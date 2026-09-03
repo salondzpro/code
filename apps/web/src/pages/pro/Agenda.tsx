@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useProBookingMutations, useProBookings, useProSalon } from '@salondz/api-client';
 import { DAY_LABELS_SHORT_FR, addDaysToKey, dayOfWeekFromKey, formatDA, formatTimeDZ, localDateTimeToISO, toLocalDateKey, weekKeys } from '@salondz/constants';
-import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
+import type { BookingWithStaff, SalonOwnerView, Staff } from '@salondz/types';
 import { WeekStrip } from '@/components/WeekStrip';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Spinner } from '@/components/Spinner';
@@ -13,11 +13,25 @@ function toDateKey(iso: string): string {
   return toLocalDateKey(new Date(iso));
 }
 
-function BookingActions({ b }: { b: BookingWithStaff }) {
-  const { setStatus, cancel } = useProBookingMutations();
-  const busy = setStatus.isPending || cancel.isPending;
+function BookingActions({ b, staff }: { b: BookingWithStaff; staff: Staff[] }) {
+  const { setStatus, cancel, reschedule } = useProBookingMutations();
+  const [moving, setMoving] = useState(false);
+  const [date, setDate] = useState(() => toDateKey(b.startsAt));
+  const [time, setTime] = useState(() => formatTimeDZ(b.startsAt));
+  const [staffId, setStaffId] = useState(b.staffId);
+  const busy = setStatus.isPending || cancel.isPending || reschedule.isPending;
+  const active = b.status === 'pending' || b.status === 'confirmed';
+
+  /** Report par le pro : date/heure libres (pas de délai minimum), membre modifiable. */
+  const move = async (e: FormEvent) => {
+    e.preventDefault();
+    await reschedule.mutateAsync({ id: b.id, startsAt: localDateTimeToISO(date, time), staffId });
+    setMoving(false);
+  };
+
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-col gap-1">
+      <div className="flex flex-wrap gap-1">
       {b.status === 'pending' && (
         <button type="button" className="btn-primary px-2 py-0.5 text-xs" disabled={busy} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
           Confirmer
@@ -33,7 +47,12 @@ function BookingActions({ b }: { b: BookingWithStaff }) {
           </button>
         </>
       )}
-      {(b.status === 'pending' || b.status === 'confirmed') && (
+      {active && (
+        <button type="button" className="btn-ghost px-2 py-0.5 text-xs" disabled={busy} aria-expanded={moving} onClick={() => setMoving((v) => !v)}>
+          Reporter
+        </button>
+      )}
+      {active && (
         <button
           type="button"
           className="btn-danger px-2 py-0.5 text-xs"
@@ -46,11 +65,36 @@ function BookingActions({ b }: { b: BookingWithStaff }) {
           Annuler
         </button>
       )}
+      </div>
+      {moving && (
+        <form onSubmit={move} className="mt-1 flex flex-col gap-1 rounded-lg bg-bg p-2" aria-label="Reporter le rendez-vous">
+          <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Nouvelle date" required />
+          <input type="time" step={300} className="input" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Nouvelle heure" required />
+          {staff.length > 1 && (
+            <select className="input" value={staffId} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
+              {staff.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.displayName}
+                </option>
+              ))}
+            </select>
+          )}
+          <ErrorMessage error={reschedule.error} />
+          <div className="flex gap-1">
+            <button type="submit" className="btn-primary px-2 py-0.5 text-xs" disabled={busy}>
+              Valider
+            </button>
+            <button type="button" className="btn-ghost px-2 py-0.5 text-xs" onClick={() => setMoving(false)}>
+              Fermer
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
 
-function BookingChip({ b, compact = false }: { b: BookingWithStaff; compact?: boolean }) {
+function BookingChip({ b, staff, compact = false }: { b: BookingWithStaff; staff: Staff[]; compact?: boolean }) {
   const tone = b.status === 'cancelled' || b.status === 'no_show' ? 'opacity-50 line-through' : '';
   return (
     <div className={`rounded-lg border border-line bg-surface p-2 text-xs ${tone}`}>
@@ -67,7 +111,7 @@ function BookingChip({ b, compact = false }: { b: BookingWithStaff; compact?: bo
             <StatusBadge status={b.status} />
           </div>
           <div className="mt-1">
-            <BookingActions b={b} />
+            <BookingActions b={b} staff={staff} />
           </div>
         </>
       )}
@@ -213,7 +257,7 @@ export function Agenda() {
               <h2 className="font-semibold">{m.displayName}</h2>
               {(byStaff.get(m.id) ?? []).length === 0 && <p className="text-xs text-muted">Aucun rendez-vous.</p>}
               {(byStaff.get(m.id) ?? []).map((b) => (
-                <BookingChip key={b.id} b={b} />
+                <BookingChip key={b.id} b={b} staff={activeStaff} />
               ))}
             </section>
           ))}
@@ -226,7 +270,7 @@ export function Agenda() {
                 {DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d)]} {dayNumber(d)}
               </button>
               {(byDay.get(d) ?? []).map((b) => (
-                <BookingChip key={b.id} b={b} compact />
+                <BookingChip key={b.id} b={b} staff={activeStaff} compact />
               ))}
             </section>
           ))}

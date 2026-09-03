@@ -1,18 +1,24 @@
-import { Link, useParams } from 'react-router';
-import { useSalon, useSalonReviews } from '@salondz/api-client';
+import { Link, useNavigate, useParams } from 'react-router';
+import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
 import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, GENDER_TARGET_LABELS_FR, wilayaName } from '@salondz/constants';
 import { Spinner } from '@/components/Spinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { formatDuration } from '@/lib/format';
+import { useAuth } from '@/lib/auth';
 
 export function SalonPage() {
   const { slug = '' } = useParams();
   const salon = useSalon(slug);
   const reviews = useSalonReviews(salon.data?.id ?? '');
+  const { session } = useAuth();
+  const navigate = useNavigate();
+  const favs = useFavorites(!!session);
+  const toggle = useToggleFavorite();
 
   if (salon.isPending) return <Spinner label="Chargement du salon…" />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
+  const isFav = !!favs.data?.items.some((x) => x.id === s.id);
 
   const share = async () => {
     const url = window.location.href;
@@ -52,6 +58,15 @@ export function SalonPage() {
             )}
             <button type="button" className="btn-ghost" onClick={share}>
               Partager
+            </button>
+            <button
+              type="button"
+              className={isFav ? 'btn-primary' : 'btn-ghost'}
+              aria-pressed={isFav}
+              disabled={toggle.isPending}
+              onClick={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}`)}`))}
+            >
+              {isFav ? '♥ Favori' : '♡ Ajouter aux favoris'}
             </button>
           </div>
           {!s.isPublished && <p className="text-xs text-warning">Aperçu : ce salon n'est pas encore publié.</p>}

@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { useCancelBooking, useCreateReview, useMyBookings } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS } from '@salondz/constants';
-import type { BookingWithSalon } from '@salondz/types';
+import { useAvailability, useCancelBooking, useCreateReview, useMyBookings, useRescheduleBooking, useSalon } from '@salondz/api-client';
+import { CLIENT_CANCEL_MIN_HOURS, addDaysToKey, dayOfWeekFromKey, formatDateLongDZ, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
+import type { AvailabilitySlot, BookingWithSalon } from '@salondz/types';
 import { BookingCard } from '@/components/BookingCard';
+import { WeekStrip } from '@/components/WeekStrip';
+import { TimeSlotGrid } from '@/components/TimeSlotGrid';
 import { Spinner } from '@/components/Spinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { EmptyState } from '@/components/EmptyState';
@@ -37,12 +39,72 @@ function ReviewForm({ booking }: { booking: BookingWithSalon }) {
   );
 }
 
+/**
+ * Report d'un rendez-vous : même salon, même service, même membre ; seul le créneau
+ * change. Les créneaux proposés viennent de `get_available_slots` (source de vérité).
+ */
+function RescheduleForm({ booking, onDone }: { booking: BookingWithSalon; onDone: () => void }) {
+  const salon = useSalon(booking.salon.slug);
+  const reschedule = useRescheduleBooking();
+  const today = toLocalDateKey();
+  const [date, setDate] = useState(() => toLocalDateKey(new Date(booking.startsAt)));
+  const [weekOf, setWeekOf] = useState(date);
+  const [slot, setSlot] = useState<AvailabilitySlot | null>(null);
+  const availability = useAvailability(booking.salonId, { serviceId: booking.serviceId, date, staffId: booking.staffId ?? undefined });
+
+  useEffect(() => {
+    setSlot(null);
+  }, [date]);
+
+  if (salon.isPending) return <Spinner inline />;
+  if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
+  const s = salon.data;
+  const maxDate = addDaysToKey(today, s.bookingHorizonDays);
+  const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
+
+  const confirm = async () => {
+    if (!slot) return;
+    await reschedule.mutateAsync({ id: booking.id, startsAt: slot.startsAt, staffId: booking.staffId });
+    onDone();
+  };
+
+  return (
+    <div className="mt-2 flex w-full flex-col gap-3 border-t border-line pt-3" aria-label="Reporter le rendez-vous">
+      <p className="text-sm font-medium">Nouveau créneau{booking.staff ? ` avec ${booking.staff.displayName}` : ''}</p>
+      <WeekStrip weekOf={weekOf} selected={date} onSelect={setDate} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} disabledDays={closedDays} />
+      {closedDays.includes(dayOfWeekFromKey(date)) ? (
+        <p className="text-sm text-muted">Le salon est fermé ce jour-là.</p>
+      ) : availability.isPending || availability.isFetching ? (
+        // isFetching aussi : le cache peut encore contenir le créneau du RDV actuel juste après la réservation
+        <Spinner label="Recherche des créneaux…" inline />
+      ) : availability.isError ? (
+        <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
+      ) : availability.data.slots.length === 0 ? (
+        <p className="text-sm text-muted">Plus de créneau disponible ce jour. Essayez un autre jour.</p>
+      ) : (
+        <TimeSlotGrid slots={availability.data.slots} selected={slot?.startsAt ?? null} onSelect={setSlot} />
+      )}
+      <ErrorMessage error={reschedule.error} />
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="btn-primary px-3 py-1 text-sm" disabled={!slot || reschedule.isPending} onClick={confirm}>
+          {slot ? `Reporter au ${formatDateLongDZ(slot.startsAt)} à ${formatTimeDZ(slot.startsAt)}` : 'Choisissez un créneau'}
+        </button>
+        <button type="button" className="btn-ghost px-3 py-1 text-sm" onClick={onDone}>
+          Fermer
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function AccountBookings() {
   const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming');
+  const [rescheduling, setRescheduling] = useState<string | null>(null);
   const list = useMyBookings({ scope });
   const cancel = useCancelBooking();
 
-  const canCancel = (b: BookingWithSalon) =>
+  /** Annulation / report possibles jusqu'à CLIENT_CANCEL_MIN_HOURS avant le rendez-vous. */
+  const canModify = (b: BookingWithSalon) =>
     (b.status === 'pending' || b.status === 'confirmed') && (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 >= CLIENT_CANCEL_MIN_HOURS;
 
   return (
@@ -83,19 +145,25 @@ export function AccountBookings() {
                     <Link to={`/s/${b.salon.slug}`} className="btn-ghost px-3 py-1 text-sm">
                       Voir le salon
                     </Link>
-                    {canCancel(b) && (
-                      <button
-                        type="button"
-                        className="btn-danger px-3 py-1 text-sm"
-                        disabled={cancel.isPending}
-                        onClick={() => {
-                          if (window.confirm('Annuler cette réservation ?')) cancel.mutate({ id: b.id });
-                        }}
-                      >
-                        Annuler
-                      </button>
+                    {canModify(b) && (
+                      <>
+                        <button type="button" className="btn-ghost px-3 py-1 text-sm" aria-expanded={rescheduling === b.id} onClick={() => setRescheduling((v) => (v === b.id ? null : b.id))}>
+                          Reporter
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-danger px-3 py-1 text-sm"
+                          disabled={cancel.isPending}
+                          onClick={() => {
+                            if (window.confirm('Annuler cette réservation ?')) cancel.mutate({ id: b.id });
+                          }}
+                        >
+                          Annuler
+                        </button>
+                      </>
                     )}
                     {b.status === 'completed' && <ReviewForm booking={b} />}
+                    {rescheduling === b.id && <RescheduleForm booking={b} onDone={() => setRescheduling(null)} />}
                   </>
                 }
               />

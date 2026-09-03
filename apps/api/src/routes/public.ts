@@ -10,7 +10,9 @@ import { loadPublicBySlug } from '../lib/queries';
 
 const CACHE_PUBLIC_LONG = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400';
 const CACHE_PUBLIC_SHORT = 'public, max-age=60, s-maxage=120, stale-while-revalidate=600';
-const CACHE_AVAILABILITY = 'public, max-age=10, stale-while-revalidate=20';
+// Disponibilités : jamais servies depuis le cache sans revalidation (ETag → 304 si inchangé) :
+// un créneau qui vient d'être pris ne doit plus apparaître, même 5 s plus tard.
+const CACHE_AVAILABILITY = 'public, no-cache';
 // Avis : toujours revalidé (ETag → 304 si inchangé) pour qu'un avis tout juste publié
 // apparaisse immédiatement. Pas de stale-while-revalidate : Chrome resservirait la copie
 // périmée et ne revaliderait qu'en arrière-plan.

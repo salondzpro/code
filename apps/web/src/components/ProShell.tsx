@@ -9,6 +9,7 @@ const items = [
   { to: '/pro/services', label: 'Services' },
   { to: '/pro/equipe', label: 'Équipe' },
   { to: '/pro/horaires', label: 'Horaires' },
+  { to: '/pro/blocages', label: 'Congés & pauses' },
   { to: '/pro/salon', label: 'Mon salon' },
 ];
 

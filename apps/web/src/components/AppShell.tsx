@@ -36,6 +36,9 @@ export function AppShell() {
                 <NavLink to={isPro ? '/pro' : '/pro/onboarding'} className={navClass}>
                   Espace pro
                 </NavLink>
+                <NavLink to="/compte/favoris" className={navClass}>
+                  Favoris
+                </NavLink>
                 <NavLink to="/compte" className={navClass}>
                   Compte
                 </NavLink>

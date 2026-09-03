@@ -29,8 +29,9 @@ const SHOTS = path.join(HERE, 'shots');
 const WEB = process.env.WEB_URL ?? 'http://localhost:5173';
 const KEEP = process.argv.includes('--keep');
 
-fs.rmSync(SHOTS, { recursive: true, force: true });
+// On vide le dossier sans le supprimer (sous Windows, un shell ouvert dedans bloquerait rmdir).
 fs.mkdirSync(SHOTS, { recursive: true });
+for (const f of fs.readdirSync(SHOTS)) fs.rmSync(path.join(SHOTS, f), { force: true });
 
 // ---- env ----
 const env = Object.fromEntries(
@@ -254,6 +255,30 @@ try {
     await p.locator('li', { hasText: 'Yacine' }).waitFor();
     await shot(p, 'pro-team');
   });
+  await step('pro: horaires personnalisés du membre', async () => {
+    const row = p.locator('li', { hasText: 'Yacine' });
+    await row.getByRole('button', { name: 'Horaires' }).click();
+    const form = row.getByRole('form', { name: /Horaires de Yacine/ });
+    await form.getByRole('button', { name: 'Horaires personnalisés' }).click();
+    await form.locator('tbody tr').first().getByRole('checkbox').uncheck(); // dimanche : repos
+    await form.getByRole('button', { name: 'Enregistrer' }).click();
+    await form.getByText('Horaires du membre enregistrés.').waitFor();
+    await shot(p, 'pro-team-hours');
+  });
+  await step('pro: blocage (pause) du membre sur le jour cible', async () => {
+    await p.goto(WEB + '/pro/blocages');
+    await p.getByRole('heading', { name: 'Congés et pauses' }).waitFor();
+    await p.getByLabel('Concerne').selectOption({ label: 'Karim Smoke' });
+    await p.getByRole('button', { name: 'Plage horaire' }).click();
+    // Les libellés obligatoires se terminent par « * » : on ancre sur le début du texte.
+    await p.getByLabel(/^Date\b/).fill(target);
+    await p.getByLabel(/^De\b/).fill('12:00');
+    await p.getByLabel(/^À\s/).fill('13:00'); // \b ne fonctionne pas après un caractère accentué
+    await p.getByLabel('Motif (facultatif)').fill('Pause');
+    await p.getByRole('button', { name: 'Ajouter le blocage' }).click();
+    await p.locator('li', { hasText: '12:00 – 13:00' }).getByText('Karim Smoke · Pause').waitFor();
+    await shot(p, 'pro-blocks');
+  });
   await step('pro: publication', async () => {
     await p.goto(WEB + '/pro/salon');
     await p.getByRole('heading', { name: 'Mon salon' }).waitFor();
@@ -301,6 +326,15 @@ try {
     await c.getByText('Fermé').first().waitFor(); // vendredi
     await shot(c, 'client-salon');
   });
+  await step('client: ajouter aux favoris → visible dans Mes favoris', async () => {
+    await c.getByRole('button', { name: /Ajouter aux favoris/ }).click();
+    await c.getByRole('button', { name: '♥ Favori' }).waitFor();
+    await c.goto(WEB + '/compte/favoris');
+    await c.locator('ul li a.card', { hasText: 'Barber Smoke' }).waitFor();
+    await shot(c, 'client-favorites');
+    await c.goto(WEB + `/s/${slug}`);
+    await c.getByRole('button', { name: '♥ Favori' }).waitFor();
+  });
   await step('client: réservation (le créneau du RDV de passage est exclu)', async () => {
     await c.getByRole('link', { name: 'Réserver' }).first().click();
     await c.waitForURL(new RegExp(`/s/${slug}/reserver`));
@@ -313,6 +347,7 @@ try {
     const texts = await slots.allInnerTexts();
     console.log(`  ${texts.length} créneaux`);
     if (texts.includes('15:00') || texts.includes('15:15')) throw new Error(`le créneau du RDV de passage est proposé : ${texts.join(',')}`);
+    if (texts.includes('12:00') || texts.includes('12:30') || texts.includes('11:45')) throw new Error(`le blocage 12:00–13:00 n'est pas exclu : ${texts.join(',')}`);
     await slots.first().click();
     await c.getByRole('heading', { name: '3. Confirmation' }).waitFor();
     await shot(c, 'client-booking-step3');
@@ -325,8 +360,22 @@ try {
   await step('client: mes réservations + annulation', async () => {
     await c.getByRole('main').getByRole('link', { name: 'Mes réservations' }).click();
     await c.waitForURL(/\/compte\/reservations/);
-    await c.locator('article', { hasText: 'Barber Smoke' }).waitFor();
+    const art = c.locator('article', { hasText: 'Barber Smoke' });
+    await art.waitFor();
     await shot(c, 'client-bookings');
+    // Report : le créneau proposé en premier est celui qui suit le RDV actuel (même membre)
+    const before = await art.locator('time').innerText();
+    await art.getByRole('button', { name: 'Reporter' }).click();
+    const panel = art.locator('[aria-label="Reporter le rendez-vous"]');
+    const slots = panel.locator('button[aria-pressed]');
+    await slots.first().waitFor();
+    const chosen = await slots.first().innerText();
+    await slots.first().click();
+    await panel.getByRole('button', { name: /^Reporter au / }).click();
+    await panel.waitFor({ state: 'detached' });
+    await art.locator('time', { hasText: chosen }).waitFor();
+    if ((await art.locator('time').innerText()) === before) throw new Error('horaire inchangé après report');
+    await shot(c, 'client-bookings-rescheduled');
     await c.locator('article', { hasText: 'Barber Smoke' }).getByRole('button', { name: 'Annuler' }).click();
     await c.locator('article', { hasText: 'Barber Smoke' }).waitFor({ state: 'detached' }).catch(() => undefined);
     await c.getByRole('tab', { name: 'Passées' }).click();
@@ -342,6 +391,18 @@ try {
     await c.getByRole('button', { name: 'Enregistrer' }).click();
     await c.getByText('Profil enregistré.').waitFor();
     await shot(c, 'client-account');
+  });
+  await step('client: recherche « autour de moi » (géolocalisation simulée : Alger)', async () => {
+    await cliCtx.grantPermissions(['geolocation'], { origin: WEB });
+    await cliCtx.setGeolocation({ latitude: 36.7538, longitude: 3.0588 });
+    await c.goto(WEB + '/recherche?category=barbier');
+    await c.getByRole('button', { name: /Autour de moi/ }).click();
+    await c.waitForURL(/lat=36\.7538&lng=3\.0588/);
+    await c.getByRole('button', { name: 'Désactiver le tri par distance' }).waitFor();
+    await c.locator('ul li a.card', { hasText: 'Barber Smoke' }).first().waitFor();
+    await shot(c, 'client-search-near-me');
+    await c.getByRole('button', { name: 'Désactiver le tri par distance' }).click();
+    await c.waitForURL((u) => !u.searchParams.has('lat'));
   });
   await step('client: notifications', async () => {
     await c.goto(WEB + '/compte/notifications');
@@ -376,6 +437,16 @@ try {
     await chip.getByRole('button', { name: 'Terminé' }).click();
     await chip.getByRole('button', { name: 'Terminé' }).waitFor({ state: 'detached' });
     await p.locator('div.rounded-lg', { hasText: 'Amine Smoke' }).locator('span', { hasText: 'Terminé' }).first().waitFor();
+  });
+  await step('pro: reporter le RDV de passage à 16:00', async () => {
+    const chip = p.locator('div.rounded-lg', { hasText: 'Walid Passage' }).first();
+    await chip.getByRole('button', { name: 'Reporter' }).click();
+    const form = chip.getByRole('form', { name: 'Reporter le rendez-vous' });
+    await form.getByLabel('Nouvelle heure').fill('16:00');
+    await form.getByRole('button', { name: 'Valider' }).click();
+    await form.waitFor({ state: 'detached' });
+    await p.locator('div.rounded-lg', { hasText: 'Walid Passage' }).getByText('16:00 – 16:30').waitFor();
+    await shot(p, 'pro-agenda-rescheduled');
   });
   await step('pro: demandes en attente (vide, auto-confirmation)', async () => {
     await p.goto(WEB + '/pro/reservations');

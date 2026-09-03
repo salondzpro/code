@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useSalonSearch } from '@salondz/api-client';
 import { CATEGORIES, GENDER_TARGETS, GENDER_TARGET_LABELS_FR, WILAYAS, type CategoryId, type GenderTarget } from '@salondz/constants';
@@ -18,7 +19,40 @@ export function Search() {
   const genderRaw = params.get('gender') ?? '';
   const gender = (GENDER_TARGETS as readonly string[]).includes(genderRaw) ? (genderRaw as GenderTarget) : undefined;
 
-  const query = useSalonSearch({ q: q || undefined, wilaya, category, gender });
+  const latRaw = Number(params.get('lat'));
+  const lngRaw = Number(params.get('lng'));
+  const near = params.has('lat') && params.has('lng') && Number.isFinite(latRaw) && Number.isFinite(lngRaw) ? { lat: latRaw, lng: lngRaw } : undefined;
+  const [locating, setLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
+  const query = useSalonSearch({ q: q || undefined, wilaya, category, gender, lat: near?.lat, lng: near?.lng });
+
+  /** « Autour de moi » : position du navigateur → tri par distance côté API (distanceKm sur les cartes). */
+  const locate = () => {
+    if (!('geolocation' in navigator)) return setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
+    setLocating(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const next = new URLSearchParams(params);
+        next.set('lat', pos.coords.latitude.toFixed(4));
+        next.set('lng', pos.coords.longitude.toFixed(4));
+        setParams(next, { replace: true });
+        setLocating(false);
+      },
+      () => {
+        setGeoError("Position indisponible. Autorisez la localisation puis réessayez.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
+    );
+  };
+  const clearNear = () => {
+    const next = new URLSearchParams(params);
+    next.delete('lat');
+    next.delete('lng');
+    setParams(next, { replace: true });
+  };
 
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -57,6 +91,18 @@ export function Search() {
           ))}
         </select>
       </form>
+      <div className="flex flex-wrap items-center gap-2">
+        {near ? (
+          <button type="button" className="chip-active" onClick={clearNear} aria-label="Désactiver le tri par distance">
+            Autour de moi ✕
+          </button>
+        ) : (
+          <button type="button" className="chip" disabled={locating} onClick={locate}>
+            {locating ? 'Localisation…' : '📍 Autour de moi'}
+          </button>
+        )}
+        {geoError && <span className="text-sm text-danger">{geoError}</span>}
+      </div>
 
       {query.isPending && <Spinner label="Recherche…" />}
       {query.isError && <ErrorMessage error={query.error} retry={() => query.refetch()} />}

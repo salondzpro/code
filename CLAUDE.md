@@ -15,7 +15,7 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - Textes UI en français ; prévoir l'arabe (RTL) plus tard via `packages/constants` (labels `*_AR`).
 
 ## Cache HTTP (API publique)
-- Listes/salons : `public, max-age=60, stale-while-revalidate=600` (4G : réponses instantanées en revisite). Chrome ressert la copie périmée et ne revalide qu'en arrière-plan : pour une ressource qui doit refléter immédiatement une écriture de l'utilisateur (avis), utiliser `public, no-cache` (ETag → 304). Le propriétaire reçoit toujours `private, no-cache`.
+- Listes/salons : `public, max-age=60, stale-while-revalidate=600` (4G : réponses instantanées en revisite). Chrome ressert la copie périmée et ne revalide qu'en arrière-plan : pour une ressource qui doit refléter immédiatement une écriture (avis, disponibilités), utiliser `public, no-cache` (ETag → 304). Le propriétaire reçoit toujours `private, no-cache`.
 
 ## Sécurité
 - `SUPABASE_SECRET_KEY` et `DATABASE_URL` : API/scripts seulement, jamais dans web/mobile ni dans git (`.env*` ignoré, `.env.example` sans secret).
