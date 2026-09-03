@@ -56,6 +56,7 @@ export default function MonSalon() {
         <Row icon="cut-outline" label="Services" value={`${activeServices} actif${activeServices > 1 ? 's' : ''}`} onPress={() => router.push('/(pro)/services' as never)} />
         <Row icon="people-outline" label="Équipe" value={`${activeStaff} membre${activeStaff > 1 ? 's' : ''}`} onPress={() => router.push('/(pro)/equipe' as never)} />
         <Row icon="time-outline" label="Horaires" value={`${openDays} j/7`} onPress={() => router.push('/(pro)/horaires' as never)} />
+        <Row icon="airplane-outline" label="Congés & pauses" value="" onPress={() => router.push('/(pro)/blocages' as never)} />
         <Row icon="storefront-outline" label="Profil, photos & réglages" value="" onPress={() => router.push('/(pro)/profil' as never)} />
       </Section>
 

@@ -8,6 +8,7 @@ export default function ClientLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="salon/[slug]/index" options={{ title: '', headerBackTitle: 'Retour' }} />
       <Stack.Screen name="salon/[slug]/reserver" options={{ title: 'Réserver', headerBackTitle: 'Retour' }} />
+      <Stack.Screen name="favoris" options={{ title: 'Mes favoris', headerBackTitle: 'Retour' }} />
     </Stack>
   );
 }

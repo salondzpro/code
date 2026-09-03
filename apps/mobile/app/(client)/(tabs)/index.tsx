@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useSalonSearch } from '@salondz/api-client';
 import { CATEGORIES, type CategoryId } from '@salondz/constants';
@@ -14,8 +15,29 @@ export default function Explorer() {
   const [wilaya, setWilaya] = useState<number | undefined>(undefined);
   const [category, setCategory] = useState<CategoryId | undefined>(undefined);
   const debouncedQ = useDebounce(q.trim());
+  const [near, setNear] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
 
-  const search = useSalonSearch({ q: debouncedQ || undefined, wilaya, category });
+  const search = useSalonSearch({ q: debouncedQ || undefined, wilaya, category, lat: near?.lat, lng: near?.lng });
+
+  /** « Autour de moi » : position de l'appareil → tri par distance côté API (distanceKm sur les cartes). */
+  const toggleNear = async () => {
+    if (near) return setNear(null);
+    setLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Localisation refusée', 'Autorisez la localisation pour trier les salons par distance.');
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setNear({ lat: Number(pos.coords.latitude.toFixed(4)), lng: Number(pos.coords.longitude.toFixed(4)) });
+    } catch {
+      Alert.alert('Position indisponible', 'Réessayez dans un instant.');
+    } finally {
+      setLocating(false);
+    }
+  };
   const items = search.data?.items ?? [];
 
   const header = (
@@ -24,6 +46,7 @@ export default function Explorer() {
       <TextField placeholder="Salon, barbier, service…" value={q} onChangeText={setQ} returnKeyType="search" autoCorrect={false} />
       <WilayaPicker value={wilaya} onChange={setWilaya} allowAll />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
+        <Chip label={locating ? 'Localisation…' : near ? '📍 Autour de moi ✕' : '📍 Autour de moi'} selected={!!near} disabled={locating} onPress={() => void toggleNear()} />
         <Chip label="Tout" selected={!category} onPress={() => setCategory(undefined)} />
         {CATEGORIES.map((c) => (
           <Chip key={c.id} label={c.labelFr} selected={category === c.id} onPress={() => setCategory(category === c.id ? undefined : c.id)} />

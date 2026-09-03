@@ -92,6 +92,14 @@ export default function Compte() {
         )}
       </Section>
 
+      <Section title="Mes salons">
+        <Pressable style={styles.row} onPress={() => router.push('/(client)/favoris' as never)}>
+          <Ionicons name="heart-outline" size={20} color={colors.primary} />
+          <Text style={styles.rowText}>Mes favoris</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+      </Section>
+
       <Section title="Espace professionnel">
         <Pressable
           style={styles.row}

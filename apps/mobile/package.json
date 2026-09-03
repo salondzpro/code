@@ -30,6 +30,7 @@
     "expo-image-manipulator": "~14.0.0",
     "expo-image-picker": "~17.0.0",
     "expo-linking": "~8.0.0",
+    "expo-location": "~19.0.8",
     "expo-notifications": "~0.32.0",
     "expo-router": "~6.0.0",
     "expo-secure-store": "~15.0.0",
@@ -55,6 +56,10 @@
     "typescript": "^5.8.3"
   },
   "expo": {
-    "doctor": { "reactNativeDirectoryCheck": { "listUnknownPackages": false } }
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false
+      }
+    }
   }
 }

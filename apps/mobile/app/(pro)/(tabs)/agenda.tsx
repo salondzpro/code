@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useProBookingMutations, useProBookings, useProSalon, useProStats } from '@salondz/api-client';
-import type { BookingWithStaff } from '@salondz/types';
-import { formatDA, formatDateLongDZ, localDateTimeToISO, toLocalDateKey, weekKeys } from '@salondz/constants';
+import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
+import { formatDA, formatDateLongDZ, formatTimeDZ, localDateTimeToISO, toLocalDateKey, weekKeys } from '@salondz/constants';
 import { createWalkInBookingSchema } from '@salondz/validation';
 import { useRealtimeBookings } from '@/lib/realtime';
 import { BookingCard, Button, Chip, EmptyState, ErrorText, Loading, Screen, Sheet, TextField, Title, WeekStrip, errorMessage } from '@/components';
@@ -15,6 +15,7 @@ export default function Agenda() {
   const [date, setDate] = useState(toLocalDateKey());
   const [staffFilter, setStaffFilter] = useState<string | undefined>(undefined);
   const [walkInOpen, setWalkInOpen] = useState(false);
+  const [moving, setMoving] = useState<BookingWithStaff | null>(null);
 
   const week = useMemo(() => weekKeys(date), [date]);
   const weekBookings = useProBookings({ from: week[0], to: week[6], limit: 200 });
@@ -43,11 +44,12 @@ export default function Agenda() {
   const onError = (e: unknown) => Alert.alert('Action impossible', errorMessage(e));
 
   const actions = (b: BookingWithStaff) => {
-    const busy = mutations.setStatus.isPending || mutations.cancel.isPending;
+    const busy = mutations.setStatus.isPending || mutations.cancel.isPending || mutations.reschedule.isPending;
     if (b.status === 'pending') {
       return (
         <>
           <Button title="Confirmer" size="sm" disabled={busy} onPress={() => mutations.setStatus.mutate({ id: b.id, status: 'confirmed' }, { onError })} />
+          <Button title="Reporter" size="sm" variant="ghost" disabled={busy} onPress={() => setMoving(b)} />
           <Button title="Refuser" size="sm" variant="danger" disabled={busy} onPress={() => act('Refuser cette demande ?', () => mutations.cancel.mutate({ id: b.id, reason: 'Indisponible' }, { onError }))} />
         </>
       );
@@ -57,6 +59,7 @@ export default function Agenda() {
         <>
           <Button title="Terminé" size="sm" variant="secondary" disabled={busy} onPress={() => mutations.setStatus.mutate({ id: b.id, status: 'completed' }, { onError })} />
           <Button title="Absent" size="sm" variant="ghost" disabled={busy} onPress={() => mutations.setStatus.mutate({ id: b.id, status: 'no_show' }, { onError })} />
+          <Button title="Reporter" size="sm" variant="ghost" disabled={busy} onPress={() => setMoving(b)} />
           <Button title="Annuler" size="sm" variant="danger" disabled={busy} onPress={() => act('Annuler ce rendez-vous ? Le client sera prévenu.', () => mutations.cancel.mutate({ id: b.id }, { onError }))} />
         </>
       );
@@ -110,6 +113,7 @@ export default function Agenda() {
         }
       />
       <WalkInSheet visible={walkInOpen} onClose={() => setWalkInOpen(false)} date={date} salon={salon} />
+      {moving ? <RescheduleSheet booking={moving} salon={salon} onClose={() => setMoving(null)} /> : null}
     </Screen>
   );
 }
@@ -175,6 +179,53 @@ function WalkInSheet({ visible, onClose, date, salon }: { visible: boolean; onCl
       <TextField label="Téléphone (facultatif)" value={clientPhone} onChangeText={setClientPhone} placeholder="05 51 23 45 67" keyboardType="phone-pad" />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Button title="Ajouter" onPress={submit} loading={createWalkIn.isPending} fullWidth />
+    </Sheet>
+  );
+}
+
+/** Report par le pro : date et heure libres (pas de délai minimum), membre modifiable. */
+function RescheduleSheet({ booking, salon, onClose }: { booking: BookingWithStaff; salon: SalonOwnerView; onClose: () => void }) {
+  const { reschedule } = useProBookingMutations();
+  const activeStaff = salon.staff.filter((s) => s.isActive);
+  const [date, setDate] = useState(() => toLocalDateKey(new Date(booking.startsAt)));
+  const [time, setTime] = useState(() => formatTimeDZ(booking.startsAt));
+  const [staffId, setStaffId] = useState(booking.staffId);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = () => {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return setError('Heure au format HH:mm (ex : 14:30)');
+    setError(null);
+    reschedule.mutate(
+      { id: booking.id, startsAt: localDateTimeToISO(date, time), staffId },
+      {
+        onSuccess: (b) => {
+          Alert.alert('Rendez-vous reporté', `${b.clientName} · ${formatDateLongDZ(b.startsAt)} à ${formatTimeDZ(b.startsAt)}`);
+          onClose();
+        },
+        onError: (e) => setError(errorMessage(e)),
+      },
+    );
+  };
+
+  return (
+    <Sheet visible onClose={onClose} title={`Reporter · ${booking.clientName}`}>
+      <Text style={styles.label}>
+        {booking.serviceName} · actuellement {formatDateLongDZ(booking.startsAt)} à {formatTimeDZ(booking.startsAt)}
+      </Text>
+      <WeekStrip value={date} onChange={setDate} minDateKey={null} />
+      <TextField label={`Nouvelle heure (${date})`} value={time} onChangeText={setTime} placeholder="14:30" keyboardType="numbers-and-punctuation" />
+      {activeStaff.length > 1 ? (
+        <>
+          <Text style={styles.label}>Membre</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
+            {activeStaff.map((m) => (
+              <Chip key={m.id} label={m.displayName} selected={staffId === m.id} onPress={() => setStaffId(m.id)} />
+            ))}
+          </ScrollView>
+        </>
+      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <Button title="Valider le report" onPress={submit} loading={reschedule.isPending} fullWidth />
     </Sheet>
   );
 }

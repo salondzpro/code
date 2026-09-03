@@ -48,6 +48,7 @@ export default function ProLayout() {
       <Stack.Screen name="services" options={{ title: 'Services' }} />
       <Stack.Screen name="equipe" options={{ title: 'Équipe' }} />
       <Stack.Screen name="horaires" options={{ title: "Horaires d'ouverture" }} />
+      <Stack.Screen name="blocages" options={{ title: 'Congés & pauses' }} />
       <Stack.Screen name="profil" options={{ title: 'Profil du salon' }} />
     </Stack>
   );

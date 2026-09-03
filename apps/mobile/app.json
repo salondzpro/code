@@ -27,7 +27,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "permissions": ["NOTIFICATIONS", "VIBRATE"],
+      "permissions": [
+        "NOTIFICATIONS",
+        "VIBRATE"
+      ],
       "edgeToEdgeEnabled": true
     },
     "web": {
@@ -60,6 +63,12 @@
         {
           "photosPermission": "SalonDZ a besoin d'accéder à vos photos pour illustrer votre salon.",
           "cameraPermission": "SalonDZ utilise l'appareil photo pour ajouter des photos de votre salon."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SalonDZ utilise votre position pour trouver les salons autour de vous."
         }
       ]
     ],
