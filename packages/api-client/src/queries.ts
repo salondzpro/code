@@ -47,7 +47,7 @@ export function makeQueries(api: ApiClient) {
         refetchOnWindowFocus: true,
         enabled: !!salonId && !!q.serviceId && !!q.date,
       }),
-    reviews: (salonId: string) => queryOptions({ queryKey: queryKeys.reviews(salonId), queryFn: () => api.public.reviews(salonId), staleTime: 5 * MIN }),
+    reviews: (salonId: string) => queryOptions({ queryKey: queryKeys.reviews(salonId), queryFn: () => api.public.reviews(salonId), staleTime: 5 * MIN, enabled: !!salonId }),
     me: () => queryOptions({ queryKey: queryKeys.me, queryFn: () => api.me.get(), staleTime: 5 * MIN, retry: false }),
     notifications: () => queryOptions({ queryKey: queryKeys.notifications, queryFn: () => api.me.notifications(), staleTime: 30_000 }),
     favorites: () => queryOptions({ queryKey: queryKeys.favorites, queryFn: () => api.me.favorites(), staleTime: 2 * MIN }),

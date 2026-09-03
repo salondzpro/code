@@ -18,7 +18,9 @@ export function RequireAuth() {
 
 /**
  * Espace pro : session requise ; sans salon → /pro/onboarding ; avec salon sur
- * l'onboarding → /pro.
+ * l'onboarding → /pro/services tant qu'aucun service n'existe, sinon /pro.
+ * (C'est ce garde, et non la page Onboarding, qui redirige après la création :
+ * la mise en cache du salon déclenche ce rendu avant la fin de la mutation.)
  */
 export function RequirePro() {
   const { session, loading } = useAuth();
@@ -34,8 +36,8 @@ export function RequirePro() {
   if (salonQuery.isPending) return <Spinner label="Chargement de votre espace…" />;
   if (salonQuery.isError) return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;
 
-  const hasSalon = !!salonQuery.data.salon;
-  if (!hasSalon && !onboarding) return <Navigate to="/pro/onboarding" replace />;
-  if (hasSalon && onboarding) return <Navigate to="/pro" replace />;
+  const salon = salonQuery.data.salon;
+  if (!salon && !onboarding) return <Navigate to="/pro/onboarding" replace />;
+  if (salon && onboarding) return <Navigate to={salon.services.length === 0 ? '/pro/services' : '/pro'} replace />;
   return <Outlet />;
 }

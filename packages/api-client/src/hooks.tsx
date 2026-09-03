@@ -126,6 +126,7 @@ export function useCreateReview() {
     mutationFn: ({ bookingId, rating, comment }: { bookingId: string; rating: number; comment?: string }) => api.bookings.review(bookingId, { rating, comment }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: queryKeys.reviews(r.salonId) });
+      qc.invalidateQueries({ queryKey: ['salon'] }); // note moyenne / nombre d'avis
       qc.invalidateQueries({ queryKey: queryKeys.myBookingsAll });
     },
   });

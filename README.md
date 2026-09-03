@@ -42,6 +42,7 @@ Tests :
 ```bash
 pnpm --filter @salondz/validation test    # unitaires (Zod)
 pnpm --filter @salondz/api test           # e2e contre Supabase (crée/supprime des utilisateurs jetables)
+pnpm --filter @salondz/web test:e2e       # parcours navigateur complet (API + web dev lancés, Chrome ou PLAYWRIGHT_CHROME)
 pnpm typecheck
 ```
 

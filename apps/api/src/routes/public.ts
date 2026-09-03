@@ -11,6 +11,10 @@ import { loadPublicBySlug } from '../lib/queries';
 const CACHE_PUBLIC_LONG = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400';
 const CACHE_PUBLIC_SHORT = 'public, max-age=60, s-maxage=120, stale-while-revalidate=600';
 const CACHE_AVAILABILITY = 'public, max-age=10, stale-while-revalidate=20';
+// Avis : toujours revalidé (ETag → 304 si inchangé) pour qu'un avis tout juste publié
+// apparaisse immédiatement. Pas de stale-while-revalidate : Chrome resservirait la copie
+// périmée et ne revaliderait qu'en arrière-plan.
+const CACHE_PUBLIC_REVALIDATE = 'public, no-cache';
 
 const publicRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/categories', async (_req, reply) => {
@@ -126,7 +130,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         createdAt: r.created_at,
         authorName: firstNameOnly(r.profiles?.full_name),
       }));
-      reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
+      reply.header('Cache-Control', CACHE_PUBLIC_REVALIDATE);
       return { items, nextCursor: items.length === limit ? String(offset + limit) : null };
     },
   );

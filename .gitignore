@@ -21,6 +21,9 @@ apps/mobile/android/
 *.key
 *.mobileprovision
 
+# captures du test e2e navigateur
+apps/web/test/shots/
+
 # misc
 .DS_Store
 Thumbs.db

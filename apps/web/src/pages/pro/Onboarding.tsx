@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
 import { useProSalonMutations } from '@salondz/api-client';
 import { CATEGORIES, GENDER_TARGETS, GENDER_TARGET_LABELS_FR, WILAYAS, type CategoryId, type GenderTarget } from '@salondz/constants';
 import { createSalonSchema } from '@salondz/validation';
@@ -7,7 +6,6 @@ import { Field } from '@/components/Field';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
 export function Onboarding() {
-  const navigate = useNavigate();
   const { createSalon } = useProSalonMutations();
   const [name, setName] = useState('');
   const [wilayaCode, setWilayaCode] = useState(16);
@@ -38,8 +36,8 @@ export function Onboarding() {
       return;
     }
     setErrors({});
+    // Après succès, RequirePro redirige (services d'abord, puisque le salon n'en a pas).
     await createSalon.mutateAsync(parsed.data);
-    navigate('/pro/services', { replace: true });
   };
 
   return (
