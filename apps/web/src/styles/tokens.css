@@ -1,0 +1,27 @@
+/*
+ * Tokens de design — À REMPLACER par ceux du fichier Claude Design.
+ * Les composants ne référencent que ces variables (jamais de couleurs en dur).
+ */
+@theme {
+  --color-bg: #fbf8f4;
+  --color-surface: #ffffff;
+  --color-text: #1b1a19;
+  --color-muted: #6b6560;
+  --color-line: #e8e2da;
+  --color-primary: #e0523a;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #f5b942;
+  --color-success: #1f9d61;
+  --color-warning: #d98a12;
+  --color-danger: #d33a2f;
+  --color-info: #2e6fd9;
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius-card: 16px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px -12px rgb(27 26 25 / 0.15);
+}
+
+:root {
+  color-scheme: light;
+}

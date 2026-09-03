@@ -1,0 +1,30 @@
+{
+  "name": "salondz",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SalonDZ — réservation et agenda pour salons de coiffure et barbers en Algérie",
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "dev:api": "pnpm --filter @salondz/api dev",
+    "dev:web": "pnpm --filter @salondz/web dev",
+    "dev:mobile": "pnpm --filter @salondz/mobile start",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:migrate": "node --env-file=.env scripts/db-migrate.mjs",
+    "db:reset": "node --env-file=.env scripts/db-migrate.mjs --reset",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:status": "node --env-file=.env scripts/db-migrate.mjs --status"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.3",
+    "pg": "^8.16.0"
+  }
+}

@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (packages + api + web)
+        run: pnpm -r --filter "./packages/*" --filter @salondz/api --filter @salondz/web typecheck
+      - name: Unit tests (validation)
+        run: pnpm --filter @salondz/validation test
+      - name: Build web
+        run: pnpm --filter @salondz/web build
+        env:
+          VITE_SUPABASE_URL: https://thpwvmtqzhtqlosgvced.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          VITE_API_URL: https://salondz-api.fly.dev
+      - name: Build api bundle
+        run: pnpm --filter @salondz/api build
+
+  # Tests de bout en bout contre Supabase (secrets requis) — uniquement sur main
+  e2e:
+    if: github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: API e2e
+        run: pnpm --filter @salondz/api exec tsx --test test/*.test.ts
+        env:
+          SUPABASE_URL: https://thpwvmtqzhtqlosgvced.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+          INTERNAL_CRON_TOKEN: ${{ secrets.INTERNAL_CRON_TOKEN }}
+          LOG_LEVEL: silent
