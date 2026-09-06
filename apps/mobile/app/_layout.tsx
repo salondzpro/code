@@ -11,6 +11,7 @@ import { api } from '@/lib/api';
 import { queryClient, setupQueryClientListeners } from '@/lib/query-client';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { usePushNotificationsListener } from '@/lib/push';
+import { hydratePrefs } from '@/lib/prefs';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
@@ -20,6 +21,9 @@ export default function RootLayout() {
   // Police du design (Inter 400/500/600/700) ; repli système tant qu'elle n'est pas chargée.
   const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold });
   useEffect(() => setupQueryClientListeners(), []);
+  useEffect(() => {
+    void hydratePrefs();
+  }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

@@ -3,7 +3,7 @@
  * (mêmes cotes que apps/web/src/styles/index.css). Aucune couleur ni rayon en dur hors theme/design.
  */
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Animated, Modal, Platform, Pressable, StyleSheet, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Animated, Modal, Platform, Pressable, StyleSheet, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -260,7 +260,7 @@ export function Input({ err, lg, f, style, onFocus, onBlur, multiline, ...props 
 }
 
 /** Sur le web (react-native-web), la bordure encre signale déjà le focus : pas d'anneau navigateur. */
-const WEB_NO_OUTLINE = Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as ViewStyle) : null;
+const WEB_NO_OUTLINE = Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as TextStyle) : null;
 
 export function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string | null; children: ReactNode }) {
   return (

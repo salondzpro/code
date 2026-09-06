@@ -1,14 +1,29 @@
 import React from 'react';
-import { Stack } from 'expo-router';
-import { colors } from '@/theme/tokens';
+import { Redirect, Stack } from 'expo-router';
+import { useMe } from '@salondz/api-client';
+import { useAuth } from '@/lib/auth';
+import { Splash } from '@/ui/Splash';
+import { Screen } from '@/ui/Screen';
+import { ErrorText } from '@/ui';
+import { C } from '@/theme/design';
 
+/**
+ * Espace client : session requise, profil complété (prénom) et marché choisi.
+ * Sans session → introduction (AUTH 02). Profil incomplet → AUTH 13. Sans marché → AUTH 15.
+ */
 export default function ClientLayout() {
-  return (
-    <Stack screenOptions={{ headerTintColor: colors.text, headerStyle: { backgroundColor: colors.bg }, headerShadowVisible: false, contentStyle: { backgroundColor: colors.bg } }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="salon/[slug]/index" options={{ title: '', headerBackTitle: 'Retour' }} />
-      <Stack.Screen name="salon/[slug]/reserver" options={{ title: 'Réserver', headerBackTitle: 'Retour' }} />
-      <Stack.Screen name="favoris" options={{ title: 'Mes favoris', headerBackTitle: 'Retour' }} />
-    </Stack>
-  );
+  const { session, loading } = useAuth();
+  const me = useMe(!!session);
+  if (loading || (session && me.isPending)) return <Splash />;
+  if (!session) return <Redirect href="/intro" />;
+  if (me.isError)
+    return (
+      <Screen center>
+        <ErrorText error={me.error} retry={() => void me.refetch()} />
+      </Screen>
+    );
+  const p = me.data!.profile;
+  if (!p.fullName) return <Redirect href="/profil-creer" />;
+  if (!p.market && p.role !== 'pro') return <Redirect href="/marche" />;
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg }, animation: 'slide_from_right' }} />;
 }

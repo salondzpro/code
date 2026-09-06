@@ -94,7 +94,7 @@ export function usePushNotificationsListener() {
       if (data.type && proTypes.has(data.type) && data.salonId) {
         router.push('/(pro)/(tabs)/demandes');
       } else {
-        router.push('/(client)/(tabs)/reservations');
+        router.push('/(client)/(tabs)/rendez-vous');
       }
     };
 
