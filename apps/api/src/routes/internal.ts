@@ -57,10 +57,25 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .select('id');
     const completed = unwrap(doneRes) as { id: string }[];
 
-    // 3) Push en attente (rattrape aussi les notifs créées hors API)
+    // 3) Demandes (validation manuelle) jamais traitées : expirées une fois l'heure passée,
+    //    pour ne pas rester « en attente » à vie ; le trigger prévient le client.
+    const expiredRes = await db
+      .from('bookings')
+      .update({
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: 'system',
+        cancellation_reason: 'Demande non confirmée à temps',
+      })
+      .eq('status', 'pending')
+      .lt('starts_at', new Date(now).toISOString())
+      .select('id');
+    const expired = unwrap(expiredRes) as { id: string }[];
+
+    // 4) Push en attente (rattrape aussi les notifs créées hors API)
     const pushed = await dispatchPendingPush(req.log);
 
-    return { reminders: toRemind.length, autoCompleted: completed.length, pushed };
+    return { reminders: toRemind.length, autoCompleted: completed.length, expired: expired.length, pushed };
   });
 };
 

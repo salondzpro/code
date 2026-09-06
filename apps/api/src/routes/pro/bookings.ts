@@ -94,6 +94,15 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     if (!ALLOWED_TRANSITIONS[b.status]?.includes(req.body.status)) {
       throw conflict('INVALID_TRANSITION', `Impossible de passer de "${b.status}" à "${req.body.status}".`);
     }
+    const startsAt = new Date(b.startsAt).getTime();
+    // Une demande dont l'heure est passée ne se confirme plus (le cron l'expire) ;
+    // une absence ne se constate qu'une fois l'heure du rendez-vous atteinte.
+    if (req.body.status === 'confirmed' && startsAt < Date.now()) {
+      throw conflict('BOOKING_EXPIRED', "L'heure de cette demande est passée : elle ne peut plus être confirmée.");
+    }
+    if (req.body.status === 'no_show' && startsAt > Date.now()) {
+      throw conflict('NOT_STARTED', "Le rendez-vous n'a pas encore commencé.");
+    }
     const res = await db.from('bookings').update({ status: req.body.status }).eq('id', b.id).eq('status', b.status).select('id').maybeSingle();
     if (!unwrap(res)) throw conflict('INVALID_TRANSITION', 'La réservation a changé entre-temps.');
     pushAfterBooking(req.log, b.id);

@@ -96,7 +96,7 @@ export function ProBookingDetail() {
       <ErrorMessage error={setStatus.error ?? cancel.error} />
 
       <BottomSheet grab={false}>
-        {b.status === 'pending' && (
+        {b.status === 'pending' && !past && (
           <Button disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
             Confirmer le rendez-vous
           </Button>

@@ -3,6 +3,7 @@ import {
   BOOKING_SOURCES,
   BOOKING_STATUSES,
   GENDER_TARGETS,
+  MAX_TIME_BLOCK_DAYS,
   SALON_MAX_PHOTOS,
   USER_ROLES,
 } from '@salondz/constants';
@@ -132,6 +133,10 @@ export const createTimeBlockSchema = z
   })
   .refine((b) => new Date(b.startsAt) < new Date(b.endsAt), {
     message: 'La fin doit être après le début',
+    path: ['endsAt'],
+  })
+  .refine((b) => new Date(b.endsAt).getTime() - new Date(b.startsAt).getTime() <= MAX_TIME_BLOCK_DAYS * 86_400_000, {
+    message: 'Un blocage ne peut pas dépasser un an',
     path: ['endsAt'],
   });
 export type CreateTimeBlockInput = z.infer<typeof createTimeBlockSchema>;

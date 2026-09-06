@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { CLIENT_CANCEL_MIN_HOURS } from '@salondz/constants';
+import { CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT } from '@salondz/constants';
 import {
   cancelBookingSchema,
   createBookingSchema,
@@ -33,9 +33,12 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     if (!profile.phone && body.clientPhone) patch.phone = body.clientPhone;
     if (Object.keys(patch).length) await db.from('profiles').update(patch).eq('id', profile.id);
 
+    const serviceIds = body.serviceIds?.length ? body.serviceIds : [body.serviceId!];
+    await assertClientCanBook(profile.id, body.salonId, serviceIds, body.startsAt);
+
     const res = await db.rpc('create_booking_multi', {
       p_salon_id: body.salonId,
-      p_service_ids: body.serviceIds?.length ? body.serviceIds : [body.serviceId!],
+      p_service_ids: serviceIds,
       p_staff_id: body.staffId ?? null,
       p_starts_at: body.startsAt,
       p_client_id: profile.id,
@@ -141,6 +144,39 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return camelize<Review>(unwrap(res));
   });
 };
+
+/**
+ * Garde-fous anti-abus avant la création (la fonction SQL reste la seule source de vérité du créneau) :
+ * plafond de rendez-vous à venir par client, et pas de doublon du même client sur un horaire
+ * qui chevauche un rendez-vous déjà pris dans ce salon (double clic, réessai réseau).
+ */
+async function assertClientCanBook(clientId: string, salonId: string, serviceIds: string[], startsAt: string): Promise<void> {
+  const nowIso = new Date().toISOString();
+  const [upcoming, total] = await Promise.all([
+    db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', clientId).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso),
+    db.rpc('services_total', { p_salon_id: salonId, p_service_ids: serviceIds }).single(),
+  ]);
+  if (upcoming.error) throw upcoming.error;
+  if ((upcoming.count ?? 0) >= MAX_UPCOMING_BOOKINGS_PER_CLIENT) {
+    throw conflict('TOO_MANY_BOOKINGS', `Vous avez déjà ${MAX_UPCOMING_BOOKINGS_PER_CLIENT} rendez-vous à venir. Annulez-en un pour réserver.`);
+  }
+  const t = unwrap(total) as { duration_minutes: number; n: number };
+  if (t.n !== serviceIds.length) return; // la fonction SQL renverra SERVICE_INACTIVE
+  const startIso = new Date(startsAt).toISOString();
+  const endIso = new Date(new Date(startsAt).getTime() + t.duration_minutes * 60_000).toISOString();
+  const dup = await db
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', clientId)
+    .eq('salon_id', salonId)
+    .in('status', ACTIVE_STATUSES)
+    .lt('starts_at', endIso)
+    .gt('ends_at', startIso);
+  if (dup.error) throw dup.error;
+  if (dup.count) throw conflict('ALREADY_BOOKED', 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.');
+}
+
+const ACTIVE_STATUSES = ['pending', 'confirmed'];
 
 function fmtWhen(iso: string): string {
   return new Intl.DateTimeFormat('fr-DZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Algiers' }).format(new Date(iso));

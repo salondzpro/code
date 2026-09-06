@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { MAX_STAFF_PER_SALON } from '@salondz/constants';
 import { createStaffSchema, setStaffHoursSchema, updateStaffSchema, uuid } from '@salondz/validation';
 import type { Staff, StaffHour } from '@salondz/types';
 import { db } from '../../lib/supabase';
@@ -13,6 +14,7 @@ const proStaffRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/staff', { schema: { body: createStaffSchema } }, async (req, reply) => {
     const salonId = req.salon!.id;
     const { count } = await db.from('staff').select('id', { count: 'exact', head: true }).eq('salon_id', salonId);
+    if ((count ?? 0) >= MAX_STAFF_PER_SALON) throw conflict('LIMIT_REACHED', `Une équipe compte au plus ${MAX_STAFF_PER_SALON} membres.`);
     const res = await db
       .from('staff')
       .insert({ ...snakeize(req.body), salon_id: salonId, sort_order: count ?? 0 })

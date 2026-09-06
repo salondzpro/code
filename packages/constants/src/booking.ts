@@ -50,3 +50,10 @@ export const NOTIFICATION_TYPES = [
   'booking_completed',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** Garde-fous anti-abus (API) : rendez-vous à venir par client, taille de l'équipe et du catalogue. */
+export const MAX_UPCOMING_BOOKINGS_PER_CLIENT = 10;
+export const MAX_STAFF_PER_SALON = 30;
+export const MAX_SERVICES_PER_SALON = 200;
+/** Durée maximale d'un blocage (congés) : un an. */
+export const MAX_TIME_BLOCK_DAYS = 366;

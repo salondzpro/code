@@ -51,7 +51,7 @@ export default function ProBookingDetail() {
       gap={16}
       footer={
         <BottomSheet grab={false}>
-          {b.status === 'pending' && (
+          {b.status === 'pending' && !past && (
             <Button disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
               Confirmer le rendez-vous
             </Button>

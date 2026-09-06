@@ -11,7 +11,9 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 ## Règles métier non négociables
 - Devise DA uniquement (`formatDA`), jamais d'euros. Fuseau `Africa/Algiers`. Semaine **dimanche → samedi** (`WEEK_STARTS_ON = 0`, `weekKeys()`), `day_of_week` 0 = dimanche.
 - Anti-double réservation = contrainte d'exclusion GiST sur `bookings` + fonctions SQL `create_booking` / `reschedule_booking` / `get_available_slots`. Ne jamais réimplémenter la logique de créneaux côté API/front ; Realtime = affichage seulement.
-- Téléphones normalisés E.164 `+213…` via `phoneDZ` ; snake_case en base, camelCase dans l'API (`camelize`).
+- Règles du salon appliquées en SQL (`create_booking_multi`, `reschedule_booking` avec `p_enforce_rules`) : délai minimum, horizon, annulation/report jusqu'à `cancel_min_hours`, report client désactivable (`allow_client_reschedule`). Les fonctions d'écriture sont révoquées pour `anon`/`authenticated` (migration 0009) : seule l'API (clé secrète) les appelle.
+- Garde-fous API (`packages/constants/src/booking.ts`) : au plus `MAX_UPCOMING_BOOKINGS_PER_CLIENT` rendez-vous à venir par client, pas de doublon du même client sur un horaire qui chevauche (`ALREADY_BOOKED`), plafonds équipe/catalogue, blocage ≤ 1 an. Transitions pro : `confirmed` impossible après l'heure (`BOOKING_EXPIRED`), `no_show` impossible avant l'heure (`NOT_STARTED`). Le cron (`/internal/cron/tick`) expire les demandes `pending` passées (`cancelled_by = 'system'`).
+- Téléphones normalisés E.164 `+213…` via `phoneDZ` ; snake_case en base, camelCase dans l'API (`camelize`). Un numéro vérifié par OTP (dans le jeton) n'est pas modifiable via `PATCH /me` ; le lien (`slug`) du salon est définitif.
 - Textes UI en français ; prévoir l'arabe (RTL) plus tard via `packages/constants` (labels `*_AR`).
 
 ## Cache HTTP (API publique)

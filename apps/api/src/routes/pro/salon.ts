@@ -86,7 +86,10 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       if (ins.error) throw ins.error;
     }
     const cover = req.body.photos[0]?.url ?? null;
-    if (cover !== salon.coverUrl) await db.from('salons').update({ cover_url: cover }).eq('id', salon.id);
+    if (cover !== salon.coverUrl) {
+      const upd = await db.from('salons').update({ cover_url: cover }).eq('id', salon.id);
+      if (upd.error) throw upd.error;
+    }
     return loadOwnerView(salon.id);
   });
 

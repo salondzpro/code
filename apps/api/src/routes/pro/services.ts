@@ -1,9 +1,10 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { MAX_SERVICES_PER_SALON } from '@salondz/constants';
 import { createServiceSchema, setServicePhotosSchema, updateServiceSchema, uuid } from '@salondz/validation';
 import type { Service } from '@salondz/types';
 import { db } from '../../lib/supabase';
-import { notFound, unwrap } from '../../lib/errors';
+import { conflict, notFound, unwrap } from '../../lib/errors';
 import { camelize, snakeize } from '../../lib/mappers';
 import { SERVICE_COLS } from '../../lib/queries';
 
@@ -13,6 +14,7 @@ const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/services', { schema: { body: createServiceSchema } }, async (req, reply) => {
     const salonId = req.salon!.id;
     const { count } = await db.from('services').select('id', { count: 'exact', head: true }).eq('salon_id', salonId);
+    if ((count ?? 0) >= MAX_SERVICES_PER_SALON) throw conflict('LIMIT_REACHED', `Un catalogue compte au plus ${MAX_SERVICES_PER_SALON} prestations.`);
     const res = await db
       .from('services')
       .insert({ ...snakeize(req.body), salon_id: salonId, sort_order: count ?? 0 })
@@ -53,7 +55,8 @@ const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.put('/services/reorder', { schema: { body: z.object({ ids: z.array(uuid).min(1).max(200) }) } }, async (req, reply) => {
     const salonId = req.salon!.id;
-    await Promise.all(req.body.ids.map((id, i) => db.from('services').update({ sort_order: i }).eq('id', id).eq('salon_id', salonId)));
+    const results = await Promise.all(req.body.ids.map((id, i) => db.from('services').update({ sort_order: i }).eq('id', id).eq('salon_id', salonId)));
+    for (const r of results) if (r.error) throw r.error;
     reply.status(204);
     return null;
   });

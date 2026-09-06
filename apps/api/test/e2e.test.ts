@@ -49,6 +49,8 @@ let salonId = '';
 let salonSlug = '';
 let serviceId = '';
 let staffId = '';
+let winnerToken = '';
+let stalePendingId = '';
 const dateKey = addDaysToKey(toLocalDateKey(), 3);
 const slotIso = localDateTimeToISO(dateKey, '10:00');
 
@@ -197,11 +199,21 @@ test('COURSE : 2 clients, même créneau, en parallèle → exactement 1 succès
   const loser = ra.statusCode === 409 ? ra : rb;
   assert.equal(loser.json().error.code, 'SLOT_TAKEN');
   const winner = ra.statusCode === 201 ? ra : rb;
+  winnerToken = ra.statusCode === 201 ? clientA.token : clientB.token;
   const b = winner.json();
   assert.equal(b.status, 'confirmed');
   assert.equal(b.priceDa, 800);
   assert.equal(b.salon.slug, salonSlug);
   assert.equal(b.staff.id, staffId);
+});
+
+test('client : doublon du même client sur un horaire qui chevauche → ALREADY_BOOKED', async () => {
+  const same = await call('POST', '/v1/bookings', winnerToken, { salonId, serviceId, startsAt: slotIso });
+  assert.equal(same.statusCode, 409, same.body);
+  assert.equal(same.json().error.code, 'ALREADY_BOOKED');
+  const overlap = await call('POST', '/v1/bookings', winnerToken, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, '10:15') });
+  assert.equal(overlap.statusCode, 409, overlap.body);
+  assert.equal(overlap.json().error.code, 'ALREADY_BOOKED');
 });
 
 test('créneau pris disparaît des disponibilités', async () => {
@@ -341,10 +353,51 @@ test('salon dépublié → page publique 404 pour un anonyme, visible pour le pr
   assert.equal(owner.statusCode, 200);
 });
 
-test('cron interne : jeton requis', async () => {
+test('pro : une demande dont l\'heure est passée ne se confirme plus ; « absent » impossible avant l\'heure', async () => {
+  // Demande (validation manuelle) d'hier jamais traitée, insérée directement en base.
+  const yesterday = addDaysToKey(toLocalDateKey(), -1);
+  const ins = await db
+    .from('bookings')
+    .insert({
+      salon_id: salonId,
+      client_id: clientB.id,
+      staff_id: staffId,
+      service_id: serviceId,
+      service_name: 'Coupe homme',
+      duration_minutes: 30,
+      price_da: 800,
+      starts_at: localDateTimeToISO(yesterday, '10:00'),
+      ends_at: localDateTimeToISO(yesterday, '10:30'),
+      status: 'pending',
+      source: 'online',
+      client_name: 'Client B',
+    })
+    .select('id')
+    .single();
+  assert.ifError(ins.error);
+  stalePendingId = ins.data!.id;
+
+  const confirm = await call('POST', `/v1/pro/bookings/${stalePendingId}/status`, pro.token, { status: 'confirmed' });
+  assert.equal(confirm.statusCode, 409, confirm.body);
+  assert.equal(confirm.json().error.code, 'BOOKING_EXPIRED');
+
+  const agenda = await call('GET', `/v1/pro/bookings?from=${dateKey}&to=${dateKey}`, pro.token);
+  const future = (agenda.json().items as { id: string; status: string }[]).find((b) => b.status === 'confirmed');
+  assert.ok(future, agenda.body);
+  const noShow = await call('POST', `/v1/pro/bookings/${future!.id}/status`, pro.token, { status: 'no_show' });
+  assert.equal(noShow.statusCode, 409, noShow.body);
+  assert.equal(noShow.json().error.code, 'NOT_STARTED');
+});
+
+test('cron interne : jeton requis ; expire les demandes non traitées', async () => {
   const no = await call('POST', '/internal/cron/tick');
   assert.equal(no.statusCode, 401);
   const ok = await call('POST', '/internal/cron/tick', config.INTERNAL_CRON_TOKEN);
   assert.equal(ok.statusCode, 200, ok.body);
   assert.ok('reminders' in ok.json());
+  assert.ok(ok.json().expired >= 1, ok.body);
+  const stale = await call('GET', `/v1/pro/bookings/${stalePendingId}`, pro.token);
+  assert.equal(stale.statusCode, 200, stale.body);
+  assert.equal(stale.json().status, 'cancelled');
+  assert.equal(stale.json().cancelledBy, 'system');
 });
