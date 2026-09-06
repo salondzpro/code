@@ -35,3 +35,9 @@ coverage/
 
 # captures des écrans du design (régénérables : node design/split.mjs)
 design/screens/*.png
+
+# captures du test e2e mobile (Expo web)
+apps/mobile/test/shots/
+
+# comptes de démonstration (sessions) — pnpm demo:seed / demo:cleanup
+scripts/.demo.json

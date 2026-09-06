@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "doctor": "npx expo-doctor",
-    "clean": "rm -rf .expo .turbo"
+    "clean": "rm -rf .expo .turbo",
+    "test:e2e": "node --env-file=../../.env test/smoke.e2e.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -58,7 +59,8 @@
   "devDependencies": {
     "@babel/core": "^7.25.0",
     "@types/react": "~19.1.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "playwright-core": "^1.56.1"
   },
   "expo": {
     "doctor": {
