@@ -27,7 +27,7 @@ export default function Reservations() {
           title="Connectez-vous"
           description="Retrouvez ici vos rendez-vous à venir et votre historique."
           actionLabel="Se connecter"
-          onAction={() => router.push({ pathname: '/(auth)/connexion', params: { redirect: '/(client)/(tabs)/reservations' } } as never)}
+          onAction={() => router.push({ pathname: '/connexion', params: { redirect: '/(client)/(tabs)/reservations' } } as never)}
         />
       </Screen>
     );

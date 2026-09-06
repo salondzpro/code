@@ -27,7 +27,7 @@ export default function ProLayout() {
 
   if (loading || (session && pro.isLoading)) return <Loading label="Chargement de votre espace…" />;
   if (!session) {
-    return <Redirect href={{ pathname: '/(auth)/connexion', params: { role: 'pro', redirect: '/(pro)' } } as never} />;
+    return <Redirect href={{ pathname: '/connexion', params: { role: 'pro', next: '/pro' } } as never} />;
   }
   if (pro.isError) {
     return (

@@ -13,6 +13,7 @@
     "clean": "rm -rf .expo .turbo"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@salondz/api-client": "workspace:*",
@@ -29,6 +30,7 @@
     "expo-image": "~3.0.0",
     "expo-image-manipulator": "~14.0.0",
     "expo-image-picker": "~17.0.0",
+    "expo-linear-gradient": "^57.0.1",
     "expo-linking": "~8.0.0",
     "expo-location": "~19.0.8",
     "expo-notifications": "~0.32.0",
@@ -37,6 +39,7 @@
     "expo-splash-screen": "~31.0.0",
     "expo-status-bar": "~3.0.0",
     "expo-system-ui": "~6.0.0",
+    "lucide-react-native": "^1.41.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.4",

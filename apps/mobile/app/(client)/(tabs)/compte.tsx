@@ -37,9 +37,9 @@ export default function Compte() {
           title="Vous n'êtes pas connecté"
           description="Connectez-vous pour réserver plus vite et suivre vos rendez-vous."
           actionLabel="Se connecter"
-          onAction={() => router.push({ pathname: '/(auth)/connexion', params: { redirect: '/(client)/(tabs)/compte' } } as never)}
+          onAction={() => router.push({ pathname: '/connexion', params: { redirect: '/(client)/(tabs)/compte' } } as never)}
         />
-        <Button title="Je suis un professionnel" variant="secondary" onPress={() => router.push({ pathname: '/(auth)/connexion', params: { role: 'pro', redirect: '/(pro)' } } as never)} />
+        <Button title="Je suis un professionnel" variant="secondary" onPress={() => router.push({ pathname: '/connexion', params: { role: 'pro', redirect: '/(pro)' } } as never)} />
       </Screen>
     );
   }

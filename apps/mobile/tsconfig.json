@@ -6,10 +6,25 @@
     "noImplicitOverride": true,
     "verbatimModuleSyntax": false,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "types": ["react-native", "expo/types"]
+    "types": [
+      "react-native",
+      "expo/types"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules", "babel.config.js", "metro.config.js", "android", "ios", ".expo"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "metro.config.js",
+    "android",
+    "ios",
+    ".expo"
+  ]
 }

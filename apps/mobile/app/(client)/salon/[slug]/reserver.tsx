@@ -52,7 +52,7 @@ export default function Reserver() {
 
   const goConfirm = () => {
     if (!session) {
-      router.push({ pathname: '/(auth)/connexion', params: { redirect: `/(client)/salon/${s.slug}/reserver?serviceId=${serviceId ?? ''}` } } as never);
+      router.push({ pathname: '/connexion', params: { redirect: `/(client)/salon/${s.slug}/reserver?serviceId=${serviceId ?? ''}` } } as never);
       return;
     }
     setStep(3);

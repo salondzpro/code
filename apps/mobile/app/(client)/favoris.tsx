@@ -31,7 +31,7 @@ export default function Favoris() {
                 title="Connectez-vous"
                 description="Vos salons favoris vous suivent sur tous vos appareils."
                 actionLabel="Se connecter"
-                onAction={() => router.push({ pathname: '/(auth)/connexion', params: { redirect: '/(client)/favoris' } } as never)}
+                onAction={() => router.push({ pathname: '/connexion', params: { redirect: '/(client)/favoris' } } as never)}
               />
             ) : favs.isLoading ? (
               <Loading inline />

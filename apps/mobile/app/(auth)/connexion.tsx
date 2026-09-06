@@ -1,106 +1,99 @@
+/** AUTH 04 / 05 — Numéro de téléphone (+213 + 9 chiffres), erreur « numéro incomplet ». */
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { emailOtpRequestSchema, emailOtpVerifySchema } from '@salondz/validation';
+import { View } from 'react-native';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { AlertCircle, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '@/lib/auth';
-import { Button, ErrorText, Screen, TextField, Title, Muted } from '@/components';
-import { spacing } from '@/theme/tokens';
+import { EMAIL_FALLBACK, groupLocalDigits, readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
+import { Alert, Button, H1, I, Input, P, TextLink, TopBar, Tx } from '@/ui';
+import { Screen } from '@/ui/Screen';
+import { C, R } from '@/theme/design';
 
-type Params = { role?: 'client' | 'pro'; redirect?: string };
-
-/** Connexion par code email (OTP) en 2 étapes. Crée le compte si nécessaire. */
-export default function Connexion() {
+export default function Phone() {
+  const { session } = useAuth();
   const router = useRouter();
-  const { role, redirect } = useLocalSearchParams<Params>();
-  const { signInWithEmailOtp, verifyEmailOtp } = useAuth();
-
-  const [step, setStep] = useState<'email' | 'code'>('email');
+  const params = useLocalSearchParams<{ role?: string; next?: string; redirect?: string }>();
+  const flow = readAuthFlow();
+  const role = params.role === 'pro' ? 'pro' : flow.role;
+  const next = params.next ?? params.redirect ?? (flow.next || (role === 'pro' ? '/pro' : '/'));
+  const [digits, setDigits] = useState(() => (flow.identifier.startsWith('+213') ? flow.identifier.slice(4) : ''));
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<unknown>(null);
+  const [useEmail, setUseEmail] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const sendCode = async () => {
-    const parsed = emailOtpRequestSchema.safeParse({ email, role });
-    if (!parsed.success) return setError(new Error('Adresse email invalide.'));
-    setBusy(true);
-    setError(null);
-    try {
-      await signInWithEmailOtp(parsed.data.email, parsed.data.role);
-      setStep('code');
-    } catch (e) {
-      setError(e);
-    } finally {
-      setBusy(false);
-    }
-  };
+  if (session) return <Redirect href="/retour" />;
 
-  const verify = async () => {
-    const parsed = emailOtpVerifySchema.safeParse({ email, token: code });
-    if (!parsed.success) return setError(new Error('Entrez le code à 6 chiffres reçu par email.'));
-    setBusy(true);
-    setError(null);
-    try {
-      await verifyEmailOtp(parsed.data.email, parsed.data.token);
-      const target = redirect && redirect.startsWith('/') ? redirect : '/';
-      router.replace(target as never);
-    } catch (e) {
-      setError(e);
-    } finally {
-      setBusy(false);
+  const submit = () => {
+    if (useEmail) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError('Adresse e-mail invalide.');
+      writeAuthFlow({ role, next, identifier: email.trim().toLowerCase(), channel: 'email' });
+      router.push('/canal');
+      return;
     }
+    const local = digits.replace(/\D/g, '');
+    if (local.length !== 9 || !/^[5-7]/.test(local)) return setError('Numéro incomplet — 9 chiffres attendus après +213.');
+    setError(null);
+    writeAuthFlow({ role, next, identifier: `+213${local}`, channel: 'whatsapp' });
+    router.push('/canal');
   };
 
   return (
-    <Screen scroll>
-      <Title>{role === 'pro' ? 'Espace professionnel' : 'Bienvenue'}</Title>
-      <Muted>
-        {step === 'email'
-          ? 'Entrez votre email : nous vous envoyons un code de connexion. Aucun mot de passe à retenir.'
-          : `Code envoyé à ${email}. Vérifiez aussi vos spams.`}
-      </Muted>
-      <View style={styles.form}>
-        {step === 'email' ? (
-          <>
-            <TextField
-              label="Email"
-              placeholder="vous@exemple.dz"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoFocus
-              onSubmitEditing={sendCode}
-            />
-            <Button title="Recevoir mon code" onPress={sendCode} loading={busy} fullWidth />
-          </>
-        ) : (
-          <>
-            <TextField
-              label="Code de connexion"
-              placeholder="123456"
-              value={code}
-              onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 8))}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              autoFocus
-              onSubmitEditing={verify}
-            />
-            <Button title="Se connecter" onPress={verify} loading={busy} fullWidth />
-            <Button title="Renvoyer le code" variant="ghost" onPress={sendCode} disabled={busy} style={{ marginTop: spacing.sm }} />
-            <Button title="Changer d'email" variant="ghost" onPress={() => setStep('email')} disabled={busy} />
-          </>
-        )}
-        <ErrorText error={error} />
+    <Screen gap={16}>
+      <TopBar backTo="/bienvenue" right="Étape 1 sur 3" />
+      <View style={{ gap: 12 }}>
+        <H1>Votre numéro</H1>
+        <P>Nous envoyons un code à 6 chiffres sur WhatsApp pour vérifier votre numéro.</P>
       </View>
-      <Text style={styles.legal}>En continuant, vous acceptez les conditions d'utilisation de SalonDZ.</Text>
+      {useEmail ? (
+        <Input
+          lg
+          err={!!error}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+          placeholder="vous@exemple.dz"
+          value={email}
+          onChangeText={(v) => {
+            setEmail(v);
+            setError(null);
+          }}
+          accessibilityLabel="Adresse e-mail"
+          autoFocus
+          returnKeyType="done"
+          onSubmitEditing={submit}
+        />
+      ) : (
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 16 }} accessibilityLabel="Indicatif +213">
+            <Tx size={17} weight={500} lh={22}>
+              +213
+            </Tx>
+            <I icon={ChevronDown} size={16} color={C.subtle} />
+          </View>
+          <Input
+            lg
+            err={!!error}
+            style={{ flex: 1 }}
+            keyboardType="number-pad"
+            autoComplete="tel-national"
+            textContentType="telephoneNumber"
+            placeholder="6 61 24 87 90"
+            value={groupLocalDigits(digits)}
+            onChangeText={(v) => {
+              setDigits(v.replace(/\D/g, '').slice(0, 9));
+              setError(null);
+            }}
+            accessibilityLabel="Numéro de téléphone"
+            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={submit}
+          />
+        </View>
+      )}
+      {error ? <Alert icon={AlertCircle}>{error}</Alert> : <Tx size={14} color={C.muted} lh={20}>{useEmail ? 'Le code arrivera par e-mail.' : 'Format algérien · +213 XX XX XX XX'}</Tx>}
+      <Button onPress={submit}>Recevoir le code</Button>
+      {EMAIL_FALLBACK && <TextLink onPress={() => setUseEmail((v) => !v)}>{useEmail ? 'Utiliser un numéro de téléphone' : 'Recevoir le code par e-mail'}</TextLink>}
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  form: { marginTop: spacing.xl },
-  legal: { marginTop: spacing.xl, fontSize: 12, color: '#6B6478', textAlign: 'center' },
-});
