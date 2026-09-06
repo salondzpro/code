@@ -4,11 +4,14 @@ import { useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { registerForPushNotifications } from '@/lib/push';
-import { ErrorText, Loading, Screen } from '@/components';
-import { colors } from '@/theme/tokens';
+import { Splash } from '@/ui/Splash';
+import { Screen } from '@/ui/Screen';
+import { ErrorText } from '@/ui';
+import { C } from '@/theme/design';
 
 /**
- * Garde de l'espace pro : session requise ; sans salon → onboarding.
+ * Espace pro : session requise. Sans salon → onboarding étapes 1 à 4 (le salon est créé à l'étape 4) ;
+ * avec salon → tout l'espace pro, y compris les étapes 5 à 10 (réutilisées comme réglages).
  * Enregistre le jeton push une fois le salon chargé.
  */
 export default function ProLayout() {
@@ -25,31 +28,26 @@ export default function ProLayout() {
     }
   }, [salon]);
 
-  if (loading || (session && pro.isLoading)) return <Loading label="Chargement de votre espace…" />;
-  if (!session) {
-    return <Redirect href={{ pathname: '/connexion', params: { role: 'pro', next: '/pro' } } as never} />;
-  }
-  if (pro.isError) {
+  if (loading || (session && pro.isPending)) return <Splash />;
+  if (!session) return <Redirect href={{ pathname: '/connexion', params: { role: 'pro', next: '/pro' } } as never} />;
+  if (pro.isError)
     return (
-      <Screen>
-        <ErrorText error={pro.error} onRetry={() => void pro.refetch()} />
+      <Screen center>
+        <ErrorText error={pro.error} retry={() => void pro.refetch()} />
       </Screen>
     );
+
+  const i = segments.indexOf('onboarding');
+  const onboarding = i >= 0;
+  const stepSeg = onboarding ? segments[i + 1] : undefined;
+  const step = stepSeg && /^\d+$/.test(stepSeg) ? Number(stepSeg) : null;
+  const publish = stepSeg === 'publier';
+
+  if (!salon) {
+    if (!onboarding || step === null || step > 4) return <Redirect href="/onboarding/1" />;
+  } else if (onboarding && (step === null || step <= 4) && !publish) {
+    return <Redirect href={salon.services.length === 0 ? '/onboarding/5' : '/(pro)/(tabs)'} />;
   }
 
-  const onOnboarding = segments.includes('onboarding');
-  if (!salon && !onOnboarding) return <Redirect href="/(pro)/onboarding" />;
-  if (salon && onOnboarding) return <Redirect href="/(pro)/(tabs)/agenda" />;
-
-  return (
-    <Stack screenOptions={{ headerTintColor: colors.text, headerStyle: { backgroundColor: colors.bg }, headerShadowVisible: false, contentStyle: { backgroundColor: colors.bg } }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="onboarding" options={{ title: 'Créer mon salon', headerBackVisible: false }} />
-      <Stack.Screen name="services" options={{ title: 'Services' }} />
-      <Stack.Screen name="equipe" options={{ title: 'Équipe' }} />
-      <Stack.Screen name="horaires" options={{ title: "Horaires d'ouverture" }} />
-      <Stack.Screen name="blocages" options={{ title: 'Congés & pauses' }} />
-      <Stack.Screen name="profil" options={{ title: 'Profil du salon' }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg }, animation: 'slide_from_right' }} />;
 }

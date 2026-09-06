@@ -1,32 +1,19 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useProPendingBookings } from '@salondz/api-client';
-import { colors } from '@/theme/tokens';
+import { Calendar, Home, Menu, User, Users } from 'lucide-react-native';
+import { TabBar } from '@/ui/TabBar';
+import { C } from '@/theme/design';
 
+/** Onglets pro du design : Accueil · Agenda · Clients · Équipe · Prestations · Profil. */
 export default function ProTabsLayout() {
-  const pending = useProPendingBookings();
-  const count = pending.data?.items.length ?? 0;
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border },
-      }}
-    >
-      <Tabs.Screen name="agenda" options={{ title: 'Agenda', tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} /> }} />
-      <Tabs.Screen
-        name="demandes"
-        options={{
-          title: 'Demandes',
-          tabBarBadge: count > 0 ? count : undefined,
-          tabBarBadgeStyle: { backgroundColor: colors.accent },
-          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen name="salon" options={{ title: 'Mon salon', tabBarIcon: ({ color, size }) => <Ionicons name="storefront-outline" size={size} color={color} /> }} />
+    <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: C.bg } }}>
+      <Tabs.Screen name="index" options={{ title: 'Accueil', tabBarIcon: ({ color, size }) => <Home size={size} color={color} strokeWidth={1.6} /> }} />
+      <Tabs.Screen name="agenda" options={{ title: 'Agenda', tabBarIcon: ({ color, size }) => <Calendar size={size} color={color} strokeWidth={1.6} /> }} />
+      <Tabs.Screen name="clients" options={{ title: 'Clients', tabBarIcon: ({ color, size }) => <User size={size} color={color} strokeWidth={1.6} /> }} />
+      <Tabs.Screen name="equipe" options={{ title: 'Équipe', tabBarIcon: ({ color, size }) => <Users size={size} color={color} strokeWidth={1.6} /> }} />
+      <Tabs.Screen name="prestations" options={{ title: 'Prestations', tabBarIcon: ({ color, size }) => <Menu size={size} color={color} strokeWidth={1.6} /> }} />
+      <Tabs.Screen name="profil-pro" options={{ title: 'Profil', tabBarIcon: ({ color, size }) => <User size={size} color={color} strokeWidth={1.6} /> }} />
     </Tabs>
   );
 }

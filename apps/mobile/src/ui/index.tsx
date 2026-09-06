@@ -366,7 +366,11 @@ export function InfoBox({ children }: { children: ReactNode }) {
       <View style={{ marginTop: 2 }}>
         <I icon={Info} size={18} color={C.muted} />
       </View>
-      <View style={{ flex: 1 }}>{typeof children === 'string' ? <Tx size={15} color={C.muted} lh={22}>{children}</Tx> : children}</View>
+      <View style={{ flex: 1 }}>
+        <Tx size={15} color={C.muted} lh={22}>
+          {children}
+        </Tx>
+      </View>
     </Soft>
   );
 }
