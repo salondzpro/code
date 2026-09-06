@@ -8,7 +8,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 const emailSchema = z.string().trim().toLowerCase().email();
 
 export function Login() {
-  const { session, signInWithEmailOtp, verifyEmailOtp } = useAuth();
+  const { session, sendEmailOtp: signInWithEmailOtp, verifyEmailOtp } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const role = params.get('role') === 'pro' ? 'pro' : undefined;

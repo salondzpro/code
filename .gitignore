@@ -32,3 +32,6 @@ coverage/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# captures des écrans du design (régénérables : node design/split.mjs)
+design/screens/*.png

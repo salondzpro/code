@@ -1,25 +1,83 @@
 /*
- * Tokens de design — À REMPLACER par ceux du fichier Claude Design.
- * Les composants ne référencent que ces variables (jamais de couleurs en dur).
+ * Jetons de design — source : Claude Design « App Beaute Hi-Fi » (design/App Beaute Hi-Fi.dc.html).
+ * Valeurs reprises telles quelles du bloc <style> du fichier ; ne pas inventer de couleur ici.
  */
-@theme {
-  --color-bg: #fbf8f4;
-  --color-surface: #ffffff;
-  --color-text: #1b1a19;
-  --color-muted: #6b6560;
-  --color-line: #e8e2da;
-  --color-primary: #e0523a;
-  --color-primary-contrast: #ffffff;
-  --color-accent: #f5b942;
-  --color-success: #1f9d61;
-  --color-warning: #d98a12;
-  --color-danger: #d33a2f;
-  --color-info: #2e6fd9;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --radius-card: 16px;
+@theme {
+  /* Fonds */
+  --color-canvas: #edeeef; /* autour de la colonne app sur grand écran */
+  --color-bg: #f8f9fa; /* fond des écrans (.ph) */
+  --color-surface: #ffffff; /* cartes (.crd) */
+  --color-fill: #f4f5f6; /* surfaces douces (.sf, .inp, .btn.off) */
+  --color-line: #e6e7e9; /* bordures */
+  --color-line-soft: #eff0f1; /* séparateurs de liste (.li) */
+
+  /* Texte */
+  --color-text: #17181a;
+  --color-muted: #6b6f73;
+  --color-subtle: #9a9ea3;
+  --color-disabled: #c4c7ca;
+  --color-ink: #111214; /* boutons, états actifs */
+  --color-on-ink: #ffffff;
+
+  /* Statuts */
+  --color-danger: #e5484d;
+  --color-danger-line: #f4d7d8;
+  --color-ok-bg: #e2f6ec;
+  --color-ok-fg: #0e7a4d;
+  --color-pending-bg: #fce8d8;
+  --color-pending-fg: #96551f;
+  --color-cancel-bg: #fde8e8;
+  --color-cancel-fg: #b22f33;
+  --color-green: #18a66a; /* interrupteurs, WhatsApp */
+
+  /* Catégories (agenda) */
+  --color-cat-hair-bg: #ddf3f4;
+  --color-cat-hair-line: #38aeb5;
+  --color-cat-hair-fg: #0e5a5f;
+  --color-cat-barb-bg: #dce7ff;
+  --color-cat-barb-line: #6d8fe8;
+  --color-cat-barb-fg: #2c4a93;
+  --color-cat-nail-bg: #fbe1ea;
+  --color-cat-nail-line: #d97898;
+  --color-cat-nail-fg: #8f3556;
+  --color-cat-lash-bg: #e7dfff;
+  --color-cat-lash-line: #8a63d8;
+  --color-cat-lash-fg: #4b2c91;
+  --color-cat-skin-bg: #dff3e7;
+  --color-cat-skin-line: #55a873;
+  --color-cat-skin-fg: #1f6b41;
+  --color-cat-lasr-bg: #fce8d8;
+  --color-cat-lasr-line: #d88c52;
+  --color-cat-lasr-fg: #8a4b18;
+
+  /* Alias de transition (anciennes classes) */
+  --color-primary: #111214;
+  --color-primary-contrast: #ffffff;
+  --color-success: #0e7a4d;
+  --color-warning: #96551f;
+  --color-accent: #f4f5f6;
+  --color-info: #2c4a93;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+
+  --radius-card: 20px;
+  --radius-card-sm: 16px;
+  --radius-btn: 16px;
+  --radius-input: 14px;
+  --radius-slot: 14px;
+  --radius-img: 18px;
   --radius-pill: 999px;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px -12px rgb(27 26 25 / 0.15);
+  --radius-sheet: 28px;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 18px 40px -12px rgb(0 0 0 / 0.18);
+  --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.22);
+  --shadow-fab: 0 10px 28px -6px rgb(0 0 0 / 0.35);
+  --shadow-toast: 0 12px 32px -10px rgb(0 0 0 / 0.4);
+
+  /* Largeur de la colonne app (écran du design = 390 px) */
+  --app-max-width: 430px;
 }
 
 :root {

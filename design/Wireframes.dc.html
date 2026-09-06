@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#ec3013}a:hover{color:#b8250d}
+.dv-turn{padding:40px 44px 32px;border-bottom:2px solid #111;scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:0;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:2px solid #111;padding:26px 28px 20px;overflow:hidden}
+.dv-opt:target .dv-oid{background:#ec3013;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.grp{margin:0 0 34px}
+.grp h4{font:600 11px system-ui;margin:0 0 14px;letter-spacing:.1em;text-transform:uppercase;color:#111;border-bottom:2px solid #111;padding-bottom:6px}
+.wfrow{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.sc{display:flex;flex-direction:column;gap:6px;width:320px}
+.sc>.t{font:400 14px 'Architects Daughter',cursive;color:#111;display:flex;gap:7px;align-items:baseline}
+.sc>.t i{font-style:normal;font:600 9px system-ui;background:#111;color:#fff;padding:2px 5px}
+.ph{width:320px;height:660px;border:2px solid #111;background:#fff;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.st{display:flex;justify-content:space-between;padding:11px 18px 4px;font:600 10px system-ui;color:#111}
+.bd{flex:1;overflow:hidden;padding:8px 16px 10px;display:flex;flex-direction:column;gap:12px}
+.tb{display:flex;align-items:center;justify-content:space-between}
+.h1{font:700 22px system-ui;letter-spacing:-.02em;margin:0}
+.h2{font:600 13px system-ui;margin:0}
+.h3{font:600 11px system-ui;margin:0;letter-spacing:.06em;text-transform:uppercase;color:#707070}
+.mut{font:400 11px system-ui;color:#8a8a8a}
+.sm{font:400 10px system-ui;color:#707070}
+.card{border:1.5px solid #1c1c1e;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.soft{border-color:#d8d8d8}
+.ln{height:6px;background:#e4e4e4}.ln.s{width:38%}.ln.m{width:62%}.ln.l{width:86%}
+.img{border:1.5px dashed #b5b5b5;background:linear-gradient(135deg,transparent 49.4%,#e2e2e2 49.4%,#e2e2e2 50.6%,transparent 50.6%),linear-gradient(45deg,transparent 49.4%,#e2e2e2 49.4%,#e2e2e2 50.6%,transparent 50.6%);display:flex;align-items:center;justify-content:center;font:400 9px system-ui;color:#a8a8a8}
+.btn{background:#111;color:#fff;font:600 12px system-ui;padding:13px;text-align:center}
+.btn2{border:1.5px solid #111;font:600 12px system-ui;padding:12px;text-align:center}
+.chip{border:1.5px solid #1c1c1e;padding:6px 10px;font:500 11px system-ui;white-space:nowrap}
+.chip.g{border-color:#dcdcdc;color:#a5a5a5}
+.chip.on{background:#111;color:#fff;border-color:#111}
+.row{display:flex;gap:8px;align-items:center}
+.col{display:flex;flex-direction:column;gap:8px}
+.av{width:38px;height:38px;border-radius:50%;border:1.5px dashed #b5b5b5;flex:none}
+.nav{display:flex;justify-content:space-around;border-top:1.5px solid #111;padding:9px 0 13px;background:#fff}
+.nv{display:flex;flex-direction:column;align-items:center;gap:4px;font:500 9px system-ui;color:#a5a5a5}
+.nv.on{color:#111}
+.ic{width:15px;height:15px;border:1.5px solid currentColor}
+.ic.r{border-radius:50%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot{border:1.5px solid #1c1c1e;padding:9px 0;text-align:center;font:500 11px system-ui}
+.slot.off{border-color:#ececec;color:#cfcfcf}
+.slot.on{background:#111;color:#fff}
+.field{border:1.5px solid #d8d8d8;padding:11px 12px;font:400 11px system-ui;color:#a5a5a5}
+.sheet{position:absolute;left:0;right:0;bottom:0;border-top:2px solid #111;background:#fff;padding:14px 16px 20px;display:flex;flex-direction:column;gap:10px}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.28)}
+.grab{width:36px;height:4px;background:#d8d8d8;margin:0 auto 4px}
+.cal{position:relative;flex:1;border-top:1.5px solid #ececec}
+.hr{position:absolute;left:44px;right:0;border-top:1px solid #efefef;font:0/0 a}
+.hl{position:absolute;left:0;font:500 9px system-ui;color:#a5a5a5;transform:translateY(-5px)}
+.ev{position:absolute;left:48px;right:0;border:1.5px solid #1c1c1e;border-left:4px solid #1c1c1e;padding:6px 8px;background:#fff;display:flex;flex-direction:column;gap:2px}
+.ev .n{font:600 11px system-ui}
+.ev .d{font:400 9px system-ui;color:#8a8a8a}
+.ev.free{border:1.5px dashed #cfcfcf;border-left:1.5px dashed #cfcfcf;color:#a5a5a5;justify-content:center}
+.fab{position:absolute;right:14px;bottom:76px;width:46px;height:46px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font:400 22px system-ui}
+.anno{font:400 12px 'Architects Daughter',cursive;color:#ec3013;margin:0}
+.tag{border:1.5px solid #ec3013;color:#ec3013;font:600 8px system-ui;padding:2px 5px;letter-spacing:.06em;text-transform:uppercase}
+.dayrow{display:flex;justify-content:space-between;text-align:center;font:500 10px system-ui;color:#a5a5a5}
+.dayrow div b{display:block;font:700 13px system-ui;color:#111;margin-top:3px}
+.dayrow .on{border-bottom:2px solid #111;color:#111;padding-bottom:4px}
+.list{display:flex;flex-direction:column}
+.li{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #ececec;font:500 12px system-ui}
+.li .r{font:400 11px system-ui;color:#8a8a8a}
+.cev{position:absolute;left:48px;right:0;padding:6px 8px;border-left:4px solid;display:flex;flex-direction:column;gap:2px;overflow:hidden;font:400 9px system-ui}
+.cev .n{font:600 11px system-ui}
+.k-hair{background:#fff2ef;border-color:#ec3013;color:#7c1405}
+.k-nail{background:#eae7e7;border-color:#605d5d;color:#2d2b2b}
+.k-lash{background:#ffe0d9;border-color:#ef6853;color:#71261b}
+.k-skin{background:#f8f4f4;border-color:#bab6b6;color:#444141}
+.k-off{background:repeating-linear-gradient(45deg,#f8f4f4 0 6px,#eae7e7 6px 12px);border-color:#d7d3d3;color:#7d7979;justify-content:center}
+.now{position:absolute;left:36px;right:0;border-top:2px solid #ec3013;animation:nowmove 5s ease-in-out infinite alternate}
+.now b{position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:#ec3013}
+@keyframes nowmove{from{transform:translateY(0)}to{transform:translateY(34px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(236,48,19,.5)}50%{box-shadow:0 0 0 7px rgba(236,48,19,0)}}
+.pulse{animation:pulse 1.9s ease-out infinite}
+@keyframes shimmer{0%{background-position:-140px 0}100%{background-position:240px 0}}
+.sk{height:10px;background:linear-gradient(90deg,#eae7e7 0,#f8f4f4 50%,#eae7e7 100%);background-size:240px 100%;animation:shimmer 1.4s linear infinite}
+@keyframes grow{from{width:14%}to{width:96%}}
+.prog{height:4px;background:#ec3013;animation:grow 3s ease-in-out infinite alternate}
+@keyframes slotpop{0%,55%{background:#fff;color:#201e1d;border-color:#201e1d}68%,100%{background:#ec3013;color:#fff;border-color:#ec3013}}
+.slotanim{animation:slotpop 2.6s ease-in-out infinite}
+@keyframes draw{to{stroke-dashoffset:0}}
+.draw{stroke-dasharray:70;stroke-dashoffset:70;animation:draw 1.6s ease-out infinite}
+@keyframes sheetup{0%{transform:translateY(100%)}22%,100%{transform:translateY(0)}}
+.sheetanim{animation:sheetup 3.4s cubic-bezier(.22,1,.36,1) infinite}
+@keyframes toastin{0%,8%{transform:translateY(-160%)}22%,72%{transform:translateY(0)}92%,100%{transform:translateY(-160%)}}
+.toastanim{animation:toastin 4.2s ease-in-out infinite}
+@keyframes fabspin{to{transform:rotate(135deg)}}
+.fabanim{animation:fabspin 2.4s ease-in-out infinite alternate}
+@keyframes cardin{0%{opacity:0;transform:translateY(14px)}30%,100%{opacity:1;transform:translateY(0)}}
+.cardin{animation:cardin 2.8s ease-out infinite}
+</style></helmet>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Couleur, animations de parcours, illustrations et agenda — au-dessus de <a class="dv-oid" href="#1a">1a</a></span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Agenda en couleur — codage par catégorie, ligne « maintenant » animée</div>
+<div class="dv-card"><div class="wfrow">
+
+<div class="sc"><div class="t"><i>P3+</i>Jour — couleur par catégorie</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="gap:8px;padding-bottom:0">
+<div class="tb"><h1 class="h1">Août <span style="color:#9b9797">25</span></h1><div class="row"><span class="chip" style="background:#201e1d;color:#fff;border-color:#201e1d">Jour</span><span class="chip g">Semaine</span></div></div>
+<div class="dayrow"><div style="color:#d7d3d3">D<b style="color:#d7d3d3">23</b></div><div>L<b>24</b></div><div class="on" style="border-color:#ec3013;color:#ec3013"><span style="color:#ec3013">M</span><b style="color:#ec3013">25</b></div><div>M<b>26</b></div><div>J<b>27</b></div><div>V<b>28</b></div><div>S<b>29</b></div></div>
+<div class="row" style="gap:6px;font:500 8px system-ui;color:#7d7979"><span class="chip" style="padding:3px 7px;font-size:8px;background:#fff2ef;border-color:#ec3013;color:#7c1405">Cheveux</span><span class="chip" style="padding:3px 7px;font-size:8px;background:#eae7e7;border-color:#605d5d;color:#2d2b2b">Ongles</span><span class="chip" style="padding:3px 7px;font-size:8px;background:#ffe0d9;border-color:#ef6853;color:#71261b">Cils</span><span class="chip" style="padding:3px 7px;font-size:8px;background:#f8f4f4;border-color:#bab6b6">Soin</span></div>
+<div class="cal">
+<div class="hl" style="top:0">08:00</div><div class="hr" style="top:0"></div>
+<div class="hl" style="top:44px">09:00</div><div class="hr" style="top:44px"></div>
+<div class="hl" style="top:88px">10:00</div><div class="hr" style="top:88px"></div>
+<div class="hl" style="top:132px">11:00</div><div class="hr" style="top:132px"></div>
+<div class="hl" style="top:176px">12:00</div><div class="hr" style="top:176px"></div>
+<div class="hl" style="top:220px">13:00</div><div class="hr" style="top:220px"></div>
+<div class="hl" style="top:264px">14:00</div><div class="hr" style="top:264px"></div>
+<div class="hl" style="top:308px">15:00</div><div class="hr" style="top:308px"></div>
+<div class="hl" style="top:352px">16:00</div><div class="hr" style="top:352px"></div>
+<div class="hl" style="top:396px">17:00</div><div class="hr" style="top:396px"></div>
+<div class="cev k-hair pulse" style="top:44px;height:32px"><span class="n">Mohamed · Coupe + barbe</span><span>09:00 – 09:45 · 900 DA · à valider</span></div>
+<div class="cev k-nail" style="top:132px;height:32px"><span class="n">Sarah L. · Manucure</span><span>11:00 – 11:45 · 900 DA</span></div>
+<div class="cev k-off" style="top:176px;height:42px">Pause · 12:00 – 13:00</div>
+<div class="cev k-nail" style="top:264px;height:53px"><span class="n">Inès · Pose gel</span><span>14:30 – 15:45 · 1 400 DA</span></div>
+<div class="cev k-lash" style="top:352px;height:42px"><span class="n">Nadia · Extensions cils</span><span>16:00 – 17:00 · 1 800 DA</span></div>
+<div class="now" style="top:110px"><b></b></div>
+</div>
+</div>
+<div class="fab fabanim" style="background:#ec3013">+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv on" style="color:#ec3013"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P4+</i>Semaine — occupation en couleur</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="gap:8px">
+<div class="tb"><h1 class="h1" style="font-size:19px">23 – 29 août</h1><div class="row"><span class="chip g">Jour</span><span class="chip" style="background:#201e1d;color:#fff;border-color:#201e1d">Semaine</span></div></div>
+<div style="display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;font:600 8px system-ui;color:#7d7979;text-align:center"><span></span><span style="color:#d7d3d3">D</span><span>L</span><span style="color:#ec3013">M</span><span>M</span><span>J</span><span>V</span><span>S</span></div>
+<div style="display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px">
+<span class="sm" style="font-size:8px">09</span><i style="background:#f8f4f4"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#ffe0d9;border-left:3px solid #ef6853"></i>
+<span class="sm" style="font-size:8px">10</span><i style="background:#f8f4f4"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#ffe0d9;border-left:3px solid #ef6853"></i>
+<span class="sm" style="font-size:8px">11</span><i style="background:#f8f4f4"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#f8f4f4;border-left:3px solid #bab6b6"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i>
+<span class="sm" style="font-size:8px">12</span><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i><i style="background:repeating-linear-gradient(45deg,#f8f4f4 0 5px,#eae7e7 5px 10px)"></i>
+<span class="sm" style="font-size:8px">14</span><i style="background:#f8f4f4"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#ffe0d9;border-left:3px solid #ef6853"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i>
+<span class="sm" style="font-size:8px">15</span><i style="background:#f8f4f4"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#f8f4f4;border-left:3px solid #bab6b6"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#ffe0d9;border-left:3px solid #ef6853"></i>
+<span class="sm" style="font-size:8px">16</span><i style="background:#f8f4f4"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#ffe0d9;border-left:3px solid #ef6853"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i>
+<span class="sm" style="font-size:8px">17</span><i style="background:#f8f4f4"></i><i style="background:#fff2ef;border-left:3px solid #ec3013"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#eae7e7;border-left:3px solid #605d5d"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#fafafa;border:1px solid #eae7e7"></i><i style="background:#f8f4f4;border-left:3px solid #bab6b6"></i>
+</div>
+<div class="tb"><h3 class="h3">Occupation</h3><span class="h2" style="color:#ec3013">78 %</span></div>
+<div style="height:6px;background:#eae7e7"><div style="width:78%;height:6px;background:#ec3013"></div></div>
+<h3 class="h3">Mois — densité</h3>
+<div class="grid4" style="grid-template-columns:repeat(7,1fr);gap:3px">
+<i style="aspect-ratio:1;background:#f8f4f4"></i><i style="aspect-ratio:1;background:#ffe0d9"></i><i style="aspect-ratio:1;background:#ffc4b8"></i><i style="aspect-ratio:1;background:#ff9783"></i><i style="aspect-ratio:1;background:#ffe0d9"></i><i style="aspect-ratio:1;background:#ec3013"></i><i style="aspect-ratio:1;background:#ffc4b8"></i>
+<i style="aspect-ratio:1;background:#f8f4f4"></i><i style="aspect-ratio:1;background:#ffc4b8"></i><i style="aspect-ratio:1;background:#ff9783"></i><i style="aspect-ratio:1;background:#ffe0d9"></i><i style="aspect-ratio:1;background:#ec3013"></i><i style="aspect-ratio:1;background:#ff9783"></i><i style="aspect-ratio:1;background:#ffe0d9"></i>
+<i style="aspect-ratio:1;background:#f8f4f4"></i><i style="aspect-ratio:1;background:#ffe0d9"></i><i style="aspect-ratio:1;background:#ec3013"></i><i style="aspect-ratio:1;background:#ff9783"></i><i style="aspect-ratio:1;background:#ffc4b8"></i><i style="aspect-ratio:1;background:#ec3013"></i><i style="aspect-ratio:1;background:#ff9783"></i>
+</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P2+</i>Accueil pro en couleur</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><div class="col" style="gap:2px"><span class="sm">Bonjour, Sarah</span><h1 class="h1">Votre journée</h1></div><div class="av" style="border-color:#ec3013"></div></div>
+<div class="row"><div class="card" style="flex:1;gap:2px;background:#201e1d;border-color:#201e1d;color:#fff"><span class="h1" style="font-size:20px;color:#fff">6</span><span class="sm" style="color:#bab6b6">rendez-vous</span></div><div class="card" style="flex:1;gap:2px;background:#fff2ef;border-color:#ec3013"><span class="h1" style="font-size:20px;color:#ec3013">2</span><span class="sm" style="color:#7c1405">en attente</span></div><div class="card soft" style="flex:1;gap:2px"><span class="h1" style="font-size:20px">6 300</span><span class="sm">DA prévu</span></div></div>
+<div class="tb"><h3 class="h3">Prochains</h3><span class="sm" style="color:#ec3013">Agenda</span></div>
+<div class="card cardin" style="border-color:#ec3013;background:#fff2ef"><div class="row"><span class="h2" style="width:44px;color:#ec3013">09:00</span><div class="col" style="flex:1;gap:2px"><span class="h2">Mohamed</span><span class="sm" style="color:#7c1405">Coupe + barbe · 45 min · 900 DA</span></div><span class="tag">à valider</span></div></div>
+<div class="card" style="background:#eae7e7;border-color:#605d5d"><div class="row"><span class="h2" style="width:44px">11:00</span><div class="col" style="flex:1;gap:2px"><span class="h2">Sarah L.</span><span class="sm">Manucure · 45 min · 900 DA</span></div></div></div>
+<div class="card" style="background:#ffe0d9;border-color:#ef6853"><div class="row"><span class="h2" style="width:44px">16:00</span><div class="col" style="flex:1;gap:2px"><span class="h2">Nadia</span><span class="sm" style="color:#71261b">Extensions cils · 1 h · 1 800 DA</span></div></div></div>
+<div style="flex:1"></div>
+<p class="anno">La couleur ne sert qu'à la catégorie et au statut.</p>
+</div>
+<div class="nav"><div class="nv on" style="color:#ec3013"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+</div></div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Animations de parcours — barre d'étapes, sélection, chargement, succès, feuille, toast</div>
+<div class="dv-card"><div class="wfrow">
+
+<div class="sc"><div class="t">Étapes + sélection de créneau</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><span class="sm">Étape 2 sur 3</span></div>
+<div style="height:4px;background:#eae7e7"><div class="prog"></div></div>
+<h1 class="h1" style="font-size:20px">Choisissez une heure</h1>
+<div class="sm">Mardi 25 août · Pose gel · 1 400 DA</div>
+<h3 class="h3">Matin</h3>
+<div class="grid3"><div class="slot">09:00</div><div class="slot slotanim">09:30</div><div class="slot">10:00</div></div>
+<h3 class="h3">Après-midi</h3>
+<div class="grid3"><div class="slot">14:00</div><div class="slot">14:30</div><div class="slot off">15:30</div></div>
+<div style="flex:1"></div>
+<div class="btn" style="background:#ec3013">Continuer</div>
+<p class="anno">150–250 ms, remplissage rouge à la sélection.</p>
+</div>
+</div></div>
+
+<div class="sc"><div class="t">Chargement des disponibilités</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="padding-top:42px">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1" style="font-size:20px">Choisissez une heure</h1>
+<div class="sk" style="width:50%"></div>
+<h3 class="h3">Matin</h3>
+<div class="grid3"><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div></div>
+<h3 class="h3">Après-midi</h3>
+<div class="grid3"><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div><div class="slot" style="border-color:#eae7e7;padding:9px 6px"><div class="sk"></div></div></div>
+<div style="flex:1"></div>
+<div class="btn" style="background:#eae7e7;color:#bab6b6">Continuer</div>
+</div>
+<div class="toastanim" style="position:absolute;top:32px;left:16px;right:16px;background:#201e1d;color:#fff;padding:10px 12px;font:600 11px system-ui">Disponibilités mises à jour</div>
+</div></div>
+
+<div class="sc"><div class="t">Confirmation animée</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="justify-content:center;align-items:center;text-align:center;gap:16px">
+<svg width="88" height="88" viewBox="0 0 88 88" class="ill"><circle cx="44" cy="44" r="41" fill="#fff2ef"/><circle cx="44" cy="44" r="41" fill="none" stroke="#ec3013" stroke-width="2"/><path class="draw" d="M27 45l12 12 22-24" fill="none" stroke="#ec3013" stroke-width="3.5" stroke-linecap="square"/></svg>
+<h1 class="h1" style="font-size:22px">Rendez-vous confirmé</h1>
+<div class="col" style="gap:3px"><div class="h2">Mardi 25 août · 14:30</div><div class="sm">Sarah Beauty Studio · Pose gel · 1 400 DA</div></div>
+<div class="col" style="align-self:stretch;gap:8px;margin-top:16px"><div class="btn2">Ajouter au calendrier</div><div class="btn" style="background:#ec3013">Voir le rendez-vous</div></div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t">Feuille glissante (annuler)</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1" style="font-size:20px">Pose gel</h1>
+<div class="sm">Mardi 25 août · 14:30 · 1 h 15</div>
+<div class="card soft"><div class="row"><div class="av"></div><div class="col" style="gap:2px"><span class="h2">Sarah Beauty Studio</span><span class="sm">Alger-Centre</span></div></div></div>
+</div>
+<div class="dim"></div>
+<div class="sheet sheetanim"><div class="grab"></div><div class="h2">Annuler ce rendez-vous&nbsp;?</div><span class="sm">Gratuit jusqu'à 24 h avant.</span><div class="btn" style="background:#ec3013">Annuler le rendez-vous</div><div class="btn2">Retour</div></div>
+</div></div>
+
+</div></div>
+</div>
+
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Illustrations — états vides, géométriques et monochromes + rouge</div>
+<div class="dv-card"><div class="wfrow">
+
+<div class="sc"><div class="t">Journée libre</div><div class="ph" style="height:520px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><h1 class="h1" style="font-size:19px">Lundi 31 août</h1><span class="sm">Jour · Semaine</span></div>
+<div class="col" style="flex:1;justify-content:center;align-items:center;text-align:center;gap:14px;border-top:1.5px solid #eae7e7">
+<svg width="150" height="120" viewBox="0 0 150 120" class="ill"><rect x="18" y="16" width="114" height="88" fill="#f8f4f4" stroke="#201e1d" stroke-width="2"/><rect x="18" y="16" width="114" height="18" fill="#201e1d"/><rect x="30" y="46" width="40" height="10" fill="#eae7e7"/><rect x="30" y="66" width="66" height="10" fill="#eae7e7"/><rect x="30" y="86" width="28" height="10" fill="#eae7e7"/><circle cx="118" cy="92" r="18" fill="#ec3013"/><path d="M118 84v16M110 92h16" stroke="#fff" stroke-width="2.5"/></svg>
+<div class="h2">Votre journée est libre</div>
+<div class="sm">Aucun rendez-vous aujourd'hui.</div>
+<div class="btn2" style="border-color:#ec3013;color:#ec3013">Ouvrir des créneaux</div>
+</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t">Aucun client</div><div class="ph" style="height:520px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<h1 class="h1" style="font-size:19px">Clients</h1>
+<div class="field">Rechercher un client</div>
+<div class="col" style="flex:1;justify-content:center;align-items:center;text-align:center;gap:14px">
+<svg width="150" height="120" viewBox="0 0 150 120" class="ill"><circle cx="52" cy="42" r="20" fill="#fff2ef" stroke="#ec3013" stroke-width="2"/><path d="M22 100c0-17 13-28 30-28s30 11 30 28" fill="none" stroke="#ec3013" stroke-width="2"/><circle cx="104" cy="52" r="15" fill="#eae7e7" stroke="#9b9797" stroke-width="2"/><path d="M82 100c0-13 10-22 22-22s22 9 22 22" fill="none" stroke="#9b9797" stroke-width="2"/></svg>
+<div class="h2">Aucun client pour l'instant</div>
+<div class="sm">Vos clients apparaîtront après leur première réservation.</div>
+<div class="btn" style="background:#ec3013;align-self:stretch">Partager mon lien</div>
+</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t">Aucune réalisation</div><div class="ph" style="height:520px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<h1 class="h1" style="font-size:19px">Réalisations</h1>
+<div class="col" style="flex:1;justify-content:center;align-items:center;text-align:center;gap:14px">
+<svg width="150" height="120" viewBox="0 0 150 120" class="ill"><rect x="14" y="24" width="72" height="72" fill="#f8f4f4" stroke="#201e1d" stroke-width="2"/><path d="M14 78l22-22 20 20 14-14 16 16v18H14z" fill="#eae7e7"/><circle cx="36" cy="44" r="7" fill="#ec3013"/><rect x="64" y="46" width="72" height="50" fill="#fff2ef" stroke="#ec3013" stroke-width="2"/><path d="M100 60v22M89 71h22" stroke="#ec3013" stroke-width="2.5"/></svg>
+<div class="h2">Ajoutez vos réalisations</div>
+<div class="sm">Les photos multiplient les réservations.</div>
+<div class="btn" style="background:#ec3013;align-self:stretch">Ajouter une photo</div>
+</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t">Plus de créneaux (client)</div><div class="ph" style="height:520px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><span class="sm">Étape 2 sur 3</span></div>
+<h1 class="h1" style="font-size:19px">Choisissez une heure</h1>
+<div class="col" style="flex:1;justify-content:center;align-items:center;text-align:center;gap:14px">
+<svg width="150" height="120" viewBox="0 0 150 120" class="ill"><circle cx="75" cy="60" r="42" fill="#f8f4f4" stroke="#201e1d" stroke-width="2"/><path d="M75 30v30l22 12" stroke="#ec3013" stroke-width="3" fill="none" stroke-linecap="square"/><path d="M40 25l-14-9M110 25l14-9" stroke="#9b9797" stroke-width="2"/><rect x="60" y="104" width="30" height="6" fill="#eae7e7"/></svg>
+<div class="h2">Plus de créneaux ce jour-là</div>
+<div class="sm">Le prochain disponible : mercredi 26, 10:00.</div>
+<div class="btn" style="background:#ec3013;align-self:stretch">Voir mercredi 26</div>
+<div class="btn2" style="align-self:stretch">Être prévenu d'une annulation</div>
+</div>
+</div>
+</div></div>
+
+</div></div>
+</div>
+
+</div>
+<p class="dv-next">Try next: « garde la couleur de <a class="dv-oid" href="#2a">2a</a> mais sans le rouge sur la nav » · « applique le codage couleur à tous les écrans de <a class="dv-oid" href="#1a">1a</a> » · « passe <a class="dv-oid" href="#2a">2a</a> en haute fidélité »</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Wireframes — application beauté (client · pro · page publique)</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Jeu complet — structure, densité et navigation de tous les écrans</div>
+<div class="dv-card">
+
+<div class="grp"><h4>Client — parcours de réservation</h4><div class="wfrow">
+
+<div class="sc"><div class="t"><i>C1</i>Découverte / Accueil</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><div><div class="mut">Paris</div><h1 class="h1">Réserver</h1></div><div class="av"></div></div>
+<div class="field">Rechercher un salon, une prestation…</div>
+<div class="row" style="overflow:hidden"><span class="chip on">Coiffure</span><span class="chip">Barbier</span><span class="chip">Ongles</span><span class="chip">Cils</span></div>
+<div class="tb"><h3 class="h3">Près de vous</h3><span class="sm">Voir tout</span></div>
+<div class="card"><div class="row"><div class="img" style="width:64px;height:64px">photo</div><div class="col" style="flex:1"><div class="h2">Sarah Beauty Studio</div><div class="sm">Paris 11e · ★ 4,9 · 1,2 km</div><div class="ln m"></div></div></div><div class="row"><span class="chip g">Dispo aujourd'hui</span><span class="chip g">dès 35 DA</span></div></div>
+<div class="card soft"><div class="row"><div class="img" style="width:64px;height:64px">photo</div><div class="col" style="flex:1"><div class="h2">Atelier Lina — Ongles</div><div class="sm">Paris 3e · ★ 4,8 · 2,0 km</div><div class="ln m"></div></div></div></div>
+<div class="card soft"><div class="row"><div class="img" style="width:64px;height:64px">photo</div><div class="col" style="flex:1"><div class="h2">Studio Cils Marais</div><div class="sm">Paris 4e · ★ 5,0 · 2,4 km</div><div class="ln m"></div></div></div></div>
+</div>
+<div class="nav"><div class="nv on"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic r"></div>Recherche</div><div class="nv"><div class="ic"></div>Rendez-vous</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C2</i>Recherche + filtres</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><div class="field" style="flex:1">Ongles</div></div>
+<div class="row" style="overflow:hidden"><span class="chip on">Ongles</span><span class="chip">&lt; 3 km</span><span class="chip">Prix</span><span class="chip">Aujourd'hui</span></div>
+<div class="sm">24 professionnels</div>
+<div class="card soft"><div class="row"><div class="img" style="width:56px;height:56px">photo</div><div class="col" style="flex:1"><div class="h2">Atelier Lina</div><div class="sm">★ 4,8 · 2,0 km · dès 30 DA</div></div><span class="chip">11:30</span></div></div>
+<div class="card soft"><div class="row"><div class="img" style="width:56px;height:56px">photo</div><div class="col" style="flex:1"><div class="h2">Nail Bar République</div><div class="sm">★ 4,7 · 2,6 km · dès 28 DA</div></div><span class="chip">14:00</span></div></div>
+<div class="card soft"><div class="row"><div class="img" style="width:56px;height:56px">photo</div><div class="col" style="flex:1"><div class="h2">Maison Onyx</div><div class="sm">★ 4,9 · 3,1 km · dès 45 DA</div></div><span class="chip g">Demain</span></div></div>
+<div class="card soft"><div class="row"><div class="img" style="width:56px;height:56px">photo</div><div class="col" style="flex:1"><div class="h2">Studio Blanche</div><div class="sm">★ 4,6 · 3,4 km · dès 32 DA</div></div><span class="chip g">Jeu.</span></div></div>
+<p class="anno">Filtres = chips, jamais un panneau modal lourd.</p>
+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv on"><div class="ic r"></div>Recherche</div><div class="nv"><div class="ic"></div>Rendez-vous</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C3</i>Profil professionnel</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="padding-top:0;padding-left:0;padding-right:0">
+<div class="img" style="height:150px;border-left:0;border-right:0;border-top:0">photo de couverture</div>
+<div class="col" style="padding:0 16px;gap:12px">
+<div class="row"><div class="av" style="width:52px;height:52px"></div><div class="col" style="flex:1;gap:3px"><div class="h1" style="font-size:18px">Sarah Beauty Studio</div><div class="sm">Paris 11e · ★ 4,9 (128 avis)</div></div></div>
+<div class="col" style="gap:5px"><div class="ln l"></div><div class="ln l"></div><div class="ln m"></div></div>
+<div class="row"><span class="chip on">Prestations</span><span class="chip">Réalisations</span><span class="chip">Infos</span></div>
+<div class="list">
+<div class="li"><span>Coupe femme<br><span class="r">45 min</span></span><span class="r">35 DA</span></div>
+<div class="li"><span>Brushing<br><span class="r">30 min</span></span><span class="r">25 DA</span></div>
+<div class="li"><span>Manucure<br><span class="r">45 min</span></span><span class="r">30 DA</span></div>
+<div class="li"><span>Pose gel<br><span class="r">1 h 15</span></span><span class="r">45 DA</span></div>
+</div>
+</div>
+</div>
+<div style="padding:10px 16px 16px;border-top:1.5px solid #ececec"><div class="btn">Réserver</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C4</i>Détail prestation</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="padding-left:0;padding-right:0;padding-top:0">
+<div class="img" style="height:200px;border:0;border-bottom:1.5px dashed #b5b5b5">image prestation</div>
+<div class="col" style="padding:0 16px;gap:12px">
+<div class="tb"><h1 class="h1" style="font-size:20px">Pose gel</h1><span class="h2">45 DA</span></div>
+<div class="sm">1 h 15 · Ongles</div>
+<div class="col" style="gap:5px"><div class="ln l"></div><div class="ln l"></div><div class="ln m"></div></div>
+<h3 class="h3">Réalisations</h3>
+<div class="grid3"><div class="img" style="height:74px"></div><div class="img" style="height:74px"></div><div class="img" style="height:74px"></div></div>
+</div>
+</div>
+<div style="padding:10px 16px 16px;border-top:1.5px solid #ececec"><div class="btn">Choisir cette prestation</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C5</i>Choix de la date</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><span class="sm">Étape 1 sur 3</span></div>
+<h1 class="h1">Quand souhaitez-vous venir&nbsp;?</h1>
+<div class="sm">Pose gel · 1 h 15 · 45 DA</div>
+<div class="tb"><h2 class="h2">Août 2026</h2><span class="sm">‹ ›</span></div>
+<div class="dayrow"><div style="color:#dcdcdc">D<b style="color:#dcdcdc">23</b></div><div>L<b>24</b></div><div class="on">M<b>25</b></div><div>M<b>26</b></div><div>J<b>27</b></div><div>V<b>28</b></div><div>S<b>29</b></div></div>
+<div class="list">
+<div class="li"><span>Mardi 25 août</span><span class="r">9 créneaux</span></div>
+<div class="li"><span>Mercredi 26 août</span><span class="r">4 créneaux</span></div>
+<div class="li"><span style="color:#c5c5c5">Jeudi 27 août</span><span class="r" style="color:#c5c5c5">Complet</span></div>
+<div class="li"><span>Vendredi 28 août</span><span class="r">7 créneaux</span></div>
+<div class="li"><span style="color:#c5c5c5">Dimanche 30 août</span><span class="r" style="color:#c5c5c5">Fermé</span></div>
+</div>
+<p class="anno">Indisponible = gris clair + non cliquable.</p>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C6</i>Choix de l'heure — états</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><span class="sm">Étape 2 sur 3</span></div>
+<h1 class="h1">Choisissez une heure</h1>
+<div class="sm">Mardi 25 août · Pose gel</div>
+<h3 class="h3">Matin</h3>
+<div class="grid3"><div class="slot">09:00</div><div class="slot">09:30</div><div class="slot">10:00</div><div class="slot">10:30</div><div class="slot">11:00</div><div class="slot off">11:30</div></div>
+<h3 class="h3">Après-midi</h3>
+<div class="grid3"><div class="slot">14:00</div><div class="slot on">14:30</div><div class="slot">15:00</div><div class="slot off">15:30</div><div class="slot off">16:00</div><div class="slot">16:30</div></div>
+<div class="row"><span class="tag">sélectionné</span><span class="tag">indisponible</span></div>
+<div style="flex:1"></div>
+<div class="btn">Continuer</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C7</i>Vos informations</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><span class="sm">Étape 3 sur 3</span></div>
+<h1 class="h1">Vos informations</h1>
+<div class="col" style="gap:10px">
+<div class="col" style="gap:5px"><span class="sm">Nom</span><div class="field">Prénom et nom</div></div>
+<div class="col" style="gap:5px"><span class="sm">Téléphone</span><div class="field">06 00 00 00 00</div></div>
+<div class="col" style="gap:5px"><span class="sm">Email</span><div class="field">vous@email.com</div></div>
+<div class="col" style="gap:5px"><span class="sm">Note (facultatif)</span><div class="field" style="height:56px">Une précision pour Sarah…</div></div>
+</div>
+<div class="row"><div class="ic" style="width:16px;height:16px"></div><span class="sm" style="flex:1">Me rappeler ce rendez-vous par SMS</span></div>
+<div style="flex:1"></div>
+<div class="btn">Continuer</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C8</i>Récapitulatif</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1">Récapitulatif</h1>
+<div class="card"><div class="row"><div class="av"></div><div class="col" style="gap:2px"><div class="h2">Sarah Beauty Studio</div><div class="sm">12 rue Oberkampf, Paris 11e</div></div></div></div>
+<div class="list">
+<div class="li"><span class="r">Prestation</span><span>Pose gel</span></div>
+<div class="li"><span class="r">Date</span><span>Mardi 25 août</span></div>
+<div class="li"><span class="r">Heure</span><span>14:30</span></div>
+<div class="li"><span class="r">Durée</span><span>1 h 15</span></div>
+<div class="li" style="border-bottom:0"><span class="r">Prix</span><span class="h2">45 DA</span></div>
+</div>
+<div class="card soft"><span class="sm">Annulation gratuite jusqu'à 24 h avant.</span></div>
+<div style="flex:1"></div>
+<div class="btn">Confirmer le rendez-vous</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C9</i>Confirmation</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="justify-content:center;align-items:center;text-align:center;gap:18px">
+<div class="ic r" style="width:56px;height:56px;border-width:2px"></div>
+<h1 class="h1">Rendez-vous confirmé</h1>
+<div class="col" style="gap:3px"><div class="h2">Mardi 25 août · 14:30</div><div class="sm">Sarah Beauty Studio · Pose gel</div></div>
+<div class="col" style="align-self:stretch;gap:8px;margin-top:20px"><div class="btn2">Ajouter au calendrier</div><div class="btn">Voir le rendez-vous</div></div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C10</i>Mes rendez-vous</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<h1 class="h1">Rendez-vous</h1>
+<div class="row"><span class="chip on">À venir</span><span class="chip">Passés</span></div>
+<div class="card"><div class="tb"><span class="h2">Mardi 25 août · 14:30</span><span class="tag">confirmé</span></div><div class="row"><div class="av"></div><div class="col" style="gap:2px"><span class="h2">Pose gel</span><span class="sm">Sarah Beauty Studio · 45 DA</span></div></div></div>
+<div class="card soft"><div class="tb"><span class="h2">Jeudi 10 sept. · 11:00</span><span class="sm">en attente</span></div><div class="row"><div class="av"></div><div class="col" style="gap:2px"><span class="h2">Coupe femme</span><span class="sm">Sarah Beauty Studio · 35 DA</span></div></div></div>
+<div style="flex:1"></div>
+<p class="anno">Vide : « Aucun rendez-vous à venir. »</p>
+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic r"></div>Recherche</div><div class="nv on"><div class="ic"></div>Rendez-vous</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>C11</i>Détail RDV + feuille d'annulation</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1">Pose gel</h1>
+<div class="sm">Mardi 25 août · 14:30 · 1 h 15</div>
+<div class="card"><div class="row"><div class="av"></div><div class="col" style="gap:2px"><span class="h2">Sarah Beauty Studio</span><span class="sm">12 rue Oberkampf, Paris 11e</span></div></div><div class="img" style="height:80px">plan</div></div>
+<div class="list"><div class="li"><span class="r">Prix</span><span>45 DA</span></div><div class="li"><span class="r">Statut</span><span>Confirmé</span></div></div>
+</div>
+<div class="dim"></div>
+<div class="sheet"><div class="grab"></div><div class="h2">Annuler ce rendez-vous&nbsp;?</div><span class="sm">Gratuit jusqu'à 24 h avant. Sarah sera prévenue.</span><div class="btn">Annuler le rendez-vous</div><div class="btn2">Retour</div></div>
+</div></div>
+
+</div></div>
+
+<div class="grp"><h4>Professionnel — agenda et gestion</h4><div class="wfrow">
+
+<div class="sc"><div class="t"><i>P1</i>Onboarding</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">Étape 2 sur 5</span></div>
+<div style="height:3px;background:#ececec"><div style="width:40%;height:3px;background:#111"></div></div>
+<h1 class="h1">Votre activité</h1>
+<div class="col" style="gap:10px">
+<div class="col" style="gap:5px"><span class="sm">Nom de l'établissement</span><div class="field">Sarah Beauty Studio</div></div>
+<div class="col" style="gap:5px"><span class="sm">Catégorie</span><div class="row" style="flex-wrap:wrap"><span class="chip on">Coiffure</span><span class="chip">Barbier</span><span class="chip">Ongles</span><span class="chip">Cils</span><span class="chip">Soin</span></div></div>
+<div class="col" style="gap:5px"><span class="sm">Photo</span><div class="img" style="height:80px">ajouter une photo</div></div>
+<div class="col" style="gap:5px"><span class="sm">Adresse</span><div class="field">12 rue Oberkampf, Paris</div></div>
+</div>
+<div style="flex:1"></div>
+<div class="btn">Continuer</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P2</i>Accueil pro</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><div class="col" style="gap:2px"><span class="sm">Bonjour, Sarah</span><h1 class="h1">Votre journée</h1></div><div class="av"></div></div>
+<div class="row"><div class="card soft" style="flex:1;gap:2px"><span class="h1" style="font-size:20px">6</span><span class="sm">rendez-vous</span></div><div class="card soft" style="flex:1;gap:2px"><span class="h1" style="font-size:20px">2</span><span class="sm">en attente</span></div><div class="card soft" style="flex:1;gap:2px"><span class="h1" style="font-size:20px">210 DA</span><span class="sm">prévu</span></div></div>
+<div class="tb"><h3 class="h3">Prochains</h3><span class="sm">Agenda</span></div>
+<div class="card"><div class="row"><span class="h2" style="width:44px">09:00</span><div class="col" style="flex:1;gap:2px"><span class="h2">Mohamed</span><span class="sm">Coupe + barbe · 45 min · 30 DA</span></div><span class="tag">à valider</span></div></div>
+<div class="card soft"><div class="row"><span class="h2" style="width:44px">11:00</span><div class="col" style="flex:1;gap:2px"><span class="h2">Sarah L.</span><span class="sm">Manucure · 45 min · 30 DA</span></div></div></div>
+<div class="card soft"><div class="row"><span class="h2" style="width:44px">14:30</span><div class="col" style="flex:1;gap:2px"><span class="h2">Inès</span><span class="sm">Pose gel · 1 h 15 · 45 DA</span></div></div></div>
+</div>
+<div class="nav"><div class="nv on"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P3</i>Agenda — jour <span class="tag" style="margin-left:4px">écran clé</span></div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="gap:8px;padding-bottom:0">
+<div class="tb"><h1 class="h1">Août <span style="color:#a5a5a5">25</span></h1><div class="row"><span class="chip">Jour</span><span class="chip g">Semaine</span></div></div>
+<div class="dayrow"><div>Dim<b>23</b></div><div>Lun<b>24</b></div><div class="on">Mar<b>25</b></div><div>Mer<b>26</b></div><div>Jeu<b>27</b></div><div>Ven<b>28</b></div><div>Sam<b>29</b></div></div>
+<div class="cal">
+<div class="hl" style="top:0">08:00</div><div class="hr" style="top:0"></div>
+<div class="hl" style="top:46px">09:00</div><div class="hr" style="top:46px"></div>
+<div class="hl" style="top:92px">10:00</div><div class="hr" style="top:92px"></div>
+<div class="hl" style="top:138px">11:00</div><div class="hr" style="top:138px"></div>
+<div class="hl" style="top:184px">12:00</div><div class="hr" style="top:184px"></div>
+<div class="hl" style="top:230px">13:00</div><div class="hr" style="top:230px"></div>
+<div class="hl" style="top:276px">14:00</div><div class="hr" style="top:276px"></div>
+<div class="hl" style="top:322px">15:00</div><div class="hr" style="top:322px"></div>
+<div class="hl" style="top:368px">16:00</div><div class="hr" style="top:368px"></div>
+<div class="hl" style="top:414px">17:00</div><div class="hr" style="top:414px"></div>
+<div class="hl" style="top:460px">18:00</div><div class="hr" style="top:460px"></div>
+<div class="ev" style="top:46px;height:33px"><span class="n">Mohamed · Coupe + barbe</span><span class="d">09:00 – 09:45 · 30 DA</span></div>
+<div class="ev free" style="top:81px;height:55px">libre · 1 h 15</div>
+<div class="ev" style="top:138px;height:33px"><span class="n">Sarah L. · Manucure</span><span class="d">11:00 – 11:45 · 30 DA</span></div>
+<div class="ev" style="top:184px;height:44px;border-style:dashed;border-left-style:solid;color:#a5a5a5"><span class="n" style="color:#a5a5a5">Pause déjeuner</span><span class="d">12:00 – 13:00</span></div>
+<div class="ev" style="top:276px;height:56px"><span class="n">Inès · Pose gel</span><span class="d">14:30 – 15:45 · 45 DA</span></div>
+<div class="ev free" style="top:340px;height:70px">libre · 1 h 30</div>
+<div class="ev" style="top:414px;height:33px"><span class="n">Camille · Brushing</span><span class="d">17:00 – 17:30 · 25 DA</span></div>
+</div>
+</div>
+<div class="fab">+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv on"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P4</i>Créer un rendez-vous</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><span class="sm">Annuler</span><span class="h2">Nouveau rendez-vous</span><span class="sm">&nbsp;</span></div>
+<div class="list">
+<div class="li"><span class="r">Client</span><span>Mohamed B. ›</span></div>
+<div class="li"><span class="r">Prestation</span><span>Coupe + barbe ›</span></div>
+<div class="li"><span class="r">Date</span><span>Mar. 25 août ›</span></div>
+<div class="li"><span class="r">Heure</span><span>09:00 ›</span></div>
+<div class="li"><span class="r">Durée</span><span>45 min ›</span></div>
+<div class="li"><span class="r">Prix</span><span>30 DA</span></div>
+</div>
+<div class="col" style="gap:5px"><span class="sm">Note</span><div class="field" style="height:56px">Visible uniquement par vous</div></div>
+<div style="flex:1"></div>
+<div class="btn">Confirmer</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P5</i>Détail rendez-vous (pro)</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><span class="sm">←</span><span class="tag">en attente</span></div>
+<div class="row"><div class="av" style="width:48px;height:48px"></div><div class="col" style="gap:2px"><h1 class="h1" style="font-size:19px">Mohamed B.</h1><span class="sm">06 12 34 56 78</span></div></div>
+<div class="list">
+<div class="li"><span class="r">Prestation</span><span>Coupe + barbe</span></div>
+<div class="li"><span class="r">Date</span><span>Mar. 25 août</span></div>
+<div class="li"><span class="r">Heure</span><span>09:00 – 09:45</span></div>
+<div class="li"><span class="r">Prix</span><span>30 DA</span></div>
+</div>
+<div class="card soft"><span class="sm">Note du client : « Dégradé court sur les côtés. »</span></div>
+<div style="flex:1"></div>
+<div class="col" style="gap:8px"><div class="btn">Confirmer</div><div class="grid2"><div class="btn2">Reporter</div><div class="btn2">Annuler</div></div><span class="sm" style="text-align:center">Marquer comme terminé</span></div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P6</i>Clients</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><h1 class="h1">Clients</h1><span class="h2">+</span></div>
+<div class="field">Rechercher un client</div>
+<h3 class="h3">Récents</h3>
+<div class="list">
+<div class="li"><span class="row"><span class="av" style="width:32px;height:32px"></span>Mohamed B.<span class="r"> · 12 RDV</span></span><span class="r">hier</span></div>
+<div class="li"><span class="row"><span class="av" style="width:32px;height:32px"></span>Inès R.<span class="r"> · 8 RDV</span></span><span class="r">5 août</span></div>
+<div class="li"><span class="row"><span class="av" style="width:32px;height:32px"></span>Camille D.<span class="r"> · 3 RDV</span></span><span class="r">28 juil.</span></div>
+<div class="li"><span class="row"><span class="av" style="width:32px;height:32px"></span>Sarah L.<span class="r"> · 21 RDV</span></span><span class="r">24 juil.</span></div>
+<div class="li"><span class="row"><span class="av" style="width:32px;height:32px"></span>Lina M.<span class="r"> · 1 RDV</span></span><span class="r">2 juil.</span></div>
+</div>
+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic"></div>Agenda</div><div class="nv on"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P7</i>Fiche client</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<div class="row"><div class="av" style="width:52px;height:52px"></div><div class="col" style="gap:2px"><h1 class="h1" style="font-size:19px">Inès R.</h1><span class="sm">06 98 76 54 32 · cliente depuis 2024</span></div></div>
+<div class="row"><div class="btn2" style="flex:1">Appeler</div><div class="btn" style="flex:1">Nouveau RDV</div></div>
+<h3 class="h3">À venir</h3>
+<div class="card"><div class="row"><span class="h2" style="width:44px">14:30</span><div class="col" style="gap:2px"><span class="h2">Pose gel</span><span class="sm">Mar. 25 août · 45 DA</span></div></div></div>
+<h3 class="h3">Historique</h3>
+<div class="list"><div class="li"><span>Pose gel</span><span class="r">5 août</span></div><div class="li"><span>Manucure</span><span class="r">10 juil.</span></div><div class="li"><span>Pose gel</span><span class="r">2 juin</span></div></div>
+<div class="card soft"><span class="sm">Notes : allergie résine. Préfère les créneaux du soir.</span></div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P8</i>Prestations</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><h1 class="h1">Prestations</h1><span class="h2">+</span></div>
+<div class="row" style="overflow:hidden"><span class="chip on">Toutes</span><span class="chip">Cheveux</span><span class="chip">Ongles</span><span class="chip">Cils</span><span class="chip">Soin</span></div>
+<h3 class="h3">Cheveux</h3>
+<div class="list"><div class="li"><span>Coupe femme<br><span class="r">45 min</span></span><span class="r">35 DA</span></div><div class="li"><span>Brushing<br><span class="r">30 min</span></span><span class="r">25 DA</span></div></div>
+<h3 class="h3">Ongles</h3>
+<div class="list"><div class="li"><span>Manucure<br><span class="r">45 min</span></span><span class="r">30 DA</span></div><div class="li"><span>Pose gel<br><span class="r">1 h 15</span></span><span class="r">45 DA</span></div></div>
+<h3 class="h3">Cils · Soin</h3>
+<div class="list"><div class="li"><span>Extensions cils<br><span class="r">1 h 30</span></span><span class="r">60 DA</span></div><div class="li"><span>Soin visage<br><span class="r">1 h</span></span><span class="r">50 DA</span></div></div>
+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv on"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P9</i>Créer / modifier une prestation</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><span class="sm">Annuler</span><span class="h2">Nouvelle prestation</span><span class="sm">&nbsp;</span></div>
+<div class="col" style="gap:10px">
+<div class="col" style="gap:5px"><span class="sm">Nom</span><div class="field">Pose gel</div></div>
+<div class="row"><div class="col" style="gap:5px;flex:1"><span class="sm">Prix</span><div class="field">45 DA</div></div><div class="col" style="gap:5px;flex:1"><span class="sm">Durée</span><div class="field">1 h 15</div></div></div>
+<div class="col" style="gap:5px"><span class="sm">Catégorie</span><div class="row"><span class="chip">Cheveux</span><span class="chip on">Ongles</span><span class="chip">Cils</span></div></div>
+<div class="col" style="gap:5px"><span class="sm">Description</span><div class="field" style="height:52px">Courte, une ou deux phrases.</div></div>
+<div class="col" style="gap:5px"><span class="sm">Photos</span><div class="grid3"><div class="img" style="height:62px"></div><div class="img" style="height:62px"></div><div class="img" style="height:62px">+</div></div></div>
+</div>
+<div style="flex:1"></div>
+<div class="btn">Publier</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P10</i>Réalisations</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><h1 class="h1">Réalisations</h1><span class="h2">+</span></div>
+<div class="row" style="overflow:hidden"><span class="chip on">Tout</span><span class="chip">Cheveux</span><span class="chip">Ongles</span><span class="chip">Cils</span></div>
+<div class="grid2"><div class="img" style="height:120px"></div><div class="img" style="height:120px"></div><div class="img" style="height:120px"></div><div class="img" style="height:120px"></div><div class="img" style="height:120px"></div><div class="img" style="height:120px"></div></div>
+<p class="anno">Chaque image peut être liée à une prestation.</p>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P11</i>Horaires d'ouverture</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1">Horaires</h1>
+<div class="list">
+<div class="li"><span>Lundi<br><span class="r">Fermé</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;border-color:#dcdcdc"></div></div>
+<div class="li"><span>Mardi<br><span class="r">09:00 – 19:00 · pause 12:00 – 13:00</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;background:#111"></div></div>
+<div class="li"><span>Mercredi<br><span class="r">09:00 – 19:00</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;background:#111"></div></div>
+<div class="li"><span>Jeudi<br><span class="r">09:00 – 19:00</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;background:#111"></div></div>
+<div class="li"><span>Vendredi<br><span class="r">09:00 – 20:00</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;background:#111"></div></div>
+<div class="li"><span>Samedi<br><span class="r">10:00 – 18:00</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;background:#111"></div></div>
+<div class="li"><span>Dimanche<br><span class="r">Fermé</span></span><div class="ic" style="width:34px;height:18px;border-radius:9px;border-color:#dcdcdc"></div></div>
+</div>
+<div class="card soft"><span class="sm">Congés · périodes indisponibles ›</span></div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P12</i>Disponibilités &amp; règles</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1">Disponibilités</h1>
+<h3 class="h3">Règles de réservation</h3>
+<div class="list">
+<div class="li"><span>Réservation en ligne</span><div class="ic" style="width:34px;height:18px;border-radius:9px;background:#111"></div></div>
+<div class="li"><span>Délai minimum</span><span class="r">24 h ›</span></div>
+<div class="li"><span>Réservable jusqu'à</span><span class="r">60 jours ›</span></div>
+<div class="li"><span>Validation manuelle</span><div class="ic" style="width:34px;height:18px;border-radius:9px;border-color:#dcdcdc"></div></div>
+</div>
+<h3 class="h3">Absences</h3>
+<div class="card soft"><div class="tb"><span class="h2">Congés d'été</span><span class="sm">✕</span></div><span class="sm">10 – 24 août</span></div>
+<div class="btn2">Ajouter une absence</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P13</i>Lien de réservation</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1">Votre page de réservation</h1>
+<div class="card"><span class="sm">Lien public</span><div class="h2">app.com/sarah-beauty</div></div>
+<div class="grid2"><div class="btn2">Copier</div><div class="btn2">Partager</div></div>
+<div class="img" style="height:150px">QR code</div>
+<div class="sm">Affichez ce QR en vitrine ou au poste de travail.</div>
+<div style="flex:1"></div>
+<div class="btn">Aperçu de la page</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P14</i>Notifications</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<h1 class="h1">Notifications</h1>
+<div class="card"><div class="row"><div class="ic r" style="margin-top:2px"></div><div class="col" style="gap:2px;flex:1"><span class="h2">Nouvelle réservation</span><span class="sm">Inès R. · Pose gel · mar. 25 août 14:30</span></div><span class="sm">2 min</span></div></div>
+<div class="card soft"><div class="row"><div class="ic r"></div><div class="col" style="gap:2px;flex:1"><span class="h2">Annulation</span><span class="sm">Camille D. · Brushing · jeu. 27 août</span></div><span class="sm">1 h</span></div></div>
+<div class="card soft"><div class="row"><div class="ic r"></div><div class="col" style="gap:2px;flex:1"><span class="h2">Report demandé</span><span class="sm">Mohamed B. · Coupe + barbe</span></div><span class="sm">hier</span></div></div>
+<div class="card soft"><div class="row"><div class="ic r"></div><div class="col" style="gap:2px;flex:1"><span class="h2">Rappel</span><span class="sm">6 rendez-vous demain</span></div><span class="sm">hier</span></div></div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P15</i>Profil &amp; réglages</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><div class="av" style="width:52px;height:52px"></div><div class="col" style="gap:2px"><h1 class="h1" style="font-size:19px">Sarah Beauty Studio</h1><span class="sm">Coiffure · Ongles · Paris 11e</span></div></div>
+<div class="list">
+<div class="li"><span>Informations</span><span class="r">›</span></div>
+<div class="li"><span>Horaires</span><span class="r">›</span></div>
+<div class="li"><span>Disponibilités</span><span class="r">›</span></div>
+<div class="li"><span>Lien de réservation</span><span class="r">›</span></div>
+<div class="li"><span>Notifications</span><span class="r">›</span></div>
+<div class="li"><span>Instagram</span><span class="r">@sarahbeauty ›</span></div>
+<div class="li"><span>Abonnement</span><span class="r">Pro ›</span></div>
+<div class="li"><span>Activité</span><span class="r">›</span></div>
+</div>
+<div style="flex:1"></div>
+<div class="btn2">Se déconnecter</div>
+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv on"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>P16</i>Activité</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span></div>
+<h1 class="h1">Activité</h1>
+<div class="row"><span class="chip on">Semaine</span><span class="chip">Mois</span></div>
+<div class="list">
+<div class="li"><span class="r">Rendez-vous aujourd'hui</span><span class="h2">6</span></div>
+<div class="li"><span class="r">Rendez-vous cette semaine</span><span class="h2">28</span></div>
+<div class="li"><span class="r">Chiffre d'affaires</span><span class="h2">1 140 DA</span></div>
+<div class="li"><span class="r">Nouveaux clients</span><span class="h2">4</span></div>
+<div class="li"><span class="r">Taux d'occupation</span><span class="h2">78 %</span></div>
+</div>
+<p class="anno">Cinq chiffres, pas de tableau de bord.</p>
+</div>
+</div></div>
+
+</div></div>
+
+<div class="grp"><h4>Page publique + états</h4><div class="wfrow">
+
+<div class="sc"><div class="t"><i>PB</i>app.com/sarah-beauty</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div style="border-bottom:1px solid #ececec;padding:4px 16px 8px;font:400 10px system-ui;color:#a5a5a5">app.com/sarah-beauty</div>
+<div class="bd" style="padding-left:0;padding-right:0;padding-top:0">
+<div class="img" style="height:130px;border-left:0;border-right:0;border-top:0">couverture</div>
+<div class="col" style="padding:0 16px;gap:11px">
+<div class="row"><div class="av" style="width:48px;height:48px"></div><div class="col" style="gap:2px"><span class="h1" style="font-size:18px">Sarah Beauty Studio</span><span class="sm">Paris 11e · ★ 4,9</span></div></div>
+<div class="col" style="gap:5px"><div class="ln l"></div><div class="ln m"></div></div>
+<h3 class="h3">Prochaines disponibilités</h3>
+<div class="grid4"><div class="slot" style="font-size:10px">Mar<br>14:30</div><div class="slot" style="font-size:10px">Mer<br>10:00</div><div class="slot" style="font-size:10px">Ven<br>16:30</div><div class="slot off" style="font-size:10px">Sam<br>—</div></div>
+<h3 class="h3">Prestations</h3>
+<div class="list"><div class="li"><span>Coupe femme<br><span class="r">45 min</span></span><span class="r">35 DA</span></div><div class="li"><span>Pose gel<br><span class="r">1 h 15</span></span><span class="r">45 DA</span></div><div class="li"><span>Soin visage<br><span class="r">1 h</span></span><span class="r">50 DA</span></div></div>
+</div>
+</div>
+<div style="padding:10px 16px 16px;border-top:1.5px solid #ececec"><div class="btn">Réserver — sans compte</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>S1</i>Journée vide · plus de créneaux</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="gap:8px">
+<div class="tb"><h1 class="h1">Août <span style="color:#a5a5a5">31</span></h1><div class="row"><span class="chip">Jour</span><span class="chip g">Semaine</span></div></div>
+<div class="dayrow"><div>Dim<b>30</b></div><div class="on">Lun<b>31</b></div><div>Mar<b>1</b></div><div>Mer<b>2</b></div><div>Jeu<b>3</b></div><div>Ven<b>4</b></div><div>Sam<b>5</b></div></div>
+<div class="col" style="flex:1;justify-content:center;align-items:center;text-align:center;gap:10px;border-top:1.5px solid #ececec">
+<div class="ic r" style="width:40px;height:40px;color:#cfcfcf"></div>
+<div class="h2">Aucun rendez-vous aujourd'hui</div>
+<div class="sm">Votre journée est libre.</div>
+<div class="btn2" style="margin-top:8px">Ajouter un rendez-vous</div>
+</div>
+<div class="card soft"><span class="sm">Côté client : « Plus de créneaux disponibles ce jour-là. »</span></div>
+</div>
+<div class="nav"><div class="nv"><div class="ic"></div>Accueil</div><div class="nv on"><div class="ic"></div>Agenda</div><div class="nv"><div class="ic r"></div>Clients</div><div class="nv"><div class="ic"></div>Prestations</div><div class="nv"><div class="ic r"></div>Profil</div></div>
+</div></div>
+
+<div class="sc"><div class="t"><i>S2</i>Chargement · erreur · succès</div><div class="ph">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<h3 class="h3">Chargement</h3>
+<div class="grid3"><div class="slot" style="border-color:#ececec"><div class="ln" style="width:60%;margin:0 auto"></div></div><div class="slot" style="border-color:#ececec"><div class="ln" style="width:60%;margin:0 auto"></div></div><div class="slot" style="border-color:#ececec"><div class="ln" style="width:60%;margin:0 auto"></div></div></div>
+<h3 class="h3">Erreur</h3>
+<div class="card" style="border-color:#ec3013"><span class="h2" style="color:#ec3013">Ce créneau vient d'être pris</span><span class="sm">Choisissez une autre heure.</span><div class="btn2" style="border-color:#ec3013;color:#ec3013">Voir les créneaux</div></div>
+<h3 class="h3">Succès (toast)</h3>
+<div class="card" style="background:#111;color:#fff;border-color:#111"><span class="h2">Rendez-vous confirmé</span></div>
+<h3 class="h3">Champ invalide</h3>
+<div class="col" style="gap:4px"><div class="field" style="border-color:#ec3013;color:#111">06 12</div><span class="sm" style="color:#ec3013">Numéro incomplet</span></div>
+<h3 class="h3">Bouton désactivé</h3>
+<div class="btn" style="background:#e7e7e7;color:#b5b5b5">Continuer</div>
+</div>
+</div></div>
+
+</div></div>
+
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Agenda pro — trois structures alternatives</div>
+<div class="dv-card"><div class="wfrow">
+
+<div class="sc"><div class="t">Timeline dense (réf.)</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="gap:8px;padding-bottom:0">
+<div class="tb"><h1 class="h1" style="font-size:19px">Mar. 25 août</h1><span class="sm">Jour · Semaine</span></div>
+<div class="cal">
+<div class="hl" style="top:0">09:00</div><div class="hr" style="top:0"></div>
+<div class="hl" style="top:60px">10:00</div><div class="hr" style="top:60px"></div>
+<div class="hl" style="top:120px">11:00</div><div class="hr" style="top:120px"></div>
+<div class="hl" style="top:180px">12:00</div><div class="hr" style="top:180px"></div>
+<div class="hl" style="top:240px">13:00</div><div class="hr" style="top:240px"></div>
+<div class="hl" style="top:300px">14:00</div><div class="hr" style="top:300px"></div>
+<div class="hl" style="top:360px">15:00</div><div class="hr" style="top:360px"></div>
+<div class="ev" style="top:0;height:44px"><span class="n">Mohamed</span><span class="d">09:00 · 45 min · 30 DA</span></div>
+<div class="ev" style="top:120px;height:44px"><span class="n">Sarah L.</span><span class="d">11:00 · 45 min · 30 DA</span></div>
+<div class="ev" style="top:300px;height:74px"><span class="n">Inès</span><span class="d">14:00 · 1 h 15 · 45 DA</span></div>
+</div>
+</div>
+<div class="fab" style="bottom:20px">+</div>
+</div></div>
+
+<div class="sc"><div class="t">Liste par créneaux</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="tb"><h1 class="h1" style="font-size:19px">Mar. 25 août</h1><span class="sm">6 RDV · 210 DA</span></div>
+<div class="row" style="align-items:stretch"><span class="h2" style="width:46px">09:00</span><div class="card" style="flex:1"><span class="h2">Mohamed · Coupe + barbe</span><span class="sm">45 min · 30 DA</span></div></div>
+<div class="row"><span class="sm" style="width:46px">09:45</span><div class="card soft" style="flex:1;border-style:dashed;color:#a5a5a5"><span class="sm">1 h 15 libre</span></div></div>
+<div class="row" style="align-items:stretch"><span class="h2" style="width:46px">11:00</span><div class="card" style="flex:1"><span class="h2">Sarah L. · Manucure</span><span class="sm">45 min · 30 DA</span></div></div>
+<div class="row"><span class="sm" style="width:46px">12:00</span><div class="card soft" style="flex:1;border-style:dashed;color:#a5a5a5"><span class="sm">Pause</span></div></div>
+<div class="row" style="align-items:stretch"><span class="h2" style="width:46px">14:30</span><div class="card" style="flex:1"><span class="h2">Inès · Pose gel</span><span class="sm">1 h 15 · 45 DA</span></div></div>
+<p class="anno">Plus lisible, moins fidèle à la durée réelle.</p>
+</div>
+<div class="fab" style="bottom:20px">+</div>
+</div></div>
+
+<div class="sc"><div class="t">Semaine compacte</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd" style="gap:8px">
+<div class="tb"><h1 class="h1" style="font-size:19px">23 – 29 août</h1><span class="sm">Jour · Semaine</span></div>
+<div style="display:grid;grid-template-columns:30px repeat(7,1fr);gap:2px;font:500 8px system-ui;color:#a5a5a5;text-align:center"><span></span><span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span></div>
+<div style="display:grid;grid-template-columns:30px repeat(7,1fr);gap:2px;flex:1">
+<span class="sm" style="font-size:8px">09</span><i style="background:#f4f4f4"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i>
+<span class="sm" style="font-size:8px">10</span><i style="background:#f4f4f4"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i>
+<span class="sm" style="font-size:8px">11</span><i style="background:#f4f4f4"></i><i style="background:#111"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i>
+<span class="sm" style="font-size:8px">12</span><i style="background:#f4f4f4"></i><i style="background:#f4f4f4"></i><i style="background:#f4f4f4"></i><i style="background:#f4f4f4"></i><i style="background:#f4f4f4"></i><i style="background:#f4f4f4"></i><i style="background:#f4f4f4"></i>
+<span class="sm" style="font-size:8px">14</span><i style="background:#f4f4f4"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="background:#111"></i>
+<span class="sm" style="font-size:8px">15</span><i style="background:#f4f4f4"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i>
+<span class="sm" style="font-size:8px">16</span><i style="background:#f4f4f4"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i>
+<span class="sm" style="font-size:8px">17</span><i style="background:#f4f4f4"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i><i style="background:#111"></i><i style="border:1px solid #ececec"></i><i style="border:1px solid #ececec"></i>
+</div>
+<p class="anno">Vue d'occupation : plein = pris, vide = libre.</p>
+</div>
+</div></div>
+
+</div></div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Réservation client — version condensée (2 écrans au lieu de 4)</div>
+<div class="dv-card"><div class="wfrow">
+
+<div class="sc"><div class="t">Date + heure sur un seul écran</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd">
+<div class="row"><span class="sm">←</span><span class="sm">Pose gel · 1 h 15 · 45 DA</span></div>
+<h1 class="h1" style="font-size:20px">Quand souhaitez-vous venir&nbsp;?</h1>
+<div class="dayrow"><div style="color:#dcdcdc">D<b style="color:#dcdcdc">23</b></div><div>L<b>24</b></div><div class="on">M<b>25</b></div><div>M<b>26</b></div><div>J<b>27</b></div><div>V<b>28</b></div><div>S<b>29</b></div></div>
+<h3 class="h3">Matin</h3>
+<div class="grid3"><div class="slot">09:00</div><div class="slot">09:30</div><div class="slot">10:00</div></div>
+<h3 class="h3">Après-midi</h3>
+<div class="grid3"><div class="slot">14:00</div><div class="slot on">14:30</div><div class="slot off">15:30</div></div>
+<div style="flex:1"></div>
+<div class="btn">Continuer · mar. 25, 14:30</div>
+</div>
+</div></div>
+
+<div class="sc"><div class="t">Coordonnées + récap en une feuille</div><div class="ph" style="height:560px">
+<div class="st"><span>9:41</span><span>▮▮▮</span></div>
+<div class="bd"><div class="row"><span class="sm">←</span></div><h1 class="h1" style="font-size:20px">Quand souhaitez-vous venir&nbsp;?</h1><div class="dayrow" style="opacity:.4"><div>D<b>23</b></div><div>L<b>24</b></div><div>M<b>25</b></div><div>M<b>26</b></div><div>J<b>27</b></div><div>V<b>28</b></div><div>S<b>29</b></div></div></div>
+<div class="dim"></div>
+<div class="sheet">
+<div class="grab"></div>
+<div class="h2">Pose gel · mar. 25 août, 14:30</div>
+<div class="sm">Sarah Beauty Studio · 1 h 15 · 45 DA</div>
+<div class="field">Prénom et nom</div>
+<div class="field">Téléphone</div>
+<div class="field">Email</div>
+<div class="btn">Confirmer le rendez-vous</div>
+<span class="sm" style="text-align:center">Annulation gratuite jusqu'à 24 h avant</span>
+</div>
+</div></div>
+
+</div></div>
+</div>
+
+</div>
+<p class="dv-next">Try next: « passe l'agenda pro en version liste de <a class="dv-oid" href="#1b">1b</a> » · « adopte le parcours condensé de <a class="dv-oid" href="#1c">1c</a> dans <a class="dv-oid" href="#1a">1a</a> » · « passe ces écrans en haute fidélité »</p>
+</section>
+
+</x-dc>
+</body>
+</html>

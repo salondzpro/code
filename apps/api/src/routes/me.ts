@@ -7,7 +7,7 @@ import { camelize, snakeize } from '../lib/mappers';
 import { unwrap } from '../lib/errors';
 import { loadOwnedSalon } from '../plugins/auth';
 
-const PROFILE_COLS = 'id, role, full_name, phone, avatar_url, gender, locale, created_at';
+const PROFILE_COLS = 'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
 
 const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);

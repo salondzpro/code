@@ -5,12 +5,18 @@ import { queryKeys } from '@salondz/api-client';
 import type { UserRole } from '@salondz/constants';
 import { supabase } from './supabase';
 
+/** Canal d'envoi du code (design AUTH 06). L'e-mail n'est proposé que si le fournisseur SMS n'est pas configuré. */
+export type OtpChannel = 'whatsapp' | 'sms' | 'email';
+
 interface AuthContextValue {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  /** Envoie un code OTP par email (crée le compte si besoin, avec le rôle en métadonnée). */
-  signInWithEmailOtp: (email: string, role?: UserRole) => Promise<void>;
+  /** Envoie un code à 6 chiffres sur WhatsApp ou par SMS (crée le compte si besoin, avec le rôle en métadonnée). */
+  sendPhoneOtp: (phoneE164: string, channel: 'whatsapp' | 'sms', role?: UserRole) => Promise<void>;
+  verifyPhoneOtp: (phoneE164: string, token: string) => Promise<void>;
+  /** Secours e-mail (projet sans fournisseur SMS) : même parcours, code reçu par e-mail. */
+  sendEmailOtp: (email: string, role?: UserRole) => Promise<void>;
   verifyEmailOtp: (email: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -43,7 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [qc]);
 
-  const signInWithEmailOtp = useCallback(async (email: string, role?: UserRole) => {
+  const sendPhoneOtp = useCallback(async (phone: string, channel: 'whatsapp' | 'sms', role?: UserRole) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: { channel, shouldCreateUser: true, data: role ? { role } : undefined },
+    });
+    if (error) throw error;
+  }, []);
+
+  const verifyPhoneOtp = useCallback(async (phone: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
+    if (error) throw error;
+  }, []);
+
+  const sendEmailOtp = useCallback(async (email: string, role?: UserRole) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { shouldCreateUser: true, data: role ? { role } : undefined },
@@ -61,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ session, user: session?.user ?? null, loading, signInWithEmailOtp, verifyEmailOtp, signOut }),
-    [session, loading, signInWithEmailOtp, verifyEmailOtp, signOut],
+    () => ({ session, user: session?.user ?? null, loading, sendPhoneOtp, verifyPhoneOtp, sendEmailOtp, verifyEmailOtp, signOut }),
+    [session, loading, sendPhoneOtp, verifyPhoneOtp, sendEmailOtp, verifyEmailOtp, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

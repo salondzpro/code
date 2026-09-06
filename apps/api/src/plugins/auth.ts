@@ -52,7 +52,7 @@ export async function verifySupabaseJwt(token: string): Promise<JWTPayload> {
 }
 
 export const SALON_COLUMNS =
-  'id, owner_id, slug, name, description, phone, wilaya_code, city, address, lat, lng, cover_url, gender_target, is_published, slot_interval_minutes, booking_lead_time_minutes, booking_horizon_days, auto_confirm, rating_avg, rating_count, created_at, updated_at, salon_categories(category_id)';
+  'id, owner_id, slug, name, description, phone, wilaya_code, city, address, lat, lng, cover_url, logo_url, zone, gender_target, is_published, slot_interval_minutes, booking_lead_time_minutes, booking_horizon_days, auto_confirm, rating_avg, rating_count, created_at, updated_at, salon_categories(category_id)';
 
 export function mapSalon(row: Record<string, unknown>): Salon {
   const { salon_categories, ...rest } = row as { salon_categories?: { category_id: string }[] };
@@ -109,7 +109,7 @@ export default fp(async (app) => {
     if (!req.user) throw unauthorized();
     const { data, error } = await db
       .from('profiles')
-      .select('id, role, full_name, phone, avatar_url, gender, locale, created_at')
+      .select('id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at')
       .eq('id', req.user.id)
       .maybeSingle();
     if (error) throw error;
@@ -118,7 +118,7 @@ export default fp(async (app) => {
       const ins = await db
         .from('profiles')
         .insert({ id: req.user.id, phone: req.user.phone })
-        .select('id, role, full_name, phone, avatar_url, gender, locale, created_at')
+        .select('id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at')
         .single();
       if (ins.error) throw ins.error;
       req.profile = camelize<Profile>(ins.data);

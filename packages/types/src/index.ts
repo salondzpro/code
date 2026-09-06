@@ -27,6 +27,8 @@ export interface Profile {
   avatarUrl: string | null;
   gender: 'male' | 'female' | null;
   locale: 'fr' | 'ar';
+  market: 'men' | 'women' | null;
+  whatsappReminders: boolean;
   createdAt: ISODateTime;
 }
 
@@ -36,6 +38,7 @@ export interface Category {
   labelAr: string;
   icon: string;
   sortOrder: number;
+  market: 'men' | 'women' | null;
 }
 
 export interface Salon {
@@ -51,6 +54,9 @@ export interface Salon {
   lat: number | null;
   lng: number | null;
   coverUrl: string | null;
+  logoUrl: string | null;
+  /** Zone d'activité (quartier) affichée sur la page. */
+  zone: string | null;
   genderTarget: GenderTarget;
   isPublished: boolean;
   slotIntervalMinutes: number;

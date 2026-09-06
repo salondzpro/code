@@ -15,6 +15,10 @@ export const updateProfileSchema = z.object({
   gender: z.enum(['male', 'female']).nullable().optional(),
   locale: z.enum(['fr', 'ar']).optional(),
   avatarUrl: p.httpUrl.nullable().optional(),
+  /** Marché affiché par défaut (« Pour Hommes » / « Pour Femmes »), modifiable depuis le profil. */
+  market: z.enum(['men', 'women']).nullable().optional(),
+  /** Rappels WhatsApp 2 h avant chaque rendez-vous. */
+  whatsappReminders: z.boolean().optional(),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
@@ -32,6 +36,8 @@ export const createSalonSchema = z.object({
   lng: z.number().min(-180).max(180).optional(),
   genderTarget: z.enum(GENDER_TARGETS).default('unisex'),
   categoryIds: z.array(p.categoryId).min(1).max(4),
+  logoUrl: p.httpUrl.nullable().optional(),
+  zone: p.shortText(80).nullable().optional(),
 });
 export type CreateSalonInput = z.infer<typeof createSalonSchema>;
 
