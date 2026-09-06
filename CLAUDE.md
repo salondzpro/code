@@ -23,3 +23,11 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 
 ## Design
 - Le design Claude Design (`App Beaute Hi-Fi.dc.html`) fait foi pour web et mobile : couleurs, composants, mises en page, animations, illustrations. Pas de réinvention.
+- Export local : `design/split.mjs` → `design/screens/<ID>.html` (+ PNG ignorés par git) et `design/index.md` (table des écrans AUTH / C-H / C-F / PRO-F). Jetons : `apps/web/src/styles/tokens.css` et `apps/mobile/src/theme/design.ts` (mêmes valeurs).
+- Web : classes du design dans `apps/web/src/styles/index.css`, primitives dans `apps/web/src/components/ui.tsx`. Mobile : primitives natives équivalentes dans `apps/mobile/src/ui/` (`Text.tsx`, `index.tsx`, `Screen.tsx`, `TabBar.tsx`, `Pickers.tsx`), écrans Expo Router sous `apps/mobile/app/` (groupes `(auth)`, `(client)`, `(pro)`, `s/[slug]`).
+
+## Mobile (Expo)
+- Vérification visuelle sans appareil : `npx expo start --web --port 8082` depuis `apps/mobile` (react-native-web), captures 390×844 avec playwright-core. Ajouter `http://localhost:8082` à `CORS_ORIGINS` du `.env` de l'API.
+- Le watcher Metro ne voit pas toujours les modifications sous Windows : après une série d'éditions, redémarrer `expo start` (`--clear`) plutôt que d'attendre la reconstruction.
+- Routes : les groupes `(client)` et `(pro)` ne doivent pas exposer le même chemin (`/profil` client vs `/profil-pro` pro, `/rdv/[id]` client vs `/pro-rdv/[id]` pro). `resolveNext()` dans `src/lib/authFlow.ts` traduit les chemins web (`/pro`, `/`) en routes Expo.
+- Texte nu interdit hors `<Text>` : toujours passer par `Tx` / `P` / `InfoBox` (un fragment mixte dans une `View` plante sur iOS/Android).
