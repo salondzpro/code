@@ -5,6 +5,7 @@ import type {
   BookingWithSalon,
   BookingWithStaff,
   Category,
+  CityCount,
   Notification,
   Paginated,
   ProDashboardStats,
@@ -142,7 +143,8 @@ export function createApiClient(opts: ApiClientOptions) {
     public: {
       categories: () => get<Category[]>('/categories', undefined, false),
       wilayas: () => get<Wilaya[]>('/wilayas', undefined, false),
-      searchSalons: (q: Partial<SearchSalonsQuery>) => get<Paginated<SalonSummary>>('/salons', q as Query, false),
+      searchSalons: (q: Partial<SearchSalonsQuery>) => get<Paginated<SalonSummary> & { total: number }>('/salons', q as Query, false),
+      cities: (q: { wilaya?: number; gender?: string; lat?: number; lng?: number; q?: string }) => get<{ items: CityCount[] }>('/salons/cities', q as Query, false),
       salon: (slug: string) => get<SalonPublic>(`/salons/${encodeURIComponent(slug)}`),
       availability: (salonId: string, q: AvailabilityQuery) => get<AvailabilityResponse>(`/salons/${salonId}/availability`, q as Query, false),
       reviews: (salonId: string, offset = 0, limit = 20) => get<Paginated<ReviewItem>>(`/salons/${salonId}/reviews`, { offset, limit }, false),

@@ -24,7 +24,14 @@ export function useApi(): ApiContextValue {
 // ---------- Public ----------
 export const useCategories = () => useQuery(useApi().queries.categories());
 export const useWilayas = () => useQuery(useApi().queries.wilayas());
-export const useSalonSearch = (q: Partial<SearchSalonsQuery>) => useQuery(useApi().queries.salons(q));
+export const useSalonSearch = (q: Partial<SearchSalonsQuery>, enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.salons(q), enabled });
+};
+export const useSalonCities = (q: Parameters<ReturnType<typeof useApi>['api']['public']['cities']>[0], enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.cities(q), enabled });
+};
 export const useSalon = (slug: string) => useQuery(useApi().queries.salon(slug));
 export const useAvailability = (salonId: string, q: AvailabilityQuery) => useQuery(useApi().queries.availability(salonId, q));
 export const useSalonReviews = (salonId: string) => useQuery(useApi().queries.reviews(salonId));

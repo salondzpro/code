@@ -100,7 +100,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/me/favorites', async (req, reply) => {
     const res = await db
       .from('favorites')
-      .select('salon_id, salons!inner(id, slug, name, city, wilaya_code, cover_url, gender_target, rating_avg, rating_count, is_published, salon_categories(category_id))')
+      .select('salon_id, salons!inner(id, slug, name, city, zone, wilaya_code, cover_url, logo_url, gender_target, rating_avg, rating_count, is_published, salon_categories(category_id))')
       .eq('user_id', req.user!.id)
       .order('created_at', { ascending: false });
     const rows = unwrap(res) as unknown as { salons: Record<string, unknown> & { salon_categories: { category_id: string }[]; is_published: boolean } }[];
@@ -108,8 +108,8 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       .filter((r) => r.salons.is_published)
       .map((r) => {
         const { salon_categories, is_published: _p, ...rest } = r.salons;
-        const s = camelize<Omit<SalonSummary, 'categoryIds' | 'minPriceDa'>>(rest);
-        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null };
+        const s = camelize<Omit<SalonSummary, 'categoryIds' | 'minPriceDa' | 'topServices' | 'nextSlots' | 'isOpenNow'>>(rest);
+        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null, topServices: [], nextSlots: [], isOpenNow: false };
       });
     reply.header('Cache-Control', 'private, no-store');
     return { items };

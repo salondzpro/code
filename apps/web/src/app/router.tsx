@@ -13,15 +13,29 @@ import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 import { Market } from '@/pages/auth/Market';
 import { ProWelcome } from '@/pages/pro/Welcome';
-// Client
-import { Home } from '@/pages/Home';
-import { Search } from '@/pages/Search';
-import { SalonPage } from '@/pages/SalonPage';
-import { BookingFlow } from '@/pages/BookingFlow';
-import { Account } from '@/pages/Account';
-import { AccountBookings } from '@/pages/AccountBookings';
+// Client (design C-H / C-F)
+import { Marketplace } from '@/pages/client/Marketplace';
+import { Localisation } from '@/pages/client/Localisation';
+import { MapView } from '@/pages/client/MapView';
+import { SearchPage } from '@/pages/client/SearchPage';
+import { CategoryResults } from '@/pages/client/CategoryResults';
+import { Salon } from '@/pages/client/Salon';
+import { SalonWorks } from '@/pages/client/SalonWorks';
+import { SalonServices } from '@/pages/client/SalonServices';
+import { ServiceDetail } from '@/pages/client/ServiceDetail';
+import { BookingServices } from '@/pages/client/BookingServices';
+import { BookingWhen } from '@/pages/client/BookingWhen';
+import { BookingDetails } from '@/pages/client/BookingDetails';
+import { BookingReview } from '@/pages/client/BookingReview';
+import { BookingConfirmed } from '@/pages/client/BookingConfirmed';
+import { Bookings } from '@/pages/client/Bookings';
+import { BookingDetail } from '@/pages/client/BookingDetail';
+import { BookingReschedule } from '@/pages/client/BookingReschedule';
+import { Rate } from '@/pages/client/Rate';
+import { Favorites } from '@/pages/client/Favorites';
+import { Profile } from '@/pages/client/Profile';
+import { Settings } from '@/pages/client/Settings';
 import { AccountNotifications } from '@/pages/AccountNotifications';
-import { AccountFavorites } from '@/pages/AccountFavorites';
 // Pro
 import { Dashboard } from '@/pages/pro/Dashboard';
 import { Onboarding } from '@/pages/pro/Onboarding';
@@ -57,34 +71,54 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      // ---- Espace client (onglets Marketplace · Rendez-vous · Profil) ----
+      // ---- Espace client : onglets Marketplace · Rendez-vous · Profil ----
       {
         element: <RequireClient />,
         children: [
           {
             element: <ClientLayout />,
             children: [
-              { path: '/', element: <Home /> },
-              { path: '/recherche', element: <Search /> },
-              { path: '/rendez-vous', element: <AccountBookings /> },
-              { path: '/profil', element: <Account /> },
-              { path: '/favoris', element: <AccountFavorites /> },
+              { path: '/', element: <Marketplace /> },
+              { path: '/recherche', element: <SearchPage /> },
+              { path: '/categorie/:category', element: <CategoryResults /> },
+              { path: '/rendez-vous', element: <Bookings /> },
+              { path: '/favoris', element: <Favorites /> },
+              { path: '/profil', element: <Profile /> },
+              { path: '/reglages', element: <Settings /> },
               { path: '/notifications', element: <AccountNotifications /> },
               // anciens chemins
-              { path: '/compte', element: <Account /> },
-              { path: '/compte/reservations', element: <AccountBookings /> },
+              { path: '/compte', element: <Profile /> },
+              { path: '/compte/reservations', element: <Bookings /> },
+              { path: '/compte/favoris', element: <Favorites /> },
               { path: '/compte/notifications', element: <AccountNotifications /> },
-              { path: '/compte/favoris', element: <AccountFavorites /> },
+            ],
+          },
+          { path: '/carte', element: <MapView /> },
+          {
+            element: <PlainLayout />,
+            children: [
+              { path: '/localisation', element: <Localisation /> },
+              { path: '/rendez-vous/:id', element: <BookingDetail /> },
+              { path: '/rendez-vous/:id/confirme', element: <BookingConfirmed /> },
+              { path: '/rendez-vous/:id/reporter', element: <BookingReschedule /> },
+              { path: '/rendez-vous/:id/noter', element: <Rate /> },
+              { path: '/s/:slug/reserver/coordonnees', element: <BookingDetails /> },
+              { path: '/s/:slug/reserver/recap', element: <BookingReview /> },
             ],
           },
         ],
       },
-      // ---- Pages salon (publiques : lisibles sans compte, réservation avec compte) ----
+      // ---- Pages salon (publiques, lisibles sans compte) ----
       {
         element: <PlainLayout />,
         children: [
-          { path: '/s/:slug', element: <SalonPage /> },
-          { path: '/s/:slug/reserver', element: <BookingFlow /> },
+          { path: '/s/:slug', element: <Salon /> },
+          { path: '/s/:slug/realisations', element: <SalonWorks /> },
+          { path: '/s/:slug/prestations', element: <BookingServices /> },
+          { path: '/s/:slug/catalogue', element: <SalonServices /> },
+          { path: '/s/:slug/prestation/:serviceId', element: <ServiceDetail /> },
+          { path: '/s/:slug/reserver/quand', element: <BookingWhen /> },
+          { path: '/s/:slug/reserver', element: <BookingServices /> },
         ],
       },
       // ---- Espace pro ----

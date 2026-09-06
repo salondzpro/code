@@ -7,6 +7,7 @@ export const queryKeys = {
   categories: ['categories'] as const,
   wilayas: ['wilayas'] as const,
   salons: (q: Partial<SearchSalonsQuery>) => ['salons', q] as const,
+  cities: (q: Record<string, unknown>) => ['salons', 'cities', q] as const,
   salon: (slug: string) => ['salon', slug] as const,
   availability: (salonId: string, q: AvailabilityQuery) => ['availability', salonId, q] as const,
   reviews: (salonId: string) => ['reviews', salonId] as const,
@@ -38,6 +39,7 @@ export function makeQueries(api: ApiClient) {
     categories: () => queryOptions({ queryKey: queryKeys.categories, queryFn: () => api.public.categories(), staleTime: 24 * 60 * MIN, gcTime: 7 * 24 * 60 * MIN }),
     wilayas: () => queryOptions({ queryKey: queryKeys.wilayas, queryFn: () => api.public.wilayas(), staleTime: Infinity }),
     salons: (q: Partial<SearchSalonsQuery>) => queryOptions({ queryKey: queryKeys.salons(q), queryFn: () => api.public.searchSalons(q), staleTime: 2 * MIN }),
+    cities: (q: Parameters<typeof api.public.cities>[0]) => queryOptions({ queryKey: queryKeys.cities(q), queryFn: () => api.public.cities(q), staleTime: 10 * MIN }),
     salon: (slug: string) => queryOptions({ queryKey: queryKeys.salon(slug), queryFn: () => api.public.salon(slug), staleTime: 5 * MIN, enabled: !!slug }),
     availability: (salonId: string, q: AvailabilityQuery) =>
       queryOptions({
@@ -45,7 +47,7 @@ export function makeQueries(api: ApiClient) {
         queryFn: () => api.public.availability(salonId, q),
         staleTime: 15_000,
         refetchOnWindowFocus: true,
-        enabled: !!salonId && !!q.serviceId && !!q.date,
+        enabled: !!salonId && (!!q.serviceId || !!q.serviceIds) && !!q.date,
       }),
     reviews: (salonId: string) => queryOptions({ queryKey: queryKeys.reviews(salonId), queryFn: () => api.public.reviews(salonId), staleTime: 5 * MIN, enabled: !!salonId }),
     me: () => queryOptions({ queryKey: queryKeys.me, queryFn: () => api.me.get(), staleTime: 5 * MIN, retry: false }),

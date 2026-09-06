@@ -125,7 +125,9 @@ export type CreateTimeBlockInput = z.infer<typeof createTimeBlockSchema>;
 // ---------- Réservations ----------
 export const createBookingSchema = z.object({
   salonId: p.uuid,
-  serviceId: p.uuid,
+  serviceId: p.uuid.optional(),
+  /** Prestations cumulées (design C-F 08) : ordre = ordre de réalisation. */
+  serviceIds: z.array(p.uuid).min(1).max(8).optional(),
   /** null/absent = "n'importe quel membre disponible". */
   staffId: p.uuid.nullable().optional(),
   startsAt: p.isoDateTime,
@@ -133,7 +135,7 @@ export const createBookingSchema = z.object({
   /** Requis si le client n'a pas de nom sur son profil. */
   clientName: p.shortText(80).optional(),
   clientPhone: p.phoneDZ.optional(),
-});
+}).refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, { message: 'Choisissez au moins une prestation', path: ['serviceIds'] });
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
 /** Réservation créée par le pro (client de passage / téléphone). */
@@ -187,16 +189,38 @@ export const searchSalonsQuerySchema = z.object({
   gender: z.enum(GENDER_TARGETS).optional(),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
+  /** Rayon autour de (lat, lng) en km — design « Localisation et rayon » (1, 2, 5, 10). */
+  radiusKm: z.coerce.number().min(0.5).max(100).optional(),
+  /** Tri — design « Trier les résultats ». */
+  sort: z.enum(['relevance', 'rating', 'price_asc', 'price_desc']).optional(),
+  /** « Dispo aujourd'hui ». */
+  availableToday: z
+    .enum(['1', '0', 'true', 'false'])
+    .transform((v) => v === '1' || v === 'true')
+    .optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).max(1000).default(0),
 });
 export type SearchSalonsQuery = z.infer<typeof searchSalonsQuerySchema>;
 
-export const availabilityQuerySchema = z.object({
-  serviceId: p.uuid,
-  date: p.dateKey,
-  staffId: p.uuid.optional(),
+export const availabilityQuerySchema = z
+  .object({
+    serviceId: p.uuid.optional(),
+    /** Prestations cumulées : ids séparés par des virgules (durée = somme). */
+    serviceIds: z.string().regex(/^[0-9a-f-]{36}(,[0-9a-f-]{36}){0,7}$/i).optional(),
+    date: p.dateKey,
+    staffId: p.uuid.optional(),
+  })
+  .refine((q) => !!q.serviceId || !!q.serviceIds, { message: 'serviceId ou serviceIds requis', path: ['serviceId'] });
+
+export const citiesQuerySchema = z.object({
+  wilaya: z.coerce.number().int().min(1).max(58).optional(),
+  gender: z.enum(GENDER_TARGETS).optional(),
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lng: z.coerce.number().min(-180).max(180).optional(),
+  q: z.string().trim().max(80).optional(),
 });
+export type CitiesQuery = z.infer<typeof citiesQuerySchema>;
 export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;
 
 // ---------- Avis ----------

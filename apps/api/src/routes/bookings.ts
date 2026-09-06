@@ -33,9 +33,9 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     if (!profile.phone && body.clientPhone) patch.phone = body.clientPhone;
     if (Object.keys(patch).length) await db.from('profiles').update(patch).eq('id', profile.id);
 
-    const res = await db.rpc('create_booking', {
+    const res = await db.rpc('create_booking_multi', {
       p_salon_id: body.salonId,
-      p_service_id: body.serviceId,
+      p_service_ids: body.serviceIds?.length ? body.serviceIds : [body.serviceId!],
       p_staff_id: body.staffId ?? null,
       p_starts_at: body.startsAt,
       p_client_id: profile.id,

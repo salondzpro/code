@@ -1,8 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { WILAYAS } from '@salondz/constants';
-import { availabilityQuerySchema, searchSalonsQuerySchema, uuid } from '@salondz/validation';
-import type { AvailabilityResponse, Category, SalonSummary } from '@salondz/types';
+import { availabilityQuerySchema, citiesQuerySchema, searchSalonsQuerySchema, uuid } from '@salondz/validation';
+import type { AvailabilityResponse, Category, CityCount, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
@@ -30,9 +30,19 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     return WILAYAS;
   });
 
+  /** Quartiers / villes avec nombre de professionnels (design « Localisation »). */
+  app.get('/salons/cities', { schema: { querystring: citiesQuerySchema } }, async (req, reply) => {
+    const q = req.query;
+    const res = await db.rpc('salon_cities', { p_wilaya: q.wilaya ?? null, p_gender: q.gender ?? null, p_lat: q.lat ?? null, p_lng: q.lng ?? null, p_q: q.q ?? null });
+    const rows = unwrap(res) as Record<string, unknown>[];
+    reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
+    return { items: rows.map((r) => camelize<CityCount>(r)) };
+  });
+
+  /** Marketplace (design C-H 01 / C-F 01) : rayon, tri, dispo du jour, prestations phares, prochains créneaux. */
   app.get('/salons', { schema: { querystring: searchSalonsQuerySchema } }, async (req, reply) => {
     const q = req.query;
-    const res = await db.rpc('search_salons', {
+    const res = await db.rpc('search_salons_v2', {
       p_q: q.q ?? null,
       p_wilaya: q.wilaya ?? null,
       p_city: q.city ?? null,
@@ -40,16 +50,27 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       p_gender: q.gender ?? null,
       p_lat: q.lat ?? null,
       p_lng: q.lng ?? null,
+      p_radius_km: q.radiusKm ?? null,
+      p_sort: q.sort ?? 'relevance',
+      p_available_today: q.availableToday ?? false,
       p_limit: q.limit,
       p_offset: q.offset,
     });
     const rows = unwrap(res) as Record<string, unknown>[];
-    const items = rows.map((r) => {
-      const s = camelize<SalonSummary & { distanceKm: number | null }>(r);
-      return { ...s, ratingAvg: Number(s.ratingAvg) };
+    let total = 0;
+    const items: SalonSummary[] = rows.map((r) => {
+      const { top_services, next_slots, is_open_now, total_count, ...rest } = r as Record<string, unknown> & {
+        top_services: { name: string; priceDa: number }[] | null;
+        next_slots: string[] | null;
+        is_open_now: boolean;
+        total_count: number | string;
+      };
+      total = Number(total_count);
+      const s = camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'isOpenNow'>>(rest);
+      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], isOpenNow: !!is_open_now };
     });
     reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
-    return { items, nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null };
+    return { items, total, nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null };
   });
 
   app.get('/salons/:slug', { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } }, async (req, reply) => {
@@ -66,23 +87,25 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { params: z.object({ id: uuid }), querystring: availabilityQuerySchema } },
     async (req, reply) => {
       const { id } = req.params;
-      const { serviceId, date, staffId } = req.query;
+      const { date, staffId } = req.query;
+      const serviceIds = [...(req.query.serviceIds ? req.query.serviceIds.split(',') : []), ...(req.query.serviceId ? [req.query.serviceId] : [])].filter((v, i, a) => a.indexOf(v) === i);
 
-      const [salonRes, serviceRes, slotsRes] = await Promise.all([
+      const [salonRes, totalRes] = await Promise.all([
         db.from('salons').select('id, slot_interval_minutes, is_published, owner_id').eq('id', id).maybeSingle(),
-        db.from('services').select('id, duration_minutes, is_active').eq('id', serviceId).eq('salon_id', id).maybeSingle(),
-        db.rpc('get_available_slots', {
-          p_salon_id: id,
-          p_service_id: serviceId,
-          p_date: date,
-          p_staff_id: staffId ?? null,
-          p_enforce_lead_time: true,
-        }),
+        db.rpc('services_total', { p_salon_id: id, p_service_ids: serviceIds }).single(),
       ]);
       const salon = unwrap(salonRes, 'Salon');
-      const service = unwrap(serviceRes, 'Service');
       if (!salon.is_published && req.user?.id !== salon.owner_id) throw notFound('Salon');
-      if (!service.is_active) throw badRequest('SERVICE_INACTIVE', "Ce service n'est plus proposé.");
+      const total = unwrap(totalRes) as { duration_minutes: number; price_da: number; label: string | null; n: number };
+      if (total.n !== serviceIds.length) throw badRequest('SERVICE_INACTIVE', "Ce service n'est plus proposé.");
+      // Durée totale des prestations enchaînées → une seule source de vérité (SQL)
+      const slotsRes = await db.rpc('get_available_slots_for', {
+        p_salon_id: id,
+        p_duration_minutes: total.duration_minutes,
+        p_date: date,
+        p_staff_id: staffId ?? null,
+        p_enforce_lead_time: true,
+      });
       const rows = unwrap(slotsRes) as { slot_start: string; staff_id: string }[];
 
       const grouped = new Map<string, string[]>();
@@ -94,10 +117,11 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       }
       const body: AvailabilityResponse = {
         salonId: id,
-        serviceId,
+        serviceId: serviceIds[0]!,
+        serviceIds,
         date,
         slotIntervalMinutes: salon.slot_interval_minutes,
-        durationMinutes: service.duration_minutes,
+        durationMinutes: total.duration_minutes,
         slots: [...grouped.entries()].map(([startsAt, staffIds]) => ({ startsAt, staffIds })),
       };
       reply.header('Cache-Control', CACHE_AVAILABILITY);

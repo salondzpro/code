@@ -87,6 +87,14 @@ export interface Service {
   categoryId: string | null;
   isActive: boolean;
   sortOrder: number;
+  /** Photos de la prestation (design « Prestations illustrées ») — présentes dans les vues salon. */
+  photos?: ServicePhoto[];
+}
+
+export interface ServicePhoto {
+  id: UUID;
+  url: string;
+  sortOrder: number;
 }
 
 export interface Staff {
@@ -146,6 +154,8 @@ export interface Booking {
   cancellationReason: string | null;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
+  /** Prestations cumulées (absent = une seule prestation, cf. serviceName). */
+  items?: BookingItem[];
 }
 
 export interface Review {
@@ -185,6 +195,34 @@ export interface SalonSummary {
   categoryIds: string[];
   minPriceDa: number | null;
   distanceKm?: number | null;
+  /** Quartier et logo (design : « Barbier · Alger-Centre · 0,8 km », vignette ronde). */
+  zone: string | null;
+  logoUrl: string | null;
+  /** Prestations phares : « Coupe 900 DA · Barbe 500 DA ». */
+  topServices: { name: string; priceDa: number }[];
+  /** Prochains créneaux du jour (HH:mm, heure d'Alger), 3 au plus. */
+  nextSlots: string[];
+  isOpenNow: boolean;
+  lat?: number | null;
+  lng?: number | null;
+}
+
+/** Quartier / ville avec le nombre de professionnels publiés (design « Localisation »). */
+export interface CityCount {
+  city: string;
+  wilayaCode: number;
+  salonCount: number;
+  distanceKm: number | null;
+}
+
+/** Ligne d'une réservation multi-prestations (snapshot). */
+export interface BookingItem {
+  id: UUID;
+  serviceId: UUID | null;
+  serviceName: string;
+  durationMinutes: number;
+  priceDa: number;
+  sortOrder: number;
 }
 
 /** Page publique du salon : tout ce qu'il faut en UNE requête. */
@@ -213,6 +251,7 @@ export interface AvailabilitySlot {
 export interface AvailabilityResponse {
   salonId: UUID;
   serviceId: UUID;
+  serviceIds: UUID[];
   date: DateKey;
   slotIntervalMinutes: number;
   durationMinutes: number;
@@ -239,6 +278,8 @@ export interface ProDashboardStats {
 
 export interface Paginated<T> {
   items: T[];
+  /** Nombre total de résultats quand la source le fournit (recherche). */
+  total?: number;
   nextCursor: string | null;
 }
 
