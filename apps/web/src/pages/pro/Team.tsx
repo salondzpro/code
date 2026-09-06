@@ -1,10 +1,16 @@
-import { useEffect, useState, type FormEvent } from 'react';
+/**
+ * Espace pro — Équipe : membres, activation et horaires propres (feuille au design).
+ * Liste vide côté API = « suit les horaires du salon » ; créneaux = salon ∩ membre (calcul SQL).
+ */
+import { useEffect, useRef, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
 import { DAY_LABELS_FR, WEEK_DAYS, type DayOfWeek } from '@salondz/constants';
 import type { OpeningHour, Staff } from '@salondz/types';
-import { Field } from '@/components/Field';
-import { Spinner } from '@/components/Spinner';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { errorText } from '@/components/ErrorMessage';
+import { Avatar, BottomSheet, Button, I, Input, Segmented, Skeleton, Toggle } from '@/components/ui';
+import { Screen, NAV_PAD } from '@/components/AppFrame';
+import { Splash } from '@/pages/auth/Splash';
 
 interface Row {
   dayOfWeek: DayOfWeek;
@@ -21,26 +27,27 @@ function rowsFromSalon(salonHours: OpeningHour[]): Row[] {
   });
 }
 
-/**
- * Horaires propres d'un membre. Liste vide côté API = « suit les horaires du salon ».
- * Les créneaux réservables sont l'intersection salon ∩ membre (calculée en SQL).
- */
-function StaffHoursEditor({ member, salonHours, onClose }: { member: Staff; salonHours: OpeningHour[]; onClose: () => void }) {
+function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { ownerId: string; openingHours: OpeningHour[] }; onClose: () => void }) {
   const hours = useStaffHours(member.id);
-  const { setHours } = useProStaffMutations();
+  const { update, remove, setHours } = useProStaffMutations();
   const [custom, setCustom] = useState(false);
-  const [rows, setRows] = useState<Row[]>(() => rowsFromSalon(salonHours));
-  const [saved, setSaved] = useState(false);
+  const [rows, setRows] = useState<Row[]>(() => rowsFromSalon(salon.openingHours));
+  const [error, setError] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const isOwner = member.userId === salon.ownerId;
+  const seeded = useRef(false);
 
+  // Amorce unique depuis l'API : ne pas écraser les choix faits pendant le chargement.
   useEffect(() => {
-    if (!hours.data) return;
+    if (!hours.data || seeded.current) return;
+    seeded.current = true;
     if (hours.data.length === 0) {
       setCustom(false);
-      setRows(rowsFromSalon(salonHours));
+      setRows(rowsFromSalon(salon.openingHours));
       return;
     }
     setCustom(true);
-    const base = rowsFromSalon(salonHours);
+    const base = rowsFromSalon(salon.openingHours);
     setRows(
       WEEK_DAYS.map((d) => {
         const h = hours.data.find((x) => x.dayOfWeek === d);
@@ -48,135 +55,172 @@ function StaffHoursEditor({ member, salonHours, onClose }: { member: Staff; salo
         return h ? { dayOfWeek: d, enabled: true, startsAt: h.startsAt, endsAt: h.endsAt } : { ...def, enabled: false };
       }),
     );
-  }, [hours.data, salonHours]);
-
-  if (hours.isPending) return <Spinner inline />;
-  if (hours.isError) return <ErrorMessage error={hours.error} retry={() => hours.refetch()} />;
+  }, [hours.data, salon.openingHours]);
 
   const patch = (d: DayOfWeek, p: Partial<Row>) => setRows((prev) => prev.map((r) => (r.dayOfWeek === d ? { ...r, ...p } : r)));
   const invalid = custom && rows.some((r) => r.enabled && r.startsAt >= r.endsAt);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    setSaved(false);
-    await setHours.mutateAsync({
-      id: member.id,
-      hours: custom ? rows.filter((r) => r.enabled).map(({ dayOfWeek, startsAt, endsAt }) => ({ dayOfWeek, startsAt, endsAt })) : [],
-    });
-    setSaved(true);
+  const save = async () => {
+    setError(null);
+    try {
+      await setHours.mutateAsync({
+        id: member.id,
+        hours: custom ? rows.filter((r) => r.enabled).map(({ dayOfWeek, startsAt, endsAt }) => ({ dayOfWeek, startsAt, endsAt })) : [],
+      });
+      onClose();
+    } catch (err) {
+      setError(errorText(err));
+    }
   };
 
   return (
-    <form onSubmit={submit} className="mt-3 flex flex-col gap-3 border-t border-line pt-3" aria-label={`Horaires de ${member.displayName}`}>
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className={!custom ? 'chip-active' : 'chip'} onClick={() => setCustom(false)}>
-          Suit les horaires du salon
-        </button>
-        <button type="button" className={custom ? 'chip-active' : 'chip'} onClick={() => setCustom(true)}>
-          Horaires personnalisés
-        </button>
-      </div>
-      {custom && (
-        <table className="w-full text-sm">
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.dayOfWeek} className="border-b border-line last:border-0">
-                <th scope="row" className="py-1 pr-2 text-left font-medium">
-                  {DAY_LABELS_FR[r.dayOfWeek]}
-                </th>
-                <td className="py-1 pr-2">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={r.enabled} onChange={(e) => patch(r.dayOfWeek, { enabled: e.target.checked })} />
-                    {r.enabled ? 'Travaille' : 'Repos'}
-                  </label>
-                </td>
-                <td className="py-1 pr-2">
-                  <input type="time" className="input" value={r.startsAt} disabled={!r.enabled} onChange={(e) => patch(r.dayOfWeek, { startsAt: e.target.value })} aria-label="Début" />
-                </td>
-                <td className="py-1">
-                  <input type="time" className="input" value={r.endsAt} disabled={!r.enabled} onChange={(e) => patch(r.dayOfWeek, { endsAt: e.target.value })} aria-label="Fin" />
-                </td>
-              </tr>
+    <>
+      <div className="dim" onClick={onClose} />
+      <BottomSheet className="max-h-[88vh] !z-50 overflow-y-auto">
+        <div role="dialog" aria-label={`Membre ${member.displayName}`} className="flex flex-col gap-3.5">
+          <div className="flex items-center gap-3.5">
+            <Avatar src={member.avatarUrl} name={member.displayName} size={56} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[22px] font-bold tracking-[-0.4px]">{member.displayName}</span>
+              <span className="p block text-[15px]">{isOwner ? 'Propriétaire' : member.isActive ? 'Membre actif' : 'Inactif — masqué à la réservation'}</span>
+            </span>
+            {!isOwner && <Toggle on={member.isActive} onChange={(v) => update.mutate({ id: member.id, isActive: v }, { onError: (e) => setError(errorText(e)) })} label="Actif" />}
+          </div>
+          <Segmented
+            label="Horaires"
+            value={custom ? 'custom' : 'salon'}
+            onChange={(v) => setCustom(v === 'custom')}
+            options={[
+              { value: 'salon', label: 'Horaires du salon' },
+              { value: 'custom', label: 'Horaires personnalisés' },
+            ]}
+          />
+          {hours.isPending ? (
+            <Skeleton className="h-[120px]" />
+          ) : custom ? (
+            <div className="crd !gap-0 !py-1">
+              {rows.map((r) => (
+                <div key={r.dayOfWeek} className="li !py-3">
+                  <span className={`w-[96px] flex-none text-[17px] ${r.enabled ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
+                  <span className="flex flex-1 items-center gap-1 text-[17px] text-muted">
+                    {r.enabled ? (
+                      <>
+                        <input type="time" className="tm" value={r.startsAt} onChange={(e) => patch(r.dayOfWeek, { startsAt: e.target.value })} aria-label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} />
+                        <span>–</span>
+                        <input type="time" className="tm" value={r.endsAt} onChange={(e) => patch(r.dayOfWeek, { endsAt: e.target.value })} aria-label={`Fin ${DAY_LABELS_FR[r.dayOfWeek]}`} />
+                      </>
+                    ) : (
+                      <span className="text-disabled">Repos</span>
+                    )}
+                  </span>
+                  <Toggle on={r.enabled} onChange={(v) => patch(r.dayOfWeek, { enabled: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="p text-[15px]">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>
+          )}
+          {invalid && <p className="text-[14px] text-danger">L'heure de début doit précéder la fin.</p>}
+          {error && (
+            <p className="text-[14px] text-danger" role="alert">
+              {error}
+            </p>
+          )}
+          <Button onClick={() => void save()} disabled={setHours.isPending || invalid || hours.isPending}>
+            {setHours.isPending ? 'Enregistrement…' : 'Enregistrer'}
+          </Button>
+          {!isOwner &&
+            (confirmRemove ? (
+              <Button
+                className="!bg-danger !text-white"
+                disabled={remove.isPending}
+                onClick={async () => {
+                  try {
+                    await remove.mutateAsync(member.id);
+                    onClose();
+                  } catch (err) {
+                    setError(errorText(err));
+                  }
+                }}
+              >
+                Confirmer le retrait
+              </Button>
+            ) : (
+              <button type="button" className="py-2 text-[17px] text-danger" onClick={() => setConfirmRemove(true)}>
+                Retirer de l'équipe
+              </button>
             ))}
-          </tbody>
-        </table>
-      )}
-      {invalid && <p className="text-sm text-danger">L'heure de début doit précéder la fin.</p>}
-      <ErrorMessage error={setHours.error} />
-      {saved && <p className="text-sm text-success">Horaires du membre enregistrés.</p>}
-      <div className="flex gap-2">
-        <button type="submit" className="btn-primary px-3 py-1 text-sm" disabled={setHours.isPending || invalid}>
-          Enregistrer
-        </button>
-        <button type="button" className="btn-ghost px-3 py-1 text-sm" onClick={onClose}>
-          Fermer
-        </button>
-      </div>
-    </form>
+        </div>
+      </BottomSheet>
+    </>
   );
 }
 
 export function Team() {
-  const { data } = useProSalon();
-  const salon = data?.salon ?? null;
-  const { create, update, remove } = useProStaffMutations();
+  const salon = useProSalon().data?.salon ?? null;
+  const { create } = useProStaffMutations();
   const [name, setName] = useState('');
-  const [editingHours, setEditingHours] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  if (!salon) return <Splash />;
+  const member = salon.staff.find((m) => m.id === open) ?? null;
 
-  if (!salon) return <Spinner />;
-
-  const add = async (e: FormEvent) => {
-    e.preventDefault();
+  const add = async () => {
     if (name.trim().length < 1) return;
-    await create.mutateAsync({ displayName: name.trim() });
-    setName('');
+    setError(null);
+    try {
+      await create.mutateAsync({ displayName: name.trim() });
+      setName('');
+    } catch (err) {
+      setError(errorText(err));
+    }
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Équipe</h1>
-      <p className="text-sm text-muted">Chaque membre a son propre agenda. Les clients peuvent choisir « n'importe qui » ou un membre précis.</p>
-      <form onSubmit={add} className="card flex items-end gap-2 p-4">
-        <Field label="Nouveau membre" required>
-          {(id) => <input id={id} className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Prénom" />}
-        </Field>
-        <button type="submit" className="btn-primary" disabled={create.isPending}>
-          Ajouter
-        </button>
-      </form>
-      <ErrorMessage error={create.error ?? update.error ?? remove.error} />
-      <ul className="flex flex-col gap-2">
+    <Screen bottom={NAV_PAD} gap={16}>
+      <h1 className="h1 !text-[34px]">Équipe</h1>
+      <p className="p">Chaque membre a son propre agenda. Les clients choisissent « n'importe qui » ou un membre précis.</p>
+      <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (
-          <li key={m.id} className={`card p-4 ${m.isActive ? '' : 'opacity-60'}`}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="font-medium">
-                  {m.displayName} {m.userId === salon.ownerId && <span className="text-xs text-muted">(vous)</span>}
-                </p>
-                {!m.isActive && <p className="text-xs text-muted">Inactif</p>}
-              </div>
-              <div className="flex gap-1">
-                <button type="button" className="btn-ghost px-2 py-1 text-xs" aria-expanded={editingHours === m.id} onClick={() => setEditingHours((v) => (v === m.id ? null : m.id))}>
-                  Horaires
-                </button>
-                <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => update.mutate({ id: m.id, isActive: !m.isActive })}>
-                  {m.isActive ? 'Désactiver' : 'Activer'}
-                </button>
-                <button
-                  type="button"
-                  className="btn-danger px-2 py-1 text-xs"
-                  onClick={() => {
-                    if (window.confirm(`Retirer ${m.displayName} de l'équipe ?`)) remove.mutate(m.id);
-                  }}
-                >
-                  Retirer
-                </button>
-              </div>
-            </div>
-            {editingHours === m.id && <StaffHoursEditor member={m} salonHours={salon.openingHours} onClose={() => setEditingHours(null)} />}
+          <li key={m.id}>
+            <button type="button" className="li w-full !py-4 text-left" onClick={() => setOpen(m.id)}>
+              <span className="flex min-w-0 items-center gap-3.5">
+                <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
+                <span className="min-w-0">
+                  <span className="block truncate text-[19px]">
+                    {m.displayName}
+                    {m.userId === salon.ownerId && <span className="text-muted"> (vous)</span>}
+                  </span>
+                  <span className="p block text-[15px]">{m.isActive ? 'Actif' : 'Inactif'}</span>
+                </span>
+              </span>
+              <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
+            </button>
           </li>
         ))}
       </ul>
-    </div>
+      <div className="crd !gap-3">
+        <Input
+          lg
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void add();
+          }}
+          placeholder="Prénom du membre"
+          aria-label="Nouveau membre"
+          maxLength={60}
+        />
+        <Button onClick={() => void add()} disabled={create.isPending || !name.trim()}>
+          Ajouter
+        </Button>
+      </div>
+      {error && (
+        <p className="text-[14px] text-danger" role="alert">
+          {error}
+        </p>
+      )}
+      {member && <MemberSheet member={member} salon={salon} onClose={() => setOpen(null)} />}
+    </Screen>
   );
 }

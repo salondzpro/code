@@ -64,7 +64,9 @@ export function ProHome() {
 
       <div className="flex items-center justify-between">
         <span className="h3">À valider</span>
-        <span className="text-[19px] font-bold">{pending.data?.items.length ?? 0}</span>
+        <Link to="/pro/reservations" className="text-[19px] font-bold" aria-label="Voir toutes les demandes">
+          {pending.data?.items.length ?? 0}
+        </Link>
       </div>
       {pending.data?.items.length ? (
         pending.data.items.slice(0, 3).map((b) => (

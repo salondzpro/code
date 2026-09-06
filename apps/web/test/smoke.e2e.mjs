@@ -283,28 +283,33 @@ try {
   });
   await step('pro: équipe (ajout membre + horaires personnalisés)', async () => {
     await p.goto(WEB + '/pro/equipe');
+    await p.getByRole('heading', { name: 'Équipe' }).waitFor();
     await p.getByLabel('Nouveau membre').fill('Yacine');
     await p.getByRole('button', { name: 'Ajouter' }).click();
     const row = p.locator('li', { hasText: 'Yacine' });
     await row.waitFor();
-    await row.getByRole('button', { name: 'Horaires' }).click();
-    const form = row.getByRole('form', { name: /Horaires de Yacine/ });
-    await form.getByRole('button', { name: 'Horaires personnalisés' }).click();
-    await form.locator('tbody tr').first().getByRole('checkbox').uncheck();
-    await form.getByRole('button', { name: 'Enregistrer' }).click();
-    await form.getByText('Horaires du membre enregistrés.').waitFor();
+    await shot(p, 'pro-equipe');
+    await row.getByRole('button').click();
+    const sheet = p.getByRole('dialog', { name: 'Membre Yacine' });
+    await sheet.getByText(/réservable sur tous les horaires/).waitFor(); // horaires chargés
+    await sheet.getByRole('tab', { name: 'Horaires personnalisés' }).click();
+    await sheet.getByRole('switch', { name: 'Dimanche' }).click(); // repos le dimanche
+    await shot(p, 'pro-equipe-membre');
+    await sheet.getByRole('button', { name: 'Enregistrer' }).click();
+    await sheet.waitFor({ state: 'detached' });
   });
-  await step('pro: blocage (pause) du membre sur le jour cible', async () => {
+  await step('pro: fermetures — pause du membre sur le jour cible (PRO-F 14)', async () => {
     await p.goto(WEB + '/pro/blocages');
-    await p.getByRole('heading', { name: 'Congés et pauses' }).waitFor();
+    await p.getByRole('heading', { name: 'Fermetures' }).waitFor();
+    await pickTargetDay(p);
+    await p.getByRole('button', { name: 'Horaires réduits' }).click();
     await p.getByLabel('Concerne').selectOption({ label: 'Karim Smoke' });
-    await p.getByRole('button', { name: 'Plage horaire' }).click();
-    await p.getByLabel(/^Date\b/).fill(target);
-    await p.getByLabel(/^De\b/).fill('12:00');
-    await p.getByLabel(/^À\s/).fill('13:00');
+    await p.getByLabel('De', { exact: true }).fill('12:00');
+    await p.getByLabel('À', { exact: true }).fill('13:00');
     await p.getByLabel('Motif (facultatif)').fill('Pause');
-    await p.getByRole('button', { name: 'Ajouter le blocage' }).click();
-    await p.locator('li', { hasText: '12:00 – 13:00' }).getByText('Karim Smoke · Pause').waitFor();
+    await shot(p, 'pro-fermetures');
+    await p.getByRole('button', { name: "Ajouter l'exception" }).click();
+    await p.locator('.li', { hasText: '12:00 – 13:00' }).getByText('Karim Smoke · Pause').waitFor();
   });
   await step('pro: accueil « Votre journée »', async () => {
     await p.goto(WEB + '/pro');

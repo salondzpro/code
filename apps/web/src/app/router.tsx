@@ -57,8 +57,7 @@ import { ProProfile } from '@/pages/pro/ProProfile';
 import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDetail';
 import { ProBookingNew } from '@/pages/pro/ProBookingNew';
 import { Team } from '@/pages/pro/Team';
-import { Blocks } from '@/pages/pro/Blocks';
-import { SalonSettings } from '@/pages/pro/SalonSettings';
+import { Closures } from '@/pages/pro/Closures';
 import { Requests } from '@/pages/pro/Requests';
 
 export const router = createBrowserRouter([
@@ -162,7 +161,8 @@ export const router = createBrowserRouter([
               { path: 'rendez-vous/nouveau', element: <ProBookingNew /> },
               { path: 'rendez-vous/:id', element: <ProBookingDetail /> },
               { path: 'rendez-vous/:id/reporter', element: <ProBookingReschedule /> },
-              { path: 'salon', element: <SalonSettings /> },
+              { path: 'salon', element: <Step4Address settings /> },
+              { path: 'blocages', element: <Closures /> },
               { path: 'services', element: <ProServices /> },
               { path: 'reservations', element: <Requests /> },
             ],
@@ -177,7 +177,6 @@ export const router = createBrowserRouter([
               { path: 'equipe', element: <Team /> },
               { path: 'prestations', element: <ProServices /> },
               { path: 'profil', element: <ProProfile /> },
-              { path: 'blocages', element: <Blocks /> },
             ],
           },
         ],
