@@ -52,7 +52,7 @@ export async function verifySupabaseJwt(token: string): Promise<JWTPayload> {
 }
 
 export const SALON_COLUMNS =
-  'id, owner_id, slug, name, description, phone, wilaya_code, city, address, lat, lng, cover_url, logo_url, zone, gender_target, is_published, slot_interval_minutes, booking_lead_time_minutes, booking_horizon_days, auto_confirm, cancel_min_hours, buffer_minutes, home_service, rating_avg, rating_count, created_at, updated_at, salon_categories(category_id)';
+  'id, owner_id, slug, name, description, phone, wilaya_code, city, address, lat, lng, cover_url, logo_url, zone, gender_target, is_published, slot_interval_minutes, booking_lead_time_minutes, booking_horizon_days, auto_confirm, cancel_min_hours, buffer_minutes, home_service, allow_client_reschedule, deposit_required, rating_avg, rating_count, created_at, updated_at, salon_categories(category_id)';
 
 export function mapSalon(row: Record<string, unknown>): Salon {
   const { salon_categories, ...rest } = row as { salon_categories?: { category_id: string }[] };

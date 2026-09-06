@@ -35,7 +35,10 @@ export default function BookingDetail() {
   const b = booking.data;
   const active = b.status === 'pending' || b.status === 'confirmed';
   const hoursLeft = Math.floor((new Date(b.startsAt).getTime() - Date.now()) / 3_600_000);
-  const canModify = active && hoursLeft >= CLIENT_CANCEL_MIN_HOURS;
+  // Règles du salon (même source que l'API) : délai d'annulation, report client autorisé.
+  const minHours = b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS;
+  const canModify = active && hoursLeft >= minHours;
+  const canReschedule = canModify && b.salon.allowClientReschedule !== false;
   const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
   const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName }];
 
@@ -162,7 +165,7 @@ export default function BookingDetail() {
             Ajouter au calendrier
           </Button>
         )}
-        {canModify && (
+        {canReschedule && (
           <Grid cols={2}>
             <Button variant="g" onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
               Reporter
@@ -172,9 +175,14 @@ export default function BookingDetail() {
             </Button>
           </Grid>
         )}
+        {canModify && !canReschedule && (
+          <Button variant="d" onPress={() => setCancelling(true)}>
+            Annuler
+          </Button>
+        )}
         {active && !canModify && (
           <Tx size={14} color={C.muted} lh={20} center>
-            Report et annulation en ligne possibles jusqu'à {CLIENT_CANCEL_MIN_HOURS} h avant. Contactez le salon.
+            Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
           </Tx>
         )}
         {b.status === 'completed' && <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>Noter la prestation</Button>}

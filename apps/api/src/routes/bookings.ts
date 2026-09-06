@@ -104,13 +104,26 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/bookings/:id/reschedule', { schema: { params: z.object({ id: uuid }), body: rescheduleBookingSchema } }, async (req) => {
     const b = await getBookingWithSalon(req.params.id);
     if (b.clientId !== req.user!.id) throw notFound('Réservation');
+    // Les règles (report autorisé, délai, délai minimum, horizon, créneau libre) sont appliquées en SQL.
     const res = await db.rpc('reschedule_booking', {
       p_booking_id: b.id,
       p_starts_at: req.body.startsAt,
       p_staff_id: req.body.staffId ?? null,
       p_enforce_rules: true,
     });
-    unwrap(res);
+    const moved = unwrap(res) as { starts_at: string };
+    // Le trigger prévient le client ; le professionnel doit aussi voir le nouveau créneau.
+    const owner = await db.from('salons').select('owner_id').eq('id', b.salonId).single();
+    if (!owner.error && owner.data) {
+      await db.from('notifications').insert({
+        user_id: owner.data.owner_id,
+        type: 'booking_rescheduled',
+        title: 'Rendez-vous déplacé',
+        body: `${b.clientName} · ${b.serviceName} · ${fmtWhen(moved.starts_at)}`,
+        data: { bookingId: b.id, salonId: b.salonId, status: b.status },
+        booking_id: b.id,
+      });
+    }
     pushAfterBooking(req.log, b.id);
     return getBookingWithSalon(b.id);
   });
@@ -128,5 +141,9 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return camelize<Review>(unwrap(res));
   });
 };
+
+function fmtWhen(iso: string): string {
+  return new Intl.DateTimeFormat('fr-DZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Algiers' }).format(new Date(iso));
+}
 
 export default bookingRoutes;

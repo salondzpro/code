@@ -88,9 +88,9 @@ export function BookingReview() {
           <span className="text-[22px] font-semibold">Total</span>
           <span className="text-[24px] font-bold">{formatDA(price)}</span>
         </div>
-        <span className="p">Paiement sur place · aucun acompte demandé</span>
+        <span className="p">{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</span>
       </div>
-      <InfoBox>Annulation gratuite jusqu'à {CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
+      <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
       {slotError && (
         <div className="flex flex-col gap-3">
           <ErrorMessage error={new Error(slotError)} />

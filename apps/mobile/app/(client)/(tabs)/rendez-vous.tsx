@@ -88,11 +88,13 @@ export default function Bookings() {
                       Itinéraire
                     </Tx>
                   </Button>
-                  <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
-                    <Tx size={17} weight={600} ls={-0.2}>
-                      Reporter
-                    </Tx>
-                  </Button>
+                  {b.salon.allowClientReschedule !== false && (
+                    <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
+                      <Tx size={17} weight={600} ls={-0.2}>
+                        Reporter
+                      </Tx>
+                    </Button>
+                  )}
                 </View>
               )}
             </Card>

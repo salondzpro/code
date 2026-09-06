@@ -76,10 +76,12 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/salons/:slug', { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } }, async (req, reply) => {
     const salon = await loadPublicBySlug(req.params.slug);
     if (!salon) throw notFound('Salon');
-    const isOwner = req.user?.id === salon.ownerId;
-    if (!salon.isPublished && !isOwner) throw notFound('Salon');
+    const { ownerId, ...pub } = salon;
+    const isOwner = req.user?.id === ownerId;
+    if (!pub.isPublished && !isOwner) throw notFound('Salon');
     reply.header('Cache-Control', isOwner ? 'private, no-cache' : CACHE_PUBLIC_SHORT);
-    return salon;
+    // L'identifiant du propriétaire (compte auth) ne fait pas partie de la fiche publique.
+    return pub;
   });
 
   app.get(

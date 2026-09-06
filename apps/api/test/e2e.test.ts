@@ -7,6 +7,7 @@
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { createClient } from '@supabase/supabase-js';
 import { addDaysToKey, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
 import { buildApp, type App } from '../src/app';
 import { config } from '../src/config';
@@ -255,6 +256,29 @@ test('client : mes réservations à venir, déplacement, annulation', async () =
   const moved = await call('POST', `/v1/bookings/${id}/reschedule`, winnerToken, { startsAt: localDateTimeToISO(dateKey, '14:00') });
   assert.equal(moved.statusCode, 200, moved.body);
   assert.equal(new Date(moved.json().startsAt).toISOString(), new Date(localDateTimeToISO(dateKey, '14:00')).toISOString());
+  assert.equal(moved.json().status, 'confirmed', 'le statut est conservé par le report');
+
+  // Le report est notifié comme « déplacé » : ni annulation ni re-confirmation parasites (trigger).
+  const notifs = (await call('GET', '/v1/me/notifications', winnerToken)).json().items as { type: string; bookingId: string | null }[];
+  const mine2 = notifs.filter((n) => n.bookingId === id);
+  assert.ok(mine2.some((n) => n.type === 'booking_rescheduled'), JSON.stringify(mine2));
+  assert.ok(!mine2.some((n) => n.type === 'booking_cancelled'), JSON.stringify(mine2));
+  const proNotifs = (await call('GET', '/v1/me/notifications', pro.token)).json().items as { type: string; bookingId: string | null }[];
+  assert.ok(proNotifs.some((n) => n.type === 'booking_rescheduled' && n.bookingId === id), 'le pro est prévenu du report');
+
+  // Règles du salon appliquées en SQL : report désactivé, puis délai d'annulation dépassé (168 h > J+3).
+  await call('PATCH', '/v1/pro/salon', pro.token, { allowClientReschedule: false });
+  const disabled = await call('POST', `/v1/bookings/${id}/reschedule`, winnerToken, { startsAt: localDateTimeToISO(dateKey, '15:00') });
+  assert.equal(disabled.statusCode, 409, disabled.body);
+  assert.equal(disabled.json().error.code, 'RESCHEDULE_DISABLED');
+  await call('PATCH', '/v1/pro/salon', pro.token, { allowClientReschedule: true, cancelMinHours: 168 });
+  const tooLate = await call('POST', `/v1/bookings/${id}/reschedule`, winnerToken, { startsAt: localDateTimeToISO(dateKey, '15:00') });
+  assert.equal(tooLate.statusCode, 409, tooLate.body);
+  assert.equal(tooLate.json().error.code, 'CANCEL_TOO_LATE');
+  const cancelTooLate = await call('POST', `/v1/bookings/${id}/cancel`, winnerToken, {});
+  assert.equal(cancelTooLate.statusCode, 409, cancelTooLate.body);
+  assert.equal(cancelTooLate.json().error.code, 'CANCEL_TOO_LATE');
+  await call('PATCH', '/v1/pro/salon', pro.token, { cancelMinHours: 2 });
 
   const otherToken = winnerToken === clientA.token ? clientB.token : clientA.token;
   const forbidden = await call('POST', `/v1/bookings/${id}/cancel`, otherToken, {});
@@ -267,6 +291,46 @@ test('client : mes réservations à venir, déplacement, annulation', async () =
 
   const again = await call('POST', `/v1/bookings/${id}/cancel`, winnerToken, {});
   assert.equal(again.statusCode, 409);
+});
+
+test('sécurité : fiche publique sans propriétaire, lien définitif, téléphone vérifié immuable', async () => {
+  const pub = await call('GET', `/v1/salons/${salonSlug}`);
+  assert.equal(pub.statusCode, 200, pub.body);
+  assert.ok(!('ownerId' in pub.json()), "l'identifiant du propriétaire ne doit pas être exposé");
+  assert.ok(pub.json().staff.every((s: Record<string, unknown>) => !('userId' in s)), 'les comptes des membres ne sont pas exposés');
+
+  // Le champ `slug` n'est pas accepté par le schéma : il est ignoré, le lien reste définitif.
+  const slug = await call('PATCH', '/v1/pro/salon', pro.token, { slug: 'autre-lien' });
+  assert.equal(slug.statusCode, 200, slug.body);
+  assert.equal(slug.json().slug, salonSlug, 'le lien est inchangé');
+  assert.equal((await call('GET', `/v1/salons/${salonSlug}`)).statusCode, 200);
+  assert.equal((await call('GET', '/v1/salons/autre-lien')).statusCode, 404);
+});
+
+test('sécurité : les fonctions réservées à l\'API ne sont pas appelables via PostgREST par un compte', async () => {
+  const asClient = createClient(config.SUPABASE_URL, config.SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${clientB.token}` } },
+  });
+  const stats = await asClient.rpc('pro_stats', { p_salon_id: salonId, p_from: dateKey, p_to: dateKey });
+  assert.ok(stats.error, 'pro_stats doit être refusée');
+  assert.equal(stats.error?.code, '42501', JSON.stringify(stats.error));
+  const forged = await asClient.rpc('create_booking_multi', {
+    p_salon_id: salonId,
+    p_service_ids: [serviceId],
+    p_staff_id: staffId,
+    p_starts_at: localDateTimeToISO(dateKey, '16:00'),
+    p_client_id: clientA.id,
+    p_client_name: 'Usurpateur',
+    p_enforce_rules: false,
+  });
+  assert.ok(forged.error, 'create_booking_multi doit être refusée');
+  assert.equal(forged.error?.code, '42501', JSON.stringify(forged.error));
+  const direct = await asClient.rpc('reschedule_booking', { p_booking_id: '00000000-0000-0000-0000-000000000000', p_starts_at: localDateTimeToISO(dateKey, '16:00'), p_enforce_rules: false });
+  assert.equal(direct.error?.code, '42501', JSON.stringify(direct.error));
+  // Les fonctions publiques (lecture) restent accessibles.
+  const slots = await asClient.rpc('get_available_slots_for', { p_salon_id: salonId, p_duration_minutes: 30, p_date: dateKey });
+  assert.equal(slots.error, null, JSON.stringify(slots.error));
 });
 
 test('salon dépublié → page publique 404 pour un anonyme, visible pour le propriétaire', async () => {

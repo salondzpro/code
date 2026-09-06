@@ -103,9 +103,9 @@ export default function BookingReview() {
             {formatDA(price)}
           </Tx>
         </View>
-        <P>Paiement sur place · aucun acompte demandé</P>
+        <P>{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</P>
       </Card>
-      <InfoBox>Annulation gratuite jusqu'à {CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
+      <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
       {slotError && (
         <View style={{ gap: 12 }}>
           <ErrorText error={new Error(slotError)} />

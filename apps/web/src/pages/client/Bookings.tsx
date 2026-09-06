@@ -80,17 +80,20 @@ export function Bookings() {
                   <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g sm !py-[18px] !text-[17px]" onClick={(e) => e.stopPropagation()}>
                     Itinéraire
                   </a>
-                  <Button
-                    variant="g"
-                    sm
-                    className="!py-[18px] !text-[17px]"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(`/rendez-vous/${b.id}/reporter`);
-                    }}
-                  >
-                    Reporter
-                  </Button>
+                  {b.salon.allowClientReschedule !== false && (
+                    <Button
+                      variant="g"
+                      sm
+                      className="!py-[18px] !text-[17px]"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/rendez-vous/${b.id}/reporter`);
+                      }}
+                    >
+                      Reporter
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

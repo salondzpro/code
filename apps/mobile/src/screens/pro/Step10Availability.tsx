@@ -60,8 +60,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     setLead(salon.bookingLeadTimeMinutes);
     setHorizon(salon.bookingHorizonDays);
     setCancel(salon.cancelMinHours ?? 2);
-    setOnline(true);
-  }, [salon]);
+    setReport(salon.allowClientReschedule ?? true);
+    setDeposit(salon.depositRequired ?? false);
+    // En réglage, l'interrupteur reflète la publication ; pendant l'onboarding, la page est publiée à la fin.
+    setOnline(settings ? salon.isPublished : true);
+  }, [salon, settings]);
 
   if (!salon) return <Splash />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
@@ -69,7 +72,17 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   const save = async () => {
     setError(null);
     try {
-      await updateSalon.mutateAsync({ slotIntervalMinutes: interval as 10 | 15 | 20 | 30 | 60, bufferMinutes: buffer, autoConfirm: !manual, bookingLeadTimeMinutes: lead, bookingHorizonDays: horizon, cancelMinHours: cancel });
+      await updateSalon.mutateAsync({
+        slotIntervalMinutes: interval as 10 | 15 | 20 | 30 | 60,
+        bufferMinutes: buffer,
+        autoConfirm: !manual,
+        bookingLeadTimeMinutes: lead,
+        bookingHorizonDays: horizon,
+        cancelMinHours: cancel,
+        allowClientReschedule: report,
+        depositRequired: deposit,
+        ...(settings ? { isPublished: online } : {}),
+      });
       if (settings) router.replace('/(pro)/(tabs)/profil-pro');
       else router.push('/onboarding/publier');
     } catch (err) {

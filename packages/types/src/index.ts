@@ -66,6 +66,10 @@ export interface Salon {
   cancelMinHours: number;
   bufferMinutes: number;
   homeService: boolean;
+  /** Le client peut déplacer lui-même son rendez-vous (design PRO-F 13 « Report client »). */
+  allowClientReschedule: boolean;
+  /** Acompte demandé sur place (information affichée au client). */
+  depositRequired: boolean;
   ratingAvg: number;
   ratingCount: number;
   categoryIds: string[];
@@ -229,7 +233,8 @@ export interface BookingItem {
 }
 
 /** Page publique du salon : tout ce qu'il faut en UNE requête. */
-export interface SalonPublic extends Salon {
+/** Fiche publique : sans l'identifiant du propriétaire (compte auth). */
+export interface SalonPublic extends Omit<Salon, 'ownerId'> {
   photos: SalonPhoto[];
   services: Service[];
   staff: Pick<Staff, 'id' | 'displayName' | 'avatarUrl'>[];
@@ -263,7 +268,7 @@ export interface AvailabilityResponse {
 
 /** Réservation enrichie côté client (nom du salon, etc.). */
 export interface BookingWithSalon extends Booking {
-  salon: Pick<Salon, 'id' | 'slug' | 'name' | 'city' | 'coverUrl' | 'logoUrl' | 'phone' | 'address' | 'cancelMinHours'>;
+  salon: Pick<Salon, 'id' | 'slug' | 'name' | 'city' | 'coverUrl' | 'logoUrl' | 'phone' | 'address' | 'cancelMinHours' | 'allowClientReschedule'>;
   staff: Pick<Staff, 'id' | 'displayName'> | null;
 }
 

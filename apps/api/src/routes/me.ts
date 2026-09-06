@@ -23,7 +23,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   app.patch('/me', { schema: { body: updateProfileSchema } }, async (req) => {
-    const res = await db.from('profiles').update(snakeize(req.body)).eq('id', req.user!.id).select(PROFILE_COLS).single();
+    // Un numéro vérifié par OTP (présent dans le jeton) reste la référence : il ne se modifie pas ici.
+    const { phone, ...rest } = req.body;
+    const body = req.user!.phone ? rest : req.body;
+    if (Object.keys(body).length === 0) return req.profile!;
+    void phone;
+    const res = await db.from('profiles').update(snakeize(body)).eq('id', req.user!.id).select(PROFILE_COLS).single();
     return camelize<Profile>(unwrap(res));
   });
 

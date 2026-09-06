@@ -41,8 +41,8 @@ export const createSalonSchema = z.object({
 });
 export type CreateSalonInput = z.infer<typeof createSalonSchema>;
 
+/** Le lien de réservation (slug) est unique et définitif (design PRO-F 04) : il n'est pas modifiable. */
 export const updateSalonSchema = createSalonSchema.partial().extend({
-  slug: p.slug.optional(),
   coverUrl: p.httpUrl.nullable().optional(),
   isPublished: z.boolean().optional(),
   slotIntervalMinutes: p.slotInterval.optional(),
@@ -55,6 +55,10 @@ export const updateSalonSchema = createSalonSchema.partial().extend({
   bufferMinutes: z.number().int().min(0).max(120).optional(),
   /** Se déplacer à domicile. */
   homeService: z.boolean().optional(),
+  /** Report par le client autorisé (règle « Report client »). */
+  allowClientReschedule: z.boolean().optional(),
+  /** Acompte demandé sur place (information client). */
+  depositRequired: z.boolean().optional(),
 });
 export type UpdateSalonInput = z.infer<typeof updateSalonSchema>;
 

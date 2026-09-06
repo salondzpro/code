@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { config } from '../config';
 import { db } from '../lib/supabase';
@@ -11,7 +12,10 @@ import { dispatchPendingPush } from '../lib/push';
 const internalRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('onRequest', async (req) => {
     const auth = req.headers.authorization ?? '';
-    if (auth !== `Bearer ${config.INTERNAL_CRON_TOKEN}`) throw unauthorized('Jeton interne invalide');
+    const given = Buffer.from(auth.startsWith('Bearer ') ? auth.slice(7).trim() : '');
+    const expected = Buffer.from(config.INTERNAL_CRON_TOKEN);
+    // Comparaison en temps constant : pas d'indice sur la longueur ni sur le préfixe correct.
+    if (given.length !== expected.length || !timingSafeEqual(given, expected)) throw unauthorized('Jeton interne invalide');
   });
 
   app.post('/cron/tick', { config: { rateLimit: false } }, async (req) => {
