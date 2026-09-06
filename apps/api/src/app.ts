@@ -76,6 +76,12 @@ export async function buildApp(): Promise<App> {
       return reply.status(500).send({ error: { code: 'SERIALIZATION_ERROR', message: 'Erreur interne' } });
     }
     if (err instanceof AppError) {
+      // Les détails d'une erreur serveur (message SQL, noms de tables) restent dans les logs.
+      if (err.statusCode >= 500) {
+        req.log.error({ err, details: err.details }, 'app error');
+        if (config.SENTRY_DSN) Sentry.captureException(err);
+        return reply.status(err.statusCode).send({ error: { code: err.code, message: err.message } });
+      }
       return reply.status(err.statusCode).send({
         error: { code: err.code, message: err.message, ...(err.details ? { details: err.details } : {}) },
       });
@@ -89,7 +95,11 @@ export async function buildApp(): Promise<App> {
         details: maybePg.details ?? '',
         hint: maybePg.hint ?? '',
       });
-      if (mapped.statusCode >= 500) req.log.error({ err }, 'db error');
+      if (mapped.statusCode >= 500) {
+        req.log.error({ err }, 'db error');
+        if (config.SENTRY_DSN) Sentry.captureException(err);
+        return reply.status(mapped.statusCode).send({ error: { code: mapped.code, message: mapped.message } });
+      }
       return reply.status(mapped.statusCode).send({
         error: { code: mapped.code, message: mapped.message, ...(mapped.details ? { details: mapped.details } : {}) },
       });
