@@ -35,7 +35,7 @@ export const createSalonSchema = z.object({
   lat: z.number().min(-90).max(90).optional(),
   lng: z.number().min(-180).max(180).optional(),
   genderTarget: z.enum(GENDER_TARGETS).default('unisex'),
-  categoryIds: z.array(p.categoryId).min(1).max(4),
+  categoryIds: z.array(p.categoryId).min(1).max(6),
   logoUrl: p.httpUrl.nullable().optional(),
   zone: p.shortText(80).nullable().optional(),
 });
@@ -49,6 +49,12 @@ export const updateSalonSchema = createSalonSchema.partial().extend({
   bookingLeadTimeMinutes: z.number().int().min(0).max(7 * 24 * 60).optional(),
   bookingHorizonDays: z.number().int().min(1).max(90).optional(),
   autoConfirm: z.boolean().optional(),
+  /** Annulation client gratuite jusqu'à N h avant (design « Règles de réservation »). */
+  cancelMinHours: z.number().int().min(0).max(168).optional(),
+  /** Temps de battement entre deux rendez-vous (minutes). */
+  bufferMinutes: z.number().int().min(0).max(120).optional(),
+  /** Se déplacer à domicile. */
+  homeService: z.boolean().optional(),
 });
 export type UpdateSalonInput = z.infer<typeof updateSalonSchema>;
 
@@ -57,6 +63,10 @@ export const setSalonPhotosSchema = z.object({
 });
 
 // ---------- Services ----------
+export const setServicePhotosSchema = z.object({
+  photos: z.array(z.object({ url: p.httpUrl })).max(7),
+});
+
 export const createServiceSchema = z.object({
   name: p.shortText(80),
   description: p.longText(500).optional(),

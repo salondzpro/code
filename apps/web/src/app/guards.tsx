@@ -15,7 +15,17 @@ export function ClientLayout() {
   );
 }
 
-/** Colonne app sans barre d'onglets (parcours de connexion, écrans plein cadre). */
+/** Colonne app + barre d'onglets pro (Accueil · Agenda · Clients · Équipe · Prestations · Profil). */
+export function ProLayout() {
+  return (
+    <AppFrame>
+      <Outlet />
+      <BottomNav kind="pro" />
+    </AppFrame>
+  );
+}
+
+/** Colonne app sans barre d'onglets (parcours de connexion, écrans plein cadre, assistants). */
 export function PlainLayout() {
   return (
     <AppFrame>
@@ -56,15 +66,17 @@ export function RequireClient() {
 }
 
 /**
- * Espace pro : session requise ; sans salon → /pro/onboarding ; avec salon sur
- * l'onboarding → /pro/services tant qu'aucun service n'existe, sinon /pro.
- * (C'est ce garde, et non la page Onboarding, qui redirige après la création :
- * la mise en cache du salon déclenche ce rendu avant la fin de la mutation.)
+ * Espace pro : session requise. Sans salon → onboarding étapes 1 à 4 (le salon est créé à l'étape 4) ;
+ * avec salon → tout l'espace pro, y compris les étapes 5 à 10 (réutilisées comme réglages).
+ * (C'est ce garde qui redirige après la création : la mise en cache du salon déclenche ce rendu.)
  */
 export function RequirePro() {
   const { session, loading } = useAuth();
   const location = useLocation();
-  const onboarding = location.pathname.replace(/\/$/, '').startsWith('/pro/onboarding');
+  const path = location.pathname.replace(/\/$/, '');
+  const stepMatch = path.match(/^\/pro\/onboarding\/(\d+)/);
+  const step = stepMatch ? Number(stepMatch[1]) : null;
+  const onboarding = path.startsWith('/pro/onboarding');
   const salonQuery = useProSalon(!!session);
 
   if (loading) return <Splash />;
@@ -76,7 +88,10 @@ export function RequirePro() {
   if (salonQuery.isError) return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;
 
   const salon = salonQuery.data.salon;
-  if (!salon && !onboarding) return <Navigate to="/pro/onboarding" replace />;
-  if (salon && onboarding) return <Navigate to={salon.services.length === 0 ? '/pro/services' : '/pro'} replace />;
+  if (!salon) {
+    if (!onboarding || step === null || step > 4) return <Navigate to="/pro/onboarding/1" replace />;
+    return <Outlet />;
+  }
+  if (onboarding && (step === null || step <= 4) && !path.endsWith('/publier')) return <Navigate to={salon.services.length === 0 ? '/pro/onboarding/5' : '/pro'} replace />;
   return <Outlet />;
 }

@@ -677,3 +677,20 @@
   }
 
 }
+
+/* Champ heure compact (lignes Horaires) : sans icône native, largeur du texte seulement. */
+@layer components {
+  .tm {
+    @apply bg-transparent p-0 outline-none;
+    width: 5.6ch;
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .tm::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+  .tm::-webkit-datetime-edit {
+    padding: 0;
+  }
+}

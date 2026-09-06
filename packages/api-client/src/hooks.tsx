@@ -148,6 +148,10 @@ export const useProStats = (enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.stats(), enabled });
 };
+export const useProStatsRange = (from: string, to: string, enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.pro.statsRange(from, to), enabled });
+};
 export const useProBookings = (q: Partial<ListBookingsQuery> = {}, enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.bookings(q), enabled });
@@ -191,6 +195,7 @@ export function useProServiceMutations() {
     update: useMutation({ mutationFn: ({ id, ...body }: { id: string } & Parameters<typeof api.pro.services.update>[1]) => api.pro.services.update(id, body), onSuccess: done }),
     remove: useMutation({ mutationFn: api.pro.services.remove, onSuccess: done }),
     reorder: useMutation({ mutationFn: api.pro.services.reorder, onSuccess: done }),
+    setPhotos: useMutation({ mutationFn: ({ id, photos }: { id: string; photos: { url: string }[] }) => api.pro.services.setPhotos(id, photos), onSuccess: done }),
   };
 }
 

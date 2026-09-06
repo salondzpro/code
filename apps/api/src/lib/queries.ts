@@ -91,7 +91,7 @@ export function mapBookingWithSalon(row: Row): BookingWithSalon {
 }
 
 export const BOOKING_ITEM_COLS = 'id, service_id, service_name, duration_minutes, price_da, sort_order';
-export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, phone, address), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
+export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, phone, address, cancel_min_hours), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
 export const BOOKING_WITH_STAFF_SELECT = `${BOOKING_COLS}, staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
 
 export async function getBookingWithSalon(id: string): Promise<BookingWithSalon> {

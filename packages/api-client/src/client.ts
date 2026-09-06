@@ -9,6 +9,7 @@ import type {
   Notification,
   Paginated,
   ProDashboardStats,
+  ProStatsRange,
   Profile,
   Review,
   SalonOwnerView,
@@ -176,11 +177,14 @@ export function createApiClient(opts: ApiClientOptions) {
       setPhotos: (photos: { url: string }[]) => put<SalonOwnerView>('/pro/salon/photos', { photos }),
       setHours: (body: SetOpeningHoursInput) => put<SalonOwnerView>('/pro/salon/hours', body),
       stats: () => get<ProDashboardStats>('/pro/stats'),
+      statsRange: (from: string, to: string) => get<ProStatsRange>('/pro/stats/range', { from, to }),
+      slugCheck: (name: string) => get<{ slug: string; available: boolean }>('/pro/salon/slug-check', { name }),
       services: {
         create: (body: CreateServiceInput) => post<Service>('/pro/services', body),
         update: (id: string, body: UpdateServiceInput) => patch<Service>(`/pro/services/${id}`, body),
         remove: (id: string) => del<{ deleted: boolean; deactivated: boolean }>(`/pro/services/${id}`),
         reorder: (ids: string[]) => put<void>('/pro/services/reorder', { ids }),
+        setPhotos: (id: string, photos: { url: string }[]) => put<void>(`/pro/services/${id}/photos`, { photos }),
       },
       staff: {
         create: (body: { displayName: string; avatarUrl?: string | null }) => post<Staff>('/pro/staff', body),

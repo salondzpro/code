@@ -21,6 +21,7 @@ export const queryKeys = {
     all: ['pro'] as const,
     salon: ['pro', 'salon'] as const,
     stats: ['pro', 'stats'] as const,
+    statsRange: (from: string, to: string) => ['pro', 'stats', from, to] as const,
     bookings: (q: Partial<ListBookingsQuery>) => ['pro', 'bookings', q] as const,
     bookingsAll: ['pro', 'bookings'] as const,
     pending: ['pro', 'bookings', 'pending'] as const,
@@ -58,6 +59,7 @@ export function makeQueries(api: ApiClient) {
     pro: {
       salon: () => queryOptions({ queryKey: queryKeys.pro.salon, queryFn: () => api.pro.salon(), staleTime: 2 * MIN, retry: false }),
       stats: () => queryOptions({ queryKey: queryKeys.pro.stats, queryFn: () => api.pro.stats(), staleTime: 30_000 }),
+      statsRange: (from: string, to: string) => queryOptions({ queryKey: queryKeys.pro.statsRange(from, to), queryFn: () => api.pro.statsRange(from, to), staleTime: 30_000 }),
       bookings: (q: Partial<ListBookingsQuery> = {}) => queryOptions({ queryKey: queryKeys.pro.bookings(q), queryFn: () => api.pro.bookings.list(q), staleTime: 15_000 }),
       pending: () => queryOptions({ queryKey: queryKeys.pro.pending, queryFn: () => api.pro.bookings.pending(), staleTime: 15_000 }),
       booking: (id: string) => queryOptions({ queryKey: queryKeys.pro.booking(id), queryFn: () => api.pro.bookings.get(id), enabled: !!id }),

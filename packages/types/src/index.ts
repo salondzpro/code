@@ -63,6 +63,9 @@ export interface Salon {
   bookingLeadTimeMinutes: number;
   bookingHorizonDays: number;
   autoConfirm: boolean;
+  cancelMinHours: number;
+  bufferMinutes: number;
+  homeService: boolean;
   ratingAvg: number;
   ratingCount: number;
   categoryIds: string[];
@@ -260,7 +263,7 @@ export interface AvailabilityResponse {
 
 /** Réservation enrichie côté client (nom du salon, etc.). */
 export interface BookingWithSalon extends Booking {
-  salon: Pick<Salon, 'id' | 'slug' | 'name' | 'city' | 'coverUrl' | 'phone' | 'address'>;
+  salon: Pick<Salon, 'id' | 'slug' | 'name' | 'city' | 'coverUrl' | 'logoUrl' | 'phone' | 'address' | 'cancelMinHours'>;
   staff: Pick<Staff, 'id' | 'displayName'> | null;
 }
 
@@ -274,6 +277,23 @@ export interface ProDashboardStats {
   pendingCount: number;
   weekCount: number;
   weekRevenueDa: number;
+  todayRevenueDa: number;
+  monthCount: number;
+  monthRevenueDa: number;
+}
+
+/** Statistiques d'une période (design « Chiffre d'affaires » jour / semaine / mois). */
+export interface ProStatsRange {
+  from: DateKey;
+  to: DateKey;
+  revenueDa: number;
+  bookings: number;
+  pending: number;
+  collectedDa: number;
+  remainingDa: number;
+  remainingCount: number;
+  byDay: { date: DateKey; revenueDa: number; bookings: number }[];
+  byService: { name: string; bookings: number; revenueDa: number }[];
 }
 
 export interface Paginated<T> {

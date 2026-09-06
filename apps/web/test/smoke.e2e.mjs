@@ -10,12 +10,10 @@
  * Variables  : `WEB_URL` (défaut http://localhost:5173). Les clés Supabase viennent du
  *              `.env` racine (SUPABASE_SECRET_KEY : création/suppression des comptes jetables).
  *
- * Parcours couvert (design « App Beaute Hi-Fi ») : écrans de connexion → pro (onboarding,
- * services, horaires, équipe + horaires membre, blocage, publication, tableau de bord, agenda + RDV
- * de passage) → client (marketplace Pour Hommes, page salon, favori, prestations cumulées, créneau,
- * coordonnées, récapitulatif, confirmation, détail, report, annulation, seconde réservation) →
- * pro (agenda, terminé, report du RDV de passage) → client (avis visible sur la page publique).
- * Les captures vont dans `apps/web/test/shots/` (ignoré par git).
+ * Parcours couvert (design « App Beaute Hi-Fi ») : écrans de connexion → pro (onboarding 1 → 10, publication,
+ * équipe + horaires membre, blocage, accueil, agenda + rendez-vous de passage) → client (marketplace, salon, favoris,
+ * réservation multi-prestations, report, annulation, profil, réglages, seconde réservation) →
+ * pro (agenda jour/semaine, terminé, report du rendez-vous de passage) → client (avis visible sur la page publique).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -160,10 +158,6 @@ try {
     if (weekStart(target) !== weekStart(today)) await page.getByRole('button', { name: 'Semaine suivante' }).click();
     await page.locator('button[role=option]:not([disabled])').filter({ has: page.locator('b', { hasText: new RegExp(`^${targetDayNum}$`) }) }).first().click();
   };
-  const pickTargetDayOld = async (page) => {
-    if (weekStart(target) !== weekStart(today)) await page.getByRole('button', { name: 'Semaine suivante' }).click();
-    await page.locator('button[role=option]:not([disabled])').filter({ has: page.locator('span.text-lg', { hasText: new RegExp(`^${targetDayNum}$`) }) }).click();
-  };
   /** Créneaux libres de l'écran « Quand ? » / « Nouveau créneau » (design : .slot, grisés = .off). */
   const freeSlots = (page) => page.locator('button.slot:not(.off):not([disabled])');
 
@@ -197,45 +191,95 @@ try {
     await a.locator('body').getByText(/introuvable|404/i).first().waitFor();
   });
 
-  // ===== Pro (espace pro, écrans en cours de refonte) =====
+  // ===== Pro (design PRO-F 01 → 26 : onboarding en 10 étapes, publication, accueil, agenda) =====
   let slug = '';
-  await step('pro: /pro → onboarding', async () => {
+  /** Agenda pro, vue Jour : amène la barre de jours sur la semaine cible puis sélectionne le jour. */
+  const agendaPickTarget = async (page) => {
+    await page.getByRole('tab', { name: 'Jour' }).waitFor();
+    if (weekStart(target) !== weekStart(today)) {
+      await page.getByRole('tab', { name: 'Semaine' }).click();
+      await page.getByRole('button', { name: 'Suivant' }).click();
+      await page.getByRole('tab', { name: 'Jour' }).click();
+    }
+    await page.locator('button[role=option]:not([disabled])').filter({ has: page.locator('b', { hasText: new RegExp(`^${targetDayNum}$`) }) }).first().click();
+  };
+  await step('pro: /pro → étape 1 (marché)', async () => {
     await p.goto(WEB + '/pro');
-    await p.waitForURL(/\/pro\/onboarding/);
-    await p.getByRole('heading', { name: 'Créer mon salon' }).waitFor();
+    await p.waitForURL(/\/pro\/onboarding\/1$/);
+    await p.getByRole('heading', { name: 'Vous travaillez pour ?' }).waitFor();
+    await p.getByRole('button', { name: /^Pour Hommes/ }).click();
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/2$/);
+    await shot(p, 'pro-etape-1');
   });
-  await step('pro: création du salon → redirigé vers services', async () => {
-    await p.getByLabel('Nom du salon').fill(`Barber Smoke ${RUN}`);
-    await p.getByLabel('Wilaya').selectOption('16');
-    await p.getByLabel('Commune / quartier').fill('Alger-Centre');
+  await step('pro: nom → identité → adresse (création du salon)', async () => {
+    await p.getByRole('heading', { name: 'Nom de votre salon' }).waitFor();
+    await p.getByLabel('Nom public').fill(`Barber Smoke ${RUN}`);
+    await p.getByText('Disponible').waitFor();
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/3$/);
+    await p.getByRole('heading', { name: 'Votre identité visuelle' }).waitFor();
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/4$/);
+    await p.getByRole('heading', { name: 'Où vous trouver ?' }).waitFor();
     await p.getByLabel('Adresse').fill('12 rue Didouche Mourad');
-    await p.getByLabel('Téléphone du salon').fill('05 51 23 45 67');
-    await p.getByRole('button', { name: 'Hommes', exact: true }).click();
-    await p.getByRole('button', { name: 'Coiffure', exact: true }).click();
-    await p.getByRole('button', { name: 'Créer mon salon' }).click();
-    await p.waitForURL(/\/pro\/services/);
-    await p.getByRole('heading', { name: 'Services' }).waitFor();
+    await p.getByLabel('Ville').selectOption('16');
+    await p.getByLabel('Quartier').fill('Alger-Centre');
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/5$/);
+    await p.getByRole('heading', { name: 'Vos prestations' }).waitFor();
+    await shot(p, 'pro-etape-5');
   });
-  await step('pro: ajout de 2 services', async () => {
-    await p.getByRole('button', { name: '+ Ajouter' }).click();
-    await p.getByLabel('Nom', { exact: false }).first().fill('Coupe + barbe');
-    await p.getByLabel('Durée').selectOption('30');
-    await p.getByLabel('Prix (DA)').fill('800');
-    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
-    await p.getByText('Coupe + barbe').first().waitFor();
-    await p.getByRole('button', { name: '+ Ajouter' }).click();
-    await p.getByLabel('Nom', { exact: false }).first().fill('Coupe simple');
-    await p.getByLabel('Durée').selectOption('20');
-    await p.getByLabel('Prix (DA)').fill('500');
-    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
-    await p.getByText('Coupe simple').first().waitFor();
+  await step('pro: catalogue (étape 5) → première prestation', async () => {
+    const coiffure = p.getByRole('button', { name: /^Coiffure/ }).first();
+    await coiffure.waitFor();
+    if ((await coiffure.getAttribute('aria-pressed')) !== 'true') await coiffure.click();
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/6$/);
+    await p.getByRole('heading', { name: 'Première prestation' }).waitFor();
   });
-  await step('pro: horaires (enregistrer)', async () => {
-    await p.goto(WEB + '/pro/horaires');
-    await p.getByRole('heading', { name: "Horaires d'ouverture" }).waitFor();
-    await p.locator('table tbody tr').nth(0).waitFor();
-    await p.getByRole('button', { name: 'Enregistrer' }).click();
-    await p.getByText('Horaires enregistrés.').waitFor();
+  await step('pro: 2 prestations (étapes 6 et 7)', async () => {
+    await p.getByLabel('Nom').fill('Coupe + barbe');
+    await p.getByLabel('Prix').fill('800');
+    await p.getByRole('button', { name: '30 min', exact: true }).click();
+    await p.getByRole('button', { name: 'Ajouter des photos' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/7\/[0-9a-f-]+$/);
+    await p.getByRole('heading', { name: /Photos · Coupe \+ barbe/ }).waitFor();
+    await shot(p, 'pro-etape-7');
+    await p.getByRole('button', { name: 'Enregistrer et ajouter une autre' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/6$/);
+    await p.getByRole('heading', { name: 'Nouvelle prestation' }).waitFor();
+    await p.getByLabel('Nom').fill('Coupe simple');
+    await p.getByLabel('Prix').fill('500');
+    await p.getByRole('button', { name: '15 min', exact: true }).click();
+    await p.getByRole('button', { name: 'Ajouter des photos' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/7\/[0-9a-f-]+$/);
+    await p.getByRole('button', { name: 'Enregistrer la prestation' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/8$/);
+    await p.getByRole('heading', { name: 'Vos réalisations' }).waitFor();
+  });
+  await step('pro: réalisations → horaires → disponibilités → publication', async () => {
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/9$/);
+    await p.getByRole('heading', { name: 'Horaires' }).waitFor();
+    await shot(p, 'pro-etape-9');
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/10$/);
+    await p.getByRole('heading', { name: 'Vos créneaux' }).waitFor();
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.getByRole('heading', { name: 'Règles de réservation' }).waitFor();
+    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.waitForURL(/\/pro\/onboarding\/publier$/);
+    await p.getByRole('heading', { name: 'Tout est prêt' }).waitFor();
+    await shot(p, 'pro-publier');
+    await p.getByRole('button', { name: 'Publier ma page' }).click();
+    await p.waitForURL(/\/pro\/lien$/);
+    await p.getByRole('heading', { name: 'Votre page de réservation' }).waitFor();
+    const { data: s, error } = await admin.from('salons').select('slug, is_published').eq('owner_id', users.pro.id).single();
+    if (error) throw error;
+    if (!s.is_published) throw new Error('salon non publié');
+    slug = s.slug;
+    await shot(p, 'pro-lien');
   });
   await step('pro: équipe (ajout membre + horaires personnalisés)', async () => {
     await p.goto(WEB + '/pro/equipe');
@@ -262,29 +306,29 @@ try {
     await p.getByRole('button', { name: 'Ajouter le blocage' }).click();
     await p.locator('li', { hasText: '12:00 – 13:00' }).getByText('Karim Smoke · Pause').waitFor();
   });
-  await step('pro: publication', async () => {
-    await p.goto(WEB + '/pro/salon');
-    await p.getByRole('heading', { name: 'Mon salon' }).waitFor();
-    slug = (await p.locator('code').first().innerText()).split('/s/')[1];
-    await p.getByRole('button', { name: 'Publier' }).click();
-    await p.getByRole('button', { name: 'Dépublier' }).waitFor();
-  });
-  await step('pro: tableau de bord', async () => {
+  await step('pro: accueil « Votre journée »', async () => {
     await p.goto(WEB + '/pro');
-    await p.getByRole('heading', { name: /Bonjour/ }).waitFor();
-    await p.getByText("Aujourd'hui").waitFor();
+    await p.getByRole('heading', { name: 'Votre journée' }).waitFor();
+    await p.getByText(/Bonjour/).waitFor();
+    await shot(p, 'pro-accueil');
   });
-  await step('pro: agenda + RDV de passage', async () => {
+  await step('pro: agenda → rendez-vous de passage à 15:00', async () => {
     await p.goto(WEB + '/pro/agenda');
-    await p.getByRole('heading', { name: 'Agenda' }).waitFor();
-    await pickTargetDayOld(p);
-    await p.getByRole('button', { name: '+ Rendez-vous' }).click();
-    await p.getByRole('heading', { name: /Ajouter un rendez-vous/ }).waitFor();
-    await p.getByLabel('Heure').fill('15:00');
+    await agendaPickTarget(p);
+    await shot(p, 'pro-agenda-jour');
+    await p.getByRole('button', { name: 'Nouveau rendez-vous' }).first().click();
+    await p.waitForURL(/\/pro\/rendez-vous\/nouveau\?date=/);
+    await p.getByRole('heading', { name: 'Ajouter un rendez-vous' }).waitFor();
     await p.getByLabel('Client').fill('Walid Passage');
-    await p.getByLabel('Téléphone').fill('06 61 11 22 33');
+    await p.getByLabel('Téléphone (facultatif)').fill('06 61 11 22 33');
+    await p.getByRole('button', { name: /Coupe \+ barbe/ }).click();
+    await p.getByLabel('Date').fill(target);
+    await p.getByLabel('Heure').fill('15:00');
     await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
-    await p.getByText('Walid Passage').waitFor();
+    await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
+    await p.getByRole('heading', { name: 'Walid P.' }).waitFor();
+    await p.getByText('15:00 – 15:30').waitFor();
+    await shot(p, 'pro-rdv');
   });
 
   // ===== Client (design C-H / C-F) =====
@@ -318,7 +362,7 @@ try {
     await c.waitForURL(new RegExp(`/s/${slug}/prestations`));
     await c.getByRole('button', { name: /Coupe \+ barbe/ }).click();
     await c.getByRole('button', { name: /Coupe simple/ }).click();
-    await c.getByText('2 prestations · 50 min au total').waitFor();
+    await c.getByText('2 prestations · 45 min au total').waitFor();
     await c.getByRole('button', { name: 'Choisir un créneau' }).click();
     await c.waitForURL(new RegExp(`/s/${slug}/reserver/quand`));
     await c.getByRole('heading', { name: 'Quand ?' }).waitFor();
@@ -396,30 +440,38 @@ try {
     bookingId = c.url().match(/rendez-vous\/([0-9a-f-]+)/)[1];
   });
 
-  // ===== Pro : agenda après réservation =====
+  // ===== Pro : cycle de vie après la réservation client =====
   await step('pro: agenda montre la réservation client (jour + semaine)', async () => {
     await p.goto(WEB + '/pro/agenda');
-    await p.getByRole('heading', { name: 'Agenda' }).waitFor();
-    await pickTargetDayOld(p);
-    await p.getByText('Amine Smoke').first().waitFor();
-    await p.getByRole('button', { name: 'Semaine', exact: true }).click();
-    await p.getByText('Amine Smoke').first().waitFor();
+    await agendaPickTarget(p);
+    await p.getByRole('button', { name: /Amine Smoke · Coupe simple/ }).waitFor();
+    await p.getByRole('tab', { name: 'Semaine' }).click();
+    await p.locator('.pill', { hasText: '2 rendez-vous' }).waitFor();
+    await shot(p, 'pro-agenda-semaine');
   });
-  await step('pro: marquer terminé', async () => {
-    await p.getByRole('button', { name: 'Jour', exact: true }).click();
-    const chip = p.locator('div.rounded-lg:not(.line-through)', { hasText: 'Amine Smoke' }).first();
-    await chip.getByRole('button', { name: 'Terminé' }).click();
-    await chip.getByRole('button', { name: 'Terminé' }).waitFor({ state: 'detached' });
-    await p.locator('div.rounded-lg', { hasText: 'Amine Smoke' }).locator('span', { hasText: 'Terminé' }).first().waitFor();
+  await step('pro: marquer terminé (rendez-vous passé)', async () => {
+    // « Terminé / Absent » n'apparaissent qu'une fois l'heure passée : on recule le rendez-vous d'une heure dans le passé.
+    const ends = new Date(Date.now() - 60 * 60_000);
+    const starts = new Date(ends.getTime() - 15 * 60_000);
+    const { error } = await admin.from('bookings').update({ starts_at: starts.toISOString(), ends_at: ends.toISOString() }).eq('id', bookingId);
+    if (error) throw error;
+    await p.goto(WEB + `/pro/rendez-vous/${bookingId}`);
+    await p.getByRole('button', { name: 'Terminé', exact: true }).click();
+    await p.getByRole('button', { name: "Retour à l'agenda" }).waitFor();
+    await shot(p, 'pro-rdv-termine');
   });
-  await step('pro: reporter le RDV de passage à 16:00', async () => {
-    const chip = p.locator('div.rounded-lg', { hasText: 'Walid Passage' }).first();
-    await chip.getByRole('button', { name: 'Reporter' }).click();
-    const form = chip.getByRole('form', { name: 'Reporter le rendez-vous' });
-    await form.getByLabel('Nouvelle heure').fill('16:00');
-    await form.getByRole('button', { name: 'Valider' }).click();
-    await form.waitFor({ state: 'detached' });
-    await p.locator('div.rounded-lg', { hasText: 'Walid Passage' }).getByText('16:00 – 16:30').waitFor();
+  await step('pro: reporter le rendez-vous de passage à 16:00', async () => {
+    await p.goto(WEB + '/pro/agenda');
+    await agendaPickTarget(p);
+    await p.getByRole('button', { name: /Walid Passage · Coupe \+ barbe/ }).click();
+    await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
+    await p.getByRole('button', { name: 'Reporter' }).click();
+    await p.waitForURL(/\/reporter$/);
+    await p.getByRole('heading', { name: 'Nouveau créneau' }).waitFor();
+    await p.getByLabel('Nouvelle heure').fill('16:00');
+    await p.getByRole('button', { name: 'Valider le report' }).click();
+    await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
+    await p.getByText('16:00 – 16:30').waitFor();
   });
   await step('pro: demandes en attente (vide, auto-confirmation)', async () => {
     await p.goto(WEB + '/pro/reservations');

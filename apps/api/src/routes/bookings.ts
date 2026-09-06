@@ -80,8 +80,9 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
       throw conflict('BOOKING_NOT_CANCELLABLE', 'Cette réservation ne peut plus être annulée.');
     }
     const hoursBefore = (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000;
-    if (hoursBefore < CLIENT_CANCEL_MIN_HOURS) {
-      throw conflict('CANCEL_TOO_LATE', `Annulation en ligne impossible à moins de ${CLIENT_CANCEL_MIN_HOURS} h. Contactez le salon.`);
+    const minHours = b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS;
+    if (hoursBefore < minHours) {
+      throw conflict('CANCEL_TOO_LATE', `Annulation en ligne impossible à moins de ${minHours} h. Contactez le salon.`);
     }
     const res = await db
       .from('bookings')

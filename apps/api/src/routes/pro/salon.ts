@@ -1,7 +1,9 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { DEFAULT_OPENING_HOURS, localDateTimeToISO, toLocalDateKey, weekKeys, addDaysToKey } from '@salondz/constants';
 import { createSalonSchema, setOpeningHoursSchema, setSalonPhotosSchema, updateSalonSchema } from '@salondz/validation';
-import type { ProDashboardStats } from '@salondz/types';
+import { z } from 'zod';
+import { dateKey } from '@salondz/validation';
+import type { ProDashboardStats, ProStatsRange } from '@salondz/types';
 import { db } from '../../lib/supabase';
 import { badRequest, conflict, unwrap } from '../../lib/errors';
 import { snakeize } from '../../lib/mappers';
@@ -106,19 +108,39 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   /** Chiffres du tableau de bord (jour / semaine dimanche→samedi). */
+  /** Le lien de réservation sera-t-il disponible pour ce nom ? (design « Nom de votre salon »). */
+  app.get('/salon/slug-check', { preHandler: app.requireProfile, schema: { querystring: z.object({ name: z.string().trim().min(1).max(80) }) } }, async (req, reply) => {
+    const slug = slugify(req.query.name);
+    const res = await db.from('salons').select('id').eq('slug', slug).maybeSingle();
+    if (res.error) throw res.error;
+    reply.header('Cache-Control', 'private, no-store');
+    return { slug, available: !res.data };
+  });
+
+  /** Statistiques d'une période (jour / semaine / mois). */
+  app.get('/stats/range', { preHandler: app.requireSalon, schema: { querystring: z.object({ from: dateKey, to: dateKey }) } }, async (req, reply) => {
+    const res = await db.rpc('pro_stats', { p_salon_id: req.salon!.id, p_from: req.query.from, p_to: req.query.to });
+    reply.header('Cache-Control', 'private, no-store');
+    return unwrap(res) as ProStatsRange;
+  });
+
   app.get('/stats', { preHandler: app.requireSalon }, async (req, reply) => {
     const salonId = req.salon!.id;
     const today = toLocalDateKey();
     const [weekStart] = weekKeys(today);
+    const monthStart = today.slice(0, 8) + '01';
+    const monthEnd = addDaysToKey(monthStart.slice(0, 5) + String(Number(monthStart.slice(5, 7)) + 1).padStart(2, '0') + '-01', -1);
     const dayStart = localDateTimeToISO(today, '00:00');
     const dayEnd = localDateTimeToISO(addDaysToKey(today, 1), '00:00');
     const wStart = localDateTimeToISO(weekStart!, '00:00');
     const wEnd = localDateTimeToISO(addDaysToKey(weekStart!, 7), '00:00');
 
-    const [todayRes, pendingRes, weekRes] = await Promise.all([
+    const [todayRes, pendingRes, weekRes, todayStats, monthStats] = await Promise.all([
       db.from('bookings').select('id', { count: 'exact', head: true }).eq('salon_id', salonId).in('status', ['pending', 'confirmed', 'completed']).gte('starts_at', dayStart).lt('starts_at', dayEnd),
       db.from('bookings').select('id', { count: 'exact', head: true }).eq('salon_id', salonId).eq('status', 'pending').gte('starts_at', new Date().toISOString()),
       db.from('bookings').select('price_da, status').eq('salon_id', salonId).in('status', ['confirmed', 'completed']).gte('starts_at', wStart).lt('starts_at', wEnd),
+      db.rpc('pro_stats', { p_salon_id: salonId, p_from: today, p_to: today }),
+      db.rpc('pro_stats', { p_salon_id: salonId, p_from: monthStart, p_to: monthEnd.length === 10 && monthEnd > monthStart ? monthEnd : addDaysToKey(monthStart, 30) }),
     ]);
     if (todayRes.error) throw todayRes.error;
     if (pendingRes.error) throw pendingRes.error;
@@ -128,10 +150,24 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       pendingCount: pendingRes.count ?? 0,
       weekCount: weekRows.length,
       weekRevenueDa: weekRows.reduce((sum, r) => sum + r.price_da, 0),
+      todayRevenueDa: Number((unwrap(todayStats) as ProStatsRange).revenueDa ?? 0),
+      monthCount: Number((unwrap(monthStats) as ProStatsRange).bookings ?? 0),
+      monthRevenueDa: Number((unwrap(monthStats) as ProStatsRange).revenueDa ?? 0),
     };
     reply.header('Cache-Control', 'private, no-store');
     return stats;
   });
 };
+
+/** Même règle que la base : minuscules, sans accents, tirets. */
+function slugify(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
 
 export default proSalonRoutes;

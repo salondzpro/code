@@ -1,6 +1,5 @@
 import { createBrowserRouter } from 'react-router';
-import { ProShell } from '@/components/ProShell';
-import { ClientLayout, PlainLayout, RequireAuth, RequireClient, RequirePro } from './guards';
+import { ClientLayout, PlainLayout, ProLayout, RequireAuth, RequireClient, RequirePro } from './guards';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
 import { NotFound } from '@/pages/NotFound';
 // Parcours de connexion (design AUTH 01 → 16)
@@ -36,16 +35,31 @@ import { Favorites } from '@/pages/client/Favorites';
 import { Profile } from '@/pages/client/Profile';
 import { Settings } from '@/pages/client/Settings';
 import { AccountNotifications } from '@/pages/AccountNotifications';
-// Pro
-import { Dashboard } from '@/pages/pro/Dashboard';
-import { Onboarding } from '@/pages/pro/Onboarding';
-import { Agenda } from '@/pages/pro/Agenda';
-import { Requests } from '@/pages/pro/Requests';
-import { Services } from '@/pages/pro/Services';
+// Pro (design PRO-F 01 → 26)
+import { Step1Market } from '@/pages/pro/onboarding/Step1Market';
+import { Step2Name } from '@/pages/pro/onboarding/Step2Name';
+import { Step3Identity } from '@/pages/pro/onboarding/Step3Identity';
+import { Step4Address } from '@/pages/pro/onboarding/Step4Address';
+import { Step5Catalog } from '@/pages/pro/onboarding/Step5Catalog';
+import { Step6Service } from '@/pages/pro/onboarding/Step6Service';
+import { Step7ServicePhotos } from '@/pages/pro/onboarding/Step7ServicePhotos';
+import { Step8Works } from '@/pages/pro/onboarding/Step8Works';
+import { Step9Hours } from '@/pages/pro/onboarding/Step9Hours';
+import { Step10Availability } from '@/pages/pro/onboarding/Step10Availability';
+import { Publish } from '@/pages/pro/onboarding/Publish';
+import { ProLink, ProQr } from '@/pages/pro/Link';
+import { ProHome } from '@/pages/pro/Home';
+import { Revenue } from '@/pages/pro/Revenue';
+import { AgendaPro } from '@/pages/pro/AgendaPro';
+import { Clients } from '@/pages/pro/Clients';
+import { ProServices } from '@/pages/pro/ProServices';
+import { ProProfile } from '@/pages/pro/ProProfile';
+import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDetail';
+import { ProBookingNew } from '@/pages/pro/ProBookingNew';
 import { Team } from '@/pages/pro/Team';
-import { Hours } from '@/pages/pro/Hours';
 import { Blocks } from '@/pages/pro/Blocks';
 import { SalonSettings } from '@/pages/pro/SalonSettings';
+import { Requests } from '@/pages/pro/Requests';
 
 export const router = createBrowserRouter([
   {
@@ -86,7 +100,6 @@ export const router = createBrowserRouter([
               { path: '/profil', element: <Profile /> },
               { path: '/reglages', element: <Settings /> },
               { path: '/notifications', element: <AccountNotifications /> },
-              // anciens chemins
               { path: '/compte', element: <Profile /> },
               { path: '/compte/reservations', element: <Bookings /> },
               { path: '/compte/favoris', element: <Favorites /> },
@@ -126,18 +139,45 @@ export const router = createBrowserRouter([
         path: '/pro',
         element: <RequirePro />,
         children: [
-          { path: 'onboarding', element: <Onboarding /> },
           {
-            element: <ProShell />,
+            element: <PlainLayout />,
             children: [
-              { index: true, element: <Dashboard /> },
-              { path: 'agenda', element: <Agenda /> },
-              { path: 'reservations', element: <Requests /> },
-              { path: 'services', element: <Services /> },
-              { path: 'equipe', element: <Team /> },
-              { path: 'horaires', element: <Hours /> },
-              { path: 'blocages', element: <Blocks /> },
+              { path: 'onboarding', element: <Step1Market /> },
+              { path: 'onboarding/1', element: <Step1Market /> },
+              { path: 'onboarding/2', element: <Step2Name /> },
+              { path: 'onboarding/3', element: <Step3Identity /> },
+              { path: 'onboarding/4', element: <Step4Address /> },
+              { path: 'onboarding/5', element: <Step5Catalog /> },
+              { path: 'onboarding/6', element: <Step6Service /> },
+              { path: 'onboarding/6/:serviceId', element: <Step6Service /> },
+              { path: 'onboarding/7/:serviceId', element: <Step7ServicePhotos /> },
+              { path: 'onboarding/8', element: <Step8Works /> },
+              { path: 'onboarding/9', element: <Step9Hours /> },
+              { path: 'onboarding/10', element: <Step10Availability /> },
+              { path: 'onboarding/publier', element: <Publish /> },
+              { path: 'lien', element: <ProLink /> },
+              { path: 'qr', element: <ProQr /> },
+              { path: 'profil/horaires', element: <Step9Hours settings /> },
+              { path: 'profil/regles', element: <Step10Availability settings /> },
+              { path: 'rendez-vous/nouveau', element: <ProBookingNew /> },
+              { path: 'rendez-vous/:id', element: <ProBookingDetail /> },
+              { path: 'rendez-vous/:id/reporter', element: <ProBookingReschedule /> },
               { path: 'salon', element: <SalonSettings /> },
+              { path: 'services', element: <ProServices /> },
+              { path: 'reservations', element: <Requests /> },
+            ],
+          },
+          {
+            element: <ProLayout />,
+            children: [
+              { index: true, element: <ProHome /> },
+              { path: 'agenda', element: <AgendaPro /> },
+              { path: 'chiffre-affaires', element: <Revenue /> },
+              { path: 'clients', element: <Clients /> },
+              { path: 'equipe', element: <Team /> },
+              { path: 'prestations', element: <ProServices /> },
+              { path: 'profil', element: <ProProfile /> },
+              { path: 'blocages', element: <Blocks /> },
             ],
           },
         ],
