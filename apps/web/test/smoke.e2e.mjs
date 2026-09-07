@@ -10,7 +10,7 @@
  * Variables  : `WEB_URL` (défaut http://localhost:9000). Les clés Supabase viennent du
  *              `.env` racine (SUPABASE_SECRET_KEY : création/suppression des comptes jetables).
  *
- * Parcours couvert (design « App Beaute Hi-Fi ») : écrans de connexion → pro (onboarding 1 → 10, publication,
+ * Parcours couvert (design « Salon DZ Hi-Fi ») : écrans de connexion → pro (onboarding 1 → 10, publication,
  * équipe + horaires membre, blocage, accueil, agenda + rendez-vous de passage) → client (marketplace, salon, favoris,
  * réservation multi-prestations, report, annulation, profil, réglages, seconde réservation) →
  * pro (agenda jour/semaine, terminé, report du rendez-vous de passage) → client (avis visible sur la page publique).

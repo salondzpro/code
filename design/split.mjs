@@ -1,4 +1,4 @@
-// Usage : PLAYWRIGHT_CHROME=<chrome.exe> node design/split.mjs "App Beaute Hi-Fi.dc.html"  (depuis la racine, playwright-core installé)
+// Usage : PLAYWRIGHT_CHROME=<chrome.exe> node design/split.mjs "Salon DZ Hi-Fi.dc.html"  (depuis la racine, playwright-core installé)
 // Découpe le fichier Claude Design en écrans : HTML + capture PNG par écran, et un index.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +7,7 @@ import { chromium } from 'playwright-core';
 const DESIGN = new URL('.', import.meta.url).pathname.replace(/^/([A-Za-z]:)/, '$1');
 const OUT = path.join(DESIGN, 'screens');
 const CHROME = process.env.PLAYWRIGHT_CHROME;
-const file = process.argv[2] ?? 'App Beaute Hi-Fi.dc.html';
+const file = process.argv[2] ?? 'Salon DZ Hi-Fi.dc.html';
 const prefix = process.argv[3] ?? '';
 
 fs.mkdirSync(OUT, { recursive: true });

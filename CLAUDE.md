@@ -32,7 +32,7 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - Le compte pro de démonstration reçoit à la première connexion un salon publié prêt à l'emploi (« Salon Démo », unisexe, prestations + horaires 7j/7 ; `apps/api/src/lib/demo.ts`, idempotent) : le tableau de bord pro est directement peuplé et le client démo peut y réserver.
 
 ## Design
-- Le design Claude Design (`App Beaute Hi-Fi.dc.html`) fait foi pour web et mobile : couleurs, composants, mises en page, animations, illustrations. Pas de réinvention.
+- Le design Claude Design (`Salon DZ Hi-Fi.dc.html`) fait foi pour web et mobile : couleurs, composants, mises en page, animations, illustrations. Pas de réinvention.
 - Export local : `design/split.mjs` → `design/screens/<ID>.html` (+ PNG ignorés par git) et `design/index.md` (table des écrans AUTH / C-H / C-F / PRO-F). Jetons : `apps/web/src/styles/tokens.css` et `apps/mobile/src/theme/design.ts` (mêmes valeurs).
 - Web : classes du design dans `apps/web/src/styles/index.css`, primitives dans `apps/web/src/components/ui.tsx`. Mobile : primitives natives équivalentes dans `apps/mobile/src/ui/` (`Text.tsx`, `index.tsx`, `Screen.tsx`, `TabBar.tsx`, `Pickers.tsx`), écrans Expo Router sous `apps/mobile/app/` (groupes `(auth)`, `(client)`, `(pro)`, `s/[slug]`).
 

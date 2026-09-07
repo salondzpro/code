@@ -1,5 +1,5 @@
 /**
- * Primitives UI — reproduction fidèle des classes du design « App Beaute Hi-Fi »
+ * Primitives UI — reproduction fidèle des classes du design « Salon DZ Hi-Fi »
  * (voir styles/index.css). Aucune couleur ni rayon en dur ici.
  */
 import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';

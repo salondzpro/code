@@ -1,5 +1,5 @@
 /**
- * Primitives UI natives — reproduction fidèle des classes du design « App Beaute Hi-Fi »
+ * Primitives UI natives — reproduction fidèle des classes du design « Salon DZ Hi-Fi »
  * (mêmes cotes que apps/web/src/styles/index.css). Aucune couleur ni rayon en dur hors theme/design.
  */
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react';

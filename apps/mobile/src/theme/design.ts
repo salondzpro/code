@@ -1,5 +1,5 @@
 /**
- * Jetons de design — source : Claude Design « App Beaute Hi-Fi » (design/App Beaute Hi-Fi.dc.html).
+ * Jetons de design — source : Claude Design « Salon DZ Hi-Fi » (design/Salon DZ Hi-Fi.dc.html).
  * Mêmes valeurs que apps/web/src/styles/tokens.css ; ne pas inventer de couleur ici.
  */
 import type { TextStyle, ViewStyle } from 'react-native';

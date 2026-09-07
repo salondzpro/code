@@ -1,4 +1,4 @@
-# App Beaute Hi-Fi.dc.html
+# Salon DZ Hi-Fi.dc.html
 
 ## f1 — COMPTE ET SESSION — 16 écrans
 
