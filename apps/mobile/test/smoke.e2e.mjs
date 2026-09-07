@@ -2,13 +2,13 @@
  * Test de bout en bout de l'app MOBILE rendue par Expo web (react-native-web) dans Chromium
  * headless (playwright-core), contre l'API locale et le VRAI projet Supabase.
  *
- * Prérequis : `pnpm dev:api` (port 8787) et, depuis `apps/mobile` :
- *   CI=1 EXPO_PUBLIC_API_URL=http://localhost:8787 npx expo start --web --port 8082 --clear
+ * Prérequis : `pnpm dev:api` (port 8080) et, depuis `apps/mobile` :
+ *   CI=1 EXPO_PUBLIC_API_URL=http://localhost:8080 npx expo start --web --port 8082 --clear
  * (ajouter `http://localhost:8082` à `CORS_ORIGINS` du `.env`).
  * Lancer   : `pnpm --filter @salondz/mobile test:e2e` (`--keep` conserve les comptes créés).
  *
  * Navigateur : `PLAYWRIGHT_CHROME=<chemin chrome.exe>` sinon le canal Chrome installé.
- * Variables  : `MOBILE_WEB` (défaut http://localhost:8082), `API_URL` (défaut http://localhost:8787).
+ * Variables  : `MOBILE_WEB` (défaut http://localhost:8082), `API_URL` (défaut http://localhost:8080).
  *
  * Parcours : salon publié via l'API → cliente : prestations (2) → quand → coordonnées → récapitulatif →
  * confirmation → mes rendez-vous → pro : détail du rendez-vous → cliente : annulation.
@@ -24,7 +24,7 @@ import { createClient } from '@supabase/supabase-js';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SHOTS = path.join(HERE, 'shots');
 const WEB = process.env.MOBILE_WEB ?? 'http://localhost:8082';
-const API = process.env.API_URL ?? 'http://localhost:8787';
+const API = process.env.API_URL ?? 'http://localhost:8080';
 const KEEP = process.argv.includes('--keep');
 
 fs.mkdirSync(SHOTS, { recursive: true });

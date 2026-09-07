@@ -18,7 +18,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
-  server: { port: 5173 },
+  // Port fixe et strict : le front est toujours sur http://localhost:9000, jamais de repli.
+  server: { host: true, port: 9000, strictPort: true },
+  preview: { host: true, port: 9000, strictPort: true },
   build: {
     target: 'es2020',
     sourcemap: false,

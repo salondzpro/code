@@ -2,12 +2,12 @@
  * Test de bout en bout de l'app web dans un vrai navigateur (Chromium headless via
  * playwright-core) contre l'API locale et le VRAI projet Supabase.
  *
- * Prérequis : `pnpm dev:api` (port 8787) et `pnpm dev:web` (port 5173) lancés.
+ * Prérequis : `pnpm dev:api` (port 8080) et `pnpm dev:web` (port 9000) lancés.
  * Lancer   : `pnpm --filter @salondz/web test:e2e` (ajouter `--keep` pour conserver
  *            les utilisateurs/salon créés, sinon tout est supprimé à la fin).
  *
  * Navigateur : `PLAYWRIGHT_CHROME=<chemin chrome.exe>` sinon le canal Chrome installé.
- * Variables  : `WEB_URL` (défaut http://localhost:5173). Les clés Supabase viennent du
+ * Variables  : `WEB_URL` (défaut http://localhost:9000). Les clés Supabase viennent du
  *              `.env` racine (SUPABASE_SECRET_KEY : création/suppression des comptes jetables).
  *
  * Parcours couvert (design « App Beaute Hi-Fi ») : écrans de connexion → pro (onboarding 1 → 10, publication,
@@ -24,7 +24,7 @@ import { createClient } from '@supabase/supabase-js';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
 const SHOTS = path.join(HERE, 'shots');
-const WEB = process.env.WEB_URL ?? 'http://localhost:5173';
+const WEB = process.env.WEB_URL ?? 'http://localhost:9000';
 const KEEP = process.argv.includes('--keep');
 
 // On vide le dossier sans le supprimer (sous Windows, un shell ouvert dedans bloquerait rmdir).
