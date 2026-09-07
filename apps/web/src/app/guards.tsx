@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
+import { useRealtimeMyBookings } from '@/lib/realtime';
 import { Splash } from '@/pages/auth/Splash';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
@@ -54,6 +55,8 @@ export function RequireClient() {
   const { session, loading } = useAuth();
   const location = useLocation();
   const me = useMe(!!session);
+  // Mes rendez-vous et notifications se rafraîchissent quand le salon confirme, déplace ou annule.
+  useRealtimeMyBookings(session?.user.id);
   if (loading) return <Splash />;
   if (!session) return <Navigate to={location.pathname === '/' ? '/intro' : `/connexion?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (me.isPending) return <Splash />;

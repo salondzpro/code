@@ -4,6 +4,7 @@ import { useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { registerForPushNotifications } from '@/lib/push';
+import { useRealtimeBookings } from '@/lib/realtime';
 import { Splash } from '@/ui/Splash';
 import { Screen } from '@/ui/Screen';
 import { ErrorText } from '@/ui';
@@ -20,6 +21,8 @@ export default function ProLayout() {
   const pro = useProSalon(!!session);
   const pushRegistered = useRef(false);
   const salon = pro.data?.salon ?? null;
+  // Agenda, demandes, chiffres et notifications se rafraîchissent quand une réservation change.
+  useRealtimeBookings(salon?.id);
 
   useEffect(() => {
     if (salon && !pushRegistered.current) {

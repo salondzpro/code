@@ -345,6 +345,46 @@ test('sécurité : les fonctions réservées à l\'API ne sont pas appelables vi
   assert.equal(slots.error, null, JSON.stringify(slots.error));
 });
 
+test('realtime : le pro abonné (RLS) reçoit l\'événement quand un client réserve', async () => {
+  const asPro = createClient(config.SUPABASE_URL, config.SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${pro.token}` } },
+  });
+  try {
+    await asPro.realtime.setAuth(pro.token);
+    let onInsert: (row: { id: string }) => void = () => undefined;
+    const received = new Promise<{ id: string }>((resolve, reject) => {
+      onInsert = resolve;
+      setTimeout(() => reject(new Error('aucun événement realtime reçu en 20 s')), 20_000).unref();
+    });
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('abonnement realtime sans réponse en 15 s')), 15_000);
+      timer.unref();
+      asPro
+        .channel(`e2e-salon:${salonId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bookings', filter: `salon_id=eq.${salonId}` }, (payload) => onInsert(payload.new as { id: string }))
+        .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') {
+            clearTimeout(timer);
+            resolve();
+          }
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            clearTimeout(timer);
+            reject(err ?? new Error(status));
+          }
+        });
+    });
+    const r = await call('POST', '/v1/bookings', clientA.token, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, '17:30') });
+    assert.equal(r.statusCode, 201, r.body);
+    const evt = await received;
+    assert.equal(evt.id, r.json().id);
+  } finally {
+    // Toujours fermer la socket : sinon le processus de test ne se termine jamais.
+    await asPro.removeAllChannels();
+    asPro.realtime.disconnect();
+  }
+});
+
 test('salon dépublié → page publique 404 pour un anonyme, visible pour le propriétaire', async () => {
   await call('PATCH', '/v1/pro/salon', pro.token, { isPublished: false });
   const anon = await call('GET', `/v1/salons/${salonSlug}`);

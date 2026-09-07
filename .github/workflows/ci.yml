@@ -23,8 +23,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Typecheck (packages + api + web)
-        run: pnpm -r --filter "./packages/*" --filter @salondz/api --filter @salondz/web typecheck
+      - name: Typecheck (packages + api + web + mobile)
+        run: pnpm -r --filter "./packages/*" --filter @salondz/api --filter @salondz/web --filter @salondz/mobile typecheck
       - name: Unit tests (validation)
         run: pnpm --filter @salondz/validation test
       - name: Build web

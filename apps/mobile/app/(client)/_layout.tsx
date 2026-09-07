@@ -2,6 +2,7 @@ import React from 'react';
 import { Redirect, Stack } from 'expo-router';
 import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
+import { useRealtimeMyBookings } from '@/lib/realtime';
 import { Splash } from '@/ui/Splash';
 import { Screen } from '@/ui/Screen';
 import { ErrorText } from '@/ui';
@@ -14,6 +15,8 @@ import { C } from '@/theme/design';
 export default function ClientLayout() {
   const { session, loading } = useAuth();
   const me = useMe(!!session);
+  // Mes rendez-vous et notifications se rafraîchissent quand le salon confirme, déplace ou annule.
+  useRealtimeMyBookings(session?.user.id);
   if (loading || (session && me.isPending)) return <Splash />;
   if (!session) return <Redirect href="/intro" />;
   if (me.isError)

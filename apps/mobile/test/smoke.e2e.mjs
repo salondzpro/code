@@ -148,14 +148,11 @@ try {
 
   await step('client: quand (premier créneau libre)', async () => {
     await cli.getByText('Quand ?').waitFor();
+    // Semaine suivante : le rendez-vous doit être à plus de 2 h (règle d'annulation en ligne du salon)
+    // et un jour plein garantit des créneaux libres.
+    await cli.getByRole('button', { name: 'Semaine suivante' }).click();
+    await cli.getByRole('button', { name: /^(Dim|Lun|Mar|Mer|Jeu|Ven|Sam) \d+$/, disabled: false }).first().click();
     const free = cli.getByRole('button', { name: /^\d\d:\d\d$/, disabled: false });
-    for (let tries = 0; tries < 3 && (await free.count()) === 0; tries++) {
-      await cli.waitForTimeout(1500);
-      if ((await free.count()) > 0) break;
-      await cli.getByRole('button', { name: 'Semaine suivante' }).click();
-      await cli.getByRole('button', { name: /^(Dim|Lun|Mar|Mer|Jeu|Ven|Sam) \d+$/, disabled: false }).first().click();
-      await cli.waitForTimeout(1500);
-    }
     await free.first().waitFor();
     await shot(cli, 'quand');
     await free.first().click();
