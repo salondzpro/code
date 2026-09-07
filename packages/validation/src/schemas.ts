@@ -264,7 +264,7 @@ export const emailOtpRequestSchema = z.object({
 });
 export const emailOtpVerifySchema = z.object({
   email: z.string().trim().toLowerCase().email(),
-  token: z.string().trim().regex(/^\d{6,8}$/),
+  token: z.string().trim().regex(/^\d{4,8}$/),
 });
 
 /** Connexion de démonstration (comptes à accès direct, sans SMS). */

@@ -1,5 +1,5 @@
 /**
- * AUTH 08 → 12 — Saisie du code à 6 chiffres : code envoyé, incorrect (tentatives restantes),
+ * AUTH 08 → 12 — Saisie du code à 4 chiffres : code envoyé, incorrect (tentatives restantes),
  * expiré (renvoyer + compte à rebours), erreur réseau (réessayer), puis « Numéro vérifié ».
  */
 import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
@@ -22,7 +22,7 @@ export function Code() {
   const navigate = useNavigate();
   const { verifyPhoneOtp, verifyEmailOtp, sendPhoneOtp, sendEmailOtp } = useAuth();
   const flow = readAuthFlow();
-  const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
+  const [digits, setDigits] = useState<string[]>(Array(4).fill(''));
   const [status, setStatus] = useState<Status>('idle');
   const [attempts, setAttempts] = useState(0);
   const [stay, setStay] = useState(true);
@@ -41,7 +41,7 @@ export function Code() {
   const shown = isEmail ? flow.identifier : formatIntlDZ(flow.identifier);
   const code = digits.join('');
   // Compte de démonstration : le code fixe fait 4 chiffres.
-  const complete = isTest ? code.replace(/\s/g, '').length >= 4 : code.length === 6 && digits.every((d) => d !== '');
+  const complete = code.length === 4 && digits.every((d) => d !== '');
 
   const setAt = (i: number, v: string) => {
     const next = [...digits];
@@ -58,20 +58,20 @@ export function Code() {
     if (v.length > 1) {
       // saisie/collage de plusieurs chiffres
       const next = [...digits];
-      for (let k = 0; k < v.length && i + k < 6; k++) next[i + k] = v[k]!;
+      for (let k = 0; k < v.length && i + k < 4; k++) next[i + k] = v[k]!;
       setDigits(next);
-      inputs.current[Math.min(5, i + v.length)]?.focus();
+      inputs.current[Math.min(3, i + v.length)]?.focus();
       return;
     }
     setAt(i, v);
-    if (i < 5) inputs.current[i + 1]?.focus();
+    if (i < 3) inputs.current[i + 1]?.focus();
   };
   const onPaste = (e: ClipboardEvent<HTMLInputElement>) => {
-    const v = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const v = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
     if (v.length) {
       e.preventDefault();
-      setDigits([...v.padEnd(6, ' ')].map((c) => (c === ' ' ? '' : c)));
-      inputs.current[Math.min(5, v.length)]?.focus();
+      setDigits([...v.padEnd(4, ' ')].map((c) => (c === ' ' ? '' : c)));
+      inputs.current[Math.min(3, v.length)]?.focus();
     }
   };
 
@@ -98,7 +98,7 @@ export function Code() {
       else await sendPhoneOtp(flow.identifier, flow.channel === 'sms' ? 'sms' : 'whatsapp', flow.role);
       writeAuthFlow({ sentAt: Date.now() });
       setResendIn(RESEND_SECONDS);
-      setDigits(Array(6).fill(''));
+      setDigits(Array(4).fill(''));
       setAttempts(0);
       setStatus('idle');
       inputs.current[0]?.focus();
@@ -160,7 +160,7 @@ export function Code() {
         </div>
       )}
 
-      <div className="flex gap-2.5" aria-label="Code à 6 chiffres">
+      <div className="flex gap-2.5" aria-label="Code à 4 chiffres">
         {digits.map((d, i) => (
           <input
             key={i}
@@ -170,7 +170,7 @@ export function Code() {
             className={`inp !p-0 h-[68px] text-center text-[22px] font-medium${d ? ' f' : ''}${status === 'wrong' ? ' err' : ''}`}
             inputMode="numeric"
             autoComplete={i === 0 ? 'one-time-code' : 'off'}
-            maxLength={6}
+            maxLength={4}
             value={d}
             onChange={(e) => onChange(i, e.target.value)}
             onKeyDown={(e) => onKey(i, e)}

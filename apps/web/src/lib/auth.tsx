@@ -13,7 +13,7 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  /** Envoie un code à 6 chiffres sur WhatsApp ou par SMS (crée le compte si besoin, avec le rôle en métadonnée). */
+  /** Envoie un code à 4 chiffres sur WhatsApp ou par SMS (crée le compte si besoin, avec le rôle en métadonnée). */
   sendPhoneOtp: (phoneE164: string, channel: 'whatsapp' | 'sms', role?: UserRole) => Promise<void>;
   verifyPhoneOtp: (phoneE164: string, token: string) => Promise<void>;
   /** Secours e-mail (projet sans fournisseur SMS) : même parcours, code reçu par e-mail. */

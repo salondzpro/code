@@ -45,7 +45,7 @@ export default function Phone() {
       <TopBar backTo="/bienvenue" right="Étape 1 sur 3" />
       <View style={{ gap: 12 }}>
         <H1>Votre numéro</H1>
-        <P>Nous envoyons un code à 6 chiffres sur WhatsApp pour vérifier votre numéro.</P>
+        <P>Nous envoyons un code à 4 chiffres sur WhatsApp pour vérifier votre numéro.</P>
       </View>
       {useEmail ? (
         <Input

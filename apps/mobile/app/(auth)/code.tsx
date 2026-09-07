@@ -1,5 +1,5 @@
 /**
- * AUTH 08 → 12 — Saisie du code à 6 chiffres : code envoyé, incorrect (tentatives restantes),
+ * AUTH 08 → 12 — Saisie du code à 4 chiffres : code envoyé, incorrect (tentatives restantes),
  * expiré (renvoyer + compte à rebours), erreur réseau (réessayer), puis « Numéro vérifié ».
  */
 import React, { useEffect, useRef, useState } from 'react';
@@ -40,9 +40,9 @@ export default function Code() {
   const isTest = isTestPhone(flow.identifier);
   const shown = isEmail ? flow.identifier : formatIntlDZ(flow.identifier);
   // Compte de démonstration : le code fixe fait 4 chiffres.
-  const complete = isTest ? code.length >= 4 : code.length === 6;
+  const complete = code.length === 4;
   const expired = status === 'expired' || attempts >= MAX_ATTEMPTS;
-  const digits = Array.from({ length: 6 }, (_, i) => code[i] ?? '');
+  const digits = Array.from({ length: 4 }, (_, i) => code[i] ?? '');
 
   const verify = async () => {
     if (!complete) return;
@@ -132,7 +132,7 @@ export default function Code() {
         </View>
       )}
 
-      <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Code à 6 chiffres" style={{ flexDirection: 'row', gap: 10 }}>
+      <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Code à 4 chiffres" style={{ flexDirection: 'row', gap: 10 }}>
         {digits.map((d, i) => (
           <View key={i} style={{ flex: 1, height: 68, borderRadius: R.input, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', backgroundColor: d || status === 'wrong' ? C.surface : C.fill, borderColor: status === 'wrong' ? C.danger : d ? C.ink : 'transparent', opacity: expired ? 0.5 : 1 }}>
             <Tx size={22} weight={500} lh={28} mono>
@@ -145,13 +145,13 @@ export default function Code() {
         ref={input}
         value={code}
         onChangeText={(t) => {
-          setCode(t.replace(/\D/g, '').slice(0, 6));
+          setCode(t.replace(/\D/g, '').slice(0, 4));
           if (status === 'wrong' || status === 'network') setStatus('idle');
         }}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         autoComplete="sms-otp"
-        maxLength={6}
+        maxLength={4}
         autoFocus
         editable={!expired}
         accessibilityLabel="Code de vérification"
