@@ -23,7 +23,7 @@ export function Splash() {
           </Tx>
         </View>
         <Tx size={11} color="rgba(255,255,255,0.4)" ls={2.9} lh={14} mono style={{ marginTop: 10 }}>
-          RÉSERVATION BEAUTÉ
+          RÉSERVATION EN LIGNE
         </Tx>
       </View>
       <View style={{ position: 'absolute', bottom: 64, width: 120, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>

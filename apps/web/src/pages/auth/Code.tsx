@@ -152,7 +152,7 @@ export function Code() {
               <I icon={MessageCircle} size={20} />
             </span>
             <span>
-              <span className="block text-[17px] font-semibold">{isEmail ? 'E-mail · Beauty' : flow.channel === 'sms' ? 'SMS · Beauty' : 'WhatsApp · Beauty'}</span>
+              <span className="block text-[17px] font-semibold">{isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}</span>
               <span className="s block">maintenant</span>
             </span>
           </div>

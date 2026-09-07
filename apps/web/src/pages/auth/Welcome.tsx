@@ -18,7 +18,7 @@ export function Welcome() {
   return (
     <Screen className="min-h-dvh justify-center" gap={16}>
       <div className="mt-[-60px]">
-        <div className="h3">Beauty · Algérie</div>
+        <div className="h3">Salon DZ · Algérie</div>
         <h1 className="h1 mt-2">
           Bienvenue.
           <br />

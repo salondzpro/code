@@ -34,7 +34,7 @@ export function Step2Name() {
       <StepBar step={2} backTo={stepPath(1)} />
       <h1 className="h1">Nom de votre salon</h1>
       <Field label="Nom public" htmlFor="salon-name">
-        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Sarah Beauty Studio" autoFocus />
+        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Salon Sarah" autoFocus />
       </Field>
       <div>
         <span className="lbl">Votre lien de réservation</span>

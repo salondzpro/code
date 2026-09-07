@@ -7,7 +7,7 @@ export function Splash() {
           <span className="font-semibold">Salon</span>
           <span className="ml-[0.16em] font-light text-white/70">DZ</span>
         </div>
-        <div className="mono mt-2.5 text-[11px] tracking-[0.26em] text-white/40">RÉSERVATION BEAUTÉ</div>
+        <div className="mono mt-2.5 text-[11px] tracking-[0.26em] text-white/40">RÉSERVATION EN LIGNE</div>
       </div>
       <div className="absolute bottom-16 h-[3px] w-[120px] overflow-hidden rounded-sm bg-white/15">
         <div className="h-full w-16 bg-white" style={{ animation: 'shim 1.2s linear infinite' }} />

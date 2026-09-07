@@ -47,7 +47,7 @@ export default function Step2Name() {
       <StepBar step={2} backTo={stepPath(1)} />
       <H1>Nom de votre salon</H1>
       <Field label="Nom public">
-        <Input lg f={!!name} value={name} onChangeText={setName} maxLength={80} placeholder="Sarah Beauty Studio" autoFocus accessibilityLabel="Nom public" />
+        <Input lg f={!!name} value={name} onChangeText={setName} maxLength={80} placeholder="Salon Sarah" autoFocus accessibilityLabel="Nom public" />
       </Field>
       <View>
         <Tx size={13} color={C.muted} lh={18} style={{ marginBottom: 6 }}>

@@ -19,7 +19,7 @@ export default function Welcome() {
   return (
     <Screen center gap={16}>
       <View style={{ marginTop: -60, gap: 8 }}>
-        <H3>Beauty · Algérie</H3>
+        <H3>Salon DZ · Algérie</H3>
         <H1>Bienvenue.{'\n'}Qui êtes-vous ?</H1>
       </View>
       <View style={{ gap: 12 }} accessibilityRole="radiogroup" accessibilityLabel="Type de compte">

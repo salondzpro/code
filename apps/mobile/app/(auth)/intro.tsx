@@ -20,7 +20,7 @@ export default function Intro() {
         <Overlay />
         <View style={{ position: 'absolute', left: 20, right: 20, bottom: 20 }}>
           <Tx size={30} weight={700} color="#fff" ls={-0.8} lh={33}>
-            Réservez votre{'\n'}rendez-vous beauté.
+            Réservez votre{'\n'}rendez-vous.
           </Tx>
         </View>
         <Credit>{DESIGN_IMAGES.intro.credit}</Credit>

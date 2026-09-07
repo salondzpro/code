@@ -107,7 +107,7 @@ const sarahPro = await user('sarah', 'pro', 'Sarah Benali');
 const sarah = await salon(
   sarahPro,
   {
-    name: 'Sarah Beauty Studio',
+    name: 'Studio Sarah',
     wilayaCode: 16,
     city: 'Hydra',
     address: '14 rue des Frères Bouadou',

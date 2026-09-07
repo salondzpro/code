@@ -121,7 +121,7 @@ export default function Code() {
             </View>
             <View>
               <Tx size={17} weight={600} lh={22}>
-                {isEmail ? 'E-mail · Beauty' : flow.channel === 'sms' ? 'SMS · Beauty' : 'WhatsApp · Beauty'}
+                {isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}
               </Tx>
               <S>maintenant</S>
             </View>

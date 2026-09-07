@@ -13,7 +13,7 @@ export function Intro() {
           <div className="text-[30px] font-bold leading-[1.1] tracking-[-0.8px]">
             Réservez votre
             <br />
-            rendez-vous beauté.
+            rendez-vous.
           </div>
         </div>
         <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
