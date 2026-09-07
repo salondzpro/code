@@ -28,7 +28,8 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 ## Comptes de démonstration (accès direct)
 - Deux numéros ouvrent une vraie session sans SMS, avec le code fixe `1111` : client `0603044618`, pro `0603044619` (définis dans `packages/constants/src/phone.ts` : `TEST_ACCOUNTS`, `TEST_LOGIN_CODE`, `isTestPhone`).
 - Front : sur ces numéros, `sendPhoneOtp` est un no-op, l'écran « canal » est sauté, l'écran code accepte 4 chiffres, `verifyPhoneOtp` appelle `POST /v1/auth/dev-login` puis `supabase.auth.setSession(...)`.
-- API (`apps/api/src/routes/auth.ts`) : la clé secrète crée le compte au besoin (idempotent), complète le profil (téléphone E.164, nom, marché client) puis délivre une session via un lien magique à usage unique. **Désactiver en production réelle avec `TEST_LOGIN_ENABLED=0`.**
+- API (`apps/api/src/routes/auth.ts`) : la clé secrète crée le compte au besoin (idempotent), complète le profil (téléphone E.164, nom, marché client) puis délivre une session via un lien magique à usage unique. Le code accepte `1111` ou toute suite de `1` (tolérance à la faute de frappe). **Désactiver en production réelle avec `TEST_LOGIN_ENABLED=0`.**
+- Le compte pro de démonstration reçoit à la première connexion un salon publié prêt à l'emploi (« Salon Démo », unisexe, prestations + horaires 7j/7 ; `apps/api/src/lib/demo.ts`, idempotent) : le tableau de bord pro est directement peuplé et le client démo peut y réserver.
 
 ## Design
 - Le design Claude Design (`App Beaute Hi-Fi.dc.html`) fait foi pour web et mobile : couleurs, composants, mises en page, animations, illustrations. Pas de réinvention.

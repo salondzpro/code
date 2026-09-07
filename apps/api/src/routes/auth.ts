@@ -4,6 +4,7 @@ import { TEST_ACCOUNTS, TEST_LOGIN_CODE } from '@salondz/constants';
 import { devLoginSchema } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
+import { ensureDemoProSalon } from '../lib/demo';
 import { AppError, notFound, unauthorized } from '../lib/errors';
 
 /**
@@ -76,6 +77,9 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
         .update({ phone, full_name: acct.fullName, ...(acct.market ? { market: acct.market } : {}) })
         .eq('id', userId);
       if (upd.error) req.log.warn({ err: upd.error }, 'dev-login profile update');
+
+      // Compte pro de démonstration : salon publié prêt à l'emploi (idempotent).
+      if (acct.role === 'pro') await ensureDemoProSalon(req.log, userId);
 
       reply.header('Cache-Control', 'private, no-store');
       const s = verified.data.session;

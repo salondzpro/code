@@ -412,6 +412,12 @@ test('connexion de démonstration : numéro + code fixe → vraie session ; mauv
   assert.equal(pro.json().role, 'pro');
   const proMe = await call('GET', '/v1/me', pro.json().accessToken);
   assert.equal(proMe.json().profile.role, 'pro');
+  // Le compte pro de démonstration a un salon publié prêt à l'emploi.
+  const proSalon = await call('GET', '/v1/pro/salon', pro.json().accessToken);
+  assert.equal(proSalon.statusCode, 200, proSalon.body);
+  assert.ok(proSalon.json().salon, 'le salon de démonstration doit exister');
+  assert.equal(proSalon.json().salon.isPublished, true);
+  assert.ok(proSalon.json().salon.services.length >= 1, 'au moins un service');
 
   // Idempotent : une seconde connexion réussit sur le même compte.
   const again = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '1111' });
