@@ -1,11 +1,13 @@
 /** C-F 12 — Rendez-vous confirmé (ou demande envoyée) ; C-F 13 — feuille « Ajouter au calendrier ». */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, Check, ChevronRight } from 'lucide-react-native';
 import { useBooking } from '@salondz/api-client';
 import { formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
 import type { BookingWithSalon } from '@salondz/types';
+import { api } from '@/lib/api';
+import { registerForPushNotifications } from '@/lib/push';
 import { googleCalendarUrl, open } from '@/lib/salon';
 import { Avatar, Button, Card, ErrorText, H1, I, IconButton, ModalSheet, P, Row, Rows, StatusBadge, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
@@ -51,6 +53,10 @@ export default function BookingConfirmed() {
   const router = useRouter();
   const booking = useBooking(id);
   const [cal, setCal] = useState(false);
+  // Moment contextuel pour la permission push : « Un rappel vous sera envoyé la veille ».
+  useEffect(() => {
+    registerForPushNotifications(api).catch((err) => console.warn('[push]', err));
+  }, []);
   if (booking.isPending) return <Splash />;
   if (booking.isError)
     return (

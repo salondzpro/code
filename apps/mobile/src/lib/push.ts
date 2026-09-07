@@ -66,11 +66,26 @@ export async function registerForPushNotifications(api: Api): Promise<string | n
   return token;
 }
 
+/**
+ * Ré-enregistre le jeton sans rien demander si la permission est déjà accordée (jeton
+ * renouvelé, nouvel appareil). Ne déclenche jamais la fenêtre de permission : celle-ci est
+ * demandée au bon moment (première réservation confirmée, espace pro).
+ */
+export async function registerPushIfGranted(api: Api): Promise<string | null> {
+  if (Platform.OS === 'web' || !Device.isDevice) return null;
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') return null;
+  return registerForPushNotifications(api);
+}
+
 interface PushData {
   bookingId?: string;
   salonId?: string;
   type?: string;
 }
+
+/** Types de notification adressés au salon (les autres vont à la cliente). */
+const PRO_TYPES = new Set(['booking_created', 'booking_cancelled', 'booking_rescheduled']);
 
 /** Réagit aux notifications : rafraîchit les données, navigue au tap. */
 export function usePushNotificationsListener() {
@@ -88,13 +103,14 @@ export function usePushNotificationsListener() {
 
     const navigate = (data: PushData | undefined) => {
       if (!data) return;
-      const proTypes = new Set(['booking_created', 'booking_cancelled']);
-      // Les notifs "pro" (nouvelle demande / annulation client) mènent à l'espace pro,
-      // les autres (confirmation, rappel…) à l'historique client.
-      if (data.type && proTypes.has(data.type) && data.salonId) {
-        router.push('/(pro)/(tabs)/demandes');
+      // Un compte qui possède un salon reçoit les notifs « salon » (nouvelle réservation, annulation
+      // ou report par la cliente) → détail pro du rendez-vous ; sinon → détail client.
+      const me = queryClient.getQueryData(queryKeys.me) as { salon: unknown } | undefined;
+      const toPro = !!me?.salon && !!data.type && PRO_TYPES.has(data.type);
+      if (data.bookingId) {
+        router.push((toPro ? `/pro-rdv/${data.bookingId}` : `/rdv/${data.bookingId}`) as never);
       } else {
-        router.push('/(client)/(tabs)/rendez-vous');
+        router.push((toPro ? '/reservations' : '/(client)/(tabs)/rendez-vous') as never);
       }
     };
 
