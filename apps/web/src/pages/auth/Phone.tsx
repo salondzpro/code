@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { AlertCircle, ChevronDown } from 'lucide-react';
+import { isTestPhone } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { EMAIL_FALLBACK, groupLocalDigits, readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, I, TopBar } from '@/components/ui';
@@ -34,8 +35,10 @@ export function Phone() {
     const local = digits.replace(/\D/g, '');
     if (local.length !== 9 || !/^[5-7]/.test(local)) return setError(`Numéro incomplet — 9 chiffres attendus après +213.`);
     setError(null);
-    writeAuthFlow({ role, next, identifier: `+213${local}`, channel: 'whatsapp' });
-    navigate('/connexion/canal');
+    const identifier = `+213${local}`;
+    // Compte de démonstration : on saute le choix du canal et on va droit au code.
+    writeAuthFlow({ role, next, identifier, channel: 'sms' });
+    navigate(isTestPhone(identifier) ? '/connexion/code' : '/connexion/canal');
   };
 
   return (

@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@salondz/api-client';
-import type { UserRole } from '@salondz/constants';
+import { isTestPhone, type UserRole } from '@salondz/constants';
+import { api } from './api';
 import { supabase } from './supabase';
 
 /** Canal d'envoi du code (design AUTH 06). L'e-mail n'est proposé que si le fournisseur SMS n'est pas configuré. */
@@ -50,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [qc]);
 
   const sendPhoneOtp = useCallback(async (phone: string, channel: 'whatsapp' | 'sms', role?: UserRole) => {
+    // Comptes de démonstration : aucun code n'est envoyé, le code fixe suffit à l'étape suivante.
+    if (isTestPhone(phone)) return;
     const { error } = await supabase.auth.signInWithOtp({
       phone,
       options: { channel, shouldCreateUser: true, data: role ? { role } : undefined },
@@ -58,6 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const verifyPhoneOtp = useCallback(async (phone: string, token: string) => {
+    // Comptes de démonstration : l'API délivre une vraie session à partir du numéro + code fixe.
+    if (isTestPhone(phone)) {
+      const { accessToken, refreshToken } = await api.auth.devLogin({ phone, code: token.trim() });
+      const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      if (error) throw error;
+      return;
+    }
     const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
     if (error) throw error;
   }, []);

@@ -15,6 +15,7 @@ import { config } from './config';
 import authPlugin from './plugins/auth';
 import { AppError, fromPostgrest } from './lib/errors';
 import healthRoutes from './routes/health';
+import authRoutes from './routes/auth';
 import publicRoutes from './routes/public';
 import meRoutes from './routes/me';
 import bookingRoutes from './routes/bookings';
@@ -123,6 +124,7 @@ export async function buildApp(): Promise<App> {
   });
 
   await app.register(healthRoutes);
+  await app.register(authRoutes, { prefix: '/v1' });
   await app.register(publicRoutes, { prefix: '/v1' });
   await app.register(meRoutes, { prefix: '/v1' });
   await app.register(bookingRoutes, { prefix: '/v1' });

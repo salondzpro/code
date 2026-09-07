@@ -25,6 +25,11 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - `SUPABASE_SECRET_KEY` et `DATABASE_URL` : API/scripts seulement, jamais dans web/mobile ni dans git (`.env*` ignoré, `.env.example` sans secret).
 - L'API contourne la RLS (clé secrète) : chaque route protégée passe par `requireAuth` / `requireProfile` / `requireSalon` et vérifie l'appartenance (`salon_id`, `client_id`).
 
+## Comptes de démonstration (accès direct)
+- Deux numéros ouvrent une vraie session sans SMS, avec le code fixe `1111` : client `0603044618`, pro `0603044619` (définis dans `packages/constants/src/phone.ts` : `TEST_ACCOUNTS`, `TEST_LOGIN_CODE`, `isTestPhone`).
+- Front : sur ces numéros, `sendPhoneOtp` est un no-op, l'écran « canal » est sauté, l'écran code accepte 4 chiffres, `verifyPhoneOtp` appelle `POST /v1/auth/dev-login` puis `supabase.auth.setSession(...)`.
+- API (`apps/api/src/routes/auth.ts`) : la clé secrète crée le compte au besoin (idempotent), complète le profil (téléphone E.164, nom, marché client) puis délivre une session via un lien magique à usage unique. **Désactiver en production réelle avec `TEST_LOGIN_ENABLED=0`.**
+
 ## Design
 - Le design Claude Design (`App Beaute Hi-Fi.dc.html`) fait foi pour web et mobile : couleurs, composants, mises en page, animations, illustrations. Pas de réinvention.
 - Export local : `design/split.mjs` → `design/screens/<ID>.html` (+ PNG ignorés par git) et `design/index.md` (table des écrans AUTH / C-H / C-F / PRO-F). Jetons : `apps/web/src/styles/tokens.css` et `apps/mobile/src/theme/design.ts` (mêmes valeurs).

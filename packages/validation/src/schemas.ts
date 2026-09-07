@@ -266,3 +266,10 @@ export const emailOtpVerifySchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   token: z.string().trim().regex(/^\d{6,8}$/),
 });
+
+/** Connexion de démonstration (comptes à accès direct, sans SMS). */
+export const devLoginSchema = z.object({
+  phone: p.phoneDZ,
+  code: z.string().trim().min(1).max(8),
+});
+export type DevLoginInput = z.infer<typeof devLoginSchema>;

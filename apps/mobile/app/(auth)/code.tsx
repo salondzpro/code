@@ -7,7 +7,8 @@ import { Pressable, TextInput, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { AlertCircle, Check, MessageCircle, WifiOff } from 'lucide-react-native';
 import { useAuth } from '@/lib/auth';
-import { clearAuthFlow, formatIntlDZ, useAuthFlow, writeAuthFlow } from '@/lib/authFlow';
+import { isTestPhone } from '@salondz/constants';
+import { clearAuthFlow, formatIntlDZ, resolveNext, useAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { errorText, isNetworkError } from '@/lib/errors';
 import { Alert, Button, Card, H1, I, P, S, TextLink, Toggle, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
@@ -36,8 +37,10 @@ export default function Code() {
 
   if (!flow.identifier) return <Redirect href="/connexion" />;
   const isEmail = flow.channel === 'email';
+  const isTest = isTestPhone(flow.identifier);
   const shown = isEmail ? flow.identifier : formatIntlDZ(flow.identifier);
-  const complete = code.length === 6;
+  // Compte de démonstration : le code fixe fait 4 chiffres.
+  const complete = isTest ? code.length >= 4 : code.length === 6;
   const expired = status === 'expired' || attempts >= MAX_ATTEMPTS;
   const digits = Array.from({ length: 6 }, (_, i) => code[i] ?? '');
 
@@ -87,8 +90,11 @@ export default function Code() {
         <Button
           onPress={() => {
             const next = flow.next;
+            const testRole = isTest ? flow.role : null;
             clearAuthFlow();
-            router.replace({ pathname: '/profil-creer', params: { next } });
+            // Compte de démonstration : profil déjà complet → accès direct à l'espace.
+            if (testRole) router.replace((testRole === 'pro' ? '/(pro)' : resolveNext(next)) as never);
+            else router.replace({ pathname: '/profil-creer', params: { next } });
           }}
         >
           Continuer

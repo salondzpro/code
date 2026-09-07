@@ -7,6 +7,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { AlertCircle, Check, MessageCircle, WifiOff } from 'lucide-react';
 import { ApiError } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
+import { isTestPhone } from '@salondz/constants';
 import { clearAuthFlow, formatIntlDZ, readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, Card, I, Toggle, TopBar } from '@/components/ui';
@@ -36,9 +37,11 @@ export function Code() {
 
   if (!flow?.identifier) return <Navigate to="/connexion" replace />;
   const isEmail = flow.channel === 'email';
+  const isTest = isTestPhone(flow.identifier);
   const shown = isEmail ? flow.identifier : formatIntlDZ(flow.identifier);
   const code = digits.join('');
-  const complete = code.length === 6 && digits.every((d) => d !== '');
+  // Compte de démonstration : le code fixe fait 4 chiffres.
+  const complete = isTest ? code.replace(/\s/g, '').length >= 4 : code.length === 6 && digits.every((d) => d !== '');
 
   const setAt = (i: number, v: string) => {
     const next = [...digits];
@@ -120,8 +123,11 @@ export function Code() {
         <Button
           onClick={() => {
             const next = flow.next;
+            const testRole = isTest ? flow.role : null;
             clearAuthFlow();
-            navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
+            // Compte de démonstration : profil déjà complet → accès direct à l'espace.
+            if (testRole) navigate(testRole === 'pro' ? '/pro' : next || '/', { replace: true });
+            else navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
           }}
         >
           Continuer

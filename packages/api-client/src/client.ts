@@ -141,6 +141,11 @@ export function createApiClient(opts: ApiClientOptions) {
 
   return {
     request,
+    auth: {
+      /** Comptes de démonstration à accès direct : renvoie une vraie session Supabase (sans SMS). */
+      devLogin: (body: { phone: string; code: string }) =>
+        request<{ accessToken: string; refreshToken: string; expiresAt: number | null; role: 'client' | 'pro'; phone: string }>('POST', '/auth/dev-login', { body, auth: false }),
+    },
     public: {
       categories: () => get<Category[]>('/categories', undefined, false),
       wilayas: () => get<Wilaya[]>('/wilayas', undefined, false),

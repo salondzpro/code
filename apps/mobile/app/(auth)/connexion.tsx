@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { AlertCircle, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '@/lib/auth';
+import { isTestPhone } from '@salondz/constants';
 import { EMAIL_FALLBACK, groupLocalDigits, readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Alert, Button, H1, I, Input, P, TextLink, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
@@ -33,8 +34,10 @@ export default function Phone() {
     const local = digits.replace(/\D/g, '');
     if (local.length !== 9 || !/^[5-7]/.test(local)) return setError('Numéro incomplet — 9 chiffres attendus après +213.');
     setError(null);
-    writeAuthFlow({ role, next, identifier: `+213${local}`, channel: 'whatsapp' });
-    router.push('/canal');
+    const identifier = `+213${local}`;
+    // Compte de démonstration : on saute le choix du canal et on va droit au code.
+    writeAuthFlow({ role, next, identifier, channel: 'sms' });
+    router.push(isTestPhone(identifier) ? '/code' : '/canal');
   };
 
   return (
