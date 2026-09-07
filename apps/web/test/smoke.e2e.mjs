@@ -2,7 +2,7 @@
  * Test de bout en bout de l'app web dans un vrai navigateur (Chromium headless via
  * playwright-core) contre l'API locale et le VRAI projet Supabase.
  *
- * Prérequis : `pnpm dev:api` (port 8080) et `pnpm dev:web` (port 9000) lancés.
+ * Prérequis : `pnpm dev:api` (port 8090) et `pnpm dev:web` (port 9000) lancés.
  * Lancer   : `pnpm --filter @salondz/web test:e2e` (ajouter `--keep` pour conserver
  *            les utilisateurs/salon créés, sinon tout est supprimé à la fin).
  *

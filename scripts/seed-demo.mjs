@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(HERE, '.demo.json');
-const API = process.env.API_URL ?? `http://localhost:${process.env.PORT ?? 8080}`;
+const API = process.env.API_URL ?? `http://localhost:${process.env.PORT ?? 8090}`;
 const { SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY } = process.env;
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('SUPABASE_URL / SUPABASE_SECRET_KEY / SUPABASE_PUBLISHABLE_KEY manquants (lancer via pnpm demo:seed)');
