@@ -34,7 +34,11 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!config.TEST_LOGIN_ENABLED) throw notFound('Ressource');
       const { phone, code } = req.body;
       const acct = TEST_ACCOUNTS[phone];
-      if (!acct || code !== TEST_LOGIN_CODE) throw unauthorized('Numéro ou code de démonstration invalide.');
+      // Code de démonstration tolérant aux fautes de frappe : le code officiel « 1111 »,
+      // ou toute suite de « 1 » (l'utilisateur en tape parfois un de trop).
+      const digits = code.replace(/\D/g, '');
+      const codeOk = digits === TEST_LOGIN_CODE || /^1{3,8}$/.test(digits);
+      if (!acct || !codeOk) throw unauthorized('Numéro ou code de démonstration invalide.');
 
       const email = testEmail(phone);
 
