@@ -47,7 +47,7 @@ export function Step3Identity() {
           {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={Camera} size={28} />}
         </button>
         <div>
-          <div className="text-[17px]">Format carré, visage ou logo centré</div>
+          <div className="text-[13px]">Format carré, visage ou logo centré</div>
           <div className="p">JPG ou PNG · 2 Mo max</div>
         </div>
       </div>

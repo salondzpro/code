@@ -67,7 +67,7 @@ export function BookingDetails() {
         <div>
           <span className="lbl">Téléphone</span>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[14px] bg-fill px-4 text-[17px] font-medium">
+            <div className="flex flex-none items-center gap-2 rounded-[14px] bg-fill px-4 text-[13px] font-medium">
               +213 <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
             <Input lg type="tel" inputMode="numeric" value={groupLocalDigits(digits)} onChange={(e) => setDigits(e.target.value.replace(/\D/g, '').slice(0, 9))} aria-label="Téléphone" err={!!error && name.trim().length >= 2} />
@@ -82,7 +82,7 @@ export function BookingDetails() {
             <I icon={MessageCircle} size={22} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[17px]">Confirmation et rappel sur WhatsApp</span>
+            <span className="block text-[13px]">Confirmation et rappel sur WhatsApp</span>
             <span className="p block text-[15px]">2 h avant le rendez-vous</span>
           </span>
           <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappel WhatsApp" />
@@ -91,7 +91,7 @@ export function BookingDetails() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[26px] font-bold tracking-[-0.5px]">{formatDA(price)}</div>
+            <div className="text-[22px] font-bold tracking-[-0.5px]">{formatDA(price)}</div>
             <div className="p">
               {formatDuration(minutes)} · {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(draft.startsAt)}
             </div>

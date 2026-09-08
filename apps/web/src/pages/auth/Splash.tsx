@@ -3,7 +3,7 @@ export function Splash() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-ink text-white" role="status" aria-label="Chargement">
       <div className="text-center">
-        <div className="text-[40px] leading-none tracking-[-1.2px]">
+        <div className="text-[34px] leading-none tracking-[-1.2px]">
           <span className="font-semibold">Salon</span>
           <span className="ml-[0.16em] font-light text-white/70">DZ</span>
         </div>

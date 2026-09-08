@@ -32,7 +32,7 @@ export default function ProLink() {
           <QRCode value={url} size={300} color={C.ink} backgroundColor={C.fill} />
         </Pressable>
         <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 20, paddingVertical: 16 }}>
-          <Tx size={19} lh={24} numberOfLines={1} style={{ flex: 1 }}>
+          <Tx size={15} lh={20} numberOfLines={1} style={{ flex: 1 }}>
             {short}
           </Tx>
           <IconButton accessibilityLabel="Copier le lien" onPress={() => copy(url)} style={{ width: 32, height: 32, borderWidth: 0, backgroundColor: 'transparent' }}>
@@ -48,17 +48,17 @@ export default function ProLink() {
       </Grid>
       <ListCard>
         <Row py={16} chevron={false} right={<Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v })} label="Réservation en ligne" />}>
-          <Tx size={19} color={C.muted} lh={24}>
+          <Tx size={15} color={C.muted} lh={20}>
             Réservation en ligne
           </Tx>
         </Row>
-        <Row py={16} chevron={false} onPress={() => router.push('/reglages-pro/regles')} right={<Tx size={22} weight={700} lh={27}>{lead}</Tx>}>
-          <Tx size={19} color={C.muted} lh={24}>
+        <Row py={16} chevron={false} onPress={() => router.push('/reglages-pro/regles')} right={<Tx size={18} weight={700} lh={23}>{lead}</Tx>}>
+          <Tx size={15} color={C.muted} lh={20}>
             Délai minimum
           </Tx>
         </Row>
         <Row py={16} chevron={false} right={<Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />}>
-          <Tx size={19} color={C.muted} lh={24}>
+          <Tx size={15} color={C.muted} lh={20}>
             Validation manuelle
           </Tx>
         </Row>

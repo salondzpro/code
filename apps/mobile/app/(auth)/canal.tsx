@@ -70,7 +70,7 @@ export default function Channel() {
             <Card row gap={16} sel={channel === 'whatsapp'} onPress={() => setChannel('whatsapp')} accessibilityLabel="WhatsApp">
               <ChannelIcon icon={MessageCircle} ok />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={20} weight={600} lh={25}>
+                <Tx size={16} weight={600} lh={21}>
                   WhatsApp
                 </Tx>
                 <P>Recommandé · instantané et gratuit</P>
@@ -82,7 +82,7 @@ export default function Channel() {
             <Card row gap={16} sel={channel === 'sms'} onPress={() => setChannel('sms')} accessibilityLabel="SMS">
               <ChannelIcon icon={MessageCircle} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={20} weight={600} lh={25}>
+                <Tx size={16} weight={600} lh={21}>
                   SMS
                 </Tx>
                 <P>Si WhatsApp n'est pas installé</P>
@@ -94,7 +94,7 @@ export default function Channel() {
           <Card row gap={16} sel={channel === 'email'} onPress={() => setChannel('email')} accessibilityLabel="E-mail">
             <ChannelIcon icon={Mail} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Tx size={20} weight={600} lh={25}>
+              <Tx size={16} weight={600} lh={21}>
                 E-mail
               </Tx>
               <P>{isEmail ? flow.identifier : 'Si le téléphone ne reçoit pas de code'}</P>

@@ -62,7 +62,7 @@ export default function MapView() {
           return (
             <Pressable key={s.id} accessibilityRole="button" accessibilityLabel={s.name} onPress={() => setSelected(s.id)} style={{ position: 'absolute', left: x, top: y, transform: [{ translateX: -60 }, { translateY: -48 }], width: 120, alignItems: 'center', zIndex: on ? 2 : 1 }}>
               <View style={[{ backgroundColor: on ? C.ink : C.surface, borderRadius: R.pill, paddingHorizontal: 14, paddingVertical: 8 }, SHADOW.card]}>
-                <Tx size={16} weight={600} lh={16} color={on ? '#fff' : C.text} numberOfLines={1}>
+                <Tx size={13} weight={600} lh={15} color={on ? '#fff' : C.text} numberOfLines={1}>
                   {s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name}
                 </Tx>
               </View>
@@ -77,7 +77,7 @@ export default function MapView() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Pressable accessibilityRole="link" onPress={() => router.push('/recherche')} style={[{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.surface, borderRadius: R.cardSm, paddingVertical: 15, paddingHorizontal: 16 }, SHADOW.card]}>
             <I icon={Search} size={22} color={C.subtle} />
-            <Tx size={16} lh={20} color={C.subtle} numberOfLines={1} style={{ flex: 1 }}>
+            <Tx size={13} lh={17} color={C.subtle} numberOfLines={1} style={{ flex: 1 }}>
               {MARKET_LABELS_FR[market]} · {prefs.label}
             </Tx>
           </Pressable>
@@ -110,12 +110,12 @@ export default function MapView() {
               <Img src={current.logoUrl ?? current.coverUrl} radius={16} style={{ width: 96, height: 96 }} />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                  <Tx size={21} weight={700} ls={-0.4} lh={25} style={{ flex: 1 }}>
+                  <Tx size={17} weight={700} ls={-0.4} lh={21} style={{ flex: 1 }}>
                     {current.name}
                   </Tx>
                   {current.ratingCount > 0 && <RatingPill avg={current.ratingAvg} />}
                 </View>
-                <Tx size={16} color={C.muted} lh={22} style={{ marginTop: 4 }}>
+                <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
                   {[current.zone ?? current.city, formatKm(current.distanceKm), current.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
                 </Tx>
                 <Tx size={15} color={C.subtle} lh={21} style={{ marginTop: 2 }}>

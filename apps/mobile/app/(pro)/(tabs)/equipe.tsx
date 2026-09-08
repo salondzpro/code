@@ -76,7 +76,7 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <Avatar src={member.avatarUrl} name={member.displayName} size={56} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={22} weight={700} ls={-0.4} lh={27} numberOfLines={1}>
+          <Tx size={18} weight={700} ls={-0.4} lh={23} numberOfLines={1}>
             {member.displayName}
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>
@@ -101,20 +101,20 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
           {rows.map((r) => (
             <Row key={r.dayOfWeek} py={12} chevron={false} right={<Toggle on={r.enabled} onChange={(v) => patch(r.dayOfWeek, { enabled: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Tx size={17} lh={22} color={r.enabled ? C.text : C.subtle} style={{ width: 96 }}>
+                <Tx size={13} lh={18} color={r.enabled ? C.text : C.subtle} style={{ width: 96 }}>
                   {DAY_LABELS_FR[r.dayOfWeek]}
                 </Tx>
                 {r.enabled ? (
                   <>
                     <TimeField size={17} value={r.startsAt} onChange={(v) => patch(r.dayOfWeek, { startsAt: v })} label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
-                    <Tx size={17} color={C.muted} lh={22}>
+                    <Tx size={13} color={C.muted} lh={18}>
                       {' '}
                       –{' '}
                     </Tx>
                     <TimeField size={17} value={r.endsAt} onChange={(v) => patch(r.dayOfWeek, { endsAt: v })} label={`Fin ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
                   </>
                 ) : (
-                  <Tx size={17} color={C.disabled} lh={22}>
+                  <Tx size={13} color={C.disabled} lh={18}>
                     Repos
                   </Tx>
                 )}
@@ -149,7 +149,7 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
           </Button>
         ) : (
           <Pressable accessibilityRole="button" onPress={() => setConfirmRemove(true)} style={{ alignSelf: 'center', paddingVertical: 8 }}>
-            <Tx size={17} color={C.danger} lh={22}>
+            <Tx size={13} color={C.danger} lh={18}>
               Retirer de l'équipe
             </Tx>
           </Pressable>
@@ -180,7 +180,7 @@ export default function Team() {
 
   return (
     <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={34} lh={38} ls={-0.8}>
+      <H1 size={28} lh={32} ls={-0.8}>
         Équipe
       </H1>
       <P>Chaque membre a son propre agenda. Les clients choisissent « n'importe qui » ou un membre précis.</P>
@@ -190,10 +190,10 @@ export default function Team() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={19} lh={24} numberOfLines={1}>
+                <Tx size={15} lh={20} numberOfLines={1}>
                   {m.displayName}
                   {m.userId === salon.ownerId ? (
-                    <Tx size={19} lh={24} color={C.muted}>
+                    <Tx size={15} lh={20} color={C.muted}>
                       {' '}
                       (vous)
                     </Tx>

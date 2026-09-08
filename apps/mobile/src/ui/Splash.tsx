@@ -15,10 +15,10 @@ export function Splash() {
     <View accessibilityRole="progressbar" accessibilityLabel="Chargement" style={{ flex: 1, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{ alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-          <Tx size={40} weight={600} color="#fff" ls={-1.2} lh={44}>
+          <Tx size={34} weight={600} color="#fff" ls={-1.2} lh={38}>
             Salon
           </Tx>
-          <Tx size={40} weight={400} color={C.white70} ls={-1.2} lh={44} style={{ marginLeft: 6 }}>
+          <Tx size={34} weight={400} color={C.white70} ls={-1.2} lh={38} style={{ marginLeft: 6 }}>
             DZ
           </Tx>
         </View>

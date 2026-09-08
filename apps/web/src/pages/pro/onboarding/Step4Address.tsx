@@ -91,12 +91,12 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           <span className="absolute left-1/2 top-1/2 flex h-[68px] w-[68px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-fab">
             <I icon={MapPin} size={26} />
           </span>
-          <span className="absolute bottom-4 left-6 max-w-[80%] truncate rounded-full bg-surface px-4 py-2 text-[16px] font-semibold shadow-card">{address.trim() ? `${address.trim()}${zone ? `, ${zone}` : ''}` : zone || wilayaName(wilaya)}</span>
+          <span className="absolute bottom-4 left-6 max-w-[80%] truncate rounded-full bg-surface px-4 py-2 text-[13px] font-semibold shadow-card">{address.trim() ? `${address.trim()}${zone ? `, ${zone}` : ''}` : zone || wilayaName(wilaya)}</span>
         </div>
         <div className="crd !gap-0 !py-1">
           <label className="li !py-4">
-            <span className="text-[19px]">Ville</span>
-            <select className="max-w-[55%] bg-transparent text-right text-[19px] text-muted outline-none" value={wilaya} onChange={(e) => setWilaya(Number(e.target.value))} aria-label="Ville">
+            <span className="text-[15px]">Ville</span>
+            <select className="max-w-[55%] bg-transparent text-right text-[15px] text-muted outline-none" value={wilaya} onChange={(e) => setWilaya(Number(e.target.value))} aria-label="Ville">
               {WILAYAS.map((w) => (
                 <option key={w.code} value={w.code}>
                   {w.name}
@@ -105,18 +105,18 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             </select>
           </label>
           <label className="li !py-4">
-            <span className="text-[19px]">Quartier</span>
-            <input className="max-w-[55%] bg-transparent text-right text-[19px] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
+            <span className="text-[15px]">Quartier</span>
+            <input className="max-w-[55%] bg-transparent text-right text-[15px] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
           </label>
           {settings && (
             <label className="li !py-4">
-              <span className="text-[19px]">Téléphone</span>
-              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[19px] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
+              <span className="text-[15px]">Téléphone</span>
+              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[15px] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
             </label>
           )}
           <div className="li !py-4">
             <span>
-              <span className="block text-[19px]">Se déplacer à domicile</span>
+              <span className="block text-[15px]">Se déplacer à domicile</span>
               <span className="p block text-[15px]">Prestations hors salon</span>
             </span>
             <Toggle on={home} onChange={setHome} label="Se déplacer à domicile" />

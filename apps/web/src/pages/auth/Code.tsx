@@ -152,7 +152,7 @@ export function Code() {
               <I icon={MessageCircle} size={20} />
             </span>
             <span>
-              <span className="block text-[17px] font-semibold">{isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}</span>
+              <span className="block text-[13px] font-semibold">{isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}</span>
               <span className="s block">maintenant</span>
             </span>
           </div>
@@ -167,7 +167,7 @@ export function Code() {
             ref={(el) => {
               inputs.current[i] = el;
             }}
-            className={`inp !p-0 h-[68px] text-center text-[22px] font-medium${d ? ' f' : ''}${status === 'wrong' ? ' err' : ''}`}
+            className={`inp !p-0 h-[68px] text-center text-[18px] font-medium${d ? ' f' : ''}${status === 'wrong' ? ' err' : ''}`}
             inputMode="numeric"
             autoComplete={i === 0 ? 'one-time-code' : 'off'}
             maxLength={4}
@@ -205,7 +205,7 @@ export function Code() {
       {!expired && status !== 'network' && (
         <Card className="!flex-row items-center justify-between">
           <span>
-            <span className="block text-[16px]">Rester connecté</span>
+            <span className="block text-[13px]">Rester connecté</span>
             <span className="p block text-[14px]">Session illimitée · aucun code à la prochaine visite</span>
           </span>
           <Toggle on={stay} onChange={setStay} label="Rester connecté" />

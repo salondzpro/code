@@ -69,8 +69,8 @@ export function AgendaPro() {
     view === 'day' ? (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[19px] text-muted">{DAY_LABELS_FR[dayOfWeekFromKey(date)]}</div>
-          <h1 className="h1 whitespace-nowrap !text-[32px]">
+          <div className="text-[15px] text-muted">{DAY_LABELS_FR[dayOfWeekFromKey(date)]}</div>
+          <h1 className="h1 whitespace-nowrap">
             {Number(date.slice(8, 10))} {MONTHS[Number(date.slice(5, 7)) - 1]}
           </h1>
         </div>
@@ -89,8 +89,8 @@ export function AgendaPro() {
     ) : (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[19px] text-muted">{view === 'week' ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}` : date.slice(0, 4)}</div>
-          <h1 className="h1 !text-[34px]">{view === 'week' ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS[Number(week[6]!.slice(5, 7)) - 1]}` : MONTHS[Number(date.slice(5, 7)) - 1]!.replace(/^\w/, (c) => c.toUpperCase())}</h1>
+          <div className="text-[15px] text-muted">{view === 'week' ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}` : date.slice(0, 4)}</div>
+          <h1 className="h1">{view === 'week' ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS[Number(week[6]!.slice(5, 7)) - 1]}` : MONTHS[Number(date.slice(5, 7)) - 1]!.replace(/^\w/, (c) => c.toUpperCase())}</h1>
         </div>
         <div className="flex gap-2.5">
           <IconButton lg aria-label="Précédent" onClick={() => shift(-1)}>
@@ -121,7 +121,7 @@ export function AgendaPro() {
         <>
           <DayStrip weekOf={date} selected={date} onSelect={setDate} disabledDays={closedDays} />
           <div className="flex items-center justify-between">
-            <span className="text-[19px]">
+            <span className="text-[15px]">
               <b>{dayItems.length} rendez-vous</b> <span className="text-muted">· {formatDA(dayRevenue)}</span>
             </span>
             {dayPending > 0 && (
@@ -206,7 +206,7 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         const e = localMinutes(b.endsAt);
         return (
           <button key={b.id} type="button" onClick={() => onOpen(b.id)} className={`absolute left-[58px] right-0 overflow-hidden rounded-[12px] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`} style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}>
-            <span className="block truncate text-[17px] font-semibold">
+            <span className="block truncate text-[13px] font-semibold">
               {b.clientName} · {b.serviceName}
             </span>
             <span className="mono block text-[14px] opacity-80">
@@ -248,7 +248,7 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
   for (let m = startMin; m <= endMin; m += 120) hours.push(m);
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 text-[17px]">
+      <div className="flex flex-wrap items-center gap-2 text-[13px]">
         <span className="pill soft !py-2 !font-semibold">{total} rendez-vous</span>
         <Badge tone="ok" md>
           {formatDA(revenue)}
@@ -271,7 +271,7 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
           return (
             <button key={d} type="button" onClick={() => onSelect(d)} className="flex min-w-0 flex-1 flex-col items-center gap-2 text-left">
               <span className={`text-[15px] ${closed ? 'text-disabled' : 'text-muted'}`}>{DAY_LABELS_SHORT_FR[dow]}</span>
-              <span className={`flex h-9 w-full items-center justify-center rounded-[12px] text-[19px] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}>{Number(d.slice(8, 10))}</span>
+              <span className={`flex h-9 w-full items-center justify-center rounded-[12px] text-[15px] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}>{Number(d.slice(8, 10))}</span>
               <span className={`relative block w-full overflow-hidden rounded-[12px] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`} style={{ height: H, background: closed ? 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' : undefined }}>
                 {!closed &&
                   list.map((b) => {
@@ -321,7 +321,7 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
           const dots = (byDay.get(d) ?? []).slice(0, 4);
           return (
             <button key={d} type="button" onClick={() => (on ? onOpenDay(d) : onSelect(d))} className={`flex h-[74px] flex-col items-center justify-center gap-1.5 rounded-[14px] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`} style={closed && !on ? { background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' } : undefined} aria-label={d}>
-              <span className={`text-[19px] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}>{Number(d.slice(8, 10))}</span>
+              <span className={`text-[15px] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}>{Number(d.slice(8, 10))}</span>
               <span className="flex h-1.5 gap-1">
                 {dots.map((b) => (
                   <span key={b.id} className="h-1.5 w-1.5 rounded-full" style={{ background: on ? '#fff' : DOT[toneOf(b)] }} />
@@ -342,10 +342,10 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
       <div className="crd !gap-0 !py-1">
         <button type="button" className="li w-full !py-4 text-left" onClick={() => onOpenDay(selected)}>
           <span>
-            <span className="block text-[21px] font-bold tracking-[-0.3px]">
+            <span className="block text-[17px] font-bold tracking-[-0.3px]">
               {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))} {MONTHS[Number(selected.slice(5, 7)) - 1]}
             </span>
-            <span className="p block text-[16px]">
+            <span className="p block text-[13px]">
               {list.length} rendez-vous · {formatDA(revenue)}
             </span>
           </span>
@@ -356,7 +356,7 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
             <span className="flex items-center gap-3">
               <span className="h-7 w-[3px] rounded-full" style={{ background: DOT[toneOf(b)] }} />
               <span>
-                <span className="block text-[17px]">
+                <span className="block text-[13px]">
                   {b.clientName} · {b.serviceName}
                 </span>
                 <span className="mono block text-[14px] text-muted">

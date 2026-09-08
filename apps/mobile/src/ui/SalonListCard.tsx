@@ -31,7 +31,7 @@ export function SlotPills({ slots, empty = "Complet aujourd'hui" }: { slots: str
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       {slots.map((t) => (
         <View key={t} style={{ backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 10 }}>
-          <Tx size={16} weight={500} lh={20} mono>
+          <Tx size={13} weight={500} lh={17} mono>
             {t}
           </Tx>
         </View>
@@ -63,12 +63,12 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
         <Img src={s.coverUrl} radius={0} style={{ height: 230, width: '100%' }} />
         <View style={{ padding: 16, gap: 4 }}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-            <Tx size={22} weight={700} ls={-0.4} lh={26} style={{ flex: 1 }}>
+            <Tx size={18} weight={700} ls={-0.4} lh={22} style={{ flex: 1 }}>
               {s.name}
             </Tx>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </View>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
           {s.topServices.length > 0 && (
@@ -90,12 +90,12 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
         <Img src={s.logoUrl ?? s.coverUrl} radius={16} style={{ width: 112, height: 112 }} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-            <Tx size={21} weight={700} ls={-0.4} lh={25} style={{ flex: 1 }}>
+            <Tx size={17} weight={700} ls={-0.4} lh={21} style={{ flex: 1 }}>
               {s.name}
             </Tx>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </View>
-          <Tx size={16} color={C.muted} lh={22} style={{ marginTop: 4 }}>
+          <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
           {s.topServices.length > 0 && (

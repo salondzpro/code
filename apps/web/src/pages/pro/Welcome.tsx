@@ -21,7 +21,7 @@ export function ProWelcome() {
         <div className="ovl" />
         <div className="ovl-t">
           <div className="h3 mb-2 !text-white/70">Espace professionnel</div>
-          <div className="text-[30px] font-bold leading-[1.1] tracking-[-0.8px]">
+          <div className="text-[26px] font-bold leading-[1.1] tracking-[-0.8px]">
             Votre agenda,
             <br />
             votre page, votre lien.
@@ -32,7 +32,7 @@ export function ProWelcome() {
       <div className="flex flex-col gap-4 px-5 pb-10 pt-4">
         <ul className="flex flex-col">
           {PROMISES.map((p) => (
-            <li key={p} className="li text-[17px]">
+            <li key={p} className="li text-[13px]">
               <span>{p}</span>
               <I icon={Check} size={20} className="text-ok-fg" />
             </li>

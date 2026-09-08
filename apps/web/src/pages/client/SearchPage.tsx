@@ -69,7 +69,7 @@ export function SearchPage() {
                     <I icon={Scissors} size={18} />
                   </span>
                   <span>
-                    <span className="block text-[17px] font-medium">{h.name}</span>
+                    <span className="block text-[13px] font-medium">{h.name}</span>
                     <span className="s block">Prestation · {h.count} {market === 'men' ? 'barbier' : 'salon'}{h.count > 1 ? 's' : ''}</span>
                   </span>
                 </span>
@@ -81,7 +81,7 @@ export function SearchPage() {
                 <span className="flex items-center gap-3.5">
                   <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={40} />
                   <span>
-                    <span className="block text-[17px] font-medium">{s.name}</span>
+                    <span className="block text-[13px] font-medium">{s.name}</span>
                     <span className="s block">
                       {s.zone ?? s.city}
                       {s.ratingCount > 0 ? ` · ${formatRating(s.ratingAvg)}` : ''}

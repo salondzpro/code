@@ -120,7 +120,7 @@ export default function Code() {
               <I icon={MessageCircle} size={20} color={C.okFg} />
             </View>
             <View>
-              <Tx size={17} weight={600} lh={22}>
+              <Tx size={13} weight={600} lh={18}>
                 {isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}
               </Tx>
               <S>maintenant</S>
@@ -135,7 +135,7 @@ export default function Code() {
       <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Code à 4 chiffres" style={{ flexDirection: 'row', gap: 10 }}>
         {digits.map((d, i) => (
           <View key={i} style={{ flex: 1, height: 68, borderRadius: R.input, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', backgroundColor: d || status === 'wrong' ? C.surface : C.fill, borderColor: status === 'wrong' ? C.danger : d ? C.ink : 'transparent', opacity: expired ? 0.5 : 1 }}>
-            <Tx size={22} weight={500} lh={28} mono>
+            <Tx size={18} weight={500} lh={24} mono>
               {d}
             </Tx>
           </View>
@@ -170,7 +170,7 @@ export default function Code() {
       {!expired && status !== 'network' && (
         <Card row>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={16} lh={21}>
+            <Tx size={13} lh={18}>
               Rester connecté
             </Tx>
             <Tx size={14} color={C.muted} lh={20}>

@@ -50,26 +50,26 @@ export default function Settings() {
             />
           }
         >
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Rappels WhatsApp
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             2 h avant le rendez-vous
           </Tx>
         </Row>
         <Row py={16} chevron={false} right={<Toggle on={confirmations} onChange={setConfirmations} label="Confirmations" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Confirmations
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             Réservation, report, annulation
           </Tx>
         </Row>
         <Row py={16} chevron={false} right={<Toggle on={news} onChange={setNews} label="Nouveautés" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Nouveautés des salons suivis
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             Maximum une fois par semaine
           </Tx>
         </Row>
@@ -77,18 +77,18 @@ export default function Settings() {
 
       <SectionLabel>Préférences</SectionLabel>
       <ListCard>
-        <Row py={16} chevron={false} right={<Tx size={19} color={C.muted} lh={24}>Français</Tx>}>
-          <Tx size={19} lh={24}>
+        <Row py={16} chevron={false} right={<Tx size={15} color={C.muted} lh={20}>Français</Tx>}>
+          <Tx size={15} lh={20}>
             Langue
           </Tx>
         </Row>
-        <Row py={16} chevron={false} onPress={() => router.push({ pathname: '/marche', params: { next: '/reglages' } })} right={<Tx size={19} color={C.muted} lh={24}>{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</Tx>}>
-          <Tx size={19} lh={24}>
+        <Row py={16} chevron={false} onPress={() => router.push({ pathname: '/marche', params: { next: '/reglages' } })} right={<Tx size={15} color={C.muted} lh={20}>{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</Tx>}>
+          <Tx size={15} lh={20}>
             Catalogue affiché
           </Tx>
         </Row>
-        <Row py={16} chevron={false} to="/localisation" right={<Tx size={19} color={C.muted} lh={24}>{prefs.city ?? wilayaName(prefs.wilaya)}</Tx>}>
-          <Tx size={19} lh={24}>
+        <Row py={16} chevron={false} to="/localisation" right={<Tx size={15} color={C.muted} lh={20}>{prefs.city ?? wilayaName(prefs.wilaya)}</Tx>}>
+          <Tx size={15} lh={20}>
             Ville
           </Tx>
         </Row>
@@ -97,20 +97,20 @@ export default function Settings() {
       <SectionLabel>Compte</SectionLabel>
       <ListCard>
         <Row py={16} chevron={false} right={<Badge tone="ok" md>Active</Badge>}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Session
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             {p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}
           </Tx>
         </Row>
         <Row py={16} onPress={() => void Linking.openURL('https://salondz.pages.dev/confidentialite').catch(() => undefined)}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Confidentialité
           </Tx>
         </Row>
         <Row py={16} onPress={() => void Linking.openURL(`mailto:contact@salondz.dz?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`).catch(() => undefined)}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Supprimer mes données
           </Tx>
         </Row>
@@ -122,7 +122,7 @@ export default function Settings() {
           }}
           style={{ paddingVertical: 16 }}
         >
-          <Tx size={19} lh={24} color={C.danger}>
+          <Tx size={15} lh={20} color={C.danger}>
             Se déconnecter
           </Tx>
         </Pressable>

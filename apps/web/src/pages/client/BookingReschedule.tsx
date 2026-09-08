@@ -52,7 +52,7 @@ export function BookingReschedule() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/rendez-vous/${b.id}`} right="Reporter" />
       <h1 className="h1">Nouveau créneau</h1>
-      <div className="sf flex items-center gap-3 text-[17px] text-muted">
+      <div className="sf flex items-center gap-3 text-[13px] text-muted">
         <I icon={Clock} size={18} />
         <span>
           Actuel · {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
@@ -74,7 +74,7 @@ export function BookingReschedule() {
       ) : (
         <div className="g3">
           {grid.map((g) => (
-            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onClick={() => g.free && setSlot(g.iso)} className="!py-[22px] !text-[20px]">
+            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onClick={() => g.free && setSlot(g.iso)} className="!py-[22px] !text-[16px]">
               {g.time}
             </Slot>
           ))}

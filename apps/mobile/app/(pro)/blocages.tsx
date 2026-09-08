@@ -114,7 +114,7 @@ export default function Closures() {
         {blocks.isPending && <Skeleton h={64} style={{ marginVertical: 12 }} />}
         {blocks.data && items.length === 0 && (
           <View style={{ paddingVertical: 16 }}>
-            <Tx size={17} color={C.muted} lh={23}>
+            <Tx size={13} color={C.muted} lh={19}>
               Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.
             </Tx>
           </View>
@@ -125,7 +125,7 @@ export default function Closures() {
           const title = who ? `${who} · ${b.reason ?? 'Indisponible'}` : (b.reason ?? 'Fermeture');
           return (
             <Row key={b.id} py={16} chevron={false} onPress={() => setDel(b)} accessibilityLabel={title} right={<Badge tone={allDay ? 'cn' : 'pd'} md dot={false}>{allDay ? 'Fermé' : 'Modifié'}</Badge>}>
-              <Tx size={19} lh={24} numberOfLines={1}>
+              <Tx size={15} lh={20} numberOfLines={1}>
                 {title}
               </Tx>
               <Tx size={15} color={C.muted} lh={20} mono>
@@ -157,20 +157,20 @@ export default function Closures() {
             <Row py={12} chevron={false} right={
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <TimeField value={from} onChange={setFrom} label="De" step={5} />
-                <Tx size={19} color={C.muted} lh={24}>
+                <Tx size={15} color={C.muted} lh={20}>
                   à
                 </Tx>
                 <TimeField value={to} onChange={setTo} label="À" step={5} />
               </View>
             }>
-              <Tx size={19} lh={24}>
+              <Tx size={15} lh={20}>
                 Fermé de
               </Tx>
             </Row>
           )}
           {active.length > 1 && <ValueRow py={12} label="Concerne" value={staffId ? (staffName.get(staffId) ?? 'Membre') : 'Tout le salon'} onPress={() => setStaffSheet(true)} />}
-          <Row py={12} chevron={false} right={<Input value={reason} onChangeText={setReason} placeholder="Congés" maxLength={120} accessibilityLabel="Motif (facultatif)" style={{ width: '55%', backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 19 }} />}>
-            <Tx size={19} lh={24}>
+          <Row py={12} chevron={false} right={<Input value={reason} onChangeText={setReason} placeholder="Congés" maxLength={120} accessibilityLabel="Motif (facultatif)" style={{ width: '55%', backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 15 }} />}>
+            <Tx size={15} lh={20}>
               Motif
             </Tx>
           </Row>
@@ -185,7 +185,7 @@ export default function Closures() {
 
       <ModalSheet open={!!del} onClose={() => setDel(null)}>
         <View style={{ alignItems: 'center', gap: 8 }}>
-          <Tx size={24} weight={700} ls={-0.4} lh={29} center>
+          <Tx size={20} weight={700} ls={-0.4} lh={25} center>
             Supprimer cette exception ?
           </Tx>
           <P center>{del ? describeBlock(del) : ''} — les créneaux redeviennent réservables.</P>

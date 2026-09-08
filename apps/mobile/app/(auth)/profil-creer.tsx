@@ -63,7 +63,7 @@ export default function ProfileSetup() {
             {phone ? 'Numéro vérifié' : 'Adresse vérifiée'}
           </Tx>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: R.input, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 18 }}>
-            <Tx size={17} lh={22}>
+            <Tx size={13} lh={18}>
               {phone ? formatIntlDZ(phone) : email}
             </Tx>
             <Badge tone="ok" md>
@@ -73,7 +73,7 @@ export default function ProfileSetup() {
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Tx size={20} weight={600} lh={25}>
+            <Tx size={16} weight={600} lh={21}>
               Rappels WhatsApp
             </Tx>
             <P>2 h avant chaque rendez-vous</P>

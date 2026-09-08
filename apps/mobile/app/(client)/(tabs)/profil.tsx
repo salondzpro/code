@@ -26,16 +26,16 @@ export default function Profile() {
 
   return (
     <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={34} lh={38} ls={-0.8}>
+      <H1 size={28} lh={32} ls={-0.8}>
         Profil
       </H1>
       <Card row gap={16}>
         <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={120} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={24} weight={700} ls={-0.4} lh={29}>
+          <Tx size={20} weight={700} ls={-0.4} lh={25}>
             {p?.fullName ?? 'Votre nom'}
           </Tx>
-          <Tx size={17} color={C.muted} lh={23}>
+          <Tx size={13} color={C.muted} lh={19}>
             {phone ? formatIntlDZ(phone) : user?.email}
           </Tx>
           <View style={{ marginTop: 8 }}>
@@ -52,7 +52,7 @@ export default function Profile() {
           { v: '—', l: 'note donnée' },
         ].map((x) => (
           <Card key={x.l} gap={4} pad={12} style={{ paddingVertical: 20 }}>
-            <Tx size={28} weight={700} ls={-0.6} lh={33}>
+            <Tx size={24} weight={700} ls={-0.6} lh={29}>
               {x.v}
             </Tx>
             <Tx size={14} color={C.muted} lh={19} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
@@ -63,22 +63,22 @@ export default function Profile() {
       </Grid>
       <ListCard>
         <Row to="/favoris">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Mes salons favoris
           </Tx>
         </Row>
         <Row onPress={() => router.push({ pathname: '/(client)/(tabs)/rendez-vous', params: { scope: 'past' } })}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Historique
           </Tx>
         </Row>
         <Row to="/reglages">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Moyens de contact
           </Tx>
         </Row>
         <Row to="/reglages">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Réglages
           </Tx>
         </Row>
@@ -88,10 +88,10 @@ export default function Profile() {
           <I icon={MessageCircle} size={26} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={20} weight={700} ls={-0.4} lh={25}>
+          <Tx size={16} weight={700} ls={-0.4} lh={21}>
             {salon ? `Gérer ${salon.name}` : 'Devenir professionnel'}
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             {salon ? 'Agenda, demandes, page publique' : 'Recevoir des réservations sur votre page'}
           </Tx>
         </View>

@@ -40,8 +40,8 @@ export function Tx({ size = 15, weight = 400, color = C.text, lh, ls, mono, cent
   );
 }
 
-export const H1 = (p: TxProps) => <Tx size={28} weight={700} ls={-0.7} lh={31} {...p} />;
-export const H2 = (p: TxProps) => <Tx size={17} weight={600} ls={-0.3} lh={22} {...p} />;
+export const H1 = (p: TxProps) => <Tx size={24} weight={700} ls={-0.7} lh={27} {...p} />;
+export const H2 = (p: TxProps) => <Tx size={13} weight={600} ls={-0.3} lh={18} {...p} />;
 export const H3 = (p: TxProps) => <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={16} upper {...p} />;
 export const P = (p: TxProps) => <Tx size={15} color={C.muted} lh={22} {...p} />;
 export const S = (p: TxProps) => <Tx size={13} color={C.muted} lh={18} {...p} />;

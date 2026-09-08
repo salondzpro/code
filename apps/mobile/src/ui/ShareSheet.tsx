@@ -34,10 +34,10 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: ReactNode; onPress: () => void }[] = [
     { label: 'WhatsApp', icon: <I icon={MessageCircle} size={26} />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
-    { label: 'Instagram', icon: <Tx size={22} weight={700}>◎</Tx>, onPress: () => copy(url) },
-    { label: 'Facebook', icon: <Tx size={24} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
-    { label: 'TikTok', icon: <Tx size={22} weight={700}>♪</Tx>, onPress: () => copy(url) },
-    { label: 'Messages', icon: <Tx size={22}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
+    { label: 'Instagram', icon: <Tx size={18} weight={700}>◎</Tx>, onPress: () => copy(url) },
+    { label: 'Facebook', icon: <Tx size={20} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
+    { label: 'TikTok', icon: <Tx size={18} weight={700}>♪</Tx>, onPress: () => copy(url) },
+    { label: 'Messages', icon: <Tx size={18}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
     {
       label: 'QR Code',
       icon: <I icon={QrCode} size={26} />,
@@ -50,16 +50,16 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
   ];
   return (
     <ModalSheet open={open} onClose={onClose}>
-      <Tx size={26} weight={700} ls={-0.7} lh={30}>
+      <Tx size={22} weight={700} ls={-0.7} lh={26}>
         Partagez votre page
       </Tx>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 16 }}>
         <I icon={Lock} size={20} color={C.muted} />
-        <Tx size={19} lh={24} numberOfLines={1} style={{ flex: 1 }}>
+        <Tx size={15} lh={20} numberOfLines={1} style={{ flex: 1 }}>
           {short}
         </Tx>
         <Pressable accessibilityRole="button" onPress={() => copy(url)}>
-          <Tx size={19} weight={600} lh={24}>
+          <Tx size={15} weight={600} lh={20}>
             {copied ? 'Copié' : 'Copier'}
           </Tx>
         </Pressable>

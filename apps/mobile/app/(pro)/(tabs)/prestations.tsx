@@ -19,7 +19,7 @@ export default function ProServices() {
   return (
     <Screen gap={16} bottom={NAV_PAD}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <H1 size={34} lh={38} ls={-0.8}>
+        <H1 size={28} lh={32} ls={-0.8}>
           Prestations
         </H1>
         <Button pill sm onPress={() => router.push('/onboarding/6')} style={{ paddingHorizontal: 16, paddingVertical: 11 }}>
@@ -39,10 +39,10 @@ export default function ProServices() {
               <Pressable accessibilityRole="link" accessibilityLabel={sv.name} onPress={() => router.push(`/onboarding/6/${sv.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
                 <Img src={photos[0]?.url ?? salon.coverUrl} radius={16} style={{ width: 88, height: 88 }} />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={21} weight={700} ls={-0.3} lh={26}>
+                  <Tx size={17} weight={700} ls={-0.3} lh={22}>
                     {sv.name}
                   </Tx>
-                  <Tx size={16} color={C.muted} lh={22}>
+                  <Tx size={13} color={C.muted} lh={19}>
                     {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
                     {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                   </Tx>
@@ -50,7 +50,7 @@ export default function ProServices() {
                 <I icon={ChevronRight} size={20} color={C.disabled} />
               </Pressable>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: C.lineSoft, paddingTop: 12 }}>
-                <Tx size={16} color={C.muted} lh={22}>
+                <Tx size={13} color={C.muted} lh={19}>
                   {sv.isActive ? 'Visible et réservable' : 'Désactivée'}
                 </Tx>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>

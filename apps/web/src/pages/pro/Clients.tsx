@@ -52,12 +52,12 @@ export function Clients() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1 !text-[34px]">Clients</h1>
+      <h1 className="h1">Clients</h1>
       <label className="search">
         <I icon={Search} size={22} />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom ou téléphone" aria-label="Rechercher un client" />
       </label>
-      <p className="text-[17px] text-muted">
+      <p className="text-[13px] text-muted">
         {rows.length} client{rows.length > 1 ? 's' : ''} · 12 derniers mois
       </p>
       {bookings.isPending ? (
@@ -71,7 +71,7 @@ export function Clients() {
               <span className="flex items-center gap-3.5">
                 <Avatar name={c.name} size={52} />
                 <span>
-                  <span className="block text-[20px] font-bold tracking-[-0.3px]">{c.name}</span>
+                  <span className="block text-[16px] font-bold tracking-[-0.3px]">{c.name}</span>
                   <span className="block text-[15px] text-muted">
                     {c.phone ? `${formatDZPhone(c.phone)} · ` : ''}
                     {c.count} rendez-vous · {c.next ? `prochain ${formatDateShortDZ(c.next)}` : `dernier ${formatDateShortDZ(c.last)}`}

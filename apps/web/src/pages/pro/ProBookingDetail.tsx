@@ -40,8 +40,8 @@ export function ProBookingDetail() {
       <div className="flex items-center gap-4">
         <Avatar name={b.clientName} size={128} />
         <div className="min-w-0">
-          <h1 className="h1 !text-[30px]">{initials}</h1>
-          {b.clientPhone && <p className="mt-1 text-[17px] text-muted">{formatDZPhone(b.clientPhone)}</p>}
+          <h1 className="h1 !text-[26px]">{initials}</h1>
+          {b.clientPhone && <p className="mt-1 text-[13px] text-muted">{formatDZPhone(b.clientPhone)}</p>}
           {b.staff && <p className="text-[15px] text-muted">avec {b.staff.displayName}</p>}
         </div>
       </div>
@@ -59,26 +59,26 @@ export function ProBookingDetail() {
       )}
       <div className="crd !gap-0">
         {(b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName }]).map((it) => (
-          <div key={it.id} className="li !py-4 text-[18px]">
+          <div key={it.id} className="li !py-4 text-[14px]">
             <span className="text-muted">Prestation</span>
             <span className="font-semibold">{it.serviceName}</span>
           </div>
         ))}
-        <div className="li !py-4 text-[18px]">
+        <div className="li !py-4 text-[14px]">
           <span className="text-muted">Date</span>
           <span className="font-semibold">{formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
         </div>
-        <div className="li !py-4 text-[18px]">
+        <div className="li !py-4 text-[14px]">
           <span className="text-muted">Heure</span>
           <span className="mono font-semibold">
             {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
           </span>
         </div>
-        <div className="li !py-4 text-[18px]">
+        <div className="li !py-4 text-[14px]">
           <span className="text-muted">Durée</span>
           <span className="font-semibold">{formatDuration(b.durationMinutes)}</span>
         </div>
-        <div className="li !py-4 text-[18px]">
+        <div className="li !py-4 text-[14px]">
           <span className="text-muted">Prix</span>
           <span className="font-semibold">{formatDA(b.priceDa)}</span>
         </div>
@@ -86,11 +86,11 @@ export function ProBookingDetail() {
       {b.notes && (
         <div className="sf">
           <span className="s block">Note {salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}</span>
-          <span className="block text-[19px]">« {b.notes} »</span>
+          <span className="block text-[15px]">« {b.notes} »</span>
         </div>
       )}
       {b.cancellationReason && <p className="text-[15px] text-danger">Motif : {b.cancellationReason}</p>}
-      <p className="text-[17px] text-muted">
+      <p className="text-[13px] text-muted">
         {visits.length} rendez-vous{lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
       </p>
       <ErrorMessage error={setStatus.error ?? cancel.error} />
@@ -129,11 +129,11 @@ export function ProBookingDetail() {
           <div className="dim" onClick={() => setCancelling(false)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
-              <div className="text-[24px] font-bold tracking-[-0.4px]">Annuler ce rendez-vous ?</div>
+              <div className="text-[20px] font-bold tracking-[-0.4px]">Annuler ce rendez-vous ?</div>
               <p className="p mt-2">Le client sera prévenu sur WhatsApp et le créneau sera libéré.</p>
             </div>
             <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[19px]">Motif (optionnel)</span>
+              <span className="text-[15px]">Motif (optionnel)</span>
               <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Indisponible" className="!w-auto !bg-transparent !p-0 text-right" maxLength={200} aria-label="Motif" />
             </div>
             <Button
@@ -177,22 +177,22 @@ export function ProBookingReschedule() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/pro/rendez-vous/${b.id}`} right="Reporter" />
       <h1 className="h1">Nouveau créneau</h1>
-      <div className="sf text-[17px] text-muted">
+      <div className="sf text-[13px] text-muted">
         Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} · {b.serviceName}
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li !py-4">
-          <span className="text-[19px]">Date</span>
-          <input type="date" className="bg-transparent text-right text-[19px] outline-none" value={d} min={toLocalDateKey()} onChange={(e) => setDate(e.target.value)} aria-label="Nouvelle date" />
+          <span className="text-[15px]">Date</span>
+          <input type="date" className="bg-transparent text-right text-[15px] outline-none" value={d} min={toLocalDateKey()} onChange={(e) => setDate(e.target.value)} aria-label="Nouvelle date" />
         </label>
         <label className="li !py-4">
-          <span className="text-[19px]">Heure</span>
-          <input type="time" step={300} className="bg-transparent text-right text-[19px] outline-none" value={t} onChange={(e) => setTime(e.target.value)} aria-label="Nouvelle heure" />
+          <span className="text-[15px]">Heure</span>
+          <input type="time" step={300} className="bg-transparent text-right text-[15px] outline-none" value={t} onChange={(e) => setTime(e.target.value)} aria-label="Nouvelle heure" />
         </label>
         {staff.length > 1 && (
           <label className="li !py-4">
-            <span className="text-[19px]">Membre</span>
-            <select className="bg-transparent text-right text-[19px] outline-none" value={sid} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
+            <span className="text-[15px]">Membre</span>
+            <select className="bg-transparent text-right text-[15px] outline-none" value={sid} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
               {staff.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.displayName}

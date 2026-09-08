@@ -30,7 +30,7 @@ export function Bookings() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1 !text-[34px]">{scope === 'past' ? 'Mes rendez-vous' : 'Rendez-vous'}</h1>
+      <h1 className="h1">{scope === 'past' ? 'Mes rendez-vous' : 'Rendez-vous'}</h1>
       <Segmented
         label="Période"
         value={scope}
@@ -49,7 +49,7 @@ export function Bookings() {
         <ErrorMessage error={list.error} retry={() => list.refetch()} />
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-4 pt-14 text-center">
-          <div className="text-[22px] font-bold">{scope === 'upcoming' ? 'Aucun rendez-vous à venir' : 'Aucun rendez-vous passé'}</div>
+          <div className="text-[18px] font-bold">{scope === 'upcoming' ? 'Aucun rendez-vous à venir' : 'Aucun rendez-vous passé'}</div>
           <p className="p">Réservez en quelques secondes dans le salon de votre choix.</p>
           <LinkButton to="/" className="mt-2">
             Explorer les salons
@@ -61,7 +61,7 @@ export function Bookings() {
           return (
             <div key={b.id} role="link" tabIndex={0} onClick={() => navigate(`/rendez-vous/${b.id}`)} onKeyDown={(e) => e.key === 'Enter' && navigate(`/rendez-vous/${b.id}`)} className="crd !gap-4 cursor-pointer">
               <div className="flex items-center justify-between gap-3">
-                <span className={`text-[22px] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}>
+                <span className={`text-[18px] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}>
                   {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} · {formatTimeDZ(b.startsAt)}
                 </span>
                 <StatusBadge status={b.status} md />
@@ -69,8 +69,8 @@ export function Bookings() {
               <div className="flex items-center gap-3.5">
                 <Img src={b.salon.coverUrl} className={`h-[104px] w-[104px] flex-none !rounded-[16px] ${active ? '' : 'opacity-60'}`} />
                 <span className="min-w-0">
-                  <span className={`block text-[22px] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}>{b.serviceName}</span>
-                  <span className="block text-[17px] text-muted">
+                  <span className={`block text-[18px] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}>{b.serviceName}</span>
+                  <span className="block text-[13px] text-muted">
                     {b.status === 'cancelled' ? `Annulé${b.cancelledBy === 'salon' ? ' par le salon' : ''}` : `${b.salon.name} · ${formatDA(b.priceDa)}`}
                   </span>
                 </span>
@@ -84,7 +84,7 @@ export function Bookings() {
                     <Button
                       variant="g"
                       sm
-                      className="!py-[18px] !text-[17px]"
+                      className="!py-[18px] !text-[13px]"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -105,8 +105,8 @@ export function Bookings() {
             <div className="flex items-center gap-3.5">
               <Avatar src={b.salon.coverUrl} name={b.salon.name} size={84} />
               <span className="min-w-0 flex-1">
-                <span className="block text-[22px] font-bold tracking-[-0.4px]">{b.salon.name}</span>
-                <span className="block text-[17px] text-muted">
+                <span className="block text-[18px] font-bold tracking-[-0.4px]">{b.salon.name}</span>
+                <span className="block text-[13px] text-muted">
                   {dayMonth(b.startsAt)} · {b.serviceName}
                   {b.status !== 'cancelled' ? ` · ${formatDA(b.priceDa)}` : ''}
                 </span>
@@ -115,10 +115,10 @@ export function Bookings() {
             </div>
             {b.status === 'completed' && (
               <div className="flex gap-2.5">
-                <LinkButton to={`/s/${b.salon.slug}/prestations`} variant="g" sm className="flex-1 !py-[18px] !text-[18px]">
+                <LinkButton to={`/s/${b.salon.slug}/prestations`} variant="g" sm className="flex-1 !py-[18px] !text-[14px]">
                   Réserver à nouveau
                 </LinkButton>
-                <LinkButton to={`/rendez-vous/${b.id}/noter`} variant="g" sm auto className="!px-6 !py-[18px] !text-[18px]">
+                <LinkButton to={`/rendez-vous/${b.id}/noter`} variant="g" sm auto className="!px-6 !py-[18px] !text-[14px]">
                   Noter
                 </LinkButton>
               </div>

@@ -54,7 +54,7 @@ export default function Step2Name() {
           Votre lien de réservation
         </Tx>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 18 }}>
-          <Tx size={19} lh={24} numberOfLines={1} style={{ flex: 1 }}>
+          <Tx size={15} lh={20} numberOfLines={1} style={{ flex: 1 }}>
             {publicHost()}/s/{check?.slug || (name.trim() ? '…' : 'votre-salon')}
           </Tx>
           {check && (

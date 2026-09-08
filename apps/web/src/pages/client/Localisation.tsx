@@ -74,7 +74,7 @@ export function Localisation() {
             <I icon={Smartphone} size={20} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[17px] font-semibold">Réglages du téléphone</span>
+            <span className="block text-[13px] font-semibold">Réglages du téléphone</span>
             <span className="p block text-[14px]">Salon DZ · Position · Jamais</span>
           </span>
           <span className="badge b-cn">Refusé</span>
@@ -84,7 +84,7 @@ export function Localisation() {
             <I icon={MapPin} size={20} />
           </span>
           <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[17px] font-semibold">Choisir un quartier</span>
+            <span className="block text-[13px] font-semibold">Choisir un quartier</span>
             <span className="p block text-[14px]">Sans activer la localisation</span>
           </span>
         </Card>
@@ -110,7 +110,7 @@ export function Localisation() {
           <I icon={MapPin} size={22} />
         </span>
         <span className="min-w-0 flex-1 text-left">
-          <span className="block text-[19px] font-semibold">Utiliser ma position actuelle</span>
+          <span className="block text-[15px] font-semibold">Utiliser ma position actuelle</span>
           <span className="p block">{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${nearest ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</span>
         </span>
         {useGps && pos && <I icon={Check} size={22} />}
@@ -123,13 +123,13 @@ export function Localisation() {
         <span className="absolute left-1/2 top-1/2 flex h-[52px] w-[52px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-fab">
           <I icon={MapPin} size={22} />
         </span>
-        <span className="absolute bottom-4 left-6 rounded-full bg-surface px-4 py-2 text-[16px] font-semibold shadow-card">Rayon de {radius} km</span>
+        <span className="absolute bottom-4 left-6 rounded-full bg-surface px-4 py-2 text-[13px] font-semibold shadow-card">Rayon de {radius} km</span>
       </div>
 
       <SectionLabel>Rayon</SectionLabel>
       <div className="g4">
         {RADIUS_OPTIONS.map((r) => (
-          <button key={r} type="button" className={`slot !text-[19px] ${radius === r ? 'on' : ''}`} onClick={() => setRadius(r)} aria-pressed={radius === r}>
+          <button key={r} type="button" className={`slot !text-[15px] ${radius === r ? 'on' : ''}`} onClick={() => setRadius(r)} aria-pressed={radius === r}>
             {r} km
           </button>
         ))}
@@ -153,7 +153,7 @@ export function Localisation() {
               <span className="flex items-center gap-3.5">
                 <I icon={MapPin} size={20} className="text-subtle" />
                 <span>
-                  <span className={`block text-[20px] font-semibold ${on ? '' : 'text-muted'}`}>{c.city}</span>
+                  <span className={`block text-[16px] font-semibold ${on ? '' : 'text-muted'}`}>{c.city}</span>
                   <span className="p block">
                     {c.salonCount} professionnel{c.salonCount > 1 ? 's' : ''}
                     {formatKm(c.distanceKm) ? ` · ${formatKm(c.distanceKm)}` : ''}
@@ -169,7 +169,7 @@ export function Localisation() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[22px] font-bold tracking-[-0.4px]">
+            <div className="text-[18px] font-bold tracking-[-0.4px]">
               {count} résultat{count > 1 ? 's' : ''}
             </div>
             <div className="p">

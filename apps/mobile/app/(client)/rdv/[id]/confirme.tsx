@@ -17,7 +17,7 @@ import { C } from '@/theme/design';
 export function CalendarSheet({ booking, open: isOpen, onClose }: { booking: BookingWithSalon; open: boolean; onClose: () => void }) {
   return (
     <ModalSheet open={isOpen} onClose={onClose}>
-      <Tx size={22} weight={600} ls={-0.3} lh={27} center>
+      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
         Ajouter au calendrier
       </Tx>
       <Rows>
@@ -35,7 +35,7 @@ export function CalendarSheet({ booking, open: isOpen, onClose }: { booking: Boo
             <IconButton lg accessibilityLabel="Google Agenda" onPress={() => void open(googleCalendarUrl(booking))}>
               <I icon={Calendar} size={20} />
             </IconButton>
-            <Tx size={19} lh={24}>
+            <Tx size={15} lh={20}>
               Google Agenda
             </Tx>
           </View>
@@ -73,7 +73,7 @@ export default function BookingConfirmed() {
         <View style={{ width: 148, height: 148, borderRadius: 74, backgroundColor: C.okBg, alignItems: 'center', justifyContent: 'center' }}>
           <I icon={Check} size={56} color={C.okFg} />
         </View>
-        <H1 size={34} lh={38} ls={-0.8} center>
+        <H1 size={28} lh={32} ls={-0.8} center>
           {confirmed ? 'Rendez-vous' : 'Demande'}
           {'\n'}
           {confirmed ? 'confirmé' : 'envoyée'}
@@ -83,28 +83,28 @@ export default function BookingConfirmed() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 8 }}>
           <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={22} weight={700} ls={-0.4} lh={27}>
+            <Tx size={18} weight={700} ls={-0.4} lh={23}>
               {b.salon.name}
             </Tx>
-            <Tx size={16} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={19}>
               {b.salon.city}
               {b.salon.phone ? ` · ${formatDZPhone(b.salon.phone)}` : ''}
             </Tx>
           </View>
         </View>
         <Rows>
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{b.serviceName}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{b.serviceName}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Prestation
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Date et heure
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{formatDA(b.priceDa)}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDA(b.priceDa)}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Total
             </Tx>
           </Row>

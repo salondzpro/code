@@ -36,8 +36,8 @@ export function Settings() {
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
           <span>
-            <span className="block text-[19px]">Rappels WhatsApp</span>
-            <span className="p block text-[16px]">2 h avant le rendez-vous</span>
+            <span className="block text-[15px]">Rappels WhatsApp</span>
+            <span className="p block text-[13px]">2 h avant le rendez-vous</span>
           </span>
           <Toggle
             on={reminders}
@@ -50,15 +50,15 @@ export function Settings() {
         </div>
         <div className="li !py-4">
           <span>
-            <span className="block text-[19px]">Confirmations</span>
-            <span className="p block text-[16px]">Réservation, report, annulation</span>
+            <span className="block text-[15px]">Confirmations</span>
+            <span className="p block text-[13px]">Réservation, report, annulation</span>
           </span>
           <Toggle on={confirmations} onChange={setConfirmations} label="Confirmations" />
         </div>
         <div className="li !py-4">
           <span>
-            <span className="block text-[19px]">Nouveautés des salons suivis</span>
-            <span className="p block text-[16px]">Maximum une fois par semaine</span>
+            <span className="block text-[15px]">Nouveautés des salons suivis</span>
+            <span className="p block text-[13px]">Maximum une fois par semaine</span>
           </span>
           <Toggle on={news} onChange={setNews} label="Nouveautés" />
         </div>
@@ -67,16 +67,16 @@ export function Settings() {
       <SectionLabel>Préférences</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
-          <span className="text-[19px]">Langue</span>
-          <span className="text-[19px] text-muted">Français</span>
+          <span className="text-[15px]">Langue</span>
+          <span className="text-[15px] text-muted">Français</span>
         </div>
         <Link to="/marche?next=/reglages" className="li !py-4">
-          <span className="text-[19px]">Catalogue affiché</span>
-          <span className="text-[19px] text-muted">{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</span>
+          <span className="text-[15px]">Catalogue affiché</span>
+          <span className="text-[15px] text-muted">{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</span>
         </Link>
         <Link to="/localisation" className="li !py-4">
-          <span className="text-[19px]">Ville</span>
-          <span className="text-[19px] text-muted">{prefs.city ?? wilayaName(prefs.wilaya)}</span>
+          <span className="text-[15px]">Ville</span>
+          <span className="text-[15px] text-muted">{prefs.city ?? wilayaName(prefs.wilaya)}</span>
         </Link>
       </div>
 
@@ -84,22 +84,22 @@ export function Settings() {
       <div className="crd !gap-0 !py-1" id="contact">
         <div className="li !py-4">
           <span>
-            <span className="block text-[19px]">Session</span>
-            <span className="p block text-[16px]">{p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}</span>
+            <span className="block text-[15px]">Session</span>
+            <span className="p block text-[13px]">{p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}</span>
           </span>
           <Badge tone="ok" md>
             Active
           </Badge>
         </div>
         <ListRow to="/confidentialite">
-          <span className="text-[19px]">Confidentialité</span>
+          <span className="text-[15px]">Confidentialité</span>
         </ListRow>
         <ListRow onClick={() => window.open(`mailto:contact@salondz.dz?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`)}>
-          <span className="text-[19px]">Supprimer mes données</span>
+          <span className="text-[15px]">Supprimer mes données</span>
         </ListRow>
         <button
           type="button"
-          className="li w-full text-left text-[19px] text-danger"
+          className="li w-full text-left text-[15px] text-danger"
           onClick={async () => {
             await signOut();
             navigate('/intro', { replace: true });

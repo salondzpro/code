@@ -59,7 +59,7 @@ export default function Step3Identity() {
           </Img>
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Tx size={17} lh={22}>
+          <Tx size={13} lh={18}>
             Format carré, visage ou logo centré
           </Tx>
           <P>JPG ou PNG · 2 Mo max</P>

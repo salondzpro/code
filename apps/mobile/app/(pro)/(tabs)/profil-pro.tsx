@@ -43,7 +43,7 @@ export default function ProProfile() {
 
   return (
     <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={34} lh={38} ls={-0.8}>
+      <H1 size={28} lh={32} ls={-0.8}>
         Profil
       </H1>
 
@@ -54,10 +54,10 @@ export default function ProProfile() {
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
           </Pressable>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={22} weight={700} ls={-0.4} lh={27}>
+            <Tx size={18} weight={700} ls={-0.4} lh={23}>
               {salon.name}
             </Tx>
-            <Tx size={16} color={C.muted} lh={22} numberOfLines={1}>
+            <Tx size={13} color={C.muted} lh={19} numberOfLines={1}>
               {short}
             </Tx>
           </View>
@@ -86,7 +86,7 @@ export default function ProProfile() {
       <SectionLabel>Établissement</SectionLabel>
       <ListCard>
         <Row py={16} to="/salon">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Adresse et zone
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>
@@ -94,7 +94,7 @@ export default function ProProfile() {
           </Tx>
         </Row>
         <Row py={16} to="/onboarding/5">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Catalogue
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>
@@ -114,7 +114,7 @@ export default function ProProfile() {
             ) : undefined
           }
         >
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Description du salon
           </Tx>
           {desc === null && (
@@ -148,27 +148,27 @@ export default function ProProfile() {
       <SectionLabel>Planning</SectionLabel>
       <ListCard>
         <Row py={16} to="/reglages-pro/horaires">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Horaires
           </Tx>
         </Row>
         <Row py={16} to="/reglages-pro/regles">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Créneaux et règles de réservation
           </Tx>
         </Row>
         <Row py={16} to="/blocages">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Fermetures et exceptions
           </Tx>
         </Row>
         <Row py={16} onPress={() => router.push('/(pro)/(tabs)/equipe')}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Équipe
           </Tx>
         </Row>
         <Row py={16} to="/lien">
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Lien, QR code et partage
           </Tx>
         </Row>
@@ -177,7 +177,7 @@ export default function ProProfile() {
       <SectionLabel>Réservation en ligne</SectionLabel>
       <ListCard>
         <Row py={16} chevron={false} right={<Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v }, { onError: (e) => setError(errorText(e)) })} label="Page publiée" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Page publiée
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>
@@ -185,7 +185,7 @@ export default function ProProfile() {
           </Tx>
         </Row>
         <Row py={16} chevron={false} right={<Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Validation manuelle
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>
@@ -198,7 +198,7 @@ export default function ProProfile() {
       <SectionLabel>Compte</SectionLabel>
       <ListCard>
         <Row py={16} chevron={false} right={<Badge tone="ok" md>Active</Badge>}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             {me.data?.profile.fullName ?? 'Vous'}
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>
@@ -206,7 +206,7 @@ export default function ProProfile() {
           </Tx>
         </Row>
         <Row py={16} onPress={() => router.replace('/(client)/(tabs)')}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Espace client
           </Tx>
         </Row>
@@ -218,7 +218,7 @@ export default function ProProfile() {
           }}
           style={{ paddingVertical: 16 }}
         >
-          <Tx size={19} lh={24} color={C.danger}>
+          <Tx size={15} lh={20} color={C.danger}>
             Se déconnecter
           </Tx>
         </Pressable>

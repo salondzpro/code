@@ -63,10 +63,10 @@ export default function AgendaPro() {
     view === 'day' ? (
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <View>
-          <Tx size={19} color={C.muted} lh={24}>
+          <Tx size={15} color={C.muted} lh={20}>
             {DAY_LABELS_FR[dayOfWeekFromKey(date)]}
           </Tx>
-          <Tx size={32} weight={700} ls={-0.8} lh={36}>
+          <Tx size={28} weight={700} ls={-0.8} lh={32}>
             {Number(date.slice(8, 10))} {MONTHS_FR[Number(date.slice(5, 7)) - 1]}
           </Tx>
         </View>
@@ -85,10 +85,10 @@ export default function AgendaPro() {
     ) : (
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Tx size={19} color={C.muted} lh={24}>
+          <Tx size={15} color={C.muted} lh={20}>
             {view === 'week' ? `Semaine ${isoWeek(date)} · ${MONTHS_FR[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}` : date.slice(0, 4)}
           </Tx>
-          <Tx size={34} weight={700} ls={-0.8} lh={38}>
+          <Tx size={28} weight={700} ls={-0.8} lh={32}>
             {view === 'week' ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS_FR[Number(week[6]!.slice(5, 7)) - 1]}` : MONTHS_FR[Number(date.slice(5, 7)) - 1]!.replace(/^\p{L}/u, (c) => c.toUpperCase())}
           </Tx>
         </View>
@@ -131,11 +131,11 @@ export default function AgendaPro() {
         <>
           <DayStrip weekOf={date} selected={date} onSelect={setDate} disabledDays={closedDays} />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Tx size={19} lh={24}>
-              <Tx size={19} weight={700} lh={24}>
+            <Tx size={15} lh={20}>
+              <Tx size={15} weight={700} lh={20}>
                 {dayItems.length} rendez-vous
               </Tx>{' '}
-              <Tx size={19} color={C.muted} lh={24}>
+              <Tx size={15} color={C.muted} lh={20}>
                 · {formatDA(dayRevenue)}
               </Tx>
             </Tx>
@@ -253,7 +253,7 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         const t = tone(toneOf(b));
         return (
           <Pressable key={b.id} accessibilityRole="button" accessibilityLabel={`${b.clientName} · ${b.serviceName}`} onPress={() => onOpen(b.id)} style={{ position: 'absolute', left: 58, right: 0, top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4), overflow: 'hidden', borderRadius: 12, borderLeftWidth: 3, borderLeftColor: t.line, backgroundColor: t.bg, paddingHorizontal: 12, paddingVertical: 8 }}>
-            <Tx size={17} weight={600} lh={22} color={t.fg} numberOfLines={1}>
+            <Tx size={13} weight={600} lh={18} color={t.fg} numberOfLines={1}>
               {b.clientName} · {b.serviceName}
             </Tx>
             <Tx size={14} lh={18} color={t.fg} mono style={{ opacity: 0.8 }}>
@@ -297,14 +297,14 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
     <View style={{ gap: 16 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
         <View style={{ backgroundColor: C.fill, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8 }}>
-          <Tx size={17} weight={600} lh={22}>
+          <Tx size={13} weight={600} lh={18}>
             {total} rendez-vous
           </Tx>
         </View>
         <Badge tone="ok" md>
           {formatDA(revenue)}
         </Badge>
-        <Tx size={17} color={C.muted} lh={22}>
+        <Tx size={13} color={C.muted} lh={18}>
           {occupancy} % occupé
         </Tx>
       </View>
@@ -327,7 +327,7 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
                 {DAY_LABELS_SHORT_FR[dow]}
               </Tx>
               <View style={{ height: 36, width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: on ? C.ink : 'transparent' }}>
-                <Tx size={19} weight={700} lh={24} color={on ? '#fff' : closed ? C.disabled : C.text}>
+                <Tx size={15} weight={700} lh={20} color={on ? '#fff' : closed ? C.disabled : C.text}>
                   {Number(d.slice(8, 10))}
                 </Tx>
               </View>
@@ -391,7 +391,7 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
               const dots = (byDay.get(d) ?? []).slice(0, 4);
               return (
                 <Pressable key={d} accessibilityRole="button" accessibilityLabel={d} onPress={() => (on ? onOpenDay(d) : onSelect(d))} style={[{ flex: 1, height: 74, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 14, borderWidth: 1, borderColor: on ? C.ink : inMonth ? C.lineSoft : 'transparent', backgroundColor: on ? C.ink : inMonth ? C.surface : 'transparent' }, closed && !on ? HATCH : null]}>
-                  <Tx size={19} weight={on || d === today ? 700 : 400} lh={24} color={on ? '#fff' : !inMonth || closed ? C.disabled : C.text}>
+                  <Tx size={15} weight={on || d === today ? 700 : 400} lh={20} color={on ? '#fff' : !inMonth || closed ? C.disabled : C.text}>
                     {Number(d.slice(8, 10))}
                   </Tx>
                   <View style={{ flexDirection: 'row', gap: 4, height: 6 }}>
@@ -416,10 +416,10 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
       </View>
       <ListCard>
         <Row py={16} onPress={() => onOpenDay(selected)}>
-          <Tx size={21} weight={700} ls={-0.3} lh={26}>
+          <Tx size={17} weight={700} ls={-0.3} lh={22}>
             {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))} {MONTHS_FR[Number(selected.slice(5, 7)) - 1]}
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             {list.length} rendez-vous · {formatDA(revenue)}
           </Tx>
         </Row>
@@ -428,7 +428,7 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={{ width: 3, height: 28, borderRadius: 2, backgroundColor: tone(toneOf(b)).line }} />
               <View style={{ flex: 1 }}>
-                <Tx size={17} lh={22}>
+                <Tx size={13} lh={18}>
                   {b.clientName} · {b.serviceName}
                 </Tx>
                 <Tx size={14} color={C.muted} lh={18} mono>

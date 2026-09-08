@@ -80,20 +80,20 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
         {rows.map((r) => (
           <Row key={r.dayOfWeek} py={16} chevron={false} right={<Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Tx size={19} lh={24} color={r.open ? C.text : C.subtle} style={{ width: 104 }}>
+              <Tx size={15} lh={20} color={r.open ? C.text : C.subtle} style={{ width: 104 }}>
                 {DAY_LABELS_FR[r.dayOfWeek]}
               </Tx>
               {r.open ? (
                 <>
                   <TimeField value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} label={`Ouverture ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
-                  <Tx size={19} color={C.muted} lh={24}>
+                  <Tx size={15} color={C.muted} lh={20}>
                     {' '}
                     –{' '}
                   </Tx>
                   <TimeField value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} label={`Fermeture ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
                 </>
               ) : (
-                <Tx size={19} color={C.disabled} lh={24}>
+                <Tx size={15} color={C.disabled} lh={20}>
                   Fermé
                 </Tx>
               )}
@@ -110,7 +110,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
               {lunch && (
                 <>
                   <TimeField value={lunchFrom} onChange={setLunchFrom} label="Début de pause" step={15} />
-                  <Tx size={19} color={C.muted} lh={24}>
+                  <Tx size={15} color={C.muted} lh={20}>
                     –
                   </Tx>
                   <TimeField value={lunchTo} onChange={setLunchTo} label="Fin de pause" step={15} />
@@ -120,12 +120,12 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
             </View>
           }
         >
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Pause déjeuner
           </Tx>
         </Row>
-        <Row py={16} chevron={false} right={<Tx size={19} color={C.muted} lh={24}>Dimanche</Tx>}>
-          <Tx size={19} lh={24}>
+        <Row py={16} chevron={false} right={<Tx size={15} color={C.muted} lh={20}>Dimanche</Tx>}>
+          <Tx size={15} lh={20}>
             Semaine commençant
           </Tx>
         </Row>

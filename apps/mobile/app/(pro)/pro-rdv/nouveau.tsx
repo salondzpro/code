@@ -66,7 +66,7 @@ export default function ProBookingNew() {
         <BottomSheet>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={24} weight={700} ls={-0.4} lh={29}>
+              <Tx size={20} weight={700} ls={-0.4} lh={25}>
                 {formatDA(total)}
               </Tx>
               <P>{chosen.length ? `${chosen.length} prestation${chosen.length > 1 ? 's' : ''} · ${formatDuration(minutes)}` : 'Choisissez une prestation'}</P>
@@ -94,7 +94,7 @@ export default function ProBookingNew() {
           const on = services.includes(s.id);
           return (
             <Row key={s.id} py={12} chevron={false} accessibilityLabel={s.name} onPress={() => setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))} right={<Checkbox on={on} label={s.name} />}>
-              <Tx size={19} weight={600} lh={24}>
+              <Tx size={15} weight={600} lh={20}>
                 {s.name}
               </Tx>
               <Tx size={15} color={C.muted} lh={20}>

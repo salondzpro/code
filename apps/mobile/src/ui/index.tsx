@@ -322,7 +322,7 @@ export function Segmented<T extends string>({ options, value, onChange, label }:
         const on = o.value === value;
         return (
           <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={[{ flex: 1, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 8, alignItems: 'center', backgroundColor: on ? C.surface : 'transparent' }, on && SHADOW.seg]}>
-            <Tx size={16} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={20}>
+            <Tx size={13} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={17}>
               {o.label}
             </Tx>
           </Pressable>

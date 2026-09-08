@@ -71,24 +71,24 @@ export default function BookingReview() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 8 }}>
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={72} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={22} weight={700} ls={-0.4} lh={27}>
+            <Tx size={18} weight={700} ls={-0.4} lh={23}>
               {s.name}
             </Tx>
-            <Tx size={16} color={C.muted} lh={22} numberOfLines={1}>
+            <Tx size={13} color={C.muted} lh={19} numberOfLines={1}>
               {s.zone ?? s.city}, {wilayaName(s.wilayaCode)} · {publicHost()}/s/{s.slug}
             </Tx>
           </View>
         </View>
         <Rows>
           {chosen.map((sv) => (
-            <Row key={sv!.id} py={16} chevron={false} right={<Tx size={18} color={C.muted} lh={23}>{formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}</Tx>}>
-              <Tx size={18} lh={23}>
+            <Row key={sv!.id} py={16} chevron={false} right={<Tx size={14} color={C.muted} lh={19}>{formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}</Tx>}>
+              <Tx size={14} lh={19}>
                 {sv!.name}
               </Tx>
             </Row>
           ))}
-          <Row py={16} chevron={false} right={<Tx size={18} color={C.muted} lh={23} mono>{start} → {end}</Tx>}>
-            <Tx size={18} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} color={C.muted} lh={19} mono>{start} → {end}</Tx>}>
+            <Tx size={14} lh={19}>
               {formatDateLongDZ(draft.startsAt)}
             </Tx>
           </Row>
@@ -96,10 +96,10 @@ export default function BookingReview() {
       </Card>
       <Card gap={4}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Tx size={22} weight={600} lh={27}>
+          <Tx size={18} weight={600} lh={23}>
             Total
           </Tx>
-          <Tx size={24} weight={700} lh={29}>
+          <Tx size={20} weight={700} lh={25}>
             {formatDA(price)}
           </Tx>
         </View>

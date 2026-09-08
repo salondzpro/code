@@ -19,7 +19,7 @@ export default function Intro() {
         <Image source={{ uri: DESIGN_IMAGES.intro.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
         <Overlay />
         <View style={{ position: 'absolute', left: 20, right: 20, bottom: 20 }}>
-          <Tx size={30} weight={700} color="#fff" ls={-0.8} lh={33}>
+          <Tx size={26} weight={700} color="#fff" ls={-0.8} lh={29}>
             Réservez votre{'\n'}rendez-vous.
           </Tx>
         </View>

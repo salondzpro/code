@@ -65,7 +65,7 @@ export default function CategoryResults() {
         <ErrorText error={query.error} retry={() => void query.refetch()} />
       ) : (
         <>
-          <Tx size={17} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={18}>
             {total} {noun} autour {/^[aeiouyhé]/i.test(prefs.label) ? "d'" : 'de '}
             {prefs.label}
           </Tx>

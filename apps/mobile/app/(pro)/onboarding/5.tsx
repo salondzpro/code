@@ -59,7 +59,7 @@ export default function Step5Catalog() {
       footer={
         <BottomSheet>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <Tx size={19} color={C.muted} lh={24} style={{ flex: 1 }}>
+            <Tx size={15} color={C.muted} lh={20} style={{ flex: 1 }}>
               {selected.length} prestation{selected.length > 1 ? 's' : ''} sélectionnée{selected.length > 1 ? 's' : ''}
             </Tx>
             <Button pill onPress={() => void next()} disabled={updateSalon.isPending} loading={updateSalon.isPending} style={{ paddingHorizontal: 28, paddingVertical: 14 }}>
@@ -72,19 +72,19 @@ export default function Step5Catalog() {
       <StepBar step={5} backTo="/(pro)/(tabs)" />
       <H1>Vos prestations</H1>
       <Soft style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 20 }}>
-        <Tx size={19} lh={24}>
+        <Tx size={15} lh={20}>
           Catalogue :{' '}
-          <Tx size={19} weight={700} lh={24}>
+          <Tx size={15} weight={700} lh={20}>
             {MARKET_LABELS_FR[market]}
           </Tx>
         </Tx>
         <Pressable accessibilityRole="link" onPress={() => router.push('/(pro)/(tabs)/profil-pro')}>
-          <Tx size={17} weight={600} color={C.muted} lh={22}>
+          <Tx size={13} weight={600} color={C.muted} lh={18}>
             Modifier
           </Tx>
         </Pressable>
       </Soft>
-      <Tx size={19} color={C.muted} lh={27}>
+      <Tx size={15} color={C.muted} lh={23}>
         Cochez ce que vous proposez. Vous fixerez prix, durée et photos à l'étape suivante.
       </Tx>
       <ListCard>
@@ -95,10 +95,10 @@ export default function Step5Catalog() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
                 <Img src={salon.coverUrl} radius={16} style={{ width: 88, height: 88 }} />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={21} weight={700} ls={-0.3} lh={26}>
+                  <Tx size={17} weight={700} ls={-0.3} lh={22}>
                     {c.labelFr}
                   </Tx>
-                  <Tx size={16} color={C.muted} lh={22}>
+                  <Tx size={13} color={C.muted} lh={19}>
                     {HINTS[c.id] ?? ''}
                   </Tx>
                 </View>

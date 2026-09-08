@@ -72,7 +72,7 @@ export function ProBookingNew() {
           return (
             <button key={s.id} type="button" className="li w-full !py-3 text-left" onClick={() => setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))} aria-pressed={on}>
               <span>
-                <span className="block text-[19px] font-semibold">{s.name}</span>
+                <span className="block text-[15px] font-semibold">{s.name}</span>
                 <span className="p block text-[15px]">
                   {formatDuration(s.durationMinutes)} · {formatDA(s.priceDa)}
                 </span>
@@ -86,17 +86,17 @@ export function ProBookingNew() {
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li !py-4">
-          <span className="text-[19px]">Date</span>
-          <input type="date" className="bg-transparent text-right text-[19px] outline-none" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" />
+          <span className="text-[15px]">Date</span>
+          <input type="date" className="bg-transparent text-right text-[15px] outline-none" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" />
         </label>
         <label className="li !py-4">
-          <span className="text-[19px]">Heure</span>
-          <input type="time" step={300} className="bg-transparent text-right text-[19px] outline-none" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" />
+          <span className="text-[15px]">Heure</span>
+          <input type="time" step={300} className="bg-transparent text-right text-[15px] outline-none" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" />
         </label>
         {staff.length > 1 && (
           <label className="li !py-4">
-            <span className="text-[19px]">Membre</span>
-            <select className="bg-transparent text-right text-[19px] outline-none" value={staffId || staff[0]!.id} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
+            <span className="text-[15px]">Membre</span>
+            <select className="bg-transparent text-right text-[15px] outline-none" value={staffId || staff[0]!.id} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
               {staff.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.displayName}
@@ -114,7 +114,7 @@ export function ProBookingNew() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[24px] font-bold tracking-[-0.4px]">{formatDA(total)}</div>
+            <div className="text-[20px] font-bold tracking-[-0.4px]">{formatDA(total)}</div>
             <div className="p">{chosen.length ? `${chosen.length} prestation${chosen.length > 1 ? 's' : ''} · ${formatDuration(minutes)}` : 'Choisissez une prestation'}</div>
           </div>
           <Button auto className="!rounded-full !px-7 !py-3.5" onClick={() => void submit()} disabled={createWalkIn.isPending}>

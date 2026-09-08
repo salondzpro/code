@@ -61,14 +61,14 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
         <Field label="Prix">
           <View>
             <Input lg keyboardType="number-pad" value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, ''))} placeholder="2 500" accessibilityLabel="Prix" style={{ paddingRight: 48 }} />
-            <Tx size={17} lh={22} style={{ position: 'absolute', right: 16, top: 18 }}>
+            <Tx size={13} lh={18} style={{ position: 'absolute', right: 16, top: 18 }}>
               DA
             </Tx>
           </View>
         </Field>
         <Field label="Durée">
           <View style={{ backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 18, paddingHorizontal: 16 }} accessibilityLabel="Durée">
-            <Tx size={17} lh={22}>
+            <Tx size={13} lh={18}>
               {formatDuration(duration)}
             </Tx>
           </View>
@@ -99,7 +99,7 @@ import { I } from '@/ui';
 function Pressable_({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel="Catégorie" onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 18, paddingHorizontal: 16 }}>
-      <Tx size={17} lh={22}>
+      <Tx size={13} lh={18}>
         {label}
       </Tx>
       <I icon={ChevronDown} size={18} color={C.subtle} />

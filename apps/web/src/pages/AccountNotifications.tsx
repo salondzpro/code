@@ -20,7 +20,7 @@ export function AccountNotifications() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Notifications</h1>
+      <h1 className="text-xl font-bold">Notifications</h1>
       {notifs.data.items.length === 0 ? (
         <EmptyState title="Rien pour le moment" description="Vos confirmations et rappels apparaîtront ici." />
       ) : (

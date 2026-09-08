@@ -34,7 +34,7 @@ export function Step1Market() {
             </span>
           )}
           <div className="ovl-t">
-            <div className="text-[26px] font-bold leading-[1.1] tracking-[-0.6px]">{MARKET_LABELS_FR[c.id]}</div>
+            <div className="text-[22px] font-bold leading-[1.1] tracking-[-0.6px]">{MARKET_LABELS_FR[c.id]}</div>
             <div className="mt-1 text-[14px] leading-[1.35] text-white/85">
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)

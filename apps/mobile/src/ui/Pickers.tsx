@@ -16,7 +16,7 @@ export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }:
     <Row py={py} onPress={onPress} chevron={false} accessibilityLabel={label} right={
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '55%' }}>
         {typeof value === 'string' ? (
-          <Tx size={19} lh={24} color={muted ? C.muted : C.text} numberOfLines={1} right>
+          <Tx size={15} lh={20} color={muted ? C.muted : C.text} numberOfLines={1} right>
             {value}
           </Tx>
         ) : (
@@ -25,11 +25,11 @@ export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }:
         {onPress && <I icon={ChevronDown} size={16} color={C.subtle} />}
       </View>
     }>
-      <Tx size={19} lh={24}>
+      <Tx size={15} lh={20}>
         {label}
       </Tx>
       {hint && (
-        <Tx size={16} color={C.muted} lh={22}>
+        <Tx size={13} color={C.muted} lh={19}>
           {hint}
         </Tx>
       )}
@@ -40,7 +40,7 @@ export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }:
 export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange }: { open: boolean; onClose: () => void; title: string; options: { value: T; label: string; hint?: string }[]; value: T | null | undefined; onChange: (v: T) => void }) {
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
-      <Tx size={22} weight={600} ls={-0.3} lh={27} center>
+      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
         {title}
       </Tx>
       <ListCard>
@@ -55,7 +55,7 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
               onClose();
             }}
           >
-            <Tx size={19} lh={24}>
+            <Tx size={15} lh={20}>
               {o.label}
             </Tx>
             {o.hint && <P>{o.hint}</P>}
@@ -72,7 +72,7 @@ export function TimeSheet({ open, onClose, title = 'Heure', value, onChange, fro
   for (let m = timeToMinutes(from); m <= timeToMinutes(to); m += step) times.push(minutesToTime(m));
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
-      <Tx size={22} weight={600} ls={-0.3} lh={27} center>
+      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
         {title}
       </Tx>
       <Grid cols={4} gap={8}>
@@ -99,7 +99,7 @@ export function DateSheet({ open, onClose, title = 'Date', value, onChange, minD
   const [sel, setSel] = useState(value);
   return (
     <ModalSheet open={open} onClose={onClose}>
-      <Tx size={22} weight={600} ls={-0.3} lh={27} center>
+      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
         {title}
       </Tx>
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={minDate ? addDaysToKey(weekKeys(minDate)[0]!, 0) : undefined} maxDate={maxDate} />

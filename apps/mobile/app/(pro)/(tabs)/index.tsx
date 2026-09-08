@@ -36,10 +36,10 @@ export default function ProHome() {
     <Screen gap={16} bottom={NAV_PAD} refreshing={stats.isRefetching} onRefresh={() => void Promise.all([stats.refetch(), pending.refetch(), todayList.refetch()])}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <View>
-          <Tx size={19} color={C.muted} lh={24}>
+          <Tx size={15} color={C.muted} lh={20}>
             Bonjour, {firstName}
           </Tx>
-          <H1 size={34} lh={38} ls={-0.8}>
+          <H1 size={28} lh={32} ls={-0.8}>
             Votre journée
           </H1>
         </View>
@@ -55,26 +55,26 @@ export default function ProHome() {
       ) : (
         <Grid cols={3}>
           <Card gap={4} pad={20} style={{ backgroundColor: C.ink, borderColor: C.ink, paddingVertical: 24 }}>
-            <Tx size={34} weight={700} ls={-0.8} lh={36} color="#fff">
+            <Tx size={28} weight={700} ls={-0.8} lh={30} color="#fff">
               {stats.data.todayCount}
             </Tx>
-            <Tx size={17} color={C.white70} lh={22}>
+            <Tx size={13} color={C.white70} lh={18}>
               rendez-vous
             </Tx>
           </Card>
           <Card gap={4} pad={20} style={{ paddingVertical: 24 }}>
-            <Tx size={34} weight={700} ls={-0.8} lh={36} color={stats.data.pendingCount ? C.pendingFg : C.text}>
+            <Tx size={28} weight={700} ls={-0.8} lh={30} color={stats.data.pendingCount ? C.pendingFg : C.text}>
               {stats.data.pendingCount}
             </Tx>
-            <Tx size={17} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={18}>
               en attente
             </Tx>
           </Card>
           <Card gap={4} pad={20} style={{ paddingVertical: 24 }}>
-            <Tx size={34} weight={700} ls={-0.8} lh={36}>
+            <Tx size={28} weight={700} ls={-0.8} lh={30}>
               {compactDA(stats.data.todayRevenueDa)}
             </Tx>
-            <Tx size={17} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={18}>
               DA prévu
             </Tx>
           </Card>
@@ -84,7 +84,7 @@ export default function ProHome() {
       <SectionLabel
         right={
           <Pressable accessibilityRole="link" accessibilityLabel="Voir toutes les demandes" onPress={() => router.push('/reservations')}>
-            <Tx size={19} weight={700} lh={24}>
+            <Tx size={15} weight={700} lh={20}>
               {pending.data?.items.length ?? 0}
             </Tx>
           </Pressable>
@@ -98,22 +98,22 @@ export default function ProHome() {
             <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <Avatar name={b.clientName} size={68} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={24} weight={700} ls={-0.4} lh={29}>
+                <Tx size={20} weight={700} ls={-0.4} lh={25}>
                   {b.clientName}
                 </Tx>
-                <Tx size={17} color={C.muted} lh={23}>
+                <Tx size={13} color={C.muted} lh={19}>
                   {b.serviceName} · {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
                 </Tx>
               </View>
             </Pressable>
             <Grid cols={2}>
               <Button sm style={{ paddingVertical: 18 }} disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
-                <Tx size={18} weight={600} color="#fff" ls={-0.2}>
+                <Tx size={14} weight={600} color="#fff" ls={-0.2}>
                   Confirmer
                 </Tx>
               </Button>
               <Button variant="g" sm style={{ paddingVertical: 18 }} onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
-                <Tx size={18} weight={600} ls={-0.2}>
+                <Tx size={14} weight={600} ls={-0.2}>
                   Reporter
                 </Tx>
               </Button>
@@ -127,7 +127,7 @@ export default function ProHome() {
       <SectionLabel
         right={
           <Pressable accessibilityRole="link" onPress={() => router.push('/(pro)/(tabs)/agenda')}>
-            <Tx size={17} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={18}>
               Tout voir
             </Tx>
           </Pressable>
@@ -145,14 +145,14 @@ export default function ProHome() {
         {upcoming.slice(0, 6).map((b) => (
           <Row key={b.id} py={16} chevron={false} onPress={() => router.push(`/pro-rdv/${b.id}` as never)} right={<StatusBadge status={b.status} md />}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-              <Tx size={19} weight={700} lh={24} mono style={{ width: 60 }}>
+              <Tx size={15} weight={700} lh={20} mono style={{ width: 60 }}>
                 {formatTimeDZ(b.startsAt)}
               </Tx>
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={21} weight={700} ls={-0.3} lh={26} color={new Date(b.endsAt).getTime() < now ? C.muted : C.text}>
+                <Tx size={17} weight={700} ls={-0.3} lh={22} color={new Date(b.endsAt).getTime() < now ? C.muted : C.text}>
                   {b.clientName}
                 </Tx>
-                <Tx size={16} color={C.muted} lh={22}>
+                <Tx size={13} color={C.muted} lh={19}>
                   {b.serviceName} · {formatDuration(b.durationMinutes)}
                 </Tx>
               </View>
@@ -173,7 +173,7 @@ export default function ProHome() {
             { v: stats.data?.monthRevenueDa ?? 0, l: 'ce mois' },
           ].map((x, i) => (
             <View key={x.l} style={{ flex: 1, paddingLeft: i ? 16 : 0, borderLeftWidth: i ? 1 : 0, borderLeftColor: C.line }}>
-              <Tx size={22} weight={700} ls={-0.4} lh={27} numberOfLines={1} adjustsFontSizeToFit>
+              <Tx size={18} weight={700} ls={-0.4} lh={23} numberOfLines={1} adjustsFontSizeToFit>
                 {fmt(x.v)}{' '}
                 <Tx size={14} weight={600} color={C.muted} lh={27}>
                   DA

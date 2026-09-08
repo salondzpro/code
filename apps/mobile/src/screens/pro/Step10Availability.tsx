@@ -28,7 +28,7 @@ const CANCEL = [2, 4, 12, 24];
 function BigSlot({ on, onPress, children }: { on: boolean; onPress: () => void; children: string }) {
   return (
     <Slot on={on} onPress={onPress} style={{ paddingVertical: 26 }}>
-      <Tx size={20} weight={500} lh={24} color={on ? C.onInk : C.text} mono>
+      <Tx size={16} weight={500} lh={20} color={on ? C.onInk : C.text} mono>
         {children}
       </Tx>
     </Slot>
@@ -108,18 +108,18 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           <ValueRow label="Temps de battement" hint="Entre deux rendez-vous" value={`${buffer} min`} onPress={() => setSheet('buffer')} />
           <ValueRow label="Rendez-vous simultanés" hint="Nombre de postes" value={String(staffCount)} />
           <Row py={16} chevron={false} right={<Toggle on={online} onChange={setOnline} label="Réservation en ligne" />}>
-            <Tx size={19} lh={24}>
+            <Tx size={15} lh={20}>
               Réservation en ligne
             </Tx>
-            <Tx size={16} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={19}>
               Visible dans la marketplace
             </Tx>
           </Row>
           <Row py={16} chevron={false} right={<Toggle on={manual} onChange={setManual} label="Validation manuelle" />}>
-            <Tx size={19} lh={24}>
+            <Tx size={15} lh={20}>
               Validation manuelle
             </Tx>
-            <Tx size={16} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={19}>
               Vous confirmez chaque demande
             </Tx>
           </Row>
@@ -153,18 +153,18 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <ListCard>
         <ValueRow label="Annulation client" hint="Gratuite jusqu'à" value={`${cancel} h avant`} onPress={() => setSheet('cancel')} />
         <Row py={16} chevron={false} right={<Toggle on={report} onChange={setReport} label="Report client" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Report client
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             Sur demande, avec validation
           </Tx>
         </Row>
         <Row py={16} chevron={false} right={<Toggle on={deposit} onChange={setDeposit} label="Acompte" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Acompte
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             Paiement sur place uniquement
           </Tx>
         </Row>

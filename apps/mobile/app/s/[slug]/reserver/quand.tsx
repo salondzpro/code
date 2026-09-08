@@ -94,10 +94,10 @@ export default function BookingWhen() {
       <Card row gap={14}>
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={20} weight={700} ls={-0.3} lh={25}>
+          <Tx size={16} weight={700} ls={-0.3} lh={21}>
             {s.name}
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
           </Tx>
         </View>
@@ -124,7 +124,7 @@ export default function BookingWhen() {
             <Grid cols={3}>
               {list.map((g) => (
                 <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 22 }}>
-                  <Tx size={20} weight={500} lh={24} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
+                  <Tx size={16} weight={500} lh={20} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
                     {g.time}
                   </Tx>
                 </Slot>

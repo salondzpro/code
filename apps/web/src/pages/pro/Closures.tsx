@@ -106,7 +106,7 @@ export function Closures() {
 
       <div className="crd !gap-0 !px-4 !py-1">
         {blocks.isPending && <Skeleton className="my-3 h-[64px]" />}
-        {blocks.data && items.length === 0 && <p className="p py-4 text-[17px]">Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.</p>}
+        {blocks.data && items.length === 0 && <p className="p py-4 text-[13px]">Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.</p>}
         {items.map((b) => {
           const allDay = isAllDay(b);
           const who = b.staffId ? (staffName.get(b.staffId) ?? 'Membre') : null;
@@ -114,7 +114,7 @@ export function Closures() {
           return (
             <button key={b.id} type="button" className="li w-full !py-4 text-left" onClick={() => setDel(b)}>
               <span className="min-w-0">
-                <span className="block truncate text-[19px]">{title}</span>
+                <span className="block truncate text-[15px]">{title}</span>
                 <span className="mono block text-[15px] text-muted">{describeBlock(b)}</span>
               </span>
               <Badge tone={allDay ? 'cn' : 'pd'} md dot={false}>
@@ -151,8 +151,8 @@ export function Closures() {
         <div>
           {mode === 'reduced' && (
             <div className="li !py-3">
-              <span className="text-[19px]">Fermé de</span>
-              <span className="flex items-center gap-2 text-[19px] text-muted">
+              <span className="text-[15px]">Fermé de</span>
+              <span className="flex items-center gap-2 text-[15px] text-muted">
                 <input type="time" step={300} className="tm" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="De" />
                 <span>à</span>
                 <input type="time" step={300} className="tm" value={to} onChange={(e) => setTo(e.target.value)} aria-label="À" />
@@ -161,8 +161,8 @@ export function Closures() {
           )}
           {active.length > 1 && (
             <label className="li !py-3">
-              <span className="text-[19px]">Concerne</span>
-              <select className="max-w-[55%] bg-transparent text-right text-[19px] text-muted outline-none" value={staffId} onChange={(e) => setStaffId(e.target.value)} aria-label="Concerne">
+              <span className="text-[15px]">Concerne</span>
+              <select className="max-w-[55%] bg-transparent text-right text-[15px] text-muted outline-none" value={staffId} onChange={(e) => setStaffId(e.target.value)} aria-label="Concerne">
                 <option value="">Tout le salon</option>
                 {active.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -173,8 +173,8 @@ export function Closures() {
             </label>
           )}
           <label className="li !border-b-0 !py-3">
-            <span className="text-[19px]">Motif</span>
-            <input className="max-w-[55%] bg-transparent text-right text-[19px] outline-none placeholder:text-subtle" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Congés" maxLength={120} aria-label="Motif (facultatif)" />
+            <span className="text-[15px]">Motif</span>
+            <input className="max-w-[55%] bg-transparent text-right text-[15px] outline-none placeholder:text-subtle" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Congés" maxLength={120} aria-label="Motif (facultatif)" />
           </label>
         </div>
         <p className="text-[15px] leading-[1.45] text-muted">
@@ -198,7 +198,7 @@ export function Closures() {
           <div className="dim" onClick={() => setDel(null)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
-              <div className="text-[24px] font-bold tracking-[-0.4px]">Supprimer cette exception ?</div>
+              <div className="text-[20px] font-bold tracking-[-0.4px]">Supprimer cette exception ?</div>
               <p className="p mt-2">{describeBlock(del)} — les créneaux redeviennent réservables.</p>
             </div>
             <Button

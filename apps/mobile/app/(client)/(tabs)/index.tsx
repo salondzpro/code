@@ -57,16 +57,16 @@ export default function Marketplace() {
         <View style={{ flex: 1, minWidth: 0 }}>
           <Pressable accessibilityRole="link" onPress={() => router.push('/localisation')} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <I icon={MapPin} size={18} color={C.muted} />
-            <Tx size={17} lh={22} numberOfLines={1} style={{ flexShrink: 1 }}>
+            <Tx size={13} lh={18} numberOfLines={1} style={{ flexShrink: 1 }}>
               {prefs.label}
             </Tx>
-            <Tx size={17} lh={22} color={C.muted}>
+            <Tx size={13} lh={18} color={C.muted}>
               · {prefs.radiusKm} km
             </Tx>
             <I icon={ChevronDown} size={16} color={C.subtle} />
           </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 }}>
-            <H1 size={34} lh={38} ls={-0.8}>
+            <H1 size={28} lh={32} ls={-0.8}>
               {MARKET_LABELS_FR[market]}
             </H1>
             <IconButton accessibilityLabel="Changer de marché" onPress={swapMarket} disabled={update.isPending} style={{ width: 36, height: 36, borderRadius: 12 }}>
@@ -82,7 +82,7 @@ export default function Marketplace() {
       {/* Recherche */}
       <Pressable accessibilityRole="search" accessibilityLabel="Rechercher" onPress={() => router.push('/recherche')} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.fill, borderRadius: R.cardSm, paddingVertical: 15, paddingHorizontal: 16 }}>
         <I icon={Search} size={22} color={C.subtle} />
-        <Tx size={16} lh={20} color={q ? C.text : C.subtle} style={{ flex: 1 }} numberOfLines={1}>
+        <Tx size={13} lh={17} color={q ? C.text : C.subtle} style={{ flex: 1 }} numberOfLines={1}>
           {q || PLACEHOLDER[market]}
         </Tx>
         {!!q && (
@@ -108,22 +108,22 @@ export default function Marketplace() {
         <View style={{ flexDirection: 'row', backgroundColor: C.fill, borderRadius: 16, padding: 4, gap: 2 }}>
           <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, backgroundColor: C.surface }, SHADOW.seg]} accessibilityState={{ selected: true }}>
             <I icon={List} size={17} />
-            <Tx size={16} weight={600} lh={20}>
+            <Tx size={13} weight={600} lh={17}>
               Liste
             </Tx>
           </View>
           <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/carte', params: category ? { category } : {} })} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14 }}>
             <I icon={MapIcon} size={17} color={C.muted} />
-            <Tx size={16} weight={500} lh={20} color={C.muted}>
+            <Tx size={13} weight={500} lh={17} color={C.muted}>
               Carte
             </Tx>
           </Pressable>
         </View>
         <Pressable accessibilityRole="button" onPress={() => setSortOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, minWidth: 0, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: R.btn, paddingVertical: 12, paddingHorizontal: 14 }}>
-          <Tx size={16} color={C.muted} lh={20}>
+          <Tx size={13} color={C.muted} lh={17}>
             ⇅
           </Tx>
-          <Tx size={16} weight={500} lh={20} numberOfLines={1} style={{ flexShrink: 1 }}>
+          <Tx size={13} weight={500} lh={17} numberOfLines={1} style={{ flexShrink: 1 }}>
             {sortLabel}
           </Tx>
           <I icon={ChevronDown} size={16} color={C.subtle} />
@@ -144,7 +144,7 @@ export default function Marketplace() {
           <View style={{ width: 128, height: 128, borderRadius: 64, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
             <I icon={Search} size={44} color={C.subtle} />
           </View>
-          <Tx size={24} weight={700} ls={-0.4} lh={28} center style={{ marginTop: 8 }}>
+          <Tx size={20} weight={700} ls={-0.4} lh={24} center style={{ marginTop: 8 }}>
             Aucun professionnel{category ? ` « ${categoryLabel(category as CategoryId)} »` : ''} à {prefs.label}
           </Tx>
           <P center>Essayez d'élargir le rayon ou de retirer un filtre.</P>
@@ -166,7 +166,7 @@ export default function Marketplace() {
         </View>
       ) : (
         <>
-          <Tx size={17} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={18}>
             {total} {noun} disponible{total > 1 ? 's' : ''} aujourd'hui
           </Tx>
           <View style={{ gap: 14 }}>
@@ -179,13 +179,13 @@ export default function Marketplace() {
 
       {/* C-H 05 — Trier par */}
       <ModalSheet open={sortOpen} onClose={() => setSortOpen(false)}>
-        <Tx size={22} weight={600} ls={-0.3} lh={27} center>
+        <Tx size={18} weight={600} ls={-0.3} lh={23} center>
           Trier par
         </Tx>
         <ListCard>
           {SORT_OPTIONS.map((o) => (
             <Row key={o.value} onPress={() => setSortDraft(o.value)} chevron={false} right={sortDraft === o.value ? <I icon={Check} size={20} /> : undefined} accessibilityLabel={o.label}>
-              <Tx size={20} weight={600} lh={25}>
+              <Tx size={16} weight={600} lh={21}>
                 {o.label}
               </Tx>
               <P>{o.hint}</P>

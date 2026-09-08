@@ -88,11 +88,11 @@ export default function ProBookingDetail() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
         <Avatar name={b.clientName} size={128} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <H1 size={30} lh={34} ls={-0.8}>
+          <H1 size={26} lh={30} ls={-0.8}>
             {initials}
           </H1>
           {!!b.clientPhone && (
-            <Tx size={17} color={C.muted} lh={23} style={{ marginTop: 4 }}>
+            <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
               {formatDZPhone(b.clientPhone)}
             </Tx>
           )}
@@ -106,13 +106,13 @@ export default function ProBookingDetail() {
       {!!b.clientPhone && (
         <Grid cols={2}>
           <Button variant="g" style={{ paddingVertical: 18 }} onPress={() => void open(`tel:${b.clientPhone}`)}>
-            <Tx size={18} weight={600} ls={-0.2}>
+            <Tx size={14} weight={600} ls={-0.2}>
               Appeler
             </Tx>
           </Button>
           {!!wa && (
             <Button variant="g" style={{ paddingVertical: 18 }} onPress={() => void open(wa)}>
-              <Tx size={18} weight={600} ls={-0.2}>
+              <Tx size={14} weight={600} ls={-0.2}>
                 WhatsApp
               </Tx>
             </Button>
@@ -122,29 +122,29 @@ export default function ProBookingDetail() {
       <Card gap={0}>
         <Rows>
           {lines.map((it) => (
-            <Row key={it.id} py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{it.serviceName}</Tx>}>
-              <Tx size={18} color={C.muted} lh={23}>
+            <Row key={it.id} py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{it.serviceName}</Tx>}>
+              <Tx size={14} color={C.muted} lh={19}>
                 Prestation
               </Tx>
             </Row>
           ))}
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{capitalize(formatDateShortDZ(b.startsAt))}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{capitalize(formatDateShortDZ(b.startsAt))}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Date
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23} mono>{formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19} mono>{formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Heure
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{formatDuration(b.durationMinutes)}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDuration(b.durationMinutes)}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Durée
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={18} weight={600} lh={23}>{formatDA(b.priceDa)}</Tx>}>
-            <Tx size={18} color={C.muted} lh={23}>
+          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDA(b.priceDa)}</Tx>}>
+            <Tx size={14} color={C.muted} lh={19}>
               Prix
             </Tx>
           </Row>
@@ -155,7 +155,7 @@ export default function ProBookingDetail() {
           <Tx size={13} color={C.muted} lh={18}>
             Note {salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}
           </Tx>
-          <Tx size={19} lh={25}>
+          <Tx size={15} lh={21}>
             « {b.notes} »
           </Tx>
         </Soft>
@@ -165,23 +165,23 @@ export default function ProBookingDetail() {
           Motif : {b.cancellationReason}
         </Tx>
       )}
-      <Tx size={17} color={C.muted} lh={22}>
+      <Tx size={13} color={C.muted} lh={18}>
         {visits.length} rendez-vous{lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
       </Tx>
       <ErrorText error={setStatus.error ?? cancel.error} />
 
       <ModalSheet open={cancelling} onClose={() => setCancelling(false)}>
         <View style={{ alignItems: 'center', gap: 8 }}>
-          <Tx size={24} weight={700} ls={-0.4} lh={29} center>
+          <Tx size={20} weight={700} ls={-0.4} lh={25} center>
             Annuler ce rendez-vous ?
           </Tx>
           <P center>Le client sera prévenu sur WhatsApp et le créneau sera libéré.</P>
         </View>
         <Card row style={{ paddingVertical: 12, justifyContent: 'space-between' }}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Motif (optionnel)
           </Tx>
-          <Input value={reason} onChangeText={setReason} placeholder="Indisponible" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 17 }} />
+          <Input value={reason} onChangeText={setReason} placeholder="Indisponible" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 15 }} />
         </Card>
         <Button
           bg={C.danger}

@@ -50,8 +50,8 @@ export function BookingServices() {
       <button type="button" onClick={() => toggle(sv.id)} className={`flex w-full items-center gap-4 text-left ${boxed ? 'crd !flex-row' : 'li !py-4'}`} aria-pressed={on}>
         <Img src={photo} className="h-[88px] w-[88px] flex-none !rounded-[16px]" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[21px] font-bold tracking-[-0.3px]">{sv.name}</span>
-          <span className="block text-[16px] text-muted">
+          <span className="block text-[17px] font-bold tracking-[-0.3px]">{sv.name}</span>
+          <span className="block text-[13px] text-muted">
             {[formatDuration(sv.durationMinutes), boxed ? sv.description : null, formatDA(sv.priceDa)].filter(Boolean).join(' · ')}
           </span>
         </span>
@@ -88,7 +88,7 @@ export function BookingServices() {
             <p className="p">{chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}</p>
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-[28px] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
+                <div className="text-[24px] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
                 <div className="p">
                   {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)} au total
                 </div>

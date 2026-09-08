@@ -43,7 +43,7 @@ export function Market() {
           <img src={c.img.src} alt="" className="h-full w-full object-cover" />
           <div className="ovl" />
           <div className="ovl-t !bottom-9">
-            <div className="text-[28px] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
+            <div className="text-[24px] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
             <div className="mt-1.5 text-[15px] leading-[1.35] text-white/85">
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)

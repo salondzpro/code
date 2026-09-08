@@ -63,7 +63,7 @@ export function CategoryResults() {
         <ErrorMessage error={query.error} retry={() => query.refetch()} />
       ) : (
         <>
-          <p className="text-[17px] text-muted">
+          <p className="text-[13px] text-muted">
             {total} {noun} autour {/^[aeiouyhé]/i.test(prefs.label) ? "d'" : 'de '}
             {prefs.label}
           </p>

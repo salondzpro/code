@@ -21,10 +21,10 @@ export default function ProQr() {
       <TopBar backTo="/lien" right="QR code" />
       <Card gap={12} style={{ alignItems: 'center', paddingVertical: 32 }}>
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={64} />
-        <Tx size={24} weight={700} ls={-0.4} lh={29}>
+        <Tx size={20} weight={700} ls={-0.4} lh={25}>
           {salon.name}
         </Tx>
-        <Tx size={17} color={C.muted} lh={22}>
+        <Tx size={13} color={C.muted} lh={18}>
           {publicHost()}/s/{salon.slug}
         </Tx>
         <View style={{ marginTop: 8, borderRadius: 16, overflow: 'hidden', padding: 8, backgroundColor: '#fff' }}>
@@ -38,7 +38,7 @@ export default function ProQr() {
         </Button>
         <Button onPress={() => void shareSalon(salon.name, url)}>
           <I icon={MoreHorizontal} size={18} color="#fff" />
-          <Tx size={16} weight={600} color="#fff" ls={-0.2}>
+          <Tx size={13} weight={600} color="#fff" ls={-0.2}>
             Partager
           </Tx>
         </Button>

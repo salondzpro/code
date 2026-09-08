@@ -28,7 +28,7 @@ export default function Bookings() {
 
   return (
     <Screen gap={16} bottom={NAV_PAD} refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
-      <H1 size={34} lh={38} ls={-0.8}>
+      <H1 size={28} lh={32} ls={-0.8}>
         {scope === 'past' ? 'Mes rendez-vous' : 'Rendez-vous'}
       </H1>
       <Segmented
@@ -49,7 +49,7 @@ export default function Bookings() {
         <ErrorText error={list.error} retry={() => void list.refetch()} />
       ) : items.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 56 }}>
-          <Tx size={22} weight={700} lh={27} center>
+          <Tx size={18} weight={700} lh={23} center>
             {scope === 'upcoming' ? 'Aucun rendez-vous à venir' : 'Aucun rendez-vous passé'}
           </Tx>
           <P center>Réservez en quelques secondes dans le salon de votre choix.</P>
@@ -64,7 +64,7 @@ export default function Bookings() {
             <Card key={b.id} gap={16}>
               <Pressable accessibilityRole="link" accessibilityLabel={`${b.serviceName} · ${b.salon.name}`} onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ gap: 16 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <Tx size={22} weight={700} ls={-0.4} lh={27} color={active ? C.text : C.muted} style={{ flex: 1 }}>
+                  <Tx size={18} weight={700} ls={-0.4} lh={23} color={active ? C.text : C.muted} style={{ flex: 1 }}>
                     {capitalize(formatDateShortDZ(b.startsAt))} · {formatTimeDZ(b.startsAt)}
                   </Tx>
                   <StatusBadge status={b.status} md />
@@ -72,10 +72,10 @@ export default function Bookings() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                   <Img src={b.salon.coverUrl} radius={16} style={{ width: 104, height: 104, opacity: active ? 1 : 0.6 }} />
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Tx size={22} weight={700} ls={-0.4} lh={27} color={active ? C.text : C.muted}>
+                    <Tx size={18} weight={700} ls={-0.4} lh={23} color={active ? C.text : C.muted}>
                       {b.serviceName}
                     </Tx>
-                    <Tx size={17} color={C.muted} lh={23}>
+                    <Tx size={13} color={C.muted} lh={19}>
                       {b.status === 'cancelled' ? `Annulé${b.cancelledBy === 'salon' ? ' par le salon' : ''}` : `${b.salon.name} · ${formatDA(b.priceDa)}`}
                     </Tx>
                   </View>
@@ -84,13 +84,13 @@ export default function Bookings() {
               {active && (
                 <View style={{ flexDirection: 'row', gap: 10 }}>
                   <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => void open(directionsUrl(b))}>
-                    <Tx size={17} weight={600} ls={-0.2}>
+                    <Tx size={13} weight={600} ls={-0.2}>
                       Itinéraire
                     </Tx>
                   </Button>
                   {b.salon.allowClientReschedule !== false && (
                     <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
-                      <Tx size={17} weight={600} ls={-0.2}>
+                      <Tx size={13} weight={600} ls={-0.2}>
                         Reporter
                       </Tx>
                     </Button>
@@ -106,10 +106,10 @@ export default function Bookings() {
             <Pressable accessibilityRole="link" onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <Avatar src={b.salon.coverUrl} name={b.salon.name} size={84} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={22} weight={700} ls={-0.4} lh={27}>
+                <Tx size={18} weight={700} ls={-0.4} lh={23}>
                   {b.salon.name}
                 </Tx>
-                <Tx size={17} color={C.muted} lh={23}>
+                <Tx size={13} color={C.muted} lh={19}>
                   {dayMonth(b.startsAt)} · {b.serviceName}
                   {b.status !== 'cancelled' ? ` · ${formatDA(b.priceDa)}` : ''}
                 </Tx>
@@ -119,12 +119,12 @@ export default function Bookings() {
             {b.status === 'completed' && (
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => router.push(`/s/${b.salon.slug}/prestations` as never)}>
-                  <Tx size={18} weight={600} ls={-0.2}>
+                  <Tx size={14} weight={600} ls={-0.2}>
                     Réserver à nouveau
                   </Tx>
                 </Button>
                 <Button variant="g" sm auto style={{ paddingHorizontal: 24, paddingVertical: 18 }} onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
-                  <Tx size={18} weight={600} ls={-0.2}>
+                  <Tx size={14} weight={600} ls={-0.2}>
                     Noter
                   </Tx>
                 </Button>

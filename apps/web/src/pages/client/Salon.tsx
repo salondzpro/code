@@ -86,8 +86,8 @@ export function Salon() {
 
       <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[24px] bg-bg px-5 pt-6">
         <div>
-          <h1 className="h1 !text-[30px]">{s.name}</h1>
-          <p className="mt-1 text-[17px] text-muted">
+          <h1 className="h1 !text-[26px]">{s.name}</h1>
+          <p className="mt-1 text-[13px] text-muted">
             {cats} — {place}
           </p>
         </div>
@@ -102,7 +102,7 @@ export function Salon() {
             {status.label}
           </span>
         </div>
-        {s.description && <p className="p text-[17px]">{s.description}</p>}
+        {s.description && <p className="p text-[13px]">{s.description}</p>}
 
         <Segmented
           label="Sections"
@@ -120,10 +120,10 @@ export function Salon() {
             {s.services.map((sv) => (
               <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="li !py-5">
                 <span>
-                  <span className="block text-[20px] font-semibold">{sv.name}</span>
+                  <span className="block text-[16px] font-semibold">{sv.name}</span>
                   <span className="s block text-[15px]">{formatDuration(sv.durationMinutes)}</span>
                 </span>
-                <span className="text-[20px] font-semibold">{formatDA(sv.priceDa)}</span>
+                <span className="text-[16px] font-semibold">{formatDA(sv.priceDa)}</span>
               </Link>
             ))}
             {s.services.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
@@ -156,8 +156,8 @@ export function Salon() {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
                   <div key={d} className="li !py-3">
-                    <span className="text-[16px]">{DAY_LABELS_FR[d]}</span>
-                    <span className={`mono text-[16px] ${rows.length ? 'text-muted' : 'text-danger'}`}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</span>
+                    <span className="text-[13px]">{DAY_LABELS_FR[d]}</span>
+                    <span className={`mono text-[13px] ${rows.length ? 'text-muted' : 'text-danger'}`}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</span>
                   </div>
                 );
               })}

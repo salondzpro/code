@@ -21,7 +21,7 @@ import { Screen } from '@/ui/Screen';
 import { StepBar, StepSheet } from '@/ui/Steps';
 import { C, R, SHADOW } from '@/theme/design';
 
-const inlineInput = { backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right' as const, fontSize: 19, width: '55%' as const };
+const inlineInput = { backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right' as const, fontSize: 15, width: '55%' as const };
 
 export function Step4Address({ settings }: { settings?: boolean }) {
   const router = useRouter();
@@ -89,7 +89,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
       <H1>Où vous trouver ?</H1>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.surface, borderRadius: R.cardSm, borderWidth: 1.5, borderColor: C.ink, paddingVertical: 15, paddingHorizontal: 16 }}>
         <I icon={Search} size={20} color={C.subtle} />
-        <Input value={address} onChangeText={setAddress} placeholder="12 rue des Frères Bouadou, Hydra" accessibilityLabel="Adresse" maxLength={200} style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, fontSize: 16 }} />
+        <Input value={address} onChangeText={setAddress} placeholder="12 rue des Frères Bouadou, Hydra" accessibilityLabel="Adresse" maxLength={200} style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, fontSize: 15 }} />
       </View>
       <View style={{ height: 220, borderRadius: R.card, borderWidth: 1, borderColor: C.line, backgroundColor: C.fill, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
         <GridBg step={110} stepY={80} />
@@ -97,7 +97,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           <I icon={MapPin} size={26} color="#fff" />
         </View>
         <View style={[{ position: 'absolute', left: 24, bottom: 16, maxWidth: '80%', backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 8 }, SHADOW.card]}>
-          <Tx size={16} weight={600} lh={20} numberOfLines={1}>
+          <Tx size={13} weight={600} lh={17} numberOfLines={1}>
             {address.trim() ? `${address.trim()}${zone ? `, ${zone}` : ''}` : zone || wilayaName(wilaya)}
           </Tx>
         </View>
@@ -105,19 +105,19 @@ export function Step4Address({ settings }: { settings?: boolean }) {
       <ListCard>
         <ValueRow label="Ville" value={wilayaName(wilaya)} onPress={() => setWilayaSheet(true)} />
         <Row py={16} chevron={false} right={<Input value={zone} onChangeText={setZone} placeholder="Hydra" accessibilityLabel="Quartier" maxLength={80} style={inlineInput} />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Quartier
           </Tx>
         </Row>
         {settings && (
           <Row py={16} chevron={false} right={<Input keyboardType="phone-pad" value={phone} onChangeText={setPhone} placeholder="05 51 23 45 67" accessibilityLabel="Téléphone du salon" style={inlineInput} />}>
-            <Tx size={19} lh={24}>
+            <Tx size={15} lh={20}>
               Téléphone
             </Tx>
           </Row>
         )}
         <Row py={16} chevron={false} right={<Toggle on={home} onChange={setHome} label="Se déplacer à domicile" />}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Se déplacer à domicile
           </Tx>
           <Tx size={15} color={C.muted} lh={20}>

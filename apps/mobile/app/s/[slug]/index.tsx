@@ -77,10 +77,10 @@ export default function Salon() {
 
       <View style={{ marginTop: -20, backgroundColor: C.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
         <View>
-          <H1 size={30} lh={34} ls={-0.8}>
+          <H1 size={26} lh={30} ls={-0.8}>
             {s.name}
           </H1>
-          <Tx size={17} color={C.muted} lh={23} style={{ marginTop: 4 }}>
+          <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
             {cats} — {place}
           </Tx>
         </View>
@@ -100,7 +100,7 @@ export default function Salon() {
           </View>
         </View>
         {!!s.description && (
-          <Tx size={17} color={C.muted} lh={25}>
+          <Tx size={13} color={C.muted} lh={21}>
             {s.description}
           </Tx>
         )}
@@ -119,8 +119,8 @@ export default function Salon() {
         {tab === 'services' && (
           <ListCard>
             {s.services.map((sv) => (
-              <Row key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} py={20} chevron={false} right={<Tx size={20} weight={600} lh={25}>{formatDA(sv.priceDa)}</Tx>}>
-                <Tx size={20} weight={600} lh={25}>
+              <Row key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} py={20} chevron={false} right={<Tx size={16} weight={600} lh={21}>{formatDA(sv.priceDa)}</Tx>}>
+                <Tx size={16} weight={600} lh={21}>
                   {sv.name}
                 </Tx>
                 <Tx size={15} color={C.muted} lh={20}>
@@ -161,8 +161,8 @@ export default function Salon() {
               {WEEK_DAYS.map((d) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
-                  <Row key={d} py={12} chevron={false} right={<Tx size={16} lh={21} mono color={rows.length ? C.muted : C.danger}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</Tx>}>
-                    <Tx size={16} lh={21}>
+                  <Row key={d} py={12} chevron={false} right={<Tx size={13} lh={18} mono color={rows.length ? C.muted : C.danger}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</Tx>}>
+                    <Tx size={13} lh={18}>
                       {DAY_LABELS_FR[d]}
                     </Tx>
                   </Row>

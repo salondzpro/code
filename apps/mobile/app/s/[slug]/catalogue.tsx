@@ -34,14 +34,14 @@ export default function SalonServices() {
             <Card key={sv.id} row gap={16} onPress={() => router.push(`/s/${s.slug}/prestation/${sv.id}` as never)} accessibilityLabel={sv.name}>
               <Img src={photos[0]?.url ?? s.coverUrl} radius={16} style={{ width: 112, height: 112 }} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={21} weight={700} ls={-0.3} lh={26}>
+                <Tx size={17} weight={700} ls={-0.3} lh={22}>
                   {sv.name}
                 </Tx>
-                <Tx size={16} color={C.muted} lh={22}>
+                <Tx size={13} color={C.muted} lh={19}>
                   {formatDuration(sv.durationMinutes)}
                   {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                 </Tx>
-                <Tx size={20} weight={700} lh={25} style={{ marginTop: 6 }}>
+                <Tx size={16} weight={700} lh={21} style={{ marginTop: 6 }}>
                   {formatDA(sv.priceDa)}
                 </Tx>
               </View>

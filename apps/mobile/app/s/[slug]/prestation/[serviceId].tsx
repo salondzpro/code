@@ -67,20 +67,20 @@ export default function ServiceDetail() {
       <View style={{ marginTop: -20, backgroundColor: C.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <H1 size={30} lh={34} ls={-0.8}>
+            <H1 size={26} lh={30} ls={-0.8}>
               {sv.name}
             </H1>
-            <Tx size={17} color={C.muted} lh={23} style={{ marginTop: 4 }}>
+            <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
               {formatDuration(sv.durationMinutes)}
               {sv.categoryId ? ` · ${categoryLabel(sv.categoryId)}` : ''}
             </Tx>
           </View>
-          <Tx size={26} weight={700} ls={-0.5} lh={31}>
+          <Tx size={22} weight={700} ls={-0.5} lh={27}>
             {formatDA(sv.priceDa)}
           </Tx>
         </View>
         {!!sv.description && (
-          <Tx size={17} color={C.muted} lh={25}>
+          <Tx size={13} color={C.muted} lh={21}>
             {sv.description}
           </Tx>
         )}
@@ -97,10 +97,10 @@ export default function ServiceDetail() {
         <Card row gap={14}>
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={20} weight={700} ls={-0.3} lh={25}>
+            <Tx size={16} weight={700} ls={-0.3} lh={21}>
               {s.name}
             </Tx>
-            <Tx size={16} color={C.muted} lh={22}>
+            <Tx size={13} color={C.muted} lh={19}>
               {s.zone ?? s.city}
               {s.ratingCount > 0 ? ` · ★ ${formatRating(s.ratingAvg)}` : ''}
             </Tx>

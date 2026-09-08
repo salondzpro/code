@@ -10,7 +10,7 @@ export function Intro() {
         <img src={DESIGN_IMAGES.intro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />
         <div className="ovl-t">
-          <div className="text-[30px] font-bold leading-[1.1] tracking-[-0.8px]">
+          <div className="text-[26px] font-bold leading-[1.1] tracking-[-0.8px]">
             Réservez votre
             <br />
             rendez-vous.

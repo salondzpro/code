@@ -57,15 +57,15 @@ export function Step5Catalog() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={5} backTo="/pro" />
       <h1 className="h1">Vos prestations</h1>
-      <div className="sf flex items-center justify-between !px-5 !py-5 text-[19px]">
+      <div className="sf flex items-center justify-between !px-5 !py-5 text-[15px]">
         <span>
           Catalogue : <b>{MARKET_LABELS_FR[market]}</b>
         </span>
-        <Link to="/pro/profil" className="text-[17px] font-semibold text-muted">
+        <Link to="/pro/profil" className="text-[13px] font-semibold text-muted">
           Modifier
         </Link>
       </div>
-      <p className="p text-[19px]">Cochez ce que vous proposez. Vous fixerez prix, durée et photos à l'étape suivante.</p>
+      <p className="p text-[15px]">Cochez ce que vous proposez. Vous fixerez prix, durée et photos à l'étape suivante.</p>
       <div className="crd !gap-0 !py-1">
         {cats.map((c) => {
           const on = selected.includes(c.id);
@@ -74,8 +74,8 @@ export function Step5Catalog() {
               <span className="flex items-center gap-4">
                 <Img src={salon.coverUrl} className="h-[88px] w-[88px] flex-none !rounded-[16px]" />
                 <span>
-                  <span className="block text-[21px] font-bold tracking-[-0.3px]">{c.labelFr}</span>
-                  <span className="block text-[16px] text-muted">{HINTS[c.id] ?? ''}</span>
+                  <span className="block text-[17px] font-bold tracking-[-0.3px]">{c.labelFr}</span>
+                  <span className="block text-[13px] text-muted">{HINTS[c.id] ?? ''}</span>
                 </span>
               </span>
               <span className={`chk${on ? ' on' : ''}`} aria-hidden>
@@ -93,7 +93,7 @@ export function Step5Catalog() {
       )}
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[19px] text-muted">
+          <span className="text-[15px] text-muted">
             {selected.length} prestation{selected.length > 1 ? 's' : ''} sélectionnée{selected.length > 1 ? 's' : ''}
           </span>
           <Button auto className="!rounded-full !px-7 !py-3.5" onClick={() => void next()} disabled={updateSalon.isPending}>

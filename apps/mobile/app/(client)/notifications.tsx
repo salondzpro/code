@@ -31,7 +31,7 @@ export default function Notifications() {
           {notifs.data.items.map((n) => (
             <Row key={n.id} py={16} chevron={false}>
               <View style={{ gap: 2 }}>
-                <Tx size={17} weight={n.readAt ? 400 : 600} lh={22}>
+                <Tx size={13} weight={n.readAt ? 400 : 600} lh={18}>
                   {n.title}
                 </Tx>
                 <Tx size={15} color={C.muted} lh={20}>

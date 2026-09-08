@@ -43,7 +43,7 @@ export default function Favorites() {
         <ErrorText error={favs.error} retry={() => void favs.refetch()} />
       ) : items.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 56 }}>
-          <Tx size={22} weight={700} lh={27} center>
+          <Tx size={18} weight={700} lh={23} center>
             Aucun salon en favori
           </Tx>
           <P center>Touchez le cœur sur la page d'un salon pour le retrouver ici.</P>
@@ -57,13 +57,13 @@ export default function Favorites() {
             <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={108} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={22} weight={700} ls={-0.4} lh={27}>
+                <Tx size={18} weight={700} ls={-0.4} lh={23}>
                   {s.name}
                 </Tx>
-                <Tx size={17} color={C.muted} lh={23}>
+                <Tx size={13} color={C.muted} lh={19}>
                   {[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}
                 </Tx>
-                <Tx size={17} lh={23} style={{ marginTop: 4 }}>
+                <Tx size={13} lh={19} style={{ marginTop: 4 }}>
                   {s.nextSlots?.length ? `Dispo ${s.nextSlots[0]}` : "Complet aujourd'hui"}
                 </Tx>
               </View>

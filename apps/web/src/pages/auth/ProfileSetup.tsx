@@ -59,7 +59,7 @@ export function ProfileSetup() {
         </Field>
         <div>
           <span className="lbl">{phone ? 'Numéro vérifié' : 'Adresse vérifiée'}</span>
-          <div className="flex items-center justify-between rounded-[14px] bg-fill px-4 py-[18px] text-[17px]">
+          <div className="flex items-center justify-between rounded-[14px] bg-fill px-4 py-[18px] text-[13px]">
             <span>{phone ? formatIntlDZ(phone) : email}</span>
             <Badge tone="ok" md>
               Vérifié
@@ -68,7 +68,7 @@ export function ProfileSetup() {
         </div>
         <div className="flex items-center justify-between">
           <span>
-            <span className="block text-[20px] font-semibold">Rappels WhatsApp</span>
+            <span className="block text-[16px] font-semibold">Rappels WhatsApp</span>
             <span className="p block">2 h avant chaque rendez-vous</span>
           </span>
           <Toggle on={reminders} onChange={setReminders} label="Rappels WhatsApp" />

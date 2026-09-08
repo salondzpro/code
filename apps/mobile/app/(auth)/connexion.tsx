@@ -69,7 +69,7 @@ export default function Phone() {
       ) : (
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 16 }} accessibilityLabel="Indicatif +213">
-            <Tx size={17} weight={500} lh={22}>
+            <Tx size={13} weight={500} lh={18}>
               +213
             </Tx>
             <I icon={ChevronDown} size={16} color={C.subtle} />

@@ -27,13 +27,13 @@ export function Welcome() {
       </div>
       <div className="flex flex-col gap-3" role="radiogroup" aria-label="Type de compte">
         <Card as="button" sel={role === 'client'} onClick={() => setRole('client')}>
-          <span role="radio" aria-checked={role === 'client'} className="h2 text-[20px]">
+          <span role="radio" aria-checked={role === 'client'} className="h2 text-[16px]">
             Je réserve
           </span>
           <span className="p">Créer mon compte ou me connecter, puis réserver : un compte est nécessaire pour prendre rendez-vous.</span>
         </Card>
         <Card as="button" sel={role === 'pro'} onClick={() => setRole('pro')}>
-          <span role="radio" aria-checked={role === 'pro'} className="h2 text-[20px]">
+          <span role="radio" aria-checked={role === 'pro'} className="h2 text-[16px]">
             Je suis professionnel
           </span>
           <span className="p">Recevoir des réservations, gérer mon agenda et partager ma page.</span>

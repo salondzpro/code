@@ -58,7 +58,7 @@ export function Step6Service() {
           <Field label="Prix" htmlFor="svc-price">
             <div className="relative">
               <Input id="svc-price" lg inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} placeholder="2 500" className="!pr-12" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[17px]">DA</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[13px]">DA</span>
             </div>
           </Field>
           <Field label="Durée" htmlFor="svc-duration">

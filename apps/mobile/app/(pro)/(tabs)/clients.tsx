@@ -52,11 +52,11 @@ export default function Clients() {
 
   return (
     <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={34} lh={38} ls={-0.8}>
+      <H1 size={28} lh={32} ls={-0.8}>
         Clients
       </H1>
       <SearchBox value={q} onChange={setQ} placeholder="Nom ou téléphone" />
-      <Tx size={17} color={C.muted} lh={22}>
+      <Tx size={13} color={C.muted} lh={18}>
         {rows.length} client{rows.length > 1 ? 's' : ''} · 12 derniers mois
       </Tx>
       {bookings.isPending ? (
@@ -70,7 +70,7 @@ export default function Clients() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                 <Avatar name={c.name} size={52} />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={20} weight={700} ls={-0.3} lh={25}>
+                  <Tx size={16} weight={700} ls={-0.3} lh={21}>
                     {c.name}
                   </Tx>
                   <Tx size={15} color={C.muted} lh={20}>

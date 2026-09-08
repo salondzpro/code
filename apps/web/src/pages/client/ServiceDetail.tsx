@@ -44,15 +44,15 @@ export function ServiceDetail() {
       <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[24px] bg-bg px-5 pt-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="h1 !text-[30px]">{sv.name}</h1>
-            <p className="mt-1 text-[17px] text-muted">
+            <h1 className="h1 !text-[26px]">{sv.name}</h1>
+            <p className="mt-1 text-[13px] text-muted">
               {formatDuration(sv.durationMinutes)}
               {sv.categoryId ? ` · ${categoryLabel(sv.categoryId)}` : ''}
             </p>
           </div>
-          <span className="text-[26px] font-bold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
+          <span className="text-[22px] font-bold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
         </div>
-        {sv.description && <p className="p text-[17px]">{sv.description}</p>}
+        {sv.description && <p className="p text-[13px]">{sv.description}</p>}
         {photos.length > 1 && (
           <>
             <span className="h3">Réalisations</span>
@@ -66,8 +66,8 @@ export function ServiceDetail() {
         <div className="crd !flex-row items-center gap-3.5">
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
           <span className="min-w-0 flex-1">
-            <span className="block text-[20px] font-bold tracking-[-0.3px]">{s.name}</span>
-            <span className="text-[16px] text-muted">
+            <span className="block text-[16px] font-bold tracking-[-0.3px]">{s.name}</span>
+            <span className="text-[13px] text-muted">
               {s.zone ?? s.city}
               {s.ratingCount > 0 ? ` · ★ ${formatRating(s.ratingAvg)}` : ''}
             </span>

@@ -54,10 +54,10 @@ export default function BookingServices() {
       <>
         <Img src={photo} radius={16} style={{ width: 88, height: 88 }} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={21} weight={700} ls={-0.3} lh={26}>
+          <Tx size={17} weight={700} ls={-0.3} lh={22}>
             {sv.name}
           </Tx>
-          <Tx size={16} color={C.muted} lh={22}>
+          <Tx size={13} color={C.muted} lh={19}>
             {[formatDuration(sv.durationMinutes), boxed ? sv.description : null, formatDA(sv.priceDa)].filter(Boolean).join(' · ')}
           </Tx>
         </View>
@@ -87,7 +87,7 @@ export default function BookingServices() {
               <P>{chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}</P>
               <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                 <View style={{ flex: 1 }}>
-                  <Tx size={28} weight={700} ls={-0.6} lh={33}>
+                  <Tx size={24} weight={700} ls={-0.6} lh={29}>
                     {formatDA(total)}
                   </Tx>
                   <P>

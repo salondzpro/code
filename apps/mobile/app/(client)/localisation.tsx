@@ -82,7 +82,7 @@ export default function Localisation() {
             <I icon={Smartphone} size={20} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={17} weight={600} lh={22}>
+            <Tx size={13} weight={600} lh={18}>
               Réglages du téléphone
             </Tx>
             <Tx size={14} color={C.muted} lh={20}>
@@ -98,7 +98,7 @@ export default function Localisation() {
             <I icon={MapPin} size={20} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={17} weight={600} lh={22}>
+            <Tx size={13} weight={600} lh={18}>
               Choisir un quartier
             </Tx>
             <Tx size={14} color={C.muted} lh={20}>
@@ -109,7 +109,7 @@ export default function Localisation() {
         <InfoBox>Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».</InfoBox>
         <Button onPress={() => void Linking.openSettings().catch(() => locate())}>
           <I icon={Settings} size={18} color="#fff" />
-          <Tx size={16} weight={600} color="#fff" ls={-0.2}>
+          <Tx size={13} weight={600} color="#fff" ls={-0.2}>
             Ouvrir les réglages
           </Tx>
         </Button>
@@ -127,7 +127,7 @@ export default function Localisation() {
         <BottomSheet>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={22} weight={700} ls={-0.4} lh={27}>
+              <Tx size={18} weight={700} ls={-0.4} lh={23}>
                 {count} résultat{count > 1 ? 's' : ''}
               </Tx>
               <P>
@@ -150,7 +150,7 @@ export default function Localisation() {
           <I icon={MapPin} size={22} color="#fff" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={19} weight={600} lh={24}>
+          <Tx size={15} weight={600} lh={20}>
             Utiliser ma position actuelle
           </Tx>
           <P>{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${nearest ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</P>
@@ -166,7 +166,7 @@ export default function Localisation() {
           <I icon={MapPin} size={22} color="#fff" />
         </View>
         <View style={[{ position: 'absolute', left: 24, bottom: 16, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 8 }, SHADOW.card]}>
-          <Tx size={16} weight={600} lh={20}>
+          <Tx size={13} weight={600} lh={17}>
             Rayon de {radius} km
           </Tx>
         </View>
@@ -176,7 +176,7 @@ export default function Localisation() {
       <Grid cols={4}>
         {RADIUS_OPTIONS.map((r) => (
           <Slot key={r} on={radius === r} onPress={() => setRadius(r)}>
-            <Tx size={19} weight={500} lh={24} color={radius === r ? C.onInk : C.text} mono>
+            <Tx size={15} weight={500} lh={20} color={radius === r ? C.onInk : C.text} mono>
               {r} km
             </Tx>
           </Slot>
@@ -206,7 +206,7 @@ export default function Localisation() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                 <I icon={MapPin} size={20} color={C.subtle} />
                 <View style={{ flex: 1 }}>
-                  <Tx size={20} weight={600} lh={25} color={on ? C.text : C.muted}>
+                  <Tx size={16} weight={600} lh={21} color={on ? C.text : C.muted}>
                     {c.city}
                   </Tx>
                   <P>

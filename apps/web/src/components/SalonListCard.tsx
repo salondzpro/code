@@ -22,7 +22,7 @@ export function SlotPills({ slots, empty = "Complet aujourd'hui" }: { slots: str
   return (
     <div className="flex flex-wrap gap-2">
       {slots.map((t) => (
-        <span key={t} className="pill soft mono !px-4 !py-2.5 !text-[16px]">
+        <span key={t} className="pill soft mono !px-4 !py-2.5 !text-[13px]">
           {t}
         </span>
       ))}
@@ -49,10 +49,10 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
         </div>
         <div className="flex flex-col gap-1 p-4">
           <div className="flex items-start justify-between gap-3">
-            <span className="text-[22px] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
+            <span className="text-[18px] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </div>
-          <span className="text-[16px] text-muted">
+          <span className="text-[13px] text-muted">
             {[cats, place, km].filter(Boolean).join(' · ')}
           </span>
           {s.topServices.length > 0 && <span className="text-[15px] text-subtle">{servicesLine(s)}</span>}
@@ -70,10 +70,10 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
         <Img src={s.logoUrl ?? s.coverUrl} className="h-[112px] w-[112px] flex-none !rounded-[16px]" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-[21px] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
+            <span className="text-[17px] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </div>
-          <span className="mt-1 block text-[16px] text-muted">{[cats, place, km].filter(Boolean).join(' · ')}</span>
+          <span className="mt-1 block text-[13px] text-muted">{[cats, place, km].filter(Boolean).join(' · ')}</span>
           {s.topServices.length > 0 && <span className="mt-0.5 block text-[15px] text-subtle">{servicesLine(s)}</span>}
         </div>
       </div>

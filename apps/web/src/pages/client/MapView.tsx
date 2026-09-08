@@ -130,10 +130,10 @@ export function MapView() {
               <Img src={current.logoUrl ?? current.coverUrl} className="h-[96px] w-[96px] flex-none !rounded-[16px]" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[21px] font-bold leading-tight tracking-[-0.4px]">{current.name}</span>
+                  <span className="text-[17px] font-bold leading-tight tracking-[-0.4px]">{current.name}</span>
                   {current.ratingCount > 0 && <RatingPill avg={current.ratingAvg} />}
                 </div>
-                <span className="mt-1 block text-[16px] text-muted">
+                <span className="mt-1 block text-[13px] text-muted">
                   {[current.zone ?? current.city, formatKm(current.distanceKm), current.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
                 </span>
                 <span className="mt-0.5 block text-[15px] text-subtle">{current.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}</span>

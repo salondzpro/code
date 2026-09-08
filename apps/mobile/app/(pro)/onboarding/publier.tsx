@@ -46,11 +46,11 @@ export default function Publish() {
       <ListCard>
         {items.map((it) => (
           <Row key={it.label} py={16} chevron={false} onPress={() => router.push(it.to as never)} accessibilityLabel={it.label} right={it.ok ? <I icon={Check} size={22} color={C.okFg} /> : <Badge tone="pd" dot={false} md>À faire</Badge>}>
-            <Tx size={19} lh={24}>
+            <Tx size={15} lh={20}>
               {it.label}
             </Tx>
             {!it.ok && it.hint && (
-              <Tx size={16} color={C.muted} lh={22}>
+              <Tx size={13} color={C.muted} lh={19}>
                 {it.hint}
               </Tx>
             )}
@@ -58,10 +58,10 @@ export default function Publish() {
         ))}
       </ListCard>
       <View style={{ borderRadius: R.card, backgroundColor: C.ink, padding: 20, gap: 4 }}>
-        <Tx size={17} color="rgba(255,255,255,0.6)" lh={22}>
+        <Tx size={13} color="rgba(255,255,255,0.6)" lh={18}>
           Votre page publique
         </Tx>
-        <Tx size={24} weight={700} color="#fff" ls={-0.4} lh={29}>
+        <Tx size={20} weight={700} color="#fff" ls={-0.4} lh={25}>
           {publicHost()}/s/{salon.slug}
         </Tx>
       </View>

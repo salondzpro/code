@@ -28,10 +28,10 @@ export default function Requests() {
           <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
             <Avatar name={b.clientName} size={68} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Tx size={24} weight={700} ls={-0.4} lh={29} numberOfLines={1}>
+              <Tx size={20} weight={700} ls={-0.4} lh={25} numberOfLines={1}>
                 {b.clientName}
               </Tx>
-              <Tx size={17} color={C.muted} lh={23}>
+              <Tx size={13} color={C.muted} lh={19}>
                 {b.serviceName} · {formatDateShortDZ(b.startsAt)} {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
               </Tx>
               {b.staff && (
@@ -43,18 +43,18 @@ export default function Requests() {
           </Pressable>
           <Grid cols={2}>
             <Button sm style={{ paddingVertical: 18 }} disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
-              <Tx size={18} weight={600} color="#fff" ls={-0.2}>
+              <Tx size={14} weight={600} color="#fff" ls={-0.2}>
                 Confirmer
               </Tx>
             </Button>
             <Button variant="g" sm style={{ paddingVertical: 18 }} onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
-              <Tx size={18} weight={600} ls={-0.2}>
+              <Tx size={14} weight={600} ls={-0.2}>
                 Reporter
               </Tx>
             </Button>
           </Grid>
           <Pressable accessibilityRole="button" onPress={() => setRefusing({ id: b.id, clientName: b.clientName })} style={{ alignSelf: 'center' }}>
-            <Tx size={17} color={C.danger} lh={22}>
+            <Tx size={13} color={C.danger} lh={18}>
               Refuser la demande
             </Tx>
           </Pressable>
@@ -64,16 +64,16 @@ export default function Requests() {
 
       <ModalSheet open={!!refusing} onClose={() => setRefusing(null)}>
         <View style={{ alignItems: 'center', gap: 8 }}>
-          <Tx size={24} weight={700} ls={-0.4} lh={29} center>
+          <Tx size={20} weight={700} ls={-0.4} lh={25} center>
             Refuser cette demande ?
           </Tx>
           <P center>{refusing?.clientName} sera prévenu·e et le créneau sera libéré.</P>
         </View>
         <Card row style={{ paddingVertical: 12, justifyContent: 'space-between' }}>
-          <Tx size={19} lh={24}>
+          <Tx size={15} lh={20}>
             Motif (optionnel)
           </Tx>
-          <Input value={reason} onChangeText={setReason} placeholder="Complet" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 17 }} />
+          <Input value={reason} onChangeText={setReason} placeholder="Complet" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 15 }} />
         </Card>
         <Button
           bg={C.danger}

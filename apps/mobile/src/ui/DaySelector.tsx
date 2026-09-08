@@ -17,7 +17,7 @@ export function DayCell({ dateKey, on, out, onPress }: { dateKey: string; on?: b
       <Tx size={11} lh={14} color={on ? 'rgba(255,255,255,0.65)' : out ? C.disabled : C.subtle}>
         {DAY_LABELS_SHORT_FR[dow]}
       </Tx>
-      <Tx size={17} weight={600} ls={-0.3} lh={21} color={on ? '#fff' : out ? C.disabled : C.text}>
+      <Tx size={13} weight={600} ls={-0.3} lh={17} color={on ? '#fff' : out ? C.disabled : C.text}>
         {dayNumber(dateKey)}
       </Tx>
     </Pressable>

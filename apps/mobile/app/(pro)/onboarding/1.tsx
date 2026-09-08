@@ -48,7 +48,7 @@ export default function Step1Market() {
             </View>
           )}
           <View style={{ position: 'absolute', left: 20, right: 20, bottom: 20, gap: 4 }}>
-            <Tx size={26} weight={700} color="#fff" ls={-0.6} lh={29}>
+            <Tx size={22} weight={700} color="#fff" ls={-0.6} lh={25}>
               {MARKET_LABELS_FR[c.id]}
             </Tx>
             <Tx size={14} color={C.white85} lh={19}>

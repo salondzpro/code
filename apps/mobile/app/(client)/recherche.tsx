@@ -60,7 +60,7 @@ export default function SearchPage() {
                     <I icon={Scissors} size={18} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Tx size={17} weight={500} lh={22}>
+                    <Tx size={13} weight={500} lh={18}>
                       {h.name}
                     </Tx>
                     <S>
@@ -76,7 +76,7 @@ export default function SearchPage() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                   <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={40} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={17} weight={500} lh={22}>
+                    <Tx size={13} weight={500} lh={18}>
                       {s.name}
                     </Tx>
                     <S>
@@ -113,7 +113,7 @@ export default function SearchPage() {
               {recent.map((r) => (
                 <Pill key={r} lg onPress={() => submit(r)}>
                   <I icon={Clock} size={16} color={C.subtle} />
-                  <Tx size={16} weight={500} lh={20}>
+                  <Tx size={13} weight={500} lh={17}>
                     {r}
                   </Tx>
                 </Pill>

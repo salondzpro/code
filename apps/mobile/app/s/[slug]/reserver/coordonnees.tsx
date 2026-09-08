@@ -63,7 +63,7 @@ export default function BookingDetails() {
         <BottomSheet>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={26} weight={700} ls={-0.5} lh={31}>
+              <Tx size={22} weight={700} ls={-0.5} lh={27}>
                 {formatDA(price)}
               </Tx>
               <P>
@@ -88,7 +88,7 @@ export default function BookingDetails() {
       <Field label="Téléphone" error={phoneError ? error : null}>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 16 }}>
-            <Tx size={17} weight={500} lh={22}>
+            <Tx size={13} weight={500} lh={18}>
               +213
             </Tx>
             <I icon={ChevronDown} size={16} color={C.subtle} />
@@ -104,7 +104,7 @@ export default function BookingDetails() {
           <I icon={MessageCircle} size={22} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={17} lh={22}>
+          <Tx size={13} lh={18}>
             Confirmation et rappel sur WhatsApp
           </Tx>
           <P>2 h avant le rendez-vous</P>

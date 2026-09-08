@@ -32,7 +32,7 @@ export default function ProWelcome() {
           <Tx size={12} weight={600} color={C.white70} ls={0.96} lh={16} upper>
             Espace professionnel
           </Tx>
-          <Tx size={30} weight={700} color="#fff" ls={-0.8} lh={33}>
+          <Tx size={26} weight={700} color="#fff" ls={-0.8} lh={29}>
             Votre agenda,{'\n'}votre page, votre lien.
           </Tx>
         </View>
@@ -42,7 +42,7 @@ export default function ProWelcome() {
         <Rows>
           {PROMISES.map((p) => (
             <Row key={p} chevron={false} right={<I icon={Check} size={20} color={C.okFg} />}>
-              <Tx size={17} lh={22}>
+              <Tx size={13} lh={18}>
                 {p}
               </Tx>
             </Row>

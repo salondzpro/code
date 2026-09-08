@@ -47,7 +47,7 @@ export function Revenue() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <div className="flex items-center justify-between">
-        <h1 className="h1 !text-[34px]">Chiffre d'affaires</h1>
+        <h1 className="h1">Chiffre d'affaires</h1>
         <IconButton lg aria-label="Exporter" onClick={exportCsv}>
           <I icon={Download} size={20} />
         </IconButton>
@@ -100,17 +100,17 @@ export function Revenue() {
           </div>
           <div className="crd !gap-0 !py-1">
             <div className="li !py-5">
-              <span className="text-[20px]">Encaissé</span>
-              <span className="text-[24px] font-bold">{formatDA(s!.collectedDa)}</span>
+              <span className="text-[16px]">Encaissé</span>
+              <span className="text-[20px] font-bold">{formatDA(s!.collectedDa)}</span>
             </div>
             <div className="li !py-5">
               <span>
-                <span className="block text-[20px]">Reste à encaisser</span>
-                <span className="p block text-[16px]">
+                <span className="block text-[16px]">Reste à encaisser</span>
+                <span className="p block text-[13px]">
                   {s!.remainingCount} rendez-vous confirmé{s!.remainingCount > 1 ? 's' : ''}
                 </span>
               </span>
-              <span className="text-[24px] font-bold">{formatDA(s!.remainingDa)}</span>
+              <span className="text-[20px] font-bold">{formatDA(s!.remainingDa)}</span>
             </div>
           </div>
           <SectionLabel>Par prestation</SectionLabel>
@@ -119,12 +119,12 @@ export function Revenue() {
             {s!.byService.map((x) => (
               <div key={x.name} className="li !py-5">
                 <span>
-                  <span className="block text-[21px] font-bold tracking-[-0.3px]">{x.name}</span>
-                  <span className="p block text-[16px]">
+                  <span className="block text-[17px] font-bold tracking-[-0.3px]">{x.name}</span>
+                  <span className="p block text-[13px]">
                     {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
                   </span>
                 </span>
-                <span className="text-[22px] font-bold">{formatDA(x.revenueDa)}</span>
+                <span className="text-[18px] font-bold">{formatDA(x.revenueDa)}</span>
               </div>
             ))}
           </div>

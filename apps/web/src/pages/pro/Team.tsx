@@ -81,7 +81,7 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
           <div className="flex items-center gap-3.5">
             <Avatar src={member.avatarUrl} name={member.displayName} size={56} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[22px] font-bold tracking-[-0.4px]">{member.displayName}</span>
+              <span className="block truncate text-[18px] font-bold tracking-[-0.4px]">{member.displayName}</span>
               <span className="p block text-[15px]">{isOwner ? 'Propriétaire' : member.isActive ? 'Membre actif' : 'Inactif — masqué à la réservation'}</span>
             </span>
             {!isOwner && <Toggle on={member.isActive} onChange={(v) => update.mutate({ id: member.id, isActive: v }, { onError: (e) => setError(errorText(e)) })} label="Actif" />}
@@ -101,8 +101,8 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
             <div className="crd !gap-0 !py-1">
               {rows.map((r) => (
                 <div key={r.dayOfWeek} className="li !py-3">
-                  <span className={`w-[96px] flex-none text-[17px] ${r.enabled ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
-                  <span className="flex flex-1 items-center gap-1 text-[17px] text-muted">
+                  <span className={`w-[96px] flex-none text-[13px] ${r.enabled ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
+                  <span className="flex flex-1 items-center gap-1 text-[13px] text-muted">
                     {r.enabled ? (
                       <>
                         <input type="time" className="tm" value={r.startsAt} onChange={(e) => patch(r.dayOfWeek, { startsAt: e.target.value })} aria-label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} />
@@ -146,7 +146,7 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
                 Confirmer le retrait
               </Button>
             ) : (
-              <button type="button" className="py-2 text-[17px] text-danger" onClick={() => setConfirmRemove(true)}>
+              <button type="button" className="py-2 text-[13px] text-danger" onClick={() => setConfirmRemove(true)}>
                 Retirer de l'équipe
               </button>
             ))}
@@ -178,7 +178,7 @@ export function Team() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1 !text-[34px]">Équipe</h1>
+      <h1 className="h1">Équipe</h1>
       <p className="p">Chaque membre a son propre agenda. Les clients choisissent « n'importe qui » ou un membre précis.</p>
       <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (
@@ -187,7 +187,7 @@ export function Team() {
               <span className="flex min-w-0 items-center gap-3.5">
                 <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
                 <span className="min-w-0">
-                  <span className="block truncate text-[19px]">
+                  <span className="block truncate text-[15px]">
                     {m.displayName}
                     {m.userId === salon.ownerId && <span className="text-muted"> (vous)</span>}
                   </span>

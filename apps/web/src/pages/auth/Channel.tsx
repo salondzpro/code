@@ -59,7 +59,7 @@ export function Channel() {
                 <I icon={MessageCircle} size={20} />
               </span>
               <span className="min-w-0 flex-1 text-left">
-                <span className="block text-[20px] font-semibold">WhatsApp</span>
+                <span className="block text-[16px] font-semibold">WhatsApp</span>
                 <span className="p block">Recommandé · instantané et gratuit</span>
               </span>
               <Badge tone="ok" dot={false} md>
@@ -71,7 +71,7 @@ export function Channel() {
                 <I icon={MessageCircle} size={20} />
               </span>
               <span className="min-w-0 flex-1 text-left">
-                <span className="block text-[20px] font-semibold">SMS</span>
+                <span className="block text-[16px] font-semibold">SMS</span>
                 <span className="p block">Si WhatsApp n'est pas installé</span>
               </span>
             </Card>
@@ -83,7 +83,7 @@ export function Channel() {
               <I icon={Mail} size={20} />
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="block text-[20px] font-semibold">E-mail</span>
+              <span className="block text-[16px] font-semibold">E-mail</span>
               <span className="p block">{isEmail ? flow.identifier : 'Si le téléphone ne reçoit pas de code'}</span>
             </span>
           </Card>

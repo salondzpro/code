@@ -62,21 +62,21 @@ export function BookingReview() {
         <div className="mb-2 flex items-center gap-3.5">
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={72} />
           <span className="min-w-0">
-            <span className="block text-[22px] font-bold tracking-[-0.4px]">{s.name}</span>
-            <span className="block truncate text-[16px] text-muted">
+            <span className="block text-[18px] font-bold tracking-[-0.4px]">{s.name}</span>
+            <span className="block truncate text-[13px] text-muted">
               {s.zone ?? s.city}, {wilayaName(s.wilayaCode)} · {host}/s/{s.slug}
             </span>
           </span>
         </div>
         {chosen.map((sv) => (
-          <div key={sv!.id} className="li !py-4 text-[18px]">
+          <div key={sv!.id} className="li !py-4 text-[14px]">
             <span>{sv!.name}</span>
             <span className="text-muted">
               {formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}
             </span>
           </div>
         ))}
-        <div className="li !py-4 text-[18px]">
+        <div className="li !py-4 text-[14px]">
           <span>{formatDateLongDZ(draft.startsAt)}</span>
           <span className="mono text-muted">
             {start} → {end}
@@ -85,8 +85,8 @@ export function BookingReview() {
       </div>
       <div className="crd !gap-1">
         <div className="flex items-center justify-between">
-          <span className="text-[22px] font-semibold">Total</span>
-          <span className="text-[24px] font-bold">{formatDA(price)}</span>
+          <span className="text-[18px] font-semibold">Total</span>
+          <span className="text-[20px] font-bold">{formatDA(price)}</span>
         </div>
         <span className="p">{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</span>
       </div>

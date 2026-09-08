@@ -60,14 +60,14 @@ export function Marketplace() {
       {/* En-tête : localisation, titre + bascule, avatar */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <Link to="/localisation" className="flex items-center gap-1.5 text-[17px]">
+          <Link to="/localisation" className="flex items-center gap-1.5 text-[13px]">
             <I icon={MapPin} size={18} className="text-muted" />
             <span className="truncate">{prefs.label}</span>
             <span className="text-muted">· {prefs.radiusKm} km</span>
             <I icon={ChevronDown} size={16} className="text-subtle" />
           </Link>
           <div className="mt-1 flex items-center gap-2.5">
-            <h1 className="h1 !text-[34px]">{MARKET_LABELS_FR[market]}</h1>
+            <h1 className="h1">{MARKET_LABELS_FR[market]}</h1>
             <IconButton aria-label="Changer de marché" onClick={swapMarket} disabled={update.isPending} className="!h-9 !w-9 !rounded-[12px]">
               <I icon={ArrowLeftRight} size={16} />
             </IconButton>
@@ -111,10 +111,10 @@ export function Marketplace() {
       {/* Liste / Carte + tri */}
       <div className="flex items-center justify-between gap-3">
         <div className="seg !p-1">
-          <button type="button" className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[16px]" aria-pressed>
+          <button type="button" className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[13px]" aria-pressed>
             <I icon={List} size={17} /> Liste
           </button>
-          <button type="button" className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[16px]" onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}>
+          <button type="button" className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[13px]" onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}>
             <I icon={MapIcon} size={17} /> Carte
           </button>
         </div>
@@ -137,7 +137,7 @@ export function Marketplace() {
           <div className="flex h-[128px] w-[128px] items-center justify-center rounded-full bg-fill text-subtle">
             <I icon={Search} size={44} />
           </div>
-          <div className="mt-2 text-[24px] font-bold leading-tight tracking-[-0.4px]">
+          <div className="mt-2 text-[20px] font-bold leading-tight tracking-[-0.4px]">
             Aucun professionnel{category ? ` « ${categoryLabel(category)} »` : ''} à {prefs.label}
           </div>
           <p className="p">Essayez d'élargir le rayon ou de retirer un filtre.</p>
@@ -159,7 +159,7 @@ export function Marketplace() {
         </div>
       ) : (
         <>
-          <p className="text-[17px] text-muted">
+          <p className="text-[13px] text-muted">
             {total} {noun} disponible{total > 1 ? 's' : ''} aujourd'hui
           </p>
           <div className="flex flex-col gap-3.5">
@@ -175,12 +175,12 @@ export function Marketplace() {
         <>
           <div className="dim" onClick={() => setSortOpen(false)} />
           <BottomSheet>
-            <div className="h2 text-center !text-[22px]">Trier par</div>
+            <div className="h2 text-center !text-[18px]">Trier par</div>
             <div className="crd !gap-0 !py-1" role="radiogroup" aria-label="Trier par">
               {SORT_OPTIONS.map((o) => (
                 <button key={o.value} type="button" role="radio" aria-checked={sortDraft === o.value} className="li w-full text-left" onClick={() => setSortDraft(o.value)}>
                   <span>
-                    <span className="block text-[20px] font-semibold">{o.label}</span>
+                    <span className="block text-[16px] font-semibold">{o.label}</span>
                     <span className="p block">{o.hint}</span>
                   </span>
                   {sortDraft === o.value && <I icon={Check} size={20} />}
