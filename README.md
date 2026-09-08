@@ -11,7 +11,7 @@ Deux espaces : **professionnels** (salon, services, équipe, agenda temps réel)
 ```
 apps/
   api/      Fastify 5 + TypeScript + Zod  → Render      (port 8080)
-  web/      React 19 + Vite 7 + TypeScript → Cloudflare Pages
+  web/      React 19 + Vite 7 + TypeScript → Render (site statique)
   mobile/   React Native + Expo SDK 54 + Expo Router → EAS (iOS + Android)
 packages/
   constants/   wilayas, catégories, DA, dates (dimanche), téléphone DZ
@@ -92,7 +92,7 @@ Auth : JWT Supabase vérifié localement (JWKS ES256, secours HS256). OTP par **
 
 - **Supabase** : migrations via `pnpm db:migrate`. Après déploiement de l'API, renseigner `app_settings` (`api_url`, `cron_token`) pour activer le cron (`0003_cron_tick.sql`).
 - **API → Render** (Francfort, plan gratuit, sans carte bancaire) : `render.yaml` à la racine (Blueprint Docker, `apps/api/Dockerfile`, contexte racine, healthcheck `/health`, déploiement auto sur `main` filtré sur `apps/api`, `packages`, lockfile). Secrets à renseigner dans le dashboard : `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWT_SECRET`, `INTERNAL_CRON_TOKEN` (+ `SENTRY_DSN`). Mise en veille après 15 min sans trafic → le cron Supabase toutes les 10 min (`0010`) maintient l’instance éveillée (≈ 744 h/mois sur les 750 h gratuites : un seul service Render par workspace).
-- **Web → Cloudflare Pages** : build command `pnpm --filter @salondz/web build`, output `apps/web/dist`, variables `VITE_*`. `_redirects` gère le SPA.
+- **Web → Render, site statique** (gratuit, CDN, hors quota des 750 h) : https://salondz.onrender.com, déclaré dans `render.yaml` (build `pnpm --filter @salondz/web build`, sortie `apps/web/dist`, règle SPA `/* → /index.html`, en-têtes cache/sécurité, variables `VITE_*`). Création/mise à jour sans dashboard : `node --env-file=.env scripts/render-web.mjs` (clé `RENDER_API_KEY` dans `.env`). `_redirects`/`_headers` restent pour Cloudflare Pages si l'on y migre un jour.
 - **Mobile → EAS** : `eas build --profile preview --platform android` (APK interne) ; push via Expo Push (gratuit).
 - **Sentry** : renseigner les DSN.
 

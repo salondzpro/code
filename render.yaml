@@ -1,4 +1,4 @@
-# Blueprint Render — API Fastify (Docker), plan gratuit, région Francfort.
+# Blueprint Render — API Fastify (Docker, Francfort) + site web statique (CDN), plans gratuits.
 # Dashboard → New → Blueprint → dépôt salondzpro/code : Render lit ce fichier.
 # Les variables `sync: false` sont à renseigner dans le dashboard (ou via l'API Render) :
 #   SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY, SUPABASE_JWT_SECRET, INTERNAL_CRON_TOKEN, SENTRY_DSN (optionnel)
@@ -46,9 +46,57 @@ services:
         sync: false
       - key: SENTRY_DSN
         sync: false
-      # Origines web autorisées (CSV) : Cloudflare Pages + domaine custom plus tard.
+      # Origines web autorisées (CSV) : site statique Render + domaine custom plus tard.
       - key: CORS_ORIGINS
-        value: https://salondz.pages.dev
+        value: https://salondz.onrender.com
       # Comptes de démonstration (0603044618 / 0603044619, code 1111). Mettre 0 au lancement réel.
       - key: TEST_LOGIN_ENABLED
+        value: "1"
+
+  # Web (Vite/React) → site statique Render : gratuit, CDN global, ne consomme pas les heures d'instance.
+  # Création en une commande (sans dashboard) : node --env-file=.env scripts/render-web.mjs
+  - type: web
+    name: salondz
+    runtime: static
+    repo: https://github.com/salondzpro/code
+    branch: main
+    autoDeploy: true
+    buildCommand: pnpm install --frozen-lockfile --filter "@salondz/web..." && pnpm --filter @salondz/web build
+    staticPublishPath: apps/web/dist
+    buildFilter:
+      paths:
+        - apps/web/**
+        - packages/**
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - .npmrc
+        - render.yaml
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PNPM_VERSION
+        value: 10.15.0
+      - key: VITE_SUPABASE_URL
+        value: https://thpwvmtqzhtqlosgvced.supabase.co
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_API_URL
+        value: https://salondz-api.onrender.com
+      # Pas de fournisseur SMS sur Supabase pour l'instant → secours OTP par e-mail. Mettre 0 quand Twilio est branché.
+      - key: VITE_AUTH_EMAIL_FALLBACK
         value: "1"
