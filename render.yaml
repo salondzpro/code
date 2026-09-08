@@ -1,0 +1,54 @@
+# Blueprint Render — API Fastify (Docker), plan gratuit, région Francfort.
+# Dashboard → New → Blueprint → dépôt salondzpro/code : Render lit ce fichier.
+# Les variables `sync: false` sont à renseigner dans le dashboard (ou via l'API Render) :
+#   SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY, SUPABASE_JWT_SECRET, INTERNAL_CRON_TOKEN, SENTRY_DSN (optionnel)
+# Plan gratuit : 750 h d'instance/mois, mise en veille après 15 min sans requête → le cron
+# Supabase (0010, toutes les 10 min) maintient l'API éveillée.
+services:
+  - type: web
+    name: salondz-api
+    runtime: docker
+    repo: https://github.com/salondzpro/code
+    branch: main
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/**
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - .npmrc
+        - render.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: LOG_LEVEL
+        value: info
+      - key: SUPABASE_URL
+        value: https://thpwvmtqzhtqlosgvced.supabase.co
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: INTERNAL_CRON_TOKEN
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      # Origines web autorisées (CSV) : Cloudflare Pages + domaine custom plus tard.
+      - key: CORS_ORIGINS
+        value: https://salondz.pages.dev
+      # Comptes de démonstration (0603044618 / 0603044619, code 1111). Mettre 0 au lancement réel.
+      - key: TEST_LOGIN_ENABLED
+        value: "1"

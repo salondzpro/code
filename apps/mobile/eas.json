@@ -15,13 +15,13 @@
       "channel": "preview",
       "android": { "buildType": "apk" },
       "ios": { "simulator": false },
-      "env": { "EXPO_PUBLIC_API_URL": "https://salondz-api.fly.dev" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://salondz-api.onrender.com" }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "android": { "buildType": "app-bundle" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://salondz-api.fly.dev" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://salondz-api.onrender.com" }
     }
   },
   "submit": {

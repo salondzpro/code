@@ -10,7 +10,7 @@ Deux espaces : **professionnels** (salon, services, équipe, agenda temps réel)
 
 ```
 apps/
-  api/      Fastify 5 + TypeScript + Zod  → Fly.io      (port 8080)
+  api/      Fastify 5 + TypeScript + Zod  → Render      (port 8080)
   web/      React 19 + Vite 7 + TypeScript → Cloudflare Pages
   mobile/   React Native + Expo SDK 54 + Expo Router → EAS (iOS + Android)
 packages/
@@ -91,7 +91,7 @@ Auth : JWT Supabase vérifié localement (JWKS ES256, secours HS256). OTP par **
 ## Déploiement (plans gratuits)
 
 - **Supabase** : migrations via `pnpm db:migrate`. Après déploiement de l'API, renseigner `app_settings` (`api_url`, `cron_token`) pour activer le cron (`0003_cron_tick.sql`).
-- **API → Fly.io** : `fly launch --no-deploy --copy-config --config apps/api/fly.toml` puis `fly secrets set ...` puis `fly deploy --config apps/api/fly.toml --dockerfile apps/api/Dockerfile .` (depuis la racine). Machine `shared-cpu-1x` 256 Mo, auto-stop/auto-start. Workflow GitHub `deploy-api.yml` (secret `FLY_API_TOKEN`).
+- **API → Render** (Francfort, plan gratuit, sans carte bancaire) : `render.yaml` à la racine (Blueprint Docker, `apps/api/Dockerfile`, contexte racine, healthcheck `/health`, déploiement auto sur `main` filtré sur `apps/api`, `packages`, lockfile). Secrets à renseigner dans le dashboard : `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWT_SECRET`, `INTERNAL_CRON_TOKEN` (+ `SENTRY_DSN`). Mise en veille après 15 min sans trafic → le cron Supabase toutes les 10 min (`0010`) maintient l’instance éveillée (≈ 744 h/mois sur les 750 h gratuites : un seul service Render par workspace).
 - **Web → Cloudflare Pages** : build command `pnpm --filter @salondz/web build`, output `apps/web/dist`, variables `VITE_*`. `_redirects` gère le SPA.
 - **Mobile → EAS** : `eas build --profile preview --platform android` (APK interne) ; push via Expo Push (gratuit).
 - **Sentry** : renseigner les DSN.

@@ -8,7 +8,7 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - `pnpm test:e2e:mobile` : parcours client + pro sur l'app mobile rendue par Expo web (`apps/mobile/test/smoke.e2e.mjs`) ; exige `pnpm dev:api` et, depuis `apps/mobile`, `CI=1 EXPO_PUBLIC_API_URL=http://localhost:8090 npx expo start --web --port 8082`. Captures dans `apps/mobile/test/shots/`.
 - `pnpm demo:seed` / `pnpm demo:cleanup` : deux salons de démonstration (Sarah Beauty Studio, Amine Barber) + une cliente avec rendez-vous, pour captures et tests manuels ; sessions dans `scripts/.demo.json` (gitignoré). Exige `pnpm dev:api`.
 - `pnpm db:migrate` (lit `DATABASE_URL` dans `.env`, suit `public.schema_migrations`). Les migrations déjà appliquées sont immuables : toute correction = nouveau fichier `000N_*.sql`.
-- API locale : `pnpm dev:api` sur le port `PORT` du `.env` (8090 en local, 8080 sur Fly/Koyeb) ; web toujours sur http://localhost:9000 (Vite `strictPort`).
+- API locale : `pnpm dev:api` sur le port `PORT` du `.env` (8090 en local, 8080 sur Render) ; web toujours sur http://localhost:9000 (Vite `strictPort`).
 
 ## Règles métier non négociables
 - Devise DA uniquement (`formatDA`), jamais d'euros. Fuseau `Africa/Algiers`. Semaine **dimanche → samedi** (`WEEK_STARTS_ON = 0`, `weekKeys()`), `day_of_week` 0 = dimanche.
