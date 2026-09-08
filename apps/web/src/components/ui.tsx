@@ -8,8 +8,8 @@ import { Check, ChevronLeft, ChevronRight, Info, X, type LucideIcon } from 'luci
 import type { BookingStatus } from '@salondz/constants';
 
 /** Icône aux réglages du design : 22 px, trait 1.6. */
-export function I({ icon: Icon, size = 22, className = '' }: { icon: LucideIcon; size?: number; className?: string }) {
-  return <Icon size={size} strokeWidth={size <= 16 ? 1.7 : 1.6} className={className} aria-hidden />;
+export function I({ icon: Icon, size = 22, strokeWidth, className = '' }: { icon: LucideIcon; size?: number; strokeWidth?: number; className?: string }) {
+  return <Icon size={size} strokeWidth={strokeWidth ?? (size <= 16 ? 1.7 : 1.6)} className={className} aria-hidden />;
 }
 
 // ---------- Boutons ----------

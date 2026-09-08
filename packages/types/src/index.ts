@@ -209,6 +209,8 @@ export interface SalonSummary {
   topServices: { name: string; priceDa: number }[];
   /** Prochains créneaux du jour (HH:mm, heure d'Alger), 3 au plus. */
   nextSlots: string[];
+  /** Première journée avec des créneaux (aujourd'hui, sinon les 7 jours suivants) : date locale + heures. */
+  nextAvailable: { date: string; slots: string[] } | null;
   isOpenNow: boolean;
   lat?: number | null;
   lng?: number | null;

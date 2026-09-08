@@ -24,6 +24,7 @@
     "@supabase/supabase-js": "^2.56.0",
     "@tanstack/react-query": "^5.85.0",
     "expo": "~54.0.0",
+    "expo-blur": "~15.0.8",
     "expo-clipboard": "^57.0.1",
     "expo-constants": "~18.0.0",
     "expo-device": "~8.0.0",
@@ -59,8 +60,8 @@
   "devDependencies": {
     "@babel/core": "^7.25.0",
     "@types/react": "~19.1.0",
-    "typescript": "^5.8.3",
-    "playwright-core": "^1.56.1"
+    "playwright-core": "^1.56.1",
+    "typescript": "^5.8.3"
   },
   "expo": {
     "doctor": {

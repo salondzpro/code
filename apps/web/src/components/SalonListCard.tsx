@@ -2,9 +2,9 @@
  * Carte salon de la marketplace (design C-H 01 / C-F 01) : grande version avec couverture,
  * version compacte avec vignette. Prestations phares, note, prochains créneaux du jour.
  */
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { SalonSummary } from '@salondz/types';
-import { categoryLabel, formatDA } from '@salondz/constants';
+import { categoryLabel, formatDA, relativeDayLabelDZ } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/clientPrefs';
 import { Img } from './ui';
 
@@ -26,6 +26,40 @@ export function SlotPills({ slots, empty = "Complet aujourd'hui" }: { slots: str
           {t}
         </span>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Prochaine disponibilité directement sur la carte : « Aujourd'hui · 12:00 12:45 15:30 » ou « Demain · 10:00 … ».
+ * Chaque heure ouvre la réservation avec la date et l'heure déjà choisies (le client n'a plus qu'à cocher ses prestations).
+ * Sans compte : accessible aux visiteurs, la connexion est demandée plus loin dans le parcours.
+ */
+export function NextSlots({ salon, empty = 'Aucune disponibilité cette semaine' }: { salon: Pick<SalonSummary, 'slug' | 'nextAvailable'>; empty?: string }) {
+  const navigate = useNavigate();
+  const next = salon.nextAvailable;
+  if (!next || next.slots.length === 0) return <span className="s">{empty}</span>;
+  const label = relativeDayLabelDZ(next.date);
+  return (
+    <div className="flex flex-col gap-2" aria-label={`Prochaines disponibilités ${label}`}>
+      <span className="t3 font-medium">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {next.slots.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className="pill soft mono !px-4 !py-2.5 !text-[13px] hover:!bg-line"
+            aria-label={`Réserver ${label} à ${t}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(`/s/${salon.slug}/prestations?date=${next.date}&time=${t}`);
+            }}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -57,7 +91,7 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
           </span>
           {s.topServices.length > 0 && <span className="text-[15px] text-subtle">{servicesLine(s)}</span>}
           <div className="mt-2.5">
-            <SlotPills slots={s.nextSlots} />
+            <NextSlots salon={s} />
           </div>
         </div>
       </Link>
@@ -77,7 +111,7 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
           {s.topServices.length > 0 && <span className="mt-0.5 block text-[15px] text-subtle">{servicesLine(s)}</span>}
         </div>
       </div>
-      <SlotPills slots={s.nextSlots} />
+      <NextSlots salon={s} />
     </Link>
   );
 }

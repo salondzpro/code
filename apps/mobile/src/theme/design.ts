@@ -61,7 +61,8 @@ export const SHADOW: Record<'card' | 'sheet' | 'fab' | 'toast' | 'knob' | 'seg',
 
 /** Espace réservé sous le contenu quand une feuille basse est affichée (design). */
 export const SHEET_PAD = 150;
-export const NAV_PAD = 24;
+/** Espace sous le contenu des écrans à onglets : la barre flottante « verre » recouvre le bas. */
+export const NAV_PAD = 104;
 
 /** Chiffres à chasse fixe (design .mono). */
 export const MONO: TextStyle = { fontVariant: ['tabular-nums'] };

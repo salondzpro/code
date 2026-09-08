@@ -5,6 +5,7 @@ import type { Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize, snakeize } from '../lib/mappers';
 import { unwrap } from '../lib/errors';
+import { toLocalDateKey } from '@salondz/constants';
 import { loadOwnedSalon } from '../plugins/auth';
 
 const PROFILE_COLS = 'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
@@ -113,9 +114,19 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       .filter((r) => r.salons.is_published)
       .map((r) => {
         const { salon_categories, is_published: _p, ...rest } = r.salons;
-        const s = camelize<Omit<SalonSummary, 'categoryIds' | 'minPriceDa' | 'topServices' | 'nextSlots' | 'isOpenNow'>>(rest);
-        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null, topServices: [], nextSlots: [], isOpenNow: false };
+        const s = camelize<Omit<SalonSummary, 'categoryIds' | 'minPriceDa' | 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
+        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null, topServices: [], nextSlots: [], nextAvailable: null as SalonSummary['nextAvailable'], isOpenNow: false };
       });
+    // Prochaine disponibilité (même calcul que la marketplace) : la liste des favoris est courte.
+    const today = toLocalDateKey();
+    await Promise.all(
+      items.map(async (s) => {
+        const r = await db.rpc('next_availability', { p_salon_id: s.id, p_duration_minutes: null, p_limit: 3, p_days: 7 });
+        const next = (r.error ? null : (r.data as SalonSummary['nextAvailable'])) ?? null;
+        s.nextAvailable = next;
+        s.nextSlots = next && next.date === today ? next.slots : [];
+      }),
+    );
     reply.header('Cache-Control', 'private, no-store');
     return { items };
   });

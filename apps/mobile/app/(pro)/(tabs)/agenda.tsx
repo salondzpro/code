@@ -109,7 +109,7 @@ export default function AgendaPro() {
       bottom={NAV_PAD + 60}
       footer={
         view === 'day' ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Nouveau rendez-vous" onPress={newBooking} style={[{ position: 'absolute', right: 20, bottom: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Nouveau rendez-vous" onPress={newBooking} style={[{ position: 'absolute', right: 20, bottom: NAV_PAD - 8, width: 56, height: 56, borderRadius: 28, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
             <I icon={Plus} size={28} color="#fff" />
           </Pressable>
         ) : undefined

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { Heart } from 'lucide-react';
 import { useFavorites, useToggleFavorite } from '@salondz/api-client';
-import { categoryLabel, salonMarkets, type Market } from '@salondz/constants';
+import { categoryLabel, salonMarkets, type Market, relativeDayLabelDZ } from '@salondz/constants';
 import { Avatar, LinkButton, Pill, Skeleton, TopBar } from '@/components/ui';
 import { RatingPill } from '@/components/SalonListCard';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -54,7 +54,7 @@ export function Favorites() {
               <span className="min-w-0">
                 <span className="block text-[18px] font-bold tracking-[-0.4px]">{s.name}</span>
                 <span className="block text-[13px] text-muted">{[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}</span>
-                <span className="mt-1 block text-[13px]">{s.nextSlots?.length ? `Dispo ${s.nextSlots[0]}` : "Complet aujourd'hui"}</span>
+                <span className="mt-1 block text-[13px]">{s.nextAvailable ? `Dispo ${relativeDayLabelDZ(s.nextAvailable.date).toLowerCase()} ${s.nextAvailable.slots[0]}` : 'Aucune disponibilité cette semaine'}</span>
               </span>
             </Link>
             <div className="flex flex-col items-end gap-3">

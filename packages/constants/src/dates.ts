@@ -117,6 +117,15 @@ export function dayOfWeekFromKey(dateKey: string): DayOfWeek {
   return new Date(Date.UTC(y!, m! - 1, d!, 12)).getUTCDay() as DayOfWeek;
 }
 
+/** « Aujourd'hui », « Demain », sinon « Jeu. 12 sept. » pour une clé "YYYY-MM-DD" (cartes marketplace). */
+export function relativeDayLabelDZ(dateKey: string, today: string = toLocalDateKey()): string {
+  if (dateKey === today) return "Aujourd'hui";
+  if (dateKey === addDaysToKey(today, 1)) return 'Demain';
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const label = formatDateShortDZ(new Date(Date.UTC(y!, m! - 1, d!, 12)));
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 /** Ajoute n jours à une clé "YYYY-MM-DD". */
 export function addDaysToKey(dateKey: string, n: number): string {
   const [y, m, d] = dateKey.split('-').map(Number);

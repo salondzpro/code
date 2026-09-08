@@ -5,10 +5,10 @@
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { SalonSummary } from '@salondz/types';
-import { categoryLabel, formatDA } from '@salondz/constants';
+import { categoryLabel, formatDA, relativeDayLabelDZ } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/format';
 import { C, R } from '@/theme/design';
-import { Img, S, Tx } from './index';
+import { Img, S, T3, Tx } from './index';
 
 export function RatingPill({ avg, count, style }: { avg: number; count?: number; style?: StyleProp<ViewStyle> }) {
   return (
@@ -36,6 +36,37 @@ export function SlotPills({ slots, empty = "Complet aujourd'hui" }: { slots: str
           </Tx>
         </View>
       ))}
+    </View>
+  );
+}
+
+/**
+ * Prochaine disponibilité directement sur la carte : « Aujourd'hui » / « Demain » / « Jeu. 12 sept. » + heures.
+ * Chaque heure ouvre la réservation avec la date et l'heure déjà choisies (il ne reste que les prestations à cocher).
+ */
+export function NextSlots({ salon, empty = 'Aucune disponibilité cette semaine' }: { salon: Pick<SalonSummary, 'slug' | 'nextAvailable'>; empty?: string }) {
+  const router = useRouter();
+  const next = salon.nextAvailable;
+  if (!next || next.slots.length === 0) return <S>{empty}</S>;
+  const label = relativeDayLabelDZ(next.date);
+  return (
+    <View style={{ gap: 8 }} accessibilityLabel={`Prochaines disponibilités ${label}`}>
+      <T3 weight={500}>{label}</T3>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {next.slots.map((t) => (
+          <Pressable
+            key={t}
+            accessibilityRole="button"
+            accessibilityLabel={`Réserver ${label} à ${t}`}
+            onPress={() => router.push({ pathname: `/s/${salon.slug}/prestations`, params: { date: next.date, time: t } } as never)}
+            style={({ pressed }) => ({ backgroundColor: pressed ? C.line : C.fill, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 10 })}
+          >
+            <Tx size={13} weight={500} lh={17} mono>
+              {t}
+            </Tx>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 }
@@ -77,7 +108,7 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
             </Tx>
           )}
           <View style={{ marginTop: 10 }}>
-            <SlotPills slots={s.nextSlots} />
+            <NextSlots salon={s} />
           </View>
         </View>
       </Pressable>
@@ -105,7 +136,7 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
           )}
         </View>
       </View>
-      <SlotPills slots={s.nextSlots} />
+      <NextSlots salon={s} />
     </Pressable>
   );
 }

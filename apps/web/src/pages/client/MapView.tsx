@@ -12,7 +12,7 @@ import { MARKET_LABELS_FR, categoriesForMarket, formatDA, type CategoryId } from
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { BottomNav } from '@/components/AppFrame';
 import { I, IconButton, Img, Pill } from '@/components/ui';
-import { RatingPill, SlotPills } from '@/components/SalonListCard';
+import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
 
 const ALGIERS: [number, number] = [36.7538, 3.0588];
@@ -139,7 +139,7 @@ export function MapView() {
                 <span className="mt-0.5 block text-[15px] text-subtle">{current.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}</span>
               </div>
             </div>
-            <SlotPills slots={current.nextSlots} />
+            <NextSlots salon={current} />
           </Link>
         ) : (
           <p className="p py-2 text-center">{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone.'}</p>

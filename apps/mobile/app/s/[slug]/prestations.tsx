@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSalon } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, localDateTimeToISO } from '@salondz/constants';
 import type { Service } from '@salondz/types';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration, shortDuration } from '@/lib/format';
@@ -18,7 +18,7 @@ import { C } from '@/theme/design';
 const isFormula = (sv: Service) => /^formule\b/i.test(sv.name);
 
 export default function BookingServices() {
-  const { slug = '', services: fromUrl = '' } = useLocalSearchParams<{ slug: string; services?: string }>();
+  const { slug = '', services: fromUrl = '', date: fromDate, time: fromTime } = useLocalSearchParams<{ slug: string; services?: string; date?: string; time?: string }>();
   const router = useRouter();
   const salon = useSalon(slug);
   const [selected, setSelected] = useState<string[]>(() => {
@@ -29,6 +29,13 @@ export default function BookingServices() {
   useEffect(() => {
     writeDraft(slug, { serviceIds: selected });
   }, [slug, selected]);
+
+  // Créneau proposé sur la carte marketplace (date + heure) : pré-rempli, l'écran « Quand » s'ouvre dessus.
+  useEffect(() => {
+    if (fromDate && fromTime && /^\d{4}-\d{2}-\d{2}$/.test(fromDate) && /^\d{2}:\d{2}$/.test(fromTime)) {
+      writeDraft(slug, { date: fromDate, startsAt: localDateTimeToISO(fromDate, fromTime) });
+    }
+  }, [slug, fromDate, fromTime]);
 
   const s = salon.data;
   const chosen = useMemo(() => (s ? selected.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x) : []), [s, selected]);

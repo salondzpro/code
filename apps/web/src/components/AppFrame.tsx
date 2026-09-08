@@ -1,6 +1,6 @@
 /**
  * Cadre d'application : une colonne de largeur téléphone (390–430 px) centrée sur
- * grand écran, fond « écran » du design, barre d'onglets fixe en bas.
+ * grand écran, fond « écran » du design, barre d'onglets flottante « verre » en bas.
  */
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router';
@@ -8,7 +8,7 @@ import { Calendar, Home, LayoutGrid, Menu, User, Users, type LucideIcon } from '
 import { I } from './ui';
 
 /** Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée. */
-export const NAV_PAD = 110;
+export const NAV_PAD = 104;
 export const SHEET_PAD = 150;
 
 export function AppFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -51,13 +51,8 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
   return (
     <nav className="nvb" aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}>
       {items.map((it) => (
-        <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => `nvi${isActive ? ' on' : ''}`}>
-          {({ isActive }) => (
-            <>
-              <I icon={it.icon} size={24} className={isActive ? 'text-ink' : 'text-subtle'} />
-              <span>{it.label}</span>
-            </>
-          )}
+        <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => `nvi${isActive ? ' on' : ''}`} aria-label={it.label} title={it.label}>
+          {({ isActive }) => <I icon={it.icon} size={24} strokeWidth={isActive ? 2 : 1.6} className="text-current" />}
         </NavLink>
       ))}
     </nav>

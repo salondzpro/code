@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSalon } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, localDateTimeToISO } from '@salondz/constants';
 import { readDraft, shortDuration, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
 import { Check } from 'lucide-react';
@@ -30,6 +30,16 @@ export function BookingServices() {
   useEffect(() => {
     writeDraft(slug, { serviceIds: selected });
   }, [slug, selected]);
+
+  // Créneau proposé sur la carte marketplace (?date=YYYY-MM-DD&time=HH:mm) : pré-rempli dans le brouillon,
+  // l'écran « Quand » s'ouvre directement dessus (et le libère s'il n'est plus disponible).
+  useEffect(() => {
+    const date = params.get('date');
+    const time = params.get('time');
+    if (date && time && /^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time)) {
+      writeDraft(slug, { date, startsAt: localDateTimeToISO(date, time) });
+    }
+  }, [slug, params]);
 
   const s = salon.data;
   const chosen = useMemo(() => (s ? selected.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x) : []), [s, selected]);

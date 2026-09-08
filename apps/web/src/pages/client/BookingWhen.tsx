@@ -56,6 +56,12 @@ export function BookingWhen() {
     return out;
   }, [s, availability.data, date, minutes]);
 
+  // Un créneau pré-rempli (carte marketplace) n'est gardé que s'il est réellement libre pour la durée choisie.
+  useEffect(() => {
+    if (!availability.data || !slot) return;
+    if (!grid.some((g) => g.iso === slot && g.free)) setSlot(null);
+  }, [availability.data, grid, slot]);
+
   if (serviceIds.length === 0) return <Navigate to={`/s/${slug}/prestations`} replace />;
   if (salon.isPending) return <Splash />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;

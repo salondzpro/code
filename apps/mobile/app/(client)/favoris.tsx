@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Heart } from 'lucide-react-native';
 import { useFavorites, useToggleFavorite } from '@salondz/api-client';
-import { categoryLabel, salonMarkets, type Market } from '@salondz/constants';
+import { categoryLabel, salonMarkets, type Market, relativeDayLabelDZ } from '@salondz/constants';
 import { Avatar, Button, Card, ErrorText, H1, P, Pill, Skeleton, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { PillRow } from '@/ui/Pills';
@@ -64,7 +64,7 @@ export default function Favorites() {
                   {[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}
                 </Tx>
                 <Tx size={13} lh={19} style={{ marginTop: 4 }}>
-                  {s.nextSlots?.length ? `Dispo ${s.nextSlots[0]}` : "Complet aujourd'hui"}
+                  {s.nextAvailable ? `Dispo ${relativeDayLabelDZ(s.nextAvailable.date).toLowerCase()} ${s.nextAvailable.slots[0]}` : 'Aucune disponibilité cette semaine'}
                 </Tx>
               </View>
             </Pressable>

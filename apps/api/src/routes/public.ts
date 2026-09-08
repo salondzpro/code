@@ -59,15 +59,16 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     const rows = unwrap(res) as Record<string, unknown>[];
     let total = 0;
     const items: SalonSummary[] = rows.map((r) => {
-      const { top_services, next_slots, is_open_now, total_count, ...rest } = r as Record<string, unknown> & {
+      const { top_services, next_slots, next_available, is_open_now, total_count, ...rest } = r as Record<string, unknown> & {
         top_services: { name: string; priceDa: number }[] | null;
         next_slots: string[] | null;
+        next_available: { date: string; slots: string[] } | null;
         is_open_now: boolean;
         total_count: number | string;
       };
       total = Number(total_count);
-      const s = camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'isOpenNow'>>(rest);
-      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], isOpenNow: !!is_open_now };
+      const s = camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
+      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], nextAvailable: next_available ?? null, isOpenNow: !!is_open_now };
     });
     reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
     return { items, total, nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null };

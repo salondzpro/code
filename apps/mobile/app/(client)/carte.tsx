@@ -15,7 +15,7 @@ import { useLocationPrefs } from '@/lib/prefs';
 import { formatKm } from '@/lib/format';
 import { I, IconButton, Img, P, Pill, Tx } from '@/ui';
 import { PillRow } from '@/ui/Pills';
-import { RatingPill, SlotPills } from '@/ui/SalonListCard';
+import { RatingPill, NextSlots } from '@/ui/SalonListCard';
 import { GridBg } from '@/ui/GridBg';
 import { C, R, SHADOW } from '@/theme/design';
 
@@ -123,7 +123,7 @@ export default function MapView() {
                 </Tx>
               </View>
             </View>
-            <SlotPills slots={current.nextSlots} />
+            <NextSlots salon={current} />
           </Pressable>
         ) : (
           <P center>{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone.'}</P>

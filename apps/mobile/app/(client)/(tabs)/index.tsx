@@ -47,7 +47,14 @@ export default function Marketplace() {
   const swapMarket = () => update.mutate({ market: market === 'men' ? 'women' : 'men' });
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? items.length;
+
   const noun = NOUN[market][total > 1 ? 1 : 0];
+  // Compteur honnête : « disponibles aujourd'hui » seulement si des créneaux du jour existent dans la page.
+  const todayCount = items.filter((x) => x.nextSlots.length > 0).length;
+  const countLabel =
+    todayCount > 0
+      ? `${todayCount} ${NOUN[market][todayCount > 1 ? 1 : 0]} disponible${todayCount > 1 ? 's' : ''} aujourd'hui`
+      : `${total} ${noun} · prochaines disponibilités ci-dessous`;
   const sortLabel = SORT_OPTIONS.find((o) => o.value === prefs.sort)?.label ?? 'Sans préférence';
 
   return (
@@ -167,7 +174,7 @@ export default function Marketplace() {
       ) : (
         <>
           <Tx size={13} color={C.muted} lh={18}>
-            {total} {noun} disponible{total > 1 ? 's' : ''} aujourd'hui
+            {countLabel}
           </Tx>
           <View style={{ gap: 14 }}>
             {items.map((s, i) => (

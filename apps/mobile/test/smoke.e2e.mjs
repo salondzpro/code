@@ -209,7 +209,9 @@ try {
 
   await step('pro: agenda', async () => {
     await pro.goto(`${WEB}/agenda`, { waitUntil: 'load' });
-    await pro.getByText('Agenda').first().waitFor();
+    // Barre d'onglets à icônes : l'onglet actif est repéré par son libellé accessible.
+    await pro.getByRole('tab', { name: 'Agenda' }).waitFor();
+    await pro.getByText(/rendez-vous/).first().waitFor();
     await shot(pro, 'pro-agenda');
   });
 
