@@ -68,7 +68,7 @@ export function Phone() {
           </div>
         ) : (
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[14px] bg-fill px-4 text-[13px] font-medium" aria-label="Indicatif +213">
+            <div className="flex flex-none items-center gap-2 rounded-[0.875rem] bg-fill px-4 text-[0.8125rem] font-medium" aria-label="Indicatif +213">
               +213
               <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
@@ -89,16 +89,16 @@ export function Phone() {
           </div>
         )}
         {error ? (
-          <p className="flex items-center gap-2 text-[14px] text-danger" role="alert">
+          <p className="flex items-center gap-2 text-[0.875rem] text-danger" role="alert">
             <I icon={AlertCircle} size={16} />
             {error}
           </p>
         ) : (
-          <p className="p text-[14px]">{useEmail ? 'Le code arrivera par e-mail.' : 'Format algérien · +213 XX XX XX XX'}</p>
+          <p className="p text-[0.875rem]">{useEmail ? 'Le code arrivera par e-mail.' : 'Format algérien · +213 XX XX XX XX'}</p>
         )}
         <Button type="submit">Recevoir le code</Button>
         {EMAIL_FALLBACK && (
-          <button type="button" className="text-center text-[14px] text-muted underline" onClick={() => setUseEmail((v) => !v)}>
+          <button type="button" className="text-center text-[0.875rem] text-muted underline" onClick={() => setUseEmail((v) => !v)}>
             {useEmail ? 'Utiliser un numéro de téléphone' : 'Recevoir le code par e-mail'}
           </button>
         )}

@@ -17,11 +17,11 @@ export default function Notifications() {
   }, [notifs.data?.unreadCount]);
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo="/(client)/(tabs)/profil" right="Notifications" />
       <H1>Notifications</H1>
       {notifs.isPending ? (
-        <Skeleton h={160} radius={20} />
+        <Skeleton h={130} radius={16} />
       ) : notifs.isError ? (
         <ErrorText error={notifs.error} retry={() => void notifs.refetch()} />
       ) : notifs.data.items.length === 0 ? (
@@ -29,15 +29,15 @@ export default function Notifications() {
       ) : (
         <ListCard>
           {notifs.data.items.map((n) => (
-            <Row key={n.id} py={16} chevron={false}>
+            <Row key={n.id} py={13} chevron={false}>
               <View style={{ gap: 2 }}>
-                <Tx size={13} weight={n.readAt ? 400 : 600} lh={18}>
+                <Tx size={10.5} weight={n.readAt ? 400 : 600} lh={14.5}>
                   {n.title}
                 </Tx>
-                <Tx size={15} color={C.muted} lh={20}>
+                <Tx size={12} color={C.muted} lh={16}>
                   {n.body}
                 </Tx>
-                <Tx size={12} color={C.subtle} lh={16}>
+                <Tx size={10} color={C.subtle} lh={13}>
                   {formatDateShortDZ(n.createdAt)} · {formatTimeDZ(n.createdAt)}
                 </Tx>
               </View>

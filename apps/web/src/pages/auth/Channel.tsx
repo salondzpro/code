@@ -55,11 +55,11 @@ export function Channel() {
         {!isEmail && (
           <>
             <Card as="button" sel={channel === 'whatsapp'} onClick={() => setChannel('whatsapp')} className="!flex-row items-center gap-4">
-              <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+              <span className="flex h-[2.625rem] w-[2.625rem] flex-none items-center justify-center rounded-full bg-ok-bg text-ok-fg">
                 <I icon={MessageCircle} size={20} />
               </span>
               <span className="min-w-0 flex-1 text-left">
-                <span className="block text-[16px] font-semibold">WhatsApp</span>
+                <span className="block text-[1rem] font-semibold">WhatsApp</span>
                 <span className="p block">Recommandé · instantané et gratuit</span>
               </span>
               <Badge tone="ok" dot={false} md>
@@ -67,11 +67,11 @@ export function Channel() {
               </Badge>
             </Card>
             <Card as="button" sel={channel === 'sms'} onClick={() => setChannel('sms')} className="!flex-row items-center gap-4">
-              <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-full border border-line bg-surface text-text">
+              <span className="flex h-[2.625rem] w-[2.625rem] flex-none items-center justify-center rounded-full border border-line bg-surface text-text">
                 <I icon={MessageCircle} size={20} />
               </span>
               <span className="min-w-0 flex-1 text-left">
-                <span className="block text-[16px] font-semibold">SMS</span>
+                <span className="block text-[1rem] font-semibold">SMS</span>
                 <span className="p block">Si WhatsApp n'est pas installé</span>
               </span>
             </Card>
@@ -79,11 +79,11 @@ export function Channel() {
         )}
         {(isEmail || EMAIL_FALLBACK) && (
           <Card as="button" sel={channel === 'email'} onClick={() => setChannel('email')} className="!flex-row items-center gap-4">
-            <span className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-full border border-line bg-surface text-text">
+            <span className="flex h-[2.625rem] w-[2.625rem] flex-none items-center justify-center rounded-full border border-line bg-surface text-text">
               <I icon={Mail} size={20} />
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="block text-[16px] font-semibold">E-mail</span>
+              <span className="block text-[1rem] font-semibold">E-mail</span>
               <span className="p block">{isEmail ? flow.identifier : 'Si le téléphone ne reçoit pas de code'}</span>
             </span>
           </Card>
@@ -93,7 +93,7 @@ export function Channel() {
         Le code arrive sur <b className="text-text">{isEmail || channel === 'email' ? flow.identifier : formatIntlDZ(flow.identifier)}</b>. Vous pouvez modifier le numéro.
       </InfoBox>
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}

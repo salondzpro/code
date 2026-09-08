@@ -50,14 +50,14 @@ export function ProProfile() {
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
           </button>
           <span className="min-w-0 flex-1">
-            <span className="block text-[18px] font-bold tracking-[-0.4px]">{salon.name}</span>
-            <span className="block truncate text-[13px] text-muted">{short}</span>
+            <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{salon.name}</span>
+            <span className="block truncate text-[0.8125rem] text-muted">{short}</span>
           </span>
           <Badge tone={salon.isPublished ? 'ok' : 'pd'} md>
             {salon.isPublished ? 'En ligne' : 'Non publiée'}
           </Badge>
         </div>
-        <button type="button" className="relative h-[140px] w-full overflow-hidden rounded-[16px] bg-line" onClick={() => coverInput.current?.click()} aria-label="Changer la photo de couverture">
+        <button type="button" className="relative h-[8.75rem] w-full overflow-hidden rounded-[1rem] bg-line" onClick={() => coverInput.current?.click()} aria-label="Changer la photo de couverture">
           {salon.coverUrl ? <img src={salon.coverUrl} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-subtle"><I icon={Camera} size={28} /></span>}
         </button>
         <input ref={coverInput} type="file" accept="image/*" hidden onChange={(e) => { void upload('cover', e.target.files?.[0]); e.target.value = ''; }} />
@@ -75,22 +75,22 @@ export function ProProfile() {
       <SectionLabel>Établissement</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/salon">
-          <span className="block text-[15px]">Adresse et zone</span>
-          <span className="p block text-[15px]">{[salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)].filter(Boolean).join(', ')}</span>
+          <span className="block text-[0.9375rem]">Adresse et zone</span>
+          <span className="p block text-[0.9375rem]">{[salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)].filter(Boolean).join(', ')}</span>
         </ListRow>
         <ListRow to="/pro/onboarding/5">
-          <span className="block text-[15px]">Catalogue</span>
-          <span className="p block text-[15px]">
+          <span className="block text-[0.9375rem]">Catalogue</span>
+          <span className="p block text-[0.9375rem]">
             {MARKET_LABELS_FR[market]} · {salon.categoryIds.length} catégorie{salon.categoryIds.length > 1 ? 's' : ''}
           </span>
         </ListRow>
         <div className="li !py-4">
           <span>
-            <span className="block text-[15px]">Description du salon</span>
-            {desc === null ? <span className="p block text-[15px]">{salon.description || 'Recommandé — améliore votre visibilité'}</span> : null}
+            <span className="block text-[0.9375rem]">Description du salon</span>
+            {desc === null ? <span className="p block text-[0.9375rem]">{salon.description || 'Recommandé — améliore votre visibilité'}</span> : null}
           </span>
           {desc === null && (
-            <button type="button" className="text-[15px] text-muted underline" onClick={() => setDesc(salon.description ?? '')}>
+            <button type="button" className="text-[0.9375rem] text-muted underline" onClick={() => setDesc(salon.description ?? '')}>
               Modifier
             </button>
           )}
@@ -120,19 +120,19 @@ export function ProProfile() {
       <SectionLabel>Planning</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/profil/horaires">
-          <span className="text-[15px]">Horaires</span>
+          <span className="text-[0.9375rem]">Horaires</span>
         </ListRow>
         <ListRow to="/pro/profil/regles">
-          <span className="text-[15px]">Créneaux et règles de réservation</span>
+          <span className="text-[0.9375rem]">Créneaux et règles de réservation</span>
         </ListRow>
         <ListRow to="/pro/blocages">
-          <span className="text-[15px]">Fermetures et exceptions</span>
+          <span className="text-[0.9375rem]">Fermetures et exceptions</span>
         </ListRow>
         <ListRow to="/pro/equipe">
-          <span className="text-[15px]">Équipe</span>
+          <span className="text-[0.9375rem]">Équipe</span>
         </ListRow>
         <ListRow to="/pro/lien">
-          <span className="text-[15px]">Lien, QR code et partage</span>
+          <span className="text-[0.9375rem]">Lien, QR code et partage</span>
         </ListRow>
       </div>
 
@@ -140,21 +140,21 @@ export function ProProfile() {
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
           <span>
-            <span className="block text-[15px]">Page publiée</span>
-            <span className="p block text-[15px]">Visible dans la marketplace</span>
+            <span className="block text-[0.9375rem]">Page publiée</span>
+            <span className="p block text-[0.9375rem]">Visible dans la marketplace</span>
           </span>
           <Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v }, { onError: (e) => setError(errorText(e)) })} label="Page publiée" />
         </div>
         <div className="li !py-4">
           <span>
-            <span className="block text-[15px]">Validation manuelle</span>
-            <span className="p block text-[15px]">Vous confirmez chaque demande</span>
+            <span className="block text-[0.9375rem]">Validation manuelle</span>
+            <span className="p block text-[0.9375rem]">Vous confirmez chaque demande</span>
           </span>
           <Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />
         </div>
       </div>
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -163,20 +163,20 @@ export function ProProfile() {
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
           <span>
-            <span className="block text-[15px]">{me.data?.profile.fullName ?? 'Vous'}</span>
-            <span className="p block text-[15px]">{me.data?.profile.phone ?? ''}</span>
+            <span className="block text-[0.9375rem]">{me.data?.profile.fullName ?? 'Vous'}</span>
+            <span className="p block text-[0.9375rem]">{me.data?.profile.phone ?? ''}</span>
           </span>
           <Badge tone="ok" md>
             Active
           </Badge>
         </div>
         <Link to="/" className="li !py-4">
-          <span className="text-[15px]">Espace client</span>
+          <span className="text-[0.9375rem]">Espace client</span>
           <I icon={ChevronRight} size={18} className="text-disabled" />
         </Link>
         <button
           type="button"
-          className="li w-full text-left text-[15px] text-danger"
+          className="li w-full text-left text-[0.9375rem] text-danger"
           onClick={async () => {
             await signOut();
             navigate('/intro', { replace: true });

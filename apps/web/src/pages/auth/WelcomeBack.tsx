@@ -40,7 +40,7 @@ export function WelcomeBack() {
       <p className="p text-center">Votre session reste ouverte tant que vous ne vous déconnectez pas — sur l'application comme sur le navigateur.</p>
       <div className="crd !gap-0 !py-1">
         <ListRow onClick={proceed} right={<I icon={ChevronRight} size={18} className="text-disabled" />} chevron={false}>
-          <span className="text-[13px] font-medium">Continuer comme {firstName}</span>
+          <span className="text-[0.8125rem] font-medium">Continuer comme {firstName}</span>
         </ListRow>
         <ListRow
           onClick={async () => {
@@ -50,7 +50,7 @@ export function WelcomeBack() {
           right={<I icon={RefreshCw} size={18} className="text-disabled" />}
           chevron={false}
         >
-          <span className="text-[13px]">Utiliser un autre numéro</span>
+          <span className="text-[0.8125rem]">Utiliser un autre numéro</span>
         </ListRow>
       </div>
       <Button onClick={proceed}>Continuer</Button>

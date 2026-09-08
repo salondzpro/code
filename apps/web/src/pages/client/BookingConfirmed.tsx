@@ -28,14 +28,14 @@ export function CalendarSheet({ booking, onClose }: { booking: BookingWithSalon;
     <>
       <div className="dim" onClick={onClose} />
       <BottomSheet>
-        <div className="h2 text-center !text-[18px]">Ajouter au calendrier</div>
+        <div className="h2 text-center !text-[1.125rem]">Ajouter au calendrier</div>
         <div className="flex flex-col">
           <a href={links.google} target="_blank" rel="noreferrer" className="li !py-5">
             <span className="flex items-center gap-4">
               <span className="ib lg">
                 <I icon={Calendar} size={20} />
               </span>
-              <span className="text-[15px]">Google Agenda</span>
+              <span className="text-[0.9375rem]">Google Agenda</span>
             </span>
             <I icon={ChevronRight} size={18} className="text-disabled" />
           </a>
@@ -44,7 +44,7 @@ export function CalendarSheet({ booking, onClose }: { booking: BookingWithSalon;
               <span className="ib lg">
                 <I icon={Download} size={20} />
               </span>
-              <span className="text-[15px]">Télécharger le fichier .ics</span>
+              <span className="text-[0.9375rem]">Télécharger le fichier .ics</span>
             </span>
             <I icon={ChevronRight} size={18} className="text-disabled" />
           </a>
@@ -70,7 +70,7 @@ export function BookingConfirmed() {
   return (
     <Screen className="min-h-dvh justify-center" gap={16}>
       <div className="flex flex-col items-center gap-5 text-center">
-        <div className="flex h-[148px] w-[148px] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+        <div className="flex h-[9.25rem] w-[9.25rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
           <I icon={Check} size={56} />
         </div>
         <h1 className="h1">
@@ -83,24 +83,24 @@ export function BookingConfirmed() {
         <div className="mb-2 flex items-center gap-3.5">
           <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
           <span className="min-w-0">
-            <span className="block text-[18px] font-bold tracking-[-0.4px]">{b.salon.name}</span>
-            <span className="block text-[13px] text-muted">
+            <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{b.salon.name}</span>
+            <span className="block text-[0.8125rem] text-muted">
               {b.salon.city}
               {b.salon.phone ? ` · ${formatDZPhone(b.salon.phone)}` : ''}
             </span>
           </span>
         </div>
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Prestation</span>
           <span className="font-semibold">{b.serviceName}</span>
         </div>
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Date et heure</span>
           <span className="font-semibold">
             {formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}
           </span>
         </div>
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Total</span>
           <span className="font-semibold">{formatDA(b.priceDa)}</span>
         </div>

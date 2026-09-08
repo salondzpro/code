@@ -51,18 +51,18 @@ export const FONT = {
 } as const;
 
 export const SHADOW: Record<'card' | 'sheet' | 'fab' | 'toast' | 'knob' | 'seg', ViewStyle> = {
-  card: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 4 },
-  sheet: { shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: -8 }, elevation: 12 },
-  fab: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
-  toast: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  card: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  sheet: { shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: -6 }, elevation: 12 },
+  fab: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+  toast: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
   knob: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 2 },
   seg: { shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
 };
 
 /** Espace réservé sous le contenu quand une feuille basse est affichée (design). */
-export const SHEET_PAD = 150;
+export const SHEET_PAD = 122;
 /** Espace sous le contenu des écrans à onglets : la barre flottante « verre » recouvre le bas. */
-export const NAV_PAD = 104;
+export const NAV_PAD = 85;
 
 /** Chiffres à chasse fixe (design .mono). */
 export const MONO: TextStyle = { fontVariant: ['tabular-nums'] };

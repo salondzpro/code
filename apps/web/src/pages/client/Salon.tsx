@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { useBack } from '@/lib/useBack';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react';
 import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
 import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName } from '@salondz/constants';
@@ -40,6 +41,7 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
 export function Salon() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
+  const back = useBack('/');
   const { session } = useAuth();
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
@@ -59,10 +61,10 @@ export function Salon() {
   return (
     <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>
       {/* Couverture */}
-      <div className="relative h-[300px] bg-line">
+      <div className="relative h-[18.75rem] bg-line">
         {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" />}
         <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
-          <IconButton lg aria-label="Retour" onClick={() => navigate(-1)}>
+          <IconButton lg aria-label="Retour" onClick={back}>
             <I icon={ChevronLeft} />
           </IconButton>
           <div className="flex gap-2.5">
@@ -84,25 +86,25 @@ export function Salon() {
         </div>
       </div>
 
-      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[24px] bg-bg px-5 pt-6">
+      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[1.5rem] bg-bg px-5 pt-6">
         <div>
-          <h1 className="h1 !text-[26px]">{s.name}</h1>
-          <p className="mt-1 text-[13px] text-muted">
+          <h1 className="h1 !text-[1.625rem]">{s.name}</h1>
+          <p className="mt-1 text-[0.8125rem] text-muted">
             {cats} — {place}
           </p>
         </div>
         <div className="flex flex-wrap gap-2.5">
           {s.ratingCount > 0 && (
-            <span className="pill soft !text-[15px] !font-semibold">
+            <span className="pill soft !text-[0.9375rem] !font-semibold">
               ★ {formatRating(s.ratingAvg)} · {s.ratingCount} avis
             </span>
           )}
-          <span className={`badge md !text-[15px] ${status.open ? 'b-ok' : 'b-nu'}`}>
+          <span className={`badge md !text-[0.9375rem] ${status.open ? 'b-ok' : 'b-nu'}`}>
             <span className="dot" />
             {status.label}
           </span>
         </div>
-        {s.description && <p className="p text-[13px]">{s.description}</p>}
+        {s.description && <p className="p text-[0.8125rem]">{s.description}</p>}
 
         <Segmented
           label="Sections"
@@ -120,10 +122,10 @@ export function Salon() {
             {s.services.map((sv) => (
               <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="li !py-5">
                 <span>
-                  <span className="block text-[16px] font-semibold">{sv.name}</span>
-                  <span className="s block text-[15px]">{formatDuration(sv.durationMinutes)}</span>
+                  <span className="block text-[1rem] font-semibold">{sv.name}</span>
+                  <span className="s block text-[0.9375rem]">{formatDuration(sv.durationMinutes)}</span>
                 </span>
-                <span className="text-[16px] font-semibold">{formatDA(sv.priceDa)}</span>
+                <span className="text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
               </Link>
             ))}
             {s.services.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
@@ -156,8 +158,8 @@ export function Salon() {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
                   <div key={d} className="li !py-3">
-                    <span className="text-[13px]">{DAY_LABELS_FR[d]}</span>
-                    <span className={`mono text-[13px] ${rows.length ? 'text-muted' : 'text-danger'}`}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</span>
+                    <span className="text-[0.8125rem]">{DAY_LABELS_FR[d]}</span>
+                    <span className={`mono text-[0.8125rem] ${rows.length ? 'text-muted' : 'text-danger'}`}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</span>
                   </div>
                 );
               })}
@@ -185,11 +187,11 @@ export function Salon() {
                 <span className="h3">Avis</span>
                 {reviews.data.items.slice(0, 5).map((r) => (
                   <div key={r.id} className="crd sm !gap-1">
-                    <span className="text-[15px] font-semibold">
+                    <span className="text-[0.9375rem] font-semibold">
                       {'★'.repeat(r.rating)}
                       <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span> · {r.authorName}
                     </span>
-                    {r.comment && <span className="p text-[15px]">{r.comment}</span>}
+                    {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
                   </div>
                 ))}
               </div>

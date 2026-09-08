@@ -27,8 +27,8 @@ export default function Bookings() {
   const items = list.data?.items ?? [];
 
   return (
-    <Screen gap={16} bottom={NAV_PAD} refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
-      <H1 size={28} lh={32} ls={-0.8}>
+    <Screen gap={13} bottom={NAV_PAD} refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
+      <H1 size={23} lh={26} ls={-0.8}>
         {scope === 'past' ? 'Mes rendez-vous' : 'Rendez-vous'}
       </H1>
       <Segmented
@@ -42,18 +42,18 @@ export default function Bookings() {
       />
       {list.isPending ? (
         <>
-          <Skeleton h={180} radius={20} />
-          <Skeleton h={120} radius={20} />
+          <Skeleton h={146} radius={16} />
+          <Skeleton h={98} radius={16} />
         </>
       ) : list.isError ? (
         <ErrorText error={list.error} retry={() => void list.refetch()} />
       ) : items.length === 0 ? (
-        <View style={{ alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 56 }}>
-          <Tx size={18} weight={700} lh={23} center>
+        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 46 }}>
+          <Tx size={14.5} weight={700} lh={18.5} center>
             {scope === 'upcoming' ? 'Aucun rendez-vous à venir' : 'Aucun rendez-vous passé'}
           </Tx>
           <P center>Réservez en quelques secondes dans le salon de votre choix.</P>
-          <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 8 }}>
+          <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 6 }}>
             Explorer les salons
           </Button>
         </View>
@@ -61,36 +61,36 @@ export default function Bookings() {
         items.map((b) => {
           const active = b.status === 'pending' || b.status === 'confirmed';
           return (
-            <Card key={b.id} gap={16}>
-              <Pressable accessibilityRole="link" accessibilityLabel={`${b.serviceName} · ${b.salon.name}`} onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ gap: 16 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <Tx size={18} weight={700} ls={-0.4} lh={23} color={active ? C.text : C.muted} style={{ flex: 1 }}>
+            <Card key={b.id} gap={13}>
+              <Pressable accessibilityRole="link" accessibilityLabel={`${b.serviceName} · ${b.salon.name}`} onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ gap: 13 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                  <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted} style={{ flex: 1 }}>
                     {capitalize(formatDateShortDZ(b.startsAt))} · {formatTimeDZ(b.startsAt)}
                   </Tx>
                   <StatusBadge status={b.status} md />
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                  <Img src={b.salon.coverUrl} radius={16} style={{ width: 104, height: 104, opacity: active ? 1 : 0.6 }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                  <Img src={b.salon.coverUrl} radius={13} style={{ width: 84, height: 84, opacity: active ? 1 : 0.6 }} />
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Tx size={18} weight={700} ls={-0.4} lh={23} color={active ? C.text : C.muted}>
+                    <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted}>
                       {b.serviceName}
                     </Tx>
-                    <Tx size={13} color={C.muted} lh={19}>
+                    <Tx size={10.5} color={C.muted} lh={15.5}>
                       {b.status === 'cancelled' ? `Annulé${b.cancelledBy === 'salon' ? ' par le salon' : ''}` : `${b.salon.name} · ${formatDA(b.priceDa)}`}
                     </Tx>
                   </View>
                 </View>
               </Pressable>
               {active && (
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => void open(directionsUrl(b))}>
-                    <Tx size={13} weight={600} ls={-0.2}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <Button variant="g" sm style={{ flex: 1, paddingVertical: 15 }} onPress={() => void open(directionsUrl(b))}>
+                    <Tx size={10.5} weight={600} ls={-0.2}>
                       Itinéraire
                     </Tx>
                   </Button>
                   {b.salon.allowClientReschedule !== false && (
-                    <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
-                      <Tx size={13} weight={600} ls={-0.2}>
+                    <Button variant="g" sm style={{ flex: 1, paddingVertical: 15 }} onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
+                      <Tx size={10.5} weight={600} ls={-0.2}>
                         Reporter
                       </Tx>
                     </Button>
@@ -102,14 +102,14 @@ export default function Bookings() {
         })
       ) : (
         items.map((b) => (
-          <Card key={b.id} gap={16}>
-            <Pressable accessibilityRole="link" onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-              <Avatar src={b.salon.coverUrl} name={b.salon.name} size={84} />
+          <Card key={b.id} gap={13}>
+            <Pressable accessibilityRole="link" onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+              <Avatar src={b.salon.coverUrl} name={b.salon.name} size={68} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={18} weight={700} ls={-0.4} lh={23}>
+                <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
                   {b.salon.name}
                 </Tx>
-                <Tx size={13} color={C.muted} lh={19}>
+                <Tx size={10.5} color={C.muted} lh={15.5}>
                   {dayMonth(b.startsAt)} · {b.serviceName}
                   {b.status !== 'cancelled' ? ` · ${formatDA(b.priceDa)}` : ''}
                 </Tx>
@@ -117,14 +117,14 @@ export default function Bookings() {
               <StatusBadge status={b.status} md />
             </Pressable>
             {b.status === 'completed' && (
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <Button variant="g" sm style={{ flex: 1, paddingVertical: 18 }} onPress={() => router.push(`/s/${b.salon.slug}/prestations` as never)}>
-                  <Tx size={14} weight={600} ls={-0.2}>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Button variant="g" sm style={{ flex: 1, paddingVertical: 15 }} onPress={() => router.push(`/s/${b.salon.slug}/prestations` as never)}>
+                  <Tx size={11.5} weight={600} ls={-0.2}>
                     Réserver à nouveau
                   </Tx>
                 </Button>
-                <Button variant="g" sm auto style={{ paddingHorizontal: 24, paddingVertical: 18 }} onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
-                  <Tx size={14} weight={600} ls={-0.2}>
+                <Button variant="g" sm auto style={{ paddingHorizontal: 20, paddingVertical: 15 }} onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
+                  <Tx size={11.5} weight={600} ls={-0.2}>
                     Noter
                   </Tx>
                 </Button>

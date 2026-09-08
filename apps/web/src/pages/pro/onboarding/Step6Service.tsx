@@ -58,7 +58,7 @@ export function Step6Service() {
           <Field label="Prix" htmlFor="svc-price">
             <div className="relative">
               <Input id="svc-price" lg inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} placeholder="2 500" className="!pr-12" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[13px]">DA</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.8125rem]">DA</span>
             </div>
           </Field>
           <Field label="Durée" htmlFor="svc-duration">
@@ -90,7 +90,7 @@ export function Step6Service() {
           <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder="Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines." />
         </Field>
         {error && (
-          <p className="text-[14px] text-danger" role="alert">
+          <p className="text-[0.875rem] text-danger" role="alert">
             {error}
           </p>
         )}

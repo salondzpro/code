@@ -25,8 +25,8 @@ export function Profile() {
       <div className="crd !flex-row items-center gap-4">
         <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={120} />
         <div className="min-w-0">
-          <div className="text-[20px] font-bold tracking-[-0.4px]">{p?.fullName ?? 'Votre nom'}</div>
-          <div className="text-[13px] text-muted">{phone ? formatIntlDZ(phone) : user?.email}</div>
+          <div className="text-[1.25rem] font-bold tracking-[-0.4px]">{p?.fullName ?? 'Votre nom'}</div>
+          <div className="text-[0.8125rem] text-muted">{phone ? formatIntlDZ(phone) : user?.email}</div>
           <div className="mt-2">
             <Badge tone="ok" md>
               {phone ? 'Numéro vérifié' : 'Adresse vérifiée'}
@@ -41,32 +41,32 @@ export function Profile() {
           { v: '—', l: 'note donnée' },
         ].map((x) => (
           <div key={x.l} className="crd !gap-1 !px-4 !py-5">
-            <span className="text-[24px] font-bold tracking-[-0.6px]">{x.v}</span>
-            <span className="whitespace-nowrap text-[15px] text-muted">{x.l}</span>
+            <span className="text-[1.5rem] font-bold tracking-[-0.6px]">{x.v}</span>
+            <span className="whitespace-nowrap text-[0.9375rem] text-muted">{x.l}</span>
           </div>
         ))}
       </div>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/favoris">
-          <span className="text-[15px]">Mes salons favoris</span>
+          <span className="text-[0.9375rem]">Mes salons favoris</span>
         </ListRow>
         <ListRow to="/rendez-vous?scope=past">
-          <span className="text-[15px]">Historique</span>
+          <span className="text-[0.9375rem]">Historique</span>
         </ListRow>
         <ListRow to="/reglages#contact">
-          <span className="text-[15px]">Moyens de contact</span>
+          <span className="text-[0.9375rem]">Moyens de contact</span>
         </ListRow>
         <ListRow to="/reglages">
-          <span className="text-[15px]">Réglages</span>
+          <span className="text-[0.9375rem]">Réglages</span>
         </ListRow>
       </div>
       <Link to={me.data?.salon ? '/pro' : '/pro/bienvenue'} className="sf flex items-center gap-4 !p-4">
-        <span className="flex h-[68px] w-[68px] flex-none items-center justify-center rounded-full border border-line bg-surface">
+        <span className="flex h-[4.25rem] w-[4.25rem] flex-none items-center justify-center rounded-full border border-line bg-surface">
           <I icon={MessageCircle} size={26} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-bold tracking-[-0.4px]">{me.data?.salon ? `Gérer ${me.data.salon.name}` : 'Devenir professionnel'}</span>
-          <span className="p block text-[13px]">{me.data?.salon ? 'Agenda, demandes, page publique' : 'Recevoir des réservations sur votre page'}</span>
+          <span className="block text-[1rem] font-bold tracking-[-0.4px]">{me.data?.salon ? `Gérer ${me.data.salon.name}` : 'Devenir professionnel'}</span>
+          <span className="p block text-[0.8125rem]">{me.data?.salon ? 'Agenda, demandes, page publique' : 'Recevoir des réservations sur votre page'}</span>
         </span>
         <I icon={ChevronRight} size={20} className="text-disabled" />
       </Link>

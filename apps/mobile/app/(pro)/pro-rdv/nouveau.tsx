@@ -61,17 +61,17 @@ export default function ProBookingNew() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={20} weight={700} ls={-0.4} lh={25}>
+              <Tx size={16} weight={700} ls={-0.4} lh={20.5}>
                 {formatDA(total)}
               </Tx>
               <P>{chosen.length ? `${chosen.length} prestation${chosen.length > 1 ? 's' : ''} · ${formatDuration(minutes)}` : 'Choisissez une prestation'}</P>
             </View>
-            <Button pill onPress={() => void submit()} disabled={createWalkIn.isPending} loading={createWalkIn.isPending} style={{ paddingHorizontal: 28, paddingVertical: 14 }}>
+            <Button pill onPress={() => void submit()} disabled={createWalkIn.isPending} loading={createWalkIn.isPending} style={{ paddingHorizontal: 23, paddingVertical: 11 }}>
               Ajouter
             </Button>
           </View>
@@ -86,18 +86,18 @@ export default function ProBookingNew() {
       <Field label="Téléphone (facultatif)">
         <Input lg keyboardType="phone-pad" value={phone} onChangeText={setPhone} placeholder="05 51 23 45 67" accessibilityLabel="Téléphone (facultatif)" />
       </Field>
-      <Tx size={13} color={C.muted} lh={18} style={{ marginBottom: -10 }}>
+      <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: -8 }}>
         Prestations
       </Tx>
       <ListCard>
         {active.map((s) => {
           const on = services.includes(s.id);
           return (
-            <Row key={s.id} py={12} chevron={false} accessibilityLabel={s.name} onPress={() => setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))} right={<Checkbox on={on} label={s.name} />}>
-              <Tx size={15} weight={600} lh={20}>
+            <Row key={s.id} py={10} chevron={false} accessibilityLabel={s.name} onPress={() => setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))} right={<Checkbox on={on} label={s.name} />}>
+              <Tx size={12} weight={600} lh={16}>
                 {s.name}
               </Tx>
-              <Tx size={15} color={C.muted} lh={20}>
+              <Tx size={12} color={C.muted} lh={16}>
                 {formatDuration(s.durationMinutes)} · {formatDA(s.priceDa)}
               </Tx>
             </Row>

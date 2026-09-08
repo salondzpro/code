@@ -33,7 +33,7 @@ export default function Step2Name() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <StepSheet
           disabled={name.trim().length < 2}
@@ -50,11 +50,11 @@ export default function Step2Name() {
         <Input lg f={!!name} value={name} onChangeText={setName} maxLength={80} placeholder="Salon Sarah" autoFocus accessibilityLabel="Nom public" />
       </Field>
       <View>
-        <Tx size={13} color={C.muted} lh={18} style={{ marginBottom: 6 }}>
+        <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
           Votre lien de réservation
         </Tx>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 18 }}>
-          <Tx size={15} lh={20} numberOfLines={1} style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 13, paddingVertical: 15 }}>
+          <Tx size={12} lh={16} numberOfLines={1} style={{ flex: 1 }}>
             {publicHost()}/s/{check?.slug || (name.trim() ? '…' : 'votre-salon')}
           </Tx>
           {check && (

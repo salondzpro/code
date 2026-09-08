@@ -39,7 +39,7 @@ export default function SearchPage() {
   };
 
   return (
-    <Screen gap={14}>
+    <Screen gap={11}>
       <TopBar backTo="/(client)/(tabs)" right={MARKET_LABELS_FR[market]} />
       <SearchBox value={q} onChange={setQ} placeholder={market === 'men' ? 'Barbier, coupe, barbe…' : 'Coiffure, ongles, cils…'} onSubmit={() => submit(q)} autoFocus />
       <PillRow>
@@ -54,13 +54,13 @@ export default function SearchPage() {
           <SectionLabel right={<S>{results.data?.total ?? 0} résultats</S>}>Suggestions</SectionLabel>
           <ListCard>
             {serviceHits.map((h) => (
-              <Row key={h.name} onPress={() => submit(h.name)} chevron={false} right={<I icon={ChevronRight} size={18} color={C.disabled} />}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
-                    <I icon={Scissors} size={18} />
+              <Row key={h.name} onPress={() => submit(h.name)} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+                    <I icon={Scissors} size={14.5} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Tx size={13} weight={500} lh={18}>
+                    <Tx size={10.5} weight={500} lh={14.5}>
                       {h.name}
                     </Tx>
                     <S>
@@ -72,11 +72,11 @@ export default function SearchPage() {
               </Row>
             ))}
             {items.map((s) => (
-              <Row key={s.id} to={`/s/${s.slug}`} chevron={false} right={<I icon={ChevronRight} size={18} color={C.disabled} />}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                  <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={40} />
+              <Row key={s.id} to={`/s/${s.slug}`} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                  <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={32.5} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={13} weight={500} lh={18}>
+                    <Tx size={10.5} weight={500} lh={14.5}>
                       {s.name}
                     </Tx>
                     <S>
@@ -89,7 +89,7 @@ export default function SearchPage() {
               </Row>
             ))}
             {!results.isPending && items.length === 0 && serviceHits.length === 0 && (
-              <View style={{ paddingVertical: 12 }}>
+              <View style={{ paddingVertical: 10 }}>
                 <P>Aucune suggestion.</P>
               </View>
             )}
@@ -101,7 +101,7 @@ export default function SearchPage() {
             <SectionLabel
               right={
                 <Pressable accessibilityRole="button" onPress={clearRecentSearches}>
-                  <Tx size={15} color={C.muted}>
+                  <Tx size={12} color={C.muted}>
                     Effacer
                   </Tx>
                 </Pressable>
@@ -109,11 +109,11 @@ export default function SearchPage() {
             >
               Recherches récentes
             </SectionLabel>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {recent.map((r) => (
                 <Pill key={r} lg onPress={() => submit(r)}>
-                  <I icon={Clock} size={16} color={C.subtle} />
-                  <Tx size={13} weight={500} lh={17}>
+                  <I icon={Clock} size={13} color={C.subtle} />
+                  <Tx size={10.5} weight={500} lh={14}>
                     {r}
                   </Tx>
                 </Pill>

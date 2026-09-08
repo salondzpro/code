@@ -62,14 +62,14 @@
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
 
-  --radius-card: 20px;
-  --radius-card-sm: 16px;
-  --radius-btn: 16px;
-  --radius-input: 14px;
-  --radius-slot: 14px;
-  --radius-img: 18px;
-  --radius-pill: 999px;
-  --radius-sheet: 28px;
+  --radius-card: 1.25rem;
+  --radius-card-sm: 1rem;
+  --radius-btn: 1rem;
+  --radius-input: 0.875rem;
+  --radius-slot: 0.875rem;
+  --radius-img: 1.125rem;
+  --radius-pill: 62.4375rem;
+  --radius-sheet: 1.75rem;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 18px 40px -12px rgb(0 0 0 / 0.18);
   --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.22);

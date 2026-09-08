@@ -10,7 +10,7 @@ import { Img } from './ui';
 
 export function RatingPill({ avg, count, className = '' }: { avg: number; count?: number; className?: string }) {
   return (
-    <span className={`inline-flex flex-none items-center gap-1 rounded-full bg-fill px-3 py-1.5 text-[15px] font-semibold ${className}`}>
+    <span className={`inline-flex flex-none items-center gap-1 rounded-full bg-fill px-3 py-1.5 text-[0.9375rem] font-semibold ${className}`}>
       ★ {formatRating(avg)}
       {count != null && <span className="font-normal text-muted">({count})</span>}
     </span>
@@ -22,7 +22,7 @@ export function SlotPills({ slots, empty = "Complet aujourd'hui" }: { slots: str
   return (
     <div className="flex flex-wrap gap-2">
       {slots.map((t) => (
-        <span key={t} className="pill soft mono !px-4 !py-2.5 !text-[13px]">
+        <span key={t} className="pill soft mono !px-4 !py-2.5 !text-[0.8125rem]">
           {t}
         </span>
       ))}
@@ -48,7 +48,7 @@ export function NextSlots({ salon, empty = 'Aucune disponibilité cette semaine'
           <button
             key={t}
             type="button"
-            className="pill soft mono !px-4 !py-2.5 !text-[13px] hover:!bg-line"
+            className="pill soft mono !px-4 !py-2.5 !text-[0.8125rem] hover:!bg-line"
             aria-label={`Réserver ${label} à ${t}`}
             onClick={(e) => {
               e.preventDefault();
@@ -78,18 +78,18 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
   if (large) {
     return (
       <Link to={href} className="crd !gap-0 overflow-hidden !p-0">
-        <div className="relative h-[230px] w-full bg-line">
+        <div className="relative h-[14.375rem] w-full bg-line">
           {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" />}
         </div>
         <div className="flex flex-col gap-1 p-4">
           <div className="flex items-start justify-between gap-3">
-            <span className="text-[18px] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
+            <span className="text-[1.125rem] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </div>
-          <span className="text-[13px] text-muted">
+          <span className="text-[0.8125rem] text-muted">
             {[cats, place, km].filter(Boolean).join(' · ')}
           </span>
-          {s.topServices.length > 0 && <span className="text-[15px] text-subtle">{servicesLine(s)}</span>}
+          {s.topServices.length > 0 && <span className="text-[0.9375rem] text-subtle">{servicesLine(s)}</span>}
           <div className="mt-2.5">
             <NextSlots salon={s} />
           </div>
@@ -101,14 +101,14 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
   return (
     <Link to={href} className="crd !gap-3">
       <div className="flex items-start gap-3.5">
-        <Img src={s.logoUrl ?? s.coverUrl} className="h-[112px] w-[112px] flex-none !rounded-[16px]" />
+        <Img src={s.logoUrl ?? s.coverUrl} className="h-[7rem] w-[7rem] flex-none !rounded-[1rem]" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-[17px] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
+            <span className="text-[1.0625rem] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </div>
-          <span className="mt-1 block text-[13px] text-muted">{[cats, place, km].filter(Boolean).join(' · ')}</span>
-          {s.topServices.length > 0 && <span className="mt-0.5 block text-[15px] text-subtle">{servicesLine(s)}</span>}
+          <span className="mt-1 block text-[0.8125rem] text-muted">{[cats, place, km].filter(Boolean).join(' · ')}</span>
+          {s.topServices.length > 0 && <span className="mt-0.5 block text-[0.9375rem] text-subtle">{servicesLine(s)}</span>}
         </div>
       </div>
       <NextSlots salon={s} />

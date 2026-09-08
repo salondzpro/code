@@ -25,7 +25,7 @@ export function Step1Market() {
         <p className="p mt-3">Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.</p>
       </div>
       {CARDS.map((c) => (
-        <button key={c.id} type="button" onClick={() => setMarket(c.id)} aria-pressed={market === c.id} className={`relative h-[210px] w-full overflow-hidden rounded-[24px] text-left ${market === c.id ? 'ring-2 ring-ink' : ''}`}>
+        <button key={c.id} type="button" onClick={() => setMarket(c.id)} aria-pressed={market === c.id} className={`relative h-[13.125rem] w-full overflow-hidden rounded-[1.5rem] text-left ${market === c.id ? 'ring-2 ring-ink' : ''}`}>
           <img src={c.img} alt="" className="h-full w-full object-cover" />
           <div className="ovl" />
           {market === c.id && (
@@ -34,8 +34,8 @@ export function Step1Market() {
             </span>
           )}
           <div className="ovl-t">
-            <div className="text-[22px] font-bold leading-[1.1] tracking-[-0.6px]">{MARKET_LABELS_FR[c.id]}</div>
-            <div className="mt-1 text-[14px] leading-[1.35] text-white/85">
+            <div className="text-[1.375rem] font-bold leading-[1.1] tracking-[-0.6px]">{MARKET_LABELS_FR[c.id]}</div>
+            <div className="mt-1 text-[0.875rem] leading-[1.35] text-white/85">
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)
                 .map((x) => x.labelFr)

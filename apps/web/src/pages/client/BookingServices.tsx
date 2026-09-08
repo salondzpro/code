@@ -58,10 +58,10 @@ export function BookingServices() {
     const photo = sv.photos?.[0]?.url ?? s.coverUrl;
     return (
       <button type="button" onClick={() => toggle(sv.id)} className={`flex w-full items-center gap-4 text-left ${boxed ? 'crd !flex-row' : 'li !py-4'}`} aria-pressed={on}>
-        <Img src={photo} className="h-[88px] w-[88px] flex-none !rounded-[16px]" />
+        <Img src={photo} className="h-[5.5rem] w-[5.5rem] flex-none !rounded-[1rem]" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[17px] font-bold tracking-[-0.3px]">{sv.name}</span>
-          <span className="block text-[13px] text-muted">
+          <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>
+          <span className="block text-[0.8125rem] text-muted">
             {[formatDuration(sv.durationMinutes), boxed ? sv.description : null, formatDA(sv.priceDa)].filter(Boolean).join(' · ')}
           </span>
         </span>
@@ -74,7 +74,7 @@ export function BookingServices() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
-      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[15px] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
+      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[0.9375rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
       <h1 className="h1">Prestations</h1>
       {formulas.length > 0 && (
         <>
@@ -98,7 +98,7 @@ export function BookingServices() {
             <p className="p">{chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}</p>
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-[24px] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
+                <div className="text-[1.5rem] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
                 <div className="p">
                   {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)} au total
                 </div>

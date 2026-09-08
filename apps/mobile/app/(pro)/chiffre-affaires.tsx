@@ -42,16 +42,16 @@ export default function Revenue() {
   };
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar
         backTo="/(pro)/(tabs)"
         right={
           <IconButton lg accessibilityLabel="Exporter" onPress={exportCsv}>
-            <I icon={Download} size={20} />
+            <I icon={Download} size={16} />
           </IconButton>
         }
       />
-      <H1 size={28} lh={32} ls={-0.8}>
+      <H1 size={23} lh={26} ls={-0.8}>
         Chiffre d'affaires
       </H1>
       <Segmented
@@ -65,18 +65,18 @@ export default function Revenue() {
         ]}
       />
       {stats.isPending ? (
-        <Skeleton h={300} radius={20} />
+        <Skeleton h={244} radius={16} />
       ) : stats.isError ? (
         <ErrorText error={stats.error} retry={() => void stats.refetch()} />
       ) : (
         <>
-          <Card gap={20}>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+          <Card gap={16}>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <Tx size={38} weight={700} ls={-1} lh={40}>
+                <Tx size={31} weight={700} ls={-1} lh={32.5}>
                   {formatDA(s!.revenueDa)}
                 </Tx>
-                <P style={{ marginTop: 8 }}>
+                <P style={{ marginTop: 6 }}>
                   {r.label} · {s!.bookings} rendez-vous
                 </P>
               </View>
@@ -88,21 +88,21 @@ export default function Revenue() {
               )}
             </View>
             {period !== 'day' && (
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, height: 210 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 171 }}>
                 {s!.byDay.map((d) => {
                   const isToday = d.date === today;
                   const h = Math.max(6, Math.round((d.revenueDa / max) * 170));
                   const dayNum = Number(d.date.slice(8, 10));
                   const showLabel = period === 'week' || dayNum % 5 === 1 || isToday;
                   return (
-                    <View key={d.date} style={{ flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-                      <View style={{ width: '100%', height: h, borderRadius: 10, backgroundColor: isToday ? C.ink : C.line }} accessibilityLabel={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
+                    <View key={d.date} style={{ flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+                      <View style={{ width: '100%', height: h, borderRadius: 8, backgroundColor: isToday ? C.ink : C.line }} accessibilityLabel={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
                       {showLabel ? (
                         <Tx size={period === 'week' ? 15 : 12} weight={isToday ? 700 : 400} color={isToday ? C.text : C.muted} lh={period === 'week' ? 20 : 16}>
                           {period === 'week' ? DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)] : String(dayNum)}
                         </Tx>
                       ) : (
-                        <View style={{ height: 16 }} />
+                        <View style={{ height: 13 }} />
                       )}
                     </View>
                   );
@@ -111,16 +111,16 @@ export default function Revenue() {
             )}
           </Card>
           <ListCard>
-            <Row py={20} chevron={false} right={<Tx size={20} weight={700} lh={25}>{formatDA(s!.collectedDa)}</Tx>}>
-              <Tx size={16} lh={21}>
+            <Row py={16} chevron={false} right={<Tx size={16} weight={700} lh={20.5}>{formatDA(s!.collectedDa)}</Tx>}>
+              <Tx size={13} lh={17}>
                 Encaissé
               </Tx>
             </Row>
-            <Row py={20} chevron={false} right={<Tx size={20} weight={700} lh={25}>{formatDA(s!.remainingDa)}</Tx>}>
-              <Tx size={16} lh={21}>
+            <Row py={16} chevron={false} right={<Tx size={16} weight={700} lh={20.5}>{formatDA(s!.remainingDa)}</Tx>}>
+              <Tx size={13} lh={17}>
                 Reste à encaisser
               </Tx>
-              <Tx size={13} color={C.muted} lh={19}>
+              <Tx size={10.5} color={C.muted} lh={15.5}>
                 {s!.remainingCount} rendez-vous confirmé{s!.remainingCount > 1 ? 's' : ''}
               </Tx>
             </Row>
@@ -128,16 +128,16 @@ export default function Revenue() {
           <SectionLabel>Par prestation</SectionLabel>
           <ListCard>
             {s!.byService.length === 0 && (
-              <View style={{ paddingVertical: 12 }}>
+              <View style={{ paddingVertical: 10 }}>
                 <P>Aucune prestation sur la période.</P>
               </View>
             )}
             {s!.byService.map((x) => (
-              <Row key={x.name} py={20} chevron={false} right={<Tx size={18} weight={700} lh={23}>{formatDA(x.revenueDa)}</Tx>}>
-                <Tx size={17} weight={700} ls={-0.3} lh={22}>
+              <Row key={x.name} py={16} chevron={false} right={<Tx size={14.5} weight={700} lh={18.5}>{formatDA(x.revenueDa)}</Tx>}>
+                <Tx size={14} weight={700} ls={-0.3} lh={18}>
                   {x.name}
                 </Tx>
-                <Tx size={13} color={C.muted} lh={19}>
+                <Tx size={10.5} color={C.muted} lh={15.5}>
                   {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
                 </Tx>
               </Row>

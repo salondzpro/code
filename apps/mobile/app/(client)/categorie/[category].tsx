@@ -38,7 +38,7 @@ export default function CategoryResults() {
   const noun = market === 'men' ? 'barbiers' : 'salons';
 
   return (
-    <Screen gap={16} bottom={NAV_PAD}>
+    <Screen gap={13} bottom={NAV_PAD}>
       <TopBar backTo="/(client)/(tabs)" right={<Pill soft>{market === 'men' ? 'Homme' : 'Femme'}</Pill>} />
       <H1>{categoryLabel(category as CategoryId)}</H1>
       <PillRow>
@@ -56,21 +56,21 @@ export default function CategoryResults() {
         </Pill>
       </PillRow>
       {query.isPending ? (
-        <View style={{ gap: 12 }}>
-          <Skeleton h={20} w={224} />
-          <Skeleton h={200} radius={20} />
-          <Skeleton h={200} radius={20} />
+        <View style={{ gap: 10 }}>
+          <Skeleton h={16} w={182} />
+          <Skeleton h={162} radius={16} />
+          <Skeleton h={162} radius={16} />
         </View>
       ) : query.isError ? (
         <ErrorText error={query.error} retry={() => void query.refetch()} />
       ) : (
         <>
-          <Tx size={13} color={C.muted} lh={18}>
+          <Tx size={10.5} color={C.muted} lh={14.5}>
             {total} {noun} autour {/^[aeiouyhé]/i.test(prefs.label) ? "d'" : 'de '}
             {prefs.label}
           </Tx>
           {items.length === 0 && <P>Aucun résultat avec ces filtres.</P>}
-          <View style={{ gap: 14 }}>
+          <View style={{ gap: 11 }}>
             {items.map((s) => (
               <SalonListCard key={s.id} salon={s} />
             ))}

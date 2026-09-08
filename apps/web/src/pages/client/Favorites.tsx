@@ -33,14 +33,14 @@ export function Favorites() {
       </div>
       {favs.isPending ? (
         <>
-          <Skeleton className="h-[140px] w-full !rounded-[20px]" />
-          <Skeleton className="h-[140px] w-full !rounded-[20px]" />
+          <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
+          <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
         </>
       ) : favs.isError ? (
         <ErrorMessage error={favs.error} retry={() => favs.refetch()} />
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-4 pt-14 text-center">
-          <div className="text-[18px] font-bold">Aucun salon en favori</div>
+          <div className="text-[1.125rem] font-bold">Aucun salon en favori</div>
           <p className="p">Touchez le cœur sur la page d'un salon pour le retrouver ici.</p>
           <LinkButton to="/" className="mt-2">
             Explorer les salons
@@ -52,9 +52,9 @@ export function Favorites() {
             <Link to={`/s/${s.slug}`} className="flex min-w-0 flex-1 items-center gap-3.5">
               <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={108} />
               <span className="min-w-0">
-                <span className="block text-[18px] font-bold tracking-[-0.4px]">{s.name}</span>
-                <span className="block text-[13px] text-muted">{[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}</span>
-                <span className="mt-1 block text-[13px]">{s.nextAvailable ? `Dispo ${relativeDayLabelDZ(s.nextAvailable.date).toLowerCase()} ${s.nextAvailable.slots[0]}` : 'Aucune disponibilité cette semaine'}</span>
+                <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{s.name}</span>
+                <span className="block text-[0.8125rem] text-muted">{[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}</span>
+                <span className="mt-1 block text-[0.8125rem]">{s.nextAvailable ? `Dispo ${relativeDayLabelDZ(s.nextAvailable.date).toLowerCase()} ${s.nextAvailable.slots[0]}` : 'Aucune disponibilité cette semaine'}</span>
               </span>
             </Link>
             <div className="flex flex-col items-end gap-3">

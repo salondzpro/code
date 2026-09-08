@@ -54,10 +54,10 @@ export function ShareSheet({ name, url, short, onClose, logo }: { name: string; 
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: React.ReactNode; onClick: () => void }[] = [
     { label: 'WhatsApp', icon: <I icon={MessageCircle} size={26} />, onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank') },
-    { label: 'Instagram', icon: <span className="text-[18px] font-bold">◎</span>, onClick: () => copy(url) },
-    { label: 'Facebook', icon: <span className="text-[20px] font-bold">f</span>, onClick: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank') },
-    { label: 'TikTok', icon: <span className="text-[18px] font-bold">♪</span>, onClick: () => copy(url) },
-    { label: 'Messages', icon: <span className="text-[18px]">✆</span>, onClick: () => window.open(`sms:?body=${text}`) },
+    { label: 'Instagram', icon: <span className="text-[1.125rem] font-bold">◎</span>, onClick: () => copy(url) },
+    { label: 'Facebook', icon: <span className="text-[1.25rem] font-bold">f</span>, onClick: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank') },
+    { label: 'TikTok', icon: <span className="text-[1.125rem] font-bold">♪</span>, onClick: () => copy(url) },
+    { label: 'Messages', icon: <span className="text-[1.125rem]">✆</span>, onClick: () => window.open(`sms:?body=${text}`) },
     { label: 'QR Code', icon: <I icon={QrCode} size={26} />, onClick: () => navigate('/pro/qr') },
     { label: 'Plus', icon: <I icon={Share2} size={26} />, onClick: () => void share(name, url) },
   ];
@@ -65,8 +65,8 @@ export function ShareSheet({ name, url, short, onClose, logo }: { name: string; 
     <>
       <div className="dim" onClick={onClose} />
       <BottomSheet>
-        <div className="h1 !text-[22px]">Partagez votre page</div>
-        <div className="flex items-center gap-3 rounded-[16px] bg-fill px-4 py-4 text-[15px]">
+        <div className="h1 !text-[1.375rem]">Partagez votre page</div>
+        <div className="flex items-center gap-3 rounded-[1rem] bg-fill px-4 py-4 text-[0.9375rem]">
           <I icon={Lock} size={20} className="text-muted" />
           <span className="flex-1 truncate">{short}</span>
           <button type="button" className="font-semibold" onClick={() => copy(url)}>
@@ -76,8 +76,8 @@ export function ShareSheet({ name, url, short, onClose, logo }: { name: string; 
         <div className="grid grid-cols-4 gap-3">
           {items.map((it) => (
             <button key={it.label} type="button" className="flex flex-col items-center gap-2" onClick={it.onClick}>
-              <span className="flex h-[76px] w-[76px] items-center justify-center rounded-[22px] border border-line bg-surface">{it.icon}</span>
-              <span className="text-[15px] text-muted">{it.label}</span>
+              <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1.375rem] border border-line bg-surface">{it.icon}</span>
+              <span className="text-[0.9375rem] text-muted">{it.label}</span>
             </button>
           ))}
         </div>
@@ -108,10 +108,10 @@ export function ProLink() {
         réservation
       </h1>
       <div className="crd items-center !gap-4 !py-6">
-        <button type="button" className="flex h-[340px] w-[340px] items-center justify-center overflow-hidden rounded-[24px] bg-fill" onClick={() => navigate('/pro/qr')} aria-label="Agrandir le QR code">
-          {qr ? <img src={qr} alt="QR code de votre page" className="h-[300px] w-[300px]" /> : <span className="text-[13px] text-subtle">QR code</span>}
+        <button type="button" className="flex h-[21.25rem] w-[21.25rem] items-center justify-center overflow-hidden rounded-[1.5rem] bg-fill" onClick={() => navigate('/pro/qr')} aria-label="Agrandir le QR code">
+          {qr ? <img src={qr} alt="QR code de votre page" className="h-[18.75rem] w-[18.75rem]" /> : <span className="text-[0.8125rem] text-subtle">QR code</span>}
         </button>
-        <div className="flex w-full items-center justify-between gap-3 rounded-[16px] bg-fill px-5 py-4 text-[15px]">
+        <div className="flex w-full items-center justify-between gap-3 rounded-[1rem] bg-fill px-5 py-4 text-[0.9375rem]">
           <span className="truncate">{short}</span>
           <IconButton aria-label="Copier le lien" onClick={() => copy(url)} className="!h-8 !w-8 !border-0 !bg-transparent">
             <I icon={copied ? Check : Copy} size={18} />
@@ -126,15 +126,15 @@ export function ProLink() {
       </div>
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
-          <span className="text-[15px] text-muted">Réservation en ligne</span>
+          <span className="text-[0.9375rem] text-muted">Réservation en ligne</span>
           <Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v })} label="Réservation en ligne" />
         </div>
         <button type="button" className="li w-full !py-4 text-left" onClick={() => navigate('/pro/profil/regles')}>
-          <span className="text-[15px] text-muted">Délai minimum</span>
-          <span className="text-[18px] font-bold">{lead}</span>
+          <span className="text-[0.9375rem] text-muted">Délai minimum</span>
+          <span className="text-[1.125rem] font-bold">{lead}</span>
         </button>
         <div className="li !py-4">
-          <span className="text-[15px] text-muted">Validation manuelle</span>
+          <span className="text-[0.9375rem] text-muted">Validation manuelle</span>
           <Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />
         </div>
       </div>
@@ -165,9 +165,9 @@ export function ProQr() {
       <TopBar backTo="/pro/lien" right="QR code" />
       <div className="crd items-center !gap-3 !py-8">
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={64} />
-        <div className="text-[20px] font-bold tracking-[-0.4px]">{salon.name}</div>
-        <div className="text-[13px] text-muted">{short}</div>
-        {qr ? <img src={qr} alt="QR code" className="mt-2 h-[280px] w-[280px] rounded-[16px]" /> : <div className="sk mt-2 h-[280px] w-[280px]" />}
+        <div className="text-[1.25rem] font-bold tracking-[-0.4px]">{salon.name}</div>
+        <div className="text-[0.8125rem] text-muted">{short}</div>
+        {qr ? <img src={qr} alt="QR code" className="mt-2 h-[17.5rem] w-[17.5rem] rounded-[1rem]" /> : <div className="sk mt-2 h-[17.5rem] w-[17.5rem]" />}
       </div>
       <p className="p text-center">À imprimer en vitrine ou à coller sur le miroir. Le scan ouvre directement votre page de réservation.</p>
       <div className="g2">

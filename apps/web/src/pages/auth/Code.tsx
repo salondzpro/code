@@ -111,7 +111,7 @@ export function Code() {
     // AUTH 12 — Vérification réussie
     return (
       <Screen className="min-h-dvh justify-center" gap={16}>
-        <div className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+        <div className="flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
           <I icon={Check} size={40} />
         </div>
         <div>
@@ -146,13 +146,13 @@ export function Code() {
       <h1 className="h1">{status === 'idle' && attempts === 0 ? 'Code envoyé' : 'Saisir le code'}</h1>
 
       {status === 'idle' && attempts === 0 && (
-        <div className="rounded-[20px] bg-ok-bg p-4 text-[15px] leading-[1.45]">
+        <div className="rounded-[1.25rem] bg-ok-bg p-4 text-[0.9375rem] leading-[1.45]">
           <div className="mb-3 flex items-center gap-3">
-            <span className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-surface text-ok-fg">
+            <span className="flex h-[2.75rem] w-[2.75rem] items-center justify-center rounded-full bg-surface text-ok-fg">
               <I icon={MessageCircle} size={20} />
             </span>
             <span>
-              <span className="block text-[13px] font-semibold">{isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}</span>
+              <span className="block text-[0.8125rem] font-semibold">{isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}</span>
               <span className="s block">maintenant</span>
             </span>
           </div>
@@ -167,7 +167,7 @@ export function Code() {
             ref={(el) => {
               inputs.current[i] = el;
             }}
-            className={`inp !p-0 h-[68px] text-center text-[18px] font-medium${d ? ' f' : ''}${status === 'wrong' ? ' err' : ''}`}
+            className={`inp !p-0 h-[4.25rem] text-center text-[1.125rem] font-medium${d ? ' f' : ''}${status === 'wrong' ? ' err' : ''}`}
             inputMode="numeric"
             autoComplete={i === 0 ? 'one-time-code' : 'off'}
             maxLength={4}
@@ -181,22 +181,22 @@ export function Code() {
           />
         ))}
       </div>
-      {status === 'idle' && attempts === 0 && <p className="p text-[14px]">Coller automatiquement depuis {isEmail ? 'votre messagerie' : 'WhatsApp'}</p>}
+      {status === 'idle' && attempts === 0 && <p className="p text-[0.875rem]">Coller automatiquement depuis {isEmail ? 'votre messagerie' : 'WhatsApp'}</p>}
 
       {status === 'wrong' && !expired && (
-        <p className="flex items-center gap-2 text-[14px] text-danger" role="alert">
+        <p className="flex items-center gap-2 text-[0.875rem] text-danger" role="alert">
           <I icon={AlertCircle} size={16} />
           Code incorrect — {remaining} tentative{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''}.
         </p>
       )}
       {expired && (
-        <p className="flex items-center gap-2 text-[14px] text-danger" role="alert">
+        <p className="flex items-center gap-2 text-[0.875rem] text-danger" role="alert">
           <I icon={AlertCircle} size={16} />
           {attempts >= MAX_ATTEMPTS ? 'Trop de tentatives. Demandez un nouveau code.' : 'Code expiré. Demandez-en un nouveau.'}
         </p>
       )}
       {status === 'network' && (
-        <p className="flex items-center gap-2 text-[14px] text-danger" role="alert">
+        <p className="flex items-center gap-2 text-[0.875rem] text-danger" role="alert">
           <I icon={WifiOff} size={16} />
           Connexion perdue. Vérification impossible.
         </p>
@@ -205,8 +205,8 @@ export function Code() {
       {!expired && status !== 'network' && (
         <Card className="!flex-row items-center justify-between">
           <span>
-            <span className="block text-[13px]">Rester connecté</span>
-            <span className="p block text-[14px]">Session illimitée · aucun code à la prochaine visite</span>
+            <span className="block text-[0.8125rem]">Rester connecté</span>
+            <span className="p block text-[0.875rem]">Session illimitée · aucun code à la prochaine visite</span>
           </span>
           <Toggle on={stay} onChange={setStay} label="Rester connecté" />
         </Card>
@@ -220,7 +220,7 @@ export function Code() {
             {resendLabel}
           </Button>
           {resendIn > 0 && (
-            <p className="p text-center text-[14px]">
+            <p className="p text-center text-[0.875rem]">
               Nouveau code disponible dans 0:{String(resendIn).padStart(2, '0')}
             </p>
           )}
@@ -231,7 +231,7 @@ export function Code() {
             {status === 'verifying' ? 'Vérification…' : 'Vérifier'}
           </Button>
           {status === 'wrong' && (
-            <button type="button" className="text-center text-[15px] text-muted underline" onClick={() => void resend()} disabled={resendIn > 0}>
+            <button type="button" className="text-center text-[0.9375rem] text-muted underline" onClick={() => void resend()} disabled={resendIn > 0}>
               {resendIn > 0 ? `Renvoyer le code (0:${String(resendIn).padStart(2, '0')})` : 'Renvoyer le code'}
             </button>
           )}

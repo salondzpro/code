@@ -32,22 +32,22 @@ export function Step3Identity() {
       <StepBar step={3} backTo={stepPath(2)} />
       <h1 className="h1">Votre identité visuelle</h1>
       <SectionLabel>Photo de couverture</SectionLabel>
-      <button type="button" className="relative h-[220px] w-full overflow-hidden rounded-[20px] bg-line" onClick={() => coverInput.current?.click()} aria-label="Choisir la photo de couverture">
+      <button type="button" className="relative h-[13.75rem] w-full overflow-hidden rounded-[1.25rem] bg-line" onClick={() => coverInput.current?.click()} aria-label="Choisir la photo de couverture">
         {coverUrl ? <img src={coverUrl} alt="" className="h-full w-full object-cover" /> : (
           <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
             <I icon={Camera} size={32} />
-            <span className="text-[15px]">Ajouter une photo</span>
+            <span className="text-[0.9375rem]">Ajouter une photo</span>
           </span>
         )}
       </button>
       <input ref={coverInput} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setCover(f); draftFiles.set({ cover: f }); } e.target.value = ''; }} />
       <SectionLabel>Logo ou portrait</SectionLabel>
       <div className="flex items-center gap-5">
-        <button type="button" className="av h-[128px] w-[128px] flex-none" onClick={() => logoInput.current?.click()} aria-label="Choisir le logo">
+        <button type="button" className="av h-[8rem] w-[8rem] flex-none" onClick={() => logoInput.current?.click()} aria-label="Choisir le logo">
           {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={Camera} size={28} />}
         </button>
         <div>
-          <div className="text-[13px]">Format carré, visage ou logo centré</div>
+          <div className="text-[0.8125rem]">Format carré, visage ou logo centré</div>
           <div className="p">JPG ou PNG · 2 Mo max</div>
         </div>
       </div>

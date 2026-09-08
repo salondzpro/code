@@ -7,14 +7,17 @@
 /* Dans @layer base : sinon ces règles non-« layered » l'emporteraient sur les composants
    (ex. `a { color: inherit }` écraserait le blanc des boutons noirs). */
 @layer base {
+  /* Échelle « densité Planity » : tout le design est en rem, le root fixe l'échelle globale
+     (13 px ≈ 0,81 × la maquette 390 px : texte courant 12 px, titres 23 px, boutons 42 px). */
   html {
+    font-size: 13px;
     -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-canvas text-text font-sans antialiased;
     margin: 0;
     min-height: 100dvh;
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.4;
   }
   a {
@@ -57,35 +60,35 @@
 @layer components {
   /* Typographie */
   .h1 {
-    font-size: 28px;
+    font-size: 1.75rem;
     font-weight: 700;
     letter-spacing: -0.7px;
     line-height: 1.12;
     margin: 0;
   }
   .h2 {
-    font-size: 17px;
+    font-size: 1.0625rem;
     font-weight: 600;
     letter-spacing: -0.3px;
   }
   .h3 {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-subtle);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
   .p {
-    font-size: 15px;
+    font-size: 0.9375rem;
     color: var(--color-muted);
     line-height: 1.5;
   }
   .s {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--color-muted);
   }
   .t3 {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: var(--color-subtle);
   }
   .mono {
@@ -99,14 +102,14 @@
     background: var(--color-surface);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-card);
-    padding: 16px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
   }
   .crd.sm {
     border-radius: var(--radius-card-sm);
-    padding: 14px;
+    padding: 0.875rem;
   }
   .crd.sel {
     border-color: var(--color-ink);
@@ -114,7 +117,7 @@
   .sf {
     background: var(--color-fill);
     border-radius: var(--radius-card-sm);
-    padding: 14px;
+    padding: 0.875rem;
   }
 
   /* Boutons */
@@ -126,15 +129,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 0.5rem;
     width: 100%;
     background: var(--color-ink);
     color: var(--color-on-ink);
     border: 1px solid transparent;
     border-radius: var(--radius-btn);
-    padding: 16px;
+    padding: 1rem;
     text-align: center;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     letter-spacing: -0.2px;
     cursor: pointer;
@@ -167,9 +170,9 @@
     border-color: var(--color-danger-line);
   }
   .btn.sm {
-    padding: 11px 14px;
-    font-size: 14px;
-    border-radius: 14px;
+    padding: 0.6875rem 0.875rem;
+    font-size: 0.875rem;
+    border-radius: 0.875rem;
   }
   .btn.auto {
     width: auto;
@@ -177,13 +180,13 @@
   .btn.pill {
     width: auto;
     border-radius: var(--radius-pill);
-    padding: 10px 18px;
-    font-size: 15px;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.9375rem;
   }
   /* Bouton icône rond (retour, favori, +) */
   .ib {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
     background: var(--color-surface);
     border: 1px solid var(--color-line);
@@ -195,8 +198,8 @@
     color: var(--color-text);
   }
   .ib.lg {
-    width: 44px;
-    height: 44px;
+    width: 2.75rem;
+    height: 2.75rem;
   }
   .ib.ink {
     background: var(--color-ink);
@@ -207,7 +210,7 @@
   /* Pastilles (filtres) */
   .pills {
     display: flex;
-    gap: 7px;
+    gap: 0.4375rem;
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -217,8 +220,8 @@
   .pill,
   .chip {
     border-radius: var(--radius-pill);
-    padding: 9px 13px;
-    font-size: 13.5px;
+    padding: 0.5625rem 0.8125rem;
+    font-size: 0.8438rem;
     font-weight: 500;
     background: var(--color-surface);
     border: 1px solid var(--color-line);
@@ -228,7 +231,7 @@
     flex: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
   }
   .pill.on,
   .chip-active {
@@ -237,8 +240,8 @@
     border-color: var(--color-ink);
   }
   .pill.lg {
-    padding: 13px 18px;
-    font-size: 16px;
+    padding: 0.8125rem 1.125rem;
+    font-size: 1rem;
     color: var(--color-text);
   }
   .pill.lg.on {
@@ -253,17 +256,17 @@
   /* Badges de statut */
   .badge {
     border-radius: var(--radius-pill);
-    padding: 4px 10px;
-    font-size: 11px;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 0.3125rem;
   }
   .badge.md {
-    font-size: 13px;
-    padding: 6px 12px;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.75rem;
   }
   .b-ok {
     background: var(--color-ok-bg);
@@ -282,8 +285,8 @@
     color: var(--color-muted);
   }
   .dot {
-    width: 6px;
-    height: 6px;
+    width: 0.375rem;
+    height: 0.375rem;
     border-radius: 50%;
     background: currentColor;
     flex: none;
@@ -294,9 +297,9 @@
     border: 1px solid var(--color-line);
     background: var(--color-surface);
     border-radius: var(--radius-slot);
-    padding: 13px 0;
+    padding: 0.8125rem 0;
     text-align: center;
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     cursor: pointer;
@@ -321,8 +324,8 @@
     background: var(--color-fill);
     border: 1.5px solid transparent;
     border-radius: var(--radius-input);
-    padding: 15px;
-    font-size: 15px;
+    padding: 0.9375rem;
+    font-size: 0.9375rem;
     color: var(--color-text);
   }
   .inp::placeholder {
@@ -344,24 +347,24 @@
     outline: none;
   }
   .inp.lg {
-    padding: 18px 16px;
-    font-size: 17px;
+    padding: 1.125rem 1rem;
+    font-size: 1.0625rem;
   }
   .lbl {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--color-muted);
-    margin-bottom: 6px;
+    margin-bottom: 0.375rem;
     display: block;
   }
   .search {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     background: var(--color-fill);
     border-radius: var(--radius-card-sm);
-    padding: 15px 16px;
+    padding: 0.9375rem 1rem;
     color: var(--color-subtle);
-    font-size: 16px;
+    font-size: 1rem;
   }
   .search input {
     flex: 1;
@@ -370,7 +373,7 @@
     border: 0;
     outline: none;
     color: var(--color-text);
-    font-size: 16px;
+    font-size: 1rem;
   }
   .search input::placeholder {
     color: var(--color-subtle);
@@ -381,8 +384,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    padding: 14px 0;
+    gap: 0.75rem;
+    padding: 0.875rem 0;
     border-bottom: 1px solid var(--color-line-soft);
   }
   .li:last-child {
@@ -393,24 +396,24 @@
   .dsel {
     display: flex;
     justify-content: space-between;
-    gap: 4px;
+    gap: 0.25rem;
   }
   .dcel {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 9px 0;
+    gap: 0.375rem;
+    padding: 0.5625rem 0;
     border-radius: var(--radius-slot);
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: var(--color-subtle);
     cursor: pointer;
     border: 0;
     background: transparent;
   }
   .dcel b {
-    font-size: 17px;
+    font-size: 1.0625rem;
     font-weight: 600;
     color: var(--color-text);
     letter-spacing: -0.3px;
@@ -432,17 +435,17 @@
   .seg {
     display: flex;
     background: var(--color-fill);
-    border-radius: 16px;
-    padding: 5px;
-    gap: 2px;
+    border-radius: 1rem;
+    padding: 0.3125rem;
+    gap: 0.125rem;
   }
   .seg > button {
     flex: 1;
     border: 0;
     background: transparent;
-    border-radius: 12px;
-    padding: 12px 8px;
-    font-size: 16px;
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--color-muted);
     cursor: pointer;
@@ -457,9 +460,9 @@
   /* Interrupteur */
   .sw {
     position: relative;
-    width: 50px;
-    height: 30px;
-    border-radius: 999px;
+    width: 3.125rem;
+    height: 1.875rem;
+    border-radius: 62.4375rem;
     background: var(--color-line);
     border: 0;
     cursor: pointer;
@@ -469,10 +472,10 @@
   .sw::after {
     content: '';
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 24px;
-    height: 24px;
+    top: 0.1875rem;
+    left: 0.1875rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
@@ -487,9 +490,9 @@
 
   /* Case à cocher carrée (prestations cumulées) */
   .chk {
-    width: 24px;
-    height: 24px;
-    border-radius: 8px;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.5rem;
     border: 1.5px solid var(--color-line);
     background: var(--color-surface);
     display: flex;
@@ -511,7 +514,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: var(--color-subtle);
     flex: none;
     overflow: hidden;
@@ -547,9 +550,9 @@
   }
   .ovl-t {
     position: absolute;
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 1.25rem;
     color: #fff;
   }
 
@@ -558,17 +561,17 @@
      flou + saturation derrière, liseré clair, ombre douce. Icônes seules, onglet actif sur pastille encre. */
   .nvb {
     position: fixed;
-    bottom: calc(14px + env(safe-area-inset-bottom));
+    bottom: calc(0.875rem + env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 32px);
-    max-width: calc(var(--app-max-width) - 32px);
-    height: 64px;
-    padding: 6px;
+    width: calc(100% - 2rem);
+    max-width: calc(var(--app-max-width) - 2rem);
+    height: 4rem;
+    padding: 0.375rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 2px;
+    gap: 0.125rem;
     background: rgb(255 255 255 / 0.66);
     backdrop-filter: blur(28px) saturate(180%);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
@@ -588,7 +591,7 @@
   .nvi {
     flex: 1;
     min-width: 0;
-    height: 52px;
+    height: 3.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -618,19 +621,19 @@
     max-width: var(--app-max-width);
     background: var(--color-surface);
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
-    padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+    padding: 0.75rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 0.875rem;
     box-shadow: var(--shadow-sheet);
     z-index: 40;
   }
   .grab {
-    width: 38px;
-    height: 5px;
-    border-radius: 3px;
+    width: 2.375rem;
+    height: 0.3125rem;
+    border-radius: 0.1875rem;
     background: var(--color-line);
-    margin: 0 auto 4px;
+    margin: 0 auto 0.25rem;
   }
   .dim {
     position: fixed;
@@ -641,9 +644,9 @@
   .fab {
     position: fixed;
     /* Au-dessus de la barre flottante (14 px + 64 px) et de la zone sûre. */
-    bottom: calc(96px + env(safe-area-inset-bottom));
-    width: 56px;
-    height: 56px;
+    bottom: calc(6rem + env(safe-area-inset-bottom));
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: 50%;
     background: var(--color-ink);
     color: #fff;
@@ -657,20 +660,20 @@
   }
   .toast {
     position: fixed;
-    top: 16px;
+    top: 1rem;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 40px);
-    max-width: calc(var(--app-max-width) - 40px);
+    width: calc(100% - 2.5rem);
+    max-width: calc(var(--app-max-width) - 2.5rem);
     background: var(--color-ink);
     color: #fff;
-    border-radius: 16px;
-    padding: 13px 16px;
-    font-size: 14px;
+    border-radius: 1rem;
+    padding: 0.8125rem 1rem;
+    font-size: 0.875rem;
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
     box-shadow: var(--shadow-toast);
     z-index: 50;
   }
@@ -678,7 +681,7 @@
   /* Squelette */
   .sk {
     background: var(--color-line-soft);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     background-image: linear-gradient(90deg, #eff0f1 0, #f8f9fa 50%, #eff0f1 100%);
     background-size: 280px 100%;
     animation: shim 1.5s linear infinite;
@@ -696,17 +699,17 @@
   .g2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 0.625rem;
   }
   .g3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 0.625rem;
   }
   .g4 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: 0.5rem;
   }
 
 }

@@ -56,7 +56,7 @@ export default function BookingReview() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
           <Button onPress={() => void confirm()} disabled={create.isPending} loading={create.isPending}>
@@ -68,38 +68,38 @@ export default function BookingReview() {
       <TopBar backTo={`/s/${slug}/reserver/coordonnees`} right="Étape 4 sur 4" />
       <H1>Récapitulatif</H1>
       <Card gap={0}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 8 }}>
-          <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={72} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11, marginBottom: 6 }}>
+          <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={58.5} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={18} weight={700} ls={-0.4} lh={23}>
+            <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
               {s.name}
             </Tx>
-            <Tx size={13} color={C.muted} lh={19} numberOfLines={1}>
+            <Tx size={10.5} color={C.muted} lh={15.5} numberOfLines={1}>
               {s.zone ?? s.city}, {wilayaName(s.wilayaCode)} · {publicHost()}/s/{s.slug}
             </Tx>
           </View>
         </View>
         <Rows>
           {chosen.map((sv) => (
-            <Row key={sv!.id} py={16} chevron={false} right={<Tx size={14} color={C.muted} lh={19}>{formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}</Tx>}>
-              <Tx size={14} lh={19}>
+            <Row key={sv!.id} py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}</Tx>}>
+              <Tx size={11.5} lh={15.5}>
                 {sv!.name}
               </Tx>
             </Row>
           ))}
-          <Row py={16} chevron={false} right={<Tx size={14} color={C.muted} lh={19} mono>{start} → {end}</Tx>}>
-            <Tx size={14} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5} mono>{start} → {end}</Tx>}>
+            <Tx size={11.5} lh={15.5}>
               {formatDateLongDZ(draft.startsAt)}
             </Tx>
           </Row>
         </Rows>
       </Card>
-      <Card gap={4}>
+      <Card gap={3}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Tx size={18} weight={600} lh={23}>
+          <Tx size={14.5} weight={600} lh={18.5}>
             Total
           </Tx>
-          <Tx size={20} weight={700} lh={25}>
+          <Tx size={16} weight={700} lh={20.5}>
             {formatDA(price)}
           </Tx>
         </View>
@@ -107,7 +107,7 @@ export default function BookingReview() {
       </Card>
       <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
       {slotError && (
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 10 }}>
           <ErrorText error={new Error(slotError)} />
           <Button variant="g" onPress={() => router.replace(`/s/${slug}/reserver/quand` as never)}>
             Choisir un autre créneau

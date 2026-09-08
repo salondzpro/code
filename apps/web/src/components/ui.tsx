@@ -3,13 +3,14 @@
  * (voir styles/index.css). Aucune couleur ni rayon en dur ici.
  */
 import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
+import { useBack } from '@/lib/useBack';
 import { Check, ChevronLeft, ChevronRight, Info, X, type LucideIcon } from 'lucide-react';
 import type { BookingStatus } from '@salondz/constants';
 
 /** Icône aux réglages du design : 22 px, trait 1.6. */
 export function I({ icon: Icon, size = 22, strokeWidth, className = '' }: { icon: LucideIcon; size?: number; strokeWidth?: number; className?: string }) {
-  return <Icon size={size} strokeWidth={strokeWidth ?? (size <= 16 ? 1.7 : 1.6)} className={className} aria-hidden />;
+  return <Icon size={size} strokeWidth={strokeWidth ?? (size <= 16 ? 1.7 : 1.6)} className={className} style={{ width: `${size / 16}rem`, height: `${size / 16}rem` }} aria-hidden />;
 }
 
 // ---------- Boutons ----------
@@ -32,10 +33,11 @@ export function IconButton({ ink, lg, className = '', ...props }: ButtonHTMLAttr
   return <button type="button" {...props} className={['ib', ink ? 'ink' : '', lg ? 'lg' : '', className].filter(Boolean).join(' ')} />;
 }
 
+/** `to` = écran parent de secours (lien direct, nouvel onglet) ; sinon on remonte l'historique réel. */
 export function BackButton({ to, close, label }: { to?: string; close?: boolean; label?: string }) {
-  const navigate = useNavigate();
+  const back = useBack(to ?? '/');
   return (
-    <IconButton lg aria-label={label ?? (close ? 'Fermer' : 'Retour')} onClick={() => (to ? navigate(to) : navigate(-1))}>
+    <IconButton lg aria-label={label ?? (close ? 'Fermer' : 'Retour')} onClick={back}>
       <I icon={close ? X : ChevronLeft} />
     </IconButton>
   );
@@ -46,7 +48,7 @@ export function TopBar({ backTo, close, right, noBack }: { backTo?: string; clos
   return (
     <div className="flex items-center justify-between gap-3">
       {noBack ? <span /> : <BackButton to={backTo} close={close} />}
-      {typeof right === 'string' ? <span className="text-[15px] text-muted">{right}</span> : (right ?? null)}
+      {typeof right === 'string' ? <span className="text-[0.9375rem] text-muted">{right}</span> : (right ?? null)}
     </div>
   );
 }
@@ -92,7 +94,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
 });
 
 export function Textarea({ err, className = '', ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { err?: boolean }) {
-  return <textarea {...props} className={['inp', err ? 'err' : '', className].filter(Boolean).join(' ')} style={{ resize: 'none', minHeight: 96 }} />;
+  return <textarea {...props} className={['inp', err ? 'err' : '', className].filter(Boolean).join(' ')} style={{ resize: 'none', minHeight: '6rem' }} />;
 }
 
 export function Field({ label, hint, error, htmlFor, children }: { label: string; hint?: string; error?: string | null; htmlFor?: string; children: ReactNode }) {
@@ -102,7 +104,7 @@ export function Field({ label, hint, error, htmlFor, children }: { label: string
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1.5 text-[13px] text-danger">{error}</p> : hint ? <p className="t3 mt-1.5">{hint}</p> : null}
+      {error ? <p className="mt-1.5 text-[0.8125rem] text-danger">{error}</p> : hint ? <p className="t3 mt-1.5">{hint}</p> : null}
     </div>
   );
 }
@@ -163,7 +165,7 @@ export function Card({ sm, sel, className = '', onClick, children, as: As = 'div
 /** Encadré d'information gris avec l'icône ⓘ (design .sf). */
 export function InfoBox({ children }: { children: ReactNode }) {
   return (
-    <div className="sf flex items-start gap-3 text-[15px] leading-[1.45] text-muted">
+    <div className="sf flex items-start gap-3 text-[0.9375rem] leading-[1.45] text-muted">
       <I icon={Info} size={18} className="mt-0.5 shrink-0" />
       <div>{children}</div>
     </div>
@@ -200,7 +202,7 @@ export function ListRow({ to, onClick, children, right, chevron = true }: { to?:
 
 export function Avatar({ src, name, size = 44 }: { src?: string | null; name: string; size?: number }) {
   return (
-    <div className="av" style={{ width: size, height: size, fontSize: Math.round(size / 2.6) }} aria-hidden>
+    <div className="av" style={{ width: `${size / 16}rem`, height: `${size / 16}rem`, fontSize: `${Math.round(size / 2.6) / 16}rem` }} aria-hidden>
       {src ? <img src={src} alt="" /> : name.trim().charAt(0).toUpperCase()}
     </div>
   );

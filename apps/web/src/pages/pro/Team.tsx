@@ -81,8 +81,8 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
           <div className="flex items-center gap-3.5">
             <Avatar src={member.avatarUrl} name={member.displayName} size={56} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[18px] font-bold tracking-[-0.4px]">{member.displayName}</span>
-              <span className="p block text-[15px]">{isOwner ? 'Propriétaire' : member.isActive ? 'Membre actif' : 'Inactif — masqué à la réservation'}</span>
+              <span className="block truncate text-[1.125rem] font-bold tracking-[-0.4px]">{member.displayName}</span>
+              <span className="p block text-[0.9375rem]">{isOwner ? 'Propriétaire' : member.isActive ? 'Membre actif' : 'Inactif — masqué à la réservation'}</span>
             </span>
             {!isOwner && <Toggle on={member.isActive} onChange={(v) => update.mutate({ id: member.id, isActive: v }, { onError: (e) => setError(errorText(e)) })} label="Actif" />}
           </div>
@@ -96,13 +96,13 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
             ]}
           />
           {hours.isPending ? (
-            <Skeleton className="h-[120px]" />
+            <Skeleton className="h-[7.5rem]" />
           ) : custom ? (
             <div className="crd !gap-0 !py-1">
               {rows.map((r) => (
                 <div key={r.dayOfWeek} className="li !py-3">
-                  <span className={`w-[96px] flex-none text-[13px] ${r.enabled ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
-                  <span className="flex flex-1 items-center gap-1 text-[13px] text-muted">
+                  <span className={`w-[6rem] flex-none text-[0.8125rem] ${r.enabled ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
+                  <span className="flex flex-1 items-center gap-1 text-[0.8125rem] text-muted">
                     {r.enabled ? (
                       <>
                         <input type="time" className="tm" value={r.startsAt} onChange={(e) => patch(r.dayOfWeek, { startsAt: e.target.value })} aria-label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} />
@@ -118,11 +118,11 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
               ))}
             </div>
           ) : (
-            <p className="p text-[15px]">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>
+            <p className="p text-[0.9375rem]">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>
           )}
-          {invalid && <p className="text-[14px] text-danger">L'heure de début doit précéder la fin.</p>}
+          {invalid && <p className="text-[0.875rem] text-danger">L'heure de début doit précéder la fin.</p>}
           {error && (
-            <p className="text-[14px] text-danger" role="alert">
+            <p className="text-[0.875rem] text-danger" role="alert">
               {error}
             </p>
           )}
@@ -146,7 +146,7 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
                 Confirmer le retrait
               </Button>
             ) : (
-              <button type="button" className="py-2 text-[13px] text-danger" onClick={() => setConfirmRemove(true)}>
+              <button type="button" className="py-2 text-[0.8125rem] text-danger" onClick={() => setConfirmRemove(true)}>
                 Retirer de l'équipe
               </button>
             ))}
@@ -187,11 +187,11 @@ export function Team() {
               <span className="flex min-w-0 items-center gap-3.5">
                 <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
                 <span className="min-w-0">
-                  <span className="block truncate text-[15px]">
+                  <span className="block truncate text-[0.9375rem]">
                     {m.displayName}
                     {m.userId === salon.ownerId && <span className="text-muted"> (vous)</span>}
                   </span>
-                  <span className="p block text-[15px]">{m.isActive ? 'Actif' : 'Inactif'}</span>
+                  <span className="p block text-[0.9375rem]">{m.isActive ? 'Actif' : 'Inactif'}</span>
                 </span>
               </span>
               <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
@@ -216,7 +216,7 @@ export function Team() {
         </Button>
       </div>
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}

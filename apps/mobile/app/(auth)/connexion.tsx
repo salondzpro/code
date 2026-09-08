@@ -41,9 +41,9 @@ export default function Phone() {
   };
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo="/bienvenue" right="Étape 1 sur 3" />
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 10 }}>
         <H1>Votre numéro</H1>
         <P>Nous envoyons un code à 4 chiffres sur WhatsApp pour vérifier votre numéro.</P>
       </View>
@@ -67,12 +67,12 @@ export default function Phone() {
           onSubmitEditing={submit}
         />
       ) : (
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 16 }} accessibilityLabel="Indicatif +213">
-            <Tx size={13} weight={500} lh={18}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 13 }} accessibilityLabel="Indicatif +213">
+            <Tx size={10.5} weight={500} lh={14.5}>
               +213
             </Tx>
-            <I icon={ChevronDown} size={16} color={C.subtle} />
+            <I icon={ChevronDown} size={13} color={C.subtle} />
           </View>
           <Input
             lg
@@ -94,7 +94,7 @@ export default function Phone() {
           />
         </View>
       )}
-      {error ? <Alert icon={AlertCircle}>{error}</Alert> : <Tx size={14} color={C.muted} lh={20}>{useEmail ? 'Le code arrivera par e-mail.' : 'Format algérien · +213 XX XX XX XX'}</Tx>}
+      {error ? <Alert icon={AlertCircle}>{error}</Alert> : <Tx size={11.5} color={C.muted} lh={16}>{useEmail ? 'Le code arrivera par e-mail.' : 'Format algérien · +213 XX XX XX XX'}</Tx>}
       <Button onPress={submit}>Recevoir le code</Button>
       {EMAIL_FALLBACK && <TextLink onPress={() => setUseEmail((v) => !v)}>{useEmail ? 'Utiliser un numéro de téléphone' : 'Recevoir le code par e-mail'}</TextLink>}
     </Screen>

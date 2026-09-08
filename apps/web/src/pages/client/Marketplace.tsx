@@ -67,7 +67,7 @@ export function Marketplace() {
       {/* En-tête : localisation, titre + bascule, avatar */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <Link to="/localisation" className="flex items-center gap-1.5 text-[13px]">
+          <Link to="/localisation" className="flex items-center gap-1.5 text-[0.8125rem]">
             <I icon={MapPin} size={18} className="text-muted" />
             <span className="truncate">{prefs.label}</span>
             <span className="text-muted">· {prefs.radiusKm} km</span>
@@ -75,7 +75,7 @@ export function Marketplace() {
           </Link>
           <div className="mt-1 flex items-center gap-2.5">
             <h1 className="h1">{MARKET_LABELS_FR[market]}</h1>
-            <IconButton aria-label="Changer de marché" onClick={swapMarket} disabled={update.isPending} className="!h-9 !w-9 !rounded-[12px]">
+            <IconButton aria-label="Changer de marché" onClick={swapMarket} disabled={update.isPending} className="!h-9 !w-9 !rounded-[0.75rem]">
               <I icon={ArrowLeftRight} size={16} />
             </IconButton>
           </div>
@@ -92,7 +92,7 @@ export function Marketplace() {
         {q && (
           <button
             type="button"
-            className="text-[15px] text-muted"
+            className="text-[0.9375rem] text-muted"
             aria-label="Effacer la recherche"
             onClick={(e) => {
               e.preventDefault();
@@ -118,14 +118,14 @@ export function Marketplace() {
       {/* Liste / Carte + tri */}
       <div className="flex items-center justify-between gap-3">
         <div className="seg !p-1">
-          <button type="button" className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[13px]" aria-pressed>
+          <button type="button" className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]" aria-pressed>
             <I icon={List} size={17} /> Liste
           </button>
-          <button type="button" className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[13px]" onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}>
+          <button type="button" className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]" onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}>
             <I icon={MapIcon} size={17} /> Carte
           </button>
         </div>
-        <button type="button" className="btn g auto !gap-1.5 whitespace-nowrap !px-3.5 !py-3 !text-[16px] !font-medium" onClick={() => setSortOpen(true)} aria-haspopup="dialog">
+        <button type="button" className="btn g auto !gap-1.5 whitespace-nowrap !px-3.5 !py-3 !text-[1rem] !font-medium" onClick={() => setSortOpen(true)} aria-haspopup="dialog">
           <span className="text-muted">⇅</span> {sortLabel} <I icon={ChevronDown} size={16} className="text-subtle" />
         </button>
       </div>
@@ -134,17 +134,17 @@ export function Marketplace() {
       {query.isPending ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-5 w-56" />
-          <Skeleton className="h-[380px] w-full !rounded-[20px]" />
-          <Skeleton className="h-[200px] w-full !rounded-[20px]" />
+          <Skeleton className="h-[23.75rem] w-full !rounded-[1.25rem]" />
+          <Skeleton className="h-[12.5rem] w-full !rounded-[1.25rem]" />
         </div>
       ) : query.isError ? (
         <ErrorMessage error={query.error} retry={() => query.refetch()} />
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-2 pt-16 text-center">
-          <div className="flex h-[128px] w-[128px] items-center justify-center rounded-full bg-fill text-subtle">
+          <div className="flex h-[8rem] w-[8rem] items-center justify-center rounded-full bg-fill text-subtle">
             <I icon={Search} size={44} />
           </div>
-          <div className="mt-2 text-[20px] font-bold leading-tight tracking-[-0.4px]">
+          <div className="mt-2 text-[1.25rem] font-bold leading-tight tracking-[-0.4px]">
             Aucun professionnel{category ? ` « ${categoryLabel(category)} »` : ''} à {prefs.label}
           </div>
           <p className="p">Essayez d'élargir le rayon ou de retirer un filtre.</p>
@@ -166,7 +166,7 @@ export function Marketplace() {
         </div>
       ) : (
         <>
-          <p className="text-[13px] text-muted">
+          <p className="text-[0.8125rem] text-muted">
             {countLabel}
           </p>
           <div className="flex flex-col gap-3.5">
@@ -182,12 +182,12 @@ export function Marketplace() {
         <>
           <div className="dim" onClick={() => setSortOpen(false)} />
           <BottomSheet>
-            <div className="h2 text-center !text-[18px]">Trier par</div>
+            <div className="h2 text-center !text-[1.125rem]">Trier par</div>
             <div className="crd !gap-0 !py-1" role="radiogroup" aria-label="Trier par">
               {SORT_OPTIONS.map((o) => (
                 <button key={o.value} type="button" role="radio" aria-checked={sortDraft === o.value} className="li w-full text-left" onClick={() => setSortDraft(o.value)}>
                   <span>
-                    <span className="block text-[16px] font-semibold">{o.label}</span>
+                    <span className="block text-[1rem] font-semibold">{o.label}</span>
                     <span className="p block">{o.hint}</span>
                   </span>
                   {sortDraft === o.value && <I icon={Check} size={20} />}

@@ -13,11 +13,11 @@ import { I, IconButton, Tx } from './index';
 export function DayCell({ dateKey, on, out, onPress }: { dateKey: string; on?: boolean; out?: boolean; onPress?: () => void }) {
   const dow = dayOfWeekFromKey(dateKey);
   return (
-    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!on, disabled: !!out }} accessibilityLabel={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(dateKey)}`} disabled={out} onPress={onPress} style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 9, borderRadius: R.slot, backgroundColor: on ? C.ink : 'transparent' }}>
-      <Tx size={11} lh={14} color={on ? 'rgba(255,255,255,0.65)' : out ? C.disabled : C.subtle}>
+    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!on, disabled: !!out }} accessibilityLabel={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(dateKey)}`} disabled={out} onPress={onPress} style={{ flex: 1, alignItems: 'center', gap: 5, paddingVertical: 7, borderRadius: R.slot, backgroundColor: on ? C.ink : 'transparent' }}>
+      <Tx size={9} lh={11.5} color={on ? 'rgba(255,255,255,0.65)' : out ? C.disabled : C.subtle}>
         {DAY_LABELS_SHORT_FR[dow]}
       </Tx>
-      <Tx size={13} weight={600} ls={-0.3} lh={17} color={on ? '#fff' : out ? C.disabled : C.text}>
+      <Tx size={10.5} weight={600} ls={-0.3} lh={14} color={on ? '#fff' : out ? C.disabled : C.text}>
         {dayNumber(dateKey)}
       </Tx>
     </Pressable>
@@ -28,7 +28,7 @@ export function DayCell({ dateKey, on, out, onPress }: { dateKey: string; on?: b
 export function DayStrip({ weekOf, selected, onSelect, minDate, maxDate, disabledDays }: { weekOf: string; selected: string; onSelect: (dateKey: string) => void; minDate?: string | null; maxDate?: string | null; disabledDays?: readonly number[] }) {
   const days = weekKeys(weekOf);
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel="Choisir un jour" style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
+    <View accessibilityRole="radiogroup" accessibilityLabel="Choisir un jour" style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 3 }}>
       {days.map((d) => {
         const dow = dayOfWeekFromKey(d);
         const out = (!!minDate && d < minDate) || (!!maxDate && d > maxDate) || !!disabledDays?.includes(dow);
@@ -47,15 +47,15 @@ export function MonthNav({ weekOf, onWeekChange, minDate, maxDate }: { weekOf: s
   const canNext = !maxDate || last < maxDate;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={16} upper>
+      <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
         {monthLabel(weekOf)}
       </Tx>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 6 }}>
         <IconButton accessibilityLabel="Semaine précédente" disabled={!canPrev} style={{ opacity: canPrev ? 1 : 0.35 }} onPress={() => onWeekChange(addDaysToKey(first, -7))}>
-          <I icon={ChevronLeft} size={18} />
+          <I icon={ChevronLeft} size={14.5} />
         </IconButton>
         <IconButton accessibilityLabel="Semaine suivante" disabled={!canNext} style={{ opacity: canNext ? 1 : 0.35 }} onPress={() => onWeekChange(addDaysToKey(first, 7))}>
-          <I icon={ChevronRight} size={18} />
+          <I icon={ChevronRight} size={14.5} />
         </IconButton>
       </View>
     </View>

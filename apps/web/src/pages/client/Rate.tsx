@@ -43,7 +43,7 @@ export function Rate() {
       <TopBar
         backTo="/rendez-vous?scope=past"
         right={
-          <button type="button" className="text-[13px] text-muted" onClick={() => navigate('/rendez-vous?scope=past')}>
+          <button type="button" className="text-[0.8125rem] text-muted" onClick={() => navigate('/rendez-vous?scope=past')}>
             Passer
           </button>
         }
@@ -56,8 +56,8 @@ export function Rate() {
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
         <span className="min-w-0">
-          <span className="block text-[18px] font-bold tracking-[-0.4px]">{b.salon.name}</span>
-          <span className="block text-[13px] text-muted">
+          <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{b.salon.name}</span>
+          <span className="block text-[0.8125rem] text-muted">
             {dayMonth(b.startsAt)} · {b.serviceName} · {formatDA(b.priceDa)}
           </span>
         </span>
@@ -70,7 +70,7 @@ export function Rate() {
             </button>
           ))}
         </div>
-        <span className="text-[14px] text-muted">{rating ? `${rating} sur 5` : 'Touchez une étoile'}</span>
+        <span className="text-[0.875rem] text-muted">{rating ? `${rating} sur 5` : 'Touchez une étoile'}</span>
       </div>
       <SectionLabel>Ce qui vous a plu</SectionLabel>
       <div className="flex flex-wrap gap-2.5">
@@ -85,8 +85,8 @@ export function Rate() {
       </Field>
       <div className="crd !flex-row items-center justify-between">
         <span>
-          <span className="block text-[14px]">Publier sous « {initials} »</span>
-          <span className="p block text-[15px]">Votre numéro reste privé</span>
+          <span className="block text-[0.875rem]">Publier sous « {initials} »</span>
+          <span className="p block text-[0.9375rem]">Votre numéro reste privé</span>
         </span>
         <Toggle on={publish} onChange={setPublish} label="Publier sous mon prénom" />
       </div>

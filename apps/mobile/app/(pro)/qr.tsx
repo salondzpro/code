@@ -17,18 +17,18 @@ export default function ProQr() {
   if (!salon) return <Splash />;
   const url = publicUrl(salon.slug);
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo="/lien" right="QR code" />
-      <Card gap={12} style={{ alignItems: 'center', paddingVertical: 32 }}>
-        <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={64} />
-        <Tx size={20} weight={700} ls={-0.4} lh={25}>
+      <Card gap={10} style={{ alignItems: 'center', paddingVertical: 26 }}>
+        <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={52} />
+        <Tx size={16} weight={700} ls={-0.4} lh={20.5}>
           {salon.name}
         </Tx>
-        <Tx size={13} color={C.muted} lh={18}>
+        <Tx size={10.5} color={C.muted} lh={14.5}>
           {publicHost()}/s/{salon.slug}
         </Tx>
-        <View style={{ marginTop: 8, borderRadius: 16, overflow: 'hidden', padding: 8, backgroundColor: '#fff' }}>
-          <QRCode value={url} size={264} color={C.ink} backgroundColor="#fff" />
+        <View style={{ marginTop: 6, borderRadius: 13, overflow: 'hidden', padding: 6, backgroundColor: '#fff' }}>
+          <QRCode value={url} size={214.5} color={C.ink} backgroundColor="#fff" />
         </View>
       </Card>
       <P center>À imprimer en vitrine ou à coller sur le miroir. Le scan ouvre directement votre page de réservation.</P>
@@ -37,8 +37,8 @@ export default function ProQr() {
           {copied ? 'Lien copié' : 'Copier le lien'}
         </Button>
         <Button onPress={() => void shareSalon(salon.name, url)}>
-          <I icon={MoreHorizontal} size={18} color="#fff" />
-          <Tx size={13} weight={600} color="#fff" ls={-0.2}>
+          <I icon={MoreHorizontal} size={14.5} color="#fff" />
+          <Tx size={10.5} weight={600} color="#fff" ls={-0.2}>
             Partager
           </Tx>
         </Button>

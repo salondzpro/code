@@ -18,7 +18,7 @@ export function AppFrame({ children, className = '' }: { children: ReactNode; cl
 /** Corps d'écran (design .bd : padding 6px 20px 0, gap 16px). */
 export function Screen({ children, bottom = 24, gap = 16, className = '' }: { children: ReactNode; bottom?: number; gap?: number; className?: string }) {
   return (
-    <div className={`flex flex-col px-5 pt-4 ${className}`} style={{ gap, paddingBottom: bottom }}>
+    <div className={`flex flex-col px-5 pt-4 ${className}`} style={{ gap: `${gap / 16}rem`, paddingBottom: `${bottom / 16}rem` }}>
       {children}
     </div>
   );

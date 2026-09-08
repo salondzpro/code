@@ -57,25 +57,25 @@ export function Step5Catalog() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={5} backTo="/pro" />
       <h1 className="h1">Vos prestations</h1>
-      <div className="sf flex items-center justify-between !px-5 !py-5 text-[15px]">
+      <div className="sf flex items-center justify-between !px-5 !py-5 text-[0.9375rem]">
         <span>
           Catalogue : <b>{MARKET_LABELS_FR[market]}</b>
         </span>
-        <Link to="/pro/profil" className="text-[13px] font-semibold text-muted">
+        <Link to="/pro/profil" className="text-[0.8125rem] font-semibold text-muted">
           Modifier
         </Link>
       </div>
-      <p className="p text-[15px]">Cochez ce que vous proposez. Vous fixerez prix, durée et photos à l'étape suivante.</p>
+      <p className="p text-[0.9375rem]">Cochez ce que vous proposez. Vous fixerez prix, durée et photos à l'étape suivante.</p>
       <div className="crd !gap-0 !py-1">
         {cats.map((c) => {
           const on = selected.includes(c.id);
           return (
             <button key={c.id} type="button" className="li w-full !py-4 text-left" onClick={() => toggle(c.id)} aria-pressed={on}>
               <span className="flex items-center gap-4">
-                <Img src={salon.coverUrl} className="h-[88px] w-[88px] flex-none !rounded-[16px]" />
+                <Img src={salon.coverUrl} className="h-[5.5rem] w-[5.5rem] flex-none !rounded-[1rem]" />
                 <span>
-                  <span className="block text-[17px] font-bold tracking-[-0.3px]">{c.labelFr}</span>
-                  <span className="block text-[13px] text-muted">{HINTS[c.id] ?? ''}</span>
+                  <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{c.labelFr}</span>
+                  <span className="block text-[0.8125rem] text-muted">{HINTS[c.id] ?? ''}</span>
                 </span>
               </span>
               <span className={`chk${on ? ' on' : ''}`} aria-hidden>
@@ -87,13 +87,13 @@ export function Step5Catalog() {
       </div>
       <InfoBox>Seules les prestations du catalogue {MARKET_LABELS_FR[market]} vous sont proposées. Elles déterminent les filtres sur lesquels les clients vous trouvent.</InfoBox>
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[15px] text-muted">
+          <span className="text-[0.9375rem] text-muted">
             {selected.length} prestation{selected.length > 1 ? 's' : ''} sélectionnée{selected.length > 1 ? 's' : ''}
           </span>
           <Button auto className="!rounded-full !px-7 !py-3.5" onClick={() => void next()} disabled={updateSalon.isPending}>

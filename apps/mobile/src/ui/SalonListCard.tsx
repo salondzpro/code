@@ -12,12 +12,12 @@ import { Img, S, T3, Tx } from './index';
 
 export function RatingPill({ avg, count, style }: { avg: number; count?: number; style?: StyleProp<ViewStyle> }) {
   return (
-    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 12, paddingVertical: 6 }, style]}>
-      <Tx size={15} weight={600} lh={19}>
+    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-start', backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 5 }, style]}>
+      <Tx size={12} weight={600} lh={15.5}>
         ★ {formatRating(avg)}
       </Tx>
       {count != null && (
-        <Tx size={15} color={C.muted} lh={19}>
+        <Tx size={12} color={C.muted} lh={15.5}>
           ({count})
         </Tx>
       )}
@@ -28,10 +28,10 @@ export function RatingPill({ avg, count, style }: { avg: number; count?: number;
 export function SlotPills({ slots, empty = "Complet aujourd'hui" }: { slots: string[]; empty?: string }) {
   if (slots.length === 0) return <S>{empty}</S>;
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
       {slots.map((t) => (
-        <View key={t} style={{ backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 10 }}>
-          <Tx size={13} weight={500} lh={17} mono>
+        <View key={t} style={{ backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 13, paddingVertical: 8 }}>
+          <Tx size={10.5} weight={500} lh={14} mono>
             {t}
           </Tx>
         </View>
@@ -50,18 +50,18 @@ export function NextSlots({ salon, empty = 'Aucune disponibilité cette semaine'
   if (!next || next.slots.length === 0) return <S>{empty}</S>;
   const label = relativeDayLabelDZ(next.date);
   return (
-    <View style={{ gap: 8 }} accessibilityLabel={`Prochaines disponibilités ${label}`}>
+    <View style={{ gap: 6 }} accessibilityLabel={`Prochaines disponibilités ${label}`}>
       <T3 weight={500}>{label}</T3>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {next.slots.map((t) => (
           <Pressable
             key={t}
             accessibilityRole="button"
             accessibilityLabel={`Réserver ${label} à ${t}`}
             onPress={() => router.push({ pathname: `/s/${salon.slug}/prestations`, params: { date: next.date, time: t } } as never)}
-            style={({ pressed }) => ({ backgroundColor: pressed ? C.line : C.fill, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 10 })}
+            style={({ pressed }) => ({ backgroundColor: pressed ? C.line : C.fill, borderRadius: R.pill, paddingHorizontal: 13, paddingVertical: 8 })}
           >
-            <Tx size={13} weight={500} lh={17} mono>
+            <Tx size={10.5} weight={500} lh={14} mono>
               {t}
             </Tx>
           </Pressable>
@@ -91,23 +91,23 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
   if (large) {
     return (
       <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={go} style={({ pressed }) => [base, { opacity: pressed ? 0.92 : 1 }]}>
-        <Img src={s.coverUrl} radius={0} style={{ height: 230, width: '100%' }} />
-        <View style={{ padding: 16, gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-            <Tx size={18} weight={700} ls={-0.4} lh={22} style={{ flex: 1 }}>
+        <Img src={s.coverUrl} radius={0} style={{ height: 187, width: '100%' }} />
+        <View style={{ padding: 13, gap: 3 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+            <Tx size={14.5} weight={700} ls={-0.4} lh={18} style={{ flex: 1 }}>
               {s.name}
             </Tx>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </View>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
           {s.topServices.length > 0 && (
-            <Tx size={15} color={C.subtle} lh={21}>
+            <Tx size={12} color={C.subtle} lh={17}>
               {servicesLine(s)}
             </Tx>
           )}
-          <View style={{ marginTop: 10 }}>
+          <View style={{ marginTop: 8 }}>
             <NextSlots salon={s} />
           </View>
         </View>
@@ -116,21 +116,21 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
   }
 
   return (
-    <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={go} style={({ pressed }) => [base, { padding: 16, gap: 12, opacity: pressed ? 0.92 : 1 }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 14 }}>
-        <Img src={s.logoUrl ?? s.coverUrl} radius={16} style={{ width: 112, height: 112 }} />
+    <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={go} style={({ pressed }) => [base, { padding: 13, gap: 10, opacity: pressed ? 0.92 : 1 }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
+        <Img src={s.logoUrl ?? s.coverUrl} radius={13} style={{ width: 91, height: 91 }} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-            <Tx size={17} weight={700} ls={-0.4} lh={21} style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
+            <Tx size={14} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
               {s.name}
             </Tx>
             {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
           </View>
-          <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
+          <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
           {s.topServices.length > 0 && (
-            <Tx size={15} color={C.subtle} lh={21} style={{ marginTop: 2 }}>
+            <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
               {servicesLine(s)}
             </Tx>
           )}

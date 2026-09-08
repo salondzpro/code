@@ -80,8 +80,8 @@ export function BookingWhen() {
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
         <span className="min-w-0">
-          <span className="block text-[16px] font-bold tracking-[-0.3px]">{s.name}</span>
-          <span className="block text-[13px] text-muted">
+          <span className="block text-[1rem] font-bold tracking-[-0.3px]">{s.name}</span>
+          <span className="block text-[0.8125rem] text-muted">
             {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
           </span>
         </span>
@@ -94,8 +94,8 @@ export function BookingWhen() {
       ) : availability.isPending || availability.isFetching ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-[64px] w-full" />
-          <Skeleton className="h-[64px] w-full" />
+          <Skeleton className="h-[4rem] w-full" />
+          <Skeleton className="h-[4rem] w-full" />
         </div>
       ) : availability.isError ? (
         <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
@@ -107,7 +107,7 @@ export function BookingWhen() {
             <span className="h3">{period}</span>
             <div className="g3">
               {list.map((g) => (
-                <Slot key={g.iso} on={slot === g.iso} off={!g.free} onClick={() => g.free && setSlot(g.iso)} className="!py-[22px] !text-[16px]">
+                <Slot key={g.iso} on={slot === g.iso} off={!g.free} onClick={() => g.free && setSlot(g.iso)} className="!py-[1.375rem] !text-[1rem]">
                   {g.time}
                 </Slot>
               ))}

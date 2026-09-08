@@ -63,23 +63,23 @@ export function Step8Works() {
       <div className="g3">
         {works.map((w) => (
           <div key={w.id} className="flex flex-col gap-1.5">
-            <div className="relative aspect-square overflow-hidden rounded-[16px] bg-line">
+            <div className="relative aspect-square overflow-hidden rounded-[1rem] bg-line">
               <img src={w.url} alt="" className="h-full w-full object-cover" />
               <button type="button" className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white" aria-label="Retirer" onClick={() => void remove(w.service.id, w.url)}>
                 <I icon={X} size={14} />
               </button>
             </div>
-            <span className="truncate text-center text-[14px] text-muted">{w.service.name}</span>
+            <span className="truncate text-center text-[0.875rem] text-muted">{w.service.name}</span>
           </div>
         ))}
-        <button type="button" className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[16px] border border-dashed border-line bg-fill text-subtle" onClick={() => input.current?.click()} disabled={busy || services.length === 0} aria-label="Ajouter des réalisations">
+        <button type="button" className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[1rem] border border-dashed border-line bg-fill text-subtle" onClick={() => input.current?.click()} disabled={busy || services.length === 0} aria-label="Ajouter des réalisations">
           <I icon={Plus} size={26} />
-          <span className="text-[14px]">Ajouter</span>
+          <span className="text-[0.875rem]">Ajouter</span>
         </button>
       </div>
       <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => { void add(e.target.files); e.target.value = ''; }} />
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}

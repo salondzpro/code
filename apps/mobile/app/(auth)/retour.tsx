@@ -29,10 +29,10 @@ export default function WelcomeBack() {
   };
 
   return (
-    <Screen center gap={16}>
-      <View style={{ alignItems: 'center', gap: 16 }}>
-        <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={96} />
-        <View style={{ alignItems: 'center', gap: 8 }}>
+    <Screen center gap={13}>
+      <View style={{ alignItems: 'center', gap: 13 }}>
+        <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={78} />
+        <View style={{ alignItems: 'center', gap: 6 }}>
           <H1 center>Bon retour, {firstName}</H1>
           <P center>{contact}</P>
         </View>
@@ -42,8 +42,8 @@ export default function WelcomeBack() {
       </View>
       <P center>Votre session reste ouverte tant que vous ne vous déconnectez pas — sur l'application comme sur le navigateur.</P>
       <ListCard>
-        <Row onPress={proceed} chevron={false} right={<I icon={ChevronRight} size={18} color={C.disabled} />}>
-          <Tx size={13} weight={500} lh={18}>
+        <Row onPress={proceed} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
+          <Tx size={10.5} weight={500} lh={14.5}>
             Continuer comme {firstName}
           </Tx>
         </Row>
@@ -53,9 +53,9 @@ export default function WelcomeBack() {
             router.replace('/connexion');
           }}
           chevron={false}
-          right={<I icon={RefreshCw} size={18} color={C.disabled} />}
+          right={<I icon={RefreshCw} size={14.5} color={C.disabled} />}
         >
-          <Tx size={13} lh={18}>
+          <Tx size={10.5} lh={14.5}>
             Utiliser un autre numéro
           </Tx>
         </Row>

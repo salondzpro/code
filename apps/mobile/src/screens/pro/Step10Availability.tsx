@@ -27,8 +27,8 @@ const CANCEL = [2, 4, 12, 24];
 
 function BigSlot({ on, onPress, children }: { on: boolean; onPress: () => void; children: string }) {
   return (
-    <Slot on={on} onPress={onPress} style={{ paddingVertical: 26 }}>
-      <Tx size={16} weight={500} lh={20} color={on ? C.onInk : C.text} mono>
+    <Slot on={on} onPress={onPress} style={{ paddingVertical: 21 }}>
+      <Tx size={13} weight={500} lh={16} color={on ? C.onInk : C.text} mono>
         {children}
       </Tx>
     </Slot>
@@ -92,7 +92,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (phase === 'slots') {
     return (
-      <Screen gap={16} footer={<StepSheet onPress={() => setPhase('rules')} />}>
+      <Screen gap={13} footer={<StepSheet onPress={() => setPhase('rules')} />}>
         <StepBar step={10} backTo={settings ? '/(pro)/(tabs)/profil-pro' : stepPath(9)} right="Disponibilités" />
         <H1>Vos créneaux</H1>
         <SectionLabel>Granularité</SectionLabel>
@@ -107,19 +107,19 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <ListCard>
           <ValueRow label="Temps de battement" hint="Entre deux rendez-vous" value={`${buffer} min`} onPress={() => setSheet('buffer')} />
           <ValueRow label="Rendez-vous simultanés" hint="Nombre de postes" value={String(staffCount)} />
-          <Row py={16} chevron={false} right={<Toggle on={online} onChange={setOnline} label="Réservation en ligne" />}>
-            <Tx size={15} lh={20}>
+          <Row py={13} chevron={false} right={<Toggle on={online} onChange={setOnline} label="Réservation en ligne" />}>
+            <Tx size={12} lh={16}>
               Réservation en ligne
             </Tx>
-            <Tx size={13} color={C.muted} lh={19}>
+            <Tx size={10.5} color={C.muted} lh={15.5}>
               Visible dans la marketplace
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Toggle on={manual} onChange={setManual} label="Validation manuelle" />}>
-            <Tx size={15} lh={20}>
+          <Row py={13} chevron={false} right={<Toggle on={manual} onChange={setManual} label="Validation manuelle" />}>
+            <Tx size={12} lh={16}>
               Validation manuelle
             </Tx>
-            <Tx size={13} color={C.muted} lh={19}>
+            <Tx size={10.5} color={C.muted} lh={15.5}>
               Vous confirmez chaque demande
             </Tx>
           </Row>
@@ -131,7 +131,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   }
 
   return (
-    <Screen gap={16} footer={<StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onPress={() => void save()} busy={updateSalon.isPending} />}>
+    <Screen gap={13} footer={<StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onPress={() => void save()} busy={updateSalon.isPending} />}>
       <StepBar step={10} right="Réservation" />
       <H1>Règles de réservation</H1>
       <SectionLabel>Délai minimum avant un rendez-vous</SectionLabel>
@@ -152,19 +152,19 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       </Grid>
       <ListCard>
         <ValueRow label="Annulation client" hint="Gratuite jusqu'à" value={`${cancel} h avant`} onPress={() => setSheet('cancel')} />
-        <Row py={16} chevron={false} right={<Toggle on={report} onChange={setReport} label="Report client" />}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Toggle on={report} onChange={setReport} label="Report client" />}>
+          <Tx size={12} lh={16}>
             Report client
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             Sur demande, avec validation
           </Tx>
         </Row>
-        <Row py={16} chevron={false} right={<Toggle on={deposit} onChange={setDeposit} label="Acompte" />}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Toggle on={deposit} onChange={setDeposit} label="Acompte" />}>
+          <Tx size={12} lh={16}>
             Acompte
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             Paiement sur place uniquement
           </Tx>
         </Row>

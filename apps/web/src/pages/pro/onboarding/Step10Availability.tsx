@@ -83,7 +83,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <SectionLabel>Granularité</SectionLabel>
         <div className="g3">
           {GRANULARITY.map((g) => (
-            <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[26px] !text-[16px]">
+            <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
               {g} min
             </Slot>
           ))}
@@ -92,10 +92,10 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <div className="crd !gap-0 !py-1">
           <label className="li !py-4">
             <span>
-              <span className="block text-[15px]">Temps de battement</span>
-              <span className="p block text-[13px]">Entre deux rendez-vous</span>
+              <span className="block text-[0.9375rem]">Temps de battement</span>
+              <span className="p block text-[0.8125rem]">Entre deux rendez-vous</span>
             </span>
-            <select className="bg-transparent text-right text-[15px] text-muted outline-none" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} aria-label="Temps de battement">
+            <select className="bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} aria-label="Temps de battement">
               {BUFFERS.map((b) => (
                 <option key={b} value={b}>
                   {b} min
@@ -105,22 +105,22 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           </label>
           <div className="li !py-4">
             <span>
-              <span className="block text-[15px]">Rendez-vous simultanés</span>
-              <span className="p block text-[13px]">Nombre de postes</span>
+              <span className="block text-[0.9375rem]">Rendez-vous simultanés</span>
+              <span className="p block text-[0.8125rem]">Nombre de postes</span>
             </span>
-            <span className="text-[15px] text-muted">{staffCount}</span>
+            <span className="text-[0.9375rem] text-muted">{staffCount}</span>
           </div>
           <div className="li !py-4">
             <span>
-              <span className="block text-[15px]">Réservation en ligne</span>
-              <span className="p block text-[13px]">Visible dans la marketplace</span>
+              <span className="block text-[0.9375rem]">Réservation en ligne</span>
+              <span className="p block text-[0.8125rem]">Visible dans la marketplace</span>
             </span>
             <Toggle on={online} onChange={setOnline} label="Réservation en ligne" />
           </div>
           <div className="li !py-4">
             <span>
-              <span className="block text-[15px]">Validation manuelle</span>
-              <span className="p block text-[13px]">Vous confirmez chaque demande</span>
+              <span className="block text-[0.9375rem]">Validation manuelle</span>
+              <span className="p block text-[0.8125rem]">Vous confirmez chaque demande</span>
             </span>
             <Toggle on={manual} onChange={setManual} label="Validation manuelle" />
           </div>
@@ -138,7 +138,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <SectionLabel>Délai minimum avant un rendez-vous</SectionLabel>
       <div className="g4">
         {LEAD.map((l) => (
-          <Slot key={l.v} on={lead === l.v} onClick={() => setLead(l.v)} className="!py-[26px] !text-[16px]">
+          <Slot key={l.v} on={lead === l.v} onClick={() => setLead(l.v)} className="!py-[1.625rem] !text-[1rem]">
             {l.l}
           </Slot>
         ))}
@@ -146,7 +146,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <SectionLabel>Fenêtre de réservation</SectionLabel>
       <div className="g3">
         {HORIZON.map((h) => (
-          <Slot key={h} on={horizon === h} onClick={() => setHorizon(h)} className="!py-[26px] !text-[16px]">
+          <Slot key={h} on={horizon === h} onClick={() => setHorizon(h)} className="!py-[1.625rem] !text-[1rem]">
             {h} j
           </Slot>
         ))}
@@ -154,10 +154,10 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <div className="crd !gap-0 !py-1">
         <label className="li !py-4">
           <span>
-            <span className="block text-[15px]">Annulation client</span>
-            <span className="p block text-[13px]">Gratuite jusqu'à</span>
+            <span className="block text-[0.9375rem]">Annulation client</span>
+            <span className="p block text-[0.8125rem]">Gratuite jusqu'à</span>
           </span>
-          <select className="bg-transparent text-right text-[15px] text-muted outline-none" value={cancel} onChange={(e) => setCancel(Number(e.target.value))} aria-label="Annulation gratuite jusqu'à">
+          <select className="bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={cancel} onChange={(e) => setCancel(Number(e.target.value))} aria-label="Annulation gratuite jusqu'à">
             {CANCEL.map((c) => (
               <option key={c} value={c}>
                 {c} h avant
@@ -167,21 +167,21 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         </label>
         <div className="li !py-4">
           <span>
-            <span className="block text-[15px]">Report client</span>
-            <span className="p block text-[13px]">Sur demande, avec validation</span>
+            <span className="block text-[0.9375rem]">Report client</span>
+            <span className="p block text-[0.8125rem]">Sur demande, avec validation</span>
           </span>
           <Toggle on={report} onChange={setReport} label="Report client" />
         </div>
         <div className="li !py-4">
           <span>
-            <span className="block text-[15px]">Acompte</span>
-            <span className="p block text-[13px]">Paiement sur place uniquement</span>
+            <span className="block text-[0.9375rem]">Acompte</span>
+            <span className="p block text-[0.8125rem]">Paiement sur place uniquement</span>
           </span>
           <Toggle on={deposit} onChange={setDeposit} label="Acompte" />
         </div>
       </div>
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}

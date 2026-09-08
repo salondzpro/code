@@ -51,7 +51,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
   };
 
   return (
-    <Screen gap={16} footer={<StepSheet label="Ajouter des photos" onPress={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price} />}>
+    <Screen gap={13} footer={<StepSheet label="Ajouter des photos" onPress={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price} />}>
       <StepBar step={6} backTo={first ? stepPath(5) : '/(pro)/(tabs)/prestations'} />
       <H1>{existing ? 'Modifier la prestation' : first ? 'Première prestation' : 'Nouvelle prestation'}</H1>
       <Field label="Nom">
@@ -60,15 +60,15 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
       <Grid cols={2}>
         <Field label="Prix">
           <View>
-            <Input lg keyboardType="number-pad" value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, ''))} placeholder="2 500" accessibilityLabel="Prix" style={{ paddingRight: 48 }} />
-            <Tx size={13} lh={18} style={{ position: 'absolute', right: 16, top: 18 }}>
+            <Input lg keyboardType="number-pad" value={price} onChangeText={(v) => setPrice(v.replace(/\D/g, ''))} placeholder="2 500" accessibilityLabel="Prix" style={{ paddingRight: 39 }} />
+            <Tx size={10.5} lh={14.5} style={{ position: 'absolute', right: 13, top: 15 }}>
               DA
             </Tx>
           </View>
         </Field>
         <Field label="Durée">
-          <View style={{ backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 18, paddingHorizontal: 16 }} accessibilityLabel="Durée">
-            <Tx size={13} lh={18}>
+          <View style={{ backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 15, paddingHorizontal: 13 }} accessibilityLabel="Durée">
+            <Tx size={10.5} lh={14.5}>
               {formatDuration(duration)}
             </Tx>
           </View>
@@ -98,11 +98,11 @@ import { ChevronDown } from 'lucide-react-native';
 import { I } from '@/ui';
 function Pressable_({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel="Catégorie" onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 18, paddingHorizontal: 16 }}>
-      <Tx size={13} lh={18}>
+    <Pressable accessibilityRole="button" accessibilityLabel="Catégorie" onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 15, paddingHorizontal: 13 }}>
+      <Tx size={10.5} lh={14.5}>
         {label}
       </Tx>
-      <I icon={ChevronDown} size={18} color={C.subtle} />
+      <I icon={ChevronDown} size={14.5} color={C.subtle} />
     </Pressable>
   );
 }

@@ -30,14 +30,14 @@ export default function Settings() {
   }, [p]);
 
   return (
-    <Screen gap={14} bottom={NAV_PAD}>
+    <Screen gap={11} bottom={NAV_PAD}>
       <TopBar backTo="/(client)/(tabs)/profil" right="Réglages" />
       <H1>Réglages</H1>
 
       <SectionLabel>Notifications</SectionLabel>
       <ListCard>
         <Row
-          py={16}
+          py={13}
           chevron={false}
           right={
             <Toggle
@@ -50,26 +50,26 @@ export default function Settings() {
             />
           }
         >
-          <Tx size={15} lh={20}>
+          <Tx size={12} lh={16}>
             Rappels WhatsApp
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             2 h avant le rendez-vous
           </Tx>
         </Row>
-        <Row py={16} chevron={false} right={<Toggle on={confirmations} onChange={setConfirmations} label="Confirmations" />}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Toggle on={confirmations} onChange={setConfirmations} label="Confirmations" />}>
+          <Tx size={12} lh={16}>
             Confirmations
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             Réservation, report, annulation
           </Tx>
         </Row>
-        <Row py={16} chevron={false} right={<Toggle on={news} onChange={setNews} label="Nouveautés" />}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Toggle on={news} onChange={setNews} label="Nouveautés" />}>
+          <Tx size={12} lh={16}>
             Nouveautés des salons suivis
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             Maximum une fois par semaine
           </Tx>
         </Row>
@@ -77,18 +77,18 @@ export default function Settings() {
 
       <SectionLabel>Préférences</SectionLabel>
       <ListCard>
-        <Row py={16} chevron={false} right={<Tx size={15} color={C.muted} lh={20}>Français</Tx>}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>Français</Tx>}>
+          <Tx size={12} lh={16}>
             Langue
           </Tx>
         </Row>
-        <Row py={16} chevron={false} onPress={() => router.push({ pathname: '/marche', params: { next: '/reglages' } })} right={<Tx size={15} color={C.muted} lh={20}>{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</Tx>}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} onPress={() => router.push({ pathname: '/marche', params: { next: '/reglages' } })} right={<Tx size={12} color={C.muted} lh={16}>{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</Tx>}>
+          <Tx size={12} lh={16}>
             Catalogue affiché
           </Tx>
         </Row>
-        <Row py={16} chevron={false} to="/localisation" right={<Tx size={15} color={C.muted} lh={20}>{prefs.city ?? wilayaName(prefs.wilaya)}</Tx>}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} to="/localisation" right={<Tx size={12} color={C.muted} lh={16}>{prefs.city ?? wilayaName(prefs.wilaya)}</Tx>}>
+          <Tx size={12} lh={16}>
             Ville
           </Tx>
         </Row>
@@ -96,21 +96,21 @@ export default function Settings() {
 
       <SectionLabel>Compte</SectionLabel>
       <ListCard>
-        <Row py={16} chevron={false} right={<Badge tone="ok" md>Active</Badge>}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Badge tone="ok" md>Active</Badge>}>
+          <Tx size={12} lh={16}>
             Session
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             {p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}
           </Tx>
         </Row>
-        <Row py={16} onPress={() => void Linking.openURL('https://salondz.pages.dev/confidentialite').catch(() => undefined)}>
-          <Tx size={15} lh={20}>
+        <Row py={13} onPress={() => void Linking.openURL('https://salondz.pages.dev/confidentialite').catch(() => undefined)}>
+          <Tx size={12} lh={16}>
             Confidentialité
           </Tx>
         </Row>
-        <Row py={16} onPress={() => void Linking.openURL(`mailto:contact@salondz.dz?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`).catch(() => undefined)}>
-          <Tx size={15} lh={20}>
+        <Row py={13} onPress={() => void Linking.openURL(`mailto:contact@salondz.dz?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`).catch(() => undefined)}>
+          <Tx size={12} lh={16}>
             Supprimer mes données
           </Tx>
         </Row>
@@ -120,9 +120,9 @@ export default function Settings() {
             await signOut();
             router.replace('/intro');
           }}
-          style={{ paddingVertical: 16 }}
+          style={{ paddingVertical: 13 }}
         >
-          <Tx size={15} lh={20} color={C.danger}>
+          <Tx size={12} lh={16} color={C.danger}>
             Se déconnecter
           </Tx>
         </Pressable>

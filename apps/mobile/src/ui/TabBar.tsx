@@ -9,13 +9,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { C, R } from '@/theme/design';
 
-const BAR_HEIGHT = 64;
-const ITEM_HEIGHT = 52;
+const BAR_HEIGHT = 52;
+const ITEM_HEIGHT = 42;
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   return (
-    <View pointerEvents="box-none" style={[styles.wrap, { bottom: 14 + insets.bottom }]}>
+    <View pointerEvents="box-none" style={[styles.wrap, { bottom: 11 + insets.bottom }]}>
       <View style={styles.pill}>
         {/* Sur Android le flou natif est expérimental : on garde un fond translucide plus opaque. */}
         <BlurView
@@ -54,7 +54,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { position: 'absolute', left: 16, right: 16, alignItems: 'center' },
+  wrap: { position: 'absolute', left: 13, right: 13, alignItems: 'center' },
   pill: {
     width: '100%',
     maxWidth: 430 - 32,
@@ -67,17 +67,17 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.18,
     shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
-  row: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 6, gap: 2 },
+  row: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 5, gap: 2 },
   item: { flex: 1, minWidth: 0, height: ITEM_HEIGHT, alignItems: 'center', justifyContent: 'center', borderRadius: R.pill },
   itemOn: {
     backgroundColor: C.ink,
     shadowColor: '#000',
     shadowOpacity: 0.35,
     shadowRadius: 8,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 5 },
     elevation: 4,
   },
 });

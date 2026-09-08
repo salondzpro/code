@@ -50,7 +50,7 @@ export function Button({ variant = 'ink', sm, auto, pill, loading, disabled, chi
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 8,
+          gap: 6,
           alignSelf: auto || pill ? 'flex-start' : 'stretch',
           backgroundColor: background,
           borderWidth: 1,
@@ -94,10 +94,11 @@ export function IconButton({ ink, lg, children, style, ...props }: Omit<Pressabl
 
 export function BackButton({ to, close, label }: { to?: string; close?: boolean; label?: string }) {
   const router = useRouter();
+  // Historique réel d'abord (écran d'où l'on vient), sinon écran parent en remplacement : jamais de push
+  // vers le parent, qui formait une boucle salon → prestations → salon…
   const go = () => {
-    if (to) router.replace(to as never);
-    else if (router.canGoBack()) router.back();
-    else router.replace('/' as never);
+    if (router.canGoBack()) router.back();
+    else router.replace((to ?? '/') as never);
   };
   return (
     <IconButton lg accessibilityLabel={label ?? (close ? 'Fermer' : 'Retour')} onPress={go}>
@@ -109,9 +110,9 @@ export function BackButton({ to, close, label }: { to?: string; close?: boolean;
 /** En-tête d'écran : bouton rond à gauche, texte ou nœud à droite (« Étape 1 sur 3 »). */
 export function TopBar({ backTo, close, right, noBack }: { backTo?: string; close?: boolean; right?: ReactNode; noBack?: boolean }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
       {noBack ? <View /> : <BackButton to={backTo} close={close} />}
-      {typeof right === 'string' ? <Tx size={15} color={C.muted}>{right}</Tx> : (right ?? null)}
+      {typeof right === 'string' ? <Tx size={12} color={C.muted}>{right}</Tx> : (right ?? null)}
     </View>
   );
 }
@@ -129,7 +130,7 @@ export function Pill({ on, lg, soft, children, style, ...props }: Omit<Pressable
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
+          gap: 5,
           alignSelf: 'flex-start',
           borderRadius: R.pill,
           paddingVertical: lg ? 13 : 9,
@@ -163,8 +164,8 @@ const TONES: Record<BadgeTone, { bg: string; fg: string }> = {
 export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; children: ReactNode }) {
   const t = TONES[tone];
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderRadius: R.pill, backgroundColor: t.bg, paddingVertical: md ? 6 : 4, paddingHorizontal: md ? 12 : 10 }}>
-      {dot && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: t.fg }} />}
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderRadius: R.pill, backgroundColor: t.bg, paddingVertical: md ? 6 : 4, paddingHorizontal: md ? 12 : 10 }}>
+      {dot && <View style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: t.fg }} />}
       <Tx size={md ? 13 : 11} weight={600} color={t.fg} lh={md ? 17 : 14}>
         {children}
       </Tx>
@@ -196,12 +197,12 @@ export function Slot({ on, off, children, style, ...props }: Omit<PressableProps
       disabled={off}
       {...props}
       style={({ pressed }) => [
-        { borderWidth: 1, borderColor: on ? C.ink : off ? 'transparent' : C.line, backgroundColor: on ? C.ink : off ? C.fill : C.surface, borderRadius: R.slot, paddingVertical: 13, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1 },
+        { borderWidth: 1, borderColor: on ? C.ink : off ? 'transparent' : C.line, backgroundColor: on ? C.ink : off ? C.fill : C.surface, borderRadius: R.slot, paddingVertical: 11, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1 },
         style,
       ]}
     >
       {typeof children === 'string' ? (
-        <Tx size={15} weight={500} color={on ? C.onInk : off ? C.disabled : C.text} mono>
+        <Tx size={12} weight={500} color={on ? C.onInk : off ? C.disabled : C.text} mono>
           {children}
         </Tx>
       ) : (
@@ -244,7 +245,7 @@ export function Input({ err, lg, f, style, onFocus, onBlur, multiline, ...props 
           borderRadius: R.input,
           paddingVertical: lg ? 18 : 15,
           paddingHorizontal: lg ? 16 : 15,
-          fontSize: lg ? 17 : 15,
+          fontSize: lg ? 14 : 12,
           fontFamily: fontFor(400),
           color: C.text,
           minHeight: multiline ? 96 : undefined,
@@ -265,16 +266,16 @@ const WEB_NO_OUTLINE = Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unkn
 export function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string | null; children: ReactNode }) {
   return (
     <View>
-      <Tx size={13} color={C.muted} lh={18} style={{ marginBottom: 6 }}>
+      <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
         {label}
       </Tx>
       {children}
       {error ? (
-        <Tx size={13} color={C.danger} lh={18} style={{ marginTop: 6 }} accessibilityRole="alert">
+        <Tx size={10.5} color={C.danger} lh={14.5} style={{ marginTop: 5 }} accessibilityRole="alert">
           {error}
         </Tx>
       ) : hint ? (
-        <T3 style={{ marginTop: 6 }}>{hint}</T3>
+        <T3 style={{ marginTop: 5 }}>{hint}</T3>
       ) : null}
     </View>
   );
@@ -282,8 +283,8 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
 
 export function SearchBox({ value, onChange, placeholder, onSubmit, autoFocus, outlined }: { value: string; onChange: (v: string) => void; placeholder: string; onSubmit?: () => void; autoFocus?: boolean; outlined?: boolean }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: outlined ? C.surface : C.fill, borderRadius: R.cardSm, paddingVertical: 15, paddingHorizontal: 16, borderWidth: outlined ? 1.5 : 0, borderColor: C.ink }}>
-      <I icon={Search} size={22} color={C.subtle} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: outlined ? C.surface : C.fill, borderRadius: R.cardSm, paddingVertical: 12, paddingHorizontal: 13, borderWidth: outlined ? 1.5 : 0, borderColor: C.ink }}>
+      <I icon={Search} size={18} color={C.subtle} />
       <TextInput
         value={value}
         onChangeText={onChange}
@@ -293,7 +294,7 @@ export function SearchBox({ value, onChange, placeholder, onSubmit, autoFocus, o
         autoFocus={autoFocus}
         returnKeyType="search"
         onSubmitEditing={onSubmit}
-        style={[{ flex: 1, minWidth: 0, fontSize: 16, fontFamily: fontFor(400), color: C.text, padding: 0 }, WEB_NO_OUTLINE]}
+        style={[{ flex: 1, minWidth: 0, fontSize: 13, fontFamily: fontFor(400), color: C.text, padding: 0 }, WEB_NO_OUTLINE]}
       />
     </View>
   );
@@ -301,28 +302,28 @@ export function SearchBox({ value, onChange, placeholder, onSubmit, autoFocus, o
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <Pressable accessibilityRole="switch" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={() => onChange(!on)} style={{ width: 50, height: 30, borderRadius: 15, backgroundColor: on ? C.green : C.line, padding: 3 }}>
-      <View style={[{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff', transform: [{ translateX: on ? 20 : 0 }] }, SHADOW.knob]} />
+    <Pressable accessibilityRole="switch" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={() => onChange(!on)} style={{ width: 41, height: 24, borderRadius: 12, backgroundColor: on ? C.green : C.line, padding: 2 }}>
+      <View style={[{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#fff', transform: [{ translateX: on ? 20 : 0 }] }, SHADOW.knob]} />
     </Pressable>
   );
 }
 
 export function Checkbox({ on, onChange, label }: { on: boolean; onChange?: (v: boolean) => void; label: string }) {
   return (
-    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onChange ? () => onChange(!on) : undefined} style={{ width: 24, height: 24, borderRadius: 8, borderWidth: 1.5, borderColor: on ? C.ink : C.line, backgroundColor: on ? C.ink : C.surface, alignItems: 'center', justifyContent: 'center' }}>
-      {on && <I icon={Check} size={16} color="#fff" />}
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onChange ? () => onChange(!on) : undefined} style={{ width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: on ? C.ink : C.line, backgroundColor: on ? C.ink : C.surface, alignItems: 'center', justifyContent: 'center' }}>
+      {on && <I icon={Check} size={13} color="#fff" />}
     </Pressable>
   );
 }
 
 export function Segmented<T extends string>({ options, value, onChange, label }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label: string }) {
   return (
-    <View accessibilityRole="tablist" accessibilityLabel={label} style={{ flexDirection: 'row', backgroundColor: C.fill, borderRadius: 16, padding: 5, gap: 2 }}>
+    <View accessibilityRole="tablist" accessibilityLabel={label} style={{ flexDirection: 'row', backgroundColor: C.fill, borderRadius: 13, padding: 4, gap: 2 }}>
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={[{ flex: 1, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 8, alignItems: 'center', backgroundColor: on ? C.surface : 'transparent' }, on && SHADOW.seg]}>
-            <Tx size={13} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={17}>
+          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={[{ flex: 1, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', backgroundColor: on ? C.surface : 'transparent' }, on && SHADOW.seg]}>
+            <Tx size={10.5} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={14}>
               {o.label}
             </Tx>
           </Pressable>
@@ -356,18 +357,18 @@ export function Card({ sm, sel, row, gap, pad, onPress, children, style, accessi
 
 /** Surface douce (design .sf). */
 export function Soft({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[{ backgroundColor: C.fill, borderRadius: R.cardSm, padding: 14 }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: C.fill, borderRadius: R.cardSm, padding: 11 }, style]}>{children}</View>;
 }
 
 /** Encadré d'information gris avec l'icône ⓘ. */
 export function InfoBox({ children }: { children: ReactNode }) {
   return (
-    <Soft style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+    <Soft style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
       <View style={{ marginTop: 2 }}>
-        <I icon={Info} size={18} color={C.muted} />
+        <I icon={Info} size={14.5} color={C.muted} />
       </View>
       <View style={{ flex: 1 }}>
-        <Tx size={15} color={C.muted} lh={22}>
+        <Tx size={12} color={C.muted} lh={18}>
           {children}
         </Tx>
       </View>
@@ -378,7 +379,7 @@ export function InfoBox({ children }: { children: ReactNode }) {
 export function SectionLabel({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={16} upper>
+      <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
         {children}
       </Tx>
       {right}
@@ -394,10 +395,10 @@ export function Row({ to, onPress, children, right, chevron, py = 14, style, acc
     <>
       <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
       {right}
-      {(chevron ?? (!!to || !!onPress)) && <I icon={ChevronRight} size={18} color={C.disabled} />}
+      {(chevron ?? (!!to || !!onPress)) && <I icon={ChevronRight} size={14.5} color={C.disabled} />}
     </>
   );
-  const base: ViewStyle = { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: py };
+  const base: ViewStyle = { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingVertical: py };
   if (press)
     return (
       <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={press} style={({ pressed }) => [base, { opacity: pressed ? 0.7 : 1 }, style]}>
@@ -424,7 +425,7 @@ export function Rows({ children, style }: { children: ReactNode; style?: StylePr
 /** Carte-liste (design .crd avec gap 0 et padding vertical 4). */
 export function ListCard({ children, style, px = 16 }: { children: ReactNode; style?: StyleProp<ViewStyle>; px?: number }) {
   return (
-    <View style={[{ backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: R.card, paddingVertical: 4, paddingHorizontal: px }, style]}>
+    <View style={[{ backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: R.card, paddingVertical: 3, paddingHorizontal: px }, style]}>
       <Rows>{children}</Rows>
     </View>
   );
@@ -461,8 +462,8 @@ export function Overlay() {
 /** Crédit photo (coin bas gauche des visuels du design). */
 export function Credit({ children }: { children: string }) {
   return (
-    <View style={{ position: 'absolute', left: 12, bottom: 8, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-      <Tx size={10} color="rgba(255,255,255,0.8)" lh={13}>
+    <View style={{ position: 'absolute', left: 10, bottom: 6, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 5, paddingHorizontal: 5, paddingVertical: 2 }}>
+      <Tx size={8} color="rgba(255,255,255,0.8)" lh={10.5}>
         {children}
       </Tx>
     </View>
@@ -474,7 +475,7 @@ export function Credit({ children }: { children: string }) {
 export function BottomSheet({ children, grab = true, style }: { children: ReactNode; grab?: boolean; style?: StyleProp<ViewStyle> }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 12, paddingHorizontal: 20, paddingBottom: 20 + insets.bottom, gap: 14 }, SHADOW.sheet, style]}>
+    <View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 16 + insets.bottom, gap: 11 }, SHADOW.sheet, style]}>
       {grab && <Grab />}
       {children}
     </View>
@@ -482,7 +483,7 @@ export function BottomSheet({ children, grab = true, style }: { children: ReactN
 }
 
 export function Grab() {
-  return <View style={{ width: 38, height: 5, borderRadius: 3, backgroundColor: C.line, alignSelf: 'center', marginBottom: 4 }} />;
+  return <View style={{ width: 31, height: 4, borderRadius: 2, backgroundColor: C.line, alignSelf: 'center', marginBottom: 3 }} />;
 }
 
 /** Feuille modale (voile + feuille) pour les confirmations et sélections. */
@@ -492,9 +493,9 @@ export function ModalSheet({ open, onClose, children, grab = true, scroll }: { o
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <Pressable style={[StyleSheet.absoluteFill, { backgroundColor: C.dim }]} onPress={onClose} accessibilityLabel="Fermer" />
       <View style={{ flex: 1, justifyContent: 'flex-end' }} pointerEvents="box-none">
-        <View style={[{ backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 12, paddingHorizontal: 20, paddingBottom: 20 + insets.bottom, gap: 14, maxHeight: '88%' }, SHADOW.sheet]}>
+        <View style={[{ backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 16 + insets.bottom, gap: 11, maxHeight: '88%' }, SHADOW.sheet]}>
           {grab && <Grab />}
-          {scroll ? <Animated.ScrollView contentContainerStyle={{ gap: 14 }} keyboardShouldPersistTaps="handled">{children}</Animated.ScrollView> : children}
+          {scroll ? <Animated.ScrollView contentContainerStyle={{ gap: 11 }} keyboardShouldPersistTaps="handled">{children}</Animated.ScrollView> : children}
         </View>
       </View>
     </Modal>
@@ -504,9 +505,9 @@ export function ModalSheet({ open, onClose, children, grab = true, scroll }: { o
 export function Toast({ children, icon: Icon }: { children: ReactNode; icon?: LucideIcon }) {
   const insets = useSafeAreaInsets();
   return (
-    <View accessibilityRole="alert" style={[{ position: 'absolute', top: 16 + insets.top, left: 20, right: 20, backgroundColor: C.ink, borderRadius: 16, paddingVertical: 13, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }, SHADOW.toast]}>
-      {Icon && <I icon={Icon} size={18} color="#fff" />}
-      <Tx size={14} weight={500} color="#fff" lh={18} style={{ flex: 1 }}>
+    <View accessibilityRole="alert" style={[{ position: 'absolute', top: 13 + insets.top, left: 16, right: 16, backgroundColor: C.ink, borderRadius: 13, paddingVertical: 11, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 8 }, SHADOW.toast]}>
+      {Icon && <I icon={Icon} size={14.5} color="#fff" />}
+      <Tx size={11.5} weight={500} color="#fff" lh={14.5} style={{ flex: 1 }}>
         {children}
       </Tx>
     </View>
@@ -525,10 +526,10 @@ export function Skeleton({ h = 20, w, radius = 8, style }: { h?: number; w?: num
 
 export function EmptyState({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
   return (
-    <View style={{ alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 40 }}>
+    <View style={{ alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 32 }}>
       <H2 center>{title}</H2>
       {description && <P center>{description}</P>}
-      {action && <View style={{ marginTop: 12, alignSelf: 'stretch' }}>{action}</View>}
+      {action && <View style={{ marginTop: 10, alignSelf: 'stretch' }}>{action}</View>}
     </View>
   );
 }
@@ -537,13 +538,13 @@ export function ErrorText({ error, retry }: { error: unknown; retry?: () => void
   if (!error) return null;
   const msg = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : 'Une erreur est survenue.';
   return (
-    <View accessibilityRole="alert" style={{ borderWidth: 1, borderColor: C.dangerLine, backgroundColor: C.cancelBg, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, gap: 6 }}>
-      <Tx size={14} weight={500} color={C.danger} lh={19}>
+    <View accessibilityRole="alert" style={{ borderWidth: 1, borderColor: C.dangerLine, backgroundColor: C.cancelBg, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 13, gap: 5 }}>
+      <Tx size={11.5} weight={500} color={C.danger} lh={15.5}>
         {msg}
       </Tx>
       {retry && (
         <Pressable onPress={retry} accessibilityRole="button">
-          <Tx size={14} color={C.danger} lh={19} style={{ textDecorationLine: 'underline' }}>
+          <Tx size={11.5} color={C.danger} lh={15.5} style={{ textDecorationLine: 'underline' }}>
             Réessayer
           </Tx>
         </Pressable>
@@ -555,9 +556,9 @@ export function ErrorText({ error, retry }: { error: unknown; retry?: () => void
 /** Ligne d'alerte compacte (icône + texte rouge). */
 export function Alert({ icon, children }: { icon?: LucideIcon; children: ReactNode }) {
   return (
-    <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      {icon && <I icon={icon} size={16} color={C.danger} />}
-      <Tx size={14} color={C.danger} lh={19} style={{ flex: 1 }}>
+    <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      {icon && <I icon={icon} size={13} color={C.danger} />}
+      <Tx size={11.5} color={C.danger} lh={15.5} style={{ flex: 1 }}>
         {children}
       </Tx>
     </View>

@@ -57,7 +57,7 @@ export default function BookingReschedule() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
           <Button
@@ -75,9 +75,9 @@ export default function BookingReschedule() {
     >
       <TopBar backTo={`/rdv/${b.id}`} right="Reporter" />
       <H1>Nouveau créneau</H1>
-      <Soft style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <I icon={Clock} size={18} color={C.muted} />
-        <Tx size={13} color={C.muted} lh={19} style={{ flex: 1 }}>
+      <Soft style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <I icon={Clock} size={14.5} color={C.muted} />
+        <Tx size={10.5} color={C.muted} lh={15.5} style={{ flex: 1 }}>
           Actuel · {formatDateLongDZ(b.startsAt).replace(/^\p{L}/u, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
         </Tx>
       </Soft>
@@ -89,7 +89,7 @@ export default function BookingReschedule() {
       {closedDays.includes(dow) ? (
         <P>Le salon est fermé ce jour-là.</P>
       ) : availability.isPending || availability.isFetching ? (
-        <Skeleton h={140} />
+        <Skeleton h={114} />
       ) : availability.isError ? (
         <ErrorText error={availability.error} retry={() => void availability.refetch()} />
       ) : grid.length === 0 ? (
@@ -97,8 +97,8 @@ export default function BookingReschedule() {
       ) : (
         <Grid cols={3}>
           {grid.map((g) => (
-            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 22 }}>
-              <Tx size={16} weight={500} lh={20} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
+            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 18 }}>
+              <Tx size={13} weight={500} lh={16} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
                 {g.time}
               </Tx>
             </Slot>

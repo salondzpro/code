@@ -98,7 +98,7 @@ export default function Closures() {
 
   return (
     <Screen
-      gap={12}
+      gap={10}
       footer={
         <BottomSheet>
           <Button onPress={() => void submit()} disabled={create.isPending} loading={create.isPending}>
@@ -111,10 +111,10 @@ export default function Closures() {
       <H1>Fermetures</H1>
 
       <ListCard>
-        {blocks.isPending && <Skeleton h={64} style={{ marginVertical: 12 }} />}
+        {blocks.isPending && <Skeleton h={52} style={{ marginVertical: 10 }} />}
         {blocks.data && items.length === 0 && (
-          <View style={{ paddingVertical: 16 }}>
-            <Tx size={13} color={C.muted} lh={19}>
+          <View style={{ paddingVertical: 13 }}>
+            <Tx size={10.5} color={C.muted} lh={15.5}>
               Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.
             </Tx>
           </View>
@@ -124,11 +124,11 @@ export default function Closures() {
           const who = b.staffId ? (staffName.get(b.staffId) ?? 'Membre') : null;
           const title = who ? `${who} · ${b.reason ?? 'Indisponible'}` : (b.reason ?? 'Fermeture');
           return (
-            <Row key={b.id} py={16} chevron={false} onPress={() => setDel(b)} accessibilityLabel={title} right={<Badge tone={allDay ? 'cn' : 'pd'} md dot={false}>{allDay ? 'Fermé' : 'Modifié'}</Badge>}>
-              <Tx size={15} lh={20} numberOfLines={1}>
+            <Row key={b.id} py={13} chevron={false} onPress={() => setDel(b)} accessibilityLabel={title} right={<Badge tone={allDay ? 'cn' : 'pd'} md dot={false}>{allDay ? 'Fermé' : 'Modifié'}</Badge>}>
+              <Tx size={12} lh={16} numberOfLines={1}>
                 {title}
               </Tx>
-              <Tx size={15} color={C.muted} lh={20} mono>
+              <Tx size={12} color={C.muted} lh={16} mono>
                 {describeBlock(b)}
               </Tx>
             </Row>
@@ -137,14 +137,14 @@ export default function Closures() {
       </ListCard>
 
       <SectionLabel>Ajouter une exception</SectionLabel>
-      <Card gap={12}>
+      <Card gap={10}>
         <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={addDaysToKey(today, HORIZON_DAYS)} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }} accessibilityLabel="Choisir les jours">
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 3 }} accessibilityLabel="Choisir les jours">
           {weekKeys(weekOf).map((d) => (
             <DayCell key={d} dateKey={d} out={d < today} on={!!range && d >= range.from && d <= range.to} onPress={() => pick(d)} />
           ))}
         </View>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
           <Pill on={mode === 'closed'} onPress={() => setMode('closed')} style={{ flex: 1, alignSelf: 'stretch' }}>
             Fermé
           </Pill>
@@ -154,28 +154,28 @@ export default function Closures() {
         </View>
         <View>
           {mode === 'reduced' && (
-            <Row py={12} chevron={false} right={
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Row py={10} chevron={false} right={
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <TimeField value={from} onChange={setFrom} label="De" step={5} />
-                <Tx size={15} color={C.muted} lh={20}>
+                <Tx size={12} color={C.muted} lh={16}>
                   à
                 </Tx>
                 <TimeField value={to} onChange={setTo} label="À" step={5} />
               </View>
             }>
-              <Tx size={15} lh={20}>
+              <Tx size={12} lh={16}>
                 Fermé de
               </Tx>
             </Row>
           )}
-          {active.length > 1 && <ValueRow py={12} label="Concerne" value={staffId ? (staffName.get(staffId) ?? 'Membre') : 'Tout le salon'} onPress={() => setStaffSheet(true)} />}
-          <Row py={12} chevron={false} right={<Input value={reason} onChangeText={setReason} placeholder="Congés" maxLength={120} accessibilityLabel="Motif (facultatif)" style={{ width: '55%', backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 15 }} />}>
-            <Tx size={15} lh={20}>
+          {active.length > 1 && <ValueRow py={10} label="Concerne" value={staffId ? (staffName.get(staffId) ?? 'Membre') : 'Tout le salon'} onPress={() => setStaffSheet(true)} />}
+          <Row py={10} chevron={false} right={<Input value={reason} onChangeText={setReason} placeholder="Congés" maxLength={120} accessibilityLabel="Motif (facultatif)" style={{ width: '55%', backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 12 }} />}>
+            <Tx size={12} lh={16}>
               Motif
             </Tx>
           </Row>
         </View>
-        <Tx size={15} color={C.muted} lh={22}>
+        <Tx size={12} color={C.muted} lh={18}>
           {mode === 'closed' ? `Les clients ne verront aucun créneau ${daysText}.` : `Les clients ne pourront pas réserver entre ${from} et ${to} ${daysText}.`} Les rendez-vous déjà confirmés ne sont pas annulés automatiquement.
         </Tx>
       </Card>
@@ -184,8 +184,8 @@ export default function Closures() {
       <PickerSheet open={staffSheet} onClose={() => setStaffSheet(false)} title="Concerne" options={[{ value: '', label: 'Tout le salon' }, ...active.map((m) => ({ value: m.id, label: m.displayName }))]} value={staffId} onChange={setStaffId} />
 
       <ModalSheet open={!!del} onClose={() => setDel(null)}>
-        <View style={{ alignItems: 'center', gap: 8 }}>
-          <Tx size={20} weight={700} ls={-0.4} lh={25} center>
+        <View style={{ alignItems: 'center', gap: 6 }}>
+          <Tx size={16} weight={700} ls={-0.4} lh={20.5} center>
             Supprimer cette exception ?
           </Tx>
           <P center>{del ? describeBlock(del) : ''} — les créneaux redeviennent réservables.</P>

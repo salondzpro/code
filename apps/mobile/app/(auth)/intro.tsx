@@ -15,22 +15,22 @@ export default function Intro() {
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <StatusBar style="light" />
-      <View style={{ flex: 1, minHeight: 320, overflow: 'hidden' }}>
+      <View style={{ flex: 1, minHeight: 260, overflow: 'hidden' }}>
         <Image source={{ uri: DESIGN_IMAGES.intro.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
         <Overlay />
-        <View style={{ position: 'absolute', left: 20, right: 20, bottom: 20 }}>
-          <Tx size={26} weight={700} color="#fff" ls={-0.8} lh={29}>
+        <View style={{ position: 'absolute', left: 16, right: 16, bottom: 16 }}>
+          <Tx size={21} weight={700} color="#fff" ls={-0.8} lh={23.5}>
             Réservez votre{'\n'}rendez-vous.
           </Tx>
         </View>
         <Credit>{DESIGN_IMAGES.intro.credit}</Credit>
       </View>
-      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 + insets.bottom, gap: 14 }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 + insets.bottom, gap: 11 }}>
         <P>Barbiers, coiffure, ongles, cils, soins et laser — près de vous, avec les disponibilités en temps réel.</P>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, paddingVertical: 4 }} accessibilityElementsHidden>
-          <View style={{ width: 20, height: 6, borderRadius: 3, backgroundColor: C.ink }} />
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.line }} />
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.line }} />
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, paddingVertical: 3 }} accessibilityElementsHidden>
+          <View style={{ width: 16, height: 5, borderRadius: 2, backgroundColor: C.ink }} />
+          <View style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: C.line }} />
+          <View style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: C.line }} />
         </View>
         <Button onPress={() => router.push('/bienvenue')}>Commencer</Button>
         <Button variant="g" onPress={() => router.push('/pro-bienvenue')}>

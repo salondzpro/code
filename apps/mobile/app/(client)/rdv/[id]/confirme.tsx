@@ -17,25 +17,25 @@ import { C } from '@/theme/design';
 export function CalendarSheet({ booking, open: isOpen, onClose }: { booking: BookingWithSalon; open: boolean; onClose: () => void }) {
   return (
     <ModalSheet open={isOpen} onClose={onClose}>
-      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
+      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
         Ajouter au calendrier
       </Tx>
       <Rows>
         <Row
-          py={20}
+          py={16}
           chevron={false}
           onPress={() => {
             void open(googleCalendarUrl(booking));
             onClose();
           }}
-          right={<I icon={ChevronRight} size={18} color={C.disabled} />}
+          right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}
           accessibilityLabel="Google Agenda"
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
             <IconButton lg accessibilityLabel="Google Agenda" onPress={() => void open(googleCalendarUrl(booking))}>
-              <I icon={Calendar} size={20} />
+              <I icon={Calendar} size={16} />
             </IconButton>
-            <Tx size={15} lh={20}>
+            <Tx size={12} lh={16}>
               Google Agenda
             </Tx>
           </View>
@@ -68,49 +68,49 @@ export default function BookingConfirmed() {
   const confirmed = b.status === 'confirmed';
 
   return (
-    <Screen center gap={16}>
-      <View style={{ alignItems: 'center', gap: 20 }}>
-        <View style={{ width: 148, height: 148, borderRadius: 74, backgroundColor: C.okBg, alignItems: 'center', justifyContent: 'center' }}>
-          <I icon={Check} size={56} color={C.okFg} />
+    <Screen center gap={13}>
+      <View style={{ alignItems: 'center', gap: 16 }}>
+        <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: C.okBg, alignItems: 'center', justifyContent: 'center' }}>
+          <I icon={Check} size={45.5} color={C.okFg} />
         </View>
-        <H1 size={28} lh={32} ls={-0.8} center>
+        <H1 size={23} lh={26} ls={-0.8} center>
           {confirmed ? 'Rendez-vous' : 'Demande'}
           {'\n'}
           {confirmed ? 'confirmé' : 'envoyée'}
         </H1>
       </View>
       <Card gap={0}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 8 }}>
-          <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11, marginBottom: 6 }}>
+          <Avatar src={b.salon.coverUrl} name={b.salon.name} size={71.5} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={18} weight={700} ls={-0.4} lh={23}>
+            <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
               {b.salon.name}
             </Tx>
-            <Tx size={13} color={C.muted} lh={19}>
+            <Tx size={10.5} color={C.muted} lh={15.5}>
               {b.salon.city}
               {b.salon.phone ? ` · ${formatDZPhone(b.salon.phone)}` : ''}
             </Tx>
           </View>
         </View>
         <Rows>
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{b.serviceName}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{b.serviceName}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Prestation
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Date et heure
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDA(b.priceDa)}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Total
             </Tx>
           </Row>
         </Rows>
         {!confirmed && (
-          <View style={{ paddingTop: 12 }}>
+          <View style={{ paddingTop: 10 }}>
             <StatusBadge status={b.status} md />
           </View>
         )}

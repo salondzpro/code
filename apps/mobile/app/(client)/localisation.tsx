@@ -65,11 +65,11 @@ export default function Localisation() {
   if (geo === 'denied' && !city && prefs.lat == null) {
     // C-H 03 — Position non reconnue
     return (
-      <Screen gap={16}>
+      <Screen gap={13}>
         <TopBar close right={MARKET_LABELS_FR[market]} />
-        <View style={{ alignItems: 'center', gap: 12, paddingTop: 32 }}>
-          <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
-            <I icon={MapPin} size={36} color={C.muted} />
+        <View style={{ alignItems: 'center', gap: 10, paddingTop: 26 }}>
+          <View style={{ width: 78, height: 78, borderRadius: 39, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+            <I icon={MapPin} size={29} color={C.muted} />
           </View>
           <Badge tone="cn" md dot={false}>
             Position indisponible
@@ -77,15 +77,15 @@ export default function Localisation() {
           <H1 center>Localisation désactivée</H1>
           <P center>Nous ne pouvons pas trouver les professionnels proches de vous. Autorisez la localisation dans les réglages de votre téléphone, ou choisissez un quartier manuellement.</P>
         </View>
-        <Card row gap={16}>
-          <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
-            <I icon={Smartphone} size={20} />
+        <Card row gap={13}>
+          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+            <I icon={Smartphone} size={16} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13} weight={600} lh={18}>
+            <Tx size={10.5} weight={600} lh={14.5}>
               Réglages du téléphone
             </Tx>
-            <Tx size={14} color={C.muted} lh={20}>
+            <Tx size={11.5} color={C.muted} lh={16}>
               Salon DZ · Position · Jamais
             </Tx>
           </View>
@@ -93,23 +93,23 @@ export default function Localisation() {
             Refusé
           </Badge>
         </Card>
-        <Card row gap={16} onPress={() => setGeo('idle')} accessibilityLabel="Choisir un quartier">
-          <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
-            <I icon={MapPin} size={20} />
+        <Card row gap={13} onPress={() => setGeo('idle')} accessibilityLabel="Choisir un quartier">
+          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+            <I icon={MapPin} size={16} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13} weight={600} lh={18}>
+            <Tx size={10.5} weight={600} lh={14.5}>
               Choisir un quartier
             </Tx>
-            <Tx size={14} color={C.muted} lh={20}>
+            <Tx size={11.5} color={C.muted} lh={16}>
               Sans activer la localisation
             </Tx>
           </View>
         </Card>
         <InfoBox>Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».</InfoBox>
         <Button onPress={() => void Linking.openSettings().catch(() => locate())}>
-          <I icon={Settings} size={18} color="#fff" />
-          <Tx size={13} weight={600} color="#fff" ls={-0.2}>
+          <I icon={Settings} size={14.5} color="#fff" />
+          <Tx size={10.5} weight={600} color="#fff" ls={-0.2}>
             Ouvrir les réglages
           </Tx>
         </Button>
@@ -122,19 +122,19 @@ export default function Localisation() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={18} weight={700} ls={-0.4} lh={23}>
+              <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
                 {count} résultat{count > 1 ? 's' : ''}
               </Tx>
               <P>
                 {label} · {useGps ? `${radius} km` : 'quartier'}
               </P>
             </View>
-            <Button pill onPress={apply} style={{ paddingHorizontal: 28, paddingVertical: 14 }}>
+            <Button pill onPress={apply} style={{ paddingHorizontal: 23, paddingVertical: 11 }}>
               Appliquer
             </Button>
           </View>
@@ -145,28 +145,28 @@ export default function Localisation() {
       <H1>Localisation</H1>
       <SearchBox value={q} onChange={setQ} placeholder="Quartier, ville ou adresse" />
 
-      <Card row gap={16} sel={useGps} onPress={() => (pos ? setUseGps(true) : void locate())} accessibilityLabel="Utiliser ma position actuelle">
-        <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
-          <I icon={MapPin} size={22} color="#fff" />
+      <Card row gap={13} sel={useGps} onPress={() => (pos ? setUseGps(true) : void locate())} accessibilityLabel="Utiliser ma position actuelle">
+        <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
+          <I icon={MapPin} size={18} color="#fff" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={15} weight={600} lh={20}>
+          <Tx size={12} weight={600} lh={16}>
             Utiliser ma position actuelle
           </Tx>
           <P>{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${nearest ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</P>
         </View>
-        {useGps && pos && <I icon={Check} size={22} />}
+        {useGps && pos && <I icon={Check} size={18} />}
       </Card>
 
       {/* Aperçu stylisé de la zone (design) */}
-      <View style={{ height: 160, borderRadius: R.card, borderWidth: 1, borderColor: C.line, backgroundColor: C.fill, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ height: 130, borderRadius: R.card, borderWidth: 1, borderColor: C.line, backgroundColor: C.fill, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
         <GridBg step={90} />
-        <View style={{ position: 'absolute', width: 190, height: 120, borderRadius: 60, borderWidth: 1, borderStyle: 'dashed', borderColor: C.disabled, backgroundColor: 'rgba(255,255,255,0.5)' }} />
-        <View style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
-          <I icon={MapPin} size={22} color="#fff" />
+        <View style={{ position: 'absolute', width: 154, height: 98, borderRadius: 49, borderWidth: 1, borderStyle: 'dashed', borderColor: C.disabled, backgroundColor: 'rgba(255,255,255,0.5)' }} />
+        <View style={[{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
+          <I icon={MapPin} size={18} color="#fff" />
         </View>
-        <View style={[{ position: 'absolute', left: 24, bottom: 16, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 8 }, SHADOW.card]}>
-          <Tx size={13} weight={600} lh={17}>
+        <View style={[{ position: 'absolute', left: 20, bottom: 13, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 13, paddingVertical: 6 }, SHADOW.card]}>
+          <Tx size={10.5} weight={600} lh={14}>
             Rayon de {radius} km
           </Tx>
         </View>
@@ -176,7 +176,7 @@ export default function Localisation() {
       <Grid cols={4}>
         {RADIUS_OPTIONS.map((r) => (
           <Slot key={r} on={radius === r} onPress={() => setRadius(r)}>
-            <Tx size={15} weight={500} lh={20} color={radius === r ? C.onInk : C.text} mono>
+            <Tx size={12} weight={500} lh={16} color={radius === r ? C.onInk : C.text} mono>
               {r} km
             </Tx>
           </Slot>
@@ -186,7 +186,7 @@ export default function Localisation() {
       <SectionLabel>Quartiers proches</SectionLabel>
       <ListCard>
         {(cities.data?.items ?? []).length === 0 && (
-          <View style={{ paddingVertical: 12 }}>
+          <View style={{ paddingVertical: 10 }}>
             <P>{cities.isPending ? 'Chargement…' : 'Aucun quartier trouvé.'}</P>
           </View>
         )}
@@ -196,17 +196,17 @@ export default function Localisation() {
             <Row
               key={c.city}
               chevron={false}
-              right={on ? <I icon={Check} size={20} /> : undefined}
+              right={on ? <I icon={Check} size={16} /> : undefined}
               onPress={() => {
                 setCity(c.city);
                 setUseGps(false);
               }}
               accessibilityLabel={c.city}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                <I icon={MapPin} size={20} color={C.subtle} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                <I icon={MapPin} size={16} color={C.subtle} />
                 <View style={{ flex: 1 }}>
-                  <Tx size={16} weight={600} lh={21} color={on ? C.text : C.muted}>
+                  <Tx size={13} weight={600} lh={17} color={on ? C.text : C.muted}>
                     {c.city}
                   </Tx>
                   <P>

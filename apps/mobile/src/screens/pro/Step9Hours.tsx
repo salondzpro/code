@@ -73,27 +73,27 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
   };
 
   return (
-    <Screen gap={16} footer={<StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onPress={() => void save()} disabled={invalid} busy={setHours.isPending} />}>
+    <Screen gap={13} footer={<StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onPress={() => void save()} disabled={invalid} busy={setHours.isPending} />}>
       <StepBar step={9} backTo={settings ? '/(pro)/(tabs)/profil-pro' : stepPath(8)} right={settings ? 'Horaires' : undefined} />
       <H1>Horaires</H1>
       <ListCard>
         {rows.map((r) => (
-          <Row key={r.dayOfWeek} py={16} chevron={false} right={<Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Tx size={15} lh={20} color={r.open ? C.text : C.subtle} style={{ width: 104 }}>
+          <Row key={r.dayOfWeek} py={13} chevron={false} right={<Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Tx size={12} lh={16} color={r.open ? C.text : C.subtle} style={{ width: 84 }}>
                 {DAY_LABELS_FR[r.dayOfWeek]}
               </Tx>
               {r.open ? (
                 <>
                   <TimeField value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} label={`Ouverture ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
-                  <Tx size={15} color={C.muted} lh={20}>
+                  <Tx size={12} color={C.muted} lh={16}>
                     {' '}
                     –{' '}
                   </Tx>
                   <TimeField value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} label={`Fermeture ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
                 </>
               ) : (
-                <Tx size={15} color={C.disabled} lh={20}>
+                <Tx size={12} color={C.disabled} lh={16}>
                   Fermé
                 </Tx>
               )}
@@ -103,14 +103,14 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
       </ListCard>
       <ListCard>
         <Row
-          py={16}
+          py={13}
           chevron={false}
           right={
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               {lunch && (
                 <>
                   <TimeField value={lunchFrom} onChange={setLunchFrom} label="Début de pause" step={15} />
-                  <Tx size={15} color={C.muted} lh={20}>
+                  <Tx size={12} color={C.muted} lh={16}>
                     –
                   </Tx>
                   <TimeField value={lunchTo} onChange={setLunchTo} label="Fin de pause" step={15} />
@@ -120,12 +120,12 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
             </View>
           }
         >
-          <Tx size={15} lh={20}>
+          <Tx size={12} lh={16}>
             Pause déjeuner
           </Tx>
         </Row>
-        <Row py={16} chevron={false} right={<Tx size={15} color={C.muted} lh={20}>Dimanche</Tx>}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>Dimanche</Tx>}>
+          <Tx size={12} lh={16}>
             Semaine commençant
           </Tx>
         </Row>

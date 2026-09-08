@@ -69,7 +69,7 @@ export function AgendaPro() {
     view === 'day' ? (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[15px] text-muted">{DAY_LABELS_FR[dayOfWeekFromKey(date)]}</div>
+          <div className="text-[0.9375rem] text-muted">{DAY_LABELS_FR[dayOfWeekFromKey(date)]}</div>
           <h1 className="h1 whitespace-nowrap">
             {Number(date.slice(8, 10))} {MONTHS[Number(date.slice(5, 7)) - 1]}
           </h1>
@@ -89,7 +89,7 @@ export function AgendaPro() {
     ) : (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[15px] text-muted">{view === 'week' ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}` : date.slice(0, 4)}</div>
+          <div className="text-[0.9375rem] text-muted">{view === 'week' ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}` : date.slice(0, 4)}</div>
           <h1 className="h1">{view === 'week' ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS[Number(week[6]!.slice(5, 7)) - 1]}` : MONTHS[Number(date.slice(5, 7)) - 1]!.replace(/^\w/, (c) => c.toUpperCase())}</h1>
         </div>
         <div className="flex gap-2.5">
@@ -121,7 +121,7 @@ export function AgendaPro() {
         <>
           <DayStrip weekOf={date} selected={date} onSelect={setDate} disabledDays={closedDays} />
           <div className="flex items-center justify-between">
-            <span className="text-[15px]">
+            <span className="text-[0.9375rem]">
               <b>{dayItems.length} rendez-vous</b> <span className="text-muted">· {formatDA(dayRevenue)}</span>
             </span>
             {dayPending > 0 && (
@@ -187,17 +187,17 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
     <div className="relative" style={{ height }}>
       {hourMarks.map((m) => (
         <div key={m} className="absolute left-0 right-0" style={{ top: top(m) }}>
-          <span className="absolute -top-2.5 left-0 text-[15px] text-subtle">{String(Math.floor(m / 60)).padStart(2, '0')}:00</span>
-          <div className="ml-[56px] border-t border-line-soft" />
+          <span className="absolute -top-2.5 left-0 text-[0.9375rem] text-subtle">{String(Math.floor(m / 60)).padStart(2, '0')}:00</span>
+          <div className="ml-[3.5rem] border-t border-line-soft" />
         </div>
       ))}
       {gaps.map((g) => (
-        <div key={`gap-${g.s}`} className="absolute left-[58px] right-0 flex items-center rounded-[12px] px-4 text-[15px] text-subtle" style={{ top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}>
+        <div key={`gap-${g.s}`} className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[0.9375rem] text-subtle" style={{ top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}>
           Libre · {formatDuration(g.e - g.s)}
         </div>
       ))}
       {closedRanges.map((c) => (
-        <div key={`c-${c.s}-${c.label}`} className="absolute left-[58px] right-0 flex items-center rounded-[12px] px-4 text-[15px] text-subtle" style={{ top: top(c.s) + 2, height: Math.max(20, (c.e - c.s) * PX - 4), background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}>
+        <div key={`c-${c.s}-${c.label}`} className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[0.9375rem] text-subtle" style={{ top: top(c.s) + 2, height: Math.max(20, (c.e - c.s) * PX - 4), background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}>
           {c.label} · {String(Math.floor(c.s / 60)).padStart(2, '0')}:{String(c.s % 60).padStart(2, '0')} – {String(Math.floor(c.e / 60)).padStart(2, '0')}:{String(c.e % 60).padStart(2, '0')}
         </div>
       ))}
@@ -205,11 +205,11 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         const s = localMinutes(b.startsAt);
         const e = localMinutes(b.endsAt);
         return (
-          <button key={b.id} type="button" onClick={() => onOpen(b.id)} className={`absolute left-[58px] right-0 overflow-hidden rounded-[12px] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`} style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}>
-            <span className="block truncate text-[13px] font-semibold">
+          <button key={b.id} type="button" onClick={() => onOpen(b.id)} className={`absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.75rem] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`} style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}>
+            <span className="block truncate text-[0.8125rem] font-semibold">
               {b.clientName} · {b.serviceName}
             </span>
-            <span className="mono block text-[14px] opacity-80">
+            <span className="mono block text-[0.875rem] opacity-80">
               {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {formatDA(b.priceDa)}
             </span>
             {b.status === 'pending' && (
@@ -223,8 +223,8 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         );
       })}
       {isToday && now >= startMin && now <= endMin && (
-        <div className="pointer-events-none absolute left-[46px] right-0 border-t-[1.5px] border-danger" style={{ top: top(now) }}>
-          <span className="absolute -left-1 -top-[5px] h-2 w-2 rounded-full bg-danger" />
+        <div className="pointer-events-none absolute left-[2.875rem] right-0 border-t-[1.5px] border-danger" style={{ top: top(now) }}>
+          <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
         </div>
       )}
     </div>
@@ -248,7 +248,7 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
   for (let m = startMin; m <= endMin; m += 120) hours.push(m);
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 text-[13px]">
+      <div className="flex flex-wrap items-center gap-2 text-[0.8125rem]">
         <span className="pill soft !py-2 !font-semibold">{total} rendez-vous</span>
         <Badge tone="ok" md>
           {formatDA(revenue)}
@@ -256,9 +256,9 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
         <span className="text-muted">{occupancy} % occupé</span>
       </div>
       <div className="flex gap-1.5">
-        <div className="relative w-[26px] flex-none" style={{ height: H + 56 }}>
+        <div className="relative w-[1.625rem] flex-none" style={{ height: H + 56 }}>
           {hours.map((m) => (
-            <span key={m} className="absolute left-0 text-[13px] text-subtle" style={{ top: 56 + (m - startMin) * px - 8 }}>
+            <span key={m} className="absolute left-0 text-[0.8125rem] text-subtle" style={{ top: 56 + (m - startMin) * px - 8 }}>
               {String(Math.floor(m / 60)).padStart(2, '0')}
             </span>
           ))}
@@ -270,14 +270,14 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
           const on = d === selected;
           return (
             <button key={d} type="button" onClick={() => onSelect(d)} className="flex min-w-0 flex-1 flex-col items-center gap-2 text-left">
-              <span className={`text-[15px] ${closed ? 'text-disabled' : 'text-muted'}`}>{DAY_LABELS_SHORT_FR[dow]}</span>
-              <span className={`flex h-9 w-full items-center justify-center rounded-[12px] text-[15px] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}>{Number(d.slice(8, 10))}</span>
-              <span className={`relative block w-full overflow-hidden rounded-[12px] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`} style={{ height: H, background: closed ? 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' : undefined }}>
+              <span className={`text-[0.9375rem] ${closed ? 'text-disabled' : 'text-muted'}`}>{DAY_LABELS_SHORT_FR[dow]}</span>
+              <span className={`flex h-9 w-full items-center justify-center rounded-[0.75rem] text-[0.9375rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}>{Number(d.slice(8, 10))}</span>
+              <span className={`relative block w-full overflow-hidden rounded-[0.75rem] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`} style={{ height: H, background: closed ? 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' : undefined }}>
                 {!closed &&
                   list.map((b) => {
                     const s = Math.max(startMin, localMinutes(b.startsAt));
                     const e = Math.min(endMin, localMinutes(b.endsAt));
-                    return <span key={b.id} className={`absolute left-0.5 right-0.5 rounded-[8px] border-l-[3px] ${TONE[toneOf(b)]}`} style={{ top: (s - startMin) * px, height: Math.max(10, (e - s) * px) }} />;
+                    return <span key={b.id} className={`absolute left-0.5 right-0.5 rounded-[0.5rem] border-l-[3px] ${TONE[toneOf(b)]}`} style={{ top: (s - startMin) * px, height: Math.max(10, (e - s) * px) }} />;
                   })}
                 {on && d === today && nowMinutes() >= startMin && nowMinutes() <= endMin && <span className="absolute left-0 right-0 border-t border-danger" style={{ top: (nowMinutes() - startMin) * px }} />}
               </span>
@@ -285,7 +285,7 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
           );
         })}
       </div>
-      <div className="flex gap-4 text-[15px] text-muted">
+      <div className="flex gap-4 text-[0.9375rem] text-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-5 rounded bg-cat-nail-bg" /> Réservé
         </span>
@@ -310,7 +310,7 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-7 gap-1.5">
         {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((l, i) => (
-          <span key={i} className={`py-1 text-center text-[15px] ${closedDays.includes(i) ? 'text-disabled' : 'text-subtle'}`}>
+          <span key={i} className={`py-1 text-center text-[0.9375rem] ${closedDays.includes(i) ? 'text-disabled' : 'text-subtle'}`}>
             {l}
           </span>
         ))}
@@ -320,8 +320,8 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
           const on = d === selected;
           const dots = (byDay.get(d) ?? []).slice(0, 4);
           return (
-            <button key={d} type="button" onClick={() => (on ? onOpenDay(d) : onSelect(d))} className={`flex h-[74px] flex-col items-center justify-center gap-1.5 rounded-[14px] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`} style={closed && !on ? { background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' } : undefined} aria-label={d}>
-              <span className={`text-[15px] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}>{Number(d.slice(8, 10))}</span>
+            <button key={d} type="button" onClick={() => (on ? onOpenDay(d) : onSelect(d))} className={`flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[0.875rem] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`} style={closed && !on ? { background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' } : undefined} aria-label={d}>
+              <span className={`text-[0.9375rem] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}>{Number(d.slice(8, 10))}</span>
               <span className="flex h-1.5 gap-1">
                 {dots.map((b) => (
                   <span key={b.id} className="h-1.5 w-1.5 rounded-full" style={{ background: on ? '#fff' : DOT[toneOf(b)] }} />
@@ -331,7 +331,7 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
           );
         })}
       </div>
-      <div className="flex gap-4 text-[15px] text-muted">
+      <div className="flex gap-4 text-[0.9375rem] text-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-cat-nail-line" /> 1 point = 1 rendez-vous
         </span>
@@ -342,10 +342,10 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
       <div className="crd !gap-0 !py-1">
         <button type="button" className="li w-full !py-4 text-left" onClick={() => onOpenDay(selected)}>
           <span>
-            <span className="block text-[17px] font-bold tracking-[-0.3px]">
+            <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
               {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))} {MONTHS[Number(selected.slice(5, 7)) - 1]}
             </span>
-            <span className="p block text-[13px]">
+            <span className="p block text-[0.8125rem]">
               {list.length} rendez-vous · {formatDA(revenue)}
             </span>
           </span>
@@ -354,12 +354,12 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
         {list.map((b) => (
           <button key={b.id} type="button" className="li w-full !py-3 text-left" onClick={() => onOpen(b.id)}>
             <span className="flex items-center gap-3">
-              <span className="h-7 w-[3px] rounded-full" style={{ background: DOT[toneOf(b)] }} />
+              <span className="h-7 w-[0.1875rem] rounded-full" style={{ background: DOT[toneOf(b)] }} />
               <span>
-                <span className="block text-[13px]">
+                <span className="block text-[0.8125rem]">
                   {b.clientName} · {b.serviceName}
                 </span>
-                <span className="mono block text-[14px] text-muted">
+                <span className="mono block text-[0.875rem] text-muted">
                   {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                 </span>
               </span>

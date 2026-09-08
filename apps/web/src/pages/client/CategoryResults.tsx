@@ -37,7 +37,7 @@ export function CategoryResults() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/" right={<span className="pill soft !text-[15px] !font-semibold">{market === 'men' ? 'Homme' : 'Femme'}</span>} />
+      <TopBar backTo="/" right={<span className="pill soft !text-[0.9375rem] !font-semibold">{market === 'men' ? 'Homme' : 'Femme'}</span>} />
       <h1 className="h1">{categoryLabel(category)}</h1>
       <div className="pills -mx-5 px-5">
         <Pill lg on={today} onClick={() => setToday((v) => !v)}>
@@ -56,14 +56,14 @@ export function CategoryResults() {
       {query.isPending ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-5 w-56" />
-          <Skeleton className="h-[200px] w-full !rounded-[20px]" />
-          <Skeleton className="h-[200px] w-full !rounded-[20px]" />
+          <Skeleton className="h-[12.5rem] w-full !rounded-[1.25rem]" />
+          <Skeleton className="h-[12.5rem] w-full !rounded-[1.25rem]" />
         </div>
       ) : query.isError ? (
         <ErrorMessage error={query.error} retry={() => query.refetch()} />
       ) : (
         <>
-          <p className="text-[13px] text-muted">
+          <p className="text-[0.8125rem] text-muted">
             {total} {noun} autour {/^[aeiouyhé]/i.test(prefs.label) ? "d'" : 'de '}
             {prefs.label}
           </p>

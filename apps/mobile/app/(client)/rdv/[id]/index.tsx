@@ -45,22 +45,22 @@ export default function BookingDetail() {
   if (done) {
     // C-F 18 — Annulation confirmée
     return (
-      <Screen center gap={16}>
-        <View style={{ alignItems: 'center', gap: 12 }}>
-          <H1 size={28} lh={32} ls={-0.8} center>
+      <Screen center gap={13}>
+        <View style={{ alignItems: 'center', gap: 10 }}>
+          <H1 size={23} lh={26} ls={-0.8} center>
             Rendez-vous annulé
           </H1>
           <P center>{b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.</P>
         </View>
         <Card gap={0}>
           <Rows>
-            <Row py={16} chevron={false} right={<Tx size={14} color={C.muted} lh={19}>{formatDA(b.priceDa)}</Tx>}>
-              <Tx size={14} lh={19}>
+            <Row py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+              <Tx size={11.5} lh={15.5}>
                 {b.serviceName}
               </Tx>
             </Row>
-            <Row py={16} chevron={false} right={<Tx size={14} color={C.muted} lh={19}>{formatTimeDZ(b.startsAt)} · annulé</Tx>}>
-              <Tx size={14} lh={19}>
+            <Row py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatTimeDZ(b.startsAt)} · annulé</Tx>}>
+              <Tx size={11.5} lh={15.5}>
                 {formatDateLongDZ(b.startsAt)}
               </Tx>
             </Row>
@@ -75,16 +75,16 @@ export default function BookingDetail() {
   }
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo="/(client)/(tabs)/rendez-vous" right={<StatusBadge status={b.status} md />} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
+        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <H1 size={26} lh={30} ls={-0.8}>
+          <H1 size={21} lh={24.5} ls={-0.8}>
             {b.salon.name}
           </H1>
           {!!b.salon.phone && (
-            <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
+            <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
               {formatDZPhone(b.salon.phone)}
             </Tx>
           )}
@@ -93,15 +93,15 @@ export default function BookingDetail() {
       {(!!b.salon.phone || !!wa) && (
         <Grid cols={2}>
           {!!b.salon.phone && (
-            <Button variant="g" style={{ paddingVertical: 18 }} onPress={() => void open(`tel:${b.salon.phone}`)}>
-              <Tx size={14} weight={600} ls={-0.2}>
+            <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(`tel:${b.salon.phone}`)}>
+              <Tx size={11.5} weight={600} ls={-0.2}>
                 Appeler
               </Tx>
             </Button>
           )}
           {!!wa && (
-            <Button variant="g" style={{ paddingVertical: 18 }} onPress={() => void open(wa)}>
-              <Tx size={14} weight={600} ls={-0.2}>
+            <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(wa)}>
+              <Tx size={11.5} weight={600} ls={-0.2}>
                 WhatsApp
               </Tx>
             </Button>
@@ -111,29 +111,29 @@ export default function BookingDetail() {
       <Card gap={0}>
         <Rows>
           {lines.map((it) => (
-            <Row key={it.id} py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{it.serviceName}</Tx>}>
-              <Tx size={14} color={C.muted} lh={19}>
+            <Row key={it.id} py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{it.serviceName}</Tx>}>
+              <Tx size={11.5} color={C.muted} lh={15.5}>
                 Prestation
               </Tx>
             </Row>
           ))}
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{capitalize(formatDateShortDZ(b.startsAt))}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{capitalize(formatDateShortDZ(b.startsAt))}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Date
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19} mono>{formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5} mono>{formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Heure
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDuration(b.durationMinutes)}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDuration(b.durationMinutes)}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Durée
             </Tx>
           </Row>
-          <Row py={16} chevron={false} right={<Tx size={14} weight={600} lh={19}>{formatDA(b.priceDa)}</Tx>}>
-            <Tx size={14} color={C.muted} lh={19}>
+          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+            <Tx size={11.5} color={C.muted} lh={15.5}>
               Prix
             </Tx>
           </Row>
@@ -141,20 +141,20 @@ export default function BookingDetail() {
       </Card>
       {!!b.notes && (
         <Soft>
-          <Tx size={13} color={C.muted} lh={18}>
+          <Tx size={10.5} color={C.muted} lh={14.5}>
             Votre note
           </Tx>
-          <Tx size={15} lh={21}>
+          <Tx size={12} lh={17}>
             « {b.notes} »
           </Tx>
         </Soft>
       )}
       {!!b.cancellationReason && (
-        <Tx size={15} color={C.danger} lh={20}>
+        <Tx size={12} color={C.danger} lh={16}>
           Motif : {b.cancellationReason}
         </Tx>
       )}
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 8 }}>
         {active && (
           <Button variant="g" onPress={() => void open(directionsUrl(b))}>
             Itinéraire
@@ -181,7 +181,7 @@ export default function BookingDetail() {
           </Button>
         )}
         {active && !canModify && (
-          <Tx size={14} color={C.muted} lh={20} center>
+          <Tx size={11.5} color={C.muted} lh={16} center>
             Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
           </Tx>
         )}
@@ -191,17 +191,17 @@ export default function BookingDetail() {
       <CalendarSheet booking={b} open={cal} onClose={() => setCal(false)} />
 
       <ModalSheet open={cancelling} onClose={() => setCancelling(false)}>
-        <View style={{ alignItems: 'center', gap: 8 }}>
-          <Tx size={20} weight={700} ls={-0.4} lh={25} center>
+        <View style={{ alignItems: 'center', gap: 6 }}>
+          <Tx size={16} weight={700} ls={-0.4} lh={20.5} center>
             Annuler ce rendez-vous ?
           </Tx>
           <P center>Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera libéré immédiatement.</P>
         </View>
-        <Card row style={{ paddingVertical: 12, justifyContent: 'space-between' }}>
-          <Tx size={15} lh={20}>
+        <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
+          <Tx size={12} lh={16}>
             Motif (optionnel)
           </Tx>
-          <Input value={reason} onChangeText={setReason} placeholder="Empêchement" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 15 }} />
+          <Input value={reason} onChangeText={setReason} placeholder="Empêchement" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 12 }} />
         </Card>
         <ErrorText error={cancel.error} />
         <Button

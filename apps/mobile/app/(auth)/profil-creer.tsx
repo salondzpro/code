@@ -48,22 +48,22 @@ export default function ProfileSetup() {
   };
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar noBack right="Dernière étape" />
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 10 }}>
         <H1>Votre prénom</H1>
         <P>Le professionnel le voit sur la réservation. Rien d'autre n'est obligatoire.</P>
       </View>
-      <View style={{ gap: 20 }}>
+      <View style={{ gap: 16 }}>
         <Field label="Prénom et nom" error={error}>
           <Input lg f={!!name} value={name} onChangeText={setName} autoComplete="name" textContentType="name" placeholder="Inès Rahmani" autoFocus returnKeyType="done" onSubmitEditing={() => void submit()} />
         </Field>
         <View>
-          <Tx size={13} color={C.muted} lh={18} style={{ marginBottom: 6 }}>
+          <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
             {phone ? 'Numéro vérifié' : 'Adresse vérifiée'}
           </Tx>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: R.input, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 18 }}>
-            <Tx size={13} lh={18}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: R.input, backgroundColor: C.fill, paddingHorizontal: 13, paddingVertical: 15 }}>
+            <Tx size={10.5} lh={14.5}>
               {phone ? formatIntlDZ(phone) : email}
             </Tx>
             <Badge tone="ok" md>
@@ -71,9 +71,9 @@ export default function ProfileSetup() {
             </Badge>
           </View>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           <View style={{ flex: 1 }}>
-            <Tx size={16} weight={600} lh={21}>
+            <Tx size={13} weight={600} lh={17}>
               Rappels WhatsApp
             </Tx>
             <P>2 h avant chaque rendez-vous</P>

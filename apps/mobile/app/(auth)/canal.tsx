@@ -14,8 +14,8 @@ const LABEL: Record<OtpChannel, string> = { whatsapp: 'WhatsApp', sms: 'SMS', em
 
 function ChannelIcon({ icon, ok }: { icon: typeof Mail; ok?: boolean }) {
   return (
-    <View style={{ width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? C.okBg : C.surface, borderWidth: ok ? 0 : 1, borderColor: C.line }}>
-      <I icon={icon} size={20} color={ok ? C.okFg : C.text} />
+    <View style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? C.okBg : C.surface, borderWidth: ok ? 0 : 1, borderColor: C.line }}>
+      <I icon={icon} size={16} color={ok ? C.okFg : C.text} />
     </View>
   );
 }
@@ -50,8 +50,8 @@ export default function Channel() {
   if (sending) {
     // AUTH 07 — Envoi du code
     return (
-      <Screen center gap={16}>
-        <View style={{ alignItems: 'center', gap: 16 }}>
+      <Screen center gap={13}>
+        <View style={{ alignItems: 'center', gap: 13 }}>
           <ActivityIndicator size="large" color={C.ink} />
           <H2 center>Envoi du code {channel === 'email' ? 'par e-mail' : `sur ${LABEL[channel]}`}…</H2>
           <P center>{shown}</P>
@@ -61,16 +61,16 @@ export default function Channel() {
   }
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo="/connexion" right="Étape 2 sur 3" />
       <H1>Comment recevoir le code ?</H1>
-      <View style={{ gap: 12 }} accessibilityRole="radiogroup" accessibilityLabel="Canal de vérification">
+      <View style={{ gap: 10 }} accessibilityRole="radiogroup" accessibilityLabel="Canal de vérification">
         {!isEmail && (
           <>
-            <Card row gap={16} sel={channel === 'whatsapp'} onPress={() => setChannel('whatsapp')} accessibilityLabel="WhatsApp">
+            <Card row gap={13} sel={channel === 'whatsapp'} onPress={() => setChannel('whatsapp')} accessibilityLabel="WhatsApp">
               <ChannelIcon icon={MessageCircle} ok />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={16} weight={600} lh={21}>
+                <Tx size={13} weight={600} lh={17}>
                   WhatsApp
                 </Tx>
                 <P>Recommandé · instantané et gratuit</P>
@@ -79,10 +79,10 @@ export default function Channel() {
                 Par défaut
               </Badge>
             </Card>
-            <Card row gap={16} sel={channel === 'sms'} onPress={() => setChannel('sms')} accessibilityLabel="SMS">
+            <Card row gap={13} sel={channel === 'sms'} onPress={() => setChannel('sms')} accessibilityLabel="SMS">
               <ChannelIcon icon={MessageCircle} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={16} weight={600} lh={21}>
+                <Tx size={13} weight={600} lh={17}>
                   SMS
                 </Tx>
                 <P>Si WhatsApp n'est pas installé</P>
@@ -91,10 +91,10 @@ export default function Channel() {
           </>
         )}
         {(isEmail || EMAIL_FALLBACK) && (
-          <Card row gap={16} sel={channel === 'email'} onPress={() => setChannel('email')} accessibilityLabel="E-mail">
+          <Card row gap={13} sel={channel === 'email'} onPress={() => setChannel('email')} accessibilityLabel="E-mail">
             <ChannelIcon icon={Mail} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Tx size={16} weight={600} lh={21}>
+              <Tx size={13} weight={600} lh={17}>
                 E-mail
               </Tx>
               <P>{isEmail ? flow.identifier : 'Si le téléphone ne reçoit pas de code'}</P>
@@ -103,8 +103,8 @@ export default function Channel() {
         )}
       </View>
       <InfoBox>
-        <Tx size={15} color={C.muted} lh={22}>
-          Le code arrive sur <Tx size={15} weight={600} lh={22}>{shown}</Tx>. Vous pouvez modifier le numéro.
+        <Tx size={12} color={C.muted} lh={18}>
+          Le code arrive sur <Tx size={12} weight={600} lh={18}>{shown}</Tx>. Vous pouvez modifier le numéro.
         </Tx>
       </InfoBox>
       {error && <Alert>{error}</Alert>}

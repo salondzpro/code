@@ -44,7 +44,7 @@ export default function Rate() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
           <Button disabled={!rating || review.isPending} loading={review.isPending} onPress={() => void send()}>
@@ -57,38 +57,38 @@ export default function Rate() {
         backTo="/(client)/(tabs)/rendez-vous"
         right={
           <Pressable accessibilityRole="button" onPress={backToPast}>
-            <Tx size={13} color={C.muted} lh={18}>
+            <Tx size={10.5} color={C.muted} lh={14.5}>
               Passer
             </Tx>
           </Pressable>
         }
       />
       <H1>Comment s'est passée{'\n'}votre visite ?</H1>
-      <Card row gap={14}>
-        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
+      <Card row gap={11}>
+        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={71.5} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={18} weight={700} ls={-0.4} lh={23}>
+          <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
             {b.salon.name}
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             {dayMonth(b.startsAt)} · {b.serviceName} · {formatDA(b.priceDa)}
           </Tx>
         </View>
       </Card>
-      <View style={{ alignItems: 'center', gap: 12, paddingVertical: 8 }}>
-        <View style={{ flexDirection: 'row', gap: 16 }} accessibilityRole="radiogroup" accessibilityLabel="Note">
+      <View style={{ alignItems: 'center', gap: 10, paddingVertical: 6 }}>
+        <View style={{ flexDirection: 'row', gap: 13 }} accessibilityRole="radiogroup" accessibilityLabel="Note">
           {[1, 2, 3, 4, 5].map((n) => (
             <Pressable key={n} accessibilityRole="radio" accessibilityState={{ checked: rating === n }} accessibilityLabel={`${n} sur 5`} onPress={() => setRating(n)}>
-              <Star size={44} strokeWidth={1.6} color={n <= rating ? C.ink : C.disabled} fill={n <= rating ? C.ink : 'none'} />
+              <Star size={36} strokeWidth={1.6} color={n <= rating ? C.ink : C.disabled} fill={n <= rating ? C.ink : 'none'} />
             </Pressable>
           ))}
         </View>
-        <Tx size={14} color={C.muted} lh={19}>
+        <Tx size={11.5} color={C.muted} lh={15.5}>
           {rating ? `${rating} sur 5` : 'Touchez une étoile'}
         </Tx>
       </View>
       <SectionLabel>Ce qui vous a plu</SectionLabel>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {TAGS.map((t) => (
           <Pill key={t} lg on={tags.includes(t)} onPress={() => setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))}>
             {t}
@@ -100,7 +100,7 @@ export default function Rate() {
       </Field>
       <Card row style={{ justifyContent: 'space-between' }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={14} lh={19}>
+          <Tx size={11.5} lh={15.5}>
             Publier sous « {initials} »
           </Tx>
           <P>Votre numéro reste privé</P>

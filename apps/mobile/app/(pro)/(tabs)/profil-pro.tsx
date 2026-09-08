@@ -42,22 +42,22 @@ export default function ProProfile() {
   };
 
   return (
-    <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={28} lh={32} ls={-0.8}>
+    <Screen gap={13} bottom={NAV_PAD}>
+      <H1 size={23} lh={26} ls={-0.8}>
         Profil
       </H1>
 
       {/* Page publique */}
-      <Card gap={16}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+      <Card gap={13}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Changer le logo" onPress={() => void upload('logo')}>
-            <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
+            <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={58.5} />
           </Pressable>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={18} weight={700} ls={-0.4} lh={23}>
+            <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
               {salon.name}
             </Tx>
-            <Tx size={13} color={C.muted} lh={19} numberOfLines={1}>
+            <Tx size={10.5} color={C.muted} lh={15.5} numberOfLines={1}>
               {short}
             </Tx>
           </View>
@@ -66,8 +66,8 @@ export default function ProProfile() {
           </Badge>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de couverture" onPress={() => void upload('cover')}>
-          <Img src={salon.coverUrl} radius={16} style={{ height: 140, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-            {!salon.coverUrl && <I icon={Camera} size={28} color={C.subtle} />}
+          <Img src={salon.coverUrl} radius={13} style={{ height: 114, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+            {!salon.coverUrl && <I icon={Camera} size={23} color={C.subtle} />}
           </Img>
         </Pressable>
         <Grid cols={2}>
@@ -75,8 +75,8 @@ export default function ProProfile() {
             Aperçu
           </Button>
           <Button sm onPress={() => setSheet(true)}>
-            <I icon={Share2} size={18} color="#fff" />
-            <Tx size={14} weight={600} color="#fff" ls={-0.2}>
+            <I icon={Share2} size={14.5} color="#fff" />
+            <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
               Partager
             </Tx>
           </Button>
@@ -85,46 +85,46 @@ export default function ProProfile() {
 
       <SectionLabel>Établissement</SectionLabel>
       <ListCard>
-        <Row py={16} to="/salon">
-          <Tx size={15} lh={20}>
+        <Row py={13} to="/salon">
+          <Tx size={12} lh={16}>
             Adresse et zone
           </Tx>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             {[salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)].filter(Boolean).join(', ')}
           </Tx>
         </Row>
-        <Row py={16} to="/onboarding/5">
-          <Tx size={15} lh={20}>
+        <Row py={13} to="/onboarding/5">
+          <Tx size={12} lh={16}>
             Catalogue
           </Tx>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             {MARKET_LABELS_FR[market]} · {salon.categoryIds.length} catégorie{salon.categoryIds.length > 1 ? 's' : ''}
           </Tx>
         </Row>
         <Row
-          py={16}
+          py={13}
           chevron={false}
           right={
             desc === null ? (
               <Pressable accessibilityRole="button" onPress={() => setDesc(salon.description ?? '')}>
-                <Tx size={15} color={C.muted} lh={20} style={{ textDecorationLine: 'underline' }}>
+                <Tx size={12} color={C.muted} lh={16} style={{ textDecorationLine: 'underline' }}>
                   Modifier
                 </Tx>
               </Pressable>
             ) : undefined
           }
         >
-          <Tx size={15} lh={20}>
+          <Tx size={12} lh={16}>
             Description du salon
           </Tx>
           {desc === null && (
-            <Tx size={15} color={C.muted} lh={20}>
+            <Tx size={12} color={C.muted} lh={16}>
               {salon.description || 'Recommandé — améliore votre visibilité'}
             </Tx>
           )}
         </Row>
         {desc !== null && (
-          <View style={{ gap: 8, paddingBottom: 12 }}>
+          <View style={{ gap: 6, paddingBottom: 10 }}>
             <Input multiline value={desc} onChangeText={setDesc} maxLength={1500} placeholder="Salon calme, produits sans parabène…" />
             <Grid cols={2}>
               <Button variant="g" sm onPress={() => setDesc(null)}>
@@ -147,28 +147,28 @@ export default function ProProfile() {
 
       <SectionLabel>Planning</SectionLabel>
       <ListCard>
-        <Row py={16} to="/reglages-pro/horaires">
-          <Tx size={15} lh={20}>
+        <Row py={13} to="/reglages-pro/horaires">
+          <Tx size={12} lh={16}>
             Horaires
           </Tx>
         </Row>
-        <Row py={16} to="/reglages-pro/regles">
-          <Tx size={15} lh={20}>
+        <Row py={13} to="/reglages-pro/regles">
+          <Tx size={12} lh={16}>
             Créneaux et règles de réservation
           </Tx>
         </Row>
-        <Row py={16} to="/blocages">
-          <Tx size={15} lh={20}>
+        <Row py={13} to="/blocages">
+          <Tx size={12} lh={16}>
             Fermetures et exceptions
           </Tx>
         </Row>
-        <Row py={16} onPress={() => router.push('/(pro)/(tabs)/equipe')}>
-          <Tx size={15} lh={20}>
+        <Row py={13} onPress={() => router.push('/(pro)/(tabs)/equipe')}>
+          <Tx size={12} lh={16}>
             Équipe
           </Tx>
         </Row>
-        <Row py={16} to="/lien">
-          <Tx size={15} lh={20}>
+        <Row py={13} to="/lien">
+          <Tx size={12} lh={16}>
             Lien, QR code et partage
           </Tx>
         </Row>
@@ -176,19 +176,19 @@ export default function ProProfile() {
 
       <SectionLabel>Réservation en ligne</SectionLabel>
       <ListCard>
-        <Row py={16} chevron={false} right={<Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v }, { onError: (e) => setError(errorText(e)) })} label="Page publiée" />}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v }, { onError: (e) => setError(errorText(e)) })} label="Page publiée" />}>
+          <Tx size={12} lh={16}>
             Page publiée
           </Tx>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             Visible dans la marketplace
           </Tx>
         </Row>
-        <Row py={16} chevron={false} right={<Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />}>
+          <Tx size={12} lh={16}>
             Validation manuelle
           </Tx>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             Vous confirmez chaque demande
           </Tx>
         </Row>
@@ -197,16 +197,16 @@ export default function ProProfile() {
 
       <SectionLabel>Compte</SectionLabel>
       <ListCard>
-        <Row py={16} chevron={false} right={<Badge tone="ok" md>Active</Badge>}>
-          <Tx size={15} lh={20}>
+        <Row py={13} chevron={false} right={<Badge tone="ok" md>Active</Badge>}>
+          <Tx size={12} lh={16}>
             {me.data?.profile.fullName ?? 'Vous'}
           </Tx>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             {me.data?.profile.phone ?? ''}
           </Tx>
         </Row>
-        <Row py={16} onPress={() => router.replace('/(client)/(tabs)')}>
-          <Tx size={15} lh={20}>
+        <Row py={13} onPress={() => router.replace('/(client)/(tabs)')}>
+          <Tx size={12} lh={16}>
             Espace client
           </Tx>
         </Row>
@@ -216,9 +216,9 @@ export default function ProProfile() {
             await signOut();
             router.replace('/intro');
           }}
-          style={{ paddingVertical: 16 }}
+          style={{ paddingVertical: 13 }}
         >
-          <Tx size={15} lh={20} color={C.danger}>
+          <Tx size={12} lh={16} color={C.danger}>
             Se déconnecter
           </Tx>
         </Pressable>

@@ -118,25 +118,25 @@ export function MapView() {
         </div>
       </div>
 
-      <button type="button" className="ib lg absolute bottom-[300px] right-5 z-[400] !shadow-card" aria-label="Recentrer" onClick={() => mapRef.current?.setView(prefs.lat != null ? [prefs.lat, prefs.lng!] : ALGIERS, 13)}>
+      <button type="button" className="ib lg absolute bottom-[18.75rem] right-5 z-[400] !shadow-card" aria-label="Recentrer" onClick={() => mapRef.current?.setView(prefs.lat != null ? [prefs.lat, prefs.lng!] : ALGIERS, 13)}>
         <I icon={LocateFixed} size={20} />
       </button>
 
       {/* Feuille : salon sélectionné */}
-      <div className="sheet !bottom-[92px] !z-[400] !pb-4">
+      <div className="sheet !bottom-[5.75rem] !z-[400] !pb-4">
         {current ? (
           <Link to={`/s/${current.slug}`} className="crd sel !gap-3">
             <div className="flex items-start gap-3.5">
-              <Img src={current.logoUrl ?? current.coverUrl} className="h-[96px] w-[96px] flex-none !rounded-[16px]" />
+              <Img src={current.logoUrl ?? current.coverUrl} className="h-[6rem] w-[6rem] flex-none !rounded-[1rem]" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[17px] font-bold leading-tight tracking-[-0.4px]">{current.name}</span>
+                  <span className="text-[1.0625rem] font-bold leading-tight tracking-[-0.4px]">{current.name}</span>
                   {current.ratingCount > 0 && <RatingPill avg={current.ratingAvg} />}
                 </div>
-                <span className="mt-1 block text-[13px] text-muted">
+                <span className="mt-1 block text-[0.8125rem] text-muted">
                   {[current.zone ?? current.city, formatKm(current.distanceKm), current.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
                 </span>
-                <span className="mt-0.5 block text-[15px] text-subtle">{current.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}</span>
+                <span className="mt-0.5 block text-[0.9375rem] text-subtle">{current.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}</span>
               </div>
             </div>
             <NextSlots salon={current} />

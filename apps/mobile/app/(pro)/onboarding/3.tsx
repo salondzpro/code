@@ -35,16 +35,16 @@ export default function Step3Identity() {
   };
 
   return (
-    <Screen gap={16} footer={<StepSheet onPress={() => router.push(stepPath(4) as never)} />}>
+    <Screen gap={13} footer={<StepSheet onPress={() => router.push(stepPath(4) as never)} />}>
       <StepBar step={3} backTo={stepPath(2)} />
       <H1>Votre identité visuelle</H1>
       <SectionLabel>Photo de couverture</SectionLabel>
       <Pressable accessibilityRole="button" accessibilityLabel="Choisir la photo de couverture" onPress={() => void choose('cover')}>
-        <Img src={cover?.uri} radius={20} style={{ height: 220, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <Img src={cover?.uri} radius={16} style={{ height: 179, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
           {!cover && (
-            <View style={{ alignItems: 'center', gap: 8 }}>
-              <I icon={Camera} size={32} color={C.subtle} />
-              <Tx size={15} color={C.subtle} lh={20}>
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <I icon={Camera} size={26} color={C.subtle} />
+              <Tx size={12} color={C.subtle} lh={16}>
                 Ajouter une photo
               </Tx>
             </View>
@@ -52,14 +52,14 @@ export default function Step3Identity() {
         </Img>
       </Pressable>
       <SectionLabel>Logo ou portrait</SectionLabel>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
         <Pressable accessibilityRole="button" accessibilityLabel="Choisir le logo" onPress={() => void choose('logo')}>
-          <Img src={logo?.uri} radius={64} style={{ width: 128, height: 128, alignItems: 'center', justifyContent: 'center' }}>
-            {!logo && <I icon={Camera} size={28} color={C.subtle} />}
+          <Img src={logo?.uri} radius={52} style={{ width: 104, height: 104, alignItems: 'center', justifyContent: 'center' }}>
+            {!logo && <I icon={Camera} size={23} color={C.subtle} />}
           </Img>
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Tx size={13} lh={18}>
+          <Tx size={10.5} lh={14.5}>
             Format carré, visage ou logo centré
           </Tx>
           <P>JPG ou PNG · 2 Mo max</P>

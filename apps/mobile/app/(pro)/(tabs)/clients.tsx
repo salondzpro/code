@@ -51,29 +51,29 @@ export default function Clients() {
   if (!salon) return <Splash />;
 
   return (
-    <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={28} lh={32} ls={-0.8}>
+    <Screen gap={13} bottom={NAV_PAD}>
+      <H1 size={23} lh={26} ls={-0.8}>
         Clients
       </H1>
       <SearchBox value={q} onChange={setQ} placeholder="Nom ou téléphone" />
-      <Tx size={13} color={C.muted} lh={18}>
+      <Tx size={10.5} color={C.muted} lh={14.5}>
         {rows.length} client{rows.length > 1 ? 's' : ''} · 12 derniers mois
       </Tx>
       {bookings.isPending ? (
-        <Skeleton h={200} radius={20} />
+        <Skeleton h={162} radius={16} />
       ) : rows.length === 0 ? (
         <P>Vos clients apparaîtront ici après leur premier rendez-vous.</P>
       ) : (
         <ListCard>
           {rows.map((c) => (
-            <Row key={c.key} py={16} onPress={() => router.push(`/pro-rdv/${c.lastBookingId}` as never)} accessibilityLabel={c.name}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                <Avatar name={c.name} size={52} />
+            <Row key={c.key} py={13} onPress={() => router.push(`/pro-rdv/${c.lastBookingId}` as never)} accessibilityLabel={c.name}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                <Avatar name={c.name} size={42} />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={16} weight={700} ls={-0.3} lh={21}>
+                  <Tx size={13} weight={700} ls={-0.3} lh={17}>
                     {c.name}
                   </Tx>
-                  <Tx size={15} color={C.muted} lh={20}>
+                  <Tx size={12} color={C.muted} lh={16}>
                     {c.phone ? `${formatDZPhone(c.phone)} · ` : ''}
                     {c.count} rendez-vous · {c.next ? `prochain ${formatDateShortDZ(c.next)}` : `dernier ${formatDateShortDZ(c.last)}`}
                   </Tx>

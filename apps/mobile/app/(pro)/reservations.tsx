@@ -17,44 +17,44 @@ export default function Requests() {
   const items = pending.data?.items ?? [];
 
   return (
-    <Screen gap={16} bottom={40}>
+    <Screen gap={13} bottom={32}>
       <TopBar backTo="/(pro)/(tabs)" right="À valider" />
       <H1>Demandes</H1>
-      {pending.isPending && <Skeleton h={160} radius={20} />}
+      {pending.isPending && <Skeleton h={130} radius={16} />}
       {pending.isError && <ErrorText error={pending.error} retry={() => void pending.refetch()} />}
       {pending.data && items.length === 0 && <EmptyState title="Tout est à jour" description="Aucune demande à confirmer." />}
       {items.map((b) => (
-        <Card key={b.id} gap={16}>
-          <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-            <Avatar name={b.clientName} size={68} />
+        <Card key={b.id} gap={13}>
+          <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+            <Avatar name={b.clientName} size={55} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Tx size={20} weight={700} ls={-0.4} lh={25} numberOfLines={1}>
+              <Tx size={16} weight={700} ls={-0.4} lh={20.5} numberOfLines={1}>
                 {b.clientName}
               </Tx>
-              <Tx size={13} color={C.muted} lh={19}>
+              <Tx size={10.5} color={C.muted} lh={15.5}>
                 {b.serviceName} · {formatDateShortDZ(b.startsAt)} {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
               </Tx>
               {b.staff && (
-                <Tx size={15} color={C.muted} lh={20}>
+                <Tx size={12} color={C.muted} lh={16}>
                   avec {b.staff.displayName}
                 </Tx>
               )}
             </View>
           </Pressable>
           <Grid cols={2}>
-            <Button sm style={{ paddingVertical: 18 }} disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
-              <Tx size={14} weight={600} color="#fff" ls={-0.2}>
+            <Button sm style={{ paddingVertical: 15 }} disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
+              <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
                 Confirmer
               </Tx>
             </Button>
-            <Button variant="g" sm style={{ paddingVertical: 18 }} onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
-              <Tx size={14} weight={600} ls={-0.2}>
+            <Button variant="g" sm style={{ paddingVertical: 15 }} onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
+              <Tx size={11.5} weight={600} ls={-0.2}>
                 Reporter
               </Tx>
             </Button>
           </Grid>
           <Pressable accessibilityRole="button" onPress={() => setRefusing({ id: b.id, clientName: b.clientName })} style={{ alignSelf: 'center' }}>
-            <Tx size={13} color={C.danger} lh={18}>
+            <Tx size={10.5} color={C.danger} lh={14.5}>
               Refuser la demande
             </Tx>
           </Pressable>
@@ -63,17 +63,17 @@ export default function Requests() {
       <ErrorText error={setStatus.error ?? cancel.error} />
 
       <ModalSheet open={!!refusing} onClose={() => setRefusing(null)}>
-        <View style={{ alignItems: 'center', gap: 8 }}>
-          <Tx size={20} weight={700} ls={-0.4} lh={25} center>
+        <View style={{ alignItems: 'center', gap: 6 }}>
+          <Tx size={16} weight={700} ls={-0.4} lh={20.5} center>
             Refuser cette demande ?
           </Tx>
           <P center>{refusing?.clientName} sera prévenu·e et le créneau sera libéré.</P>
         </View>
-        <Card row style={{ paddingVertical: 12, justifyContent: 'space-between' }}>
-          <Tx size={15} lh={20}>
+        <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
+          <Tx size={12} lh={16}>
             Motif (optionnel)
           </Tx>
-          <Input value={reason} onChangeText={setReason} placeholder="Complet" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 15 }} />
+          <Input value={reason} onChangeText={setReason} placeholder="Complet" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 12 }} />
         </Card>
         <Button
           bg={C.danger}

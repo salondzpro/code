@@ -14,22 +14,22 @@ import { DayStrip, MonthNav } from './DaySelector';
 export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }: { label: string; hint?: string; value: ReactNode; onPress?: () => void; py?: number; muted?: boolean }) {
   return (
     <Row py={py} onPress={onPress} chevron={false} accessibilityLabel={label} right={
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '55%' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, maxWidth: '55%' }}>
         {typeof value === 'string' ? (
-          <Tx size={15} lh={20} color={muted ? C.muted : C.text} numberOfLines={1} right>
+          <Tx size={12} lh={16} color={muted ? C.muted : C.text} numberOfLines={1} right>
             {value}
           </Tx>
         ) : (
           value
         )}
-        {onPress && <I icon={ChevronDown} size={16} color={C.subtle} />}
+        {onPress && <I icon={ChevronDown} size={13} color={C.subtle} />}
       </View>
     }>
-      <Tx size={15} lh={20}>
+      <Tx size={12} lh={16}>
         {label}
       </Tx>
       {hint && (
-        <Tx size={13} color={C.muted} lh={19}>
+        <Tx size={10.5} color={C.muted} lh={15.5}>
           {hint}
         </Tx>
       )}
@@ -40,7 +40,7 @@ export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }:
 export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange }: { open: boolean; onClose: () => void; title: string; options: { value: T; label: string; hint?: string }[]; value: T | null | undefined; onChange: (v: T) => void }) {
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
-      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
+      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
       <ListCard>
@@ -49,13 +49,13 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
             key={String(o.value)}
             chevron={false}
             accessibilityLabel={o.label}
-            right={o.value === value ? <I icon={Check} size={20} /> : undefined}
+            right={o.value === value ? <I icon={Check} size={16} /> : undefined}
             onPress={() => {
               onChange(o.value);
               onClose();
             }}
           >
-            <Tx size={15} lh={20}>
+            <Tx size={12} lh={16}>
               {o.label}
             </Tx>
             {o.hint && <P>{o.hint}</P>}
@@ -72,10 +72,10 @@ export function TimeSheet({ open, onClose, title = 'Heure', value, onChange, fro
   for (let m = timeToMinutes(from); m <= timeToMinutes(to); m += step) times.push(minutesToTime(m));
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
-      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
+      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
-      <Grid cols={4} gap={8}>
+      <Grid cols={4} gap={6}>
         {times.map((t) => (
           <Slot
             key={t}
@@ -99,7 +99,7 @@ export function DateSheet({ open, onClose, title = 'Date', value, onChange, minD
   const [sel, setSel] = useState(value);
   return (
     <ModalSheet open={open} onClose={onClose}>
-      <Tx size={18} weight={600} ls={-0.3} lh={23} center>
+      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={minDate ? addDaysToKey(weekKeys(minDate)[0]!, 0) : undefined} maxDate={maxDate} />

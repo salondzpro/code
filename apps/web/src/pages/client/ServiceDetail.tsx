@@ -1,4 +1,5 @@
 /** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver · 2 500 DA ». */
+import { useBack } from '@/lib/useBack';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, Heart } from 'lucide-react';
 import { useFavorites, useSalon, useToggleFavorite } from '@salondz/api-client';
@@ -15,6 +16,7 @@ import { openingStatus } from './Salon';
 export function ServiceDetail() {
   const { slug = '', serviceId = '' } = useParams();
   const navigate = useNavigate();
+  const back = useBack(`/s/${slug}`);
   const { session } = useAuth();
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
@@ -30,10 +32,10 @@ export function ServiceDetail() {
 
   return (
     <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>
-      <div className="relative h-[330px] bg-line">
+      <div className="relative h-[20.625rem] bg-line">
         {(photos[0]?.url ?? s.coverUrl) && <img src={photos[0]?.url ?? s.coverUrl ?? ''} alt="" className="h-full w-full object-cover" />}
         <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
-          <IconButton lg aria-label="Retour" onClick={() => navigate(-1)}>
+          <IconButton lg aria-label="Retour" onClick={back}>
             <I icon={ChevronLeft} />
           </IconButton>
           <IconButton lg aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={isFav} onClick={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}/prestation/${sv.id}`)}`))}>
@@ -41,24 +43,24 @@ export function ServiceDetail() {
           </IconButton>
         </div>
       </div>
-      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[24px] bg-bg px-5 pt-6">
+      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[1.5rem] bg-bg px-5 pt-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="h1 !text-[26px]">{sv.name}</h1>
-            <p className="mt-1 text-[13px] text-muted">
+            <h1 className="h1 !text-[1.625rem]">{sv.name}</h1>
+            <p className="mt-1 text-[0.8125rem] text-muted">
               {formatDuration(sv.durationMinutes)}
               {sv.categoryId ? ` · ${categoryLabel(sv.categoryId)}` : ''}
             </p>
           </div>
-          <span className="text-[22px] font-bold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
+          <span className="text-[1.375rem] font-bold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
         </div>
-        {sv.description && <p className="p text-[13px]">{sv.description}</p>}
+        {sv.description && <p className="p text-[0.8125rem]">{sv.description}</p>}
         {photos.length > 1 && (
           <>
             <span className="h3">Réalisations</span>
             <div className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {photos.slice(1).map((p) => (
-                <Img key={p.id} src={p.url} className="h-[200px] w-[220px] flex-none" />
+                <Img key={p.id} src={p.url} className="h-[12.5rem] w-[13.75rem] flex-none" />
               ))}
             </div>
           </>
@@ -66,13 +68,13 @@ export function ServiceDetail() {
         <div className="crd !flex-row items-center gap-3.5">
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
           <span className="min-w-0 flex-1">
-            <span className="block text-[16px] font-bold tracking-[-0.3px]">{s.name}</span>
-            <span className="text-[13px] text-muted">
+            <span className="block text-[1rem] font-bold tracking-[-0.3px]">{s.name}</span>
+            <span className="text-[0.8125rem] text-muted">
               {s.zone ?? s.city}
               {s.ratingCount > 0 ? ` · ★ ${formatRating(s.ratingAvg)}` : ''}
             </span>
           </span>
-          <span className={`badge md !text-[15px] ${status.open ? 'b-ok' : 'b-nu'}`}>
+          <span className={`badge md !text-[0.9375rem] ${status.open ? 'b-ok' : 'b-nu'}`}>
             <span className="dot" />
             {status.open ? 'Ouvert' : 'Fermé'}
           </span>

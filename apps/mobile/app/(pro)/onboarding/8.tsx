@@ -51,9 +51,9 @@ export default function Step8Works() {
   };
 
   return (
-    <Screen gap={16} footer={<StepSheet onPress={() => router.push(stepPath(9) as never)} busy={busy} />}>
+    <Screen gap={13} footer={<StepSheet onPress={() => router.push(stepPath(9) as never)} busy={busy} />}>
       <StepBar step={8} backTo={stepPath(6)} />
-      <View style={{ gap: 8 }}>
+      <View style={{ gap: 6 }}>
         <H1>Vos réalisations</H1>
         <P>Associez chaque photo à une prestation : elle apparaîtra sur sa fiche.</P>
       </View>
@@ -64,21 +64,21 @@ export default function Step8Works() {
       )}
       <Grid cols={3}>
         {works.map((w) => (
-          <View key={w.id} style={{ gap: 6 }}>
+          <View key={w.id} style={{ gap: 5 }}>
             <View style={{ aspectRatio: 1 }}>
-              <Img src={w.url} radius={16} style={{ width: '100%', height: '100%' }} />
-              <Pressable accessibilityRole="button" accessibilityLabel="Retirer" onPress={() => void remove(w.service.id, w.url)} style={{ position: 'absolute', right: 6, top: 6, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' }}>
-                <I icon={X} size={14} color="#fff" />
+              <Img src={w.url} radius={13} style={{ width: '100%', height: '100%' }} />
+              <Pressable accessibilityRole="button" accessibilityLabel="Retirer" onPress={() => void remove(w.service.id, w.url)} style={{ position: 'absolute', right: 5, top: 5, width: 23, height: 23, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' }}>
+                <I icon={X} size={11.5} color="#fff" />
               </Pressable>
             </View>
-            <Tx size={14} color={C.muted} lh={18} center numberOfLines={1}>
+            <Tx size={11.5} color={C.muted} lh={14.5} center numberOfLines={1}>
               {w.service.name}
             </Tx>
           </View>
         ))}
-        <Pressable accessibilityRole="button" accessibilityLabel="Ajouter des réalisations" onPress={() => void add()} disabled={busy || services.length === 0} style={{ aspectRatio: 1, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: C.line, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          <I icon={Plus} size={26} color={C.subtle} />
-          <Tx size={14} color={C.subtle} lh={18}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Ajouter des réalisations" onPress={() => void add()} disabled={busy || services.length === 0} style={{ aspectRatio: 1, borderRadius: 13, borderWidth: 1, borderStyle: 'dashed', borderColor: C.line, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+          <I icon={Plus} size={21} color={C.subtle} />
+          <Tx size={11.5} color={C.subtle} lh={14.5}>
             Ajouter
           </Tx>
         </Pressable>

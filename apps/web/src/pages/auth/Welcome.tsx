@@ -17,7 +17,7 @@ export function Welcome() {
 
   return (
     <Screen className="min-h-dvh justify-center" gap={16}>
-      <div className="mt-[-60px]">
+      <div className="mt-[-3.75rem]">
         <div className="h3">Salon DZ · Algérie</div>
         <h1 className="h1 mt-2">
           Bienvenue.
@@ -27,13 +27,13 @@ export function Welcome() {
       </div>
       <div className="flex flex-col gap-3" role="radiogroup" aria-label="Type de compte">
         <Card as="button" sel={role === 'client'} onClick={() => setRole('client')}>
-          <span role="radio" aria-checked={role === 'client'} className="h2 text-[16px]">
+          <span role="radio" aria-checked={role === 'client'} className="h2 text-[1rem]">
             Je réserve
           </span>
           <span className="p">Créer mon compte ou me connecter, puis réserver : un compte est nécessaire pour prendre rendez-vous.</span>
         </Card>
         <Card as="button" sel={role === 'pro'} onClick={() => setRole('pro')}>
-          <span role="radio" aria-checked={role === 'pro'} className="h2 text-[16px]">
+          <span role="radio" aria-checked={role === 'pro'} className="h2 text-[1rem]">
             Je suis professionnel
           </span>
           <span className="p">Recevoir des réservations, gérer mon agenda et partager ma page.</span>

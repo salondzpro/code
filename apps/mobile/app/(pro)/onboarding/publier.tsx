@@ -41,27 +41,27 @@ export default function Publish() {
   };
 
   return (
-    <Screen gap={16} footer={<StepSheet label={salon.isPublished ? 'Page publiée · voir mon lien' : 'Publier ma page'} onPress={() => (salon.isPublished ? router.replace('/lien') : void publish())} busy={updateSalon.isPending} />}>
-      <H1 style={{ marginTop: 8 }}>Tout est prêt</H1>
+    <Screen gap={13} footer={<StepSheet label={salon.isPublished ? 'Page publiée · voir mon lien' : 'Publier ma page'} onPress={() => (salon.isPublished ? router.replace('/lien') : void publish())} busy={updateSalon.isPending} />}>
+      <H1 style={{ marginTop: 6 }}>Tout est prêt</H1>
       <ListCard>
         {items.map((it) => (
-          <Row key={it.label} py={16} chevron={false} onPress={() => router.push(it.to as never)} accessibilityLabel={it.label} right={it.ok ? <I icon={Check} size={22} color={C.okFg} /> : <Badge tone="pd" dot={false} md>À faire</Badge>}>
-            <Tx size={15} lh={20}>
+          <Row key={it.label} py={13} chevron={false} onPress={() => router.push(it.to as never)} accessibilityLabel={it.label} right={it.ok ? <I icon={Check} size={18} color={C.okFg} /> : <Badge tone="pd" dot={false} md>À faire</Badge>}>
+            <Tx size={12} lh={16}>
               {it.label}
             </Tx>
             {!it.ok && it.hint && (
-              <Tx size={13} color={C.muted} lh={19}>
+              <Tx size={10.5} color={C.muted} lh={15.5}>
                 {it.hint}
               </Tx>
             )}
           </Row>
         ))}
       </ListCard>
-      <View style={{ borderRadius: R.card, backgroundColor: C.ink, padding: 20, gap: 4 }}>
-        <Tx size={13} color="rgba(255,255,255,0.6)" lh={18}>
+      <View style={{ borderRadius: R.card, backgroundColor: C.ink, padding: 16, gap: 3 }}>
+        <Tx size={10.5} color="rgba(255,255,255,0.6)" lh={14.5}>
           Votre page publique
         </Tx>
-        <Tx size={20} weight={700} color="#fff" ls={-0.4} lh={25}>
+        <Tx size={16} weight={700} color="#fff" ls={-0.4} lh={20.5}>
           {publicHost()}/s/{salon.slug}
         </Tx>
       </View>

@@ -73,13 +73,13 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
 
   return (
     <ModalSheet open onClose={onClose} scroll>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <Avatar src={member.avatarUrl} name={member.displayName} size={56} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+        <Avatar src={member.avatarUrl} name={member.displayName} size={45.5} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={18} weight={700} ls={-0.4} lh={23} numberOfLines={1}>
+          <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} numberOfLines={1}>
             {member.displayName}
           </Tx>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             {isOwner ? 'Propriétaire' : member.isActive ? 'Membre actif' : 'Inactif — masqué à la réservation'}
           </Tx>
         </View>
@@ -95,26 +95,26 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
         ]}
       />
       {hours.isPending ? (
-        <Skeleton h={120} />
+        <Skeleton h={98} />
       ) : custom ? (
         <ListCard>
           {rows.map((r) => (
-            <Row key={r.dayOfWeek} py={12} chevron={false} right={<Toggle on={r.enabled} onChange={(v) => patch(r.dayOfWeek, { enabled: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Tx size={13} lh={18} color={r.enabled ? C.text : C.subtle} style={{ width: 96 }}>
+            <Row key={r.dayOfWeek} py={10} chevron={false} right={<Toggle on={r.enabled} onChange={(v) => patch(r.dayOfWeek, { enabled: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <Tx size={10.5} lh={14.5} color={r.enabled ? C.text : C.subtle} style={{ width: 78 }}>
                   {DAY_LABELS_FR[r.dayOfWeek]}
                 </Tx>
                 {r.enabled ? (
                   <>
-                    <TimeField size={17} value={r.startsAt} onChange={(v) => patch(r.dayOfWeek, { startsAt: v })} label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
-                    <Tx size={13} color={C.muted} lh={18}>
+                    <TimeField size={14} value={r.startsAt} onChange={(v) => patch(r.dayOfWeek, { startsAt: v })} label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
+                    <Tx size={10.5} color={C.muted} lh={14.5}>
                       {' '}
                       –{' '}
                     </Tx>
-                    <TimeField size={17} value={r.endsAt} onChange={(v) => patch(r.dayOfWeek, { endsAt: v })} label={`Fin ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
+                    <TimeField size={14} value={r.endsAt} onChange={(v) => patch(r.dayOfWeek, { endsAt: v })} label={`Fin ${DAY_LABELS_FR[r.dayOfWeek]}`} step={30} />
                   </>
                 ) : (
-                  <Tx size={13} color={C.disabled} lh={18}>
+                  <Tx size={10.5} color={C.disabled} lh={14.5}>
                     Repos
                   </Tx>
                 )}
@@ -148,8 +148,8 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
             Confirmer le retrait
           </Button>
         ) : (
-          <Pressable accessibilityRole="button" onPress={() => setConfirmRemove(true)} style={{ alignSelf: 'center', paddingVertical: 8 }}>
-            <Tx size={13} color={C.danger} lh={18}>
+          <Pressable accessibilityRole="button" onPress={() => setConfirmRemove(true)} style={{ alignSelf: 'center', paddingVertical: 6 }}>
+            <Tx size={10.5} color={C.danger} lh={14.5}>
               Retirer de l'équipe
             </Tx>
           </Pressable>
@@ -179,27 +179,27 @@ export default function Team() {
   };
 
   return (
-    <Screen gap={16} bottom={NAV_PAD}>
-      <H1 size={28} lh={32} ls={-0.8}>
+    <Screen gap={13} bottom={NAV_PAD}>
+      <H1 size={23} lh={26} ls={-0.8}>
         Équipe
       </H1>
       <P>Chaque membre a son propre agenda. Les clients choisissent « n'importe qui » ou un membre précis.</P>
       <ListCard>
         {salon.staff.map((m) => (
-          <Row key={m.id} py={16} onPress={() => setOpen(m.id)} accessibilityLabel={m.displayName} chevron={false} right={<I icon={ChevronRight} size={18} color={C.disabled} />}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-              <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
+          <Row key={m.id} py={13} onPress={() => setOpen(m.id)} accessibilityLabel={m.displayName} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+              <Avatar src={m.avatarUrl} name={m.displayName} size={42} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={15} lh={20} numberOfLines={1}>
+                <Tx size={12} lh={16} numberOfLines={1}>
                   {m.displayName}
                   {m.userId === salon.ownerId ? (
-                    <Tx size={15} lh={20} color={C.muted}>
+                    <Tx size={12} lh={16} color={C.muted}>
                       {' '}
                       (vous)
                     </Tx>
                   ) : null}
                 </Tx>
-                <Tx size={15} color={C.muted} lh={20}>
+                <Tx size={12} color={C.muted} lh={16}>
                   {m.isActive ? 'Actif' : 'Inactif'}
                 </Tx>
               </View>
@@ -207,7 +207,7 @@ export default function Team() {
           </Row>
         ))}
       </ListCard>
-      <Card gap={12}>
+      <Card gap={10}>
         <Input lg value={name} onChangeText={setName} onSubmitEditing={() => void add()} placeholder="Prénom du membre" accessibilityLabel="Nouveau membre" maxLength={60} returnKeyType="done" />
         <Button onPress={() => void add()} disabled={create.isPending || !name.trim()} loading={create.isPending}>
           Ajouter

@@ -64,7 +64,7 @@ export default function Step7ServicePhotos() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <StepSheet
           label="Enregistrer la prestation"
@@ -79,17 +79,17 @@ export default function Step7ServicePhotos() {
       }
     >
       <StepBar step={7} backTo={`${stepPath(6)}/${service.id}`} />
-      <View style={{ gap: 8 }}>
+      <View style={{ gap: 6 }}>
         <H1>Photos · {service.name}</H1>
         <P>Une photo de couverture et jusqu'à {MAX_EXAMPLES} exemples de résultats.</P>
       </View>
       <SectionLabel>Couverture</SectionLabel>
       <Pressable accessibilityRole="button" accessibilityLabel="Choisir la photo de couverture" onPress={() => void add(true)} disabled={busy}>
-        <Img src={cover} radius={20} style={{ height: 320, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <Img src={cover} radius={16} style={{ height: 260, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
           {!cover && (
-            <View style={{ alignItems: 'center', gap: 8 }}>
-              <I icon={Camera} size={32} color={C.subtle} />
-              <Tx size={15} color={C.subtle} lh={20}>
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <I icon={Camera} size={26} color={C.subtle} />
+              <Tx size={12} color={C.subtle} lh={16}>
                 Ajouter une photo
               </Tx>
             </View>
@@ -100,15 +100,15 @@ export default function Step7ServicePhotos() {
       <Grid cols={3}>
         {examples.map((u) => (
           <View key={u} style={{ aspectRatio: 1 }}>
-            <Img src={u} radius={16} style={{ width: '100%', height: '100%' }} />
-            <Pressable accessibilityRole="button" accessibilityLabel="Retirer" onPress={() => remove(u)} style={{ position: 'absolute', right: 6, top: 6, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' }}>
-              <I icon={X} size={14} color="#fff" />
+            <Img src={u} radius={13} style={{ width: '100%', height: '100%' }} />
+            <Pressable accessibilityRole="button" accessibilityLabel="Retirer" onPress={() => remove(u)} style={{ position: 'absolute', right: 5, top: 5, width: 23, height: 23, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' }}>
+              <I icon={X} size={11.5} color="#fff" />
             </Pressable>
           </View>
         ))}
         {examples.length < MAX_EXAMPLES && (
-          <Pressable accessibilityRole="button" accessibilityLabel="Ajouter un exemple" onPress={() => void add(false)} disabled={busy} style={{ aspectRatio: 1, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: C.line, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
-            <I icon={Plus} size={28} color={C.subtle} />
+          <Pressable accessibilityRole="button" accessibilityLabel="Ajouter un exemple" onPress={() => void add(false)} disabled={busy} style={{ aspectRatio: 1, borderRadius: 13, borderWidth: 1, borderStyle: 'dashed', borderColor: C.line, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+            <I icon={Plus} size={23} color={C.subtle} />
           </Pressable>
         )}
       </Grid>

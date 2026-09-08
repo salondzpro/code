@@ -61,43 +61,43 @@ export default function AgendaPro() {
 
   const header =
     view === 'day' ? (
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
         <View>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             {DAY_LABELS_FR[dayOfWeekFromKey(date)]}
           </Tx>
-          <Tx size={28} weight={700} ls={-0.8} lh={32}>
+          <Tx size={23} weight={700} ls={-0.8} lh={26}>
             {Number(date.slice(8, 10))} {MONTHS_FR[Number(date.slice(5, 7)) - 1]}
           </Tx>
         </View>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           <IconButton lg accessibilityLabel="Rechercher un rendez-vous" onPress={() => router.push('/(pro)/(tabs)/clients')}>
-            <I icon={Search} size={20} />
+            <I icon={Search} size={16} />
           </IconButton>
           <IconButton lg ink accessibilityLabel="Nouveau rendez-vous" onPress={newBooking}>
-            <I icon={Plus} size={22} color="#fff" />
+            <I icon={Plus} size={18} color="#fff" />
           </IconButton>
           <IconButton lg accessibilityLabel="Aujourd'hui" onPress={() => setDate(today)}>
-            <I icon={Calendar} size={20} />
+            <I icon={Calendar} size={16} />
           </IconButton>
         </View>
       </View>
     ) : (
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
         <View style={{ flex: 1 }}>
-          <Tx size={15} color={C.muted} lh={20}>
+          <Tx size={12} color={C.muted} lh={16}>
             {view === 'week' ? `Semaine ${isoWeek(date)} · ${MONTHS_FR[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}` : date.slice(0, 4)}
           </Tx>
-          <Tx size={28} weight={700} ls={-0.8} lh={32}>
+          <Tx size={23} weight={700} ls={-0.8} lh={26}>
             {view === 'week' ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS_FR[Number(week[6]!.slice(5, 7)) - 1]}` : MONTHS_FR[Number(date.slice(5, 7)) - 1]!.replace(/^\p{L}/u, (c) => c.toUpperCase())}
           </Tx>
         </View>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           <IconButton lg accessibilityLabel="Précédent" onPress={() => shift(-1)}>
-            <I icon={ChevronLeft} size={20} />
+            <I icon={ChevronLeft} size={16} />
           </IconButton>
           <IconButton lg accessibilityLabel="Suivant" onPress={() => shift(1)}>
-            <I icon={ChevronRight} size={20} />
+            <I icon={ChevronRight} size={16} />
           </IconButton>
         </View>
       </View>
@@ -105,12 +105,12 @@ export default function AgendaPro() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       bottom={NAV_PAD + 60}
       footer={
         view === 'day' ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Nouveau rendez-vous" onPress={newBooking} style={[{ position: 'absolute', right: 20, bottom: NAV_PAD - 8, width: 56, height: 56, borderRadius: 28, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
-            <I icon={Plus} size={28} color="#fff" />
+          <Pressable accessibilityRole="button" accessibilityLabel="Nouveau rendez-vous" onPress={newBooking} style={[{ position: 'absolute', right: 16, bottom: NAV_PAD - 8, width: 46, height: 46, borderRadius: 23, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
+            <I icon={Plus} size={23} color="#fff" />
           </Pressable>
         ) : undefined
       }
@@ -131,11 +131,11 @@ export default function AgendaPro() {
         <>
           <DayStrip weekOf={date} selected={date} onSelect={setDate} disabledDays={closedDays} />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Tx size={15} lh={20}>
-              <Tx size={15} weight={700} lh={20}>
+            <Tx size={12} lh={16}>
+              <Tx size={12} weight={700} lh={16}>
                 {dayItems.length} rendez-vous
               </Tx>{' '}
-              <Tx size={15} color={C.muted} lh={20}>
+              <Tx size={12} color={C.muted} lh={16}>
                 · {formatDA(dayRevenue)}
               </Tx>
             </Tx>
@@ -197,7 +197,7 @@ function isoWeek(key: string): number {
 function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void }) {
   if (hours.length === 0 && items.length === 0)
     return (
-      <View style={{ paddingVertical: 24 }}>
+      <View style={{ paddingVertical: 20 }}>
         <P center>Fermé ce jour.</P>
       </View>
     );
@@ -227,22 +227,22 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
     <View style={{ height }}>
       {hourMarks.map((m) => (
         <View key={m} style={{ position: 'absolute', left: 0, right: 0, top: top(m) }}>
-          <Tx size={15} color={C.subtle} lh={20} style={{ position: 'absolute', top: -10, left: 0 }}>
+          <Tx size={12} color={C.subtle} lh={16} style={{ position: 'absolute', top: -8, left: 0 }}>
             {hm(m)}
           </Tx>
-          <View style={{ marginLeft: 56, borderTopWidth: 1, borderTopColor: C.lineSoft }} />
+          <View style={{ marginLeft: 46, borderTopWidth: 1, borderTopColor: C.lineSoft }} />
         </View>
       ))}
       {gaps.map((g) => (
-        <View key={`gap-${g.s}`} style={[{ position: 'absolute', left: 58, right: 0, top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, borderRadius: 12, justifyContent: 'center', paddingHorizontal: 16 }, HATCH]}>
-          <Tx size={15} color={C.subtle} lh={20}>
+        <View key={`gap-${g.s}`} style={[{ position: 'absolute', left: 47, right: 0, top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 13 }, HATCH]}>
+          <Tx size={12} color={C.subtle} lh={16}>
             Libre · {formatDuration(g.e - g.s)}
           </Tx>
         </View>
       ))}
       {closedRanges.map((c) => (
-        <View key={`c-${c.s}-${c.label}`} style={[{ position: 'absolute', left: 58, right: 0, top: top(c.s) + 2, height: Math.max(20, (c.e - c.s) * PX - 4), borderRadius: 12, justifyContent: 'center', paddingHorizontal: 16 }, HATCH]}>
-          <Tx size={15} color={C.subtle} lh={20} numberOfLines={1}>
+        <View key={`c-${c.s}-${c.label}`} style={[{ position: 'absolute', left: 47, right: 0, top: top(c.s) + 2, height: Math.max(20, (c.e - c.s) * PX - 4), borderRadius: 10, justifyContent: 'center', paddingHorizontal: 13 }, HATCH]}>
+          <Tx size={12} color={C.subtle} lh={16} numberOfLines={1}>
             {c.label} · {hm(c.s)} – {hm(c.e)}
           </Tx>
         </View>
@@ -252,15 +252,15 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         const e = localMinutes(b.endsAt);
         const t = tone(toneOf(b));
         return (
-          <Pressable key={b.id} accessibilityRole="button" accessibilityLabel={`${b.clientName} · ${b.serviceName}`} onPress={() => onOpen(b.id)} style={{ position: 'absolute', left: 58, right: 0, top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4), overflow: 'hidden', borderRadius: 12, borderLeftWidth: 3, borderLeftColor: t.line, backgroundColor: t.bg, paddingHorizontal: 12, paddingVertical: 8 }}>
-            <Tx size={13} weight={600} lh={18} color={t.fg} numberOfLines={1}>
+          <Pressable key={b.id} accessibilityRole="button" accessibilityLabel={`${b.clientName} · ${b.serviceName}`} onPress={() => onOpen(b.id)} style={{ position: 'absolute', left: 47, right: 0, top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4), overflow: 'hidden', borderRadius: 10, borderLeftWidth: 3, borderLeftColor: t.line, backgroundColor: t.bg, paddingHorizontal: 10, paddingVertical: 6 }}>
+            <Tx size={10.5} weight={600} lh={14.5} color={t.fg} numberOfLines={1}>
               {b.clientName} · {b.serviceName}
             </Tx>
-            <Tx size={14} lh={18} color={t.fg} mono style={{ opacity: 0.8 }}>
+            <Tx size={11.5} lh={14.5} color={t.fg} mono style={{ opacity: 0.8 }}>
               {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {formatDA(b.priceDa)}
             </Tx>
             {b.status === 'pending' && (
-              <View style={{ marginTop: 4 }}>
+              <View style={{ marginTop: 3 }}>
                 <Badge tone="pd" dot={false}>
                   En attente
                 </Badge>
@@ -270,8 +270,8 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         );
       })}
       {isToday && now >= startMin && now <= endMin && (
-        <View pointerEvents="none" style={{ position: 'absolute', left: 46, right: 0, top: top(now), borderTopWidth: 1.5, borderTopColor: C.danger }}>
-          <View style={{ position: 'absolute', left: -4, top: -5, width: 8, height: 8, borderRadius: 4, backgroundColor: C.danger }} />
+        <View pointerEvents="none" style={{ position: 'absolute', left: 37, right: 0, top: top(now), borderTopWidth: 1.5, borderTopColor: C.danger }}>
+          <View style={{ position: 'absolute', left: -3, top: -4, width: 6, height: 6, borderRadius: 3, backgroundColor: C.danger }} />
         </View>
       )}
     </View>
@@ -294,24 +294,24 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
   const hours: number[] = [];
   for (let m = startMin; m <= endMin; m += 120) hours.push(m);
   return (
-    <View style={{ gap: 16 }}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-        <View style={{ backgroundColor: C.fill, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8 }}>
-          <Tx size={13} weight={600} lh={18}>
+    <View style={{ gap: 13 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+        <View style={{ backgroundColor: C.fill, borderRadius: 812, paddingHorizontal: 11, paddingVertical: 6 }}>
+          <Tx size={10.5} weight={600} lh={14.5}>
             {total} rendez-vous
           </Tx>
         </View>
         <Badge tone="ok" md>
           {formatDA(revenue)}
         </Badge>
-        <Tx size={13} color={C.muted} lh={18}>
+        <Tx size={10.5} color={C.muted} lh={14.5}>
           {occupancy} % occupé
         </Tx>
       </View>
-      <View style={{ flexDirection: 'row', gap: 6 }}>
-        <View style={{ width: 26, height: H + 56 }}>
+      <View style={{ flexDirection: 'row', gap: 5 }}>
+        <View style={{ width: 21, height: H + 56 }}>
           {hours.map((m) => (
-            <Tx key={m} size={13} color={C.subtle} lh={16} style={{ position: 'absolute', left: 0, top: 56 + (m - startMin) * px - 8 }}>
+            <Tx key={m} size={10.5} color={C.subtle} lh={13} style={{ position: 'absolute', left: 0, top: 46 + (m - startMin) * px - 8 }}>
               {String(Math.floor(m / 60)).padStart(2, '0')}
             </Tx>
           ))}
@@ -322,22 +322,22 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
           const list = byDay.get(d) ?? [];
           const on = d === selected;
           return (
-            <Pressable key={d} accessibilityRole="button" accessibilityLabel={d} onPress={() => onSelect(d)} style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: 8 }}>
-              <Tx size={15} color={closed ? C.disabled : C.muted} lh={20}>
+            <Pressable key={d} accessibilityRole="button" accessibilityLabel={d} onPress={() => onSelect(d)} style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: 6 }}>
+              <Tx size={12} color={closed ? C.disabled : C.muted} lh={16}>
                 {DAY_LABELS_SHORT_FR[dow]}
               </Tx>
-              <View style={{ height: 36, width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: on ? C.ink : 'transparent' }}>
-                <Tx size={15} weight={700} lh={20} color={on ? '#fff' : closed ? C.disabled : C.text}>
+              <View style={{ height: 29, width: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: on ? C.ink : 'transparent' }}>
+                <Tx size={12} weight={700} lh={16} color={on ? '#fff' : closed ? C.disabled : C.text}>
                   {Number(d.slice(8, 10))}
                 </Tx>
               </View>
-              <View style={[{ width: '100%', height: H, borderRadius: 12, overflow: 'hidden', backgroundColor: C.surface, borderWidth: on ? 1.5 : 1, borderColor: on ? C.ink : C.lineSoft }, closed ? HATCH : null]}>
+              <View style={[{ width: '100%', height: H, borderRadius: 10, overflow: 'hidden', backgroundColor: C.surface, borderWidth: on ? 1.5 : 1, borderColor: on ? C.ink : C.lineSoft }, closed ? HATCH : null]}>
                 {!closed &&
                   list.map((b) => {
                     const s = Math.max(startMin, localMinutes(b.startsAt));
                     const e = Math.min(endMin, localMinutes(b.endsAt));
                     const t = tone(toneOf(b));
-                    return <View key={b.id} style={{ position: 'absolute', left: 2, right: 2, top: (s - startMin) * px, height: Math.max(10, (e - s) * px), borderRadius: 8, borderLeftWidth: 3, borderLeftColor: t.line, backgroundColor: t.bg }} />;
+                    return <View key={b.id} style={{ position: 'absolute', left: 2, right: 2, top: (s - startMin) * px, height: Math.max(10, (e - s) * px), borderRadius: 6, borderLeftWidth: 3, borderLeftColor: t.line, backgroundColor: t.bg }} />;
                   })}
                 {on && d === today && nowMinutes() >= startMin && nowMinutes() <= endMin && <View style={{ position: 'absolute', left: 0, right: 0, top: (nowMinutes() - startMin) * px, borderTopWidth: 1, borderTopColor: C.danger }} />}
               </View>
@@ -345,7 +345,7 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
           );
         })}
       </View>
-      <View style={{ flexDirection: 'row', gap: 16 }}>
+      <View style={{ flexDirection: 'row', gap: 13 }}>
         <Legend swatch={{ backgroundColor: CAT.nail!.bg }} label="Réservé" />
         <Legend swatch={{ borderWidth: 1, borderStyle: 'dashed', borderColor: C.line }} label="Libre" />
         <Legend swatch={HATCH} label="Fermé" />
@@ -356,9 +356,9 @@ function WeekGrid({ week, byDay, closedDays, salonHours, toneOf, selected, onSel
 
 function Legend({ swatch, label }: { swatch: ViewStyle; label: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-      <View style={[{ width: 20, height: 12, borderRadius: 4 }, swatch]} />
-      <Tx size={15} color={C.muted} lh={20}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+      <View style={[{ width: 16, height: 10, borderRadius: 3 }, swatch]} />
+      <Tx size={12} color={C.muted} lh={16}>
         {label}
       </Tx>
     </View>
@@ -373,30 +373,30 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
   const list = (byDay.get(selected) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const revenue = list.reduce((a, b) => a + b.priceDa, 0);
   return (
-    <View style={{ gap: 16 }}>
-      <View style={{ gap: 6 }}>
-        <View style={{ flexDirection: 'row', gap: 6 }}>
+    <View style={{ gap: 13 }}>
+      <View style={{ gap: 5 }}>
+        <View style={{ flexDirection: 'row', gap: 5 }}>
           {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((l, i) => (
-            <Tx key={i} size={15} lh={20} center color={closedDays.includes(i) ? C.disabled : C.subtle} style={{ flex: 1, paddingVertical: 4 }}>
+            <Tx key={i} size={12} lh={16} center color={closedDays.includes(i) ? C.disabled : C.subtle} style={{ flex: 1, paddingVertical: 3 }}>
               {l}
             </Tx>
           ))}
         </View>
         {rows.map((row, r) => (
-          <View key={r} style={{ flexDirection: 'row', gap: 6 }}>
+          <View key={r} style={{ flexDirection: 'row', gap: 5 }}>
             {row.map((d) => {
               const inMonth = d.slice(0, 7) === month;
               const closed = closedDays.includes(dayOfWeekFromKey(d));
               const on = d === selected;
               const dots = (byDay.get(d) ?? []).slice(0, 4);
               return (
-                <Pressable key={d} accessibilityRole="button" accessibilityLabel={d} onPress={() => (on ? onOpenDay(d) : onSelect(d))} style={[{ flex: 1, height: 74, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 14, borderWidth: 1, borderColor: on ? C.ink : inMonth ? C.lineSoft : 'transparent', backgroundColor: on ? C.ink : inMonth ? C.surface : 'transparent' }, closed && !on ? HATCH : null]}>
-                  <Tx size={15} weight={on || d === today ? 700 : 400} lh={20} color={on ? '#fff' : !inMonth || closed ? C.disabled : C.text}>
+                <Pressable key={d} accessibilityRole="button" accessibilityLabel={d} onPress={() => (on ? onOpenDay(d) : onSelect(d))} style={[{ flex: 1, height: 60, alignItems: 'center', justifyContent: 'center', gap: 5, borderRadius: 11, borderWidth: 1, borderColor: on ? C.ink : inMonth ? C.lineSoft : 'transparent', backgroundColor: on ? C.ink : inMonth ? C.surface : 'transparent' }, closed && !on ? HATCH : null]}>
+                  <Tx size={12} weight={on || d === today ? 700 : 400} lh={16} color={on ? '#fff' : !inMonth || closed ? C.disabled : C.text}>
                     {Number(d.slice(8, 10))}
                   </Tx>
-                  <View style={{ flexDirection: 'row', gap: 4, height: 6 }}>
+                  <View style={{ flexDirection: 'row', gap: 3, height: 5 }}>
                     {dots.map((b) => (
-                      <View key={b.id} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: on ? '#fff' : tone(toneOf(b)).line }} />
+                      <View key={b.id} style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: on ? '#fff' : tone(toneOf(b)).line }} />
                     ))}
                   </View>
                 </Pressable>
@@ -405,33 +405,33 @@ function MonthGrid({ date, gridStart, byDay, closedDays, toneOf, selected, today
           </View>
         ))}
       </View>
-      <View style={{ flexDirection: 'row', gap: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: CAT.nail!.line }} />
-          <Tx size={15} color={C.muted} lh={20}>
+      <View style={{ flexDirection: 'row', gap: 13 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <View style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: CAT.nail!.line }} />
+          <Tx size={12} color={C.muted} lh={16}>
             1 point = 1 rendez-vous
           </Tx>
         </View>
         <Legend swatch={HATCH} label="Fermé" />
       </View>
       <ListCard>
-        <Row py={16} onPress={() => onOpenDay(selected)}>
-          <Tx size={17} weight={700} ls={-0.3} lh={22}>
+        <Row py={13} onPress={() => onOpenDay(selected)}>
+          <Tx size={14} weight={700} ls={-0.3} lh={18}>
             {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))} {MONTHS_FR[Number(selected.slice(5, 7)) - 1]}
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             {list.length} rendez-vous · {formatDA(revenue)}
           </Tx>
         </Row>
         {list.map((b) => (
-          <Row key={b.id} py={12} chevron={false} onPress={() => onOpen(b.id)} right={<StatusBadge status={b.status} />}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 3, height: 28, borderRadius: 2, backgroundColor: tone(toneOf(b)).line }} />
+          <Row key={b.id} py={10} chevron={false} onPress={() => onOpen(b.id)} right={<StatusBadge status={b.status} />}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ width: 2, height: 23, borderRadius: 2, backgroundColor: tone(toneOf(b)).line }} />
               <View style={{ flex: 1 }}>
-                <Tx size={13} lh={18}>
+                <Tx size={10.5} lh={14.5}>
                   {b.clientName} · {b.serviceName}
                 </Tx>
-                <Tx size={14} color={C.muted} lh={18} mono>
+                <Tx size={11.5} color={C.muted} lh={14.5} mono>
                   {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                 </Tx>
               </View>

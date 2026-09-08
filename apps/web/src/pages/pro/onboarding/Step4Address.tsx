@@ -86,17 +86,17 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           <I icon={Search} size={20} className="text-subtle" />
           <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue des Frères Bouadou, Hydra" aria-label="Adresse" maxLength={200} />
         </label>
-        <div className="relative h-[220px] overflow-hidden rounded-[20px] border border-line bg-fill">
+        <div className="relative h-[13.75rem] overflow-hidden rounded-[1.25rem] border border-line bg-fill">
           <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '110px 80px' }} />
-          <span className="absolute left-1/2 top-1/2 flex h-[68px] w-[68px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-fab">
+          <span className="absolute left-1/2 top-1/2 flex h-[4.25rem] w-[4.25rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-fab">
             <I icon={MapPin} size={26} />
           </span>
-          <span className="absolute bottom-4 left-6 max-w-[80%] truncate rounded-full bg-surface px-4 py-2 text-[13px] font-semibold shadow-card">{address.trim() ? `${address.trim()}${zone ? `, ${zone}` : ''}` : zone || wilayaName(wilaya)}</span>
+          <span className="absolute bottom-4 left-6 max-w-[80%] truncate rounded-full bg-surface px-4 py-2 text-[0.8125rem] font-semibold shadow-card">{address.trim() ? `${address.trim()}${zone ? `, ${zone}` : ''}` : zone || wilayaName(wilaya)}</span>
         </div>
         <div className="crd !gap-0 !py-1">
           <label className="li !py-4">
-            <span className="text-[15px]">Ville</span>
-            <select className="max-w-[55%] bg-transparent text-right text-[15px] text-muted outline-none" value={wilaya} onChange={(e) => setWilaya(Number(e.target.value))} aria-label="Ville">
+            <span className="text-[0.9375rem]">Ville</span>
+            <select className="max-w-[55%] bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={wilaya} onChange={(e) => setWilaya(Number(e.target.value))} aria-label="Ville">
               {WILAYAS.map((w) => (
                 <option key={w.code} value={w.code}>
                   {w.name}
@@ -105,25 +105,25 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             </select>
           </label>
           <label className="li !py-4">
-            <span className="text-[15px]">Quartier</span>
-            <input className="max-w-[55%] bg-transparent text-right text-[15px] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
+            <span className="text-[0.9375rem]">Quartier</span>
+            <input className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
           </label>
           {settings && (
             <label className="li !py-4">
-              <span className="text-[15px]">Téléphone</span>
-              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[15px] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
+              <span className="text-[0.9375rem]">Téléphone</span>
+              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
             </label>
           )}
           <div className="li !py-4">
             <span>
-              <span className="block text-[15px]">Se déplacer à domicile</span>
-              <span className="p block text-[15px]">Prestations hors salon</span>
+              <span className="block text-[0.9375rem]">Se déplacer à domicile</span>
+              <span className="p block text-[0.9375rem]">Prestations hors salon</span>
             </span>
             <Toggle on={home} onChange={setHome} label="Se déplacer à domicile" />
           </div>
         </div>
         {error && (
-          <p className="text-[14px] text-danger" role="alert">
+          <p className="text-[0.875rem] text-danger" role="alert">
             {error}
           </p>
         )}

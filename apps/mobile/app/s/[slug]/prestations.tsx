@@ -59,12 +59,12 @@ export default function BookingServices() {
     const photo = sv.photos?.[0]?.url ?? s.coverUrl;
     const inner = (
       <>
-        <Img src={photo} radius={16} style={{ width: 88, height: 88 }} />
+        <Img src={photo} radius={13} style={{ width: 72, height: 72 }} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={17} weight={700} ls={-0.3} lh={22}>
+          <Tx size={14} weight={700} ls={-0.3} lh={18}>
             {sv.name}
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             {[formatDuration(sv.durationMinutes), boxed ? sv.description : null, formatDA(sv.priceDa)].filter(Boolean).join(' · ')}
           </Tx>
         </View>
@@ -73,12 +73,12 @@ export default function BookingServices() {
     );
     if (boxed)
       return (
-        <Card row gap={16} onPress={() => toggle(sv.id)} accessibilityLabel={sv.name}>
+        <Card row gap={13} onPress={() => toggle(sv.id)} accessibilityLabel={sv.name}>
           {inner}
         </Card>
       );
     return (
-      <Pressable accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={sv.name} onPress={() => toggle(sv.id)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 16, opacity: pressed ? 0.8 : 1 })}>
+      <Pressable accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={sv.name} onPress={() => toggle(sv.id)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 13, paddingVertical: 13, opacity: pressed ? 0.8 : 1 })}>
         {inner}
       </Pressable>
     );
@@ -86,28 +86,28 @@ export default function BookingServices() {
 
   return (
     <Screen
-      gap={14}
+      gap={11}
       footer={
         <BottomSheet>
           {chosen.length > 0 ? (
             <>
               <P>{chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}</P>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Tx size={24} weight={700} ls={-0.6} lh={29}>
+                  <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
                     {formatDA(total)}
                   </Tx>
                   <P>
                     {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)} au total
                   </P>
                 </View>
-                <Button pill onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)} style={{ paddingHorizontal: 24, paddingVertical: 16 }}>
+                <Button pill onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)} style={{ paddingHorizontal: 20, paddingVertical: 13 }}>
                   Choisir un créneau
                 </Button>
               </View>
             </>
           ) : (
-            <View style={{ paddingVertical: 8 }}>
+            <View style={{ paddingVertical: 6 }}>
               <P center>Cochez une ou plusieurs prestations.</P>
             </View>
           )}
@@ -130,7 +130,7 @@ export default function BookingServices() {
           <ServiceRow key={sv.id} sv={sv} />
         ))}
         {carte.length === 0 && (
-          <View style={{ paddingVertical: 12 }}>
+          <View style={{ paddingVertical: 10 }}>
             <P>Aucune prestation pour le moment.</P>
           </View>
         )}

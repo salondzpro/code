@@ -22,7 +22,7 @@ export default function SalonWorks() {
   const withPhotos = s.services.filter((sv) => (sv.photos?.length ?? 0) > 0);
   const photos = filter === 'all' ? [...s.photos.map((p) => ({ id: p.id, url: p.url })), ...withPhotos.flatMap((sv) => sv.photos!.map((p) => ({ id: p.id, url: p.url })))] : (withPhotos.find((sv) => sv.id === filter)?.photos ?? []);
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
       <H1>Réalisations</H1>
       <PillRow>

@@ -28,7 +28,7 @@ export default function ProBookingReschedule() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
           <Button
@@ -47,7 +47,7 @@ export default function ProBookingReschedule() {
       <TopBar backTo={`/pro-rdv/${b.id}`} right="Reporter" />
       <H1>Nouveau créneau</H1>
       <Soft>
-        <Tx size={13} color={C.muted} lh={19}>
+        <Tx size={10.5} color={C.muted} lh={15.5}>
           Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} · {b.serviceName}
         </Tx>
       </Soft>

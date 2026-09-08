@@ -52,7 +52,7 @@ export function BookingReschedule() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/rendez-vous/${b.id}`} right="Reporter" />
       <h1 className="h1">Nouveau créneau</h1>
-      <div className="sf flex items-center gap-3 text-[13px] text-muted">
+      <div className="sf flex items-center gap-3 text-[0.8125rem] text-muted">
         <I icon={Clock} size={18} />
         <span>
           Actuel · {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
@@ -66,7 +66,7 @@ export function BookingReschedule() {
       {closedDays.includes(dow) ? (
         <p className="p">Le salon est fermé ce jour-là.</p>
       ) : availability.isPending || availability.isFetching ? (
-        <Skeleton className="h-[140px] w-full" />
+        <Skeleton className="h-[8.75rem] w-full" />
       ) : availability.isError ? (
         <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
       ) : grid.length === 0 ? (
@@ -74,7 +74,7 @@ export function BookingReschedule() {
       ) : (
         <div className="g3">
           {grid.map((g) => (
-            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onClick={() => g.free && setSlot(g.iso)} className="!py-[22px] !text-[16px]">
+            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onClick={() => g.free && setSlot(g.iso)} className="!py-[1.375rem] !text-[1rem]">
               {g.time}
             </Slot>
           ))}

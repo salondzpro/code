@@ -17,45 +17,45 @@ export default function ProServices() {
   const { update, remove } = useProServiceMutations();
   if (!salon) return <Splash />;
   return (
-    <Screen gap={16} bottom={NAV_PAD}>
+    <Screen gap={13} bottom={NAV_PAD}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <H1 size={28} lh={32} ls={-0.8}>
+        <H1 size={23} lh={26} ls={-0.8}>
           Prestations
         </H1>
-        <Button pill sm onPress={() => router.push('/onboarding/6')} style={{ paddingHorizontal: 16, paddingVertical: 11 }}>
-          <I icon={Plus} size={18} color="#fff" />
-          <Tx size={14} weight={600} color="#fff" ls={-0.2}>
+        <Button pill sm onPress={() => router.push('/onboarding/6')} style={{ paddingHorizontal: 13, paddingVertical: 9 }}>
+          <I icon={Plus} size={14.5} color="#fff" />
+          <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
             Ajouter
           </Tx>
         </Button>
       </View>
       <ErrorText error={update.error ?? remove.error} />
       {salon.services.length === 0 && <P>Ajoutez votre première prestation : nom, prix, durée et photos.</P>}
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 10 }}>
         {salon.services.map((sv) => {
           const photos = sv.photos ?? [];
           return (
-            <Card key={sv.id} gap={12} style={{ opacity: sv.isActive ? 1 : 0.6 }}>
-              <Pressable accessibilityRole="link" accessibilityLabel={sv.name} onPress={() => router.push(`/onboarding/6/${sv.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-                <Img src={photos[0]?.url ?? salon.coverUrl} radius={16} style={{ width: 88, height: 88 }} />
+            <Card key={sv.id} gap={10} style={{ opacity: sv.isActive ? 1 : 0.6 }}>
+              <Pressable accessibilityRole="link" accessibilityLabel={sv.name} onPress={() => router.push(`/onboarding/6/${sv.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
+                <Img src={photos[0]?.url ?? salon.coverUrl} radius={13} style={{ width: 72, height: 72 }} />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={17} weight={700} ls={-0.3} lh={22}>
+                  <Tx size={14} weight={700} ls={-0.3} lh={18}>
                     {sv.name}
                   </Tx>
-                  <Tx size={13} color={C.muted} lh={19}>
+                  <Tx size={10.5} color={C.muted} lh={15.5}>
                     {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
                     {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                   </Tx>
                 </View>
-                <I icon={ChevronRight} size={20} color={C.disabled} />
+                <I icon={ChevronRight} size={16} color={C.disabled} />
               </Pressable>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: C.lineSoft, paddingTop: 12 }}>
-                <Tx size={13} color={C.muted} lh={19}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: C.lineSoft, paddingTop: 10 }}>
+                <Tx size={10.5} color={C.muted} lh={15.5}>
                   {sv.isActive ? 'Visible et réservable' : 'Désactivée'}
                 </Tx>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
                   <Pressable accessibilityRole="link" onPress={() => router.push(`/onboarding/7/${sv.id}` as never)}>
-                    <Tx size={15} color={C.muted} lh={20} style={{ textDecorationLine: 'underline' }}>
+                    <Tx size={12} color={C.muted} lh={16} style={{ textDecorationLine: 'underline' }}>
                       Photos
                     </Tx>
                   </Pressable>

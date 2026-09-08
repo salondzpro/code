@@ -75,8 +75,8 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
       <div className="crd !gap-0 !py-1">
         {rows.map((r) => (
           <div key={r.dayOfWeek} className="li !py-4">
-            <span className={`w-[104px] flex-none text-[15px] ${r.open ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
-            <span className="flex flex-1 items-center gap-1 text-[15px] text-muted">
+            <span className={`w-[6.5rem] flex-none text-[0.9375rem] ${r.open ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
+            <span className="flex flex-1 items-center gap-1 text-[0.9375rem] text-muted">
               {r.open ? (
                 <>
                   <input type="time" className="tm" value={r.opensAt} onChange={(e) => patch(r.dayOfWeek, { opensAt: e.target.value })} aria-label={`Ouverture ${DAY_LABELS_FR[r.dayOfWeek]}`} />
@@ -93,8 +93,8 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
       </div>
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
-          <span className="text-[15px]">Pause déjeuner</span>
-          <span className="flex items-center gap-2 text-[15px] text-muted">
+          <span className="text-[0.9375rem]">Pause déjeuner</span>
+          <span className="flex items-center gap-2 text-[0.9375rem] text-muted">
             {lunch && (
               <>
                 <input type="time" className="tm" value={lunchFrom} onChange={(e) => setLunchFrom(e.target.value)} aria-label="Début de pause" />
@@ -106,13 +106,13 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
           </span>
         </div>
         <div className="li !py-4">
-          <span className="text-[15px]">Semaine commençant</span>
-          <span className="text-[15px] text-muted">Dimanche</span>
+          <span className="text-[0.9375rem]">Semaine commençant</span>
+          <span className="text-[0.9375rem] text-muted">Dimanche</span>
         </div>
       </div>
-      {invalid && <p className="text-[14px] text-danger">L'heure d'ouverture doit précéder la fermeture.</p>}
+      {invalid && <p className="text-[0.875rem] text-danger">L'heure d'ouverture doit précéder la fermeture.</p>}
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}

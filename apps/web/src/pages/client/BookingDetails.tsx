@@ -67,23 +67,23 @@ export function BookingDetails() {
         <div>
           <span className="lbl">Téléphone</span>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[14px] bg-fill px-4 text-[13px] font-medium">
+            <div className="flex flex-none items-center gap-2 rounded-[0.875rem] bg-fill px-4 text-[0.8125rem] font-medium">
               +213 <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
             <Input lg type="tel" inputMode="numeric" value={groupLocalDigits(digits)} onChange={(e) => setDigits(e.target.value.replace(/\D/g, '').slice(0, 9))} aria-label="Téléphone" err={!!error && name.trim().length >= 2} />
           </div>
-          {error && name.trim().length >= 2 && <p className="mt-1.5 text-[13px] text-danger">{error}</p>}
+          {error && name.trim().length >= 2 && <p className="mt-1.5 text-[0.8125rem] text-danger">{error}</p>}
         </div>
         <Field label="Note pour le salon (optionnel)" htmlFor="bk-notes">
           <Textarea id="bk-notes" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder="Base fine, gel rose pâle si possible" />
         </Field>
         <div className="crd !flex-row items-center gap-4">
-          <span className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full border border-line bg-surface">
+          <span className="flex h-[3.25rem] w-[3.25rem] flex-none items-center justify-center rounded-full border border-line bg-surface">
             <I icon={MessageCircle} size={22} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[13px]">Confirmation et rappel sur WhatsApp</span>
-            <span className="p block text-[15px]">2 h avant le rendez-vous</span>
+            <span className="block text-[0.8125rem]">Confirmation et rappel sur WhatsApp</span>
+            <span className="p block text-[0.9375rem]">2 h avant le rendez-vous</span>
           </span>
           <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappel WhatsApp" />
         </div>
@@ -91,7 +91,7 @@ export function BookingDetails() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[22px] font-bold tracking-[-0.5px]">{formatDA(price)}</div>
+            <div className="text-[1.375rem] font-bold tracking-[-0.5px]">{formatDA(price)}</div>
             <div className="p">
               {formatDuration(minutes)} · {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(draft.startsAt)}
             </div>

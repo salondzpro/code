@@ -24,14 +24,14 @@ export function SalonServices() {
           const photos = sv.photos ?? [];
           return (
             <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="crd !flex-row items-center gap-4">
-              <Img src={photos[0]?.url ?? s.coverUrl} className="h-[112px] w-[112px] flex-none !rounded-[16px]" />
+              <Img src={photos[0]?.url ?? s.coverUrl} className="h-[7rem] w-[7rem] flex-none !rounded-[1rem]" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[17px] font-bold tracking-[-0.3px]">{sv.name}</span>
-                <span className="block text-[13px] text-muted">
+                <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>
+                <span className="block text-[0.8125rem] text-muted">
                   {formatDuration(sv.durationMinutes)}
                   {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                 </span>
-                <span className="mt-1.5 block text-[16px] font-bold">{formatDA(sv.priceDa)}</span>
+                <span className="mt-1.5 block text-[1rem] font-bold">{formatDA(sv.priceDa)}</span>
               </span>
               <I icon={ChevronRight} size={20} className="text-disabled" />
             </Link>

@@ -33,42 +33,42 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
   const short = `${publicHost()}/s/${slug}`;
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: ReactNode; onPress: () => void }[] = [
-    { label: 'WhatsApp', icon: <I icon={MessageCircle} size={26} />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
-    { label: 'Instagram', icon: <Tx size={18} weight={700}>◎</Tx>, onPress: () => copy(url) },
-    { label: 'Facebook', icon: <Tx size={20} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
-    { label: 'TikTok', icon: <Tx size={18} weight={700}>♪</Tx>, onPress: () => copy(url) },
-    { label: 'Messages', icon: <Tx size={18}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
+    { label: 'WhatsApp', icon: <I icon={MessageCircle} size={21} />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
+    { label: 'Instagram', icon: <Tx size={14.5} weight={700}>◎</Tx>, onPress: () => copy(url) },
+    { label: 'Facebook', icon: <Tx size={16} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
+    { label: 'TikTok', icon: <Tx size={14.5} weight={700}>♪</Tx>, onPress: () => copy(url) },
+    { label: 'Messages', icon: <Tx size={14.5}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
     {
       label: 'QR Code',
-      icon: <I icon={QrCode} size={26} />,
+      icon: <I icon={QrCode} size={21} />,
       onPress: () => {
         onClose();
         router.push('/qr');
       },
     },
-    { label: 'Plus', icon: <I icon={Share2} size={26} />, onPress: () => void shareSalon(name, url) },
+    { label: 'Plus', icon: <I icon={Share2} size={21} />, onPress: () => void shareSalon(name, url) },
   ];
   return (
     <ModalSheet open={open} onClose={onClose}>
-      <Tx size={22} weight={700} ls={-0.7} lh={26}>
+      <Tx size={18} weight={700} ls={-0.7} lh={21}>
         Partagez votre page
       </Tx>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 16 }}>
-        <I icon={Lock} size={20} color={C.muted} />
-        <Tx size={15} lh={20} numberOfLines={1} style={{ flex: 1 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 13, paddingVertical: 13 }}>
+        <I icon={Lock} size={16} color={C.muted} />
+        <Tx size={12} lh={16} numberOfLines={1} style={{ flex: 1 }}>
           {short}
         </Tx>
         <Pressable accessibilityRole="button" onPress={() => copy(url)}>
-          <Tx size={15} weight={600} lh={20}>
+          <Tx size={12} weight={600} lh={16}>
             {copied ? 'Copié' : 'Copier'}
           </Tx>
         </Pressable>
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {items.map((it) => (
-          <Pressable key={it.label} accessibilityRole="button" accessibilityLabel={it.label} onPress={it.onPress} style={{ width: '22%', flexGrow: 1, alignItems: 'center', gap: 8 }}>
-            <View style={{ width: 76, height: 76, borderRadius: 22, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>{it.icon}</View>
-            <Tx size={15} color={C.muted} lh={20}>
+          <Pressable key={it.label} accessibilityRole="button" accessibilityLabel={it.label} onPress={it.onPress} style={{ width: '22%', flexGrow: 1, alignItems: 'center', gap: 6 }}>
+            <View style={{ width: 62, height: 62, borderRadius: 18, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>{it.icon}</View>
+            <Tx size={12} color={C.muted} lh={16}>
               {it.label}
             </Tx>
           </Pressable>

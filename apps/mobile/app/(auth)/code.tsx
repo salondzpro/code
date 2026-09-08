@@ -77,14 +77,14 @@ export default function Code() {
   if (status === 'verified') {
     // AUTH 12 — Vérification réussie
     return (
-      <Screen center gap={16}>
-        <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: C.okBg, alignItems: 'center', justifyContent: 'center' }}>
-          <I icon={Check} size={40} color={C.okFg} />
+      <Screen center gap={13}>
+        <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.okBg, alignItems: 'center', justifyContent: 'center' }}>
+          <I icon={Check} size={32.5} color={C.okFg} />
         </View>
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 10 }}>
           <H1>Numéro vérifié</H1>
           <P>
-            <Tx size={15} weight={600} lh={22}>{shown}</Tx> est confirmé. Vous restez connecté sur cet appareil : aucun nouveau code ne vous sera envoyé.
+            <Tx size={12} weight={600} lh={18}>{shown}</Tx> est confirmé. Vous restez connecté sur cet appareil : aucun nouveau code ne vous sera envoyé.
           </P>
         </View>
         <Button
@@ -109,33 +109,33 @@ export default function Code() {
   const countdown = `0:${String(resendIn).padStart(2, '0')}`;
 
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo="/canal" right="Étape 3 sur 3" />
       <H1>{fresh ? 'Code envoyé' : 'Saisir le code'}</H1>
 
       {fresh && (
-        <View style={{ borderRadius: R.card, backgroundColor: C.okBg, padding: 16, gap: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
-              <I icon={MessageCircle} size={20} color={C.okFg} />
+        <View style={{ borderRadius: R.card, backgroundColor: C.okBg, padding: 13, gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+              <I icon={MessageCircle} size={16} color={C.okFg} />
             </View>
             <View>
-              <Tx size={13} weight={600} lh={18}>
+              <Tx size={10.5} weight={600} lh={14.5}>
                 {isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}
               </Tx>
               <S>maintenant</S>
             </View>
           </View>
-          <Tx size={15} lh={22}>
-            Votre code de vérification arrive sur <Tx size={15} weight={600} lh={22}>{shown}</Tx>. Il expire dans 5 minutes.
+          <Tx size={12} lh={18}>
+            Votre code de vérification arrive sur <Tx size={12} weight={600} lh={18}>{shown}</Tx>. Il expire dans 5 minutes.
           </Tx>
         </View>
       )}
 
-      <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Code à 4 chiffres" style={{ flexDirection: 'row', gap: 10 }}>
+      <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Code à 4 chiffres" style={{ flexDirection: 'row', gap: 8 }}>
         {digits.map((d, i) => (
-          <View key={i} style={{ flex: 1, height: 68, borderRadius: R.input, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', backgroundColor: d || status === 'wrong' ? C.surface : C.fill, borderColor: status === 'wrong' ? C.danger : d ? C.ink : 'transparent', opacity: expired ? 0.5 : 1 }}>
-            <Tx size={18} weight={500} lh={24} mono>
+          <View key={i} style={{ flex: 1, height: 55, borderRadius: R.input, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', backgroundColor: d || status === 'wrong' ? C.surface : C.fill, borderColor: status === 'wrong' ? C.danger : d ? C.ink : 'transparent', opacity: expired ? 0.5 : 1 }}>
+            <Tx size={14.5} weight={500} lh={19.5} mono>
               {d}
             </Tx>
           </View>
@@ -157,7 +157,7 @@ export default function Code() {
         accessibilityLabel="Code de vérification"
         style={{ position: 'absolute', opacity: 0, height: 1, width: 1 }}
       />
-      {fresh && <Tx size={14} color={C.muted} lh={20}>Coller automatiquement depuis {isEmail ? 'votre messagerie' : 'WhatsApp'}</Tx>}
+      {fresh && <Tx size={11.5} color={C.muted} lh={16}>Coller automatiquement depuis {isEmail ? 'votre messagerie' : 'WhatsApp'}</Tx>}
 
       {status === 'wrong' && !expired && (
         <Alert icon={AlertCircle}>
@@ -170,10 +170,10 @@ export default function Code() {
       {!expired && status !== 'network' && (
         <Card row>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13} lh={18}>
+            <Tx size={10.5} lh={14.5}>
               Rester connecté
             </Tx>
-            <Tx size={14} color={C.muted} lh={20}>
+            <Tx size={11.5} color={C.muted} lh={16}>
               Session illimitée · aucun code à la prochaine visite
             </Tx>
           </View>
@@ -189,7 +189,7 @@ export default function Code() {
             {resendLabel}
           </Button>
           {resendIn > 0 && (
-            <Tx size={14} color={C.muted} lh={20} center>
+            <Tx size={11.5} color={C.muted} lh={16} center>
               Nouveau code disponible dans {countdown}
             </Tx>
           )}
@@ -199,7 +199,7 @@ export default function Code() {
           <Button onPress={() => void verify()} disabled={!complete || status === 'verifying'} loading={status === 'verifying'}>
             Vérifier
           </Button>
-          {status === 'wrong' && <TextLink size={15} onPress={() => (resendIn > 0 ? undefined : void resend())}>{resendIn > 0 ? `Renvoyer le code (${countdown})` : 'Renvoyer le code'}</TextLink>}
+          {status === 'wrong' && <TextLink size={12} onPress={() => (resendIn > 0 ? undefined : void resend())}>{resendIn > 0 ? `Renvoyer le code (${countdown})` : 'Renvoyer le code'}</TextLink>}
         </>
       )}
     </Screen>

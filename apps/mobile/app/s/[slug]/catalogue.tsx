@@ -24,28 +24,28 @@ export default function SalonServices() {
     );
   const s = salon.data;
   return (
-    <Screen gap={16}>
+    <Screen gap={13}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
       <H1>Prestations</H1>
-      <View style={{ gap: 14 }}>
+      <View style={{ gap: 11 }}>
         {s.services.map((sv) => {
           const photos = sv.photos ?? [];
           return (
-            <Card key={sv.id} row gap={16} onPress={() => router.push(`/s/${s.slug}/prestation/${sv.id}` as never)} accessibilityLabel={sv.name}>
-              <Img src={photos[0]?.url ?? s.coverUrl} radius={16} style={{ width: 112, height: 112 }} />
+            <Card key={sv.id} row gap={13} onPress={() => router.push(`/s/${s.slug}/prestation/${sv.id}` as never)} accessibilityLabel={sv.name}>
+              <Img src={photos[0]?.url ?? s.coverUrl} radius={13} style={{ width: 91, height: 91 }} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={17} weight={700} ls={-0.3} lh={22}>
+                <Tx size={14} weight={700} ls={-0.3} lh={18}>
                   {sv.name}
                 </Tx>
-                <Tx size={13} color={C.muted} lh={19}>
+                <Tx size={10.5} color={C.muted} lh={15.5}>
                   {formatDuration(sv.durationMinutes)}
                   {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                 </Tx>
-                <Tx size={16} weight={700} lh={21} style={{ marginTop: 6 }}>
+                <Tx size={13} weight={700} lh={17} style={{ marginTop: 5 }}>
                   {formatDA(sv.priceDa)}
                 </Tx>
               </View>
-              <I icon={ChevronRight} size={20} color={C.disabled} />
+              <I icon={ChevronRight} size={16} color={C.disabled} />
             </Card>
           );
         })}

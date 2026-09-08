@@ -67,11 +67,11 @@ export function Step7ServicePhotos() {
         <p className="p mt-2">Une photo de couverture et jusqu'à {MAX_EXAMPLES} exemples de résultats.</p>
       </div>
       <SectionLabel>Couverture</SectionLabel>
-      <button type="button" className="relative h-[320px] w-full overflow-hidden rounded-[20px] bg-line" onClick={() => coverInput.current?.click()} aria-label="Choisir la photo de couverture" disabled={busy}>
+      <button type="button" className="relative h-[20rem] w-full overflow-hidden rounded-[1.25rem] bg-line" onClick={() => coverInput.current?.click()} aria-label="Choisir la photo de couverture" disabled={busy}>
         {cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : (
           <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
             <I icon={Camera} size={32} />
-            <span className="text-[15px]">Ajouter une photo</span>
+            <span className="text-[0.9375rem]">Ajouter une photo</span>
           </span>
         )}
       </button>
@@ -79,7 +79,7 @@ export function Step7ServicePhotos() {
       <SectionLabel>Exemples de résultats</SectionLabel>
       <div className="g3">
         {examples.map((u) => (
-          <div key={u} className="relative aspect-square overflow-hidden rounded-[16px] bg-line">
+          <div key={u} className="relative aspect-square overflow-hidden rounded-[1rem] bg-line">
             <img src={u} alt="" className="h-full w-full object-cover" />
             <button type="button" className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white" aria-label="Retirer" onClick={() => remove(u)}>
               <I icon={X} size={14} />
@@ -87,7 +87,7 @@ export function Step7ServicePhotos() {
           </div>
         ))}
         {examples.length < MAX_EXAMPLES && (
-          <button type="button" className="flex aspect-square items-center justify-center rounded-[16px] border border-dashed border-line bg-fill text-subtle" onClick={() => moreInput.current?.click()} aria-label="Ajouter un exemple" disabled={busy}>
+          <button type="button" className="flex aspect-square items-center justify-center rounded-[1rem] border border-dashed border-line bg-fill text-subtle" onClick={() => moreInput.current?.click()} aria-label="Ajouter un exemple" disabled={busy}>
             <I icon={Plus} size={28} />
           </button>
         )}
@@ -95,7 +95,7 @@ export function Step7ServicePhotos() {
       <input ref={moreInput} type="file" accept="image/*" multiple hidden onChange={(e) => { void add(e.target.files, false); e.target.value = ''; }} />
       <InfoBox>Les prestations avec photos sont réservées 3 fois plus souvent.</InfoBox>
       {error && (
-        <p className="text-[14px] text-danger" role="alert">
+        <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
       )}

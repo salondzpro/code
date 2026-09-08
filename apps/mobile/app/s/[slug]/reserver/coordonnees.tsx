@@ -58,19 +58,19 @@ export default function BookingDetails() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={22} weight={700} ls={-0.5} lh={27}>
+              <Tx size={18} weight={700} ls={-0.5} lh={22}>
                 {formatDA(price)}
               </Tx>
               <P>
                 {formatDuration(minutes)} · {formatDateLongDZ(draft.startsAt).replace(/^\p{L}/u, (c) => c.toLowerCase())}, {formatTimeDZ(draft.startsAt)}
               </P>
             </View>
-            <Button pill onPress={submit} style={{ paddingHorizontal: 28, paddingVertical: 14 }}>
+            <Button pill onPress={submit} style={{ paddingHorizontal: 23, paddingVertical: 11 }}>
               Vérifier
             </Button>
           </View>
@@ -78,7 +78,7 @@ export default function BookingDetails() {
       }
     >
       <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 4 sur 4" />
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 10 }}>
         <H1>Vos coordonnées</H1>
         <P>Vous êtes connecté{me.data?.profile.gender === 'female' ? 'e' : ''} : vos coordonnées sont préremplies depuis votre compte.</P>
       </View>
@@ -86,12 +86,12 @@ export default function BookingDetails() {
         <Input lg f={!!name} value={name} onChangeText={setName} autoComplete="name" textContentType="name" />
       </Field>
       <Field label="Téléphone" error={phoneError ? error : null}>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 16 }}>
-            <Tx size={13} weight={500} lh={18}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 13 }}>
+            <Tx size={10.5} weight={500} lh={14.5}>
               +213
             </Tx>
-            <I icon={ChevronDown} size={16} color={C.subtle} />
+            <I icon={ChevronDown} size={13} color={C.subtle} />
           </View>
           <Input lg style={{ flex: 1 }} keyboardType="number-pad" value={groupLocalDigits(digits)} onChangeText={(v) => setDigits(v.replace(/\D/g, '').slice(0, 9))} accessibilityLabel="Téléphone" err={phoneError} />
         </View>
@@ -99,12 +99,12 @@ export default function BookingDetails() {
       <Field label="Note pour le salon (optionnel)">
         <Input multiline value={notes} onChangeText={setNotes} maxLength={300} placeholder="Base fine, gel rose pâle si possible" />
       </Field>
-      <Card row gap={16}>
-        <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
-          <I icon={MessageCircle} size={22} />
+      <Card row gap={13}>
+        <View style={{ width: 42, height: 42, borderRadius: 21, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+          <I icon={MessageCircle} size={18} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={13} lh={18}>
+          <Tx size={10.5} lh={14.5}>
             Confirmation et rappel sur WhatsApp
           </Tx>
           <P>2 h avant le rendez-vous</P>

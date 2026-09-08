@@ -20,7 +20,7 @@ export default function Favorites() {
   const items = filter === 'all' ? all : all.filter((s) => salonMarkets(s.genderTarget).includes(filter));
 
   return (
-    <Screen gap={16} bottom={NAV_PAD}>
+    <Screen gap={13} bottom={NAV_PAD}>
       <TopBar backTo="/(client)/(tabs)/profil" right="Favoris" />
       <H1>Mes favoris</H1>
       <PillRow>
@@ -36,42 +36,42 @@ export default function Favorites() {
       </PillRow>
       {favs.isPending ? (
         <>
-          <Skeleton h={140} radius={20} />
-          <Skeleton h={140} radius={20} />
+          <Skeleton h={114} radius={16} />
+          <Skeleton h={114} radius={16} />
         </>
       ) : favs.isError ? (
         <ErrorText error={favs.error} retry={() => void favs.refetch()} />
       ) : items.length === 0 ? (
-        <View style={{ alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 56 }}>
-          <Tx size={18} weight={700} lh={23} center>
+        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 46 }}>
+          <Tx size={14.5} weight={700} lh={18.5} center>
             Aucun salon en favori
           </Tx>
           <P center>Touchez le cœur sur la page d'un salon pour le retrouver ici.</P>
-          <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 8 }}>
+          <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 6 }}>
             Explorer les salons
           </Button>
         </View>
       ) : (
         items.map((s) => (
-          <Card key={s.id} row gap={14}>
-            <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-              <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={108} />
+          <Card key={s.id} row gap={11}>
+            <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+              <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={88} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={18} weight={700} ls={-0.4} lh={23}>
+                <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
                   {s.name}
                 </Tx>
-                <Tx size={13} color={C.muted} lh={19}>
+                <Tx size={10.5} color={C.muted} lh={15.5}>
                   {[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}
                 </Tx>
-                <Tx size={13} lh={19} style={{ marginTop: 4 }}>
+                <Tx size={10.5} lh={15.5} style={{ marginTop: 3 }}>
                   {s.nextAvailable ? `Dispo ${relativeDayLabelDZ(s.nextAvailable.date).toLowerCase()} ${s.nextAvailable.slots[0]}` : 'Aucune disponibilité cette semaine'}
                 </Tx>
               </View>
             </Pressable>
-            <View style={{ alignItems: 'flex-end', gap: 12 }}>
+            <View style={{ alignItems: 'flex-end', gap: 10 }}>
               {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
               <Pressable accessibilityRole="button" accessibilityLabel="Retirer des favoris" onPress={() => toggle.mutate({ salonId: s.id, on: false })} disabled={toggle.isPending} hitSlop={8}>
-                <Heart size={26} strokeWidth={1.6} color={C.text} fill={C.text} />
+                <Heart size={21} strokeWidth={1.6} color={C.text} fill={C.text} />
               </Pressable>
             </View>
           </Card>

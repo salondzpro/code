@@ -36,7 +36,7 @@ export function SearchPage() {
 
   return (
     <Screen bottom={NAV_PAD} gap={14}>
-      <TopBar backTo="/" right={<span className="text-[15px] text-muted">{MARKET_LABELS_FR[market]}</span>} />
+      <TopBar backTo="/" right={<span className="text-[0.9375rem] text-muted">{MARKET_LABELS_FR[market]}</span>} />
       <form
         className="search"
         role="search"
@@ -69,7 +69,7 @@ export function SearchPage() {
                     <I icon={Scissors} size={18} />
                   </span>
                   <span>
-                    <span className="block text-[13px] font-medium">{h.name}</span>
+                    <span className="block text-[0.8125rem] font-medium">{h.name}</span>
                     <span className="s block">Prestation · {h.count} {market === 'men' ? 'barbier' : 'salon'}{h.count > 1 ? 's' : ''}</span>
                   </span>
                 </span>
@@ -81,7 +81,7 @@ export function SearchPage() {
                 <span className="flex items-center gap-3.5">
                   <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={40} />
                   <span>
-                    <span className="block text-[13px] font-medium">{s.name}</span>
+                    <span className="block text-[0.8125rem] font-medium">{s.name}</span>
                     <span className="s block">
                       {s.zone ?? s.city}
                       {s.ratingCount > 0 ? ` · ${formatRating(s.ratingAvg)}` : ''}
@@ -102,7 +102,7 @@ export function SearchPage() {
               <span className="h3">Recherches récentes</span>
               <button
                 type="button"
-                className="text-[15px] text-muted"
+                className="text-[0.9375rem] text-muted"
                 onClick={() => {
                   clearRecentSearches();
                   setRecent([]);

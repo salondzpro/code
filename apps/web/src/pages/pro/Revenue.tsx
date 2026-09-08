@@ -63,7 +63,7 @@ export function Revenue() {
         ]}
       />
       {stats.isPending ? (
-        <Skeleton className="h-[300px] w-full !rounded-[20px]" />
+        <Skeleton className="h-[18.75rem] w-full !rounded-[1.25rem]" />
       ) : stats.isError ? (
         <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
       ) : (
@@ -71,7 +71,7 @@ export function Revenue() {
           <div className="crd !gap-5">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-[38px] font-bold leading-none tracking-[-1px]">{formatDA(s!.revenueDa)}</div>
+                <div className="text-[2.375rem] font-bold leading-none tracking-[-1px]">{formatDA(s!.revenueDa)}</div>
                 <div className="p mt-2">
                   {r.label} · {s!.bookings} rendez-vous
                 </div>
@@ -90,8 +90,8 @@ export function Revenue() {
                   const h = Math.max(6, Math.round((d.revenueDa / max) * 170));
                   return (
                     <div key={d.date} className="flex flex-1 flex-col items-center justify-end gap-2" style={{ minWidth: 0 }}>
-                      <div className={`w-full rounded-[10px] ${isToday ? 'bg-ink' : 'bg-line'}`} style={{ height: h }} title={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
-                      {period === 'week' ? <span className={`text-[15px] ${isToday ? 'font-bold' : 'text-muted'}`}>{DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)]}</span> : (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && <span className={`text-[12px] ${isToday ? 'font-bold' : 'text-muted'}`}>{Number(d.date.slice(8, 10))}</span>}
+                      <div className={`w-full rounded-[0.625rem] ${isToday ? 'bg-ink' : 'bg-line'}`} style={{ height: h }} title={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
+                      {period === 'week' ? <span className={`text-[0.9375rem] ${isToday ? 'font-bold' : 'text-muted'}`}>{DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)]}</span> : (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && <span className={`text-[0.75rem] ${isToday ? 'font-bold' : 'text-muted'}`}>{Number(d.date.slice(8, 10))}</span>}
                     </div>
                   );
                 })}
@@ -100,17 +100,17 @@ export function Revenue() {
           </div>
           <div className="crd !gap-0 !py-1">
             <div className="li !py-5">
-              <span className="text-[16px]">Encaissé</span>
-              <span className="text-[20px] font-bold">{formatDA(s!.collectedDa)}</span>
+              <span className="text-[1rem]">Encaissé</span>
+              <span className="text-[1.25rem] font-bold">{formatDA(s!.collectedDa)}</span>
             </div>
             <div className="li !py-5">
               <span>
-                <span className="block text-[16px]">Reste à encaisser</span>
-                <span className="p block text-[13px]">
+                <span className="block text-[1rem]">Reste à encaisser</span>
+                <span className="p block text-[0.8125rem]">
                   {s!.remainingCount} rendez-vous confirmé{s!.remainingCount > 1 ? 's' : ''}
                 </span>
               </span>
-              <span className="text-[20px] font-bold">{formatDA(s!.remainingDa)}</span>
+              <span className="text-[1.25rem] font-bold">{formatDA(s!.remainingDa)}</span>
             </div>
           </div>
           <SectionLabel>Par prestation</SectionLabel>
@@ -119,12 +119,12 @@ export function Revenue() {
             {s!.byService.map((x) => (
               <div key={x.name} className="li !py-5">
                 <span>
-                  <span className="block text-[17px] font-bold tracking-[-0.3px]">{x.name}</span>
-                  <span className="p block text-[13px]">
+                  <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{x.name}</span>
+                  <span className="p block text-[0.8125rem]">
                     {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
                   </span>
                 </span>
-                <span className="text-[18px] font-bold">{formatDA(x.revenueDa)}</span>
+                <span className="text-[1.125rem] font-bold">{formatDA(x.revenueDa)}</span>
               </div>
             ))}
           </div>

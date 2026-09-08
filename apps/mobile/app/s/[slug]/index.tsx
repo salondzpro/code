@@ -58,49 +58,49 @@ export default function Salon() {
       }
     >
       {/* Couverture */}
-      <View style={{ height: 300, backgroundColor: C.line }}>
-        <Img src={s.coverUrl} radius={0} style={{ height: 300 }} />
-        <View style={{ position: 'absolute', left: 20, right: 20, top: insets.top + 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View style={{ height: 244, backgroundColor: C.line }}>
+        <Img src={s.coverUrl} radius={0} style={{ height: 244 }} />
+        <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <IconButton lg accessibilityLabel="Retour" onPress={back}>
             <I icon={ChevronLeft} />
           </IconButton>
-          <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
             <IconButton lg accessibilityLabel="Partager" onPress={() => void shareUrl(s.name, publicUrl(s.slug))}>
-              <I icon={Share2} size={20} />
+              <I icon={Share2} size={16} />
             </IconButton>
             <IconButton lg accessibilityLabel={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'} accessibilityState={{ selected: isFav }} disabled={toggle.isPending} onPress={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : router.push({ pathname: '/connexion', params: { next: `/s/${s.slug}` } }))}>
-              <Heart size={22} strokeWidth={1.6} color={C.text} fill={isFav ? C.text : 'none'} />
+              <Heart size={18} strokeWidth={1.6} color={C.text} fill={isFav ? C.text : 'none'} />
             </IconButton>
           </View>
         </View>
       </View>
 
-      <View style={{ marginTop: -20, backgroundColor: C.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
+      <View style={{ marginTop: -16, backgroundColor: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 16, paddingTop: 20, gap: 13 }}>
         <View>
-          <H1 size={26} lh={30} ls={-0.8}>
+          <H1 size={21} lh={24.5} ls={-0.8}>
             {s.name}
           </H1>
-          <Tx size={13} color={C.muted} lh={19} style={{ marginTop: 4 }}>
+          <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
             {cats} — {place}
           </Tx>
         </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {s.ratingCount > 0 && (
-            <View style={{ backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 13, paddingVertical: 9 }}>
-              <Tx size={15} weight={600} lh={19}>
+            <View style={{ backgroundColor: C.fill, borderRadius: R.pill, paddingHorizontal: 11, paddingVertical: 7 }}>
+              <Tx size={12} weight={600} lh={15.5}>
                 ★ {formatRating(s.ratingAvg)} · {s.ratingCount} avis
               </Tx>
             </View>
           )}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: R.pill, backgroundColor: status.open ? C.okBg : C.fill, paddingHorizontal: 12, paddingVertical: 7 }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: status.open ? C.okFg : C.muted }} />
-            <Tx size={15} weight={600} lh={19} color={status.open ? C.okFg : C.muted}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: R.pill, backgroundColor: status.open ? C.okBg : C.fill, paddingHorizontal: 10, paddingVertical: 6 }}>
+            <View style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: status.open ? C.okFg : C.muted }} />
+            <Tx size={12} weight={600} lh={15.5} color={status.open ? C.okFg : C.muted}>
               {status.label}
             </Tx>
           </View>
         </View>
         {!!s.description && (
-          <Tx size={13} color={C.muted} lh={21}>
+          <Tx size={10.5} color={C.muted} lh={17}>
             {s.description}
           </Tx>
         )}
@@ -119,17 +119,17 @@ export default function Salon() {
         {tab === 'services' && (
           <ListCard>
             {s.services.map((sv) => (
-              <Row key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} py={20} chevron={false} right={<Tx size={16} weight={600} lh={21}>{formatDA(sv.priceDa)}</Tx>}>
-                <Tx size={16} weight={600} lh={21}>
+              <Row key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} py={16} chevron={false} right={<Tx size={13} weight={600} lh={17}>{formatDA(sv.priceDa)}</Tx>}>
+                <Tx size={13} weight={600} lh={17}>
                   {sv.name}
                 </Tx>
-                <Tx size={15} color={C.muted} lh={20}>
+                <Tx size={12} color={C.muted} lh={16}>
                   {formatDuration(sv.durationMinutes)}
                 </Tx>
               </Row>
             ))}
             {s.services.length === 0 && (
-              <View style={{ paddingVertical: 12 }}>
+              <View style={{ paddingVertical: 10 }}>
                 <P>Aucune prestation pour le moment.</P>
               </View>
             )}
@@ -156,13 +156,13 @@ export default function Salon() {
         )}
 
         {tab === 'infos' && (
-          <View style={{ gap: 16 }}>
+          <View style={{ gap: 13 }}>
             <ListCard>
               {WEEK_DAYS.map((d) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
-                  <Row key={d} py={12} chevron={false} right={<Tx size={13} lh={18} mono color={rows.length ? C.muted : C.danger}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</Tx>}>
-                    <Tx size={13} lh={18}>
+                  <Row key={d} py={10} chevron={false} right={<Tx size={10.5} lh={14.5} mono color={rows.length ? C.muted : C.danger}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</Tx>}>
+                    <Tx size={10.5} lh={14.5}>
                       {DAY_LABELS_FR[d]}
                     </Tx>
                   </Row>
@@ -170,34 +170,34 @@ export default function Salon() {
               })}
             </ListCard>
             <ListCard>
-              <Row py={12} chevron={false} right={<Tx size={15} lh={20} right style={{ maxWidth: '60%' }}>{[s.address, place].filter(Boolean).join(', ')}</Tx>}>
-                <Tx size={15} color={C.muted} lh={20}>
+              <Row py={10} chevron={false} right={<Tx size={12} lh={16} right style={{ maxWidth: '60%' }}>{[s.address, place].filter(Boolean).join(', ')}</Tx>}>
+                <Tx size={12} color={C.muted} lh={16}>
                   Adresse
                 </Tx>
               </Row>
               {!!s.phone && (
-                <Row py={12} chevron={false} onPress={() => void open(`tel:${s.phone}`)} right={<Tx size={15} lh={20}>{formatDZPhone(s.phone)}</Tx>}>
-                  <Tx size={15} color={C.muted} lh={20}>
+                <Row py={10} chevron={false} onPress={() => void open(`tel:${s.phone}`)} right={<Tx size={12} lh={16}>{formatDZPhone(s.phone)}</Tx>}>
+                  <Tx size={12} color={C.muted} lh={16}>
                     Téléphone
                   </Tx>
                 </Row>
               )}
               {s.staff.length > 0 && (
-                <Row py={12} chevron={false} right={<Tx size={15} lh={20} right style={{ maxWidth: '60%' }}>{s.staff.map((m) => m.displayName).join(' · ')}</Tx>}>
-                  <Tx size={15} color={C.muted} lh={20}>
+                <Row py={10} chevron={false} right={<Tx size={12} lh={16} right style={{ maxWidth: '60%' }}>{s.staff.map((m) => m.displayName).join(' · ')}</Tx>}>
+                  <Tx size={12} color={C.muted} lh={16}>
                     Équipe
                   </Tx>
                 </Row>
               )}
             </ListCard>
             {reviews.data && reviews.data.items.length > 0 && (
-              <View style={{ gap: 10 }}>
+              <View style={{ gap: 8 }}>
                 <SectionLabel>Avis</SectionLabel>
                 {reviews.data.items.slice(0, 5).map((r) => (
-                  <Card key={r.id} sm gap={4}>
-                    <Tx size={15} weight={600} lh={20}>
+                  <Card key={r.id} sm gap={3}>
+                    <Tx size={12} weight={600} lh={16}>
                       {'★'.repeat(r.rating)}
-                      <Tx size={15} weight={600} lh={20} color={C.disabled}>
+                      <Tx size={12} weight={600} lh={16} color={C.disabled}>
                         {'★'.repeat(5 - r.rating)}
                       </Tx>{' '}
                       · {r.authorName}

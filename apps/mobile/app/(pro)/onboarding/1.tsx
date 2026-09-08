@@ -22,7 +22,7 @@ export default function Step1Market() {
   const [market, setMarket] = useState<Market | undefined>(readProDraft().market);
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <StepSheet
           disabled={!market}
@@ -34,24 +34,24 @@ export default function Step1Market() {
       }
     >
       <StepBar step={1} backTo="/pro-bienvenue" />
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 10 }}>
         <H1>Vous travaillez pour ?</H1>
         <P>Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.</P>
       </View>
       {CARDS.map((c) => (
-        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} accessibilityState={{ selected: market === c.id }} onPress={() => setMarket(c.id)} style={{ height: 210, borderRadius: 24, overflow: 'hidden', backgroundColor: C.line, borderWidth: 2, borderColor: market === c.id ? C.ink : 'transparent' }}>
+        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} accessibilityState={{ selected: market === c.id }} onPress={() => setMarket(c.id)} style={{ height: 171, borderRadius: 20, overflow: 'hidden', backgroundColor: C.line, borderWidth: 2, borderColor: market === c.id ? C.ink : 'transparent' }}>
           <Image source={{ uri: c.img }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
           <Overlay />
           {market === c.id && (
-            <View style={{ position: 'absolute', right: 16, top: 16, width: 36, height: 36, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-              <I icon={Check} size={20} color={C.ink} />
+            <View style={{ position: 'absolute', right: 13, top: 13, width: 29, height: 29, borderRadius: 15, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+              <I icon={Check} size={16} color={C.ink} />
             </View>
           )}
-          <View style={{ position: 'absolute', left: 20, right: 20, bottom: 20, gap: 4 }}>
-            <Tx size={22} weight={700} color="#fff" ls={-0.6} lh={25}>
+          <View style={{ position: 'absolute', left: 16, right: 16, bottom: 16, gap: 3 }}>
+            <Tx size={18} weight={700} color="#fff" ls={-0.6} lh={20.5}>
               {MARKET_LABELS_FR[c.id]}
             </Tx>
-            <Tx size={14} color={C.white85} lh={19}>
+            <Tx size={11.5} color={C.white85} lh={15.5}>
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)
                 .map((x) => x.labelFr)

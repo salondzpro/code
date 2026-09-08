@@ -37,21 +37,21 @@ export function Market() {
           type="button"
           onClick={() => void choose(c.id)}
           disabled={update.isPending}
-          className="relative h-[300px] w-full overflow-hidden rounded-[24px] text-left"
+          className="relative h-[18.75rem] w-full overflow-hidden rounded-[1.5rem] text-left"
           aria-label={MARKET_LABELS_FR[c.id]}
         >
           <img src={c.img.src} alt="" className="h-full w-full object-cover" />
           <div className="ovl" />
           <div className="ovl-t !bottom-9">
-            <div className="text-[24px] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
-            <div className="mt-1.5 text-[15px] leading-[1.35] text-white/85">
+            <div className="text-[1.5rem] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
+            <div className="mt-1.5 text-[0.9375rem] leading-[1.35] text-white/85">
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)
                 .map((x) => x.labelFr)
                 .join(' · ')}
             </div>
           </div>
-          <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] text-white/80">{c.img.credit}</span>
+          <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[0.625rem] text-white/80">{c.img.credit}</span>
         </button>
       ))}
       <p className="p text-center">Modifiable à tout moment depuis le profil.</p>

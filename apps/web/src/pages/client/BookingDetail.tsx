@@ -43,11 +43,11 @@ export function BookingDetail() {
           <p className="p mt-3">{b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.</p>
         </div>
         <div className="crd !gap-0">
-          <div className="li !py-4 text-[14px]">
+          <div className="li !py-4 text-[0.875rem]">
             <span>{b.serviceName}</span>
             <span className="text-muted">{formatDA(b.priceDa)}</span>
           </div>
-          <div className="li !py-4 text-[14px]">
+          <div className="li !py-4 text-[0.875rem]">
             <span>{formatDateLongDZ(b.startsAt)}</span>
             <span className="text-muted">{formatTimeDZ(b.startsAt)} · annulé</span>
           </div>
@@ -66,44 +66,44 @@ export function BookingDetail() {
       <div className="flex items-center gap-4">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
         <div className="min-w-0">
-          <h1 className="h1 !text-[26px]">{b.salon.name}</h1>
-          {b.salon.phone && <p className="mt-1 text-[13px] text-muted">{formatDZPhone(b.salon.phone)}</p>}
+          <h1 className="h1 !text-[1.625rem]">{b.salon.name}</h1>
+          {b.salon.phone && <p className="mt-1 text-[0.8125rem] text-muted">{formatDZPhone(b.salon.phone)}</p>}
         </div>
       </div>
       <div className="g2">
         {b.salon.phone && (
-          <a href={`tel:${b.salon.phone}`} className="btn g !py-[18px] !text-[18px]">
+          <a href={`tel:${b.salon.phone}`} className="btn g !py-[1.125rem] !text-[1.125rem]">
             Appeler
           </a>
         )}
         {wa && (
-          <a href={wa} target="_blank" rel="noreferrer" className="btn g !py-[18px] !text-[18px]">
+          <a href={wa} target="_blank" rel="noreferrer" className="btn g !py-[1.125rem] !text-[1.125rem]">
             WhatsApp
           </a>
         )}
       </div>
       <div className="crd !gap-0">
         {(b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }]).map((it) => (
-          <div key={it.id} className="li !py-4 text-[14px]">
+          <div key={it.id} className="li !py-4 text-[0.875rem]">
             <span className="text-muted">Prestation</span>
             <span className="font-semibold">{it.serviceName}</span>
           </div>
         ))}
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Date</span>
           <span className="font-semibold">{formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
         </div>
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Heure</span>
           <span className="mono font-semibold">
             {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
           </span>
         </div>
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Durée</span>
           <span className="font-semibold">{formatDuration(b.durationMinutes)}</span>
         </div>
-        <div className="li !py-4 text-[14px]">
+        <div className="li !py-4 text-[0.875rem]">
           <span className="text-muted">Prix</span>
           <span className="font-semibold">{formatDA(b.priceDa)}</span>
         </div>
@@ -111,10 +111,10 @@ export function BookingDetail() {
       {b.notes && (
         <div className="sf">
           <span className="s block">Votre note</span>
-          <span className="block text-[15px]">« {b.notes} »</span>
+          <span className="block text-[0.9375rem]">« {b.notes} »</span>
         </div>
       )}
-      {b.cancellationReason && <p className="text-[15px] text-danger">Motif : {b.cancellationReason}</p>}
+      {b.cancellationReason && <p className="text-[0.9375rem] text-danger">Motif : {b.cancellationReason}</p>}
       <div className="flex flex-col gap-2.5">
         {active && (
           <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">
@@ -141,7 +141,7 @@ export function BookingDetail() {
             Annuler
           </Button>
         )}
-        {active && !canModify && <p className="p text-center text-[14px]">Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.</p>}
+        {active && !canModify && <p className="p text-center text-[0.875rem]">Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.</p>}
         {b.status === 'completed' && <LinkButton to={`/rendez-vous/${b.id}/noter`}>Noter la prestation</LinkButton>}
       </div>
 
@@ -152,13 +152,13 @@ export function BookingDetail() {
           <div className="dim" onClick={() => setCancelling(false)} />
           <BottomSheet>
             <div className="text-center">
-              <div className="text-[20px] font-bold tracking-[-0.4px]">Annuler ce rendez-vous ?</div>
+              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">Annuler ce rendez-vous ?</div>
               <p className="p mt-2">
                 Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera libéré immédiatement.
               </p>
             </div>
             <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[15px]">Motif (optionnel)</span>
+              <span className="text-[0.9375rem]">Motif (optionnel)</span>
               <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Empêchement" className="!w-auto !bg-transparent !p-0 text-right" maxLength={200} aria-label="Motif" />
             </div>
             <ErrorMessage error={cancel.error} />

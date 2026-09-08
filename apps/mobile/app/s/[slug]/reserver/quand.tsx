@@ -80,7 +80,7 @@ export default function BookingWhen() {
 
   return (
     <Screen
-      gap={16}
+      gap={13}
       footer={
         <BottomSheet>
           <Button
@@ -97,13 +97,13 @@ export default function BookingWhen() {
     >
       <TopBar backTo={`/s/${s.slug}/prestations`} right="Étape 3 sur 4" />
       <H1>Quand ?</H1>
-      <Card row gap={14}>
-        <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
+      <Card row gap={11}>
+        <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={52} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={16} weight={700} ls={-0.3} lh={21}>
+          <Tx size={13} weight={700} ls={-0.3} lh={17}>
             {s.name}
           </Tx>
-          <Tx size={13} color={C.muted} lh={19}>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
             {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
           </Tx>
         </View>
@@ -114,10 +114,10 @@ export default function BookingWhen() {
       {closedDays.includes(dayOfWeekFromKey(date)) ? (
         <P>Le salon est fermé ce jour-là.</P>
       ) : availability.isPending || availability.isFetching ? (
-        <View style={{ gap: 12 }}>
-          <Skeleton h={16} w={80} />
-          <Skeleton h={64} />
-          <Skeleton h={64} />
+        <View style={{ gap: 10 }}>
+          <Skeleton h={13} w={65} />
+          <Skeleton h={52} />
+          <Skeleton h={52} />
         </View>
       ) : availability.isError ? (
         <ErrorText error={availability.error} retry={() => void availability.refetch()} />
@@ -125,12 +125,12 @@ export default function BookingWhen() {
         <P>Plus de créneau disponible ce jour. Essayez un autre jour.</P>
       ) : (
         [...groups.entries()].map(([period, list]) => (
-          <View key={period} style={{ gap: 12 }}>
+          <View key={period} style={{ gap: 10 }}>
             <SectionLabel>{period}</SectionLabel>
             <Grid cols={3}>
               {list.map((g) => (
-                <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 22 }}>
-                  <Tx size={16} weight={500} lh={20} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
+                <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 18 }}>
+                  <Tx size={13} weight={500} lh={16} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
                     {g.time}
                   </Tx>
                 </Slot>

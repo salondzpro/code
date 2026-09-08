@@ -33,7 +33,7 @@ export function ProHome() {
     <Screen bottom={NAV_PAD} gap={16}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[15px] text-muted">Bonjour, {firstName}</div>
+          <div className="text-[0.9375rem] text-muted">Bonjour, {firstName}</div>
           <h1 className="h1">Votre journée</h1>
         </div>
         <Link to="/pro/profil" aria-label="Profil">
@@ -42,29 +42,29 @@ export function ProHome() {
       </div>
 
       {stats.isPending ? (
-        <Skeleton className="h-[140px] w-full !rounded-[20px]" />
+        <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
       ) : stats.isError ? (
         <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
       ) : (
         <div className="g3">
           <div className="crd !gap-1 !bg-ink !px-5 !py-6 !text-white">
-            <span className="text-[28px] font-bold leading-none tracking-[-0.8px]">{stats.data.todayCount}</span>
-            <span className="text-[13px] text-white/70">rendez-vous</span>
+            <span className="text-[1.75rem] font-bold leading-none tracking-[-0.8px]">{stats.data.todayCount}</span>
+            <span className="text-[0.8125rem] text-white/70">rendez-vous</span>
           </div>
           <div className="crd !gap-1 !px-5 !py-6">
-            <span className={`text-[28px] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}>{stats.data.pendingCount}</span>
-            <span className="text-[13px] text-muted">en attente</span>
+            <span className={`text-[1.75rem] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}>{stats.data.pendingCount}</span>
+            <span className="text-[0.8125rem] text-muted">en attente</span>
           </div>
           <div className="crd !gap-1 !px-5 !py-6">
-            <span className="text-[28px] font-bold leading-none tracking-[-0.8px]">{compactDA(stats.data.todayRevenueDa)}</span>
-            <span className="text-[13px] text-muted">DA prévu</span>
+            <span className="text-[1.75rem] font-bold leading-none tracking-[-0.8px]">{compactDA(stats.data.todayRevenueDa)}</span>
+            <span className="text-[0.8125rem] text-muted">DA prévu</span>
           </div>
         </div>
       )}
 
       <div className="flex items-center justify-between">
         <span className="h3">À valider</span>
-        <Link to="/pro/reservations" className="text-[15px] font-bold" aria-label="Voir toutes les demandes">
+        <Link to="/pro/reservations" className="text-[0.9375rem] font-bold" aria-label="Voir toutes les demandes">
           {pending.data?.items.length ?? 0}
         </Link>
       </div>
@@ -74,17 +74,17 @@ export function ProHome() {
             <button type="button" className="flex items-center gap-3.5 text-left" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
               <Avatar name={b.clientName} size={68} />
               <span className="min-w-0">
-                <span className="block text-[20px] font-bold tracking-[-0.4px]">{b.clientName}</span>
-                <span className="block text-[13px] text-muted">
+                <span className="block text-[1.25rem] font-bold tracking-[-0.4px]">{b.clientName}</span>
+                <span className="block text-[0.8125rem] text-muted">
                   {b.serviceName} · {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
                 </span>
               </span>
             </button>
             <div className="g2">
-              <Button sm className="!py-[18px] !text-[14px]" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
+              <Button sm className="!py-[1.125rem] !text-[0.875rem]" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
                 Confirmer
               </Button>
-              <Button variant="g" sm className="!py-[18px] !text-[14px]" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+              <Button variant="g" sm className="!py-[1.125rem] !text-[0.875rem]" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
                 Reporter
               </Button>
             </div>
@@ -96,7 +96,7 @@ export function ProHome() {
 
       <div className="flex items-center justify-between">
         <span className="h3">Prochains</span>
-        <Link to="/pro/agenda" className="text-[13px] text-muted">
+        <Link to="/pro/agenda" className="text-[0.8125rem] text-muted">
           Tout voir
         </Link>
       </div>
@@ -106,10 +106,10 @@ export function ProHome() {
         {upcoming.slice(0, 6).map((b) => (
           <button key={b.id} type="button" className="li w-full !py-4 text-left" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
             <span className="flex items-center gap-4">
-              <span className="mono w-[60px] flex-none text-[15px] font-bold">{formatTimeDZ(b.startsAt)}</span>
+              <span className="mono w-[3.75rem] flex-none text-[0.9375rem] font-bold">{formatTimeDZ(b.startsAt)}</span>
               <span>
-                <span className={`block text-[17px] font-bold tracking-[-0.3px] ${new Date(b.endsAt).getTime() < now ? 'text-muted' : ''}`}>{b.clientName}</span>
-                <span className="block text-[13px] text-muted">
+                <span className={`block text-[1.0625rem] font-bold tracking-[-0.3px] ${new Date(b.endsAt).getTime() < now ? 'text-muted' : ''}`}>{b.clientName}</span>
+                <span className="block text-[0.8125rem] text-muted">
                   {b.serviceName} · {formatDuration(b.durationMinutes)}
                 </span>
               </span>
@@ -131,10 +131,10 @@ export function ProHome() {
             { v: stats.data?.monthRevenueDa ?? 0, l: 'ce mois' },
           ].map((x, i) => (
             <span key={x.l} className={`flex flex-col ${i ? 'pl-4' : ''}`}>
-              <span className="whitespace-nowrap text-[18px] font-bold tracking-[-0.4px]">
-                {x.v.toLocaleString('fr-DZ').replace(/ /g, ' ')} <span className="text-[14px] font-semibold text-muted">DA</span>
+              <span className="whitespace-nowrap text-[1.125rem] font-bold tracking-[-0.4px]">
+                {x.v.toLocaleString('fr-DZ').replace(/ /g, ' ')} <span className="text-[0.875rem] font-semibold text-muted">DA</span>
               </span>
-              <span className="text-[15px] text-muted">{x.l}</span>
+              <span className="text-[0.9375rem] text-muted">{x.l}</span>
             </span>
           ))}
         </span>
