@@ -1,8 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { WILAYAS } from '@salondz/constants';
-import { availabilityQuerySchema, citiesQuerySchema, searchSalonsQuerySchema, uuid } from '@salondz/validation';
-import type { AvailabilityResponse, Category, CityCount, SalonSummary } from '@salondz/types';
+import { availabilityQuerySchema, citiesQuerySchema, searchSalonsQuerySchema, suggestQuerySchema, uuid } from '@salondz/validation';
+import type { AvailabilityResponse, Category, CityCount, SalonSummary, SearchSuggestions } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
@@ -39,6 +39,15 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     return { items: rows.map((r) => camelize<CityCount>(r)) };
   });
 
+  /** Suggestions de recherche (design C-H 07) : salons, prestations et lieux, en une requête. */
+  app.get('/salons/suggest', { schema: { querystring: suggestQuerySchema } }, async (req, reply) => {
+    const q = req.query;
+    const res = await db.rpc('search_suggest', { p_q: q.q, p_gender: q.gender ?? null, p_wilaya: q.wilaya ?? null });
+    const data = unwrap(res) as SearchSuggestions | null;
+    reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
+    return data ?? { salons: [], services: [], places: [] };
+  });
+
   /** Marketplace (design C-H 01 / C-F 01) : rayon, tri, dispo du jour, prestations phares, prochains créneaux. */
   app.get('/salons', { schema: { querystring: searchSalonsQuerySchema } }, async (req, reply) => {
     const q = req.query;
@@ -55,6 +64,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       p_available_today: q.availableToday ?? false,
       p_limit: q.limit,
       p_offset: q.offset,
+      p_rating_min: q.ratingMin ?? null,
     });
     const rows = unwrap(res) as Record<string, unknown>[];
     let total = 0;

@@ -40,13 +40,17 @@ export default function Marketplace() {
     lng: prefs.lng ?? undefined,
     radiusKm: prefs.lat != null ? prefs.radiusKm : undefined,
     sort: prefs.sort,
+    availableToday: prefs.availableToday || undefined,
+    ratingMin: prefs.ratingMin ?? undefined,
     limit: 30,
   });
 
   const toggleCategory = (id: string) => setCategory((cur) => (cur === id ? '' : id));
   const swapMarket = () => update.mutate({ market: market === 'men' ? 'women' : 'men' });
-  const items = query.data?.items ?? [];
-  const total = query.data?.total ?? items.length;
+  const all = query.data?.items ?? [];
+  // « Ouvert maintenant » se filtre côté client : l'état d'ouverture est déjà dans chaque carte.
+  const items = prefs.openNow ? all.filter((s) => s.isOpenNow) : all;
+  const total = prefs.openNow ? items.length : (query.data?.total ?? items.length);
 
   const noun = NOUN[market][total > 1 ? 1 : 0];
   // Compteur honnête : « disponibles aujourd'hui » seulement si des créneaux du jour existent dans la page.
@@ -108,6 +112,19 @@ export default function Marketplace() {
             {c.labelFr}
           </Pill>
         ))}
+      </PillRow>
+
+      {/* Filtres rapides (vrais filtres : disponibilité du jour et note côté API, ouverture côté client) */}
+      <PillRow>
+        <Pill on={prefs.availableToday} onPress={() => setPrefs({ availableToday: !prefs.availableToday })}>
+          Disponible aujourd'hui
+        </Pill>
+        <Pill on={prefs.openNow} onPress={() => setPrefs({ openNow: !prefs.openNow })}>
+          Ouvert maintenant
+        </Pill>
+        <Pill on={prefs.ratingMin != null} onPress={() => setPrefs({ ratingMin: prefs.ratingMin ? null : 4.5 })}>
+          Note 4,5+
+        </Pill>
       </PillRow>
 
       {/* Liste / Carte + tri */}

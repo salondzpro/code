@@ -217,6 +217,8 @@ export const searchSalonsQuerySchema = z.object({
     .enum(['1', '0', 'true', 'false'])
     .transform((v) => v === '1' || v === 'true')
     .optional(),
+  /** « Note 4,5+ » : note moyenne minimale (salons notés uniquement). */
+  ratingMin: z.coerce.number().min(1).max(5).optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).max(1000).default(0),
 });
@@ -240,6 +242,13 @@ export const citiesQuerySchema = z.object({
   q: z.string().trim().max(80).optional(),
 });
 export type CitiesQuery = z.infer<typeof citiesQuerySchema>;
+
+export const suggestQuerySchema = z.object({
+  q: z.string().trim().min(1).max(80),
+  gender: z.enum(GENDER_TARGETS).optional(),
+  wilaya: z.coerce.number().int().min(1).max(58).optional(),
+});
+export type SuggestQuery = z.infer<typeof suggestQuerySchema>;
 export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;
 
 // ---------- Avis ----------

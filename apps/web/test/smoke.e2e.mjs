@@ -344,6 +344,23 @@ try {
     await c.locator('a.crd', { hasText: 'Barber Smoke' }).first().waitFor();
     await shot(c, 'client-marketplace');
   });
+  await step('client: carte interactive (bulles de prix, compteur de zone, recherche)', async () => {
+    await c.goto(WEB + '/carte');
+    await c.getByText(/dans cette zone/).waitFor();
+    await c.locator('button.map-bubble').first().waitFor();
+    await c.locator('button.map-bubble').first().click();
+    await c.locator('a.crd.sel').first().waitFor();
+    await shot(c, 'client-carte');
+    // Recherche interactive : suggestions typées (prestation / salon / lieu) dès deux caractères.
+    await c.goto(WEB + '/recherche');
+    await c.getByLabel('Recherche').fill('cou');
+    await c.getByText(/Prestation · /).first().waitFor();
+    await c.getByLabel('Recherche').fill('Barber Smoke');
+    await c.locator('a.li', { hasText: 'Barber Smoke' }).first().waitFor();
+    await shot(c, 'client-recherche');
+    await c.goto(WEB + '/');
+    await c.getByRole('heading', { name: 'Pour Hommes' }).waitFor();
+  });
   await step('client: page salon (design C-F 04)', async () => {
     await c.locator('a.crd', { hasText: 'Barber Smoke' }).first().click();
     await c.waitForURL(new RegExp(`/s/${slug}$`));
@@ -428,8 +445,13 @@ try {
     await c.getByRole('heading', { name: 'Réglages' }).waitFor();
     await c.goto(WEB + '/localisation');
     await c.getByRole('heading', { name: 'Localisation' }).waitFor();
-    await c.getByRole('button', { name: '10 km' }).click();
+    // Recherche interactive par lieu : la saisie propose la wilaya et les quartiers (toutes wilayas).
+    await c.getByPlaceholder('Quartier, ville, wilaya ou adresse').fill('Alger');
+    await c.getByRole('button', { name: /Wilaya 16/ }).waitFor();
+    await c.getByRole('button', { name: /Alger-Centre/ }).first().click();
+    await c.getByText(/\d+ résultats?/).waitFor();
     await c.getByRole('button', { name: 'Appliquer' }).click();
+    await c.getByRole('heading', { name: /Pour (Hommes|Femmes)/ }).waitFor();
   });
   await step('client: seconde réservation (une prestation)', async () => {
     await c.goto(WEB + `/s/${slug}/prestations`);

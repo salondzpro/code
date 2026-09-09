@@ -192,6 +192,14 @@ try {
     await shot(cli, 'rendez-vous');
   });
 
+  await step('client: carte (fond réel en iframe, compteur de zone)', async () => {
+    await cli.goto(`${WEB}/carte`, { waitUntil: 'load' });
+    await cli.getByText(/dans cette zone/).waitFor();
+    const frame = cli.frameLocator('iframe[title="Carte des salons"]');
+    await frame.locator('button.b').first().waitFor({ timeout: 60_000 });
+    await shot(cli, 'carte');
+  });
+
   const proCtx = await withSession(users.pro.session);
   const pro = await proCtx.newPage();
   attach(pro, 'pro');

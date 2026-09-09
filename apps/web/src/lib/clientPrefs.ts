@@ -25,11 +25,25 @@ export interface LocationPrefs {
   /** Libellé affiché (« Alger-Centre », « Hydra, Alger »). */
   label: string;
   sort: SortKey;
+  /** Filtres rapides de la marketplace (puces « Aujourd'hui », « Note 4,5+ », « Ouvert »). */
+  availableToday: boolean;
+  ratingMin: number | null;
+  openNow: boolean;
+}
+
+/** Lieu choisi récemment (quartier, ville, wilaya ou adresse géocodée). */
+export interface RecentPlace {
+  label: string;
+  city: string | null;
+  wilaya: number;
+  lat: number | null;
+  lng: number | null;
 }
 
 const KEY = 'salondz:location';
 const RECENT_KEY = 'salondz:recentSearches';
-const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance' };
+const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance', availableToday: false, ratingMin: null, openNow: false };
+const PLACES_KEY = 'salondz:recentPlaces';
 
 let cache: LocationPrefs | null = null;
 const listeners = new Set<() => void>();
@@ -89,6 +103,22 @@ export function pushRecentSearch(q: string): void {
 export function clearRecentSearches(): void {
   try {
     localStorage.removeItem(RECENT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readRecentPlaces(): RecentPlace[] {
+  try {
+    return JSON.parse(localStorage.getItem(PLACES_KEY) ?? '[]') as RecentPlace[];
+  } catch {
+    return [];
+  }
+}
+export function pushRecentPlace(p: RecentPlace): void {
+  const next = [p, ...readRecentPlaces().filter((x) => x.label.toLowerCase() !== p.label.toLowerCase())].slice(0, 5);
+  try {
+    localStorage.setItem(PLACES_KEY, JSON.stringify(next));
   } catch {
     /* ignore */
   }

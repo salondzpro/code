@@ -38,6 +38,8 @@ export function Marketplace() {
     lng: prefs.lng ?? undefined,
     radiusKm: prefs.lat != null ? prefs.radiusKm : undefined,
     sort: prefs.sort,
+    availableToday: prefs.availableToday || undefined,
+    ratingMin: prefs.ratingMin ?? undefined,
     limit: 30,
   });
 
@@ -50,8 +52,10 @@ export function Marketplace() {
 
   const swapMarket = () => update.mutate({ market: market === 'men' ? 'women' : 'men' });
 
-  const items = query.data?.items ?? [];
-  const total = query.data?.total ?? items.length;
+  const all = query.data?.items ?? [];
+  // « Ouvert maintenant » se filtre côté client : l'état d'ouverture est déjà dans chaque carte.
+  const items = prefs.openNow ? all.filter((s) => s.isOpenNow) : all;
+  const total = prefs.openNow ? items.length : (query.data?.total ?? items.length);
 
   const noun = NOUN[market][total > 1 ? 1 : 0];
   // Compteur honnête : « disponibles aujourd'hui » seulement si des créneaux du jour existent dans la page.
@@ -115,6 +119,19 @@ export function Marketplace() {
         ))}
       </div>
 
+      {/* Filtres rapides (vrais filtres : disponibilité du jour et note côté API, ouverture côté client) */}
+      <div className="pills -mx-5 px-5" aria-label="Filtres rapides">
+        <Pill on={prefs.availableToday} aria-pressed={prefs.availableToday} onClick={() => setPrefs({ availableToday: !prefs.availableToday })}>
+          Disponible aujourd'hui
+        </Pill>
+        <Pill on={prefs.openNow} aria-pressed={prefs.openNow} onClick={() => setPrefs({ openNow: !prefs.openNow })}>
+          Ouvert maintenant
+        </Pill>
+        <Pill on={prefs.ratingMin != null} aria-pressed={prefs.ratingMin != null} onClick={() => setPrefs({ ratingMin: prefs.ratingMin ? null : 4.5 })}>
+          Note 4,5+
+        </Pill>
+      </div>
+
       {/* Liste / Carte + tri */}
       <div className="flex items-center justify-between gap-3">
         <div className="seg !p-1">
@@ -152,6 +169,11 @@ export function Marketplace() {
             {prefs.radiusKm < 10 && (
               <Pill lg onClick={() => setPrefs({ radiusKm: 10 })}>
                 Rayon 10 km
+              </Pill>
+            )}
+            {(prefs.availableToday || prefs.openNow || prefs.ratingMin != null) && (
+              <Pill lg onClick={() => setPrefs({ availableToday: false, openNow: false, ratingMin: null })}>
+                Retirer les filtres
               </Pill>
             )}
             {category && (

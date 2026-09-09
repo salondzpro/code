@@ -26,23 +26,39 @@ export interface LocationPrefs {
   /** Libellé affiché (« Alger-Centre », « Hydra, Alger »). */
   label: string;
   sort: SortKey;
+  /** Filtres rapides de la marketplace (puces « Aujourd'hui », « Note 4,5+ », « Ouvert »). */
+  availableToday: boolean;
+  ratingMin: number | null;
+  openNow: boolean;
+}
+
+/** Lieu choisi récemment (quartier, ville, wilaya ou adresse géocodée). */
+export interface RecentPlace {
+  label: string;
+  city: string | null;
+  wilaya: number;
+  lat: number | null;
+  lng: number | null;
 }
 
 const KEY = 'salondz:location';
 const RECENT_KEY = 'salondz:recentSearches';
-const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance' };
+const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance', availableToday: false, ratingMin: null, openNow: false };
+const PLACES_KEY = 'salondz:recentPlaces';
 
 let prefs: LocationPrefs = DEFAULTS;
 let recent: string[] = [];
+let places: RecentPlace[] = [];
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
 /** À appeler une fois au démarrage : relit les préférences persistées. */
 export async function hydratePrefs(): Promise<void> {
   try {
-    const [p, r] = await Promise.all([AsyncStorage.getItem(KEY), AsyncStorage.getItem(RECENT_KEY)]);
+    const [p, r, pl] = await Promise.all([AsyncStorage.getItem(KEY), AsyncStorage.getItem(RECENT_KEY), AsyncStorage.getItem(PLACES_KEY)]);
     if (p) prefs = { ...DEFAULTS, ...(JSON.parse(p) as Partial<LocationPrefs>) };
     if (r) recent = JSON.parse(r) as string[];
+    if (pl) places = JSON.parse(pl) as RecentPlace[];
     notify();
   } catch {
     /* stockage indisponible : valeurs par défaut */
@@ -84,6 +100,17 @@ export function pushRecentSearch(q: string): void {
   recent = [v, ...recent.filter((x) => x.toLowerCase() !== v.toLowerCase())].slice(0, 6);
   notify();
   void AsyncStorage.setItem(RECENT_KEY, JSON.stringify(recent)).catch(() => undefined);
+}
+export function readRecentPlaces(): RecentPlace[] {
+  return places;
+}
+export function useRecentPlaces(): RecentPlace[] {
+  return useSyncExternalStore(subscribe, readRecentPlaces, readRecentPlaces);
+}
+export function pushRecentPlace(p: RecentPlace): void {
+  places = [p, ...places.filter((x) => x.label.toLowerCase() !== p.label.toLowerCase())].slice(0, 5);
+  notify();
+  void AsyncStorage.setItem(PLACES_KEY, JSON.stringify(places)).catch(() => undefined);
 }
 export function clearRecentSearches(): void {
   recent = [];

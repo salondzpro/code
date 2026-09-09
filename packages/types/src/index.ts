@@ -218,10 +218,20 @@ export interface SalonSummary {
 
 /** Quartier / ville avec le nombre de professionnels publiés (design « Localisation »). */
 export interface CityCount {
+  /** Quartier (zone) ou ville — valeur à passer au filtre `city` de la recherche. */
   city: string;
+  /** Ville parente quand `city` est un quartier (« Hydra » → « Alger »). */
+  parentCity: string | null;
   wilayaCode: number;
   salonCount: number;
   distanceKm: number | null;
+}
+
+/** Suggestions de recherche (design C-H 07) : salons, prestations et lieux correspondant à la saisie. */
+export interface SearchSuggestions {
+  salons: { id: UUID; slug: string; name: string; city: string; zone: string | null; wilayaCode: number; logoUrl: string | null; coverUrl: string | null; ratingAvg: number; ratingCount: number; categoryId: string | null }[];
+  services: { name: string; salonCount: number; minPriceDa: number | null }[];
+  places: { city: string; parentCity: string | null; wilayaCode: number; salonCount: number }[];
 }
 
 /** Ligne d'une réservation multi-prestations (snapshot). */

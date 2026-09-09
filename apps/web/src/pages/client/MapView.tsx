@@ -1,8 +1,12 @@
 /**
  * C-H 04 — Résultats sur la carte : bulles de prix (prix de départ), cercle du rayon,
- * feuille basse avec la carte du salon sélectionné. Fond de carte gris clair (CARTO Positron).
+ * feuille basse avec la carte du salon sélectionné. Fond de carte gris clair (OpenStreetMap).
+ *
+ * Interactive : déplacer la carte propose « Rechercher dans cette zone » (centre + rayon déduits de
+ * l'emprise visible), le bouton de position utilise la géolocalisation réelle, une bulle touchée
+ * sélectionne le salon (et inversement), le compteur suit les résultats de la zone.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,41 +20,84 @@ import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
 
 const ALGIERS: [number, number] = [36.7538, 3.0588];
+type Area = { lat: number; lng: number; radiusKm: number };
+
+/** Rayon (km) couvrant l'emprise visible : moitié de la plus petite dimension, borné 1–50 km. */
+function areaOf(map: L.Map): Area {
+  const b = map.getBounds();
+  const c = b.getCenter();
+  const h = b.getNorthEast().distanceTo(L.latLng(b.getSouthWest().lat, b.getNorthEast().lng)) / 1000;
+  const w = b.getNorthEast().distanceTo(L.latLng(b.getNorthEast().lat, b.getSouthWest().lng)) / 1000;
+  return { lat: Number(c.lat.toFixed(4)), lng: Number(c.lng.toFixed(4)), radiusKm: Math.min(50, Math.max(1, Number((Math.min(h, w) / 2).toFixed(1)))) };
+}
 
 export function MapView() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const me = useMe();
   const market = me.data?.profile.market ?? 'women';
-  const [prefs] = useLocationPrefs();
+  const [prefs, setPrefs] = useLocationPrefs();
   const category = params.get('category') ?? '';
   const [selected, setSelected] = useState<string | null>(null);
+  /** Zone recherchée : celle des préférences, ou celle choisie en déplaçant la carte. */
+  const [area, setArea] = useState<Area | null>(prefs.lat != null ? { lat: prefs.lat, lng: prefs.lng!, radiusKm: prefs.radiusKm } : null);
+  const [moved, setMoved] = useState(false);
+  const [locating, setLocating] = useState(false);
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const areaLayerRef = useRef<L.LayerGroup | null>(null);
+  const programmatic = useRef(false);
 
-  const query = useSalonSearch({ gender: market, category: category ? (category as CategoryId) : undefined, city: prefs.city ?? undefined, wilaya: prefs.city ? undefined : prefs.wilaya, lat: prefs.lat ?? undefined, lng: prefs.lng ?? undefined, radiusKm: prefs.lat != null ? prefs.radiusKm : undefined, limit: 50 });
-  const items = useMemo(() => (query.data?.items ?? []) as (SalonSummary & { lat?: number | null; lng?: number | null })[], [query.data]);
+  const query = useSalonSearch({
+    gender: market,
+    category: category ? (category as CategoryId) : undefined,
+    city: area ? undefined : (prefs.city ?? undefined),
+    wilaya: area || prefs.city ? undefined : prefs.wilaya,
+    lat: area?.lat,
+    lng: area?.lng,
+    radiusKm: area?.radiusKm,
+    availableToday: prefs.availableToday || undefined,
+    ratingMin: prefs.ratingMin ?? undefined,
+    limit: 50,
+  });
+  const items = useMemo(() => ((query.data?.items ?? []) as (SalonSummary & { lat?: number | null; lng?: number | null })[]).filter((s) => s.lat != null && s.lng != null), [query.data]);
   const current = items.find((s) => s.id === selected) ?? items[0] ?? null;
 
-  // Carte
+  const drawArea = useCallback((a: Area | null) => {
+    const layer = areaLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    if (!a) return;
+    L.circle([a.lat, a.lng], { radius: a.radiusKm * 1000, color: '#c4c7ca', dashArray: '6 6', weight: 1.5, fillColor: '#111214', fillOpacity: 0.04 }).addTo(layer);
+    L.circleMarker([a.lat, a.lng], { radius: 9, color: '#fff', weight: 4, fillColor: '#111214', fillOpacity: 1 }).addTo(layer);
+  }, []);
+
+  // Carte (créée une fois)
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return;
-    const center: [number, number] = prefs.lat != null ? [prefs.lat, prefs.lng!] : ALGIERS;
+    const center: [number, number] = area ? [area.lat, area.lng] : ALGIERS;
     const map = L.map(mapEl.current, { zoomControl: false, attributionControl: true }).setView(center, 13);
-    // Tuiles OpenStreetMap (gratuites, sans clé) passées en gris clair pour retrouver le fond neutre du design.
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19, className: 'map-tiles' }).addTo(map);
-    if (prefs.lat != null) {
-      L.circle(center, { radius: prefs.radiusKm * 1000, color: '#c4c7ca', dashArray: '6 6', weight: 1.5, fillColor: '#111214', fillOpacity: 0.04 }).addTo(map);
-      L.circleMarker(center, { radius: 9, color: '#fff', weight: 4, fillColor: '#111214', fillOpacity: 1 }).addTo(map);
-    }
+    areaLayerRef.current = L.layerGroup().addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
+    map.on('moveend', () => {
+      if (programmatic.current) {
+        programmatic.current = false;
+        return;
+      }
+      setMoved(true);
+    });
     mapRef.current = map;
+    drawArea(area);
     return () => {
       map.remove();
       mapRef.current = null;
     };
-  }, [prefs.lat, prefs.lng, prefs.radiusKm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => drawArea(area), [area, drawArea]);
 
   // Bulles de prix
   useEffect(() => {
@@ -60,21 +107,62 @@ export function MapView() {
     layer.clearLayers();
     const bounds: [number, number][] = [];
     for (const s of items) {
-      const lat = (s as { lat?: number | null }).lat;
-      const lng = (s as { lng?: number | null }).lng;
-      if (lat == null || lng == null) continue;
-      bounds.push([lat, lng]);
+      bounds.push([s.lat!, s.lng!]);
       const on = s.id === (current?.id ?? null);
       const icon = L.divIcon({
         className: '',
-        html: `<div class="map-bubble${on ? ' on' : ''}">${s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name}</div>`,
+        html: `<button type="button" class="map-bubble${on ? ' on' : ''}" aria-label="${s.name.replace(/"/g, '&quot;')}">${s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name}</button>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
       });
-      L.marker([lat, lng], { icon }).on('click', () => setSelected(s.id)).addTo(layer);
+      L.marker([s.lat!, s.lng!], { icon, zIndexOffset: on ? 1000 : 0 }).on('click', () => setSelected(s.id)).addTo(layer);
     }
-    if (bounds.length > 1 && !prefs.lat) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-  }, [items, current?.id, prefs.lat]);
+    if (bounds.length > 1 && !area && !moved) {
+      programmatic.current = true;
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+  }, [items, current?.id, area, moved]);
+
+  // Sélection depuis la feuille → recentre doucement sur la bulle
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !current || !selected) return;
+    if (!map.getBounds().pad(-0.2).contains([current.lat!, current.lng!])) {
+      programmatic.current = true;
+      map.panTo([current.lat!, current.lng!], { animate: true });
+    }
+  }, [selected, current]);
+
+  const searchHere = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    setArea(areaOf(map));
+    setSelected(null);
+    setMoved(false);
+  };
+
+  const locate = () => {
+    if (!('geolocation' in navigator)) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        const a = { lat: Number(p.coords.latitude.toFixed(4)), lng: Number(p.coords.longitude.toFixed(4)), radiusKm: prefs.radiusKm };
+        setArea(a);
+        setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
+        setSelected(null);
+        setMoved(false);
+        setLocating(false);
+        programmatic.current = true;
+        mapRef.current?.setView([a.lat, a.lng], 14, { animate: true });
+      },
+      () => {
+        setLocating(false);
+        programmatic.current = true;
+        mapRef.current?.setView(area ? [area.lat, area.lng] : ALGIERS, 13, { animate: true });
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
+    );
+  };
 
   const setCategory = (id: string) => {
     const next = new URLSearchParams(params);
@@ -83,10 +171,13 @@ export function MapView() {
     setParams(next, { replace: true });
   };
 
+  const total = query.data?.total ?? 0;
+  const noun = market === 'men' ? 'barbier' : 'salon';
+
   return (
     <div className="relative min-h-dvh">
       <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}
-.map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#17181a;border-radius:999px;padding:8px 14px;font:600 16px/1 Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative}
+.map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#17181a;border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
 .map-bubble.on{background:#111214;color:#fff}
 .map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #e6e7e9;transform:translateX(-50%)}
 .map-bubble.on::after{background:#111214;border-color:#111214}
@@ -99,10 +190,10 @@ export function MapView() {
           <Link to="/recherche" className="search flex-1 !bg-surface !shadow-card">
             <I icon={Search} size={22} />
             <span className="flex-1 truncate text-subtle">
-              {MARKET_LABELS_FR[market]} · {prefs.label}
+              {MARKET_LABELS_FR[market]} · {area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
             </span>
           </Link>
-          <IconButton lg className="!shadow-card" aria-label="Filtres" onClick={() => navigate('/localisation')}>
+          <IconButton lg className="!shadow-card" aria-label="Localisation et rayon" onClick={() => navigate('/localisation')}>
             <I icon={SlidersHorizontal} size={20} />
           </IconButton>
         </div>
@@ -116,14 +207,24 @@ export function MapView() {
             </Pill>
           ))}
         </div>
+        <div className="pointer-events-auto flex items-center justify-center gap-2">
+          <span className="rounded-full bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-muted shadow-card" aria-live="polite">
+            {query.isFetching ? 'Recherche…' : `${total} ${noun}${total > 1 ? 's' : ''} dans cette zone`}
+          </span>
+          {moved && (
+            <button type="button" className="btn auto !rounded-full !px-4 !py-2 !text-[0.8125rem] !shadow-card" onClick={searchHere}>
+              Rechercher dans cette zone
+            </button>
+          )}
+        </div>
       </div>
 
-      <button type="button" className="ib lg absolute bottom-[18.75rem] right-5 z-[400] !shadow-card" aria-label="Recentrer" onClick={() => mapRef.current?.setView(prefs.lat != null ? [prefs.lat, prefs.lng!] : ALGIERS, 13)}>
-        <I icon={LocateFixed} size={20} />
+      <button type="button" className="ib lg absolute bottom-[15.5rem] right-5 z-[400] !shadow-card" aria-label="Ma position" onClick={locate} disabled={locating}>
+        <I icon={LocateFixed} size={20} className={locating ? 'animate-pulse' : ''} />
       </button>
 
       {/* Feuille : salon sélectionné */}
-      <div className="sheet !bottom-[5.75rem] !z-[400] !pb-4">
+      <div className="sheet !bottom-[4.75rem] !z-[400] !pb-4">
         {current ? (
           <Link to={`/s/${current.slug}`} className="crd sel !gap-3">
             <div className="flex items-start gap-3.5">
@@ -142,11 +243,11 @@ export function MapView() {
             <NextSlots salon={current} />
           </Link>
         ) : (
-          <p className="p py-2 text-center">{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone.'}</p>
+          <p className="p py-2 text-center">{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone. Déplacez la carte puis « Rechercher dans cette zone ».'}</p>
         )}
         {items.length > 1 && (
-          <div className="flex items-center justify-center gap-1.5" aria-hidden>
-            {items.slice(0, 6).map((s) => (
+          <div className="flex items-center justify-center gap-1.5">
+            {items.slice(0, 8).map((s) => (
               <button key={s.id} type="button" onClick={() => setSelected(s.id)} className={`h-1.5 rounded-full ${s.id === current?.id ? 'w-6 bg-ink' : 'w-1.5 bg-line'}`} aria-label={s.name} />
             ))}
           </div>
