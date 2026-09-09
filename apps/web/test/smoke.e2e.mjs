@@ -281,8 +281,11 @@ try {
   await step('pro: équipe (ajout membre + horaires personnalisés)', async () => {
     await p.goto(WEB + '/pro/equipe');
     await p.getByRole('heading', { name: 'Équipe' }).waitFor();
+    await p.getByRole('button', { name: 'Ajouter un membre' }).click();
+    await p.getByRole('heading', { name: 'Nouveau membre' }).waitFor();
     await p.getByLabel('Nouveau membre').fill('Yacine');
-    await p.getByRole('button', { name: 'Ajouter' }).click();
+    await p.getByRole('button', { name: 'Ajouter le membre' }).click();
+    await p.getByRole('heading', { name: 'Équipe' }).waitFor();
     const row = p.locator('li', { hasText: 'Yacine' });
     await row.waitFor();
     await shot(p, 'pro-equipe');

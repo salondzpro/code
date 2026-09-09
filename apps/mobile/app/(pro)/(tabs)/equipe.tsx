@@ -3,14 +3,15 @@
  * Prestations : « toutes » par défaut, ou une sélection — le membre n'est proposé que pour ce qu'il réalise (SQL).
  * Horaires : liste vide côté API = « suit le salon » ; sinon plages par jour avec pause facultative.
  */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, Plus } from 'lucide-react-native';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
 import { formatDA, rangesFromRows, rowError, rowsFromRanges, type DayHoursRow } from '@salondz/constants';
 import type { OpeningHour, Service, Staff } from '@salondz/types';
 import { errorText } from '@/lib/errors';
-import { Alert, Avatar, Button, Card, Checkbox, H1, I, Input, ListCard, ModalSheet, P, Row, SectionLabel, Segmented, Skeleton, Toggle, Tx } from '@/ui';
+import { Alert, Avatar, Button, Checkbox, H1, I, ListCard, ModalSheet, P, Row, Segmented, Skeleton, Toggle, Tx } from '@/ui';
 import { WeekHoursEditor } from '@/ui/WeekHours';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
@@ -18,7 +19,7 @@ import { C, NAV_PAD } from '@/theme/design';
 
 const salonRanges = (hours: OpeningHour[]) => hours.filter((h) => !h.isClosed).map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.opensAt, end: h.closesAt }));
 
-function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
+export function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
   return (
     <View style={{ gap: 10 }}>
       <Segmented
@@ -164,29 +165,12 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
 }
 
 export default function Team() {
+  const router = useRouter();
   const salon = useProSalon().data?.salon ?? null;
-  const { create } = useProStaffMutations();
-  const [name, setName] = useState('');
-  const [all, setAll] = useState(true);
-  const [selected, setSelected] = useState<string[]>([]);
   const [open, setOpen] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const activeServices = useMemo(() => (salon?.services ?? []).filter((s) => s.isActive), [salon?.services]);
   if (!salon) return <Splash />;
   const member = salon.staff.find((m) => m.id === open) ?? null;
-
-  const add = async () => {
-    if (name.trim().length < 1) return;
-    setError(null);
-    try {
-      await create.mutateAsync({ displayName: name.trim(), allServices: all, serviceIds: all ? [] : selected });
-      setName('');
-      setAll(true);
-      setSelected([]);
-    } catch (err) {
-      setError(errorText(err));
-    }
-  };
 
   const summary = (m: Staff) => {
     const state = m.isActive ? 'Actif' : 'Inactif';
@@ -223,14 +207,12 @@ export default function Team() {
           </Row>
         ))}
       </ListCard>
-      <Card gap={10}>
-        <SectionLabel>Nouveau membre</SectionLabel>
-        <Input lg value={name} onChangeText={setName} onSubmitEditing={() => void add()} placeholder="Prénom du membre" accessibilityLabel="Nouveau membre" maxLength={60} returnKeyType="done" />
-        <ServicesPicker services={activeServices} all={all} selected={selected} onAll={setAll} onToggle={(id) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))} />
-        <Button onPress={() => void add()} disabled={create.isPending || !name.trim() || (!all && selected.length === 0 && activeServices.length > 0)} loading={create.isPending}>
-          Ajouter
-        </Button>
-      </Card>
+      <Button onPress={() => router.push('/equipe-nouveau' as never)}>
+        <I icon={Plus} size={14.5} color="#fff" />
+        <Tx size={12} weight={600} color="#fff" lh={16}>
+          Ajouter un membre
+        </Tx>
+      </Button>
       {error && <Alert>{error}</Alert>}
       {member && <MemberSheet member={member} salon={salon} onClose={() => setOpen(null)} />}
     </Screen>

@@ -4,13 +4,14 @@
  * que pour les prestations qu'il réalise (calcul SQL). Horaires : liste vide côté API = « suit le salon » ;
  * sinon plages par jour avec pause facultative ; créneaux = salon ∩ membre.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { ChevronRight, Plus } from 'lucide-react';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
 import { formatDA, rangesFromRows, rowError, rowsFromRanges, type DayHoursRow } from '@salondz/constants';
 import type { OpeningHour, Service, Staff } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, BottomSheet, Button, Checkbox, I, Input, Segmented, Skeleton, Toggle } from '@/components/ui';
+import { Avatar, BottomSheet, Button, Checkbox, I, Segmented, Skeleton, Toggle } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { WeekHoursEditor } from './onboarding/Step9Hours';
@@ -18,7 +19,7 @@ import { WeekHoursEditor } from './onboarding/Step9Hours';
 const salonRanges = (hours: OpeningHour[]) => hours.filter((h) => !h.isClosed).map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.opensAt, end: h.closesAt }));
 
 /** Choix des prestations d'un membre : toutes, ou cases à cocher. */
-function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
+export function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
   return (
     <div className="flex flex-col gap-3">
       <Segmented
@@ -168,29 +169,12 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
 }
 
 export function Team() {
+  const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  const { create } = useProStaffMutations();
-  const [name, setName] = useState('');
-  const [all, setAll] = useState(true);
-  const [selected, setSelected] = useState<string[]>([]);
   const [open, setOpen] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const activeServices = useMemo(() => (salon?.services ?? []).filter((s) => s.isActive), [salon?.services]);
   if (!salon) return <Splash />;
   const member = salon.staff.find((m) => m.id === open) ?? null;
-
-  const add = async () => {
-    if (name.trim().length < 1) return;
-    setError(null);
-    try {
-      await create.mutateAsync({ displayName: name.trim(), allServices: all, serviceIds: all ? [] : selected });
-      setName('');
-      setAll(true);
-      setSelected([]);
-    } catch (err) {
-      setError(errorText(err));
-    }
-  };
 
   const summary = (m: Staff) => {
     const state = m.isActive ? 'Actif' : 'Inactif';
@@ -221,24 +205,9 @@ export function Team() {
           </li>
         ))}
       </ul>
-      <div className="crd !gap-3">
-        <span className="h3">Nouveau membre</span>
-        <Input
-          lg
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') void add();
-          }}
-          placeholder="Prénom du membre"
-          aria-label="Nouveau membre"
-          maxLength={60}
-        />
-        <ServicesPicker services={activeServices} all={all} selected={selected} onAll={setAll} onToggle={(id) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))} />
-        <Button onClick={() => void add()} disabled={create.isPending || !name.trim() || (!all && selected.length === 0 && activeServices.length > 0)}>
-          Ajouter
-        </Button>
-      </div>
+      <Button onClick={() => navigate('/pro/equipe/nouveau')}>
+        <I icon={Plus} size={18} /> Ajouter un membre
+      </Button>
       {error && (
         <p className="text-[0.875rem] text-danger" role="alert">
           {error}
