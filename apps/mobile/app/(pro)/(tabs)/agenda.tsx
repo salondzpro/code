@@ -75,9 +75,6 @@ export default function AgendaPro() {
           <IconButton lg accessibilityLabel="Rechercher un rendez-vous" onPress={() => router.push('/(pro)/(tabs)/clients')}>
             <I icon={Search} size={16} />
           </IconButton>
-          <IconButton lg ink accessibilityLabel="Nouveau rendez-vous" onPress={newBooking}>
-            <I icon={Plus} size={18} color="#fff" />
-          </IconButton>
           <IconButton lg accessibilityLabel="Aujourd'hui" onPress={() => setDate(today)}>
             <I icon={Calendar} size={16} />
           </IconButton>
@@ -257,8 +254,8 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
           <Tx size={12} color={C.subtle} lh={16} style={{ flex: 1 }}>
             Libre · {formatDuration(g.e - g.s)}
           </Tx>
-          <Tx size={10.5} weight={600} color={C.ink} lh={14}>
-            + Rendez-vous
+          <Tx size={9.5} color={C.subtle} lh={13}>
+            toucher pour réserver
           </Tx>
         </Pressable>
       ))}

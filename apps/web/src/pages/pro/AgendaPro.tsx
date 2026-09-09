@@ -77,9 +77,6 @@ export function AgendaPro() {
           <IconButton lg aria-label="Rechercher un rendez-vous" onClick={() => navigate('/pro/clients')}>
             <I icon={Search} size={20} />
           </IconButton>
-          <IconButton lg ink aria-label="Nouveau rendez-vous" onClick={() => navigate(`/pro/rendez-vous/nouveau?date=${date}`)}>
-            <I icon={Plus} size={22} />
-          </IconButton>
           <IconButton lg aria-label="Aujourd'hui" onClick={() => setDate(today)}>
             <I icon={Calendar} size={20} />
           </IconButton>
@@ -217,7 +214,7 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
           aria-label={`Ajouter un rendez-vous à ${minutesToTime(g.s)}`}
         >
           <span>Libre · {formatDuration(g.e - g.s)}</span>
-          <span className="text-[0.8125rem] font-semibold text-ink">+ Rendez-vous</span>
+          <span className="text-[0.75rem] text-subtle">toucher pour réserver</span>
         </button>
       ))}
       {closedRanges.map((c) => (
