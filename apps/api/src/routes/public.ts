@@ -7,6 +7,7 @@ import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
 import { loadPublicBySlug } from '../lib/queries';
+import { attachPeriodAvailability } from '../lib/availability';
 
 const CACHE_PUBLIC_LONG = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400';
 const CACHE_PUBLIC_SHORT = 'public, max-age=60, s-maxage=120, stale-while-revalidate=600';
@@ -78,8 +79,9 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       };
       total = Number(total_count);
       const s = camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
-      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], nextAvailable: next_available ?? null, isOpenNow: !!is_open_now };
+      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], nextAvailable: next_available ?? null, periods: [], isOpenNow: !!is_open_now };
     });
+    await attachPeriodAvailability(items, req.log);
     reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
     return { items, total, nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null };
   });

@@ -1,11 +1,12 @@
 /**
- * Carte salon de la marketplace (design C-H 01 / C-F 01) : grande version avec couverture,
- * version compacte avec vignette. Prestations phares, note, prochains créneaux du jour.
+ * Carte salon de la marketplace (design C-H 01 / C-F 01, présentation « à la Planity ») : grande version avec
+ * couverture, version compacte avec vignette. Prestations phares, « ★ 4,9 (383 avis) », puis la grille
+ * MATIN / APRÈS-MIDI / SOIR × 3 jours : une puce active ouvre la réservation au premier créneau libre du moment.
  */
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
-import type { SalonSummary } from '@salondz/types';
-import { categoryLabel, formatDA, relativeDayLabelDZ } from '@salondz/constants';
+import type { PeriodDay, SalonSummary } from '@salondz/types';
+import { categoryLabel, dayChipLabelDZ, formatDA, relativeDayLabelDZ } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/format';
 import { C, R } from '@/theme/design';
 import { Img, S, T3, Tx } from './index';
@@ -21,6 +22,84 @@ export function RatingPill({ avg, count, style }: { avg: number; count?: number;
           ({count})
         </Tx>
       )}
+    </View>
+  );
+}
+
+/** Ligne d'avis des cartes (Planity : « ☆ 4,9 (383 avis) ») ; sans avis : « Nouveau sur Salon DZ ». */
+export function RatingLine({ avg, count }: { avg: number; count: number }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <Tx size={11.5} lh={15}>
+        ★
+      </Tx>
+      {count > 0 ? (
+        <>
+          <Tx size={11.5} weight={700} lh={15}>
+            {formatRating(avg)}
+          </Tx>
+          <Tx size={11.5} color={C.muted} lh={15}>
+            ({count} avis)
+          </Tx>
+        </>
+      ) : (
+        <Tx size={11.5} color={C.muted} lh={15}>
+          Nouveau sur Salon DZ
+        </Tx>
+      )}
+    </View>
+  );
+}
+
+const PERIODS: { key: keyof Omit<PeriodDay, 'date'>; label: string }[] = [
+  { key: 'matin', label: 'Matin' },
+  { key: 'apresMidi', label: 'Après-midi' },
+  { key: 'soir', label: 'Soir' },
+];
+
+/**
+ * Grille « Matin / Après-midi / Soir » × 3 jours (Planity) : puce active = premier créneau libre du moment,
+ * puce grisée = rien de libre. La ligne Soir n'apparaît que si le salon a des créneaux le soir.
+ * Aucun créneau sur 3 jours → repli sur la prochaine disponibilité (`NextSlots`).
+ */
+export function PeriodGrid({ salon }: { salon: Pick<SalonSummary, 'slug' | 'nextAvailable' | 'periods'> }) {
+  const router = useRouter();
+  const days = salon.periods ?? [];
+  const any = days.some((d) => d.matin || d.apresMidi || d.soir);
+  if (!any) return <NextSlots salon={salon} empty="Aucune disponibilité ces 3 prochains jours" />;
+  const rows = PERIODS.filter((p) => p.key !== 'soir' || days.some((d) => d.soir));
+  return (
+    <View style={{ gap: 6 }} accessibilityLabel="Disponibilités par moment de la journée">
+      {rows.map((p) => (
+        <View key={p.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Tx size={9.5} weight={700} ls={0.7} lh={13} style={{ width: 74 }}>
+            {p.label.toUpperCase()}
+          </Tx>
+          {days.map((d) => {
+            const t = d[p.key];
+            const label = dayChipLabelDZ(d.date);
+            return t ? (
+              <Pressable
+                key={d.date}
+                accessibilityRole="button"
+                accessibilityLabel={`Réserver ${label} ${p.label.toLowerCase()} à ${t}`}
+                onPress={() => router.push({ pathname: `/s/${salon.slug}/prestations`, params: { date: d.date, time: t } } as never)}
+                style={({ pressed }) => ({ flex: 1, alignItems: 'center', borderWidth: 1, borderColor: C.ink, borderRadius: R.pill, paddingVertical: 8, backgroundColor: pressed ? C.fill : C.surface })}
+              >
+                <Tx size={10.5} weight={600} lh={14}>
+                  {label}
+                </Tx>
+              </Pressable>
+            ) : (
+              <View key={d.date} accessibilityLabel={`${label} ${p.label.toLowerCase()} : complet`} style={{ flex: 1, alignItems: 'center', borderRadius: R.pill, paddingVertical: 8, backgroundColor: C.fill }}>
+                <Tx size={10.5} color={C.subtle} lh={14}>
+                  {label}
+                </Tx>
+              </View>
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 }
@@ -93,22 +172,20 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
       <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={go} style={({ pressed }) => [base, { opacity: pressed ? 0.92 : 1 }]}>
         <Img src={s.coverUrl} radius={0} style={{ height: 187, width: '100%' }} />
         <View style={{ padding: 13, gap: 3 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-            <Tx size={14.5} weight={700} ls={-0.4} lh={18} style={{ flex: 1 }}>
-              {s.name}
-            </Tx>
-            {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
-          </View>
+          <Tx size={14.5} weight={700} ls={-0.4} lh={18}>
+            {s.name}
+          </Tx>
           <Tx size={10.5} color={C.muted} lh={15.5}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
+          <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
           {s.topServices.length > 0 && (
             <Tx size={12} color={C.subtle} lh={17}>
               {servicesLine(s)}
             </Tx>
           )}
           <View style={{ marginTop: 8 }}>
-            <NextSlots salon={s} />
+            <PeriodGrid salon={s} />
           </View>
         </View>
       </Pressable>
@@ -120,15 +197,15 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
         <Img src={s.logoUrl ?? s.coverUrl} radius={13} style={{ width: 91, height: 91 }} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
-            <Tx size={14} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
-              {s.name}
-            </Tx>
-            {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
-          </View>
+          <Tx size={14} weight={700} ls={-0.4} lh={17}>
+            {s.name}
+          </Tx>
           <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
+          <View style={{ marginTop: 3 }}>
+            <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
+          </View>
           {s.topServices.length > 0 && (
             <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
               {servicesLine(s)}
@@ -136,7 +213,7 @@ export function SalonListCard({ salon, large, to }: { salon: SalonSummary; large
           )}
         </View>
       </View>
-      <NextSlots salon={s} />
+      <PeriodGrid salon={s} />
     </Pressable>
   );
 }

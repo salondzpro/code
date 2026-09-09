@@ -7,6 +7,7 @@ import { camelize, snakeize } from '../lib/mappers';
 import { unwrap } from '../lib/errors';
 import { toLocalDateKey } from '@salondz/constants';
 import { loadOwnedSalon } from '../plugins/auth';
+import { attachPeriodAvailability } from '../lib/availability';
 
 const PROFILE_COLS = 'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
 
@@ -115,10 +116,11 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       .map((r) => {
         const { salon_categories, is_published: _p, ...rest } = r.salons;
         const s = camelize<Omit<SalonSummary, 'categoryIds' | 'minPriceDa' | 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
-        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null, topServices: [], nextSlots: [], nextAvailable: null as SalonSummary['nextAvailable'], isOpenNow: false };
+        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null, topServices: [], nextSlots: [], nextAvailable: null as SalonSummary['nextAvailable'], periods: [], isOpenNow: false };
       });
     // Prochaine disponibilité (même calcul que la marketplace) : la liste des favoris est courte.
     const today = toLocalDateKey();
+    await attachPeriodAvailability(items, req.log);
     await Promise.all(
       items.map(async (s) => {
         const r = await db.rpc('next_availability', { p_salon_id: s.id, p_duration_minutes: null, p_limit: 3, p_days: 7 });
