@@ -107,11 +107,11 @@ export function ProBookingDetail() {
               Terminé
             </Button>
             <Button variant="g" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'no_show' })}>
-              Absent
+              Client absent
             </Button>
           </div>
         )}
-        {active && (
+        {active && !past && (
           <div className="g2">
             <Button variant="g" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
               Reporter
@@ -121,7 +121,7 @@ export function ProBookingDetail() {
             </Button>
           </div>
         )}
-        {!active && <Button variant="g" onClick={() => navigate('/pro/agenda')}>Retour à l'agenda</Button>}
+        {(!active || (past && b.status === 'pending')) && <Button variant="g" onClick={() => navigate('/pro/agenda')}>Retour à l'agenda</Button>}
       </BottomSheet>
 
       {cancelling && (

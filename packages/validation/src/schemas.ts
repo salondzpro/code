@@ -128,6 +128,16 @@ export const setStaffHoursSchema = z.object({
     .max(14),
 });
 
+// ---------- Clients bloqués ----------
+export const blockClientSchema = z
+  .object({
+    clientId: p.uuid.optional(),
+    phone: p.phoneDZ.optional(),
+    reason: p.shortText(200).optional(),
+  })
+  .refine((v) => !!v.clientId || !!v.phone, { message: 'Compte ou numéro requis', path: ['phone'] });
+export type BlockClientInput = z.infer<typeof blockClientSchema>;
+
 // ---------- Blocages (congés, pauses) ----------
 export const createTimeBlockSchema = z
   .object({

@@ -15,15 +15,15 @@ import { C } from '@/theme/design';
 
 export default function ProBookingNew() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ date?: string }>();
+  const params = useLocalSearchParams<{ date?: string; time?: string; staff?: string; name?: string; phone?: string }>();
   const salon = useProSalon().data?.salon ?? null;
   const { createWalkIn } = useProBookingMutations();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [name, setName] = useState(params.name ?? '');
+  const [phone, setPhone] = useState(params.phone ?? '');
   const [services, setServices] = useState<string[]>([]);
   const [date, setDate] = useState(params.date ?? toLocalDateKey());
-  const [time, setTime] = useState('10:00');
-  const [staffId, setStaffId] = useState<string>('');
+  const [time, setTime] = useState(/^\d{2}:\d{2}$/.test(params.time ?? '') ? params.time! : '10:00');
+  const [staffId, setStaffId] = useState<string>(params.staff ?? '');
   const [sheet, setSheet] = useState<'date' | 'time' | 'staff' | null>(null);
   const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;

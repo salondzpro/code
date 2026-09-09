@@ -160,14 +160,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             Sur demande, avec validation
           </Tx>
         </Row>
-        <Row py={13} chevron={false} right={<Toggle on={deposit} onChange={setDeposit} label="Acompte" />}>
-          <Tx size={12} lh={16}>
-            Acompte
-          </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
-            Paiement sur place uniquement
-          </Tx>
-        </Row>
       </ListCard>
       {error && <Alert>{error}</Alert>}
       <PickerSheet open={sheet === 'cancel'} onClose={() => setSheet(null)} title="Annulation gratuite jusqu'à" options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} value={cancel} onChange={setCancel} />

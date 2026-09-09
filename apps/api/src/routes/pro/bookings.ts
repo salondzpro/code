@@ -115,6 +115,10 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     if (!ALLOWED_TRANSITIONS[b.status]?.includes('cancelled')) {
       throw conflict('BOOKING_NOT_CANCELLABLE', 'Cette réservation ne peut plus être annulée.');
     }
+    // Règle simple : le professionnel annule tant que le rendez-vous n'est pas passé ; ensuite il le marque Terminé ou Client absent.
+    if (new Date(b.startsAt).getTime() < Date.now()) {
+      throw conflict('BOOKING_STARTED', 'Ce rendez-vous est passé : marquez-le « Terminé » ou « Client absent ».');
+    }
     const res = await db
       .from('bookings')
       .update({

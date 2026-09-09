@@ -154,12 +154,15 @@ export function Pill({ on, lg, soft, children, style, ...props }: Omit<Pressable
   );
 }
 
-export type BadgeTone = 'ok' | 'pd' | 'cn' | 'nu';
+export type BadgeTone = 'ok' | 'pd' | 'cn' | 'nu' | 'cf' | 'dk';
 const TONES: Record<BadgeTone, { bg: string; fg: string }> = {
   ok: { bg: C.okBg, fg: C.okFg },
   pd: { bg: C.pendingBg, fg: C.pendingFg },
   cn: { bg: C.cancelBg, fg: C.cancelFg },
   nu: { bg: C.fill, fg: C.muted },
+  // Confirmé (violet) et Client absent (noir) : statuts simples du lancement
+  cf: { bg: '#E7DFFF', fg: '#4B2C91' },
+  dk: { bg: '#E3E4E6', fg: '#17181A' },
 };
 export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; children: ReactNode }) {
   const t = TONES[tone];
@@ -174,11 +177,11 @@ export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot
 }
 
 const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boolean }> = {
-  confirmed: { tone: 'ok', label: 'Confirmé', dot: true },
+  confirmed: { tone: 'cf', label: 'Confirmé', dot: true },
   pending: { tone: 'pd', label: 'En attente', dot: true },
   cancelled: { tone: 'cn', label: 'Annulé', dot: true },
-  completed: { tone: 'nu', label: 'Terminé', dot: false },
-  no_show: { tone: 'nu', label: 'Absent', dot: false },
+  completed: { tone: 'ok', label: 'Terminé', dot: true },
+  no_show: { tone: 'dk', label: 'Client absent', dot: true },
 };
 export function StatusBadge({ status, md }: { status: BookingStatus; md?: boolean }) {
   const s = STATUS[status];

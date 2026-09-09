@@ -172,13 +172,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           </span>
           <Toggle on={report} onChange={setReport} label="Report client" />
         </div>
-        <div className="li !py-4">
-          <span>
-            <span className="block text-[0.9375rem]">Acompte</span>
-            <span className="p block text-[0.8125rem]">Paiement sur place uniquement</span>
-          </span>
-          <Toggle on={deposit} onChange={setDeposit} label="Acompte" />
-        </div>
       </div>
       {error && (
         <p className="text-[0.875rem] text-danger" role="alert">

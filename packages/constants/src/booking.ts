@@ -39,7 +39,7 @@ export const DEFAULT_BOOKING_HORIZON_DAYS = 30;
 /** Durée max d'un service (minutes). */
 export const MAX_SERVICE_DURATION_MINUTES = 8 * 60;
 /** Délai d'annulation côté client (heures avant le RDV). */
-export const CLIENT_CANCEL_MIN_HOURS = 2;
+export const CLIENT_CANCEL_MIN_HOURS = 1;
 
 export const NOTIFICATION_TYPES = [
   'booking_created',

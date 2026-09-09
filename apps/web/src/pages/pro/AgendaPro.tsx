@@ -2,11 +2,11 @@
  * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
  * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
-import { DAY_LABELS_FR, DAY_LABELS_SHORT_FR, addDaysToKey, categoryTone, dayOfWeekFromKey, formatDA, formatTimeDZ, timeToMinutes, toLocalDateKey, weekKeys } from '@salondz/constants';
+import { DAY_LABELS_FR, DAY_LABELS_SHORT_FR, addDaysToKey, categoryTone, dayOfWeekFromKey, formatDA, formatTimeDZ, timeToMinutes, toLocalDateKey, weekKeys, minutesToTime } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
 import { useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
@@ -72,7 +72,7 @@ export function AgendaPro() {
     view === 'day' ? (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[0.9375rem] text-muted">{DAY_LABELS_FR[dayOfWeekFromKey(date)]}</div>
+          <div className="text-[0.9375rem] text-muted">{date === today ? "Aujourd'hui · " : ''}{DAY_LABELS_FR[dayOfWeekFromKey(date)]}</div>
           <h1 className="h1 whitespace-nowrap">
             {Number(date.slice(8, 10))} {MONTHS[Number(date.slice(5, 7)) - 1]}
           </h1>
@@ -106,7 +106,24 @@ export function AgendaPro() {
       </div>
     );
 
+  // Balayage horizontal (tactile) : jour précédent / suivant en vue jour.
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touch.current = t ? { x: t.clientX, y: t.clientY } : null;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touch.current;
+    const t = e.changedTouches[0];
+    touch.current = null;
+    if (!start || !t || view !== 'day') return;
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
+  };
+
   return (
+    <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
     <Screen bottom={NAV_PAD} gap={16}>
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
@@ -134,7 +151,7 @@ export function AgendaPro() {
               </Badge>
             )}
           </div>
-          <DayTimeline date={date} items={dayItems} blocks={dayBlocks} hours={dayHours(date)} toneOf={toneOf} onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)} />
+          <DayTimeline date={date} items={dayItems} blocks={dayBlocks} hours={dayHours(date)} toneOf={toneOf} onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)} onFree={(t) => navigate(`/pro/rendez-vous/nouveau?date=${date}&time=${t}${staffId ? `&staff=${staffId}` : ''}`)} />
           <button type="button" className="fab right-5" aria-label="Nouveau rendez-vous" onClick={() => navigate(`/pro/rendez-vous/nouveau?date=${date}`)} style={{ left: 'auto', right: 'max(20px, calc(50% - var(--app-max-width) / 2 + 20px))' }}>
             <I icon={Plus} size={28} />
           </button>
@@ -149,6 +166,7 @@ export function AgendaPro() {
         <MonthGrid date={date} gridStart={monthGridStart} byDay={byDay} closedDays={closedDays} toneOf={toneOf} selected={date} today={today} onSelect={setDate} onOpenDay={(d) => { setDate(d); setView('day'); }} onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)} />
       )}
     </Screen>
+    </div>
   );
 }
 
@@ -161,7 +179,7 @@ function isoWeek(key: string): number {
 }
 
 /** Vue jour : ligne de temps de l'ouverture à la fermeture (pas d'une heure). */
-function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void }) {
+function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void; onFree: (timeHM: string) => void }) {
   if (hours.length === 0 && items.length === 0) return <p className="p py-6 text-center">Fermé ce jour.</p>;
   const startMin = Math.min(...(hours.length ? hours.map((h) => timeToMinutes(h.opensAt)) : [8 * 60]), ...items.map((b) => localMinutes(b.startsAt)));
   const endMin = Math.max(...(hours.length ? hours.map((h) => timeToMinutes(h.closesAt)) : [19 * 60]), ...items.map((b) => localMinutes(b.endsAt)));
@@ -196,9 +214,17 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         </div>
       ))}
       {gaps.map((g) => (
-        <div key={`gap-${g.s}`} className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[0.9375rem] text-subtle" style={{ top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}>
-          Libre · {formatDuration(g.e - g.s)}
-        </div>
+        <button
+          key={`gap-${g.s}`}
+          type="button"
+          className="absolute left-[3.625rem] right-0 flex items-center justify-between rounded-[0.75rem] px-4 text-left text-[0.9375rem] text-subtle hover:text-text"
+          style={{ top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}
+          onClick={() => onFree(minutesToTime(g.s))}
+          aria-label={`Ajouter un rendez-vous à ${minutesToTime(g.s)}`}
+        >
+          <span>Libre · {formatDuration(g.e - g.s)}</span>
+          <span className="text-[0.8125rem] font-semibold text-ink">+ Rendez-vous</span>
+        </button>
       ))}
       {closedRanges.map((c) => (
         <div key={`c-${c.s}-${c.label}`} className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[0.9375rem] text-subtle" style={{ top: top(c.s) + 2, height: Math.max(20, (c.e - c.s) * PX - 4), background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)' }}>

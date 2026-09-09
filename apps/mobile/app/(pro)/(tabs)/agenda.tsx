@@ -2,8 +2,8 @@
  * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
  * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
  */
-import React, { useMemo, useState } from 'react';
-import { Pressable, View, type ViewStyle } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react-native';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
@@ -58,6 +58,19 @@ export default function AgendaPro() {
   const dayRevenue = dayItems.filter((b) => b.status !== 'no_show').reduce((a, b) => a + b.priceDa, 0);
   const dayPending = dayItems.filter((b) => b.status === 'pending').length;
   const dayBlocks = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === date);
+  // Balayage horizontal : jour précédent / suivant en vue jour (mobile-first).
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: GestureResponderEvent) => {
+    touch.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY };
+  };
+  const onTouchEnd = (e: GestureResponderEvent) => {
+    const start = touch.current;
+    touch.current = null;
+    if (!start || view !== 'day') return;
+    const dx = e.nativeEvent.pageX - start.x;
+    const dy = e.nativeEvent.pageY - start.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
+  };
   const shift = (n: number) => setDate(view === 'month' ? addDaysToKey(monthStart, n > 0 ? 32 : -1).slice(0, 8) + '01' : addDaysToKey(date, n * (view === 'week' ? 7 : 1)));
   const openBooking = (id: string) => router.push(`/pro-rdv/${id}` as never);
   const newBooking = () => router.push({ pathname: '/pro-rdv/nouveau', params: { date } });
@@ -67,6 +80,7 @@ export default function AgendaPro() {
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
         <View>
           <Tx size={12} color={C.muted} lh={16}>
+            {date === today ? "Aujourd'hui · " : ''}
             {DAY_LABELS_FR[dayOfWeekFromKey(date)]}
           </Tx>
           <Tx size={23} weight={700} ls={-0.8} lh={26}>
@@ -108,6 +122,8 @@ export default function AgendaPro() {
 
   return (
     <Screen
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       gap={13}
       bottom={NAV_PAD + 60}
       footer={
@@ -149,7 +165,7 @@ export default function AgendaPro() {
               </Badge>
             )}
           </View>
-          <DayTimeline date={date} items={dayItems} blocks={dayBlocks} hours={dayHours(date)} toneOf={toneOf} onOpen={openBooking} />
+          <DayTimeline date={date} items={dayItems} blocks={dayBlocks} hours={dayHours(date)} toneOf={toneOf} onOpen={openBooking} onFree={(t) => router.push({ pathname: '/pro-rdv/nouveau', params: { date, time: t, ...(staffId ? { staff: staffId } : {}) } } as never)} />
         </>
       )}
 
@@ -198,7 +214,7 @@ function isoWeek(key: string): number {
 }
 
 /** Vue jour : ligne de temps de l'ouverture à la fermeture (92 px par heure, design). */
-function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void }) {
+function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void; onFree: (timeHM: string) => void }) {
   if (hours.length === 0 && items.length === 0)
     return (
       <View style={{ paddingVertical: 20 }}>
@@ -238,11 +254,14 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen }: { date: str
         </View>
       ))}
       {gaps.map((g) => (
-        <View key={`gap-${g.s}`} style={[{ position: 'absolute', left: 47, right: 0, top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 13 }, HATCH]}>
-          <Tx size={12} color={C.subtle} lh={16}>
+        <Pressable key={`gap-${g.s}`} accessibilityRole="button" accessibilityLabel={`Ajouter un rendez-vous à ${hm(g.s)}`} onPress={() => onFree(hm(g.s))} style={[{ position: 'absolute', left: 47, right: 0, top: top(g.s) + 2, height: (g.e - g.s) * PX - 4, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center' }, HATCH]}>
+          <Tx size={12} color={C.subtle} lh={16} style={{ flex: 1 }}>
             Libre · {formatDuration(g.e - g.s)}
           </Tx>
-        </View>
+          <Tx size={10.5} weight={600} color={C.ink} lh={14}>
+            + Rendez-vous
+          </Tx>
+        </Pressable>
       ))}
       {closedRanges.map((c) => (
         <View key={`c-${c.s}-${c.label}`} style={[{ position: 'absolute', left: 47, right: 0, top: top(c.s) + 2, height: Math.max(20, (c.e - c.s) * PX - 4), borderRadius: 10, justifyContent: 'center', paddingHorizontal: 13 }, HATCH]}>

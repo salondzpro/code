@@ -58,7 +58,7 @@ export function Pill({ on, lg, soft, className = '', ...props }: ButtonHTMLAttri
   return <button type="button" {...props} className={['pill', on ? 'on' : '', lg ? 'lg' : '', soft ? 'soft' : '', className].filter(Boolean).join(' ')} />;
 }
 
-export type BadgeTone = 'ok' | 'pd' | 'cn' | 'nu';
+export type BadgeTone = 'ok' | 'pd' | 'cn' | 'nu' | 'cf' | 'dk';
 export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; children: ReactNode }) {
   return (
     <span className={`badge b-${tone}${md ? ' md' : ''}`}>
@@ -69,11 +69,11 @@ export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot
 }
 
 const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boolean }> = {
-  confirmed: { tone: 'ok', label: 'Confirmé', dot: true },
+  confirmed: { tone: 'cf', label: 'Confirmé', dot: true },
   pending: { tone: 'pd', label: 'En attente', dot: true },
   cancelled: { tone: 'cn', label: 'Annulé', dot: true },
-  completed: { tone: 'nu', label: 'Terminé', dot: false },
-  no_show: { tone: 'nu', label: 'Absent', dot: false },
+  completed: { tone: 'ok', label: 'Terminé', dot: true },
+  no_show: { tone: 'dk', label: 'Client absent', dot: true },
 };
 export function StatusBadge({ status, md }: { status: BookingStatus; md?: boolean }) {
   const s = STATUS[status];

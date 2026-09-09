@@ -284,6 +284,15 @@
     background: var(--color-fill);
     color: var(--color-muted);
   }
+  /* Confirmé (violet) et Client absent (noir) : statuts simples du lancement */
+  .b-cf {
+    background: #e7dfff;
+    color: #4b2c91;
+  }
+  .b-dk {
+    background: #e3e4e6;
+    color: #17181a;
+  }
   .dot {
     width: 0.375rem;
     height: 0.375rem;

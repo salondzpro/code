@@ -203,6 +203,17 @@ export function useProServiceMutations() {
   };
 }
 
+export const useProClients = () => useQuery(useApi().queries.pro.clients());
+export function useProClientMutations() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  const done = () => qc.invalidateQueries({ queryKey: queryKeys.pro.clients });
+  return {
+    block: useMutation({ mutationFn: api.pro.clients.block, onSuccess: done }),
+    unblock: useMutation({ mutationFn: api.pro.clients.unblock, onSuccess: done }),
+  };
+}
+
 export function useProStaffMutations() {
   const { api } = useApi();
   const qc = useQueryClient();

@@ -294,6 +294,23 @@ export interface BookingWithStaff extends Booking {
   staff: Pick<Staff, 'id' | 'displayName'> | null;
 }
 
+/** Fiche client agrégée côté pro (un client = compte, sinon numéro, sinon nom). */
+export interface ProClient {
+  clientKey: string;
+  clientId: UUID | null;
+  name: string;
+  phone: string | null;
+  bookingsCount: number;
+  completedCount: number;
+  cancelledCount: number;
+  noShowCount: number;
+  lastAt: string | null;
+  nextAt: string | null;
+  lastBookingId: UUID | null;
+  blocked: boolean;
+  blockedReason: string | null;
+}
+
 export interface ProDashboardStats {
   todayCount: number;
   pendingCount: number;

@@ -62,11 +62,11 @@ export default function ProBookingDetail() {
                 Terminé
               </Button>
               <Button variant="g" disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'no_show' })}>
-                Absent
+                Client absent
               </Button>
             </Grid>
           )}
-          {active && (
+          {active && !past && (
             <Grid cols={2}>
               <Button variant="g" onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
                 Reporter
@@ -76,7 +76,7 @@ export default function ProBookingDetail() {
               </Button>
             </Grid>
           )}
-          {!active && (
+          {(!active || (past && b.status === 'pending')) && (
             <Button variant="g" onPress={back}>
               Retour à l'agenda
             </Button>

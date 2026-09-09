@@ -20,6 +20,7 @@ import type {
   StaffHour,
   TimeBlock,
   SearchSuggestions,
+  ProClient,
 } from '@salondz/types';
 import type { Wilaya } from '@salondz/constants';
 import type {
@@ -36,6 +37,7 @@ import type {
   UpdateProfileInput,
   UpdateSalonInput,
   UpdateServiceInput,
+  BlockClientInput,
 } from '@salondz/validation';
 
 export class ApiError extends Error {
@@ -199,6 +201,11 @@ export function createApiClient(opts: ApiClientOptions) {
         remove: (id: string) => del<{ deleted: boolean; deactivated: boolean }>(`/pro/staff/${id}`),
         hours: (id: string) => get<StaffHour[]>(`/pro/staff/${id}/hours`),
         setHours: (id: string, hours: { dayOfWeek: number; startsAt: string; endsAt: string }[]) => put<void>(`/pro/staff/${id}/hours`, { hours }),
+      },
+      clients: {
+        list: () => get<{ items: ProClient[] }>('/pro/clients'),
+        block: (body: BlockClientInput) => post<void>('/pro/clients/block', body),
+        unblock: (body: BlockClientInput) => post<void>('/pro/clients/unblock', body),
       },
       blocks: {
         list: (from?: string, to?: string) => get<{ items: TimeBlock[] }>('/pro/blocks', { from, to }),

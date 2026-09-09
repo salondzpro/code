@@ -509,6 +509,20 @@ try {
     await p.goto(WEB + '/pro/reservations');
     await p.getByText('Tout est à jour').waitFor();
   });
+  await step('pro: fiche client (statistiques, bloquer puis débloquer)', async () => {
+    await p.goto(WEB + '/pro/clients');
+    await p.getByRole('heading', { name: 'Clients' }).waitFor();
+    await p.locator('button.li', { hasText: 'Amine Smoke' }).first().click();
+    const sheet = p.getByRole('dialog', { name: 'Client Amine Smoke' });
+    await sheet.getByText('Prochain rendez-vous').waitFor();
+    await shot(p, 'pro-client');
+    await sheet.getByRole('button', { name: 'Actions' }).click();
+    await sheet.getByRole('menuitem', { name: 'Bloquer' }).click();
+    await sheet.getByText('Bloqué', { exact: true }).waitFor();
+    await sheet.getByRole('button', { name: 'Actions' }).click();
+    await sheet.getByRole('menuitem', { name: 'Débloquer' }).click();
+    await sheet.getByText('Actif', { exact: true }).waitFor();
+  });
   await step('client: noter la prestation → avis visible sur la page publique', async () => {
     await c.goto(WEB + '/rendez-vous?scope=past');
     const card = c.locator('.crd', { hasText: 'Coupe simple' }).filter({ hasText: 'Terminé' });

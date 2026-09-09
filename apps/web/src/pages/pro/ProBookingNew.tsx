@@ -16,12 +16,12 @@ export function ProBookingNew() {
   const [params] = useSearchParams();
   const salon = useProSalon().data?.salon ?? null;
   const { createWalkIn } = useProBookingMutations();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [name, setName] = useState(params.get('name') ?? '');
+  const [phone, setPhone] = useState(params.get('phone') ?? '');
   const [services, setServices] = useState<string[]>([]);
   const [date, setDate] = useState(params.get('date') ?? toLocalDateKey());
-  const [time, setTime] = useState('10:00');
-  const [staffId, setStaffId] = useState<string>('');
+  const [time, setTime] = useState(/^\d{2}:\d{2}$/.test(params.get('time') ?? '') ? params.get('time')! : '10:00');
+  const [staffId, setStaffId] = useState<string>(params.get('staff') ?? '');
   const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;
   const active = salon.services.filter((s) => s.isActive);
