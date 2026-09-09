@@ -38,15 +38,17 @@ export function RatingPill({
 /** Ligne d'avis des cartes (Planity : « ☆ 4,9 (383 avis) ») ; sans avis : « Nouveau sur Salon DZ ». */
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
-    <span className="flex items-center gap-1.5 text-[0.875rem]">
-      <span aria-hidden>★</span>
+    <span className="flex items-center gap-1.5 text-[0.9375rem]">
+      <span aria-hidden className="text-[1rem]">
+        ★
+      </span>
       {count > 0 ? (
         <>
-          <b>{formatRating(avg)}</b>
+          <b className="text-[1rem]">{formatRating(avg)}</b>
           <span className="text-muted">({count} avis)</span>
         </>
       ) : (
-        <span className="text-muted">Nouveau sur Salon DZ</span>
+        <span className="font-medium text-muted">Nouveau sur Salon DZ</span>
       )}
     </span>
   );
@@ -145,16 +147,16 @@ export function NextSlots({
       </div>
       {rows.map((r) => (
         <div key={r.key} className="flex items-center gap-2">
-          <span className="w-[7.75rem] flex-none text-[0.75rem] font-bold uppercase tracking-[0.06em]">
+          <span className="w-[7.75rem] flex-none text-[0.8125rem] font-bold uppercase tracking-[0.06em]">
             {r.label}{' '}
-            <span className="font-semibold normal-case tracking-normal text-muted">· {day}</span>
+            <span className="font-bold normal-case tracking-normal text-text">· {day}</span>
           </span>
           <div className="flex flex-1 flex-wrap gap-1.5">
             {r.slots.map((t) => (
               <button
                 key={t}
                 type="button"
-                className="pill mono !border-ink !px-3 !py-2 !text-[0.875rem] font-semibold hover:!bg-fill"
+                className="pill mono !border-ink !px-3.5 !py-2.5 !text-[1rem] font-bold hover:!bg-fill"
                 aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
                 onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
               >
@@ -168,8 +170,18 @@ export function NextSlots({
   );
 }
 
-function servicesLine(s: SalonSummary): string {
-  return s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ');
+/** Prestations phares : le prix en gras, c'est ce que le client compare en premier. */
+function ServicesLine({ s }: { s: SalonSummary }) {
+  return (
+    <span className="text-[0.9375rem] text-text">
+      {s.topServices.map((t, i) => (
+        <span key={`${t.name}-${i}`}>
+          {i > 0 && <span className="text-subtle"> · </span>}
+          {t.name} <b>{formatDA(t.priceDa)}</b>
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export function SalonListCard({
@@ -199,16 +211,14 @@ export function SalonListCard({
           )}
         </div>
         <div className="flex flex-col gap-1 p-4">
-          <span className="text-[1.125rem] font-bold leading-tight tracking-[-0.4px]">
+          <span className="text-[1.3125rem] font-bold leading-tight tracking-[-0.5px]">
             {s.name}
           </span>
-          <span className="text-[0.8125rem] text-muted">
+          <span className="text-[0.875rem] text-muted">
             {[cats, place, km].filter(Boolean).join(' · ')}
           </span>
           <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-          {s.topServices.length > 0 && (
-            <span className="text-[0.9375rem] text-subtle">{servicesLine(s)}</span>
-          )}
+          {s.topServices.length > 0 && <ServicesLine s={s} />}
           <div className="mt-2.5">
             <NextSlots salon={s} />
           </div>
@@ -225,17 +235,19 @@ export function SalonListCard({
           className="h-[7rem] w-[7rem] flex-none !rounded-[1rem]"
         />
         <div className="min-w-0 flex-1">
-          <span className="text-[1.0625rem] font-bold leading-tight tracking-[-0.4px]">
+          <span className="text-[1.1875rem] font-bold leading-tight tracking-[-0.5px]">
             {s.name}
           </span>
-          <span className="mt-1 block text-[0.8125rem] text-muted">
+          <span className="mt-1 block text-[0.875rem] text-muted">
             {[cats, place, km].filter(Boolean).join(' · ')}
           </span>
           <div className="mt-1">
             <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
           </div>
           {s.topServices.length > 0 && (
-            <span className="mt-0.5 block text-[0.9375rem] text-subtle">{servicesLine(s)}</span>
+            <span className="mt-0.5 block">
+              <ServicesLine s={s} />
+            </span>
           )}
         </div>
       </div>

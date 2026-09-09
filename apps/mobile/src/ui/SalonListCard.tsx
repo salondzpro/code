@@ -59,20 +59,20 @@ export function RatingPill({
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      <Tx size={11.5} lh={15}>
+      <Tx size={13} lh={17}>
         ★
       </Tx>
       {count > 0 ? (
         <>
-          <Tx size={11.5} weight={700} lh={15}>
+          <Tx size={13} weight={700} lh={17}>
             {formatRating(avg)}
           </Tx>
-          <Tx size={11.5} color={C.muted} lh={15}>
+          <Tx size={12} color={C.muted} lh={16}>
             ({count} avis)
           </Tx>
         </>
       ) : (
-        <Tx size={11.5} color={C.muted} lh={15}>
+        <Tx size={12} weight={500} color={C.muted} lh={16}>
           Nouveau sur Salon DZ
         </Tx>
       )}
@@ -193,10 +193,10 @@ export function NextSlots({
       {rows.map((r) => (
         <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <View style={{ width: 88 }}>
-            <Tx size={9.5} weight={700} ls={0.5} lh={13}>
+            <Tx size={10.5} weight={700} ls={0.5} lh={14}>
               {r.label}
             </Tx>
-            <Tx size={9.5} weight={600} color={C.muted} lh={13}>
+            <Tx size={10.5} weight={700} lh={14}>
               {day}
             </Tx>
           </View>
@@ -221,7 +221,7 @@ export function NextSlots({
                   backgroundColor: pressed ? C.fill : C.surface,
                 })}
               >
-                <Tx size={11.5} weight={600} lh={14} mono>
+                <Tx size={13} weight={700} lh={16} mono>
                   {t}
                 </Tx>
               </Pressable>
@@ -233,8 +233,25 @@ export function NextSlots({
   );
 }
 
-function servicesLine(s: SalonSummary): string {
-  return s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ');
+/** Prestations phares : le prix en gras, c'est ce que le client compare en premier. */
+function ServicesLine({ s }: { s: SalonSummary }) {
+  return (
+    <Tx size={12} lh={17}>
+      {s.topServices.map((t, i) => (
+        <Tx key={`${t.name}-${i}`} size={12} lh={17}>
+          {i > 0 ? (
+            <Tx size={12} color={C.subtle} lh={17}>
+              {' · '}
+            </Tx>
+          ) : null}
+          {t.name}{' '}
+          <Tx size={12} weight={700} lh={17}>
+            {formatDA(t.priceDa)}
+          </Tx>
+        </Tx>
+      ))}
+    </Tx>
+  );
 }
 
 export function SalonListCard({
@@ -274,18 +291,14 @@ export function SalonListCard({
       >
         <Img src={s.coverUrl} radius={0} style={{ height: 187, width: '100%' }} />
         <View style={{ padding: 13, gap: 3 }}>
-          <Tx size={14.5} weight={700} ls={-0.4} lh={18}>
+          <Tx size={17} weight={700} ls={-0.5} lh={21}>
             {s.name}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={11.5} color={C.muted} lh={16}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
           <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-          {s.topServices.length > 0 && (
-            <Tx size={12} color={C.subtle} lh={17}>
-              {servicesLine(s)}
-            </Tx>
-          )}
+          {s.topServices.length > 0 && <ServicesLine s={s} />}
           <View style={{ marginTop: 8 }}>
             <NextSlots salon={s} />
           </View>
@@ -304,19 +317,19 @@ export function SalonListCard({
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
         <Img src={s.logoUrl ?? s.coverUrl} radius={13} style={{ width: 91, height: 91 }} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={14} weight={700} ls={-0.4} lh={17}>
+          <Tx size={15.5} weight={700} ls={-0.5} lh={19}>
             {s.name}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+          <Tx size={11.5} color={C.muted} lh={16} style={{ marginTop: 3 }}>
             {[cats, place, km].filter(Boolean).join(' · ')}
           </Tx>
           <View style={{ marginTop: 3 }}>
             <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
           </View>
           {s.topServices.length > 0 && (
-            <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
-              {servicesLine(s)}
-            </Tx>
+            <View style={{ marginTop: 2 }}>
+              <ServicesLine s={s} />
+            </View>
           )}
         </View>
       </View>

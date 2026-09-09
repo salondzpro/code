@@ -197,18 +197,7 @@ export default function ProBookingDetail() {
         </BottomSheet>
       }
     >
-      <TopBar
-        backTo="/(pro)/(tabs)/agenda"
-        right={
-          <StatusBadge
-            status={b.status}
-            md
-            cancelledBy={b.cancelledBy}
-            kind={b.cancellationKind}
-            viewer="pro"
-          />
-        }
-      />
+      <TopBar backTo="/(pro)/(tabs)/agenda" />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar name={b.clientName} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -258,12 +247,21 @@ export default function ProBookingDetail() {
             gap: 10,
           }}
         >
-          <Tx size={12} weight={600} lh={16}>
-            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
-          </Tx>
-          <Tx size={11} color={C.muted} lh={15}>
-            {capitalize(formatDateShortDZ(b.startsAt))}
-          </Tx>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Tx size={13} weight={700} lh={17}>
+              {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+            </Tx>
+            <Tx size={11} color={C.muted} lh={15}>
+              {capitalize(formatDateShortDZ(b.startsAt))}
+            </Tx>
+          </View>
+          <StatusBadge
+            status={b.status}
+            lg
+            cancelledBy={b.cancelledBy}
+            kind={b.cancellationKind}
+            viewer="pro"
+          />
         </View>
         <View
           style={{

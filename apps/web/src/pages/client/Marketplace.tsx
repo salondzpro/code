@@ -188,7 +188,7 @@ export function Marketplace() {
         </div>
       ) : (
         <>
-          <p className="text-[0.8125rem] text-muted">
+          <p className="text-[0.9375rem] font-semibold text-text">
             {countLabel}
           </p>
           <div className="flex flex-col gap-3.5">

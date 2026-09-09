@@ -97,11 +97,6 @@ export default function BookingConfirmed() {
             </Tx>
           </View>
         </View>
-        {!confirmed && (
-          <View style={{ paddingTop: 10 }}>
-            <StatusBadge status={b.status} md />
-          </View>
-        )}
       </Card>
       {/* L'essentiel en grand : quand, à quelle heure, combien — même lecture que la fiche de rendez-vous. */}
       <Card gap={10}>
@@ -116,9 +111,7 @@ export default function BookingConfirmed() {
           <Tx size={13} weight={700} lh={17}>
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </Tx>
-          <Tx size={11} color={C.muted} lh={15}>
-            {capitalize(formatDateLongDZ(b.startsAt))}
-          </Tx>
+          <StatusBadge status={b.status} lg />
         </View>
         <View
           style={{
@@ -141,7 +134,7 @@ export default function BookingConfirmed() {
           </Tx>
         </View>
         <Tx size={10.5} color={C.muted} lh={14}>
-          {`${formatDuration(b.durationMinutes)} au total · paiement sur place`}
+          {`${capitalize(formatDateLongDZ(b.startsAt))} · ${formatDuration(b.durationMinutes)} au total · paiement sur place`}
         </Tx>
       </Card>
       <Card gap={0}>

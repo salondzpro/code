@@ -164,12 +164,12 @@ const TONES: Record<BadgeTone, { bg: string; fg: string }> = {
   cf: { bg: '#E7DFFF', fg: '#4B2C91' },
   dk: { bg: '#E3E4E6', fg: '#17181A' },
 };
-export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; children: ReactNode }) {
+export function Badge({ tone, dot = true, md, lg, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; lg?: boolean; children: ReactNode }) {
   const t = TONES[tone];
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderRadius: R.pill, backgroundColor: t.bg, paddingVertical: md ? 6 : 4, paddingHorizontal: md ? 12 : 10 }}>
-      {dot && <View style={{ width: 5, height: 5, borderRadius: 2, backgroundColor: t.fg }} />}
-      <Tx size={md ? 13 : 11} weight={600} color={t.fg} lh={md ? 17 : 14}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderRadius: R.pill, backgroundColor: t.bg, paddingVertical: lg ? 7 : md ? 6 : 4, paddingHorizontal: lg ? 13 : md ? 12 : 10 }}>
+      {dot && <View style={{ width: lg ? 6 : 5, height: lg ? 6 : 5, borderRadius: 3, backgroundColor: t.fg }} />}
+      <Tx size={lg ? 14.5 : md ? 13 : 11} weight={600} color={t.fg} lh={lg ? 18.5 : md ? 17 : 14}>
         {children}
       </Tx>
     </View>
@@ -192,10 +192,10 @@ export function cancelledLabel(cancelledBy: CancelledBy | null | undefined, view
   return 'Annulé';
 }
 
-export function StatusBadge({ status, md, cancelledBy, viewer = 'client', kind }: { status: BookingStatus; md?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro'; kind?: CancellationKind | null }) {
+export function StatusBadge({ status, md, lg, cancelledBy, viewer = 'client', kind }: { status: BookingStatus; md?: boolean; lg?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro'; kind?: CancellationKind | null }) {
   const s = STATUS[status];
   return (
-    <Badge tone={s.tone} dot={s.dot} md={md}>
+    <Badge tone={s.tone} dot={s.dot} md={md} lg={lg}>
       {status === 'cancelled' && cancelledBy !== undefined ? cancelledLabel(cancelledBy, viewer, kind) : s.label}
     </Badge>
   );

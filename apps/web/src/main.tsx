@@ -9,13 +9,20 @@ import { api } from './lib/api';
 import { queryClient } from './lib/query-client';
 import { AuthProvider } from './lib/auth';
 import { router } from './app/router';
+import { startUpdateCheck } from './lib/updateCheck';
 
 if (env.sentryDsn) {
   // Chargé à la demande : ne pèse pas sur le bundle initial
   void import('@sentry/react').then((Sentry) => {
-    Sentry.init({ dsn: env.sentryDsn, environment: env.isDev ? 'development' : 'production', tracesSampleRate: 0.05 });
+    Sentry.init({
+      dsn: env.sentryDsn,
+      environment: env.isDev ? 'development' : 'production',
+      tracesSampleRate: 0.05,
+    });
   });
 }
+
+startUpdateCheck();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

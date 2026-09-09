@@ -59,9 +59,9 @@ export function Pill({ on, lg, soft, className = '', ...props }: ButtonHTMLAttri
 }
 
 export type BadgeTone = 'ok' | 'pd' | 'cn' | 'nu' | 'cf' | 'dk';
-export function Badge({ tone, dot = true, md, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; children: ReactNode }) {
+export function Badge({ tone, dot = true, md, lg, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; lg?: boolean; children: ReactNode }) {
   return (
-    <span className={`badge b-${tone}${md ? ' md' : ''}`}>
+    <span className={`badge b-${tone}${lg ? ' lg' : md ? ' md' : ''}`}>
       {dot && <span className="dot" />}
       {children}
     </span>
@@ -84,10 +84,10 @@ export function cancelledLabel(cancelledBy: CancelledBy | null | undefined, view
   return 'Annulé';
 }
 
-export function StatusBadge({ status, md, cancelledBy, viewer = 'client', kind }: { status: BookingStatus; md?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro'; kind?: CancellationKind | null }) {
+export function StatusBadge({ status, md, lg, cancelledBy, viewer = 'client', kind }: { status: BookingStatus; md?: boolean; lg?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro'; kind?: CancellationKind | null }) {
   const s = STATUS[status];
   return (
-    <Badge tone={s.tone} dot={s.dot} md={md}>
+    <Badge tone={s.tone} dot={s.dot} md={md} lg={lg}>
       {status === 'cancelled' && cancelledBy !== undefined ? cancelledLabel(cancelledBy, viewer, kind) : s.label}
     </Badge>
   );

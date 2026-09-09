@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Star,
   XCircle,
+  ArrowLeft,
 } from 'lucide-react-native';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
@@ -95,43 +96,114 @@ export default function BookingDetail() {
   const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
-    // C-F 18 — Annulation confirmée
+    // C-F 18 — Annulation confirmée : même lecture en grand que la fiche, avec le statut « Annulé » bien visible.
     return (
       <Screen center gap={13}>
         <View style={{ alignItems: 'center', gap: 10 }}>
+          <View
+            style={{
+              width: 98,
+              height: 98,
+              borderRadius: 49,
+              backgroundColor: C.cancelBg,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <I icon={XCircle} size={45.5} color={C.cancelFg} />
+          </View>
           <H1 size={23} lh={26} ls={-0.8} center>
             Rendez-vous annulé
           </H1>
           <P center>{b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.</P>
         </View>
+        <Card gap={10} style={{ borderColor: C.dangerLine }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}
+          >
+            <Tx size={13} weight={700} lh={17}>
+              {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+            </Tx>
+            <StatusBadge status="cancelled" lg cancelledBy="client" />
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+              <Tx
+                size={26}
+                weight={700}
+                ls={-0.9}
+                lh={29}
+                mono
+                style={{ textDecorationLine: 'line-through', textDecorationColor: C.danger }}
+              >
+                {formatTimeDZ(b.startsAt)}
+              </Tx>
+              <Tx size={13} color={C.muted} lh={21} mono>
+                – {formatTimeDZ(b.endsAt)}
+              </Tx>
+            </View>
+            <Tx
+              size={19.5}
+              weight={700}
+              ls={-0.6}
+              lh={23.5}
+              color={C.muted}
+              style={{ textDecorationLine: 'line-through', textDecorationColor: C.danger }}
+            >
+              {formatDA(b.priceDa)}
+            </Tx>
+          </View>
+          <Tx size={10.5} color={C.muted} lh={14}>
+            {`${capitalize(formatDateLongDZ(b.startsAt))} · ${b.salon.name}`}
+          </Tx>
+        </Card>
         <Card gap={0}>
           <Rows>
             <Row
-              py={13}
+              py={10}
               chevron={false}
               right={
-                <Tx size={11.5} color={C.muted} lh={15.5}>
-                  {formatDA(b.priceDa)}
-                </Tx>
+                <Tx
+                  size={11.5}
+                  color={C.muted}
+                  lh={15.5}
+                >{`annulée${lines.length > 1 ? 's' : ''}`}</Tx>
               }
             >
-              <Tx size={11.5} lh={15.5}>
-                {b.serviceName}
+              <Tx size={13} weight={700} lh={17}>
+                {lines.length} prestation{lines.length > 1 ? 's' : ''}
               </Tx>
             </Row>
-            <Row
-              py={13}
-              chevron={false}
-              right={
-                <Tx size={11.5} color={C.muted} lh={15.5}>
-                  {formatTimeDZ(b.startsAt)} · annulé
+            {lines.map((it) => (
+              <Row
+                key={it.id}
+                py={10}
+                chevron={false}
+                right={
+                  <Tx size={11} color={C.muted} lh={15}>
+                    {it.durationMinutes
+                      ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
+                      : formatDA(it.priceDa)}
+                  </Tx>
+                }
+              >
+                <Tx size={13} weight={600} lh={17}>
+                  {it.serviceName}
                 </Tx>
-              }
-            >
-              <Tx size={11.5} lh={15.5}>
-                {formatDateLongDZ(b.startsAt)}
-              </Tx>
-            </Row>
+              </Row>
+            ))}
           </Rows>
         </Card>
         <Button onPress={() => router.replace(`/s/${b.salon.slug}/prestations` as never)}>
@@ -141,7 +213,10 @@ export default function BookingDetail() {
           </Tx>
         </Button>
         <Button variant="g" onPress={() => router.replace('/(client)/(tabs)/rendez-vous')}>
-          Retour à mes rendez-vous
+          <I icon={ArrowLeft} size={15} />
+          <Tx size={12} weight={600} lh={16}>
+            Retour à mes rendez-vous
+          </Tx>
         </Button>
       </Screen>
     );
@@ -149,12 +224,7 @@ export default function BookingDetail() {
 
   return (
     <Screen gap={13}>
-      <TopBar
-        backTo="/(client)/(tabs)/rendez-vous"
-        right={
-          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
-        }
-      />
+      <TopBar backTo="/(client)/(tabs)/rendez-vous" />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -205,9 +275,7 @@ export default function BookingDetail() {
           <Tx size={13} weight={700} lh={17}>
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </Tx>
-          <Tx size={11} color={C.muted} lh={15}>
-            {capitalize(formatDateLongDZ(b.startsAt))}
-          </Tx>
+          <StatusBadge status={b.status} lg cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
         </View>
         <View
           style={{
@@ -230,7 +298,7 @@ export default function BookingDetail() {
           </Tx>
         </View>
         <Tx size={10.5} color={C.muted} lh={14}>
-          {formatDuration(b.durationMinutes)} au total · paiement sur place
+          {`${capitalize(formatDateLongDZ(b.startsAt))} · ${formatDuration(b.durationMinutes)} au total · paiement sur place`}
         </Tx>
       </Card>
       <Card gap={0}>

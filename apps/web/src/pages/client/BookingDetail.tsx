@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Star,
   XCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
@@ -81,30 +82,61 @@ export function BookingDetail() {
   const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
-    // C-F 18 — Annulation confirmée
+    // C-F 18 — Annulation confirmée : même lecture en grand que la fiche, avec le statut « Annulé » bien visible.
     return (
       <Screen className="min-h-dvh justify-center" gap={16}>
-        <div className="text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="flex h-[7.5rem] w-[7.5rem] items-center justify-center rounded-full bg-cancel-bg text-cancel-fg">
+            <I icon={XCircle} size={56} />
+          </span>
           <h1 className="h1">Rendez-vous annulé</h1>
-          <p className="p mt-3">
+          <p className="p">
             {b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.
           </p>
         </div>
+        <div className="crd !gap-3 !border-danger-line">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[1rem] font-bold">
+              {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+            </span>
+            <StatusBadge status="cancelled" lg cancelledBy="client" />
+          </div>
+          <div className="flex items-end justify-between gap-3">
+            <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px] line-through decoration-danger/60 decoration-2">
+              {formatTimeDZ(b.startsAt)}{' '}
+              <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
+            </span>
+            <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px] text-muted line-through decoration-danger/60 decoration-2">
+              {formatDA(b.priceDa)}
+            </span>
+          </div>
+          <span className="text-[0.8125rem] text-muted">
+            {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} · {b.salon.name}
+          </span>
+        </div>
         <div className="crd !gap-0">
-          <div className="li !py-4 text-[0.875rem]">
-            <span>{b.serviceName}</span>
-            <span className="text-muted">{formatDA(b.priceDa)}</span>
+          <div className="li !py-3">
+            <span className="text-[1rem] font-bold">
+              {lines.length} prestation{lines.length > 1 ? 's' : ''}
+            </span>
+            <span className="text-[0.875rem] text-muted">annulée{lines.length > 1 ? 's' : ''}</span>
           </div>
-          <div className="li !py-4 text-[0.875rem]">
-            <span>{formatDateLongDZ(b.startsAt)}</span>
-            <span className="text-muted">{formatTimeDZ(b.startsAt)} · annulé</span>
-          </div>
+          {lines.map((it) => (
+            <div key={it.id} className="li !py-3">
+              <span className="text-[1rem] font-semibold">{it.serviceName}</span>
+              <span className="text-[0.875rem] text-muted">
+                {it.durationMinutes
+                  ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
+                  : formatDA(it.priceDa)}
+              </span>
+            </div>
+          ))}
         </div>
         <LinkButton to={`/s/${b.salon.slug}/prestations`}>
           <I icon={RotateCcw} size={18} /> Réserver un autre créneau
         </LinkButton>
         <LinkButton to="/rendez-vous" variant="g">
-          Retour à mes rendez-vous
+          <I icon={ArrowLeft} size={18} /> Retour à mes rendez-vous
         </LinkButton>
       </Screen>
     );
@@ -112,12 +144,7 @@ export function BookingDetail() {
 
   return (
     <Screen className="min-h-dvh" gap={16}>
-      <TopBar
-        backTo="/rendez-vous"
-        right={
-          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
-        }
-      />
+      <TopBar backTo="/rendez-vous" />
       <div className="flex items-center gap-4">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
         <div className="min-w-0">
@@ -150,9 +177,7 @@ export function BookingDetail() {
           <span className="text-[1rem] font-bold">
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </span>
-          <span className="text-[0.875rem] text-muted">
-            {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
-          </span>
+          <StatusBadge status={b.status} lg cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
         </div>
         <div className="flex items-end justify-between gap-3">
           <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
@@ -164,6 +189,7 @@ export function BookingDetail() {
           </span>
         </div>
         <span className="text-[0.8125rem] text-muted">
+          {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} ·{' '}
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </span>
       </div>

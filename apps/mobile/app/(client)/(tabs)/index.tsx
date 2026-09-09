@@ -190,7 +190,7 @@ export default function Marketplace() {
         </View>
       ) : (
         <>
-          <Tx size={10.5} color={C.muted} lh={14.5}>
+          <Tx size={12} weight={600} lh={16}>
             {countLabel}
           </Tx>
           <View style={{ gap: 11 }}>

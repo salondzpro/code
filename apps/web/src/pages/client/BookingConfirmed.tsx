@@ -87,11 +87,6 @@ export function BookingConfirmed() {
             </span>
           </span>
         </div>
-        {!confirmed && (
-          <div className="pt-3">
-            <StatusBadge status={b.status} md />
-          </div>
-        )}
       </div>
       {/* L'essentiel en grand : quand, à quelle heure, combien — même lecture que la fiche de rendez-vous. */}
       <div className="crd !gap-3">
@@ -99,9 +94,7 @@ export function BookingConfirmed() {
           <span className="text-[1rem] font-bold">
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </span>
-          <span className="text-[0.875rem] text-muted">
-            {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
-          </span>
+          <StatusBadge status={b.status} lg />
         </div>
         <div className="flex items-end justify-between gap-3">
           <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
@@ -113,6 +106,7 @@ export function BookingConfirmed() {
           </span>
         </div>
         <span className="text-[0.8125rem] text-muted">
+          {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} ·{' '}
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </span>
       </div>

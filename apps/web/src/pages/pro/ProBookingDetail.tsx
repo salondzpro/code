@@ -97,18 +97,7 @@ export function ProBookingDetail() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar
-        backTo="/pro/agenda"
-        right={
-          <StatusBadge
-            status={b.status}
-            md
-            cancelledBy={b.cancelledBy}
-            kind={b.cancellationKind}
-            viewer="pro"
-          />
-        }
-      />
+      <TopBar backTo="/pro/agenda" />
       <div className="flex items-center gap-4">
         <Avatar name={b.clientName} size={128} />
         <div className="min-w-0">
@@ -141,10 +130,17 @@ export function ProBookingDetail() {
         <div className="flex items-center justify-between gap-3">
           <span className="text-[0.9375rem] font-semibold">
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+            <span className="ml-2 text-[0.875rem] font-normal text-muted">
+              {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
+            </span>
           </span>
-          <span className="text-[0.875rem] text-muted">
-            {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
-          </span>
+          <StatusBadge
+            status={b.status}
+            lg
+            cancelledBy={b.cancelledBy}
+            kind={b.cancellationKind}
+            viewer="pro"
+          />
         </div>
         <div className="flex items-end justify-between gap-3">
           <span className="mono text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
