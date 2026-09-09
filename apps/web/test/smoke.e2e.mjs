@@ -440,6 +440,8 @@ try {
     await c.getByRole('button', { name: 'Voir le rendez-vous' }).click();
     await c.waitForURL(new RegExp(`/rendez-vous/${bookingId}$`));
     await c.getByText('1 300 DA').waitFor();
+    await c.getByText('2 prestations').waitFor();
+    await shot(c, 'client-rdv');
     await c.getByRole('link', { name: 'Reporter' }).click();
     await c.waitForURL(/\/reporter$/);
     await c.getByRole('heading', { name: 'Nouveau créneau' }).waitFor();

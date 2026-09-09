@@ -45,6 +45,7 @@ let app: App;
 let pro: TestUser;
 let clientA: TestUser;
 let clientB: TestUser;
+let clientC: TestUser;
 let salonId = '';
 let salonSlug = '';
 let serviceId = '';
@@ -76,7 +77,7 @@ before(async () => {
 
 after(async () => {
   await app?.close();
-  for (const u of [pro, clientA, clientB]) {
+  for (const u of [pro, clientA, clientB, clientC]) {
     if (u?.id) await db.auth.admin.deleteUser(u.id);
   }
 });
@@ -486,6 +487,45 @@ test('pro : une demande dont l\'heure est passée ne se confirme plus ; « absen
   const noShow = await call('POST', `/v1/pro/bookings/${future!.id}/status`, pro.token, { status: 'no_show' });
   assert.equal(noShow.statusCode, 409, noShow.body);
   assert.equal(noShow.json().error.code, 'NOT_STARTED');
+});
+
+test('concurrence : 2 membres → agendas séparés ; triple clic du même client → 1 seul rendez-vous', async () => {
+  clientC = await createUser('clientC', 'client', 'Client C');
+  // Le salon avait été dépublié par un test précédent.
+  assert.equal((await call('PATCH', '/v1/pro/salon', pro.token, { isPublished: true })).statusCode, 200);
+  // Sarah rejoint l'équipe : deux agendas indépendants dans le salon.
+  const sarah = await call('POST', '/v1/pro/staff', pro.token, { displayName: 'Sarah' });
+  assert.equal(sarah.statusCode, 201, sarah.body);
+  const sarahId = sarah.json().id as string;
+  const day = addDaysToKey(toLocalDateKey(), 5);
+  const at = localDateTimeToISO(day, '14:00');
+
+  // Ahmed (membre par défaut) réservé à 14:00 → Ahmed indisponible, Sarah toujours disponible à 14:00.
+  const a = await call('POST', '/v1/pro/bookings', pro.token, { serviceId, staffId, startsAt: at, clientName: 'Client de passage' });
+  assert.equal(a.statusCode, 201, a.body);
+  const avail = await call('GET', `/v1/salons/${salonId}/availability?serviceId=${serviceId}&date=${day}`);
+  const slot14 = (avail.json().slots as { startsAt: string; staffIds: string[] }[]).find((s) => new Date(s.startsAt).toISOString() === new Date(at).toISOString());
+  assert.ok(slot14, '14:00 reste proposé grâce à Sarah');
+  assert.deepEqual(slot14!.staffIds, [sarahId]);
+
+  // Triple clic simultané du client C sur 14:00 (sans membre imposé) : une seule réservation, chez Sarah,
+  // même si la pré-vérification de l'API est contournée par la concurrence (contrainte d'exclusion client).
+  const clicks = await Promise.all([1, 2, 3].map(() => call('POST', '/v1/bookings', clientC.token, { salonId, serviceId, startsAt: at })));
+  const created = clicks.filter((r) => r.statusCode === 201);
+  assert.equal(created.length, 1, clicks.map((r) => r.body).join(' | '));
+  assert.equal(created[0]!.json().staff.id, sarahId);
+  for (const r of clicks.filter((r) => r.statusCode !== 201)) {
+    assert.equal(r.statusCode, 409, r.body);
+    assert.ok(['ALREADY_BOOKED', 'SLOT_TAKEN'].includes(r.json().error.code), r.body);
+  }
+  const mine = await call('GET', '/v1/me/bookings?scope=upcoming', clientC.token);
+  assert.equal(mine.json().items.length, 1);
+
+  // Plus personne n'est libre à 14:00 : même un rendez-vous de passage saisi par le pro chez Sarah est refusé, avec l'erreur claire.
+  const full = await call('POST', '/v1/pro/bookings', pro.token, { serviceId, staffId: sarahId, startsAt: at, clientName: 'Client de passage' });
+  assert.equal(full.statusCode, 409, full.body);
+  assert.equal(full.json().error.code, 'SLOT_TAKEN');
+  assert.match(full.json().error.message, /vient d'être réservé/);
 });
 
 test('cron interne : jeton requis ; expire les demandes non traitées', async () => {

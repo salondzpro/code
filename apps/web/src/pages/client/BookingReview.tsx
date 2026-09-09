@@ -48,8 +48,8 @@ export function BookingReview() {
       navigate(`/rendez-vous/${b.id}/confirme`, { replace: true });
       clearDraft(slug);
     } catch (err) {
-      if (err instanceof ApiError && (err.code === 'SLOT_TAKEN' || err.code === 'TOO_SOON' || err.code === 'OUTSIDE_OPENING_HOURS')) {
-        setSlotError("Ce créneau vient d'être pris. Choisissez-en un autre.");
+      if (err instanceof ApiError && (err.code === 'SLOT_TAKEN' || err.code === 'TOO_SOON' || err.code === 'OUTSIDE_OPENING_HOURS' || err.code === 'ALREADY_BOOKED')) {
+        setSlotError(err.message);
       }
     }
   };

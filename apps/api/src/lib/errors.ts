@@ -22,7 +22,8 @@ export const conflict = (code: string, msg: string) => new AppError(409, code, m
 
 /** Messages FR pour les codes métier levés par les fonctions SQL. */
 const BUSINESS_MESSAGES: Record<string, { status: number; message: string }> = {
-  SLOT_TAKEN: { status: 409, message: "Ce créneau vient d'être réservé. Choisissez-en un autre." },
+  SLOT_TAKEN: { status: 409, message: "Ce créneau vient d'être réservé. Veuillez choisir un autre horaire." },
+  ALREADY_BOOKED: { status: 409, message: 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.' },
   OUTSIDE_OPENING_HOURS: { status: 400, message: 'Le salon est fermé à cet horaire.' },
   TOO_SOON: { status: 400, message: 'Ce créneau est trop proche. Choisissez un horaire plus tard.' },
   TOO_FAR: { status: 400, message: 'Ce créneau est trop loin dans le futur.' },
