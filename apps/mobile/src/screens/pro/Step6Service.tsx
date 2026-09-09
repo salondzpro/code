@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
-import { CATEGORY_BY_ID, categoriesForMarket, type CategoryId } from '@salondz/constants';
+import { CATEGORY_BY_ID, categoriesForSalon, type CategoryId } from '@salondz/constants';
 import { createServiceSchema } from '@salondz/validation';
 import { errorText } from '@/lib/errors';
 import { formatDuration } from '@/lib/format';
@@ -35,9 +35,9 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
 
   if (!salon) return <Splash />;
   if (serviceId && !existing) return <Redirect href={stepPath(6) as never} />;
-  const market = salon.genderTarget === 'men' ? 'men' : 'women';
-  // Catégories Salon DZ du marché (toutes) + catégories créées par le pro.
-  const cats = categoriesForMarket(market);
+  // Catégories Salon DZ : d'abord celles choisies par ce salon à l'inscription, puis les autres de son marché (les deux pour un salon unisexe).
+  const { suggested, others } = categoriesForSalon(salon.genderTarget, salon.categoryIds);
+  const cats = [...suggested, ...others];
   const first = salon.services.length === 0;
   // Groupes déjà utilisés dans le catalogue : proposés en puces, un nouveau nom crée un nouveau groupe.
   const groups = [...new Set(salon.services.map((s) => s.groupName?.trim()).filter((g): g is string => !!g))];
@@ -102,17 +102,14 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
         title="Catégorie"
         options={[
           { value: '', label: 'Sans catégorie' },
-          ...groups.map((g) => ({ value: `g:${g}`, label: g, hint: 'Ma catégorie' })),
-          ...cats.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, hint: 'Salon DZ' })),
-          { value: '__new__', label: '＋ Créer une catégorie…' },
+          ...groups.map((g) => ({ value: `g:${g}`, label: g, group: 'Mes catégories' })),
+          ...suggested.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Suggérées pour votre salon' })),
+          ...others.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Autres catégories Salon DZ' })),
         ]}
         value={pick}
         onChange={(v) => {
-          setCreating(v === '__new__');
-          if (v === '__new__') {
-            setGroup('');
-            setCategoryId('');
-          } else if (v.startsWith('g:')) {
+          setCreating(false);
+          if (v.startsWith('g:')) {
             setGroup(v.slice(2));
             setCategoryId('');
           } else if (v.startsWith('c:')) {
@@ -122,6 +119,14 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
             setGroup('');
             setCategoryId('');
           }
+        }}
+        action={{
+          label: 'Créer une nouvelle catégorie',
+          onPress: () => {
+            setCreating(true);
+            setGroup('');
+            setCategoryId('');
+          },
         }}
       />
     </Screen>

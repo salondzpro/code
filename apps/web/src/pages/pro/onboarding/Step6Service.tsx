@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
-import { CATEGORY_BY_ID, categoriesForMarket, type CategoryId } from '@salondz/constants';
+import { CATEGORY_BY_ID, categoriesForSalon, type CategoryId } from '@salondz/constants';
 import { createServiceSchema } from '@salondz/validation';
 import { formatDuration } from '@/lib/format';
 import { errorText } from '@/components/ErrorMessage';
@@ -31,9 +31,9 @@ export function Step6Service() {
 
   if (!salon) return <Splash />;
   if (serviceId && !existing) return <Navigate to={stepPath(6)} replace />;
-  const market = salon.genderTarget === 'men' ? 'men' : 'women';
-  // Catégories Salon DZ du marché (toutes, pas seulement celles du salon) + catégories créées par le pro.
-  const cats = categoriesForMarket(market);
+  // Catégories Salon DZ : d'abord celles choisies par ce salon à l'inscription, puis les autres de son marché (les deux pour un salon unisexe).
+  const { suggested, others } = categoriesForSalon(salon.genderTarget, salon.categoryIds);
+  const cats = [...suggested, ...others];
   const first = salon.services.length === 0;
   // Groupes déjà utilisés dans le catalogue : proposés en saisie, un nouveau nom crée un nouveau groupe.
   const groups = [...new Set(salon.services.map((s) => s.groupName?.trim()).filter((g): g is string => !!g))];
@@ -86,19 +86,17 @@ export function Step6Service() {
             label="Catégorie"
             value={pick}
             placeholder="Sans catégorie"
+            display={creating ? 'Nouvelle catégorie' : undefined}
             options={[
               { value: '', label: 'Sans catégorie' },
               ...groups.map((g) => ({ value: `g:${g}`, label: g, group: 'Mes catégories' })),
-              ...cats.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Catégories Salon DZ' })),
-              ...(categoryId && !cats.some((c) => c.id === categoryId) ? [{ value: `c:${categoryId}`, label: CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId, group: 'Catégories Salon DZ' }] : []),
-              { value: '__new__', label: '＋ Créer une catégorie…', hint: 'Une catégorie à vous, affichée sur votre profil' },
+              ...suggested.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Suggérées pour votre salon' })),
+              ...others.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Autres catégories Salon DZ' })),
+              ...(categoryId && !cats.some((c) => c.id === categoryId) ? [{ value: `c:${categoryId}`, label: CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId, group: 'Autres catégories Salon DZ' }] : []),
             ]}
             onChange={(v) => {
-              setCreating(v === '__new__');
-              if (v === '__new__') {
-                setGroup('');
-                setCategoryId('');
-              } else if (v.startsWith('g:')) {
+              setCreating(false);
+              if (v.startsWith('g:')) {
                 setGroup(v.slice(2));
                 setCategoryId('');
               } else if (v.startsWith('c:')) {
@@ -108,6 +106,14 @@ export function Step6Service() {
                 setGroup('');
                 setCategoryId('');
               }
+            }}
+            action={{
+              label: 'Créer une nouvelle catégorie',
+              onClick: () => {
+                setCreating(true);
+                setGroup('');
+                setCategoryId('');
+              },
             }}
           />
           {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder="Nom de la nouvelle catégorie (ex. Soins de la barbe)" aria-label="Nouvelle catégorie" autoFocus />}

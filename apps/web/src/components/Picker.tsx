@@ -3,9 +3,9 @@
  * l'autre) : un champ qui affiche le choix courant, et une feuille basse au design avec la liste (sections,
  * indication, coche). Même modèle que « Trier par » et les sélecteurs d'heure.
  */
-import { useState, type ReactNode } from 'react';
-import { Check, ChevronDown } from 'lucide-react';
-import { BottomSheet, I } from './ui';
+import { Fragment, useState, type ReactNode } from 'react';
+import { Check, ChevronDown, Plus } from 'lucide-react';
+import { BottomSheet, Button, I } from './ui';
 
 export interface PickerOption<T extends string | number> {
   value: T;
@@ -16,7 +16,7 @@ export interface PickerOption<T extends string | number> {
   icon?: ReactNode;
 }
 
-export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange }: { open: boolean; onClose: () => void; title: string; options: PickerOption<T>[]; value: T | null | undefined; onChange: (v: T) => void }) {
+export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange, action }: { open: boolean; onClose: () => void; title: string; options: PickerOption<T>[]; value: T | null | undefined; onChange: (v: T) => void; /** Bouton distinct sous la liste (ex. « Créer une catégorie »). */ action?: { label: string; onClick: () => void } }) {
   if (!open) return null;
   let lastGroup: string | undefined;
   return (
@@ -30,13 +30,13 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
             lastGroup = o.group;
             const on = o.value === value;
             return (
-              <div key={String(o.value)}>
-                {header && <div className="h3 pb-1 pt-3">{header}</div>}
+              <Fragment key={String(o.value)}>
+                {header && <div className="h3 border-b border-line-soft pb-2 pt-3">{header}</div>}
                 <button
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  className="li w-full text-left"
+                  className="li w-full text-left !border-b !border-line-soft last:!border-b-0"
                   onClick={() => {
                     onChange(o.value);
                     onClose();
@@ -51,17 +51,28 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
                   </span>
                   {on && <I icon={Check} size={20} />}
                 </button>
-              </div>
+              </Fragment>
             );
           })}
         </div>
+        {action && (
+          <Button
+            variant="g"
+            onClick={() => {
+              action.onClick();
+              onClose();
+            }}
+          >
+            <I icon={Plus} size={18} /> {action.label}
+          </Button>
+        )}
       </BottomSheet>
     </>
   );
 }
 
 /** Champ de sélection : `inline` = texte à droite d'une ligne de liste, sinon un champ pleine largeur. */
-export function PickerField<T extends string | number>({ label, title, options, value, onChange, placeholder = 'Choisir', inline, className = '' }: { label: string; title?: string; options: PickerOption<T>[]; value: T | null | undefined; onChange: (v: T) => void; placeholder?: string; inline?: boolean; className?: string }) {
+export function PickerField<T extends string | number>({ label, title, options, value, onChange, placeholder = 'Choisir', inline, className = '', action, display }: { label: string; title?: string; options: PickerOption<T>[]; value: T | null | undefined; onChange: (v: T) => void; placeholder?: string; inline?: boolean; className?: string; action?: { label: string; onClick: () => void }; /** Texte affiché dans le champ quand la valeur n'est pas dans la liste (ex. catégorie en cours de création). */ display?: string }) {
   const [open, setOpen] = useState(false);
   const current = options.find((o) => o.value === value);
   return (
@@ -73,10 +84,10 @@ export function PickerField<T extends string | number>({ label, title, options, 
         onClick={() => setOpen(true)}
         className={inline ? `flex max-w-[60%] items-center gap-1 text-right text-[0.9375rem] ${current ? '' : 'text-subtle'} ${className}` : `inp lg flex items-center justify-between gap-3 text-left ${current ? '' : 'text-subtle'} ${className}`}
       >
-        <span className="truncate">{current?.label ?? placeholder}</span>
+        <span className="truncate">{current?.label ?? display ?? placeholder}</span>
         <I icon={ChevronDown} size={inline ? 16 : 18} className="flex-none text-subtle" />
       </button>
-      <PickerSheet open={open} onClose={() => setOpen(false)} title={title ?? label} options={options} value={value} onChange={onChange} />
+      <PickerSheet open={open} onClose={() => setOpen(false)} title={title ?? label} options={options} value={value} onChange={onChange} action={action} />
     </>
   );
 }

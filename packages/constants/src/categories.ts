@@ -72,6 +72,18 @@ export const CATEGORIES: readonly CategoryDef[] = [
 export const CATEGORY_BY_ID: ReadonlyMap<string, CategoryDef> = new Map(CATEGORIES.map((c) => [c.id, c]));
 
 /** Catégories proposées dans les filtres et l'onboarding d'un marché (sans les clés historiques). */
+/**
+ * Catégories proposées à un salon pour classer ses prestations : d'abord celles qu'il a choisies à l'inscription
+ * (« suggérées »), puis les autres de son marché (les deux marchés pour un salon unisexe).
+ */
+export function categoriesForSalon(genderTarget: 'men' | 'women' | 'unisex', chosen: readonly string[]): { suggested: CategoryDef[]; others: CategoryDef[] } {
+  const markets: Market[] = genderTarget === 'unisex' ? ['women', 'men'] : [genderTarget];
+  const all = markets.flatMap((m) => categoriesForMarket(m));
+  const suggested = all.filter((c) => chosen.includes(c.id));
+  const others = all.filter((c) => !chosen.includes(c.id));
+  return { suggested, others };
+}
+
 export function categoriesForMarket(market: Market): CategoryDef[] {
   return CATEGORIES.filter((c) => c.market === market && !c.legacy);
 }

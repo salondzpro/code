@@ -4,10 +4,10 @@
  */
 import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
-import { Check, ChevronDown } from 'lucide-react-native';
+import { Check, ChevronDown, Plus } from 'lucide-react-native';
 import { addDaysToKey, minutesToTime, timeToMinutes, weekKeys } from '@salondz/constants';
 import { C } from '@/theme/design';
-import { Button, Grid, I, ListCard, ModalSheet, P, Row, Slot, Tx } from './index';
+import { Button, Grid, I, ListCard, ModalSheet, P, Row, SectionLabel, Slot, Tx } from './index';
 import { DayStrip, MonthNav } from './DaySelector';
 
 /** Ligne « libellé … valeur ⌄ » (design .li avec select). */
@@ -37,31 +37,58 @@ export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }:
   );
 }
 
-export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange }: { open: boolean; onClose: () => void; title: string; options: { value: T; label: string; hint?: string }[]; value: T | null | undefined; onChange: (v: T) => void }) {
+export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange, action }: { open: boolean; onClose: () => void; title: string; options: { value: T; label: string; hint?: string; group?: string }[]; value: T | null | undefined; onChange: (v: T) => void; /** Bouton distinct sous la liste (ex. « Créer une catégorie »). */ action?: { label: string; onPress: () => void } }) {
+  let lastGroup: string | undefined;
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
       <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
       <ListCard>
-        {options.map((o) => (
-          <Row
-            key={String(o.value)}
-            chevron={false}
-            accessibilityLabel={o.label}
-            right={o.value === value ? <I icon={Check} size={16} /> : undefined}
-            onPress={() => {
-              onChange(o.value);
-              onClose();
-            }}
-          >
-            <Tx size={12} lh={16}>
-              {o.label}
-            </Tx>
-            {o.hint && <P>{o.hint}</P>}
-          </Row>
-        ))}
+        {options.map((o, i) => {
+          const header = o.group !== lastGroup ? o.group : undefined;
+          lastGroup = o.group;
+          return (
+            <View key={String(o.value)}>
+              {header && (
+                <View style={{ paddingTop: 10, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: C.lineSoft }}>
+                  <SectionLabel>{header}</SectionLabel>
+                </View>
+              )}
+              <View style={{ borderBottomWidth: i < options.length - 1 ? 1 : 0, borderBottomColor: C.lineSoft }}>
+                <Row
+                  chevron={false}
+                  accessibilityLabel={o.label}
+                  right={o.value === value ? <I icon={Check} size={16} /> : undefined}
+                  onPress={() => {
+                    onChange(o.value);
+                    onClose();
+                  }}
+                >
+                  <Tx size={12} lh={16} weight={o.value === value ? 600 : 400}>
+                    {o.label}
+                  </Tx>
+                  {o.hint && <P>{o.hint}</P>}
+                </Row>
+              </View>
+            </View>
+          );
+        })}
       </ListCard>
+      {action && (
+        <Button
+          variant="g"
+          onPress={() => {
+            action.onPress();
+            onClose();
+          }}
+        >
+          <I icon={Plus} size={14} />
+          <Tx size={12} weight={600} lh={16}>
+            {action.label}
+          </Tx>
+        </Button>
+      )}
     </ModalSheet>
   );
 }
