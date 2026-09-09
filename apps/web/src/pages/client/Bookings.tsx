@@ -65,7 +65,7 @@ export function Bookings() {
                 <span className={`text-[1.125rem] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}>
                   {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} · {formatTimeDZ(b.startsAt)}
                 </span>
-                <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />
+                <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
               </div>
               <div className="flex items-center gap-3.5">
                 <Img src={b.salon.coverUrl} className={`h-[6.5rem] w-[6.5rem] flex-none !rounded-[1rem] ${active ? '' : 'opacity-60'}`} />
@@ -113,7 +113,7 @@ export function Bookings() {
                 </span>
                 {b.status === 'cancelled' && b.cancellationReason && <span className="block text-[0.8125rem] text-danger">Motif : {b.cancellationReason}</span>}
               </span>
-              <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />
+              <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
             </div>
             {b.status === 'completed' && (
               <div className="flex gap-2.5" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} role="presentation">

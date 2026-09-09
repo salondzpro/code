@@ -189,6 +189,10 @@ export type CreateWalkInBookingInput = z.infer<typeof createWalkInBookingSchema>
 export const cancelBookingSchema = z.object({
   reason: p.shortText(200).optional(),
 });
+/** Annulation par le pro : `late` = pour retard (autorisée seulement une fois le retard toléré dépassé). */
+export const proCancelBookingSchema = cancelBookingSchema.extend({
+  late: z.boolean().optional(),
+});
 
 export const rescheduleBookingSchema = z.object({
   startsAt: p.isoDateTime,

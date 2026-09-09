@@ -11,7 +11,7 @@ export const STAFF_COLS = 'id, salon_id, user_id, display_name, avatar_url, is_a
 export const STAFF_SELECT = `${STAFF_COLS}, staff_services(service_id)`;
 export const HOURS_COLS = 'id, salon_id, day_of_week, opens_at, closes_at, is_closed';
 export const BOOKING_COLS =
-  'id, salon_id, client_id, staff_id, service_id, service_name, duration_minutes, price_da, starts_at, ends_at, status, source, client_name, client_phone, notes, cancelled_at, cancelled_by, cancellation_reason, created_at, updated_at';
+  'id, salon_id, client_id, staff_id, service_id, service_name, duration_minutes, price_da, starts_at, ends_at, status, source, client_name, client_phone, notes, cancelled_at, cancelled_by, cancellation_reason, cancellation_kind, created_at, updated_at';
 
 export const SERVICE_PHOTO_COLS = 'id, url, sort_order';
 const FULL_SALON_SELECT = `${SALON_COLUMNS}, salon_photos(${PHOTO_COLS}), services(${SERVICE_COLS}, service_photos(${SERVICE_PHOTO_COLS})), staff(${STAFF_SELECT}), opening_hours(${HOURS_COLS})`;

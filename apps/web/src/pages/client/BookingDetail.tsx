@@ -11,6 +11,7 @@ import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, InfoBox, Input, LinkButton, StatusBadge, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { LateRule } from '@/components/LateRule';
 import { Splash } from '@/pages/auth/Splash';
 import { CalendarSheet } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
@@ -66,7 +67,7 @@ export function BookingDetail() {
 
   return (
     <Screen className="min-h-dvh" gap={16}>
-      <TopBar backTo="/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />} />
+      <TopBar backTo="/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />} />
       <div className="flex items-center gap-4">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
         <div className="min-w-0">
@@ -100,6 +101,7 @@ export function BookingDetail() {
         </div>
         <span className="text-[0.8125rem] text-muted">{formatDuration(b.durationMinutes)} au total · paiement sur place</span>
       </div>
+      {active && <LateRule startsAt={b.startsAt} />}
       <div className="crd !gap-0">
         <div className="li !py-3">
           <span className="text-[1rem] font-bold">

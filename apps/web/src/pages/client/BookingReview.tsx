@@ -8,6 +8,7 @@ import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, InfoBox, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { LateRule } from '@/components/LateRule';
 import { Splash } from '@/pages/auth/Splash';
 
 export function BookingReview() {
@@ -90,6 +91,7 @@ export function BookingReview() {
         </div>
         <span className="p">{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</span>
       </div>
+      <LateRule startsAt={draft.startsAt} />
       <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
       {slotError && (
         <div className="flex flex-col gap-3">

@@ -6,7 +6,7 @@ import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type R
 import { Link } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import { Check, ChevronLeft, ChevronRight, Info, X, type LucideIcon } from 'lucide-react';
-import type { BookingStatus, CancelledBy } from '@salondz/constants';
+import type { BookingStatus, CancellationKind, CancelledBy } from '@salondz/constants';
 
 /** Icône aux réglages du design : 22 px, trait 1.6. */
 export function I({ icon: Icon, size = 22, strokeWidth, className = '' }: { icon: LucideIcon; size?: number; strokeWidth?: number; className?: string }) {
@@ -76,18 +76,19 @@ const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boole
   no_show: { tone: 'dk', label: 'Client absent', dot: true },
 };
 /** Libellé d'une annulation selon qui l'a faite et qui regarde (client ou salon). */
-export function cancelledLabel(cancelledBy: CancelledBy | null | undefined, viewer: 'client' | 'pro' = 'client'): string {
+export function cancelledLabel(cancelledBy: CancelledBy | null | undefined, viewer: 'client' | 'pro' = 'client', kind?: CancellationKind | null): string {
+  if (kind === 'late') return 'Annulé pour retard';
   if (cancelledBy === 'client') return viewer === 'client' ? 'Annulé par vous' : 'Annulé par le client';
   if (cancelledBy === 'salon') return viewer === 'client' ? 'Annulé par le salon' : 'Annulé par vous';
   if (cancelledBy === 'system') return 'Demande expirée';
   return 'Annulé';
 }
 
-export function StatusBadge({ status, md, cancelledBy, viewer = 'client' }: { status: BookingStatus; md?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro' }) {
+export function StatusBadge({ status, md, cancelledBy, viewer = 'client', kind }: { status: BookingStatus; md?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro'; kind?: CancellationKind | null }) {
   const s = STATUS[status];
   return (
     <Badge tone={s.tone} dot={s.dot} md={md}>
-      {status === 'cancelled' && cancelledBy !== undefined ? cancelledLabel(cancelledBy, viewer) : s.label}
+      {status === 'cancelled' && cancelledBy !== undefined ? cancelledLabel(cancelledBy, viewer, kind) : s.label}
     </Badge>
   );
 }

@@ -12,6 +12,7 @@ import { formatDuration } from '@/lib/format';
 import { capitalize, directionsUrl, open } from '@/lib/salon';
 import { Avatar, Button, Card, ErrorText, Grid, H1, InfoBox, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
+import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 import { CalendarSheet } from './confirme';
@@ -79,7 +80,7 @@ export default function BookingDetail() {
 
   return (
     <Screen gap={13}>
-      <TopBar backTo="/(client)/(tabs)/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />} />
+      <TopBar backTo="/(client)/(tabs)/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -138,6 +139,7 @@ export default function BookingDetail() {
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </Tx>
       </Card>
+      {active && <LateRule startsAt={b.startsAt} />}
       <Card gap={0}>
         <Rows>
           <Row py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>

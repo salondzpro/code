@@ -528,6 +528,56 @@ test('concurrence : 2 membres → agendas séparés ; triple clic du même clien
   assert.match(full.json().error.message, /vient d'être réservé/);
 });
 
+test('règle de retard : annulation « pour retard » après 10 min, refusée avant ; comptée comme absence', async () => {
+  // Rendez-vous confirmé de clientC commencé il y a 30 min (inséré directement), jamais honoré.
+  const started = new Date(Date.now() - 30 * 60_000);
+  const ins = await db
+    .from('bookings')
+    .insert({
+      salon_id: salonId,
+      client_id: clientC.id,
+      staff_id: staffId,
+      service_id: serviceId,
+      service_name: 'Coupe homme',
+      duration_minutes: 30,
+      price_da: 800,
+      starts_at: started.toISOString(),
+      ends_at: new Date(started.getTime() + 30 * 60_000).toISOString(),
+      status: 'confirmed',
+      source: 'online',
+      client_name: 'Client C',
+    })
+    .select('id')
+    .single();
+  assert.ifError(ins.error);
+  const lateId = ins.data!.id as string;
+
+  // Le rendez-vous futur de clientC (14:00 dans 5 jours) ne peut pas être annulé pour retard.
+  const upcoming = (await call('GET', '/v1/me/bookings?scope=upcoming', clientC.token)).json().items as { id: string }[];
+  assert.equal(upcoming.length, 1);
+  const tooEarly = await call('POST', `/v1/pro/bookings/${upcoming[0]!.id}/cancel`, pro.token, { late: true });
+  assert.equal(tooEarly.statusCode, 409, tooEarly.body);
+  assert.equal(tooEarly.json().error.code, 'NOT_LATE_YET');
+
+  // Une annulation normale d'un rendez-vous commencé reste refusée (Terminé / Client absent / retard).
+  const normal = await call('POST', `/v1/pro/bookings/${lateId}/cancel`, pro.token, {});
+  assert.equal(normal.statusCode, 409, normal.body);
+  assert.equal(normal.json().error.code, 'BOOKING_STARTED');
+
+  const late = await call('POST', `/v1/pro/bookings/${lateId}/cancel`, pro.token, { late: true });
+  assert.equal(late.statusCode, 200, late.body);
+  assert.equal(late.json().status, 'cancelled');
+  assert.equal(late.json().cancelledBy, 'salon');
+  assert.equal(late.json().cancellationKind, 'late');
+  assert.match(late.json().cancellationReason, /Retard/);
+
+  // Côté client : statut distinct exposé ; anti-abus : compte comme une absence.
+  const seen = await call('GET', `/v1/bookings/${lateId}`, clientC.token);
+  assert.equal(seen.json().cancellationKind, 'late');
+  const me = await call('GET', '/v1/me', clientC.token);
+  assert.equal(me.json().standing.noShows, 1, me.body);
+});
+
 test('cron interne : jeton requis ; expire les demandes non traitées', async () => {
   const no = await call('POST', '/internal/cron/tick');
   assert.equal(no.statusCode, 401);

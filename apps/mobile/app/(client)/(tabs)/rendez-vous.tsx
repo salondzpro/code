@@ -68,7 +68,7 @@ export default function Bookings() {
                   <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted} style={{ flex: 1 }}>
                     {capitalize(formatDateShortDZ(b.startsAt))} · {formatTimeDZ(b.startsAt)}
                   </Tx>
-                  <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />
+                  <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Img src={b.salon.coverUrl} radius={13} style={{ width: 84, height: 84, opacity: active ? 1 : 0.6 }} />
@@ -120,7 +120,7 @@ export default function Bookings() {
                   </Tx>
                 )}
               </View>
-              <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />
+              <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
             </Pressable>
             {b.status === 'completed' && (
               <View style={{ flexDirection: 'row', gap: 8 }}>

@@ -5,6 +5,7 @@ import { Calendar, Check, ChevronRight, Download } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import { formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, wilayaName } from '@salondz/constants';
 import { Avatar, BottomSheet, Button, I, StatusBadge } from '@/components/ui';
+import { LateRule } from '@/components/LateRule';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
@@ -110,6 +111,7 @@ export function BookingConfirmed() {
           </div>
         )}
       </div>
+      <LateRule startsAt={b.startsAt} />
       <p className="p text-center">{confirmed ? 'Un rappel vous sera envoyé la veille.' : 'Le salon confirme votre demande sur WhatsApp.'}</p>
       <Button variant="g" onClick={() => setCal(true)}>
         Ajouter au calendrier

@@ -1,8 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { addDaysToKey, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, localDateTimeToISO, toLocalDateKey, LATE_TOLERANCE_MINUTES, isLate } from '@salondz/constants';
 import {
-  cancelBookingSchema,
+  proCancelBookingSchema,
   createWalkInBookingSchema,
   listBookingsQuerySchema,
   rescheduleBookingSchema,
@@ -109,15 +109,18 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return getBookingWithStaff(b.id);
   });
 
-  app.post('/bookings/:id/cancel', { schema: { params: z.object({ id: uuid }), body: cancelBookingSchema } }, async (req) => {
+  app.post('/bookings/:id/cancel', { schema: { params: z.object({ id: uuid }), body: proCancelBookingSchema } }, async (req) => {
     const b = await getBookingWithStaff(req.params.id);
     if (b.salonId !== req.salon!.id) throw notFound('Réservation');
     if (!ALLOWED_TRANSITIONS[b.status]?.includes('cancelled')) {
       throw conflict('BOOKING_NOT_CANCELLABLE', 'Cette réservation ne peut plus être annulée.');
     }
-    // Règle simple : le professionnel annule tant que le rendez-vous n'est pas passé ; ensuite il le marque Terminé ou Client absent.
-    if (new Date(b.startsAt).getTime() < Date.now()) {
-      throw conflict('BOOKING_STARTED', 'Ce rendez-vous est passé : marquez-le « Terminé » ou « Client absent ».');
+    // Règle de retard : au-delà de LATE_TOLERANCE_MINUTES après l'heure, le pro peut annuler « pour retard »
+    // (statut distinct) ; sinon, il annule tant que le rendez-vous n'est pas passé, puis le marque Terminé ou Client absent.
+    if (req.body.late) {
+      if (!isLate(b.startsAt)) throw conflict('NOT_LATE_YET', `Le retard toléré (${LATE_TOLERANCE_MINUTES} min) n'est pas encore dépassé.`);
+    } else if (new Date(b.startsAt).getTime() < Date.now()) {
+      throw conflict('BOOKING_STARTED', 'Ce rendez-vous est passé : marquez-le « Terminé », « Client absent » ou annulez-le pour retard.');
     }
     const res = await db
       .from('bookings')
@@ -125,7 +128,8 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
         status: 'cancelled',
         cancelled_at: new Date().toISOString(),
         cancelled_by: 'salon',
-        cancellation_reason: req.body.reason ?? null,
+        cancellation_reason: req.body.reason ?? (req.body.late ? `Retard de plus de ${LATE_TOLERANCE_MINUTES} min` : null),
+        cancellation_kind: req.body.late ? 'late' : null,
       })
       .eq('id', b.id)
       .in('status', ['pending', 'confirmed'])

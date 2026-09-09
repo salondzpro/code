@@ -9,6 +9,7 @@ import { formatDuration } from '@/lib/format';
 import { publicHost } from '@/lib/salon';
 import { Avatar, BottomSheet, Button, Card, ErrorText, H1, InfoBox, P, Row, Rows, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
+import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
@@ -105,6 +106,7 @@ export default function BookingReview() {
         </View>
         <P>{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</P>
       </Card>
+      <LateRule startsAt={draft.startsAt} />
       <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>
       {slotError && (
         <View style={{ gap: 10 }}>

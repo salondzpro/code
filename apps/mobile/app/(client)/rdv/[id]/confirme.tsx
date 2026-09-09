@@ -11,6 +11,7 @@ import { registerForPushNotifications } from '@/lib/push';
 import { googleCalendarUrl, open } from '@/lib/salon';
 import { Avatar, Button, Card, ErrorText, H1, I, IconButton, ModalSheet, P, Row, Rows, StatusBadge, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
+import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
@@ -115,6 +116,7 @@ export default function BookingConfirmed() {
           </View>
         )}
       </Card>
+      <LateRule startsAt={b.startsAt} />
       <P center>{confirmed ? 'Un rappel vous sera envoyé la veille.' : 'Le salon confirme votre demande sur WhatsApp.'}</P>
       <Button variant="g" onPress={() => setCal(true)}>
         Ajouter au calendrier

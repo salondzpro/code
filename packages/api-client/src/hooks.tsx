@@ -263,7 +263,7 @@ export function useProBookingMutations() {
   return {
     createWalkIn: useMutation({ mutationFn: api.pro.bookings.createWalkIn, onSuccess: done }),
     setStatus: useMutation({ mutationFn: ({ id, status }: { id: string; status: 'confirmed' | 'completed' | 'no_show' }) => api.pro.bookings.setStatus(id, status), onSuccess: done }),
-    cancel: useMutation({ mutationFn: ({ id, reason }: { id: string; reason?: string }) => api.pro.bookings.cancel(id, reason), onSuccess: done }),
+    cancel: useMutation({ mutationFn: ({ id, reason, late }: { id: string; reason?: string; late?: boolean }) => api.pro.bookings.cancel(id, reason, late), onSuccess: done }),
     reschedule: useMutation({ mutationFn: ({ id, startsAt, staffId }: { id: string; startsAt: string; staffId?: string | null }) => api.pro.bookings.reschedule(id, { startsAt, staffId }), onSuccess: done }),
     invalidateAll: () => invalidatePro(qc),
   };

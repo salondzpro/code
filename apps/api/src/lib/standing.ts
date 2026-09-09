@@ -30,7 +30,7 @@ export async function clientStanding(clientId: string, now = Date.now()): Promis
       .from('bookings')
       .select('starts_at')
       .eq('client_id', clientId)
-      .eq('status', 'no_show')
+      .or('status.eq.no_show,and(status.eq.cancelled,cancellation_kind.eq.late)')
       .gte('starts_at', new Date(now - NO_SHOW_ABUSE_WINDOW_DAYS * DAY).toISOString())
       .order('starts_at', { ascending: false }),
   ]);

@@ -224,7 +224,7 @@ export function createApiClient(opts: ApiClientOptions) {
         get: (id: string) => get<BookingWithStaff>(`/pro/bookings/${id}`),
         createWalkIn: (body: CreateWalkInBookingInput) => post<BookingWithStaff>('/pro/bookings', body),
         setStatus: (id: string, status: 'confirmed' | 'completed' | 'no_show') => post<BookingWithStaff>(`/pro/bookings/${id}/status`, { status }),
-        cancel: (id: string, reason?: string) => post<BookingWithStaff>(`/pro/bookings/${id}/cancel`, { reason }),
+        cancel: (id: string, reason?: string, late?: boolean) => post<BookingWithStaff>(`/pro/bookings/${id}/cancel`, { reason, late }),
         reschedule: (id: string, body: { startsAt: string; staffId?: string | null }) => post<BookingWithStaff>(`/pro/bookings/${id}/reschedule`, body),
       },
     },

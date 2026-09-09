@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProBooking, useProBookingMutations, useProBookings, useProSalon } from '@salondz/api-client';
-import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, LATE_TOLERANCE_MINUTES, isLate, lateRule, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, open } from '@/lib/salon';
 import { Avatar, BottomSheet, Button, Card, ErrorText, Grid, H1, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
@@ -38,6 +38,8 @@ export default function ProBookingDetail() {
   if (!b) return null;
   const active = b.status === 'pending' || b.status === 'confirmed';
   const past = new Date(b.startsAt).getTime() < Date.now();
+  const late = active && isLate(b.startsAt);
+  const rule = lateRule(b.startsAt);
   const wa = b.clientPhone ? `https://wa.me/${b.clientPhone.replace(/\D/g, '')}` : null;
   const initials = b.clientName
     .split(' ')
@@ -66,6 +68,11 @@ export default function ProBookingDetail() {
               </Button>
             </Grid>
           )}
+          {late && (
+            <Button variant="d" disabled={cancel.isPending} loading={cancel.isPending} onPress={() => cancel.mutate({ id: b.id, late: true })}>
+              {`Annuler pour retard (plus de ${LATE_TOLERANCE_MINUTES} min)`}
+            </Button>
+          )}
           {active && !past && (
             <Grid cols={2}>
               <Button variant="g" onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
@@ -84,7 +91,7 @@ export default function ProBookingDetail() {
         </BottomSheet>
       }
     >
-      <TopBar backTo="/(pro)/(tabs)/agenda" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} viewer="pro" />} />
+      <TopBar backTo="/(pro)/(tabs)/agenda" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} viewer="pro" />} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar name={b.clientName} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -142,7 +149,7 @@ export default function ProBookingDetail() {
           </Tx>
         </View>
         <Tx size={10.5} color={C.muted} lh={14}>
-          {formatDuration(b.durationMinutes)} au total
+          {`${formatDuration(b.durationMinutes)} au total · arrivée à ${rule.arriveAt} · retard toléré jusqu'à ${rule.lateUntil}`}
         </Tx>
       </Card>
       <Card gap={0}>

@@ -7,6 +7,7 @@ import type {
   GenderTarget,
   NotificationType,
   UserRole,
+  CancellationKind,
 } from '@salondz/constants';
 
 export type UUID = string;
@@ -164,6 +165,8 @@ export interface Booking {
   cancelledAt: ISODateTime | null;
   cancelledBy: CancelledBy | null;
   cancellationReason: string | null;
+  /** 'late' = annulé par le salon pour retard (> LATE_TOLERANCE_MINUTES), sinon null. */
+  cancellationKind: CancellationKind | null;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
   /** Prestations cumulées (absent = une seule prestation, cf. serviceName). */
