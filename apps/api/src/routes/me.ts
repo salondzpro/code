@@ -1,27 +1,37 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { chooseRoleSchema, registerPushTokenSchema, updateProfileSchema, uuid } from '@salondz/validation';
+import {
+  chooseRoleSchema,
+  registerPushTokenSchema,
+  updateProfileSchema,
+  uuid,
+} from '@salondz/validation';
 import type { Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize, snakeize } from '../lib/mappers';
 import { unwrap } from '../lib/errors';
-import { toLocalDateKey } from '@salondz/constants';
 import { loadOwnedSalon } from '../plugins/auth';
-import { attachPeriodAvailability } from '../lib/availability';
+import { attachNextSlots } from '../lib/availability';
 import { clientStanding } from '../lib/standing';
 
-const PROFILE_COLS = 'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
+const PROFILE_COLS =
+  'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
 
 const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
 
   /** Profil + raccourci vers le salon (pour router après connexion). */
   app.get('/me', async (req, reply) => {
-    const [salon, standing] = await Promise.all([loadOwnedSalon(req.user!.id), req.profile!.role === 'client' ? clientStanding(req.user!.id) : Promise.resolve(null)]);
+    const [salon, standing] = await Promise.all([
+      loadOwnedSalon(req.user!.id),
+      req.profile!.role === 'client' ? clientStanding(req.user!.id) : Promise.resolve(null),
+    ]);
     reply.header('Cache-Control', 'private, no-store');
     return {
       profile: req.profile!,
-      salon: salon ? { id: salon.id, slug: salon.slug, name: salon.name, isPublished: salon.isPublished } : null,
+      salon: salon
+        ? { id: salon.id, slug: salon.slug, name: salon.name, isPublished: salon.isPublished }
+        : null,
       standing,
     };
   });
@@ -32,12 +42,22 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const body = req.user!.phone ? rest : req.body;
     if (Object.keys(body).length === 0) return req.profile!;
     void phone;
-    const res = await db.from('profiles').update(snakeize(body)).eq('id', req.user!.id).select(PROFILE_COLS).single();
+    const res = await db
+      .from('profiles')
+      .update(snakeize(body))
+      .eq('id', req.user!.id)
+      .select(PROFILE_COLS)
+      .single();
     return camelize<Profile>(unwrap(res));
   });
 
   app.post('/me/role', { schema: { body: chooseRoleSchema } }, async (req) => {
-    const res = await db.from('profiles').update({ role: req.body.role }).eq('id', req.user!.id).select(PROFILE_COLS).single();
+    const res = await db
+      .from('profiles')
+      .update({ role: req.body.role })
+      .eq('id', req.user!.id)
+      .select(PROFILE_COLS)
+      .single();
     return camelize<Profile>(unwrap(res));
   });
 
@@ -62,11 +82,19 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     return null;
   });
 
-  app.delete('/me/push-tokens/:token', { schema: { params: z.object({ token: z.string().min(1) }) } }, async (req, reply) => {
-    await db.from('push_tokens').delete().eq('user_id', req.user!.id).eq('token', req.params.token);
-    reply.status(204);
-    return null;
-  });
+  app.delete(
+    '/me/push-tokens/:token',
+    { schema: { params: z.object({ token: z.string().min(1) }) } },
+    async (req, reply) => {
+      await db
+        .from('push_tokens')
+        .delete()
+        .eq('user_id', req.user!.id)
+        .eq('token', req.params.token);
+      reply.status(204);
+      return null;
+    },
+  );
 
   // ---- Notifications ----
   app.get(
@@ -88,65 +116,113 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
           .eq('user_id', req.user!.id)
           .order('created_at', { ascending: false })
           .range(cursor, cursor + limit - 1),
-        db.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', req.user!.id).is('read_at', null),
+        db
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', req.user!.id)
+          .is('read_at', null),
       ]);
       const items = camelize<Notification[]>(unwrap(listRes));
       reply.header('Cache-Control', 'private, no-store');
-      return { items, nextCursor: items.length === limit ? String(cursor + limit) : null, unreadCount: unreadRes.count ?? 0 };
+      return {
+        items,
+        nextCursor: items.length === limit ? String(cursor + limit) : null,
+        unreadCount: unreadRes.count ?? 0,
+      };
     },
   );
 
-  app.post('/me/notifications/read', { schema: { body: z.object({ ids: z.array(uuid).max(200).optional() }) } }, async (req, reply) => {
-    let q = db.from('notifications').update({ read_at: new Date().toISOString() }).eq('user_id', req.user!.id).is('read_at', null);
-    if (req.body.ids?.length) q = q.in('id', req.body.ids);
-    const { error } = await q;
-    if (error) throw error;
-    reply.status(204);
-    return null;
-  });
+  app.post(
+    '/me/notifications/read',
+    { schema: { body: z.object({ ids: z.array(uuid).max(200).optional() }) } },
+    async (req, reply) => {
+      let q = db
+        .from('notifications')
+        .update({ read_at: new Date().toISOString() })
+        .eq('user_id', req.user!.id)
+        .is('read_at', null);
+      if (req.body.ids?.length) q = q.in('id', req.body.ids);
+      const { error } = await q;
+      if (error) throw error;
+      reply.status(204);
+      return null;
+    },
+  );
 
   // ---- Favoris ----
   app.get('/me/favorites', async (req, reply) => {
     const res = await db
       .from('favorites')
-      .select('salon_id, salons!inner(id, slug, name, city, zone, wilaya_code, cover_url, logo_url, gender_target, rating_avg, rating_count, is_published, salon_categories(category_id))')
+      .select(
+        'salon_id, salons!inner(id, slug, name, city, zone, wilaya_code, cover_url, logo_url, gender_target, rating_avg, rating_count, is_published, salon_categories(category_id))',
+      )
       .eq('user_id', req.user!.id)
       .order('created_at', { ascending: false });
-    const rows = unwrap(res) as unknown as { salons: Record<string, unknown> & { salon_categories: { category_id: string }[]; is_published: boolean } }[];
+    const rows = unwrap(res) as unknown as {
+      salons: Record<string, unknown> & {
+        salon_categories: { category_id: string }[];
+        is_published: boolean;
+      };
+    }[];
     const items: SalonSummary[] = rows
       .filter((r) => r.salons.is_published)
       .map((r) => {
         const { salon_categories, is_published: _p, ...rest } = r.salons;
-        const s = camelize<Omit<SalonSummary, 'categoryIds' | 'minPriceDa' | 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
-        return { ...s, ratingAvg: Number(s.ratingAvg), categoryIds: salon_categories.map((c) => c.category_id), minPriceDa: null, topServices: [], nextSlots: [], nextAvailable: null as SalonSummary['nextAvailable'], periods: [], isOpenNow: false };
+        const s =
+          camelize<
+            Omit<
+              SalonSummary,
+              | 'categoryIds'
+              | 'minPriceDa'
+              | 'topServices'
+              | 'nextSlots'
+              | 'nextAvailable'
+              | 'isOpenNow'
+            >
+          >(rest);
+        return {
+          ...s,
+          ratingAvg: Number(s.ratingAvg),
+          categoryIds: salon_categories.map((c) => c.category_id),
+          minPriceDa: null,
+          topServices: [],
+          nextSlots: [],
+          nextAvailable: null as SalonSummary['nextAvailable'],
+          isOpenNow: false,
+        };
       });
-    // Prochaine disponibilité (même calcul que la marketplace) : la liste des favoris est courte.
-    const today = toLocalDateKey();
-    await attachPeriodAvailability(items, req.log);
-    await Promise.all(
-      items.map(async (s) => {
-        const r = await db.rpc('next_availability', { p_salon_id: s.id, p_duration_minutes: null, p_limit: 3, p_days: 7 });
-        const next = (r.error ? null : (r.data as SalonSummary['nextAvailable'])) ?? null;
-        s.nextAvailable = next;
-        s.nextSlots = next && next.date === today ? next.slots : [];
-      }),
-    );
+    // Prochaines disponibilités (même calcul que la marketplace, un seul appel).
+    await attachNextSlots(items, req.log);
     reply.header('Cache-Control', 'private, no-store');
     return { items };
   });
 
-  app.put('/me/favorites/:salonId', { schema: { params: z.object({ salonId: uuid }) } }, async (req, reply) => {
-    const { error } = await db.from('favorites').upsert({ user_id: req.user!.id, salon_id: req.params.salonId });
-    if (error) throw error;
-    reply.status(204);
-    return null;
-  });
+  app.put(
+    '/me/favorites/:salonId',
+    { schema: { params: z.object({ salonId: uuid }) } },
+    async (req, reply) => {
+      const { error } = await db
+        .from('favorites')
+        .upsert({ user_id: req.user!.id, salon_id: req.params.salonId });
+      if (error) throw error;
+      reply.status(204);
+      return null;
+    },
+  );
 
-  app.delete('/me/favorites/:salonId', { schema: { params: z.object({ salonId: uuid }) } }, async (req, reply) => {
-    await db.from('favorites').delete().eq('user_id', req.user!.id).eq('salon_id', req.params.salonId);
-    reply.status(204);
-    return null;
-  });
+  app.delete(
+    '/me/favorites/:salonId',
+    { schema: { params: z.object({ salonId: uuid }) } },
+    async (req, reply) => {
+      await db
+        .from('favorites')
+        .delete()
+        .eq('user_id', req.user!.id)
+        .eq('salon_id', req.params.salonId);
+      reply.status(204);
+      return null;
+    },
+  );
 };
 
 export default meRoutes;

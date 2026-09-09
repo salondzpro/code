@@ -5,11 +5,56 @@
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useProBooking, useProBookingMutations, useProBookings, useProSalon } from '@salondz/api-client';
-import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, LATE_TOLERANCE_MINUTES, isLate, lateRule, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
+import {
+  AlarmClock,
+  ArrowLeft,
+  CalendarClock,
+  Check,
+  CheckCircle2,
+  MessageCircle,
+  Phone,
+  UserX,
+  XCircle,
+} from 'lucide-react-native';
+import {
+  useProBooking,
+  useProBookingMutations,
+  useProBookings,
+  useProSalon,
+} from '@salondz/api-client';
+import {
+  addDaysToKey,
+  formatDA,
+  formatDateShortDZ,
+  formatDZPhone,
+  formatTimeDZ,
+  LATE_TOLERANCE_MINUTES,
+  isLate,
+  lateRule,
+  relativeDayLabelDZ,
+  toLocalDateKey,
+} from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, open } from '@/lib/salon';
-import { Avatar, BottomSheet, Button, Card, ErrorText, Grid, H1, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
+import {
+  Avatar,
+  BottomSheet,
+  Button,
+  Card,
+  ErrorText,
+  Grid,
+  H1,
+  I,
+  Input,
+  ModalSheet,
+  P,
+  Row,
+  Rows,
+  Soft,
+  StatusBadge,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
@@ -22,11 +67,27 @@ export default function ProBookingDetail() {
   const { setStatus, cancel } = useProBookingMutations();
   const b = booking.data;
   const today = toLocalDateKey();
-  const history = useProBookings({ from: addDaysToKey(today, -365), to: addDaysToKey(today, 90), limit: 200 }, !!b);
+  const history = useProBookings(
+    { from: addDaysToKey(today, -365), to: addDaysToKey(today, 90), limit: 200 },
+    !!b,
+  );
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
-  const visits = useMemo(() => (history.data?.items ?? []).filter((x) => b && x.status !== 'cancelled' && (x.clientPhone && b.clientPhone ? x.clientPhone === b.clientPhone : x.clientName === b.clientName)), [history.data, b]);
-  const lastVisit = visits.filter((x) => x.startsAt < (b?.startsAt ?? '')).sort((a, c) => c.startsAt.localeCompare(a.startsAt))[0];
+  const visits = useMemo(
+    () =>
+      (history.data?.items ?? []).filter(
+        (x) =>
+          b &&
+          x.status !== 'cancelled' &&
+          (x.clientPhone && b.clientPhone
+            ? x.clientPhone === b.clientPhone
+            : x.clientName === b.clientName),
+      ),
+    [history.data, b],
+  );
+  const lastVisit = visits
+    .filter((x) => x.startsAt < (b?.startsAt ?? ''))
+    .sort((a, c) => c.startsAt.localeCompare(a.startsAt))[0];
 
   if (booking.isPending || !salon) return <Splash />;
   if (booking.isError)
@@ -45,7 +106,16 @@ export default function ProBookingDetail() {
     .split(' ')
     .map((p, i) => (i === 0 ? p : `${p.charAt(0)}.`))
     .join(' ');
-  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
+  const lines = b.items?.length
+    ? b.items
+    : [
+        {
+          id: b.id,
+          serviceName: b.serviceName,
+          durationMinutes: b.durationMinutes,
+          priceDa: b.priceDa,
+        },
+      ];
   const back = () => router.replace('/(pro)/(tabs)/agenda');
 
   return (
@@ -54,44 +124,91 @@ export default function ProBookingDetail() {
       footer={
         <BottomSheet grab={false}>
           {b.status === 'pending' && !past && (
-            <Button disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
-              Confirmer le rendez-vous
+            <Button
+              disabled={setStatus.isPending}
+              onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
+            >
+              <I icon={Check} size={15} color={C.onInk} />
+              <Tx size={12} weight={600} lh={16} color={C.onInk}>
+                Confirmer le rendez-vous
+              </Tx>
             </Button>
           )}
           {b.status === 'confirmed' && past && (
             <Grid cols={2}>
-              <Button disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'completed' })}>
-                Terminé
+              <Button
+                disabled={setStatus.isPending}
+                onPress={() => setStatus.mutate({ id: b.id, status: 'completed' })}
+              >
+                <I icon={CheckCircle2} size={15} color={C.onInk} />
+                <Tx size={12} weight={600} lh={16} color={C.onInk}>
+                  Terminé
+                </Tx>
               </Button>
-              <Button variant="g" disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: b.id, status: 'no_show' })}>
-                Client absent
+              <Button
+                variant="g"
+                disabled={setStatus.isPending}
+                onPress={() => setStatus.mutate({ id: b.id, status: 'no_show' })}
+              >
+                <I icon={UserX} size={15} />
+                <Tx size={12} weight={600} lh={16}>
+                  Client absent
+                </Tx>
               </Button>
             </Grid>
           )}
           {late && (
-            <Button variant="d" disabled={cancel.isPending} loading={cancel.isPending} onPress={() => cancel.mutate({ id: b.id, late: true })}>
-              {`Annuler pour retard (plus de ${LATE_TOLERANCE_MINUTES} min)`}
+            <Button
+              variant="d"
+              disabled={cancel.isPending}
+              loading={cancel.isPending}
+              onPress={() => cancel.mutate({ id: b.id, late: true })}
+            >
+              <I icon={AlarmClock} size={15} color={C.danger} />
+              <Tx size={12} weight={600} lh={16} color={C.danger}>
+                {`Annuler pour retard (plus de ${LATE_TOLERANCE_MINUTES} min)`}
+              </Tx>
             </Button>
           )}
           {active && !past && (
             <Grid cols={2}>
               <Button variant="g" onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
-                Reporter
+                <I icon={CalendarClock} size={15} />
+                <Tx size={12} weight={600} lh={16}>
+                  Reporter
+                </Tx>
               </Button>
               <Button variant="d" onPress={() => setCancelling(true)}>
-                Annuler
+                <I icon={XCircle} size={15} color={C.danger} />
+                <Tx size={12} weight={600} lh={16} color={C.danger}>
+                  Annuler
+                </Tx>
               </Button>
             </Grid>
           )}
           {(!active || (past && b.status === 'pending')) && (
             <Button variant="g" onPress={back}>
-              Retour à l'agenda
+              <I icon={ArrowLeft} size={15} />
+              <Tx size={12} weight={600} lh={16}>
+                Retour à l'agenda
+              </Tx>
             </Button>
           )}
         </BottomSheet>
       }
     >
-      <TopBar backTo="/(pro)/(tabs)/agenda" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} viewer="pro" />} />
+      <TopBar
+        backTo="/(pro)/(tabs)/agenda"
+        right={
+          <StatusBadge
+            status={b.status}
+            md
+            cancelledBy={b.cancelledBy}
+            kind={b.cancellationKind}
+            viewer="pro"
+          />
+        }
+      />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar name={b.clientName} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -112,13 +229,19 @@ export default function ProBookingDetail() {
       </View>
       {!!b.clientPhone && (
         <Grid cols={2}>
-          <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(`tel:${b.clientPhone}`)}>
+          <Button
+            variant="g"
+            style={{ paddingVertical: 15 }}
+            onPress={() => void open(`tel:${b.clientPhone}`)}
+          >
+            <I icon={Phone} size={16} />
             <Tx size={11.5} weight={600} ls={-0.2}>
               Appeler
             </Tx>
           </Button>
           {!!wa && (
             <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(wa)}>
+              <I icon={MessageCircle} size={16} />
               <Tx size={11.5} weight={600} ls={-0.2}>
                 WhatsApp
               </Tx>
@@ -127,7 +250,14 @@ export default function ProBookingDetail() {
         </Grid>
       )}
       <Card gap={10}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
           <Tx size={12} weight={600} lh={16}>
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </Tx>
@@ -135,7 +265,14 @@ export default function ProBookingDetail() {
             {capitalize(formatDateShortDZ(b.startsAt))}
           </Tx>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
             <Tx size={23} weight={700} ls={-0.8} lh={26} mono>
               {formatTimeDZ(b.startsAt)}
@@ -154,13 +291,32 @@ export default function ProBookingDetail() {
       </Card>
       <Card gap={0}>
         <Rows>
-          <Row py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+          <Row
+            py={10}
+            chevron={false}
+            right={
+              <Tx size={11.5} color={C.muted} lh={15.5}>
+                {formatDA(b.priceDa)}
+              </Tx>
+            }
+          >
             <Tx size={12} weight={600} lh={16}>
               {lines.length} prestation{lines.length > 1 ? 's' : ''}
             </Tx>
           </Row>
           {lines.map((it) => (
-            <Row key={it.id} py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{'durationMinutes' in it && it.durationMinutes ? `${formatDuration(it.durationMinutes)}${'priceDa' in it && it.priceDa != null ? ` · ${formatDA(it.priceDa)}` : ''}` : ''}</Tx>}>
+            <Row
+              key={it.id}
+              py={10}
+              chevron={false}
+              right={
+                <Tx size={11.5} color={C.muted} lh={15.5}>
+                  {'durationMinutes' in it && it.durationMinutes
+                    ? `${formatDuration(it.durationMinutes)}${'priceDa' in it && it.priceDa != null ? ` · ${formatDA(it.priceDa)}` : ''}`
+                    : ''}
+                </Tx>
+              }
+            >
               <Tx size={12} lh={16}>
                 {it.serviceName}
               </Tx>
@@ -184,7 +340,8 @@ export default function ProBookingDetail() {
         </Tx>
       )}
       <Tx size={10.5} color={C.muted} lh={14.5}>
-        {visits.length} rendez-vous{lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
+        {visits.length} rendez-vous
+        {lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
       </Tx>
       <ErrorText error={setStatus.error ?? cancel.error} />
 
@@ -199,7 +356,22 @@ export default function ProBookingDetail() {
           <Tx size={12} lh={16}>
             Motif (optionnel)
           </Tx>
-          <Input value={reason} onChangeText={setReason} placeholder="Indisponible" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 12 }} />
+          <Input
+            value={reason}
+            onChangeText={setReason}
+            placeholder="Indisponible"
+            maxLength={200}
+            accessibilityLabel="Motif"
+            style={{
+              flex: 1,
+              backgroundColor: 'transparent',
+              borderColor: 'transparent',
+              paddingVertical: 0,
+              paddingHorizontal: 0,
+              textAlign: 'right',
+              fontSize: 12,
+            }}
+          />
         </Card>
         <Button
           bg={C.danger}

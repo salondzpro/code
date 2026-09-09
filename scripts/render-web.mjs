@@ -52,6 +52,10 @@ const siteSpec = {
     routes: [{ type: 'rewrite', source: '/*', destination: '/index.html' }],
     headers: [
       { path: '/assets/*', name: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      // L'index (et toute route SPA) doit être revalidé à chaque visite : sinon le téléphone garde l'ancien bundle.
+      { path: '/', name: 'Cache-Control', value: 'no-cache' },
+      { path: '/index.html', name: 'Cache-Control', value: 'no-cache' },
+      { path: '/*', name: 'Cache-Control', value: 'no-cache' },
       { path: '/*', name: 'X-Content-Type-Options', value: 'nosniff' },
       { path: '/*', name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
     ],

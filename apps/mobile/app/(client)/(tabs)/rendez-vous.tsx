@@ -5,12 +5,26 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { RotateCcw, Star } from 'lucide-react-native';
 import { useMyBookings } from '@salondz/api-client';
 import { formatDA, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useRealtimeMyBookings } from '@/lib/realtime';
 import { capitalize, dayMonth, directionsUrl, open } from '@/lib/salon';
-import { Avatar, Button, Card, ErrorText, H1, Img, P, Segmented, Skeleton, StatusBadge, Tx } from '@/ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  ErrorText,
+  H1,
+  I,
+  Img,
+  P,
+  Segmented,
+  Skeleton,
+  StatusBadge,
+  Tx,
+} from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { C, NAV_PAD } from '@/theme/design';
 
@@ -18,16 +32,24 @@ export default function Bookings() {
   const router = useRouter();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ scope?: string }>();
-  const [scope, setScope] = useState<'upcoming' | 'past' | 'cancelled'>(params.scope === 'past' ? 'past' : params.scope === 'cancelled' ? 'cancelled' : 'upcoming');
+  const [scope, setScope] = useState<'upcoming' | 'past' | 'cancelled'>(
+    params.scope === 'past' ? 'past' : params.scope === 'cancelled' ? 'cancelled' : 'upcoming',
+  );
   useEffect(() => {
-    if (params.scope === 'past' || params.scope === 'upcoming' || params.scope === 'cancelled') setScope(params.scope);
+    if (params.scope === 'past' || params.scope === 'upcoming' || params.scope === 'cancelled')
+      setScope(params.scope);
   }, [params.scope]);
   const list = useMyBookings({ scope });
   useRealtimeMyBookings(user?.id);
   const items = list.data?.items ?? [];
 
   return (
-    <Screen gap={13} bottom={NAV_PAD} refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
+    <Screen
+      gap={13}
+      bottom={NAV_PAD}
+      refreshing={list.isRefetching}
+      onRefresh={() => void list.refetch()}
+    >
       <H1 size={23} lh={26} ls={-0.8}>
         {scope === 'upcoming' ? 'Rendez-vous' : 'Mes rendez-vous'}
       </H1>
@@ -51,7 +73,11 @@ export default function Bookings() {
       ) : items.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 46 }}>
           <Tx size={14.5} weight={700} lh={18.5} center>
-            {scope === 'upcoming' ? 'Aucun rendez-vous à venir' : scope === 'cancelled' ? 'Aucun rendez-vous annulé' : 'Aucun rendez-vous passé'}
+            {scope === 'upcoming'
+              ? 'Aucun rendez-vous à venir'
+              : scope === 'cancelled'
+                ? 'Aucun rendez-vous annulé'
+                : 'Aucun rendez-vous passé'}
           </Tx>
           <P center>Réservez en quelques secondes dans le salon de votre choix.</P>
           <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 6 }}>
@@ -63,17 +89,51 @@ export default function Bookings() {
           const active = b.status === 'pending' || b.status === 'confirmed';
           return (
             <Card key={b.id} gap={13}>
-              <Pressable accessibilityRole="link" accessibilityLabel={`${b.serviceName} · ${b.salon.name}`} onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ gap: 13 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                  <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted} style={{ flex: 1 }}>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={`${b.serviceName} · ${b.salon.name}`}
+                onPress={() => router.push(`/rdv/${b.id}` as never)}
+                style={{ gap: 13 }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                  }}
+                >
+                  <Tx
+                    size={14.5}
+                    weight={700}
+                    ls={-0.4}
+                    lh={18.5}
+                    color={active ? C.text : C.muted}
+                    style={{ flex: 1 }}
+                  >
                     {capitalize(formatDateShortDZ(b.startsAt))} · {formatTimeDZ(b.startsAt)}
                   </Tx>
-                  <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
+                  <StatusBadge
+                    status={b.status}
+                    md
+                    cancelledBy={b.cancelledBy}
+                    kind={b.cancellationKind}
+                  />
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-                  <Img src={b.salon.coverUrl} radius={13} style={{ width: 84, height: 84, opacity: active ? 1 : 0.6 }} />
+                  <Img
+                    src={b.salon.coverUrl}
+                    radius={13}
+                    style={{ width: 84, height: 84, opacity: active ? 1 : 0.6 }}
+                  />
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted}>
+                    <Tx
+                      size={14.5}
+                      weight={700}
+                      ls={-0.4}
+                      lh={18.5}
+                      color={active ? C.text : C.muted}
+                    >
                       {b.serviceName}
                     </Tx>
                     <Tx size={10.5} color={C.muted} lh={15.5}>
@@ -84,13 +144,23 @@ export default function Bookings() {
               </Pressable>
               {active && (
                 <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <Button variant="g" sm style={{ flex: 1, paddingVertical: 15 }} onPress={() => void open(directionsUrl(b))}>
+                  <Button
+                    variant="g"
+                    sm
+                    style={{ flex: 1, paddingVertical: 15 }}
+                    onPress={() => void open(directionsUrl(b))}
+                  >
                     <Tx size={10.5} weight={600} ls={-0.2}>
                       Itinéraire
                     </Tx>
                   </Button>
                   {b.salon.allowClientReschedule !== false && (
-                    <Button variant="g" sm style={{ flex: 1, paddingVertical: 15 }} onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
+                    <Button
+                      variant="g"
+                      sm
+                      style={{ flex: 1, paddingVertical: 15 }}
+                      onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}
+                    >
                       <Tx size={10.5} weight={600} ls={-0.2}>
                         Reporter
                       </Tx>
@@ -104,7 +174,11 @@ export default function Bookings() {
       ) : (
         items.map((b) => (
           <Card key={b.id} gap={13}>
-            <Pressable accessibilityRole="link" onPress={() => router.push(`/rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push(`/rdv/${b.id}` as never)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}
+            >
               <Avatar src={b.salon.coverUrl} name={b.salon.name} size={68} />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
@@ -120,23 +194,44 @@ export default function Bookings() {
                   </Tx>
                 )}
               </View>
-              <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
+              <StatusBadge
+                status={b.status}
+                md
+                cancelledBy={b.cancelledBy}
+                kind={b.cancellationKind}
+              />
             </Pressable>
             {b.status === 'completed' && (
               <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button variant="g" sm style={{ flex: 1, paddingVertical: 15 }} onPress={() => router.push(`/s/${b.salon.slug}/prestations` as never)}>
+                <Button
+                  variant="g"
+                  sm
+                  style={{ flex: 1, paddingVertical: 15 }}
+                  onPress={() => router.push(`/s/${b.salon.slug}/prestations` as never)}
+                >
+                  <I icon={RotateCcw} size={14} />
                   <Tx size={11.5} weight={600} ls={-0.2}>
                     Réserver à nouveau
                   </Tx>
                 </Button>
                 {b.reviewRating != null ? (
-                  <View style={{ justifyContent: 'center', paddingHorizontal: 10 }} accessibilityLabel={`Votre note : ${b.reviewRating} sur 5`}>
+                  <View
+                    style={{ justifyContent: 'center', paddingHorizontal: 10 }}
+                    accessibilityLabel={`Votre note : ${b.reviewRating} sur 5`}
+                  >
                     <Tx size={11.5} weight={600} lh={15}>
                       ★ {b.reviewRating}/5
                     </Tx>
                   </View>
                 ) : (
-                  <Button variant="g" sm auto style={{ paddingHorizontal: 20, paddingVertical: 15 }} onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
+                  <Button
+                    variant="g"
+                    sm
+                    auto
+                    style={{ paddingHorizontal: 20, paddingVertical: 15 }}
+                    onPress={() => router.push(`/rdv/${b.id}/noter` as never)}
+                  >
+                    <I icon={Star} size={14} />
                     <Tx size={11.5} weight={600} ls={-0.2}>
                       Noter
                     </Tx>

@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Calendar, Check } from 'lucide-react-native';
+import { Calendar, CalendarCheck, Check } from 'lucide-react-native';
 import { useBooking } from '@salondz/api-client';
 import { formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
 import type { BookingWithSalon } from '@salondz/types';
@@ -132,7 +132,12 @@ export default function BookingConfirmed() {
           ? 'Un rappel vous sera envoyé la veille.'
           : 'Le salon confirme votre demande sur WhatsApp.'}
       </P>
-      <Button onPress={() => router.replace(`/rdv/${b.id}` as never)}>Voir le rendez-vous</Button>
+      <Button onPress={() => router.replace(`/rdv/${b.id}` as never)}>
+        <I icon={CalendarCheck} size={15} color={C.onInk} />
+        <Tx size={12} weight={600} lh={16} color={C.onInk}>
+          Voir le rendez-vous
+        </Tx>
+      </Button>
       <GoogleCalendarButton booking={b} />
     </Screen>
   );

@@ -1,6 +1,6 @@
 /** C-F 12 — Rendez-vous confirmé (ou demande envoyée) ; « Ajouter à votre calendrier Google » en bas (lien direct, sans feuille). */
 import { useNavigate, useParams } from 'react-router';
-import { Calendar, Check } from 'lucide-react';
+import { Calendar, CalendarCheck, Check } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import {
   formatDA,
@@ -101,7 +101,7 @@ export function BookingConfirmed() {
           : 'Le salon confirme votre demande sur WhatsApp.'}
       </p>
       <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
-        Voir le rendez-vous
+        <I icon={CalendarCheck} size={18} /> Voir le rendez-vous
       </Button>
       <GoogleCalendarButton booking={b} />
       <span className="sr-only">{wilayaName(16)}</span>

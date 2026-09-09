@@ -221,21 +221,9 @@ export interface SalonSummary {
   nextSlots: string[];
   /** Première journée avec des créneaux (aujourd'hui, sinon les 7 jours suivants) : date locale + heures. */
   nextAvailable: { date: string; slots: string[] } | null;
-  /** 7 prochains jours avec le premier créneau libre par moment : cartes « Matin / Après-midi » à la Planity (`planPeriodDays`). */
-  periods: PeriodDay[];
   isOpenNow: boolean;
   lat?: number | null;
   lng?: number | null;
-}
-
-/** Un jour de la grille « Matin / Après-midi » d'une carte : ouvert ?, heure de fermeture, premier créneau libre (HH:mm) par moment. */
-export interface PeriodDay {
-  date: DateKey;
-  open: boolean;
-  closesAt: string | null;
-  matin: string | null;
-  /** Après-midi et soir confondus (≥ 12 h). */
-  apresMidi: string | null;
 }
 
 /** Situation d'un client vis-à-vis des règles anti-abus (annulations récentes, absences, suspension en cours). */

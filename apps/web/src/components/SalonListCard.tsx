@@ -1,17 +1,17 @@
 /**
- * Carte salon de la marketplace (design C-H 01 / C-F 01, présentation « à la Planity ») : grande version avec
- * couverture, version compacte avec vignette. Prestations phares, « ★ 4,9 (383 avis) », puis la grille
- * MATIN / APRÈS-MIDI / SOIR × 3 jours : une puce active ouvre la réservation au premier créneau libre du moment.
+ * Carte salon de la marketplace (design C-H 01 / C-F 01) : grande version avec couverture, version compacte
+ * avec vignette. Nom, « ★ 4,9 (383 avis) · quartier », prestations phares, puis « Prochaines disponibilités » :
+ * les 5 premiers créneaux libres du premier jour disponible, chacun ouvre la réservation avec la date et l'heure
+ * déjà choisies (il ne reste que les prestations). « Voir plus » ouvre la fiche du salon.
  */
-import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router';
-import type { PeriodDay, SalonSummary } from '@salondz/types';
+import type { SalonSummary } from '@salondz/types';
 import {
+  addDaysToKey,
   categoryLabel,
   dayChipLabelDZ,
   formatDA,
-  planPeriodDays,
-  relativeDayLabelDZ,
+  toLocalDateKey,
 } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/clientPrefs';
 import { Img } from './ui';
@@ -52,86 +52,6 @@ export function RatingLine({ avg, count }: { avg: number; count: number }) {
   );
 }
 
-const PERIODS: { key: 'matin' | 'apresMidi'; label: string }[] = [
-  { key: 'matin', label: 'Matin' },
-  { key: 'apresMidi', label: 'Après-midi' },
-];
-
-/**
- * Grille « Matin / Après-midi » × 3 jours ouverts (Planity, simplifié) : puce active = premier créneau libre du
- * moment, puce grisée = rien de libre. Aujourd'hui plein, fermé ou terminé → statut au-dessus et la grille
- * commence au prochain jour ouvert (`planPeriodDays`). Rien sur 7 jours → prochaine disponibilité (`NextSlots`).
- */
-export function PeriodGrid({
-  salon,
-}: {
-  salon: Pick<SalonSummary, 'slug' | 'nextAvailable' | 'periods'>;
-}) {
-  const navigate = useNavigate();
-  const { status, days } = planPeriodDays<PeriodDay>(salon.periods ?? []);
-  const any = days.some((d) => d.matin || d.apresMidi);
-  const statusEl = status && (
-    <span
-      className="self-start rounded-full bg-fill px-3 py-1 text-[0.75rem] font-semibold text-muted"
-      role="status"
-    >
-      {status}
-    </span>
-  );
-  if (!any)
-    return (
-      <div className="flex flex-col gap-2">
-        {statusEl}
-        <NextSlots salon={salon} empty="Aucune disponibilité cette semaine" />
-      </div>
-    );
-  const rows = PERIODS;
-  return (
-    <div className="flex flex-col gap-2">
-      {statusEl}
-      <div
-        className="grid items-center gap-x-2 gap-y-2"
-        style={{ gridTemplateColumns: `5.75rem repeat(${days.length}, minmax(0, 1fr))` }}
-        role="group"
-        aria-label="Disponibilités par moment de la journée"
-      >
-        {rows.map((p) => (
-          <Fragment key={p.key}>
-            <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em]">{p.label}</span>
-            {days.map((d) => {
-              const t = d[p.key];
-              const label = dayChipLabelDZ(d.date);
-              return t ? (
-                <button
-                  key={d.date}
-                  type="button"
-                  className="pill !border-ink !px-1 !py-2.5 text-center !text-[0.8125rem] font-semibold hover:!bg-fill"
-                  aria-label={`Réserver ${label} ${p.label.toLowerCase()} à ${t}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate(`/s/${salon.slug}/prestations?date=${d.date}&time=${t}`);
-                  }}
-                >
-                  {label}
-                </button>
-              ) : (
-                <span
-                  key={d.date}
-                  className="pill soft !px-1 !py-2.5 text-center !text-[0.8125rem] text-subtle"
-                  aria-label={`${label} ${p.label.toLowerCase()} : complet`}
-                >
-                  {label}
-                </span>
-              );
-            })}
-          </Fragment>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function SlotPills({
   slots,
   empty = "Complet aujourd'hui",
@@ -151,10 +71,17 @@ export function SlotPills({
   );
 }
 
+/** Libellé du jour des prochaines disponibilités : « Aujourd'hui », « Demain · Ven. 11 », « Prochain créneau · Sam. 12 ». */
+export function nextDayLabel(date: string, today: string = toLocalDateKey()): string {
+  if (date === today) return "Aujourd'hui";
+  if (date === addDaysToKey(today, 1)) return `Demain · ${dayChipLabelDZ(date)}`;
+  return `Prochain créneau · ${dayChipLabelDZ(date)}`;
+}
+
 /**
- * Prochaine disponibilité directement sur la carte : « Aujourd'hui · 12:00 12:45 15:30 » ou « Demain · 10:00 … ».
- * Chaque heure ouvre la réservation avec la date et l'heure déjà choisies (le client n'a plus qu'à cocher ses prestations).
- * Sans compte : accessible aux visiteurs, la connexion est demandée plus loin dans le parcours.
+ * « Prochaines disponibilités » directement sur la carte : les créneaux réellement libres les plus proches
+ * (aujourd'hui, sinon demain, sinon le prochain jour ouvert et non complet — calcul SQL côté API, revalidé à la
+ * réservation). Chaque heure ouvre la réservation avec la date et l'heure déjà choisies. « Voir plus » = fiche salon.
  */
 export function NextSlots({
   salon,
@@ -165,27 +92,54 @@ export function NextSlots({
 }) {
   const navigate = useNavigate();
   const next = salon.nextAvailable;
-  if (!next || next.slots.length === 0) return <span className="s">{empty}</span>;
-  const label = relativeDayLabelDZ(next.date);
+  const go = (e: { preventDefault: () => void; stopPropagation: () => void }, to: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(to);
+  };
+  if (!next || next.slots.length === 0) {
+    return (
+      <div className="flex items-center justify-between gap-2">
+        <span className="s">{empty}</span>
+        <button
+          type="button"
+          className="text-[0.8125rem] font-semibold text-muted"
+          onClick={(e) => go(e, `/s/${salon.slug}`)}
+        >
+          Voir le salon →
+        </button>
+      </div>
+    );
+  }
+  const label = nextDayLabel(next.date);
   return (
     <div className="flex flex-col gap-2" aria-label={`Prochaines disponibilités ${label}`}>
-      <span className="t3 font-medium">{label}</span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em] text-muted">
+          Prochaines disponibilités
+        </span>
+        <span className="text-[0.8125rem] font-semibold">{label}</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
         {next.slots.map((t) => (
           <button
             key={t}
             type="button"
-            className="pill soft mono !px-4 !py-2.5 !text-[0.8125rem] hover:!bg-line"
+            className="pill mono !border-ink !px-3.5 !py-2.5 !text-[0.9375rem] font-semibold hover:!bg-fill"
             aria-label={`Réserver ${label} à ${t}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              navigate(`/s/${salon.slug}/prestations?date=${next.date}&time=${t}`);
-            }}
+            onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
           >
             {t}
           </button>
         ))}
+        <button
+          type="button"
+          className="!px-1 text-[0.8125rem] font-semibold text-muted"
+          aria-label="Voir plus de créneaux"
+          onClick={(e) => go(e, `/s/${salon.slug}`)}
+        >
+          Voir plus →
+        </button>
       </div>
     </div>
   );
@@ -233,7 +187,7 @@ export function SalonListCard({
             <span className="text-[0.9375rem] text-subtle">{servicesLine(s)}</span>
           )}
           <div className="mt-2.5">
-            <PeriodGrid salon={s} />
+            <NextSlots salon={s} />
           </div>
         </div>
       </Link>
@@ -262,7 +216,7 @@ export function SalonListCard({
           )}
         </div>
       </div>
-      <PeriodGrid salon={s} />
+      <NextSlots salon={s} />
     </Link>
   );
 }

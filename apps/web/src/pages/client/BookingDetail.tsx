@@ -5,6 +5,15 @@
  */
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
+import {
+  CalendarClock,
+  MessageCircle,
+  Navigation,
+  Phone,
+  RotateCcw,
+  Star,
+  XCircle,
+} from 'lucide-react';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
   CANCEL_ABUSE_BLOCK_DAYS,
@@ -24,6 +33,7 @@ import {
   Avatar,
   BottomSheet,
   Button,
+  I,
   InfoBox,
   Input,
   LinkButton,
@@ -90,7 +100,9 @@ export function BookingDetail() {
             <span className="text-muted">{formatTimeDZ(b.startsAt)} · annulé</span>
           </div>
         </div>
-        <LinkButton to={`/s/${b.salon.slug}/prestations`}>Réserver un autre créneau</LinkButton>
+        <LinkButton to={`/s/${b.salon.slug}/prestations`}>
+          <I icon={RotateCcw} size={18} /> Réserver un autre créneau
+        </LinkButton>
         <LinkButton to="/rendez-vous" variant="g">
           Retour à mes rendez-vous
         </LinkButton>
@@ -118,7 +130,7 @@ export function BookingDetail() {
       <div className="g2">
         {b.salon.phone && (
           <a href={`tel:${b.salon.phone}`} className="btn g !py-[1.125rem] !text-[1.125rem]">
-            Appeler
+            <I icon={Phone} size={20} /> Appeler
           </a>
         )}
         {wa && (
@@ -128,7 +140,7 @@ export function BookingDetail() {
             rel="noreferrer"
             className="btn g !py-[1.125rem] !text-[1.125rem]"
           >
-            WhatsApp
+            <I icon={MessageCircle} size={20} /> WhatsApp
           </a>
         )}
       </div>
@@ -186,22 +198,22 @@ export function BookingDetail() {
       <div className="flex flex-col gap-2.5">
         {active && (
           <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">
-            Itinéraire
+            <I icon={Navigation} size={18} /> Itinéraire
           </a>
         )}
         {canReschedule && (
           <div className="g2">
             <Link to={`/rendez-vous/${b.id}/reporter`} className="btn g">
-              Reporter
+              <I icon={CalendarClock} size={18} /> Reporter
             </Link>
             <Button variant="d" onClick={() => setCancelling(true)}>
-              Annuler
+              <I icon={XCircle} size={18} /> Annuler
             </Button>
           </div>
         )}
         {canModify && !canReschedule && (
           <Button variant="d" onClick={() => setCancelling(true)}>
-            Annuler
+            <I icon={XCircle} size={18} /> Annuler
           </Button>
         )}
         {active && !canModify && (
@@ -215,7 +227,9 @@ export function BookingDetail() {
           </p>
         )}
         {b.status === 'completed' && b.reviewRating == null && (
-          <LinkButton to={`/rendez-vous/${b.id}/noter`}>Noter la prestation</LinkButton>
+          <LinkButton to={`/rendez-vous/${b.id}/noter`}>
+            <I icon={Star} size={18} /> Noter la prestation
+          </LinkButton>
         )}
         {b.status === 'completed' && b.reviewRating != null && (
           <InfoBox>

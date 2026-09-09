@@ -6,6 +6,15 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  CalendarClock,
+  MessageCircle,
+  Navigation,
+  Phone,
+  RotateCcw,
+  Star,
+  XCircle,
+} from 'lucide-react-native';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
   CANCEL_ABUSE_BLOCK_DAYS,
@@ -29,6 +38,7 @@ import {
   ErrorText,
   Grid,
   H1,
+  I,
   InfoBox,
   Input,
   ModalSheet,
@@ -125,7 +135,10 @@ export default function BookingDetail() {
           </Rows>
         </Card>
         <Button onPress={() => router.replace(`/s/${b.salon.slug}/prestations` as never)}>
-          Réserver un autre créneau
+          <I icon={RotateCcw} size={15} color={C.onInk} />
+          <Tx size={12} weight={600} lh={16} color={C.onInk}>
+            Réserver un autre créneau
+          </Tx>
         </Button>
         <Button variant="g" onPress={() => router.replace('/(client)/(tabs)/rendez-vous')}>
           Retour à mes rendez-vous
@@ -163,6 +176,7 @@ export default function BookingDetail() {
               style={{ paddingVertical: 15 }}
               onPress={() => void open(`tel:${b.salon.phone}`)}
             >
+              <I icon={Phone} size={16} />
               <Tx size={11.5} weight={600} ls={-0.2}>
                 Appeler
               </Tx>
@@ -170,6 +184,7 @@ export default function BookingDetail() {
           )}
           {!!wa && (
             <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(wa)}>
+              <I icon={MessageCircle} size={16} />
               <Tx size={11.5} weight={600} ls={-0.2}>
                 WhatsApp
               </Tx>
@@ -272,22 +287,34 @@ export default function BookingDetail() {
       <View style={{ gap: 8 }}>
         {active && (
           <Button variant="g" onPress={() => void open(directionsUrl(b))}>
-            Itinéraire
+            <I icon={Navigation} size={15} />
+            <Tx size={12} weight={600} lh={16}>
+              Itinéraire
+            </Tx>
           </Button>
         )}
         {canReschedule && (
           <Grid cols={2}>
             <Button variant="g" onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
-              Reporter
+              <I icon={CalendarClock} size={15} />
+              <Tx size={12} weight={600} lh={16}>
+                Reporter
+              </Tx>
             </Button>
             <Button variant="d" onPress={() => setCancelling(true)}>
-              Annuler
+              <I icon={XCircle} size={15} color={C.danger} />
+              <Tx size={12} weight={600} lh={16} color={C.danger}>
+                Annuler
+              </Tx>
             </Button>
           </Grid>
         )}
         {canModify && !canReschedule && (
           <Button variant="d" onPress={() => setCancelling(true)}>
-            Annuler
+            <I icon={XCircle} size={15} color={C.danger} />
+            <Tx size={12} weight={600} lh={16} color={C.danger}>
+              Annuler
+            </Tx>
           </Button>
         )}
         {active && !canModify && (
@@ -302,7 +329,10 @@ export default function BookingDetail() {
         )}
         {b.status === 'completed' && b.reviewRating == null && (
           <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
-            Noter la prestation
+            <I icon={Star} size={15} color={C.onInk} />
+            <Tx size={12} weight={600} lh={16} color={C.onInk}>
+              Noter la prestation
+            </Tx>
           </Button>
         )}
         {b.status === 'completed' && b.reviewRating != null && (

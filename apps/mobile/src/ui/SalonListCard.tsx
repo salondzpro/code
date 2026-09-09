@@ -1,21 +1,22 @@
 /**
- * Carte salon de la marketplace (design C-H 01 / C-F 01, présentation « à la Planity ») : grande version avec
- * couverture, version compacte avec vignette. Prestations phares, « ★ 4,9 (383 avis) », puis la grille
- * MATIN / APRÈS-MIDI / SOIR × 3 jours : une puce active ouvre la réservation au premier créneau libre du moment.
+ * Carte salon de la marketplace (design C-H 01 / C-F 01) : grande version avec couverture, version compacte
+ * avec vignette. Nom, « ★ 4,9 (383 avis) · quartier », prestations phares, puis « Prochaines disponibilités » :
+ * les 5 premiers créneaux libres du premier jour disponible, chacun ouvre la réservation avec la date et l'heure
+ * déjà choisies (il ne reste que les prestations). « Voir plus » ouvre la fiche du salon.
  */
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
-import type { PeriodDay, SalonSummary } from '@salondz/types';
+import type { SalonSummary } from '@salondz/types';
 import {
+  addDaysToKey,
   categoryLabel,
   dayChipLabelDZ,
   formatDA,
-  planPeriodDays,
-  relativeDayLabelDZ,
+  toLocalDateKey,
 } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/format';
 import { C, R } from '@/theme/design';
-import { Img, S, T3, Tx } from './index';
+import { Img, S, Tx } from './index';
 
 export function RatingPill({
   avg,
@@ -79,107 +80,6 @@ export function RatingLine({ avg, count }: { avg: number; count: number }) {
   );
 }
 
-const PERIODS: { key: 'matin' | 'apresMidi'; label: string }[] = [
-  { key: 'matin', label: 'Matin' },
-  { key: 'apresMidi', label: 'Après-midi' },
-];
-
-/**
- * Grille « Matin / Après-midi » × 3 jours ouverts (Planity, simplifié) : puce active = premier créneau libre du
- * moment, puce grisée = rien de libre. Aujourd'hui plein, fermé ou terminé → statut au-dessus et la grille
- * commence au prochain jour ouvert (`planPeriodDays`). Rien sur 7 jours → prochaine disponibilité (`NextSlots`).
- */
-export function PeriodGrid({
-  salon,
-}: {
-  salon: Pick<SalonSummary, 'slug' | 'nextAvailable' | 'periods'>;
-}) {
-  const router = useRouter();
-  const { status, days } = planPeriodDays<PeriodDay>(salon.periods ?? []);
-  const any = days.some((d) => d.matin || d.apresMidi);
-  const statusEl = status ? (
-    <View
-      style={{
-        alignSelf: 'flex-start',
-        backgroundColor: C.fill,
-        borderRadius: R.pill,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-      }}
-      accessibilityRole="text"
-    >
-      <Tx size={10} weight={600} color={C.muted} lh={13}>
-        {status}
-      </Tx>
-    </View>
-  ) : null;
-  if (!any)
-    return (
-      <View style={{ gap: 6 }}>
-        {statusEl}
-        <NextSlots salon={salon} empty="Aucune disponibilité cette semaine" />
-      </View>
-    );
-  return (
-    <View style={{ gap: 6 }} accessibilityLabel="Disponibilités par moment de la journée">
-      {statusEl}
-      {PERIODS.map((p) => (
-        <View key={p.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Tx size={9.5} weight={700} ls={0.7} lh={13} style={{ width: 74 }}>
-            {p.label.toUpperCase()}
-          </Tx>
-          {days.map((d) => {
-            const t = d[p.key];
-            const label = dayChipLabelDZ(d.date);
-            return t ? (
-              <Pressable
-                key={d.date}
-                accessibilityRole="button"
-                accessibilityLabel={`Réserver ${label} ${p.label.toLowerCase()} à ${t}`}
-                onPress={() =>
-                  router.push({
-                    pathname: `/s/${salon.slug}/prestations`,
-                    params: { date: d.date, time: t },
-                  } as never)
-                }
-                style={({ pressed }) => ({
-                  flex: 1,
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: C.ink,
-                  borderRadius: R.pill,
-                  paddingVertical: 8,
-                  backgroundColor: pressed ? C.fill : C.surface,
-                })}
-              >
-                <Tx size={10.5} weight={600} lh={14}>
-                  {label}
-                </Tx>
-              </Pressable>
-            ) : (
-              <View
-                key={d.date}
-                accessibilityLabel={`${label} ${p.label.toLowerCase()} : complet`}
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  borderRadius: R.pill,
-                  paddingVertical: 8,
-                  backgroundColor: C.fill,
-                }}
-              >
-                <Tx size={10.5} color={C.subtle} lh={14}>
-                  {label}
-                </Tx>
-              </View>
-            );
-          })}
-        </View>
-      ))}
-    </View>
-  );
-}
-
 export function SlotPills({
   slots,
   empty = "Complet aujourd'hui",
@@ -209,9 +109,17 @@ export function SlotPills({
   );
 }
 
+/** Libellé du jour des prochaines disponibilités : « Aujourd'hui », « Demain · Ven. 11 », « Prochain créneau · Sam. 12 ». */
+export function nextDayLabel(date: string, today: string = toLocalDateKey()): string {
+  if (date === today) return "Aujourd'hui";
+  if (date === addDaysToKey(today, 1)) return `Demain · ${dayChipLabelDZ(date)}`;
+  return `Prochain créneau · ${dayChipLabelDZ(date)}`;
+}
+
 /**
- * Prochaine disponibilité directement sur la carte : « Aujourd'hui » / « Demain » / « Jeu. 12 sept. » + heures.
- * Chaque heure ouvre la réservation avec la date et l'heure déjà choisies (il ne reste que les prestations à cocher).
+ * « Prochaines disponibilités » directement sur la carte : les créneaux réellement libres les plus proches
+ * (calcul SQL côté API, revalidé à la réservation). Chaque heure ouvre la réservation avec la date et l'heure
+ * déjà choisies. « Voir plus » = fiche salon.
  */
 export function NextSlots({
   salon,
@@ -222,12 +130,47 @@ export function NextSlots({
 }) {
   const router = useRouter();
   const next = salon.nextAvailable;
-  if (!next || next.slots.length === 0) return <S>{empty}</S>;
-  const label = relativeDayLabelDZ(next.date);
+  if (!next || next.slots.length === 0) {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <S>{empty}</S>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push(`/s/${salon.slug}` as never)}
+        >
+          <Tx size={10.5} weight={600} color={C.muted} lh={14}>
+            Voir le salon →
+          </Tx>
+        </Pressable>
+      </View>
+    );
+  }
+  const label = nextDayLabel(next.date);
   return (
     <View style={{ gap: 6 }} accessibilityLabel={`Prochaines disponibilités ${label}`}>
-      <T3 weight={500}>{label}</T3>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <Tx size={9.5} weight={700} ls={0.7} color={C.muted} lh={13}>
+          PROCHAINES DISPONIBILITÉS
+        </Tx>
+        <Tx size={10.5} weight={600} lh={14}>
+          {label}
+        </Tx>
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
         {next.slots.map((t) => (
           <Pressable
             key={t}
@@ -240,17 +183,29 @@ export function NextSlots({
               } as never)
             }
             style={({ pressed }) => ({
-              backgroundColor: pressed ? C.line : C.fill,
+              borderWidth: 1,
+              borderColor: C.ink,
               borderRadius: R.pill,
-              paddingHorizontal: 13,
+              paddingHorizontal: 12,
               paddingVertical: 8,
+              backgroundColor: pressed ? C.fill : C.surface,
             })}
           >
-            <Tx size={10.5} weight={500} lh={14} mono>
+            <Tx size={12} weight={600} lh={15} mono>
               {t}
             </Tx>
           </Pressable>
         ))}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Voir plus de créneaux"
+          onPress={() => router.push(`/s/${salon.slug}` as never)}
+          style={{ paddingHorizontal: 4, paddingVertical: 8 }}
+        >
+          <Tx size={10.5} weight={600} color={C.muted} lh={14}>
+            Voir plus →
+          </Tx>
+        </Pressable>
       </View>
     </View>
   );
@@ -310,7 +265,7 @@ export function SalonListCard({
             </Tx>
           )}
           <View style={{ marginTop: 8 }}>
-            <PeriodGrid salon={s} />
+            <NextSlots salon={s} />
           </View>
         </View>
       </Pressable>
@@ -343,7 +298,7 @@ export function SalonListCard({
           )}
         </View>
       </View>
-      <PeriodGrid salon={s} />
+      <NextSlots salon={s} />
     </Pressable>
   );
 }
