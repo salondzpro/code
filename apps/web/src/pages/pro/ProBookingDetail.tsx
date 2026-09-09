@@ -5,7 +5,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useProBooking, useProBookingMutations, useProBookings, useProSalon } from '@salondz/api-client';
-import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, localDateTimeToISO, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, Input, StatusBadge, TopBar } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
@@ -32,12 +32,13 @@ export function ProBookingDetail() {
   if (!b) return null;
   const active = b.status === 'pending' || b.status === 'confirmed';
   const past = new Date(b.startsAt).getTime() < Date.now();
+  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
   const wa = b.clientPhone ? `https://wa.me/${b.clientPhone.replace(/\D/g, '')}` : null;
   const initials = b.clientName.split(' ').map((p, i) => (i === 0 ? p : `${p.charAt(0)}.`)).join(' ');
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo="/pro/agenda" right={<StatusBadge status={b.status} md />} />
+      <TopBar backTo="/pro/agenda" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} viewer="pro" />} />
       <div className="flex items-center gap-4">
         <Avatar name={b.clientName} size={128} />
         <div className="min-w-0">
@@ -58,31 +59,33 @@ export function ProBookingDetail() {
           )}
         </div>
       )}
+      {/* L'essentiel en grand : quand, à quelle heure, combien — ce que le pro regarde dix fois par jour. */}
+      <div className="crd !gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[0.9375rem] font-semibold">{relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}</span>
+          <span className="text-[0.875rem] text-muted">{formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
+        </div>
+        <div className="flex items-end justify-between gap-3">
+          <span className="mono text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
+            {formatTimeDZ(b.startsAt)} <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
+          </span>
+          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">{formatDA(b.priceDa)}</span>
+        </div>
+        <span className="text-[0.8125rem] text-muted">{formatDuration(b.durationMinutes)} au total</span>
+      </div>
       <div className="crd !gap-0">
-        {(b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName }]).map((it) => (
-          <div key={it.id} className="li !py-4 text-[0.875rem]">
-            <span className="text-muted">Prestation</span>
-            <span className="font-semibold">{it.serviceName}</span>
+        <div className="li !py-3">
+          <span className="text-[0.9375rem] font-semibold">
+            {lines.length} prestation{lines.length > 1 ? 's' : ''}
+          </span>
+          <span className="text-[0.875rem] text-muted">{formatDA(b.priceDa)}</span>
+        </div>
+        {lines.map((it) => (
+          <div key={it.id} className="li !py-3 text-[0.9375rem]">
+            <span>{it.serviceName}</span>
+            <span className="text-muted">{'durationMinutes' in it && it.durationMinutes ? `${formatDuration(it.durationMinutes)}${'priceDa' in it && it.priceDa != null ? ` · ${formatDA(it.priceDa)}` : ''}` : ''}</span>
           </div>
         ))}
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Date</span>
-          <span className="font-semibold">{formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Heure</span>
-          <span className="mono font-semibold">
-            {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
-          </span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Durée</span>
-          <span className="font-semibold">{formatDuration(b.durationMinutes)}</span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Prix</span>
-          <span className="font-semibold">{formatDA(b.priceDa)}</span>
-        </div>
       </div>
       {b.notes && (
         <div className="sf">

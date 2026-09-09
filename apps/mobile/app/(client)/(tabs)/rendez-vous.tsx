@@ -18,9 +18,9 @@ export default function Bookings() {
   const router = useRouter();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ scope?: string }>();
-  const [scope, setScope] = useState<'upcoming' | 'past'>(params.scope === 'past' ? 'past' : 'upcoming');
+  const [scope, setScope] = useState<'upcoming' | 'past' | 'cancelled'>(params.scope === 'past' ? 'past' : params.scope === 'cancelled' ? 'cancelled' : 'upcoming');
   useEffect(() => {
-    if (params.scope === 'past' || params.scope === 'upcoming') setScope(params.scope);
+    if (params.scope === 'past' || params.scope === 'upcoming' || params.scope === 'cancelled') setScope(params.scope);
   }, [params.scope]);
   const list = useMyBookings({ scope });
   useRealtimeMyBookings(user?.id);
@@ -29,7 +29,7 @@ export default function Bookings() {
   return (
     <Screen gap={13} bottom={NAV_PAD} refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
       <H1 size={23} lh={26} ls={-0.8}>
-        {scope === 'past' ? 'Mes rendez-vous' : 'Rendez-vous'}
+        {scope === 'upcoming' ? 'Rendez-vous' : 'Mes rendez-vous'}
       </H1>
       <Segmented
         label="Période"
@@ -38,6 +38,7 @@ export default function Bookings() {
         options={[
           { value: 'upcoming', label: 'À venir' },
           { value: 'past', label: 'Passés' },
+          { value: 'cancelled', label: 'Annulés' },
         ]}
       />
       {list.isPending ? (
@@ -50,7 +51,7 @@ export default function Bookings() {
       ) : items.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 46 }}>
           <Tx size={14.5} weight={700} lh={18.5} center>
-            {scope === 'upcoming' ? 'Aucun rendez-vous à venir' : 'Aucun rendez-vous passé'}
+            {scope === 'upcoming' ? 'Aucun rendez-vous à venir' : scope === 'cancelled' ? 'Aucun rendez-vous annulé' : 'Aucun rendez-vous passé'}
           </Tx>
           <P center>Réservez en quelques secondes dans le salon de votre choix.</P>
           <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 6 }}>
@@ -67,7 +68,7 @@ export default function Bookings() {
                   <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted} style={{ flex: 1 }}>
                     {capitalize(formatDateShortDZ(b.startsAt))} · {formatTimeDZ(b.startsAt)}
                   </Tx>
-                  <StatusBadge status={b.status} md />
+                  <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Img src={b.salon.coverUrl} radius={13} style={{ width: 84, height: 84, opacity: active ? 1 : 0.6 }} />
@@ -76,7 +77,7 @@ export default function Bookings() {
                       {b.serviceName}
                     </Tx>
                     <Tx size={10.5} color={C.muted} lh={15.5}>
-                      {b.status === 'cancelled' ? `Annulé${b.cancelledBy === 'salon' ? ' par le salon' : ''}` : `${b.salon.name} · ${formatDA(b.priceDa)}`}
+                      {b.salon.name} · {formatDA(b.priceDa)}
                     </Tx>
                   </View>
                 </View>
@@ -110,11 +111,16 @@ export default function Bookings() {
                   {b.salon.name}
                 </Tx>
                 <Tx size={10.5} color={C.muted} lh={15.5}>
-                  {dayMonth(b.startsAt)} · {b.serviceName}
+                  {dayMonth(b.startsAt)} · {formatTimeDZ(b.startsAt)} · {b.serviceName}
                   {b.status !== 'cancelled' ? ` · ${formatDA(b.priceDa)}` : ''}
                 </Tx>
+                {b.status === 'cancelled' && !!b.cancellationReason && (
+                  <Tx size={10.5} color={C.danger} lh={15.5}>
+                    Motif : {b.cancellationReason}
+                  </Tx>
+                )}
               </View>
-              <StatusBadge status={b.status} md />
+              <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />
             </Pressable>
             {b.status === 'completed' && (
               <View style={{ flexDirection: 'row', gap: 8 }}>

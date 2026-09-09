@@ -2,8 +2,8 @@
  * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
  * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
  */
-import React, { useMemo, useState } from 'react';
-import { Pressable, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react-native';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
@@ -51,7 +51,11 @@ export default function AgendaPro() {
 
   const toneOf = (b: BookingWithStaff) => categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
   const [staffId, setStaffId] = useStaffFilter();
-  const { width: winWidth } = useWindowDimensions();
+  const { width: winWidth, height: winHeight } = useWindowDimensions();
+  const scrollRef = useRef<ScrollView>(null);
+  const carouselY = useRef(0);
+  const timelineY = useRef(0);
+  const scrolledToNow = useRef<string | null>(null);
   const items = useMemo(() => (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && (!staffId || b.staffId === staffId)), [bookings.data, staffId]);
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
@@ -110,6 +114,7 @@ export default function AgendaPro() {
 
   return (
     <Screen
+      scrollRef={scrollRef}
       gap={13}
       bottom={NAV_PAD + 60}
       footer={
@@ -136,6 +141,7 @@ export default function AgendaPro() {
       {view === 'day' && (
         <>
           <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} />
+          <View onLayout={(e) => (carouselY.current = e.nativeEvent.layout.y)}>
           <DayCarousel
             date={date}
             onChange={setDate}
@@ -162,11 +168,32 @@ export default function AgendaPro() {
                       </Badge>
                     )}
                   </View>
-                  <DayTimeline date={d} items={items} blocks={dayBlk} hours={dayHours(d)} toneOf={toneOf} onOpen={openBooking} onFree={(t) => router.push({ pathname: '/pro-rdv/nouveau', params: { date: d, time: t, ...(staffId ? { staff: staffId } : {}) } } as never)} />
+                  <View
+                    onLayout={(e) => {
+                      if (d === today) timelineY.current = e.nativeEvent.layout.y;
+                    }}
+                  >
+                    <DayTimeline
+                      date={d}
+                      items={items}
+                      blocks={dayBlk}
+                      hours={dayHours(d)}
+                      toneOf={toneOf}
+                      onOpen={openBooking}
+                      onFree={(t) => router.push({ pathname: '/pro-rdv/nouveau', params: { date: d, time: t, ...(staffId ? { staff: staffId } : {}) } } as never)}
+                      onNowLayout={(y) => {
+                        // Aujourd'hui : l'heure actuelle est amenée au centre de l'écran (suivi de la journée en direct).
+                        if (d !== today || scrolledToNow.current === date) return;
+                        scrolledToNow.current = date;
+                        setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(0, carouselY.current + timelineY.current + y - winHeight / 2), animated: true }), 150);
+                      }}
+                    />
+                  </View>
                 </View>
               );
             }}
           />
+          </View>
         </>
       )}
 
@@ -233,7 +260,7 @@ function isoWeek(key: string): number {
 }
 
 /** Vue jour : ligne de temps de l'ouverture à la fermeture (92 px par heure, design). */
-function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void; onFree: (timeHM: string) => void }) {
+function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree, onNowLayout }: { date: string; items: BookingWithStaff[]; blocks: { startsAt: string; endsAt: string; reason: string | null }[]; hours: { opensAt: string; closesAt: string }[]; toneOf: (b: BookingWithStaff) => string; onOpen: (id: string) => void; onFree: (timeHM: string) => void; onNowLayout?: (y: number) => void }) {
   if (hours.length === 0 && items.length === 0)
     return (
       <View style={{ paddingVertical: 20 }}>
@@ -314,7 +341,7 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
         );
       })}
       {isToday && now >= startMin && now <= endMin && (
-        <View pointerEvents="none" style={{ position: 'absolute', left: 37, right: 0, top: top(now), borderTopWidth: 1.5, borderTopColor: C.danger }}>
+        <View pointerEvents="none" onLayout={(e) => onNowLayout?.(e.nativeEvent.layout.y)} style={{ position: 'absolute', left: 37, right: 0, top: top(now), borderTopWidth: 1.5, borderTopColor: C.danger }}>
           <View style={{ position: 'absolute', left: -3, top: -4, width: 6, height: 6, borderRadius: 3, backgroundColor: C.danger }} />
         </View>
       )}

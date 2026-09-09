@@ -76,7 +76,7 @@ export default function BookingDetail() {
 
   return (
     <Screen gap={13}>
-      <TopBar backTo="/(client)/(tabs)/rendez-vous" right={<StatusBadge status={b.status} md />} />
+      <TopBar backTo="/(client)/(tabs)/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>

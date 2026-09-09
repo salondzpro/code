@@ -1,8 +1,9 @@
 /** C-F 23 — Réglages client : notifications, préférences (langue, catalogue, ville), compte (session, confidentialité, données, déconnexion). */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { PickerField } from '@/components/Picker';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
-import { MARKET_LABELS_FR, wilayaName } from '@salondz/constants';
+import { MARKET_LABELS_FR } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
 import { Badge, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
@@ -17,10 +18,8 @@ export function Settings() {
   const { session, signOut } = useAuth();
   const me = useMe();
   const update = useUpdateProfile();
-  const [prefs] = useLocationPrefs();
+  const [prefs, setPrefs] = useLocationPrefs();
   const [reminders, setReminders] = useState(true);
-  const [confirmations, setConfirmations] = useState(true);
-  const [news, setNews] = useState(false);
   const p = me.data?.profile;
 
   useEffect(() => {
@@ -53,30 +52,58 @@ export function Settings() {
             <span className="block text-[0.9375rem]">Confirmations</span>
             <span className="p block text-[0.8125rem]">Réservation, report, annulation</span>
           </span>
-          <Toggle on={confirmations} onChange={setConfirmations} label="Confirmations" />
+          <Toggle on={prefs.notifConfirmations} onChange={(v) => setPrefs({ notifConfirmations: v })} label="Confirmations" />
         </div>
         <div className="li !py-4">
           <span>
             <span className="block text-[0.9375rem]">Nouveautés des salons suivis</span>
             <span className="p block text-[0.8125rem]">Maximum une fois par semaine</span>
           </span>
-          <Toggle on={news} onChange={setNews} label="Nouveautés" />
+          <Toggle on={prefs.notifNews} onChange={(v) => setPrefs({ notifNews: v })} label="Nouveautés" />
         </div>
       </div>
 
       <SectionLabel>Préférences</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
-          <span className="text-[0.9375rem]">Langue</span>
-          <span className="text-[0.9375rem] text-muted">Français</span>
+          <span>
+            <span className="block text-[0.9375rem]">Langue</span>
+            <span className="p block text-[0.8125rem]">L'interface en arabe arrive bientôt</span>
+          </span>
+          <PickerField
+            inline
+            label="Langue"
+            value={p?.locale ?? 'fr'}
+            onChange={(v) => update.mutate({ locale: v })}
+            options={[
+              { value: 'fr', label: 'Français' },
+              { value: 'ar', label: 'العربية', hint: 'Bientôt disponible · votre choix est mémorisé' },
+            ]}
+          />
         </div>
-        <Link to="/marche?next=/reglages" className="li !py-4">
-          <span className="text-[0.9375rem]">Catalogue affiché</span>
-          <span className="text-[0.9375rem] text-muted">{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</span>
-        </Link>
+        <div className="li !py-4">
+          <span>
+            <span className="block text-[0.9375rem]">Catalogue affiché</span>
+            <span className="p block text-[0.8125rem]">Marketplace et recherche</span>
+          </span>
+          <PickerField
+            inline
+            label="Catalogue affiché"
+            value={p?.market ?? ''}
+            placeholder="—"
+            onChange={(v) => v && update.mutate({ market: v as 'men' | 'women' })}
+            options={[
+              { value: 'men', label: MARKET_LABELS_FR.men.replace('Pour ', ''), hint: 'Barbiers, coiffure homme' },
+              { value: 'women', label: MARKET_LABELS_FR.women.replace('Pour ', ''), hint: 'Coiffure, ongles, cils, soins' },
+            ]}
+          />
+        </div>
         <Link to="/localisation" className="li !py-4">
-          <span className="text-[0.9375rem]">Ville</span>
-          <span className="text-[0.9375rem] text-muted">{prefs.city ?? wilayaName(prefs.wilaya)}</span>
+          <span>
+            <span className="block text-[0.9375rem]">Ville</span>
+            <span className="p block text-[0.8125rem]">{prefs.lat != null ? `Autour de vous · ${prefs.radiusKm} km` : prefs.city ? 'Quartier choisi' : 'Toute la wilaya'}</span>
+          </span>
+          <span className="text-[0.9375rem] text-muted">{prefs.label}</span>
         </Link>
       </div>
 

@@ -2,7 +2,7 @@
  * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
  * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
@@ -186,6 +186,13 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
   for (let m = Math.floor(startMin / 60) * 60; m <= endMin; m += 60) hourMarks.push(m);
   const isToday = date === toLocalDateKey();
   const now = nowMinutes();
+  // Aujourd'hui : on amène l'heure actuelle au centre de l'écran à l'ouverture (suivi de la journée en direct).
+  const nowRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!isToday) return;
+    const t = window.setTimeout(() => nowRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
+    return () => window.clearTimeout(t);
+  }, [isToday, date]);
   // Trous « Libre » entre deux rendez-vous
   const sorted = [...items].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const gaps: { s: number; e: number }[] = [];
@@ -251,7 +258,7 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
         );
       })}
       {isToday && now >= startMin && now <= endMin && (
-        <div className="pointer-events-none absolute left-[2.875rem] right-0 border-t-[1.5px] border-danger" style={{ top: top(now) }}>
+        <div ref={nowRef} className="pointer-events-none absolute left-[2.875rem] right-0 border-t-[1.5px] border-danger" style={{ top: top(now) }}>
           <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
         </div>
       )}

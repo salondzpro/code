@@ -62,7 +62,7 @@ export function BookingDetail() {
 
   return (
     <Screen className="min-h-dvh" gap={16}>
-      <TopBar backTo="/rendez-vous" right={<StatusBadge status={b.status} md />} />
+      <TopBar backTo="/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} />} />
       <div className="flex items-center gap-4">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
         <div className="min-w-0">

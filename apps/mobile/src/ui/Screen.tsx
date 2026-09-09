@@ -1,3 +1,4 @@
+import type React from 'react';
 /**
  * Cadre d'écran (design .ph / .bd) : fond écran, marge 20 px, espacement 16 px,
  * feuille basse fixe optionnelle (footer) avec l'espace réservé correspondant.
@@ -23,6 +24,7 @@ export function Screen({
   center,
   onTouchStart,
   onTouchEnd,
+  scrollRef,
 }: {
   children: ReactNode;
   footer?: ReactNode;
@@ -40,6 +42,7 @@ export function Screen({
   center?: boolean;
   onTouchStart?: (e: GestureResponderEvent) => void;
   onTouchEnd?: (e: GestureResponderEvent) => void;
+  scrollRef?: React.Ref<ScrollView>;
 }) {
   const padBottom = bottom ?? (footer ? SHEET_PAD : 24);
   const content: ViewStyle = { paddingHorizontal: px, paddingTop: top, paddingBottom: padBottom, gap, flexGrow: 1, justifyContent: center ? 'center' : undefined };
@@ -47,7 +50,7 @@ export function Screen({
     <SafeAreaView edges={edges} style={[{ flex: 1, backgroundColor: bg }, style]} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         {scroll ? (
-          <ScrollView contentContainerStyle={content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={C.ink} /> : undefined}>
+          <ScrollView ref={scrollRef} contentContainerStyle={content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={C.ink} /> : undefined}>
             {children}
           </ScrollView>
         ) : (

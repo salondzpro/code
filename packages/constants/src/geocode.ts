@@ -28,6 +28,29 @@ export async function reverseGeocode(lat: number, lng: number, signal?: AbortSig
   }
 }
 
+/**
+ * Points superposés (même adresse, ou coordonnées identiques) : on les écarte en éventail d'environ 35 m
+ * pour que chaque bulle reste visible et touchable sur la carte. Les coordonnées d'origine ne sont pas modifiées.
+ */
+export function spreadOverlaps<T extends { lat: number; lng: number }>(points: T[]): (T & { drawLat: number; drawLng: number })[] {
+  const groups = new Map<string, number[]>();
+  points.forEach((p, i) => {
+    const key = `${p.lat.toFixed(4)},${p.lng.toFixed(4)}`;
+    groups.set(key, [...(groups.get(key) ?? []), i]);
+  });
+  const out = points.map((p) => ({ ...p, drawLat: p.lat, drawLng: p.lng }));
+  for (const idx of groups.values()) {
+    if (idx.length < 2) continue;
+    const r = 0.00032; // ≈ 35 m
+    idx.forEach((i, k) => {
+      const a = (2 * Math.PI * k) / idx.length - Math.PI / 2;
+      out[i]!.drawLat = points[i]!.lat + r * Math.sin(a);
+      out[i]!.drawLng = points[i]!.lng + (r * Math.cos(a)) / Math.cos((points[i]!.lat * Math.PI) / 180);
+    });
+  }
+  return out;
+}
+
 /** Emprise de l'Algérie (lng min, lat min, lng max, lat max). */
 const DZ_BBOX = '-8.7,18.9,12.0,37.2';
 

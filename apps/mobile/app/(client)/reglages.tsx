@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { Linking, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
-import { MARKET_LABELS_FR, wilayaName } from '@salondz/constants';
+import { MARKET_LABELS_FR } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/prefs';
 import { Badge, H1, ListCard, P, Row, SectionLabel, Toggle, TopBar, Tx } from '@/ui';
+import { PickerSheet } from '@/ui/Pickers';
 import { Screen } from '@/ui/Screen';
 import { C, NAV_PAD } from '@/theme/design';
 
@@ -19,10 +20,9 @@ export default function Settings() {
   const { session, signOut } = useAuth();
   const me = useMe();
   const update = useUpdateProfile();
-  const [prefs] = useLocationPrefs();
+  const [prefs, setPrefs] = useLocationPrefs();
   const [reminders, setReminders] = useState(true);
-  const [confirmations, setConfirmations] = useState(true);
-  const [news, setNews] = useState(false);
+  const [sheet, setSheet] = useState<'locale' | 'market' | null>(null);
   const p = me.data?.profile;
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function Settings() {
             2 h avant le rendez-vous
           </Tx>
         </Row>
-        <Row py={13} chevron={false} right={<Toggle on={confirmations} onChange={setConfirmations} label="Confirmations" />}>
+        <Row py={13} chevron={false} right={<Toggle on={prefs.notifConfirmations} onChange={(v) => setPrefs({ notifConfirmations: v })} label="Confirmations" />}>
           <Tx size={12} lh={16}>
             Confirmations
           </Tx>
@@ -65,7 +65,7 @@ export default function Settings() {
             Réservation, report, annulation
           </Tx>
         </Row>
-        <Row py={13} chevron={false} right={<Toggle on={news} onChange={setNews} label="Nouveautés" />}>
+        <Row py={13} chevron={false} right={<Toggle on={prefs.notifNews} onChange={(v) => setPrefs({ notifNews: v })} label="Nouveautés" />}>
           <Tx size={12} lh={16}>
             Nouveautés des salons suivis
           </Tx>
@@ -77,22 +77,53 @@ export default function Settings() {
 
       <SectionLabel>Préférences</SectionLabel>
       <ListCard>
-        <Row py={13} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>Français</Tx>}>
+        <Row py={13} onPress={() => setSheet('locale')} accessibilityLabel="Langue" right={<Tx size={12} color={C.muted} lh={16}>{p?.locale === 'ar' ? 'العربية' : 'Français'}</Tx>}>
           <Tx size={12} lh={16}>
             Langue
           </Tx>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
+            L'interface en arabe arrive bientôt
+          </Tx>
         </Row>
-        <Row py={13} chevron={false} onPress={() => router.push({ pathname: '/marche', params: { next: '/reglages' } })} right={<Tx size={12} color={C.muted} lh={16}>{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</Tx>}>
+        <Row py={13} onPress={() => setSheet('market')} accessibilityLabel="Catalogue affiché" right={<Tx size={12} color={C.muted} lh={16}>{p?.market ? MARKET_LABELS_FR[p.market].replace('Pour ', '') : '—'}</Tx>}>
           <Tx size={12} lh={16}>
             Catalogue affiché
           </Tx>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
+            Marketplace et recherche
+          </Tx>
         </Row>
-        <Row py={13} chevron={false} to="/localisation" right={<Tx size={12} color={C.muted} lh={16}>{prefs.city ?? wilayaName(prefs.wilaya)}</Tx>}>
+        <Row py={13} to="/localisation" accessibilityLabel="Ville" right={<Tx size={12} color={C.muted} lh={16}>{prefs.label}</Tx>}>
           <Tx size={12} lh={16}>
             Ville
           </Tx>
+          <Tx size={10.5} color={C.muted} lh={15.5}>
+            {prefs.lat != null ? `Autour de vous · ${prefs.radiusKm} km` : prefs.city ? 'Quartier choisi' : 'Toute la wilaya'}
+          </Tx>
         </Row>
       </ListCard>
+      <PickerSheet
+        open={sheet === 'locale'}
+        onClose={() => setSheet(null)}
+        title="Langue"
+        options={[
+          { value: 'fr', label: 'Français' },
+          { value: 'ar', label: 'العربية', hint: 'Bientôt disponible · votre choix est mémorisé' },
+        ]}
+        value={p?.locale ?? 'fr'}
+        onChange={(v) => update.mutate({ locale: v as 'fr' | 'ar' })}
+      />
+      <PickerSheet
+        open={sheet === 'market'}
+        onClose={() => setSheet(null)}
+        title="Catalogue affiché"
+        options={[
+          { value: 'men', label: MARKET_LABELS_FR.men.replace('Pour ', ''), hint: 'Barbiers, coiffure homme' },
+          { value: 'women', label: MARKET_LABELS_FR.women.replace('Pour ', ''), hint: 'Coiffure, ongles, cils, soins' },
+        ]}
+        value={p?.market ?? ''}
+        onChange={(v) => update.mutate({ market: v as 'men' | 'women' })}
+      />
 
       <SectionLabel>Compte</SectionLabel>
       <ListCard>

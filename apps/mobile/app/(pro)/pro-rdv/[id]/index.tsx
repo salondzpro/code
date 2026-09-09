@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProBooking, useProBookingMutations, useProBookings, useProSalon } from '@salondz/api-client';
-import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, open } from '@/lib/salon';
 import { Avatar, BottomSheet, Button, Card, ErrorText, Grid, H1, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
@@ -43,7 +43,7 @@ export default function ProBookingDetail() {
     .split(' ')
     .map((p, i) => (i === 0 ? p : `${p.charAt(0)}.`))
     .join(' ');
-  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName }];
+  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
   const back = () => router.replace('/(pro)/(tabs)/agenda');
 
   return (
@@ -84,7 +84,7 @@ export default function ProBookingDetail() {
         </BottomSheet>
       }
     >
-      <TopBar backTo="/(pro)/(tabs)/agenda" right={<StatusBadge status={b.status} md />} />
+      <TopBar backTo="/(pro)/(tabs)/agenda" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} viewer="pro" />} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar name={b.clientName} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -119,35 +119,46 @@ export default function ProBookingDetail() {
           )}
         </Grid>
       )}
+      <Card gap={10}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <Tx size={12} weight={600} lh={16}>
+            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+          </Tx>
+          <Tx size={11} color={C.muted} lh={15}>
+            {capitalize(formatDateShortDZ(b.startsAt))}
+          </Tx>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+            <Tx size={23} weight={700} ls={-0.8} lh={26} mono>
+              {formatTimeDZ(b.startsAt)}
+            </Tx>
+            <Tx size={13} color={C.muted} lh={20} mono>
+              – {formatTimeDZ(b.endsAt)}
+            </Tx>
+          </View>
+          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+            {formatDA(b.priceDa)}
+          </Tx>
+        </View>
+        <Tx size={10.5} color={C.muted} lh={14}>
+          {formatDuration(b.durationMinutes)} au total
+        </Tx>
+      </Card>
       <Card gap={0}>
         <Rows>
+          <Row py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+            <Tx size={12} weight={600} lh={16}>
+              {lines.length} prestation{lines.length > 1 ? 's' : ''}
+            </Tx>
+          </Row>
           {lines.map((it) => (
-            <Row key={it.id} py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{it.serviceName}</Tx>}>
-              <Tx size={11.5} color={C.muted} lh={15.5}>
-                Prestation
+            <Row key={it.id} py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{'durationMinutes' in it && it.durationMinutes ? `${formatDuration(it.durationMinutes)}${'priceDa' in it && it.priceDa != null ? ` · ${formatDA(it.priceDa)}` : ''}` : ''}</Tx>}>
+              <Tx size={12} lh={16}>
+                {it.serviceName}
               </Tx>
             </Row>
           ))}
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{capitalize(formatDateShortDZ(b.startsAt))}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Date
-            </Tx>
-          </Row>
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5} mono>{formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Heure
-            </Tx>
-          </Row>
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDuration(b.durationMinutes)}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Durée
-            </Tx>
-          </Row>
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Prix
-            </Tx>
-          </Row>
         </Rows>
       </Card>
       {!!b.notes && (

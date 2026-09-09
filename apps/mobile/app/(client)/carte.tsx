@@ -6,13 +6,13 @@
  * le bouton de position utilise la géolocalisation, une bulle touchée sélectionne le salon (et inversement).
  */
 import React, { useMemo, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react-native';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, type CategoryId } from '@salondz/constants';
+import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import type { SalonSummary } from '@salondz/types';
 import { useLocationPrefs } from '@/lib/prefs';
 import { formatKm } from '@/lib/format';
@@ -52,22 +52,27 @@ export default function MapView() {
     ratingMin: prefs.ratingMin ?? undefined,
     limit: 50,
   });
-  const items = useMemo(() => ((query.data?.items ?? []) as Pin[]).filter((s) => s.lat != null && s.lng != null), [query.data]);
+  const items = useMemo(() => spreadOverlaps(((query.data?.items ?? []) as Pin[]).filter((s): s is Pin & { lat: number; lng: number } => s.lat != null && s.lng != null)), [query.data]);
+  const cardsRef = useRef<ScrollView>(null);
+  const { width: winWidth } = useWindowDimensions();
+  const cardW = Math.max(0, winWidth - 32);
   const current = items.find((s) => s.id === selected) ?? items[0] ?? null;
 
   const state = useMemo<MapState>(
     () => ({
-      pins: items.map((s) => ({ id: s.id, lat: s.lat!, lng: s.lng!, label: s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name, on: s.id === current?.id })),
+      pins: items.map((s) => ({ id: s.id, lat: s.drawLat, lng: s.drawLng, label: s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name, on: s.id === current?.id })),
       area,
       fit: !area && !pending,
     }),
     [items, current?.id, area, pending],
   );
 
-  const select = (id: string) => {
+  const select = (id: string, fromCards = false) => {
     setSelected(id);
-    const s = items.find((x) => x.id === id);
-    if (s) mapRef.current?.flyTo(s.lat!, s.lng!);
+    const idx = items.findIndex((x) => x.id === id);
+    const s = items[idx];
+    if (s) mapRef.current?.flyTo(s.drawLat, s.drawLng);
+    if (!fromCards && idx >= 0) cardsRef.current?.scrollTo({ x: idx * cardW, animated: true });
   };
 
   const searchHere = () => {
@@ -148,29 +153,46 @@ export default function MapView() {
       {/* Feuille : salon sélectionné */}
       <View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 13 + insets.bottom, gap: 11 }, SHADOW.sheet]}>
         <View style={{ width: 31, height: 4, borderRadius: 2, backgroundColor: C.line, alignSelf: 'center', marginBottom: 3 }} />
-        {current ? (
-          <Pressable accessibilityRole="link" accessibilityLabel={current.name} onPress={() => router.push(`/s/${current.slug}` as never)} style={{ backgroundColor: C.surface, borderWidth: 1, borderColor: C.ink, borderRadius: R.card, padding: 13, gap: 10 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
-              <Img src={current.logoUrl ?? current.coverUrl} radius={13} style={{ width: 78, height: 78 }} />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
-                  <Tx size={14} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
-                    {current.name}
-                  </Tx>
-                  {current.ratingCount > 0 && <RatingPill avg={current.ratingAvg} />}
-                </View>
-                <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
-                  {[current.zone ?? current.city, formatKm(current.distanceKm), current.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
-                </Tx>
-                <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
-                  {current.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}
-                </Tx>
-              </View>
-            </View>
-            <NextSlots salon={current} />
-          </Pressable>
-        ) : (
+        {items.length === 0 ? (
           <P center>{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone. Déplacez la carte puis « Rechercher dans cette zone ».'}</P>
+        ) : (
+          <ScrollView
+            ref={cardsRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ marginHorizontal: -16, width: winWidth }}
+            onMomentumScrollEnd={(e) => {
+              const s = items[Math.round(e.nativeEvent.contentOffset.x / winWidth)];
+              if (s && s.id !== current?.id) select(s.id, true);
+            }}
+            accessibilityLabel="Glisser pour voir les autres salons"
+          >
+            {items.map((s) => (
+              <View key={s.id} style={{ width: winWidth, paddingHorizontal: 16 }}>
+                <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ backgroundColor: C.surface, borderWidth: 1, borderColor: s.id === current?.id ? C.ink : C.line, borderRadius: R.card, padding: 13, gap: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
+                    <Img src={s.logoUrl ?? s.coverUrl} radius={13} style={{ width: 78, height: 78 }} />
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
+                        <Tx size={14} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
+                          {s.name}
+                        </Tx>
+                        {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
+                      </View>
+                      <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+                        {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
+                      </Tx>
+                      <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
+                        {s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}
+                      </Tx>
+                    </View>
+                  </View>
+                  <NextSlots salon={s} />
+                </Pressable>
+              </View>
+            ))}
+          </ScrollView>
         )}
         {items.length > 1 && (
           <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>

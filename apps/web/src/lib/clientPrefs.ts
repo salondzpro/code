@@ -29,6 +29,9 @@ export interface LocationPrefs {
   availableToday: boolean;
   ratingMin: number | null;
   openNow: boolean;
+  /** Notifications (réglages client) : confirmations de réservation, nouveautés des salons suivis. */
+  notifConfirmations: boolean;
+  notifNews: boolean;
 }
 
 /** Lieu choisi récemment (quartier, ville, wilaya ou adresse géocodée). */
@@ -42,7 +45,7 @@ export interface RecentPlace {
 
 const KEY = 'salondz:location';
 const RECENT_KEY = 'salondz:recentSearches';
-const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance', availableToday: false, ratingMin: null, openNow: false };
+const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance', availableToday: false, ratingMin: null, openNow: false, notifConfirmations: true, notifNews: false };
 const PLACES_KEY = 'salondz:recentPlaces';
 
 let cache: LocationPrefs | null = null;

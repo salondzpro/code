@@ -20,6 +20,7 @@ import { Badge, BottomSheet, Button, Card, Grid, H1, I, InfoBox, ListCard, P, Pi
 import { Screen } from '@/ui/Screen';
 import { PillRow } from '@/ui/Pills';
 import { GridBg } from '@/ui/GridBg';
+import { MapCanvas } from '@/ui/MapCanvas';
 import { C, R, SHADOW } from '@/theme/design';
 
 type GeoState = 'idle' | 'asking' | 'granted' | 'denied';
@@ -311,18 +312,25 @@ export default function Localisation() {
             {choice.kind === 'gps' && pos && <I icon={Check} size={18} />}
           </Card>
 
-          <View style={{ height: 130, borderRadius: R.card, borderWidth: 1, borderColor: C.line, backgroundColor: C.fill, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-            <GridBg step={90} />
-            <View style={{ position: 'absolute', width: 154, height: 98, borderRadius: 49, borderWidth: 1, borderStyle: 'dashed', borderColor: C.disabled, backgroundColor: 'rgba(255,255,255,0.5)' }} />
-            <View style={[{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }, SHADOW.fab]}>
-              <I icon={MapPin} size={18} color="#fff" />
+          {point ? (
+            <View style={{ height: 176, borderRadius: R.card, borderWidth: 1, borderColor: C.line, overflow: 'hidden' }}>
+              <MapCanvas state={{ pins: [], area: { lat: point.lat, lng: point.lng, radiusKm: radius }, fit: false }} onSelect={() => undefined} onMoveEnd={() => undefined} initialCenter={{ lat: point.lat, lng: point.lng }} zoomToArea style={{ flex: 1 }} />
+              <View style={[{ position: 'absolute', left: 13, bottom: 10, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 5 }, SHADOW.card]} pointerEvents="none">
+                <Tx size={10.5} weight={600} lh={14}>
+                  Rayon de {radius} km
+                </Tx>
+              </View>
             </View>
-            <View style={[{ position: 'absolute', left: 20, bottom: 13, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 13, paddingVertical: 6 }, SHADOW.card]}>
-              <Tx size={10.5} weight={600} lh={14}>
-                {withRadius ? `Rayon de ${radius} km` : label}
-              </Tx>
+          ) : (
+            <View style={{ height: 80, borderRadius: R.card, borderWidth: 1, borderColor: C.line, backgroundColor: C.fill, overflow: 'hidden', justifyContent: 'flex-end' }}>
+              <GridBg step={90} />
+              <View style={[{ alignSelf: 'flex-start', marginLeft: 13, marginBottom: 10, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 5 }, SHADOW.card]}>
+                <Tx size={10.5} weight={600} lh={14}>
+                  {label}
+                </Tx>
+              </View>
             </View>
-          </View>
+          )}
 
           {withRadius && (
             <>

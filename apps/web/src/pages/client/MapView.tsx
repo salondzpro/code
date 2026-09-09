@@ -12,7 +12,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, type CategoryId } from '@salondz/constants';
+import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { BottomNav } from '@/components/AppFrame';
 import { I, IconButton, Img, Pill } from '@/components/ui';
@@ -61,7 +61,9 @@ export function MapView() {
     ratingMin: prefs.ratingMin ?? undefined,
     limit: 50,
   });
-  const items = useMemo(() => ((query.data?.items ?? []) as (SalonSummary & { lat?: number | null; lng?: number | null })[]).filter((s) => s.lat != null && s.lng != null), [query.data]);
+  const items = useMemo(() => spreadOverlaps(((query.data?.items ?? []) as (SalonSummary & { lat?: number | null; lng?: number | null })[]).filter((s): s is SalonSummary & { lat: number; lng: number } => s.lat != null && s.lng != null)), [query.data]);
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+  const cardSettle = useRef<number | null>(null);
   const current = items.find((s) => s.id === selected) ?? items[0] ?? null;
 
   const drawArea = useCallback((a: Area | null) => {
@@ -107,7 +109,7 @@ export function MapView() {
     layer.clearLayers();
     const bounds: [number, number][] = [];
     for (const s of items) {
-      bounds.push([s.lat!, s.lng!]);
+      bounds.push([s.drawLat, s.drawLng]);
       const on = s.id === (current?.id ?? null);
       const icon = L.divIcon({
         className: '',
@@ -115,7 +117,7 @@ export function MapView() {
         iconSize: [0, 0],
         iconAnchor: [0, 0],
       });
-      L.marker([s.lat!, s.lng!], { icon, zIndexOffset: on ? 1000 : 0 }).on('click', () => setSelected(s.id)).addTo(layer);
+      L.marker([s.drawLat, s.drawLng], { icon, zIndexOffset: on ? 1000 : 0 }).on('click', () => setSelected(s.id)).addTo(layer);
     }
     if (bounds.length > 1 && !area && !moved) {
       programmatic.current = true;
@@ -123,15 +125,29 @@ export function MapView() {
     }
   }, [items, current?.id, area, moved]);
 
-  // Sélection depuis la feuille → recentre doucement sur la bulle
+  // Sélection (bulle ou fiche) → recentre doucement sur la bulle et fait défiler la fiche correspondante
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !current || !selected) return;
-    if (!map.getBounds().pad(-0.2).contains([current.lat!, current.lng!])) {
+    if (!map || !current) return;
+    if (selected && !map.getBounds().pad(-0.2).contains([current.drawLat, current.drawLng])) {
       programmatic.current = true;
-      map.panTo([current.lat!, current.lng!], { animate: true });
+      map.panTo([current.drawLat, current.drawLng], { animate: true });
     }
-  }, [selected, current]);
+    const el = cardsRef.current;
+    const idx = items.findIndex((s) => s.id === current.id);
+    if (el && idx >= 0 && Math.round(el.scrollLeft / el.clientWidth) !== idx) el.scrollTo({ left: idx * el.clientWidth, behavior: 'smooth' });
+  }, [selected, current, items]);
+
+  // Glissement des fiches → salon sélectionné
+  const onCardsScroll = () => {
+    if (cardSettle.current) window.clearTimeout(cardSettle.current);
+    cardSettle.current = window.setTimeout(() => {
+      const el = cardsRef.current;
+      if (!el || !el.clientWidth) return;
+      const s = items[Math.round(el.scrollLeft / el.clientWidth)];
+      if (s && s.id !== current?.id) setSelected(s.id);
+    }, 90);
+  };
 
   const searchHere = () => {
     const map = mapRef.current;
@@ -224,30 +240,35 @@ export function MapView() {
         <I icon={LocateFixed} size={20} className={locating ? 'animate-pulse' : ''} />
       </button>
 
-      {/* Feuille : salon sélectionné */}
+      {/* Feuille : fiches glissables (une par salon), synchronisées avec les bulles */}
       <div className="sheet !bottom-[4.75rem] !z-[400] !pb-4">
-        {current ? (
-          <Link to={`/s/${current.slug}`} className="crd sel !gap-3">
-            <div className="flex items-start gap-3.5">
-              <Img src={current.logoUrl ?? current.coverUrl} className="h-[6rem] w-[6rem] flex-none !rounded-[1rem]" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-[1.0625rem] font-bold leading-tight tracking-[-0.4px]">{current.name}</span>
-                  {current.ratingCount > 0 && <RatingPill avg={current.ratingAvg} />}
-                </div>
-                <span className="mt-1 block text-[0.8125rem] text-muted">
-                  {[current.zone ?? current.city, formatKm(current.distanceKm), current.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
-                </span>
-                <span className="mt-0.5 block text-[0.9375rem] text-subtle">{current.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}</span>
-              </div>
-            </div>
-            <NextSlots salon={current} />
-          </Link>
-        ) : (
+        {items.length === 0 ? (
           <p className="p py-2 text-center">{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone. Déplacez la carte puis « Rechercher dans cette zone ».'}</p>
+        ) : (
+          <div ref={cardsRef} onScroll={onCardsScroll} className="-mx-5 flex overflow-x-auto" style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }} aria-label="Glisser pour voir les autres salons">
+            {items.map((s) => (
+              <div key={s.id} className="w-full flex-none px-5" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+                <Link to={`/s/${s.slug}`} className={`crd !gap-3 ${s.id === current?.id ? 'sel' : ''}`}>
+                  <div className="flex items-start gap-3.5">
+                    <Img src={s.logoUrl ?? s.coverUrl} className="h-[6rem] w-[6rem] flex-none !rounded-[1rem]" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-[1.0625rem] font-bold leading-tight tracking-[-0.4px]">{s.name}</span>
+                        {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
+                      </div>
+                      <span className="mt-1 block text-[0.8125rem] text-muted">{[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}</span>
+                      <span className="mt-0.5 block text-[0.9375rem] text-subtle">{s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}</span>
+                    </div>
+                  </div>
+                  <NextSlots salon={s} />
+                </Link>
+              </div>
+            ))}
+          </div>
         )}
         {items.length > 1 && (
           <div className="flex items-center justify-center gap-1.5">
+            <span className="s">{(items.findIndex((s) => s.id === current?.id) ?? 0) + 1} / {items.length}</span>
             {items.slice(0, 8).map((s) => (
               <button key={s.id} type="button" onClick={() => setSelected(s.id)} className={`h-1.5 rounded-full ${s.id === current?.id ? 'w-6 bg-ink' : 'w-1.5 bg-line'}`} aria-label={s.name} />
             ))}

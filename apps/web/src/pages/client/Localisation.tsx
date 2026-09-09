@@ -14,6 +14,7 @@ import { MARKET_LABELS_FR, WILAYAS, geocodeDZ, reverseGeocode, wilayaName, type 
 import { RADIUS_OPTIONS, formatKm, pushRecentPlace, readRecentPlaces, useLocationPrefs, type RecentPlace } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
 import { BottomSheet, Button, Card, I, InfoBox, Pill, SearchBox, SectionLabel, TopBar } from '@/components/ui';
+import { MiniMap } from '@/components/MiniMap';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 
 type GeoState = 'idle' | 'asking' | 'granted' | 'denied';
@@ -262,15 +263,15 @@ export function Localisation() {
             {choice.kind === 'gps' && pos && <I icon={Check} size={22} />}
           </Card>
 
-          {/* Aperçu stylisé de la zone (design) */}
-          <div className="relative h-[10rem] overflow-hidden rounded-[1.25rem] border border-line bg-fill">
-            <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '90px 70px' }} />
-            <div className="absolute left-1/2 top-1/2 h-[7.5rem] w-[11.875rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-disabled bg-white/50" />
-            <span className="absolute left-1/2 top-1/2 flex h-[3.25rem] w-[3.25rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-fab">
-              <I icon={MapPin} size={22} />
-            </span>
-            <span className="absolute bottom-4 left-6 rounded-full bg-surface px-4 py-2 text-[0.8125rem] font-semibold shadow-card">{withRadius ? `Rayon de ${radius} km` : label}</span>
-          </div>
+          {/* Vraie carte : position (ou point choisi) et cercle du rayon ; sinon le quartier / la wilaya */}
+          {point ? (
+            <MiniMap lat={point.lat} lng={point.lng} radiusKm={radius} label={`Rayon de ${radius} km`} className="h-[11rem]" />
+          ) : (
+            <div className="relative h-[6rem] overflow-hidden rounded-[1.25rem] border border-line bg-fill">
+              <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '90px 70px' }} />
+              <span className="absolute bottom-3 left-4 rounded-full bg-surface px-3 py-1.5 text-[0.8125rem] font-semibold shadow-card">{label}</span>
+            </div>
+          )}
 
           {withRadius && (
             <>

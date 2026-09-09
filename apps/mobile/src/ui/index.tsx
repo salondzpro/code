@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, ChevronLeft, ChevronRight, Info, Search, X, type LucideIcon } from 'lucide-react-native';
-import type { BookingStatus } from '@salondz/constants';
+import type { BookingStatus, CancelledBy } from '@salondz/constants';
 import { C, R, SHADOW } from '@/theme/design';
 import { H2, P, S, T3, Tx, fontFor } from './Text';
 
@@ -183,11 +183,19 @@ const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boole
   completed: { tone: 'ok', label: 'Terminé', dot: true },
   no_show: { tone: 'dk', label: 'Client absent', dot: true },
 };
-export function StatusBadge({ status, md }: { status: BookingStatus; md?: boolean }) {
+/** Libellé d'une annulation selon qui l'a faite et qui regarde (client ou salon). */
+export function cancelledLabel(cancelledBy: CancelledBy | null | undefined, viewer: 'client' | 'pro' = 'client'): string {
+  if (cancelledBy === 'client') return viewer === 'client' ? 'Annulé par vous' : 'Annulé par le client';
+  if (cancelledBy === 'salon') return viewer === 'client' ? 'Annulé par le salon' : 'Annulé par vous';
+  if (cancelledBy === 'system') return 'Demande expirée';
+  return 'Annulé';
+}
+
+export function StatusBadge({ status, md, cancelledBy, viewer = 'client' }: { status: BookingStatus; md?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro' }) {
   const s = STATUS[status];
   return (
     <Badge tone={s.tone} dot={s.dot} md={md}>
-      {s.label}
+      {status === 'cancelled' && cancelledBy !== undefined ? cancelledLabel(cancelledBy, viewer) : s.label}
     </Badge>
   );
 }

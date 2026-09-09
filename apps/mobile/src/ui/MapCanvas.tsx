@@ -25,6 +25,8 @@ export interface MapState {
   area: MapArea | null;
   /** Ajuste la vue aux bulles (première charge sans zone). */
   fit?: boolean;
+  /** Ajuste la vue au cercle de la zone (aperçu de localisation). */
+  zoomToArea?: boolean;
 }
 export interface MapCanvasHandle {
   flyTo(lat: number, lng: number, zoom?: number): void;
@@ -47,7 +49,7 @@ function send(m){var s=JSON.stringify(m);if(window.ReactNativeWebView)window.Rea
 function areaOf(){var b=map.getBounds(),c=b.getCenter();var h=b.getNorthEast().distanceTo(L.latLng(b.getSouthWest().lat,b.getNorthEast().lng))/1000;var w=b.getNorthEast().distanceTo(L.latLng(b.getNorthEast().lat,b.getSouthWest().lng))/1000;return{lat:+c.lat.toFixed(4),lng:+c.lng.toFixed(4),radiusKm:Math.min(50,Math.max(1,+(Math.min(h,w)/2).toFixed(1)))};}
 map.on('moveend',function(){if(prog){prog=false;return;}var a=areaOf();send({type:'moveend',lat:a.lat,lng:a.lng,radiusKm:a.radiusKm});});
 window.setState=function(s){pins.clearLayers();areaL.clearLayers();
- if(s.area){L.circle([s.area.lat,s.area.lng],{radius:s.area.radiusKm*1000,color:'#c4c7ca',dashArray:'6 6',weight:1.5,fillColor:'#111214',fillOpacity:.04}).addTo(areaL);L.circleMarker([s.area.lat,s.area.lng],{radius:8,color:'#fff',weight:4,fillColor:'#111214',fillOpacity:1}).addTo(areaL);}
+ if(s.area){var c=L.circle([s.area.lat,s.area.lng],{radius:s.area.radiusKm*1000,color:'#c4c7ca',dashArray:'6 6',weight:1.5,fillColor:'#111214',fillOpacity:.04}).addTo(areaL);L.circleMarker([s.area.lat,s.area.lng],{radius:8,color:'#fff',weight:4,fillColor:'#111214',fillOpacity:1}).addTo(areaL);if(s.zoomToArea){prog=true;map.fitBounds(c.getBounds(),{padding:[12,12],animate:false});}}
  var bounds=[];(s.pins||[]).forEach(function(p){bounds.push([p.lat,p.lng]);var ic=L.divIcon({className:'',html:'<button type="button" class="b'+(p.on?' on':'')+'">'+p.label+'</button>',iconSize:[0,0],iconAnchor:[0,0]});L.marker([p.lat,p.lng],{icon:ic,zIndexOffset:p.on?1000:0}).on('click',function(){send({type:'select',id:p.id});}).addTo(pins);});
  if(s.fit&&bounds.length>1){prog=true;map.fitBounds(bounds,{padding:[40,40],maxZoom:15});}else if(s.fit&&bounds.length===1){prog=true;map.setView(bounds[0],14);}
 };
@@ -56,8 +58,8 @@ window.addEventListener('message',function(e){var d=e.data;if(typeof d==='string
 send({type:'ready'});
 </script></body></html>`;
 
-export const MapCanvas = forwardRef<MapCanvasHandle, { state: MapState; onSelect: (id: string) => void; onMoveEnd: (area: MapArea) => void; initialCenter?: { lat: number; lng: number }; style?: StyleProp<ViewStyle> }>(
-  function MapCanvas({ state, onSelect, onMoveEnd, initialCenter, style }, ref) {
+export const MapCanvas = forwardRef<MapCanvasHandle, { state: MapState; onSelect: (id: string) => void; onMoveEnd: (area: MapArea) => void; initialCenter?: { lat: number; lng: number }; style?: StyleProp<ViewStyle>; zoomToArea?: boolean }>(
+  function MapCanvas({ state, onSelect, onMoveEnd, initialCenter, style, zoomToArea }, ref) {
     const webRef = useRef<WebView>(null);
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const ready = useRef(false);
@@ -79,7 +81,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, { state: MapState; onSelect
       if (m.type === 'ready') {
         ready.current = true;
         if (initialCenter) post({ type: 'flyTo', lat: initialCenter.lat, lng: initialCenter.lng, zoom: 13 });
-        post({ type: 'state', state: latest.current });
+        post({ type: 'state', state: { ...latest.current, zoomToArea: zoomToArea ?? latest.current.zoomToArea } });
       } else if (m.type === 'select') onSelect(m.id);
       else if (m.type === 'moveend') onMoveEnd({ lat: m.lat, lng: m.lng, radiusKm: m.radiusKm });
     };
@@ -87,8 +89,8 @@ export const MapCanvas = forwardRef<MapCanvasHandle, { state: MapState; onSelect
     useImperativeHandle(ref, () => ({ flyTo: (lat, lng, zoom) => post({ type: 'flyTo', lat, lng, zoom }) }), []);
 
     useEffect(() => {
-      if (ready.current) post({ type: 'state', state });
-    }, [state]);
+      if (ready.current) post({ type: 'state', state: { ...state, zoomToArea: zoomToArea ?? state.zoomToArea } });
+    }, [state, zoomToArea]);
 
     useEffect(() => {
       if (Platform.OS !== 'web') return;

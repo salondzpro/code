@@ -210,7 +210,7 @@ export const listBookingsQuerySchema = z.object({
 export type ListBookingsQuery = z.infer<typeof listBookingsQuerySchema>;
 
 export const myBookingsQuerySchema = z.object({
-  scope: z.enum(['upcoming', 'past']).default('upcoming'),
+  scope: z.enum(['upcoming', 'past', 'cancelled']).default('upcoming'),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });

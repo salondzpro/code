@@ -62,7 +62,9 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     q =
       scope === 'upcoming'
         ? q.gte('ends_at', nowIso).in('status', ['pending', 'confirmed']).order('starts_at', { ascending: true })
-        : q.or(`ends_at.lt.${nowIso},status.in.(cancelled,completed,no_show)`).order('starts_at', { ascending: false });
+        : scope === 'cancelled'
+          ? q.eq('status', 'cancelled').order('cancelled_at', { ascending: false, nullsFirst: false })
+          : q.neq('status', 'cancelled').or(`ends_at.lt.${nowIso},status.in.(completed,no_show)`).order('starts_at', { ascending: false });
     const rows = unwrap(await q.range(offset, offset + limit - 1)) as Record<string, unknown>[];
     const items = rows.map(mapBookingWithSalon);
     reply.header('Cache-Control', 'private, no-store');
