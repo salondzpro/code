@@ -8,6 +8,7 @@ import { unwrap } from '../lib/errors';
 import { toLocalDateKey } from '@salondz/constants';
 import { loadOwnedSalon } from '../plugins/auth';
 import { attachPeriodAvailability } from '../lib/availability';
+import { clientStanding } from '../lib/standing';
 
 const PROFILE_COLS = 'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
 
@@ -16,11 +17,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
 
   /** Profil + raccourci vers le salon (pour router après connexion). */
   app.get('/me', async (req, reply) => {
-    const salon = await loadOwnedSalon(req.user!.id);
+    const [salon, standing] = await Promise.all([loadOwnedSalon(req.user!.id), req.profile!.role === 'client' ? clientStanding(req.user!.id) : Promise.resolve(null)]);
     reply.header('Cache-Control', 'private, no-store');
     return {
       profile: req.profile!,
       salon: salon ? { id: salon.id, slug: salon.slug, name: salon.name, isPublished: salon.isPublished } : null,
+      standing,
     };
   });
 

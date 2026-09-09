@@ -233,6 +233,16 @@ export interface PeriodDay {
   apresMidi: string | null;
 }
 
+/** Situation d'un client vis-à-vis des règles anti-abus (annulations récentes, absences, suspension en cours). */
+export interface ClientStanding {
+  /** Annulations par le client sur la fenêtre CANCEL_ABUSE_WINDOW_DAYS. */
+  cancellations: number;
+  /** Absences signalées par les salons sur la fenêtre NO_SHOW_ABUSE_WINDOW_DAYS. */
+  noShows: number;
+  /** Réservation en ligne suspendue jusqu'à cette date, sinon null. */
+  suspendedUntil: ISODateTime | null;
+}
+
 /** Quartier / ville avec le nombre de professionnels publiés (design « Localisation »). */
 export interface CityCount {
   /** Quartier (zone) ou ville — valeur à passer au filtre `city` de la recherche. */

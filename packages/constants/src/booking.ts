@@ -55,5 +55,18 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const MAX_UPCOMING_BOOKINGS_PER_CLIENT = 10;
 export const MAX_STAFF_PER_SALON = 30;
 export const MAX_SERVICES_PER_SALON = 200;
+/**
+ * Anti-abus d'annulation (API `assertClientCanBook`) : au-delà de CANCEL_ABUSE_MAX annulations par le client sur
+ * CANCEL_ABUSE_WINDOW_DAYS jours, la réservation en ligne est suspendue CANCEL_ABUSE_BLOCK_DAYS jours après la
+ * dernière annulation. Même logique pour les absences (« Client absent ») signalées par les pros, plus sévère.
+ * Les rendez-vous déjà pris restent valables ; le client peut toujours appeler le salon.
+ */
+export const CANCEL_ABUSE_MAX = 3;
+export const CANCEL_ABUSE_WINDOW_DAYS = 30;
+export const CANCEL_ABUSE_BLOCK_DAYS = 7;
+export const NO_SHOW_ABUSE_MAX = 2;
+export const NO_SHOW_ABUSE_WINDOW_DAYS = 60;
+export const NO_SHOW_ABUSE_BLOCK_DAYS = 14;
+
 /** Durée maximale d'un blocage (congés) : un an. */
 export const MAX_TIME_BLOCK_DAYS = 366;

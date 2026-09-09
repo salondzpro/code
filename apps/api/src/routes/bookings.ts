@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT } from '@salondz/constants';
+import { CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT, NO_SHOW_ABUSE_MAX, NO_SHOW_ABUSE_WINDOW_DAYS } from '@salondz/constants';
 import {
   cancelBookingSchema,
   createBookingSchema,
@@ -15,6 +15,7 @@ import { badRequest, conflict, forbidden, notFound, unwrap } from '../lib/errors
 import { camelize } from '../lib/mappers';
 import { BOOKING_WITH_SALON_SELECT, getBookingWithSalon, mapBookingWithSalon } from '../lib/queries';
 import { pushAfterBooking } from '../lib/push';
+import { clientStanding } from '../lib/standing';
 
 const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
@@ -156,11 +157,17 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
  */
 async function assertClientCanBook(clientId: string, salonId: string, serviceIds: string[], startsAt: string): Promise<void> {
   const nowIso = new Date().toISOString();
-  const [upcoming, total] = await Promise.all([
+  const [upcoming, total, standing] = await Promise.all([
     db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', clientId).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso),
     db.rpc('services_total', { p_salon_id: salonId, p_service_ids: serviceIds }).single(),
+    clientStanding(clientId),
   ]);
   if (upcoming.error) throw upcoming.error;
+  // Anti-abus : trop d'annulations ou d'absences récentes → réservation en ligne suspendue quelques jours.
+  if (standing.suspendedUntil) {
+    const why = standing.noShows >= NO_SHOW_ABUSE_MAX ? `${standing.noShows} absences signalées en ${NO_SHOW_ABUSE_WINDOW_DAYS} jours` : `${standing.cancellations} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours`;
+    throw conflict('BOOKING_SUSPENDED', `Réservation en ligne suspendue jusqu'au ${fmtWhen(standing.suspendedUntil)} (${why}). Vous pouvez appeler le salon.`);
+  }
   if ((upcoming.count ?? 0) >= MAX_UPCOMING_BOOKINGS_PER_CLIENT) {
     throw conflict('TOO_MANY_BOOKINGS', `Vous avez déjà ${MAX_UPCOMING_BOOKINGS_PER_CLIENT} rendez-vous à venir. Annulez-en un pour réserver.`);
   }

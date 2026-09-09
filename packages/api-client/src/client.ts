@@ -15,6 +15,7 @@ import type {
   SalonOwnerView,
   SalonPublic,
   SalonSummary,
+  ClientStanding,
   Service,
   Staff,
   StaffHour,
@@ -80,6 +81,8 @@ export interface ReviewItem {
 export interface MeResponse {
   profile: Profile;
   salon: { id: string; slug: string; name: string; isPublished: boolean } | null;
+  /** Situation anti-abus du client (annulations / absences récentes, suspension) ; null pour un pro. */
+  standing: ClientStanding | null;
 }
 
 export interface NotificationsResponse extends Paginated<Notification> {

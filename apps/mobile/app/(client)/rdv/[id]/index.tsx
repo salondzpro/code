@@ -1,12 +1,13 @@
 /**
- * Détail d'un rendez-vous côté client (structure de C-F 15) : salon, contact, lignes, note,
- * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » ; C-F 18 — annulation confirmée.
+ * Détail d'un rendez-vous côté client (structure de C-F 15) : salon, contact, puis l'essentiel en grand
+ * (Aujourd'hui / Demain / date, heure, prix) et la liste des prestations — même lecture que la fiche pro.
+ * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » (avec la règle anti-abus) ; C-F 18 — annulation confirmée.
  */
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useBooking, useCancelBooking } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
+import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
+import { CANCEL_ABUSE_BLOCK_DAYS, CANCEL_ABUSE_MAX, CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDZPhone, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, directionsUrl, open } from '@/lib/salon';
 import { Avatar, Button, Card, ErrorText, Grid, H1, InfoBox, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
@@ -20,6 +21,7 @@ export default function BookingDetail() {
   const router = useRouter();
   const booking = useBooking(id);
   const cancel = useCancelBooking();
+  const me = useMe();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
   const [cal, setCal] = useState(false);
@@ -40,7 +42,8 @@ export default function BookingDetail() {
   const canModify = active && hoursLeft >= minHours;
   const canReschedule = canModify && b.salon.allowClientReschedule !== false;
   const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
-  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName }];
+  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
+  const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
     // C-F 18 — Annulation confirmée
@@ -108,35 +111,47 @@ export default function BookingDetail() {
           )}
         </Grid>
       )}
+      {/* L'essentiel en grand : quand, à quelle heure, combien — rassurant et lisible d'un coup d'œil. */}
+      <Card gap={10}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <Tx size={13} weight={700} lh={17}>
+            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+          </Tx>
+          <Tx size={11} color={C.muted} lh={15}>
+            {capitalize(formatDateLongDZ(b.startsAt))}
+          </Tx>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+              {formatTimeDZ(b.startsAt)}
+            </Tx>
+            <Tx size={13} color={C.muted} lh={21} mono>
+              – {formatTimeDZ(b.endsAt)}
+            </Tx>
+          </View>
+          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+            {formatDA(b.priceDa)}
+          </Tx>
+        </View>
+        <Tx size={10.5} color={C.muted} lh={14}>
+          {formatDuration(b.durationMinutes)} au total · paiement sur place
+        </Tx>
+      </Card>
       <Card gap={0}>
         <Rows>
+          <Row py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+            <Tx size={13} weight={700} lh={17}>
+              {lines.length} prestation{lines.length > 1 ? 's' : ''}
+            </Tx>
+          </Row>
           {lines.map((it) => (
-            <Row key={it.id} py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{it.serviceName}</Tx>}>
-              <Tx size={11.5} color={C.muted} lh={15.5}>
-                Prestation
+            <Row key={it.id} py={10} chevron={false} right={<Tx size={11} color={C.muted} lh={15}>{it.durationMinutes ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}` : formatDA(it.priceDa)}</Tx>}>
+              <Tx size={13} weight={600} lh={17}>
+                {it.serviceName}
               </Tx>
             </Row>
           ))}
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{capitalize(formatDateShortDZ(b.startsAt))}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Date
-            </Tx>
-          </Row>
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5} mono>{formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Heure
-            </Tx>
-          </Row>
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDuration(b.durationMinutes)}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Durée
-            </Tx>
-          </Row>
-          <Row py={13} chevron={false} right={<Tx size={11.5} weight={600} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Prix
-            </Tx>
-          </Row>
         </Rows>
       </Card>
       {!!b.notes && (
@@ -198,6 +213,11 @@ export default function BookingDetail() {
           </Tx>
           <P center>Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera libéré immédiatement.</P>
         </View>
+        <InfoBox>
+          {cancels >= CANCEL_ABUSE_MAX - 1
+            ? `Attention : ce serait votre ${cancels + 1}ᵉ annulation en ${CANCEL_ABUSE_WINDOW_DAYS} jours. Au-delà de ${CANCEL_ABUSE_MAX}, la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`
+            : `Pour respecter le travail des salons, au-delà de ${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`}
+        </InfoBox>
         <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
           <Tx size={12} lh={16}>
             Motif (optionnel)

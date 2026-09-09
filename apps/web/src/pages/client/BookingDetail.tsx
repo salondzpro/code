@@ -1,11 +1,12 @@
 /**
- * Détail d'un rendez-vous côté client (structure de C-F 15) : salon, contact, lignes, note,
- * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » ; C-F 18 — annulation confirmée.
+ * Détail d'un rendez-vous côté client (structure de C-F 15) : salon, contact, puis l'essentiel en grand
+ * (Aujourd'hui / Demain / date, heure, prix) et la liste des prestations — même lecture que la fiche pro.
+ * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » (avec la règle anti-abus) ; C-F 18 — annulation confirmée.
  */
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { useBooking, useCancelBooking } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
+import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
+import { CANCEL_ABUSE_BLOCK_DAYS, CANCEL_ABUSE_MAX, CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDZPhone, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, InfoBox, Input, LinkButton, StatusBadge, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
@@ -18,6 +19,7 @@ export function BookingDetail() {
   const { id = '' } = useParams();
   const booking = useBooking(id);
   const cancel = useCancelBooking();
+  const me = useMe();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
   const [cal, setCal] = useState(false);
@@ -33,6 +35,8 @@ export function BookingDetail() {
   const canModify = active && hoursLeft >= minHours;
   const canReschedule = canModify && b.salon.allowClientReschedule !== false;
   const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
+  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
+  const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
     // C-F 18 — Annulation confirmée
@@ -82,31 +86,33 @@ export function BookingDetail() {
           </a>
         )}
       </div>
+      {/* L'essentiel en grand : quand, à quelle heure, combien — rassurant et lisible d'un coup d'œil. */}
+      <div className="crd !gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[1rem] font-bold">{relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}</span>
+          <span className="text-[0.875rem] text-muted">{formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
+        </div>
+        <div className="flex items-end justify-between gap-3">
+          <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+            {formatTimeDZ(b.startsAt)} <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
+          </span>
+          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">{formatDA(b.priceDa)}</span>
+        </div>
+        <span className="text-[0.8125rem] text-muted">{formatDuration(b.durationMinutes)} au total · paiement sur place</span>
+      </div>
       <div className="crd !gap-0">
-        {(b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }]).map((it) => (
-          <div key={it.id} className="li !py-4 text-[0.875rem]">
-            <span className="text-muted">Prestation</span>
-            <span className="font-semibold">{it.serviceName}</span>
+        <div className="li !py-3">
+          <span className="text-[1rem] font-bold">
+            {lines.length} prestation{lines.length > 1 ? 's' : ''}
+          </span>
+          <span className="text-[0.875rem] text-muted">{formatDA(b.priceDa)}</span>
+        </div>
+        {lines.map((it) => (
+          <div key={it.id} className="li !py-3">
+            <span className="text-[1rem] font-semibold">{it.serviceName}</span>
+            <span className="text-[0.875rem] text-muted">{it.durationMinutes ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}` : formatDA(it.priceDa)}</span>
           </div>
         ))}
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Date</span>
-          <span className="font-semibold">{formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Heure</span>
-          <span className="mono font-semibold">
-            {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
-          </span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Durée</span>
-          <span className="font-semibold">{formatDuration(b.durationMinutes)}</span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Prix</span>
-          <span className="font-semibold">{formatDA(b.priceDa)}</span>
-        </div>
       </div>
       {b.notes && (
         <div className="sf">
@@ -158,6 +164,11 @@ export function BookingDetail() {
                 Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera libéré immédiatement.
               </p>
             </div>
+            <InfoBox>
+              {cancels >= CANCEL_ABUSE_MAX - 1
+                ? `Attention : ce serait votre ${cancels + 1}ᵉ annulation en ${CANCEL_ABUSE_WINDOW_DAYS} jours. Au-delà de ${CANCEL_ABUSE_MAX}, la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`
+                : `Pour respecter le travail des salons, au-delà de ${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`}
+            </InfoBox>
             <div className="crd !flex-row items-center justify-between !py-3">
               <span className="text-[0.9375rem]">Motif (optionnel)</span>
               <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Empêchement" className="!w-auto !bg-transparent !p-0 text-right" maxLength={200} aria-label="Motif" />

@@ -305,6 +305,26 @@ test('client : mes réservations à venir, déplacement, annulation', async () =
   assert.equal(again.statusCode, 409);
 });
 
+test('anti-abus : 3 annulations en 30 jours → réservation en ligne suspendue (BOOKING_SUSPENDED)', async () => {
+  // Le client « gagnant » a déjà annulé une fois (test précédent) : deux annulations de plus déclenchent la suspension.
+  for (const hm of ['15:00', '16:30']) {
+    const r = await call('POST', '/v1/bookings', winnerToken, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, hm) });
+    assert.equal(r.statusCode, 201, r.body);
+    const c = await call('POST', `/v1/bookings/${r.json().id}/cancel`, winnerToken, { reason: 'Test' });
+    assert.equal(c.statusCode, 200, c.body);
+  }
+  const me = await call('GET', '/v1/me', winnerToken);
+  assert.equal(me.json().standing.cancellations, 3, me.body);
+  assert.ok(me.json().standing.suspendedUntil, 'suspension active');
+  const blocked = await call('POST', '/v1/bookings', winnerToken, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, '17:30') });
+  assert.equal(blocked.statusCode, 409, blocked.body);
+  assert.equal(blocked.json().error.code, 'BOOKING_SUSPENDED');
+  // L'autre client n'est pas concerné.
+  const otherToken = winnerToken === clientA.token ? clientB.token : clientA.token;
+  const other = await call('GET', '/v1/me', otherToken);
+  assert.equal(other.json().standing.suspendedUntil, null);
+});
+
 test('sécurité : fiche publique sans propriétaire, lien définitif, téléphone vérifié immuable', async () => {
   const pub = await call('GET', `/v1/salons/${salonSlug}`);
   assert.equal(pub.statusCode, 200, pub.body);
