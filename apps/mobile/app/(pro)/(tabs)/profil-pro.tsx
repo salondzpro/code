@@ -10,6 +10,7 @@ import { pickImages, uploadSalonImage } from '@/lib/images';
 import { errorText } from '@/lib/errors';
 import { publicHost } from '@/lib/salon';
 import { Alert, Avatar, Badge, Button, Card, Grid, H1, I, Img, Input, ListCard, P, Row, SectionLabel, Toggle, Tx } from '@/ui';
+import { BrandFooter } from '@/ui/BrandFooter';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { ShareSheet } from '@/ui/ShareSheet';
@@ -224,7 +225,7 @@ export default function ProProfile() {
         </Pressable>
       </ListCard>
       <ShareSheet open={sheet} onClose={() => setSheet(false)} name={salon.name} slug={salon.slug} />
-      <P> </P>
+      <BrandFooter />
     </Screen>
   );
 }

@@ -7,7 +7,15 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react';
 import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
-import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName, groupServices } from '@salondz/constants';
+import {
+  DAY_LABELS_FR,
+  WEEK_DAYS,
+  categoryLabel,
+  formatDA,
+  formatDZPhone,
+  wilayaName,
+  groupServices,
+} from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
@@ -33,7 +41,11 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
   for (let i = 1; i <= 7; i++) {
     const d = (dow + i) % 7;
     const h = s.openingHours.find((x) => x.dayOfWeek === d && !x.isClosed);
-    if (h) return { open: false, label: `Fermé · ouvre ${i === 1 ? 'demain' : DAY_LABELS_FR[d as 0].toLowerCase()} ${h.opensAt}` };
+    if (h)
+      return {
+        open: false,
+        label: `Fermé · ouvre ${i === 1 ? 'demain' : DAY_LABELS_FR[d as 0].toLowerCase()} ${h.opensAt}`,
+      };
   }
   return { open: false, label: 'Fermé' };
 }
@@ -64,22 +76,46 @@ export function Salon() {
       <div className="relative h-[18.75rem] bg-line">
         {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" />}
         <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
-          <IconButton lg aria-label="Retour" onClick={back}>
-            <I icon={ChevronLeft} />
-          </IconButton>
+          <div className="flex items-center gap-2.5">
+            <IconButton lg aria-label="Retour" onClick={back}>
+              <I icon={ChevronLeft} />
+            </IconButton>
+            {/* Visiteur arrivé par le lien du professionnel (sans compte) : la marque reste visible et mène à l'accueil. */}
+            {!session && (
+              <Link
+                to="/"
+                className="flex h-[3rem] items-center rounded-full border border-line bg-surface px-4 text-[1rem] leading-none tracking-[-0.5px] shadow-sm"
+                aria-label="Salon DZ · accueil"
+              >
+                <span className="font-semibold">Salon</span>
+                <span className="ml-[0.16em] font-light text-muted">DZ</span>
+              </Link>
+            )}
+          </div>
           <div className="flex gap-2.5">
             <IconButton
               lg
               aria-label="Partager"
               onClick={() => {
                 const url = window.location.href;
-                if (navigator.share) void navigator.share({ title: s.name, url }).catch(() => undefined);
+                if (navigator.share)
+                  void navigator.share({ title: s.name, url }).catch(() => undefined);
                 else void navigator.clipboard.writeText(url);
               }}
             >
               <I icon={Share2} size={20} />
             </IconButton>
-            <IconButton lg aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={isFav} disabled={toggle.isPending} onClick={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}`)}`))}>
+            <IconButton
+              lg
+              aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              aria-pressed={isFav}
+              disabled={toggle.isPending}
+              onClick={() =>
+                session
+                  ? toggle.mutate({ salonId: s.id, on: !isFav })
+                  : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}`)}`)
+              }
+            >
               <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
             </IconButton>
           </div>
@@ -127,7 +163,9 @@ export function Salon() {
                     <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="li !py-5">
                       <span>
                         <span className="block text-[1rem] font-semibold">{sv.name}</span>
-                        <span className="s block text-[0.9375rem]">{formatDuration(sv.durationMinutes)}</span>
+                        <span className="s block text-[0.9375rem]">
+                          {formatDuration(sv.durationMinutes)}
+                        </span>
                       </span>
                       <span className="text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
                     </Link>
@@ -166,7 +204,13 @@ export function Salon() {
                 return (
                   <div key={d} className="li !py-3">
                     <span className="text-[0.8125rem]">{DAY_LABELS_FR[d]}</span>
-                    <span className={`mono text-[0.8125rem] ${rows.length ? 'text-muted' : 'text-danger'}`}>{rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}</span>
+                    <span
+                      className={`mono text-[0.8125rem] ${rows.length ? 'text-muted' : 'text-danger'}`}
+                    >
+                      {rows.length
+                        ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ')
+                        : 'Fermé'}
+                    </span>
                   </div>
                 );
               })}
@@ -185,7 +229,9 @@ export function Salon() {
               {s.staff.length > 0 && (
                 <div className="li !py-3">
                   <span className="text-muted">Équipe</span>
-                  <span className="text-right">{s.staff.map((m) => m.displayName).join(' · ')}</span>
+                  <span className="text-right">
+                    {s.staff.map((m) => m.displayName).join(' · ')}
+                  </span>
                 </div>
               )}
             </div>
@@ -196,7 +242,8 @@ export function Salon() {
                   <div key={r.id} className="crd sm !gap-1">
                     <span className="text-[0.9375rem] font-semibold">
                       {'★'.repeat(r.rating)}
-                      <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span> · {r.authorName}
+                      <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span> ·{' '}
+                      {r.authorName}
                     </span>
                     {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
                   </div>

@@ -5,6 +5,7 @@ import { useFavorites, useMe, useMyBookings } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { formatIntlDZ } from '@/lib/authFlow';
 import { Avatar, Badge, I, ListRow } from '@/components/ui';
+import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
@@ -70,6 +71,7 @@ export function Profile() {
         </span>
         <I icon={ChevronRight} size={20} className="text-disabled" />
       </Link>
+      <BrandFooter />
     </Screen>
   );
 }

@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { Avatar, Badge, Button, I, ListRow, SectionLabel, Textarea, Toggle } from '@/components/ui';
+import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { ShareSheet, usePublicUrl } from './Link';
@@ -185,6 +186,7 @@ export function ProProfile() {
           Se déconnecter
         </button>
       </div>
+      <BrandFooter />
       {sheet && <ShareSheet name={salon.name} url={url} short={short} logo={salon.logoUrl} onClose={() => setSheet(false)} />}
     </Screen>
   );

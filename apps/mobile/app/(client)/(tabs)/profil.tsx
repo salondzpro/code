@@ -7,6 +7,7 @@ import { useFavorites, useMe, useMyBookings } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { formatIntlDZ } from '@/lib/authFlow';
 import { Avatar, Badge, Card, Grid, H1, I, ListCard, P, Row, Tx } from '@/ui';
+import { BrandFooter } from '@/ui/BrandFooter';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, NAV_PAD, R } from '@/theme/design';
@@ -97,7 +98,7 @@ export default function Profile() {
         </View>
         <I icon={ChevronRight} size={16} color={C.disabled} />
       </Pressable>
-      <P> </P>
+      <BrandFooter />
     </Screen>
   );
 }
