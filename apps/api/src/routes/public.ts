@@ -104,7 +104,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       const serviceIds = [...(req.query.serviceIds ? req.query.serviceIds.split(',') : []), ...(req.query.serviceId ? [req.query.serviceId] : [])].filter((v, i, a) => a.indexOf(v) === i);
 
       const [salonRes, totalRes] = await Promise.all([
-        db.from('salons').select('id, slot_interval_minutes, is_published, owner_id').eq('id', id).maybeSingle(),
+        db.from('salons').select('id, slot_interval_minutes, is_published, owner_id, booking_horizon_days').eq('id', id).maybeSingle(),
         db.rpc('services_total', { p_salon_id: id, p_service_ids: serviceIds }).single(),
       ]);
       const salon = unwrap(salonRes, 'Salon');
@@ -122,6 +122,21 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         p_service_ids: serviceIds,
       });
       const rows = unwrap(slotsRes) as { slot_start: string; staff_id: string }[];
+      // Journée complète → prochaine journée avec des créneaux libres (dans l'horizon), pour l'écran « Quand ? ».
+      let nextAvailable: AvailabilityResponse['nextAvailable'] = null;
+      if (rows.length === 0) {
+        const n = await db.rpc('next_availability_after', {
+          p_salon_id: id,
+          p_duration_minutes: total.duration_minutes,
+          p_after: date,
+          p_days: Math.min(salon.booking_horizon_days ?? 30, 60),
+          p_service_ids: serviceIds,
+          p_staff_id: staffId ?? null,
+          p_limit: 3,
+        });
+        if (n.error) req.log.warn({ err: n.error }, 'next_availability_after');
+        else nextAvailable = (n.data as AvailabilityResponse['nextAvailable']) ?? null;
+      }
 
       const grouped = new Map<string, string[]>();
       for (const r of rows) {
@@ -138,6 +153,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         slotIntervalMinutes: salon.slot_interval_minutes,
         durationMinutes: total.duration_minutes,
         slots: [...grouped.entries()].map(([startsAt, staffIds]) => ({ startsAt, staffIds })),
+        nextAvailable,
       };
       reply.header('Cache-Control', CACHE_AVAILABILITY);
       return body;

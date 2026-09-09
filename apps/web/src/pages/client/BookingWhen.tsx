@@ -1,11 +1,12 @@
 /**
- * C-F 09 — Quand ? Semaine (dimanche → samedi), créneaux Matin / Après-midi / Soir,
- * créneaux grisés = déjà réservés, information sur la durée, « Continuer · 14:30 ».
+ * C-F 09 — Quand ? Semaine (dimanche → samedi), créneaux Matin / Après-midi / Soir.
+ * Seuls les créneaux libres sont affichés (pas de grille grisée à faire défiler) ; journée complète →
+ * carte « Complet » avec le dernier créneau du jour et un bouton vers la prochaine disponibilité.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { useAvailability, useSalon } from '@salondz/api-client';
-import { addDaysToKey, dayOfWeekFromKey, formatDA, formatTimeDZ, localDateTimeToISO, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, dayOfWeekFromKey, formatDA, formatTimeDZ, localDateTimeToISO, minutesToTime, relativeDayLabelDZ, timeToMinutes, toLocalDateKey } from '@salondz/constants';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, InfoBox, Skeleton, Slot, TopBar } from '@/components/ui';
@@ -68,10 +69,21 @@ export function BookingWhen() {
 
   const maxDate = addDaysToKey(today, s.bookingHorizonDays);
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
+  const freeGrid = grid.filter((g) => g.free);
+  const takenCount = grid.length - freeGrid.length;
   const groups = new Map<Period, typeof grid>();
-  for (const g of grid) groups.set(periodOf(g.time), [...(groups.get(periodOf(g.time)) ?? []), g]);
+  for (const g of freeGrid) groups.set(periodOf(g.time), [...(groups.get(periodOf(g.time)) ?? []), g]);
   const chosenSlot = grid.find((g) => g.iso === slot);
   const endTime = chosenSlot ? minutesToTime(timeToMinutes(chosenSlot.time) + minutes) : null;
+  const lastSlot = grid[grid.length - 1] ?? null;
+  const dayOver = !!lastSlot && new Date(lastSlot.iso).getTime() <= Date.now();
+  const next = availability.data?.nextAvailable ?? null;
+  const goNext = () => {
+    if (!next) return;
+    setWeekOf(next.date);
+    setDate(next.date);
+    setSlot(localDateTimeToISO(next.date, next.slots[0]!));
+  };
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
@@ -99,8 +111,24 @@ export function BookingWhen() {
         </div>
       ) : availability.isError ? (
         <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
-      ) : grid.length === 0 ? (
-        <p className="p">Plus de créneau disponible ce jour. Essayez un autre jour.</p>
+      ) : freeGrid.length === 0 ? (
+        <div className="crd !gap-2" role="status">
+          <span className="text-[1rem] font-bold tracking-[-0.3px]">{dayOver ? 'Journée terminée' : 'Complet ce jour'}</span>
+          <span className="p text-[0.875rem]">
+            {lastSlot
+              ? dayOver
+                ? `Le dernier créneau du jour était à ${lastSlot.time}.`
+                : `Le dernier créneau (${lastSlot.time}) est déjà pris : toutes les disponibilités de ce jour sont réservées.`
+              : 'Aucune disponibilité ce jour.'}
+          </span>
+          {next ? (
+            <Button auto sm onClick={goNext} className="mt-1">
+              Prochaine disponibilité · {relativeDayLabelDZ(next.date)} à {next.slots[0]}
+            </Button>
+          ) : (
+            <span className="p text-[0.8125rem]">Aucune disponibilité dans les {s.bookingHorizonDays} prochains jours pour ces prestations.</span>
+          )}
+        </div>
       ) : (
         [...groups.entries()].map(([period, list]) => (
           <div key={period} className="flex flex-col gap-3">
@@ -116,15 +144,10 @@ export function BookingWhen() {
         ))
       )}
 
-      {grid.length > 0 && (
+      {freeGrid.length > 0 && (
         <InfoBox>
-          {chosenSlot ? (
-            <>
-              Créneau de {formatDuration(minutes)} : {chosenSlot.time} → {endTime}. Les créneaux grisés sont déjà réservés.
-            </>
-          ) : (
-            <>Durée totale {formatDuration(minutes)}. Les créneaux grisés sont déjà réservés.</>
-          )}
+          {chosenSlot ? `Créneau de ${formatDuration(minutes)} : ${chosenSlot.time} → ${endTime}.` : `Durée totale ${formatDuration(minutes)}.`}
+          {takenCount > 0 ? ` ${takenCount} créneau${takenCount > 1 ? 'x' : ''} déjà pris ce jour ${takenCount > 1 ? 'ne sont' : "n'est"} pas affiché${takenCount > 1 ? 's' : ''}.` : ''}
         </InfoBox>
       )}
 

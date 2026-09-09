@@ -281,6 +281,8 @@ export interface AvailabilityResponse {
   slotIntervalMinutes: number;
   durationMinutes: number;
   slots: AvailabilitySlot[];
+  /** Journée complète : prochaine journée avec des créneaux libres pour ces prestations (après `date`), sinon null. */
+  nextAvailable: { date: DateKey; slots: string[] } | null;
 }
 
 /** Réservation enrichie côté client (nom du salon, etc.). */
