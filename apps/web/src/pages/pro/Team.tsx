@@ -1,22 +1,15 @@
 /**
- * Espace pro — Équipe : membres, activation, prestations affectées et horaires propres (feuille au design).
- * Prestations : « toutes » par défaut, ou une sélection — les créneaux et réservations ne proposent le membre
- * que pour les prestations qu'il réalise (calcul SQL). Horaires : liste vide côté API = « suit le salon » ;
- * sinon plages par jour avec pause facultative ; créneaux = salon ∩ membre.
+ * Espace pro — Équipe : liste des membres ; chaque ligne ouvre la fiche du membre (page dédiée), qui mène
+ * aux pages Prestations et Horaires. « Ajouter un membre » ouvre la page de création.
  */
-import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronRight, Plus } from 'lucide-react';
-import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
-import { formatDA, rangesFromRows, rowError, rowsFromRanges, type DayHoursRow } from '@salondz/constants';
-import type { OpeningHour, Service, Staff } from '@salondz/types';
-import { errorText } from '@/components/ErrorMessage';
-import { Avatar, BottomSheet, Button, Checkbox, I, Segmented, Skeleton, Toggle } from '@/components/ui';
+import { useProSalon } from '@salondz/api-client';
+import { formatDA } from '@salondz/constants';
+import type { Service, Staff } from '@salondz/types';
+import { Avatar, Button, Checkbox, I, Segmented } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
-import { WeekHoursEditor } from './onboarding/Step9Hours';
-
-const salonRanges = (hours: OpeningHour[]) => hours.filter((h) => !h.isClosed).map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.opensAt, end: h.closesAt }));
 
 /** Choix des prestations d'un membre : toutes, ou cases à cocher. */
 export function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
@@ -56,125 +49,10 @@ export function ServicesPicker({ services, all, selected, onAll, onToggle }: { s
   );
 }
 
-function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { ownerId: string; openingHours: OpeningHour[]; services: Service[] }; onClose: () => void }) {
-  const hours = useStaffHours(member.id);
-  const { update, remove, setHours } = useProStaffMutations();
-  const [tab, setTab] = useState<'services' | 'hours'>('services');
-  const [all, setAll] = useState(member.allServices);
-  const [selected, setSelected] = useState<string[]>(member.serviceIds);
-  const [custom, setCustom] = useState(false);
-  const [rows, setRows] = useState<DayHoursRow[]>(() => rowsFromRanges([], salonRanges(salon.openingHours)).map((r) => ({ ...r, open: salon.openingHours.some((h) => h.dayOfWeek === r.dayOfWeek && !h.isClosed) })));
-  const [error, setError] = useState<string | null>(null);
-  const [confirmRemove, setConfirmRemove] = useState(false);
-  const isOwner = member.userId === salon.ownerId;
-  const seeded = useRef(false);
-
-  // Amorce unique depuis l'API : ne pas écraser les choix faits pendant le chargement.
-  useEffect(() => {
-    if (!hours.data || seeded.current) return;
-    seeded.current = true;
-    if (hours.data.length === 0) return setCustom(false);
-    setCustom(true);
-    setRows(rowsFromRanges(hours.data.map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.startsAt, end: h.endsAt })), salonRanges(salon.openingHours)));
-  }, [hours.data, salon.openingHours]);
-
-  const invalidHours = custom && rows.some((r) => rowError(r) !== null);
-  const invalidServices = !all && selected.length === 0 && salon.services.length > 0;
-
-  const save = async () => {
-    setError(null);
-    try {
-      await update.mutateAsync({ id: member.id, allServices: all, serviceIds: all ? [] : selected });
-      await setHours.mutateAsync({
-        id: member.id,
-        hours: custom ? rangesFromRows(rows).map((r) => ({ dayOfWeek: r.dayOfWeek, startsAt: r.start, endsAt: r.end })) : [],
-      });
-      onClose();
-    } catch (err) {
-      setError(errorText(err));
-    }
-  };
-
-  return (
-    <>
-      <div className="dim" onClick={onClose} />
-      <BottomSheet className="max-h-[88vh] !z-50 overflow-y-auto">
-        <div role="dialog" aria-label={`Membre ${member.displayName}`} className="flex flex-col gap-3.5">
-          <div className="flex items-center gap-3.5">
-            <Avatar src={member.avatarUrl} name={member.displayName} size={56} />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[1.125rem] font-bold tracking-[-0.4px]">{member.displayName}</span>
-              <span className="p block text-[0.9375rem]">{isOwner ? 'Propriétaire' : member.isActive ? 'Membre actif' : 'Inactif — masqué à la réservation'}</span>
-            </span>
-            {!isOwner && <Toggle on={member.isActive} onChange={(v) => update.mutate({ id: member.id, isActive: v }, { onError: (e) => setError(errorText(e)) })} label="Actif" />}
-          </div>
-          <Segmented
-            label="Réglages du membre"
-            value={tab}
-            onChange={setTab}
-            options={[
-              { value: 'services', label: `Prestations${all ? '' : ` (${selected.length})`}` },
-              { value: 'hours', label: 'Horaires' },
-            ]}
-          />
-          {tab === 'services' ? (
-            <ServicesPicker services={salon.services} all={all} selected={selected} onAll={setAll} onToggle={(id) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))} />
-          ) : (
-            <>
-              <Segmented
-                label="Horaires"
-                value={custom ? 'custom' : 'salon'}
-                onChange={(v) => setCustom(v === 'custom')}
-                options={[
-                  { value: 'salon', label: 'Horaires du salon' },
-                  { value: 'custom', label: 'Horaires personnalisés' },
-                ]}
-              />
-              {hours.isPending ? <Skeleton className="h-[7.5rem]" /> : custom ? <WeekHoursEditor rows={rows} onChange={setRows} closedLabel="Repos" /> : <p className="p text-[0.9375rem]">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>}
-            </>
-          )}
-          {error && (
-            <p className="text-[0.875rem] text-danger" role="alert">
-              {error}
-            </p>
-          )}
-          <Button onClick={() => void save()} disabled={setHours.isPending || update.isPending || invalidHours || invalidServices || hours.isPending}>
-            {setHours.isPending || update.isPending ? 'Enregistrement…' : 'Enregistrer'}
-          </Button>
-          {!isOwner &&
-            (confirmRemove ? (
-              <Button
-                className="!bg-danger !text-white"
-                disabled={remove.isPending}
-                onClick={async () => {
-                  try {
-                    await remove.mutateAsync(member.id);
-                    onClose();
-                  } catch (err) {
-                    setError(errorText(err));
-                  }
-                }}
-              >
-                Confirmer le retrait
-              </Button>
-            ) : (
-              <button type="button" className="py-2 text-[0.8125rem] text-danger" onClick={() => setConfirmRemove(true)}>
-                Retirer de l'équipe
-              </button>
-            ))}
-        </div>
-      </BottomSheet>
-    </>
-  );
-}
-
 export function Team() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  const [open, setOpen] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;
-  const member = salon.staff.find((m) => m.id === open) ?? null;
 
   const summary = (m: Staff) => {
     const state = m.isActive ? 'Actif' : 'Inactif';
@@ -189,7 +67,7 @@ export function Team() {
       <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (
           <li key={m.id}>
-            <button type="button" className="li w-full !py-4 text-left" onClick={() => setOpen(m.id)}>
+            <button type="button" className="li w-full !py-4 text-left" onClick={() => navigate(`/pro/equipe/${m.id}`)}>
               <span className="flex min-w-0 items-center gap-3.5">
                 <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
                 <span className="min-w-0">
@@ -208,12 +86,6 @@ export function Team() {
       <Button onClick={() => navigate('/pro/equipe/nouveau')}>
         <I icon={Plus} size={18} /> Ajouter un membre
       </Button>
-      {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
-          {error}
-        </p>
-      )}
-      {member && <MemberSheet member={member} salon={salon} onClose={() => setOpen(null)} />}
     </Screen>
   );
 }

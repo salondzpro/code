@@ -1,8 +1,9 @@
-/** Éditeur d'une semaine d'horaires avec pause facultative par jour (salon et membre) — même logique que le web. */
+/** Éditeur d'une semaine d'horaires avec une ou plusieurs pauses par jour (salon et membre) — même logique que le web. */
 import React from 'react';
-import { View } from 'react-native';
-import { DAY_LABELS_FR, formatDayRanges, rangesFromRows, rowError, type DayHoursRow, type DayOfWeek } from '@salondz/constants';
-import { Card, Grid, Toggle, Tx } from './index';
+import { Pressable, View } from 'react-native';
+import { Plus, X } from 'lucide-react-native';
+import { DAY_LABELS_FR, MAX_BREAKS_PER_DAY, formatDayRanges, nextBreakSuggestion, rangesFromRows, rowError, type DayBreak, type DayHoursRow, type DayOfWeek } from '@salondz/constants';
+import { Card, Grid, I, IconButton, Toggle, Tx } from './index';
 import { TimeField } from './Pickers';
 import { C, R } from '@/theme/design';
 
@@ -18,8 +19,9 @@ function TimeBox({ label, value, onChange, ariaLabel }: { label: string; value: 
   );
 }
 
-export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé', breakLabel = 'Pause' }: { rows: DayHoursRow[]; onChange: (rows: DayHoursRow[]) => void; closedLabel?: string; breakLabel?: string }) {
+export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { rows: DayHoursRow[]; onChange: (rows: DayHoursRow[]) => void; closedLabel?: string }) {
   const patch = (d: DayOfWeek, p: Partial<DayHoursRow>) => onChange(rows.map((r) => (r.dayOfWeek === d ? { ...r, ...p } : r)));
+  const patchBreak = (r: DayHoursRow, idx: number, b: Partial<DayBreak>) => patch(r.dayOfWeek, { breaks: r.breaks.map((x, k) => (k === idx ? { ...x, ...b } : x)) });
   return (
     <View style={{ gap: 10 }}>
       {rows.map((r) => {
@@ -44,17 +46,26 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé', breakL
                   <TimeBox label="Ouvre" value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} ariaLabel={`Ouverture ${day}`} />
                   <TimeBox label="Ferme" value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} ariaLabel={`Fermeture ${day}`} />
                 </Grid>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                  <Tx size={12} lh={16}>
-                    {breakLabel}
-                  </Tx>
-                  <Toggle on={r.hasBreak} onChange={(v) => patch(r.dayOfWeek, { hasBreak: v })} label={`${breakLabel} ${day}`} />
-                </View>
-                {r.hasBreak && (
-                  <Grid cols={2} gap={8}>
-                    <TimeBox label="Début de pause" value={r.breakFrom} onChange={(v) => patch(r.dayOfWeek, { breakFrom: v })} ariaLabel={`Début de pause ${day}`} />
-                    <TimeBox label="Fin de pause" value={r.breakTo} onChange={(v) => patch(r.dayOfWeek, { breakTo: v })} ariaLabel={`Fin de pause ${day}`} />
-                  </Grid>
+                {r.breaks.map((b, idx) => (
+                  <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6 }}>
+                    <View style={{ flex: 1 }}>
+                      <Grid cols={2} gap={8}>
+                        <TimeBox label={r.breaks.length > 1 ? `Pause ${idx + 1} · début` : 'Début de pause'} value={b.from} onChange={(v) => patchBreak(r, idx, { from: v })} ariaLabel={`Début de pause ${idx + 1} ${day}`} />
+                        <TimeBox label={r.breaks.length > 1 ? `Pause ${idx + 1} · fin` : 'Fin de pause'} value={b.to} onChange={(v) => patchBreak(r, idx, { to: v })} ariaLabel={`Fin de pause ${idx + 1} ${day}`} />
+                      </Grid>
+                    </View>
+                    <IconButton accessibilityLabel={`Supprimer la pause ${idx + 1} ${day}`} onPress={() => patch(r.dayOfWeek, { breaks: r.breaks.filter((_, k) => k !== idx) })}>
+                      <I icon={X} size={13} />
+                    </IconButton>
+                  </View>
+                ))}
+                {r.breaks.length < MAX_BREAKS_PER_DAY && (
+                  <Pressable accessibilityRole="button" accessibilityLabel={`Ajouter une pause ${day}`} onPress={() => patch(r.dayOfWeek, { breaks: [...r.breaks, nextBreakSuggestion(r)] })} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingVertical: 2 }}>
+                    <I icon={Plus} size={13} />
+                    <Tx size={12} weight={600} lh={16}>
+                      {r.breaks.length ? 'Ajouter une autre pause' : 'Ajouter une pause'}
+                    </Tx>
+                  </Pressable>
                 )}
               </>
             )}

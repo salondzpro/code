@@ -100,9 +100,9 @@ export const openingHourSchema = z
     message: "L'heure d'ouverture doit précéder la fermeture",
     path: ['closesAt'],
   });
-/** Remplace l'intégralité des horaires (max 2 plages par jour : ex. coupure déjeuner). */
+/** Remplace l'intégralité des horaires (jusqu'à 5 plages par jour : une ou plusieurs pauses). */
 export const setOpeningHoursSchema = z.object({
-  hours: z.array(openingHourSchema).min(1).max(14),
+  hours: z.array(openingHourSchema).min(1).max(35),
 });
 export type SetOpeningHoursInput = z.infer<typeof setOpeningHoursSchema>;
 
@@ -125,7 +125,7 @@ export const setStaffHoursSchema = z.object({
         .object({ dayOfWeek: p.dayOfWeek, startsAt: p.timeHM, endsAt: p.timeHM })
         .refine((h) => h.startsAt < h.endsAt, { message: 'Plage invalide', path: ['endsAt'] }),
     )
-    .max(14),
+    .max(35),
 });
 
 // ---------- Clients bloqués ----------

@@ -47,7 +47,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
     <Screen gap={13} footer={<StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onPress={() => void save()} disabled={invalid} busy={setHours.isPending} />}>
       <StepBar step={9} backTo={settings ? '/(pro)/(tabs)/profil-pro' : stepPath(8)} right={settings ? 'Horaires' : undefined} />
       <H1>Horaires</H1>
-      <P>Ouverture et fermeture par jour. Ajoutez une pause sur les jours qui en ont une, par exemple le vendredi de 12:00 à 14:00.</P>
+      <P>Ouverture et fermeture par jour. Ajoutez une ou plusieurs pauses sur les jours qui en ont, par exemple le vendredi de 12:00 à 14:00.</P>
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <ListCard>
         <Row py={13} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>Dimanche</Tx>}>

@@ -166,7 +166,10 @@ export const useProPendingBookings = (enabled = true) => {
 };
 export const useProBooking = (id: string) => useQuery(useApi().queries.pro.booking(id));
 export const useProBlocks = (from?: string, to?: string) => useQuery(useApi().queries.pro.blocks(from, to));
-export const useStaffHours = (id: string) => useQuery(useApi().queries.pro.staffHours(id));
+export const useStaffHours = (id: string, enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.pro.staffHours(id), enabled: enabled && !!id });
+};
 
 function invalidatePro(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: queryKeys.pro.all });

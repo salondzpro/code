@@ -290,18 +290,31 @@ try {
     await row.waitFor();
     await shot(p, 'pro-equipe');
     await row.getByRole('button').click();
-    const sheet = p.getByRole('dialog', { name: 'Membre Yacine' });
-    // Prestations affectées : « toutes » par défaut, sélection possible.
-    await sheet.getByText(/toutes les prestations du catalogue/).waitFor();
-    await sheet.getByRole('tab', { name: 'Sélection' }).click();
-    await sheet.getByRole('checkbox', { name: 'Coupe + barbe' }).click();
-    await sheet.getByRole('tab', { name: 'Horaires', exact: true }).click();
-    await sheet.getByText(/réservable sur tous les horaires/).waitFor(); // horaires chargés
-    await sheet.getByRole('tab', { name: 'Horaires personnalisés' }).click();
-    await sheet.getByRole('switch', { name: 'Dimanche', exact: true }).click(); // repos le dimanche
+    // Fiche du membre (page dédiée) → page Prestations : « toutes » par défaut, sélection possible.
+    await p.waitForURL(/\/pro\/equipe\/[0-9a-f-]+$/);
+    await p.getByRole('heading', { name: 'Yacine' }).waitFor();
+    await p.getByRole('button', { name: /^Prestations/ }).click();
+    await p.getByText(/toutes les prestations du catalogue/).waitFor();
+    await p.getByRole('tab', { name: 'Sélection' }).click();
+    await p.getByRole('checkbox', { name: 'Coupe + barbe' }).click();
+    await p.getByRole('button', { name: 'Enregistrer' }).click();
+    await p.waitForURL(/\/pro\/equipe\/[0-9a-f-]+$/);
+    await p.getByText('1 prestation sur').waitFor();
+    // Page Horaires : personnalisés, repos le dimanche, deux pauses le lundi.
+    await p.getByRole('button', { name: /^Horaires/ }).click();
+    await p.getByText(/réservable sur tous les horaires/).waitFor(); // horaires chargés
+    await p.getByRole('tab', { name: 'Horaires personnalisés' }).click();
+    await p.getByRole('switch', { name: 'Dimanche', exact: true }).click(); // repos le dimanche
+    await p.getByRole('button', { name: 'Ajouter une pause Lundi' }).click();
+    await p.getByRole('button', { name: 'Ajouter une pause Lundi' }).click();
+    await p.getByLabel('Début de pause 2 Lundi').fill('16:00');
+    await p.getByLabel('Fin de pause 2 Lundi').fill('16:30');
+    await p.getByText('09:00–12:00 · 13:00–16:00 · 16:30–19:00').waitFor();
     await shot(p, 'pro-equipe-membre');
-    await sheet.getByRole('button', { name: 'Enregistrer' }).click();
-    await sheet.waitFor({ state: 'detached' });
+    await p.getByRole('button', { name: 'Enregistrer' }).click();
+    await p.waitForURL(/\/pro\/equipe\/[0-9a-f-]+$/);
+    await p.getByText(/Personnalisés · [0-9] jours/).waitFor();
+    await p.getByText('09:00–12:00 · 13:00–16:00 · 16:30–19:00').waitFor();
   });
   await step('pro: fermetures — pause du membre sur le jour cible (PRO-F 14)', async () => {
     await p.goto(WEB + '/pro/blocages');

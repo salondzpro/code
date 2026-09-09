@@ -59,6 +59,7 @@ import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDe
 import { ProBookingNew } from '@/pages/pro/ProBookingNew';
 import { Team } from '@/pages/pro/Team';
 import { TeamNew } from '@/pages/pro/TeamNew';
+import { TeamMember, TeamMemberHours, TeamMemberServices } from '@/pages/pro/TeamMember';
 import { Closures } from '@/pages/pro/Closures';
 import { Requests } from '@/pages/pro/Requests';
 
@@ -179,6 +180,9 @@ export const router = createBrowserRouter([
               { path: 'clients/:key', element: <ClientDetail /> },
               { path: 'equipe', element: <Team /> },
               { path: 'equipe/nouveau', element: <TeamNew /> },
+              { path: 'equipe/:id', element: <TeamMember /> },
+              { path: 'equipe/:id/prestations', element: <TeamMemberServices /> },
+              { path: 'equipe/:id/horaires', element: <TeamMemberHours /> },
               { path: 'prestations', element: <ProServices /> },
               { path: 'profil', element: <ProProfile /> },
             ],
