@@ -71,17 +71,19 @@ export function SlotPills({
   );
 }
 
-/** Libellé du jour des prochaines disponibilités : « Aujourd'hui », « Demain · Ven. 11 », « Prochain créneau · Sam. 12 ». */
+/** Libellé du jour des prochaines disponibilités : « Aujourd'hui », « Demain », sinon « Jeu. 10 ». */
 export function nextDayLabel(date: string, today: string = toLocalDateKey()): string {
   if (date === today) return "Aujourd'hui";
-  if (date === addDaysToKey(today, 1)) return `Demain · ${dayChipLabelDZ(date)}`;
-  return `Prochain créneau · ${dayChipLabelDZ(date)}`;
+  if (date === addDaysToKey(today, 1)) return 'Demain';
+  return dayChipLabelDZ(date);
 }
 
 /**
- * « Prochaines disponibilités » directement sur la carte : les créneaux réellement libres les plus proches
- * (aujourd'hui, sinon demain, sinon le prochain jour ouvert et non complet — calcul SQL côté API, revalidé à la
- * réservation). Chaque heure ouvre la réservation avec la date et l'heure déjà choisies. « Voir plus » = fiche salon.
+ * « Prochaines disponibilités » directement sur la carte (Planity, en plus compact) : pour le premier jour
+ * disponible (aujourd'hui → demain → prochain jour ouvert et non complet, calcul SQL côté API), une ligne MATIN et
+ * une ligne APRÈS-MIDI avec au plus 3 heures réellement libres chacune ; une période vide n'est pas affichée.
+ * Chaque heure ouvre la réservation avec la date et l'heure déjà choisies (revalidées en SQL à la réservation).
+ * « Voir plus » = fiche salon (tous les créneaux).
  */
 export function NextSlots({
   salon,
@@ -97,7 +99,21 @@ export function NextSlots({
     e.stopPropagation();
     navigate(to);
   };
-  if (!next || next.slots.length === 0) {
+  const rows = next
+    ? [
+        {
+          key: 'matin',
+          label: 'Matin',
+          slots: next.morning ?? next.slots.filter((t) => t < '12:00').slice(0, 3),
+        },
+        {
+          key: 'aprem',
+          label: 'Après-midi',
+          slots: next.afternoon ?? next.slots.filter((t) => t >= '12:00').slice(0, 3),
+        },
+      ].filter((r) => r.slots.length > 0)
+    : [];
+  if (!next || rows.length === 0) {
     return (
       <div className="flex items-center justify-between gap-2">
         <span className="s">{empty}</span>
@@ -111,36 +127,43 @@ export function NextSlots({
       </div>
     );
   }
-  const label = nextDayLabel(next.date);
+  const day = nextDayLabel(next.date);
   return (
-    <div className="flex flex-col gap-2" aria-label={`Prochaines disponibilités ${label}`}>
+    <div className="flex flex-col gap-2" aria-label={`Prochaines disponibilités ${day}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em] text-muted">
           Prochaines disponibilités
         </span>
-        <span className="text-[0.8125rem] font-semibold">{label}</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {next.slots.map((t) => (
-          <button
-            key={t}
-            type="button"
-            className="pill mono !border-ink !px-3.5 !py-2.5 !text-[0.9375rem] font-semibold hover:!bg-fill"
-            aria-label={`Réserver ${label} à ${t}`}
-            onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
-          >
-            {t}
-          </button>
-        ))}
         <button
           type="button"
-          className="!px-1 text-[0.8125rem] font-semibold text-muted"
+          className="text-[0.8125rem] font-semibold text-muted"
           aria-label="Voir plus de créneaux"
           onClick={(e) => go(e, `/s/${salon.slug}`)}
         >
           Voir plus →
         </button>
       </div>
+      {rows.map((r) => (
+        <div key={r.key} className="flex items-center gap-2">
+          <span className="w-[7.75rem] flex-none text-[0.75rem] font-bold uppercase tracking-[0.06em]">
+            {r.label}{' '}
+            <span className="font-semibold normal-case tracking-normal text-muted">· {day}</span>
+          </span>
+          <div className="flex flex-1 flex-wrap gap-1.5">
+            {r.slots.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className="pill mono !border-ink !px-3 !py-2 !text-[0.875rem] font-semibold hover:!bg-fill"
+                aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
+                onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

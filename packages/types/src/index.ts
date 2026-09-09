@@ -220,7 +220,12 @@ export interface SalonSummary {
   /** Prochains créneaux du jour (HH:mm, heure d'Alger), 3 au plus. */
   nextSlots: string[];
   /** Première journée avec des créneaux (aujourd'hui, sinon les 7 jours suivants) : date locale + heures. */
-  nextAvailable: { date: string; slots: string[] } | null;
+  nextAvailable: {
+    date: string;
+    slots: string[];
+    /** 3 premiers créneaux libres du matin (< 12 h) et de l'après-midi (≥ 12 h). */ morning?: string[];
+    afternoon?: string[];
+  } | null;
   isOpenNow: boolean;
   lat?: number | null;
   lng?: number | null;
@@ -249,7 +254,19 @@ export interface CityCount {
 
 /** Suggestions de recherche (design C-H 07) : salons, prestations et lieux correspondant à la saisie. */
 export interface SearchSuggestions {
-  salons: { id: UUID; slug: string; name: string; city: string; zone: string | null; wilayaCode: number; logoUrl: string | null; coverUrl: string | null; ratingAvg: number; ratingCount: number; categoryId: string | null }[];
+  salons: {
+    id: UUID;
+    slug: string;
+    name: string;
+    city: string;
+    zone: string | null;
+    wilayaCode: number;
+    logoUrl: string | null;
+    coverUrl: string | null;
+    ratingAvg: number;
+    ratingCount: number;
+    categoryId: string | null;
+  }[];
   services: { name: string; salonCount: number; minPriceDa: number | null }[];
   places: { city: string; parentCity: string | null; wilayaCode: number; salonCount: number }[];
 }
@@ -302,7 +319,19 @@ export interface AvailabilityResponse {
 
 /** Réservation enrichie côté client (nom du salon, etc.). */
 export interface BookingWithSalon extends Booking {
-  salon: Pick<Salon, 'id' | 'slug' | 'name' | 'city' | 'coverUrl' | 'logoUrl' | 'phone' | 'address' | 'cancelMinHours' | 'allowClientReschedule'>;
+  salon: Pick<
+    Salon,
+    | 'id'
+    | 'slug'
+    | 'name'
+    | 'city'
+    | 'coverUrl'
+    | 'logoUrl'
+    | 'phone'
+    | 'address'
+    | 'cancelMinHours'
+    | 'allowClientReschedule'
+  >;
   staff: Pick<Staff, 'id' | 'displayName'> | null;
   /** Note déjà donnée par le client pour ce rendez-vous (un seul avis par rendez-vous), sinon null. */
   reviewRating: number | null;
