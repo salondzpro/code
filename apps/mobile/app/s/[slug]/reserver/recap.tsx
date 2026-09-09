@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ApiError, useCreateBooking, useSalon, useUpdateProfile } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatTimeDZ, minutesToTime, timeToMinutes, wilayaName } from '@salondz/constants';
+import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatTimeDZ, minutesToTime, relativeDayLabelDZ, timeToMinutes, toLocalDateKey, wilayaName } from '@salondz/constants';
 import { clearDraft, readDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
+import { capitalize } from '@/lib/salon';
 import { publicHost } from '@/lib/salon';
 import { Avatar, BottomSheet, Button, Card, ErrorText, H1, InfoBox, P, Row, Rows, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
@@ -68,8 +69,8 @@ export default function BookingReview() {
     >
       <TopBar backTo={`/s/${slug}/reserver/coordonnees`} right="Étape 4 sur 4" />
       <H1>Récapitulatif</H1>
-      <Card gap={0}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11, marginBottom: 6 }}>
+      <Card>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={58.5} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
@@ -80,31 +81,49 @@ export default function BookingReview() {
             </Tx>
           </View>
         </View>
+      </Card>
+      {/* L'essentiel en grand : quand, à quelle heure, combien — même lecture que la fiche de rendez-vous. */}
+      <Card gap={10}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <Tx size={13} weight={700} lh={17}>
+            {relativeDayLabelDZ(toLocalDateKey(new Date(draft.startsAt)))}
+          </Tx>
+          <Tx size={11} color={C.muted} lh={15}>
+            {capitalize(formatDateLongDZ(draft.startsAt))}
+          </Tx>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+              {start}
+            </Tx>
+            <Tx size={13} color={C.muted} lh={21} mono>
+              – {end}
+            </Tx>
+          </View>
+          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+            {formatDA(price)}
+          </Tx>
+        </View>
+        <Tx size={10.5} color={C.muted} lh={14}>
+          {`${formatDuration(minutes)} au total · ${s.depositRequired ? 'acompte demandé sur place' : 'paiement sur place, aucun acompte'}`}
+        </Tx>
+      </Card>
+      <Card gap={0}>
         <Rows>
+          <Row py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(price)}</Tx>}>
+            <Tx size={13} weight={700} lh={17}>
+              {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
+            </Tx>
+          </Row>
           {chosen.map((sv) => (
-            <Row key={sv!.id} py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}</Tx>}>
-              <Tx size={11.5} lh={15.5}>
+            <Row key={sv!.id} py={10} chevron={false} right={<Tx size={11} color={C.muted} lh={15}>{`${formatDuration(sv!.durationMinutes)} · ${formatDA(sv!.priceDa)}`}</Tx>}>
+              <Tx size={13} weight={600} lh={17}>
                 {sv!.name}
               </Tx>
             </Row>
           ))}
-          <Row py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5} mono>{start} → {end}</Tx>}>
-            <Tx size={11.5} lh={15.5}>
-              {formatDateLongDZ(draft.startsAt)}
-            </Tx>
-          </Row>
         </Rows>
-      </Card>
-      <Card gap={3}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Tx size={14.5} weight={600} lh={18.5}>
-            Total
-          </Tx>
-          <Tx size={16} weight={700} lh={20.5}>
-            {formatDA(price)}
-          </Tx>
-        </View>
-        <P>{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</P>
       </Card>
       <LateRule startsAt={draft.startsAt} />
       <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>

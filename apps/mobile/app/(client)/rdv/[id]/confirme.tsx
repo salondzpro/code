@@ -4,12 +4,20 @@ import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, CalendarCheck, Check } from 'lucide-react-native';
 import { useBooking } from '@salondz/api-client';
-import { formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
+import {
+  formatDA,
+  formatDateLongDZ,
+  formatDZPhone,
+  formatTimeDZ,
+  relativeDayLabelDZ,
+  toLocalDateKey,
+} from '@salondz/constants';
 import type { BookingWithSalon } from '@salondz/types';
 import { api } from '@/lib/api';
 import { registerForPushNotifications } from '@/lib/push';
-import { googleCalendarUrl, open } from '@/lib/salon';
+import { capitalize, googleCalendarUrl, open } from '@/lib/salon';
 import { Avatar, Button, Card, ErrorText, H1, I, P, Row, Rows, StatusBadge, Tx } from '@/ui';
+import { formatDuration } from '@/lib/format';
 import { Screen } from '@/ui/Screen';
 import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
@@ -44,6 +52,16 @@ export default function BookingConfirmed() {
     );
   const b = booking.data;
   const confirmed = b.status === 'confirmed';
+  const lines = b.items?.length
+    ? b.items
+    : [
+        {
+          id: b.id,
+          serviceName: b.serviceName,
+          durationMinutes: b.durationMinutes,
+          priceDa: b.priceDa,
+        },
+      ];
 
   return (
     <Screen center gap={13}>
@@ -66,9 +84,9 @@ export default function BookingConfirmed() {
           {confirmed ? 'confirmé' : 'envoyée'}
         </H1>
       </View>
-      <Card gap={0}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11, marginBottom: 6 }}>
-          <Avatar src={b.salon.coverUrl} name={b.salon.name} size={71.5} />
+      <Card>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+          <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={71.5} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
               {b.salon.name}
@@ -79,52 +97,87 @@ export default function BookingConfirmed() {
             </Tx>
           </View>
         </View>
-        <Rows>
-          <Row
-            py={13}
-            chevron={false}
-            right={
-              <Tx size={11.5} weight={600} lh={15.5}>
-                {b.serviceName}
-              </Tx>
-            }
-          >
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Prestation
-            </Tx>
-          </Row>
-          <Row
-            py={13}
-            chevron={false}
-            right={
-              <Tx size={11.5} weight={600} lh={15.5}>
-                {formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}
-              </Tx>
-            }
-          >
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Date et heure
-            </Tx>
-          </Row>
-          <Row
-            py={13}
-            chevron={false}
-            right={
-              <Tx size={11.5} weight={600} lh={15.5}>
-                {formatDA(b.priceDa)}
-              </Tx>
-            }
-          >
-            <Tx size={11.5} color={C.muted} lh={15.5}>
-              Total
-            </Tx>
-          </Row>
-        </Rows>
         {!confirmed && (
           <View style={{ paddingTop: 10 }}>
             <StatusBadge status={b.status} md />
           </View>
         )}
+      </Card>
+      {/* L'essentiel en grand : quand, à quelle heure, combien — même lecture que la fiche de rendez-vous. */}
+      <Card gap={10}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <Tx size={13} weight={700} lh={17}>
+            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+          </Tx>
+          <Tx size={11} color={C.muted} lh={15}>
+            {capitalize(formatDateLongDZ(b.startsAt))}
+          </Tx>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+              {formatTimeDZ(b.startsAt)}
+            </Tx>
+            <Tx size={13} color={C.muted} lh={21} mono>
+              – {formatTimeDZ(b.endsAt)}
+            </Tx>
+          </View>
+          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+            {formatDA(b.priceDa)}
+          </Tx>
+        </View>
+        <Tx size={10.5} color={C.muted} lh={14}>
+          {`${formatDuration(b.durationMinutes)} au total · paiement sur place`}
+        </Tx>
+      </Card>
+      <Card gap={0}>
+        <Rows>
+          <Row
+            py={10}
+            chevron={false}
+            right={
+              <Tx size={11.5} color={C.muted} lh={15.5}>
+                {formatDA(b.priceDa)}
+              </Tx>
+            }
+          >
+            <Tx size={13} weight={700} lh={17}>
+              {lines.length} prestation{lines.length > 1 ? 's' : ''}
+            </Tx>
+          </Row>
+          {lines.map((it) => (
+            <Row
+              key={it.id}
+              py={10}
+              chevron={false}
+              right={
+                <Tx size={11} color={C.muted} lh={15}>
+                  {it.durationMinutes
+                    ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
+                    : formatDA(it.priceDa)}
+                </Tx>
+              }
+            >
+              <Tx size={13} weight={600} lh={17}>
+                {it.serviceName}
+              </Tx>
+            </Row>
+          ))}
+        </Rows>
       </Card>
       <LateRule startsAt={b.startsAt} />
       <P center>

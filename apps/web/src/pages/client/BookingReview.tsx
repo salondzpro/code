@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { ApiError, useCreateBooking, useSalon, useUpdateProfile } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatTimeDZ, minutesToTime, timeToMinutes, wilayaName } from '@salondz/constants';
+import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatTimeDZ, minutesToTime, relativeDayLabelDZ, timeToMinutes, toLocalDateKey, wilayaName } from '@salondz/constants';
 import { clearDraft, readDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, InfoBox, TopBar } from '@/components/ui';
@@ -59,8 +59,8 @@ export function BookingReview() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/s/${slug}/reserver/coordonnees`} right="Étape 4 sur 4" />
       <h1 className="h1">Récapitulatif</h1>
-      <div className="crd !gap-0">
-        <div className="mb-2 flex items-center gap-3.5">
+      <div className="crd">
+        <div className="flex items-center gap-3.5">
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={72} />
           <span className="min-w-0">
             <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{s.name}</span>
@@ -69,27 +69,38 @@ export function BookingReview() {
             </span>
           </span>
         </div>
+      </div>
+      {/* L'essentiel en grand : quand, à quelle heure, combien — même lecture que la fiche de rendez-vous. */}
+      <div className="crd !gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[1rem] font-bold">{relativeDayLabelDZ(toLocalDateKey(new Date(draft.startsAt)))}</span>
+          <span className="text-[0.875rem] text-muted">{formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
+        </div>
+        <div className="flex items-end justify-between gap-3">
+          <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+            {start} <span className="text-[1rem] font-medium text-muted">– {end}</span>
+          </span>
+          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">{formatDA(price)}</span>
+        </div>
+        <span className="text-[0.8125rem] text-muted">
+          {formatDuration(minutes)} au total · {s.depositRequired ? 'acompte demandé sur place' : 'paiement sur place, aucun acompte'}
+        </span>
+      </div>
+      <div className="crd !gap-0">
+        <div className="li !py-3">
+          <span className="text-[1rem] font-bold">
+            {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
+          </span>
+          <span className="text-[0.875rem] text-muted">{formatDA(price)}</span>
+        </div>
         {chosen.map((sv) => (
-          <div key={sv!.id} className="li !py-4 text-[0.875rem]">
-            <span>{sv!.name}</span>
-            <span className="text-muted">
+          <div key={sv!.id} className="li !py-3">
+            <span className="text-[1rem] font-semibold">{sv!.name}</span>
+            <span className="text-[0.875rem] text-muted">
               {formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}
             </span>
           </div>
         ))}
-        <div className="li !py-4 text-[0.875rem]">
-          <span>{formatDateLongDZ(draft.startsAt)}</span>
-          <span className="mono text-muted">
-            {start} → {end}
-          </span>
-        </div>
-      </div>
-      <div className="crd !gap-1">
-        <div className="flex items-center justify-between">
-          <span className="text-[1.125rem] font-semibold">Total</span>
-          <span className="text-[1.25rem] font-bold">{formatDA(price)}</span>
-        </div>
-        <span className="p">{s.depositRequired ? 'Acompte demandé sur place · confirmé par le salon' : 'Paiement sur place · aucun acompte demandé'}</span>
       </div>
       <LateRule startsAt={draft.startsAt} />
       <InfoBox>Annulation gratuite jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h avant. Confirmation par WhatsApp.</InfoBox>

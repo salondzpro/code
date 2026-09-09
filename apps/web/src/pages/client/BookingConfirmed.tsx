@@ -4,9 +4,11 @@ import { Calendar, CalendarCheck, Check } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import {
   formatDA,
-  formatDateShortDZ,
+  formatDateLongDZ,
   formatDZPhone,
   formatTimeDZ,
+  relativeDayLabelDZ,
+  toLocalDateKey,
   wilayaName,
 } from '@salondz/constants';
 import { Avatar, Button, I, StatusBadge } from '@/components/ui';
@@ -14,6 +16,7 @@ import { LateRule } from '@/components/LateRule';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { formatDuration } from '@/lib/format';
 import type { BookingWithSalon } from '@salondz/types';
 
 function icsDate(iso: string): string {
@@ -48,6 +51,16 @@ export function BookingConfirmed() {
     return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;
   const confirmed = b.status === 'confirmed';
+  const lines = b.items?.length
+    ? b.items
+    : [
+        {
+          id: b.id,
+          serviceName: b.serviceName,
+          durationMinutes: b.durationMinutes,
+          priceDa: b.priceDa,
+        },
+      ];
 
   return (
     <Screen className="min-h-dvh justify-center" gap={16}>
@@ -61,9 +74,9 @@ export function BookingConfirmed() {
           {confirmed ? 'confirmé' : 'envoyée'}
         </h1>
       </div>
-      <div className="crd !gap-0">
-        <div className="mb-2 flex items-center gap-3.5">
-          <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
+      <div className="crd">
+        <div className="flex items-center gap-3.5">
+          <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={88} />
           <span className="min-w-0">
             <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">
               {b.salon.name}
@@ -74,25 +87,52 @@ export function BookingConfirmed() {
             </span>
           </span>
         </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Prestation</span>
-          <span className="font-semibold">{b.serviceName}</span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Date et heure</span>
-          <span className="font-semibold">
-            {formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}
-          </span>
-        </div>
-        <div className="li !py-4 text-[0.875rem]">
-          <span className="text-muted">Total</span>
-          <span className="font-semibold">{formatDA(b.priceDa)}</span>
-        </div>
         {!confirmed && (
           <div className="pt-3">
             <StatusBadge status={b.status} md />
           </div>
         )}
+      </div>
+      {/* L'essentiel en grand : quand, à quelle heure, combien — même lecture que la fiche de rendez-vous. */}
+      <div className="crd !gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[1rem] font-bold">
+            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+          </span>
+          <span className="text-[0.875rem] text-muted">
+            {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
+          </span>
+        </div>
+        <div className="flex items-end justify-between gap-3">
+          <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+            {formatTimeDZ(b.startsAt)}{' '}
+            <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
+          </span>
+          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">
+            {formatDA(b.priceDa)}
+          </span>
+        </div>
+        <span className="text-[0.8125rem] text-muted">
+          {formatDuration(b.durationMinutes)} au total · paiement sur place
+        </span>
+      </div>
+      <div className="crd !gap-0">
+        <div className="li !py-3">
+          <span className="text-[1rem] font-bold">
+            {lines.length} prestation{lines.length > 1 ? 's' : ''}
+          </span>
+          <span className="text-[0.875rem] text-muted">{formatDA(b.priceDa)}</span>
+        </div>
+        {lines.map((it) => (
+          <div key={it.id} className="li !py-3">
+            <span className="text-[1rem] font-semibold">{it.serviceName}</span>
+            <span className="text-[0.875rem] text-muted">
+              {it.durationMinutes
+                ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
+                : formatDA(it.priceDa)}
+            </span>
+          </div>
+        ))}
       </div>
       <LateRule startsAt={b.startsAt} />
       <p className="p text-center">
