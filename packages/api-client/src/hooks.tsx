@@ -204,6 +204,10 @@ export function useProServiceMutations() {
 }
 
 export const useProClients = () => useQuery(useApi().queries.pro.clients());
+export const useProClientHistory = (key: string, enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.pro.clientHistory(key), enabled });
+};
 export function useProClientMutations() {
   const { api } = useApi();
   const qc = useQueryClient();
@@ -211,6 +215,7 @@ export function useProClientMutations() {
   return {
     block: useMutation({ mutationFn: api.pro.clients.block, onSuccess: done }),
     unblock: useMutation({ mutationFn: api.pro.clients.unblock, onSuccess: done }),
+    setNotes: useMutation({ mutationFn: ({ key, notes }: { key: string; notes: string }) => api.pro.clients.setNotes(key, notes), onSuccess: done }),
   };
 }
 
@@ -249,6 +254,7 @@ export function useProBookingMutations() {
     if (b) qc.setQueryData(queryKeys.pro.booking(b.id), b);
     qc.invalidateQueries({ queryKey: queryKeys.pro.bookingsAll });
     qc.invalidateQueries({ queryKey: queryKeys.pro.stats });
+    qc.invalidateQueries({ queryKey: queryKeys.pro.clients });
     qc.invalidateQueries({ queryKey: ['availability'] });
   };
   return {

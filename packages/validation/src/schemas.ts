@@ -137,6 +137,8 @@ export const blockClientSchema = z
   })
   .refine((v) => !!v.clientId || !!v.phone, { message: 'Compte ou numéro requis', path: ['phone'] });
 export type BlockClientInput = z.infer<typeof blockClientSchema>;
+export const clientNotesSchema = z.object({ notes: z.string().trim().max(2000) });
+export type ClientNotesInput = z.infer<typeof clientNotesSchema>;
 
 // ---------- Blocages (congés, pauses) ----------
 export const createTimeBlockSchema = z

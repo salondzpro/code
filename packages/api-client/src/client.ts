@@ -21,6 +21,7 @@ import type {
   TimeBlock,
   SearchSuggestions,
   ProClient,
+  ProClientHistoryItem,
 } from '@salondz/types';
 import type { Wilaya } from '@salondz/constants';
 import type {
@@ -206,6 +207,8 @@ export function createApiClient(opts: ApiClientOptions) {
         list: () => get<{ items: ProClient[] }>('/pro/clients'),
         block: (body: BlockClientInput) => post<void>('/pro/clients/block', body),
         unblock: (body: BlockClientInput) => post<void>('/pro/clients/unblock', body),
+        history: (key: string) => get<{ items: ProClientHistoryItem[] }>(`/pro/clients/${encodeURIComponent(key)}/history`),
+        setNotes: (key: string, notes: string) => put<void>(`/pro/clients/${encodeURIComponent(key)}/notes`, { notes }),
       },
       blocks: {
         list: (from?: string, to?: string) => get<{ items: TimeBlock[] }>('/pro/blocks', { from, to }),

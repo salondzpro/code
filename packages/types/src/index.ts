@@ -309,6 +309,24 @@ export interface ProClient {
   lastBookingId: UUID | null;
   blocked: boolean;
   blockedReason: string | null;
+  /** E-mail du compte (null pour un client de passage ou un compte technique). */
+  email: string | null;
+  /** Montant des rendez-vous terminés (DA). */
+  spentDa: number;
+  /** Notes privées du salon (jamais visibles du client). */
+  notes: string | null;
+}
+
+/** Ligne d'historique d'un client chez un salon. */
+export interface ProClientHistoryItem {
+  id: UUID;
+  startsAt: string;
+  endsAt: string;
+  serviceName: string;
+  priceDa: number;
+  status: BookingStatus;
+  cancelledBy: CancelledBy | null;
+  staffName: string | null;
 }
 
 export interface ProDashboardStats {

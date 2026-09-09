@@ -1,118 +1,27 @@
 /**
- * Espace pro — Clients : fiche simple par client (compte, sinon numéro, sinon nom), calculée en base :
- * nombre de rendez-vous, dernier, prochain, annulés, absences, bloqué/actif. ⋮ → Bloquer / Débloquer :
- * le blocage ne vaut que pour ce salon (le client ne peut plus y réserver en ligne).
+ * Espace pro — Clients : liste (compte, sinon numéro, sinon nom) calculée en base ; chaque ligne ouvre la fiche
+ * client complète (/pro/clients/:key) : compteurs, notes privées, historique, blocage.
  */
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Ban, CalendarPlus, ChevronRight, Phone, Search, ShieldCheck } from 'lucide-react';
-import { useProClientMutations, useProClients, useProSalon } from '@salondz/api-client';
-import { formatDZPhone, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
-import type { ProClient } from '@salondz/types';
-import { errorText } from '@/components/ErrorMessage';
-import { Avatar, Badge, BottomSheet, Button, I, Skeleton } from '@/components/ui';
+import { ChevronRight, Search } from 'lucide-react';
+import { useProClients, useProSalon } from '@salondz/api-client';
+import { formatDZPhone, formatDateShortDZ } from '@salondz/constants';
+import { Avatar, Badge, I, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
-function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
-  const navigate = useNavigate();
-  const { block, unblock } = useProClientMutations();
-  const [error, setError] = useState<string | null>(null);
-  const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
-  const canBlock = !!(c.clientId || c.phone);
-  const stat = (v: number | string, l: string) => (
-    <span className="flex flex-col rounded-[0.75rem] bg-fill px-3 py-2.5">
-      <span className="text-[1.125rem] font-bold tracking-[-0.4px]">{v}</span>
-      <span className="text-[0.75rem] text-muted">{l}</span>
-    </span>
-  );
-  const toggleBlock = async () => {
-    setError(null);
-    try {
-      if (c.blocked) await unblock.mutateAsync(ident);
-      else await block.mutateAsync(ident);
-    } catch (err) {
-      setError(errorText(err));
-    }
-  };
-  return (
-    <>
-      <div className="dim" onClick={onClose} />
-      <BottomSheet className="max-h-[88vh] !z-50 overflow-y-auto">
-        <div role="dialog" aria-label={`Client ${c.name}`} className="flex flex-col gap-3.5">
-          <div className="flex items-center gap-3.5">
-            <Avatar name={c.name} size={56} />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[1.125rem] font-bold tracking-[-0.4px]">{c.name}</span>
-              <span className="p block text-[0.9375rem]">{c.phone ? formatDZPhone(c.phone) : 'Sans numéro'}</span>
-            </span>
-            <Badge tone={c.blocked ? 'cn' : 'ok'} dot>
-              {c.blocked ? 'Client bloqué' : 'Client actif'}
-            </Badge>
-          </div>
-          {c.blocked && <p className="text-[0.875rem] text-danger">Ce client ne peut plus prendre de rendez-vous chez vous{c.blockedReason ? ` · ${c.blockedReason}` : ''}. Le blocage ne concerne que votre salon.</p>}
-          <div className="grid grid-cols-3 gap-2">
-            {stat(c.bookingsCount, 'rendez-vous')}
-            {stat(c.cancelledCount, 'annulés')}
-            {stat(c.noShowCount, 'absences')}
-          </div>
-          <div className="crd !gap-0 !py-1">
-            <div className="li !py-3">
-              <span className="text-[0.9375rem]">Dernier rendez-vous</span>
-              <span className="text-[0.9375rem] text-muted">{c.lastAt ? `${formatDateShortDZ(c.lastAt)} · ${formatTimeDZ(c.lastAt)}` : '—'}</span>
-            </div>
-            <div className="li !py-3">
-              <span className="text-[0.9375rem]">Prochain rendez-vous</span>
-              <span className="text-[0.9375rem] text-muted">{c.nextAt ? `${formatDateShortDZ(c.nextAt)} · ${formatTimeDZ(c.nextAt)}` : 'Aucun'}</span>
-            </div>
-            <div className="li !py-3">
-              <span className="text-[0.9375rem]">Terminés</span>
-              <span className="text-[0.9375rem] text-muted">{c.completedCount}</span>
-            </div>
-          </div>
-          {error && (
-            <p className="text-[0.875rem] text-danger" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="g2">
-            {c.phone && (
-              <a className="btn g" href={`tel:${c.phone}`}>
-                <I icon={Phone} size={18} /> Appeler
-              </a>
-            )}
-            <Button onClick={() => navigate(`/pro/rendez-vous/nouveau?name=${encodeURIComponent(c.name)}${c.phone ? `&phone=${encodeURIComponent(c.phone)}` : ''}`)} disabled={c.blocked}>
-              <I icon={CalendarPlus} size={18} /> Rendez-vous
-            </Button>
-          </div>
-          {canBlock && (
-            <Button variant={c.blocked ? 'g' : 'd'} onClick={() => void toggleBlock()} disabled={block.isPending || unblock.isPending}>
-              <I icon={c.blocked ? ShieldCheck : Ban} size={18} /> {c.blocked ? 'Débloquer le client' : 'Bloquer le client'}
-            </Button>
-          )}
-          {c.lastBookingId && (
-            <button type="button" className="py-1 text-[0.875rem] text-muted underline" onClick={() => navigate(`/pro/rendez-vous/${c.lastBookingId}`)}>
-              Voir le dernier rendez-vous
-            </button>
-          )}
-        </div>
-      </BottomSheet>
-    </>
-  );
-}
-
 export function Clients() {
+  const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const clients = useProClients();
   const [q, setQ] = useState('');
-  const [openKey, setOpenKey] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     const list = clients.data?.items ?? [];
     const needle = q.trim().toLowerCase();
     return needle ? list.filter((c) => c.name.toLowerCase().includes(needle) || (c.phone ?? '').includes(needle.replace(/\s/g, ''))) : list;
   }, [clients.data, q]);
-  const current = rows.find((c) => c.clientKey === openKey) ?? (clients.data?.items ?? []).find((c) => c.clientKey === openKey) ?? null;
 
   if (!salon) return <Splash />;
 
@@ -134,7 +43,7 @@ export function Clients() {
       ) : (
         <div className="crd !gap-0 !py-1">
           {rows.map((c) => (
-            <button key={c.clientKey} type="button" className="li w-full !py-4 text-left" onClick={() => setOpenKey(c.clientKey)}>
+            <button key={c.clientKey} type="button" className="li w-full !py-4 text-left" onClick={() => navigate(`/pro/clients/${encodeURIComponent(c.clientKey)}`)}>
               <span className="flex min-w-0 items-center gap-3.5">
                 <Avatar name={c.name} size={52} />
                 <span className="min-w-0">
@@ -159,7 +68,6 @@ export function Clients() {
           ))}
         </div>
       )}
-      {current && <ClientSheet c={current} onClose={() => setOpenKey(null)} />}
     </Screen>
   );
 }

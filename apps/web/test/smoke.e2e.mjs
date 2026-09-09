@@ -510,12 +510,21 @@ try {
     await p.goto(WEB + '/pro/clients');
     await p.getByRole('heading', { name: 'Clients' }).waitFor();
     await p.locator('button.li', { hasText: 'Amine Smoke' }).first().click();
-    const sheet = p.getByRole('dialog', { name: 'Client Amine Smoke' });
+    await p.waitForURL(/\/pro\/clients\//);
+    const sheet = p;
+    await sheet.getByRole('heading', { name: 'Amine Smoke' }).waitFor();
     await sheet.getByText('Prochain rendez-vous').waitFor();
+    // Historique détaillé : la prestation terminée y figure avec son statut.
+    await sheet.getByText('Historique').waitFor();
+    await sheet.locator('.crd', { hasText: 'Coupe simple' }).getByText('Terminé').first().waitFor();
+    // Notes privées
+    await sheet.getByLabel('Notes privées').fill('Préfère le matin');
+    await sheet.getByRole('button', { name: 'Enregistrer les notes' }).click();
+    await sheet.getByText('Enregistré').waitFor();
     await shot(p, 'pro-client');
     await sheet.getByRole('button', { name: 'Bloquer le client' }).click();
     await sheet.getByText('Client bloqué', { exact: true }).waitFor();
-    await sheet.getByRole('button', { name: 'Débloquer le client' }).click();
+    await sheet.getByRole('button', { name: 'Débloquer', exact: true }).click();
     await sheet.getByText('Client actif', { exact: true }).waitFor();
   });
   await step('client: noter la prestation → avis visible sur la page publique', async () => {

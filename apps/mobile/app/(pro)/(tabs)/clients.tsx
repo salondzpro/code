@@ -1,138 +1,29 @@
 /**
- * Espace pro — Clients : fiche simple par client (compte, sinon numéro, sinon nom), calculée en base :
- * nombre de rendez-vous, dernier, prochain, annulés, absences, bloqué/actif. ⋮ → Bloquer / Débloquer :
- * le blocage ne vaut que pour ce salon (le client ne peut plus y réserver en ligne).
+ * Espace pro — Clients : liste (compte, sinon numéro, sinon nom) calculée en base ; chaque ligne ouvre la fiche
+ * client complète (/pro-client/[key]) : compteurs, notes privées, historique, blocage.
  */
 import React, { useMemo, useState } from 'react';
-import { Linking, Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ban, CalendarPlus, ChevronRight, Phone, ShieldCheck } from 'lucide-react-native';
-import { useProClientMutations, useProClients, useProSalon } from '@salondz/api-client';
-import { formatDZPhone, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
-import type { ProClient } from '@salondz/types';
-import { errorText } from '@/lib/errors';
-import { Alert, Avatar, Badge, Button, Grid, H1, I, ListCard, ModalSheet, P, Row, SearchBox, Skeleton, Tx } from '@/ui';
+import { ChevronRight } from 'lucide-react-native';
+import { useProClients, useProSalon } from '@salondz/api-client';
+import { formatDZPhone, formatDateShortDZ } from '@salondz/constants';
+import { Avatar, Badge, H1, I, ListCard, P, Row, SearchBox, Skeleton, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, NAV_PAD } from '@/theme/design';
 
-function Stat({ v, l }: { v: number | string; l: string }) {
-  return (
-    <View style={{ backgroundColor: C.fill, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
-      <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
-        {String(v)}
-      </Tx>
-      <Tx size={10} color={C.muted} lh={13}>
-        {l}
-      </Tx>
-    </View>
-  );
-}
-
-function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
-  const router = useRouter();
-  const { block, unblock } = useProClientMutations();
-  const [error, setError] = useState<string | null>(null);
-  const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
-  const canBlock = !!(c.clientId || c.phone);
-  const toggleBlock = async () => {
-    setError(null);
-    try {
-      if (c.blocked) await unblock.mutateAsync(ident);
-      else await block.mutateAsync(ident);
-    } catch (err) {
-      setError(errorText(err));
-    }
-  };
-  return (
-    <ModalSheet open onClose={onClose} scroll>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-        <Avatar name={c.name} size={45.5} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} numberOfLines={1}>
-            {c.name}
-          </Tx>
-          <Tx size={12} color={C.muted} lh={16}>
-            {c.phone ? formatDZPhone(c.phone) : 'Sans numéro'}
-          </Tx>
-        </View>
-        <Badge tone={c.blocked ? 'cn' : 'ok'} dot>
-          {c.blocked ? 'Client bloqué' : 'Client actif'}
-        </Badge>
-      </View>
-      {c.blocked && <Alert>Ce client ne peut plus prendre de rendez-vous chez vous{c.blockedReason ? ` · ${c.blockedReason}` : ''}. Le blocage ne concerne que votre salon.</Alert>}
-      <Grid cols={3} gap={6}>
-        <Stat v={c.bookingsCount} l="rendez-vous" />
-        <Stat v={c.cancelledCount} l="annulés" />
-        <Stat v={c.noShowCount} l="absences" />
-      </Grid>
-      <ListCard>
-        <Row py={10} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>{c.lastAt ? `${formatDateShortDZ(c.lastAt)} · ${formatTimeDZ(c.lastAt)}` : '—'}</Tx>}>
-          <Tx size={12} lh={16}>
-            Dernier rendez-vous
-          </Tx>
-        </Row>
-        <Row py={10} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>{c.nextAt ? `${formatDateShortDZ(c.nextAt)} · ${formatTimeDZ(c.nextAt)}` : 'Aucun'}</Tx>}>
-          <Tx size={12} lh={16}>
-            Prochain rendez-vous
-          </Tx>
-        </Row>
-        <Row py={10} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>{String(c.completedCount)}</Tx>}>
-          <Tx size={12} lh={16}>
-            Terminés
-          </Tx>
-        </Row>
-      </ListCard>
-      {error && <Alert>{error}</Alert>}
-      <Grid cols={2} gap={8}>
-        {c.phone ? (
-          <Button variant="g" onPress={() => void Linking.openURL(`tel:${c.phone}`)}>
-            <I icon={Phone} size={14} />
-            <Tx size={12} weight={600} lh={16}>
-              Appeler
-            </Tx>
-          </Button>
-        ) : (
-          <View />
-        )}
-        <Button disabled={c.blocked} onPress={() => router.push({ pathname: '/pro-rdv/nouveau', params: { name: c.name, ...(c.phone ? { phone: c.phone } : {}) } } as never)}>
-          <I icon={CalendarPlus} size={14} color="#fff" />
-          <Tx size={12} weight={600} color="#fff" lh={16}>
-            Rendez-vous
-          </Tx>
-        </Button>
-      </Grid>
-      {canBlock && (
-        <Button variant={c.blocked ? 'g' : 'd'} onPress={() => void toggleBlock()} disabled={block.isPending || unblock.isPending}>
-          <I icon={c.blocked ? ShieldCheck : Ban} size={14} color={c.blocked ? C.text : C.danger} />
-          <Tx size={12} weight={600} lh={16} color={c.blocked ? C.text : C.danger}>
-            {c.blocked ? 'Débloquer le client' : 'Bloquer le client'}
-          </Tx>
-        </Button>
-      )}
-      {c.lastBookingId && (
-        <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${c.lastBookingId}` as never)} style={{ alignSelf: 'center', paddingVertical: 4 }}>
-          <Tx size={11.5} color={C.muted} lh={15} style={{ textDecorationLine: 'underline' }}>
-            Voir le dernier rendez-vous
-          </Tx>
-        </Pressable>
-      )}
-    </ModalSheet>
-  );
-}
-
 export default function Clients() {
+  const router = useRouter();
   const salon = useProSalon().data?.salon ?? null;
   const clients = useProClients();
   const [q, setQ] = useState('');
-  const [openKey, setOpenKey] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     const list = clients.data?.items ?? [];
     const needle = q.trim().toLowerCase();
     return needle ? list.filter((c) => c.name.toLowerCase().includes(needle) || (c.phone ?? '').includes(needle.replace(/\s/g, ''))) : list;
   }, [clients.data, q]);
-  const current = (clients.data?.items ?? []).find((c) => c.clientKey === openKey) ?? null;
   const blockedCount = (clients.data?.items ?? []).filter((c) => c.blocked).length;
 
   if (!salon) return <Splash />;
@@ -154,7 +45,7 @@ export default function Clients() {
       ) : (
         <ListCard>
           {rows.map((c) => (
-            <Row key={c.clientKey} py={13} onPress={() => setOpenKey(c.clientKey)} accessibilityLabel={c.name} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
+            <Row key={c.clientKey} py={13} onPress={() => router.push({ pathname: '/pro-client/[key]', params: { key: c.clientKey } } as never)} accessibilityLabel={c.name} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                 <Avatar name={c.name} size={42} />
                 <View style={{ flex: 1, minWidth: 0 }}>
@@ -180,7 +71,6 @@ export default function Clients() {
           ))}
         </ListCard>
       )}
-      {current && <ClientSheet c={current} onClose={() => setOpenKey(null)} />}
     </Screen>
   );
 }

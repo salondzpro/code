@@ -52,6 +52,7 @@ import { ProHome } from '@/pages/pro/Home';
 import { Revenue } from '@/pages/pro/Revenue';
 import { AgendaPro } from '@/pages/pro/AgendaPro';
 import { Clients } from '@/pages/pro/Clients';
+import { ClientDetail } from '@/pages/pro/ClientDetail';
 import { ProServices } from '@/pages/pro/ProServices';
 import { ProProfile } from '@/pages/pro/ProProfile';
 import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDetail';
@@ -174,6 +175,7 @@ export const router = createBrowserRouter([
               { path: 'agenda', element: <AgendaPro /> },
               { path: 'chiffre-affaires', element: <Revenue /> },
               { path: 'clients', element: <Clients /> },
+              { path: 'clients/:key', element: <ClientDetail /> },
               { path: 'equipe', element: <Team /> },
               { path: 'prestations', element: <ProServices /> },
               { path: 'profil', element: <ProProfile /> },

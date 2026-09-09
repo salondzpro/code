@@ -31,6 +31,7 @@ export const queryKeys = {
     blocksAll: ['pro', 'blocks'] as const,
     staffHours: (id: string) => ['pro', 'staff', id, 'hours'] as const,
     clients: ['pro', 'clients'] as const,
+    clientHistory: (key: string) => ['pro', 'clients', key, 'history'] as const,
   },
 };
 
@@ -62,6 +63,7 @@ export function makeQueries(api: ApiClient) {
     pro: {
       salon: () => queryOptions({ queryKey: queryKeys.pro.salon, queryFn: () => api.pro.salon(), staleTime: 2 * MIN, retry: false }),
       clients: () => queryOptions({ queryKey: queryKeys.pro.clients, queryFn: () => api.pro.clients.list(), staleTime: MIN }),
+      clientHistory: (key: string) => queryOptions({ queryKey: queryKeys.pro.clientHistory(key), queryFn: () => api.pro.clients.history(key), staleTime: MIN }),
       stats: () => queryOptions({ queryKey: queryKeys.pro.stats, queryFn: () => api.pro.stats(), staleTime: 30_000 }),
       statsRange: (from: string, to: string) => queryOptions({ queryKey: queryKeys.pro.statsRange(from, to), queryFn: () => api.pro.statsRange(from, to), staleTime: 30_000 }),
       bookings: (q: Partial<ListBookingsQuery> = {}) => queryOptions({ queryKey: queryKeys.pro.bookings(q), queryFn: () => api.pro.bookings.list(q), staleTime: 15_000 }),
