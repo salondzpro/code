@@ -11,6 +11,7 @@ import type { TimeBlock } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
 import { Badge, BottomSheet, Button, Pill, SectionLabel, Skeleton, TopBar } from '@/components/ui';
 import { MonthNav, dayNumber } from '@/components/DaySelector';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
@@ -162,14 +163,7 @@ export function Closures() {
           {active.length > 1 && (
             <label className="li !py-3">
               <span className="text-[0.9375rem]">Concerne</span>
-              <select className="max-w-[55%] bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={staffId} onChange={(e) => setStaffId(e.target.value)} aria-label="Concerne">
-                <option value="">Tout le salon</option>
-                {active.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.displayName}
-                  </option>
-                ))}
-              </select>
+              <PickerField inline label="Concerne" value={staffId} onChange={setStaffId} options={[{ value: '', label: 'Tout le salon' }, ...active.map((m) => ({ value: m.id, label: m.displayName }))]} />
             </label>
           )}
           <label className="li !border-b-0 !py-3">

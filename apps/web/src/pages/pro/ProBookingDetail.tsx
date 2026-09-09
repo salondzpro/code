@@ -8,6 +8,7 @@ import { useProBooking, useProBookingMutations, useProBookings, useProSalon } fr
 import { addDaysToKey, formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, Input, StatusBadge, TopBar } from '@/components/ui';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
@@ -192,13 +193,7 @@ export function ProBookingReschedule() {
         {staff.length > 1 && (
           <label className="li !py-4">
             <span className="text-[0.9375rem]">Membre</span>
-            <select className="bg-transparent text-right text-[0.9375rem] outline-none" value={sid} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
-              {staff.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.displayName}
-                </option>
-              ))}
-            </select>
+            <PickerField inline label="Membre" value={sid} onChange={setStaffId} options={staff.map((m) => ({ value: m.id, label: m.displayName }))} />
           </label>
         )}
       </div>

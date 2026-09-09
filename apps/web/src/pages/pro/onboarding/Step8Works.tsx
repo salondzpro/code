@@ -6,6 +6,7 @@ import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { I } from '@/components/ui';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
@@ -52,13 +53,7 @@ export function Step8Works() {
         <p className="p mt-2">Associez chaque photo à une prestation : elle apparaîtra sur sa fiche.</p>
       </div>
       {services.length > 1 && (
-        <select className="inp" value={target || services[0]?.id} onChange={(e) => setTarget(e.target.value)} aria-label="Prestation associée aux nouvelles photos">
-          {services.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+        <PickerField label="Prestation associée aux nouvelles photos" title="Prestation" value={target || services[0]?.id || ''} onChange={setTarget} options={services.map((s) => ({ value: s.id, label: s.name }))} />
       )}
       <div className="g3">
         {works.map((w) => (

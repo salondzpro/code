@@ -7,6 +7,7 @@ import { formatDA, localDateTimeToISO, toLocalDateKey } from '@salondz/constants
 import { phoneDZ } from '@salondz/validation';
 import { errorText } from '@/components/ErrorMessage';
 import { BottomSheet, Button, Field, I, Input, TopBar } from '@/components/ui';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { formatDuration } from '@/lib/format';
@@ -96,13 +97,7 @@ export function ProBookingNew() {
         {staff.length > 1 && (
           <label className="li !py-4">
             <span className="text-[0.9375rem]">Membre</span>
-            <select className="bg-transparent text-right text-[0.9375rem] outline-none" value={staffId || staff[0]!.id} onChange={(e) => setStaffId(e.target.value)} aria-label="Membre">
-              {staff.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.displayName}
-                </option>
-              ))}
-            </select>
+            <PickerField inline label="Membre" value={staffId || staff[0]!.id} onChange={setStaffId} options={staff.map((m) => ({ value: m.id, label: m.displayName }))} />
           </label>
         )}
       </div>

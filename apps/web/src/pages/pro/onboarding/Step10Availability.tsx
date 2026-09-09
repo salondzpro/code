@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { errorText } from '@/components/ErrorMessage';
 import { InfoBox, SectionLabel, Slot, Toggle } from '@/components/ui';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
@@ -95,13 +96,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
               <span className="block text-[0.9375rem]">Temps de battement</span>
               <span className="p block text-[0.8125rem]">Entre deux rendez-vous</span>
             </span>
-            <select className="bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} aria-label="Temps de battement">
-              {BUFFERS.map((b) => (
-                <option key={b} value={b}>
-                  {b} min
-                </option>
-              ))}
-            </select>
+            <PickerField inline label="Temps de battement" value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
           </label>
           <div className="li !py-4">
             <span>
@@ -157,13 +152,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             <span className="block text-[0.9375rem]">Annulation client</span>
             <span className="p block text-[0.8125rem]">Gratuite jusqu'à</span>
           </span>
-          <select className="bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={cancel} onChange={(e) => setCancel(Number(e.target.value))} aria-label="Annulation gratuite jusqu'à">
-            {CANCEL.map((c) => (
-              <option key={c} value={c}>
-                {c} h avant
-              </option>
-            ))}
-          </select>
+          <PickerField inline label="Annulation gratuite jusqu'à" value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
         </label>
         <div className="li !py-4">
           <span>

@@ -1,13 +1,13 @@
 /** PRO-F 08 — Étape 6 : prestation (nom, prix, durée libre en minutes, groupe du catalogue créé librement, catégorie, description) → photos. */
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { ChevronDown } from 'lucide-react';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { CATEGORY_BY_ID, categoriesForMarket, type CategoryId } from '@salondz/constants';
 import { createServiceSchema } from '@salondz/validation';
 import { formatDuration } from '@/lib/format';
 import { errorText } from '@/components/ErrorMessage';
-import { Field, I, Input, Pill, Textarea } from '@/components/ui';
+import { Field, Input, Pill, Textarea } from '@/components/ui';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
@@ -82,51 +82,34 @@ export function Step6Service() {
           ))}
         </div>
         <Field label="Catégorie" htmlFor="svc-cat" hint="Choisissez une catégorie Salon DZ ou créez la vôtre : elle classe la prestation sur votre profil.">
-          <div className="relative">
-            <select
-              id="svc-cat"
-              className="inp lg appearance-none pr-12"
-              value={pick}
-              onChange={(e) => {
-                const v = e.target.value;
-                setCreating(v === '__new__');
-                if (v === '__new__') {
-                  setGroup('');
-                  setCategoryId('');
-                } else if (v.startsWith('g:')) {
-                  setGroup(v.slice(2));
-                  setCategoryId('');
-                } else if (v.startsWith('c:')) {
-                  setCategoryId(v.slice(2));
-                  setGroup('');
-                } else {
-                  setGroup('');
-                  setCategoryId('');
-                }
-              }}
-            >
-              <option value="">Sans catégorie</option>
-              {groups.length > 0 && (
-                <optgroup label="Mes catégories">
-                  {groups.map((g) => (
-                    <option key={g} value={`g:${g}`}>
-                      {g}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              <optgroup label="Catégories Salon DZ">
-                {cats.map((c) => (
-                  <option key={c.id} value={`c:${c.id}`}>
-                    {c.labelFr}
-                  </option>
-                ))}
-                {categoryId && !cats.some((c) => c.id === categoryId) && <option value={`c:${categoryId}`}>{CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId}</option>}
-              </optgroup>
-              <option value="__new__">＋ Créer une catégorie…</option>
-            </select>
-            <I icon={ChevronDown} size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-subtle" />
-          </div>
+          <PickerField
+            label="Catégorie"
+            value={pick}
+            placeholder="Sans catégorie"
+            options={[
+              { value: '', label: 'Sans catégorie' },
+              ...groups.map((g) => ({ value: `g:${g}`, label: g, group: 'Mes catégories' })),
+              ...cats.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Catégories Salon DZ' })),
+              ...(categoryId && !cats.some((c) => c.id === categoryId) ? [{ value: `c:${categoryId}`, label: CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId, group: 'Catégories Salon DZ' }] : []),
+              { value: '__new__', label: '＋ Créer une catégorie…', hint: 'Une catégorie à vous, affichée sur votre profil' },
+            ]}
+            onChange={(v) => {
+              setCreating(v === '__new__');
+              if (v === '__new__') {
+                setGroup('');
+                setCategoryId('');
+              } else if (v.startsWith('g:')) {
+                setGroup(v.slice(2));
+                setCategoryId('');
+              } else if (v.startsWith('c:')) {
+                setCategoryId(v.slice(2));
+                setGroup('');
+              } else {
+                setGroup('');
+                setCategoryId('');
+              }
+            }}
+          />
           {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder="Nom de la nouvelle catégorie (ex. Soins de la barbe)" aria-label="Nouvelle catégorie" autoFocus />}
         </Field>
         <Field label="Description" htmlFor="svc-desc">

@@ -14,6 +14,7 @@ import { clearProDraft, draftFiles, readProDraft, writeProDraft } from '@/lib/pr
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { I, Toggle } from '@/components/ui';
+import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, stepPath } from './Shared';
 
@@ -96,13 +97,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
         <div className="crd !gap-0 !py-1">
           <label className="li !py-4">
             <span className="text-[0.9375rem]">Ville</span>
-            <select className="max-w-[55%] bg-transparent text-right text-[0.9375rem] text-muted outline-none" value={wilaya} onChange={(e) => setWilaya(Number(e.target.value))} aria-label="Ville">
-              {WILAYAS.map((w) => (
-                <option key={w.code} value={w.code}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+            <PickerField inline label="Ville" title="Wilaya" value={wilaya} onChange={setWilaya} options={WILAYAS.map((w) => ({ value: w.code, label: w.name, hint: `Wilaya ${String(w.code).padStart(2, '0')}` }))} />
           </label>
           <label className="li !py-4">
             <span className="text-[0.9375rem]">Quartier</span>

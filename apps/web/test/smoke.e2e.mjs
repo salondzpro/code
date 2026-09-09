@@ -220,7 +220,8 @@ try {
     await p.waitForURL(/\/pro\/onboarding\/4$/);
     await p.getByRole('heading', { name: 'Où vous trouver ?' }).waitFor();
     await p.getByLabel('Adresse').fill('12 rue Didouche Mourad');
-    await p.getByLabel('Ville').selectOption('16');
+    await p.getByRole('button', { name: 'Ville' }).click();
+    await p.getByRole('radio', { name: /^Alger\b/ }).click();
     await p.getByLabel('Quartier').fill('Alger-Centre');
     await p.getByRole('button', { name: 'Continuer' }).click();
     await p.waitForURL(/\/pro\/onboarding\/5$/);
@@ -321,7 +322,8 @@ try {
     await p.getByRole('heading', { name: 'Fermetures' }).waitFor();
     await pickTargetDay(p);
     await p.getByRole('button', { name: 'Horaires réduits' }).click();
-    await p.getByLabel('Concerne').selectOption({ label: 'Karim Smoke' });
+    await p.getByRole('button', { name: 'Concerne' }).click();
+    await p.getByRole('radio', { name: 'Karim Smoke' }).click();
     await p.getByLabel('De', { exact: true }).fill('12:00');
     await p.getByLabel('À', { exact: true }).fill('13:00');
     await p.getByLabel('Motif (facultatif)').fill('Pause');
