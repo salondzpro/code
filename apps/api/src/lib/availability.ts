@@ -1,11 +1,11 @@
 /**
- * Grille « Matin / Après-midi / Soir » des cartes marketplace (style Planity) : premier créneau libre par moment
- * pour les 3 prochains jours, calculé en un seul appel SQL pour toute la page (`period_availability`).
+ * Grille « Matin / Après-midi » des cartes marketplace (style Planity) : premier créneau libre par moment
+ * pour les 7 prochains jours (le client n'en montre que 3 ouverts), un seul appel SQL pour toute la page.
  */
 import type { PeriodDay, SalonSummary } from '@salondz/types';
 import { db } from './supabase';
 
-export const PERIOD_DAYS = 3;
+export const PERIOD_DAYS = 7;
 
 export async function attachPeriodAvailability(items: SalonSummary[], log?: { warn: (o: unknown, msg: string) => void }): Promise<void> {
   for (const s of items) s.periods = [];

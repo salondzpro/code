@@ -126,10 +126,8 @@ export function relativeDayLabelDZ(dateKey: string, today: string = toLocalDateK
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-/** Puce de jour des cartes marketplace (style Planity) : « Auj. », « Dem. », sinon « Mer. 9 ». */
-export function dayChipLabelDZ(dateKey: string, today: string = toLocalDateKey()): string {
-  if (dateKey === today) return 'Auj.';
-  if (dateKey === addDaysToKey(today, 1)) return 'Dem.';
+/** Puce de jour des cartes marketplace (style Planity) : « Mer. 9 » — toujours le jour de semaine, plus lisible qu'« Aujourd'hui / Demain ». */
+export function dayChipLabelDZ(dateKey: string): string {
   const [y, m, d] = dateKey.split('-').map(Number);
   const wd = new Intl.DateTimeFormat('fr-DZ', { weekday: 'short', timeZone: TIMEZONE }).format(new Date(Date.UTC(y!, m! - 1, d!, 12)));
   return `${wd.charAt(0).toUpperCase()}${wd.slice(1).replace(/\.$/, '')}. ${d}`;

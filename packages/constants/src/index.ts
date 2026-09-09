@@ -5,6 +5,7 @@ export * from './services';
 export * from './categories';
 export * from './money';
 export * from './dates';
+export * from './periods';
 export * from './booking';
 export * from './phone';
 
