@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera } from 'lucide-react-native';
-import { pickImages } from '@/lib/images';
+import { COVER_ASPECT_RN, pickImages } from '@/lib/images';
 import { errorText } from '@/lib/errors';
 import { draftFiles, stepPath, type LocalImage } from '@/lib/proDraft';
 import { Alert, Button, H1, I, Img, P, SectionLabel, Tx } from '@/ui';
@@ -20,7 +20,7 @@ export default function Step3Identity() {
   const choose = async (kind: 'cover' | 'logo') => {
     setError(null);
     try {
-      const [img] = await pickImages({ square: kind === 'logo' });
+      const [img] = await pickImages(kind === 'logo' ? { square: true } : { aspect: COVER_ASPECT_RN });
       if (!img) return;
       if (kind === 'cover') {
         setCover(img);

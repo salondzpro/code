@@ -8,16 +8,22 @@ import { compressImage, uploadToStorage } from './upload';
 const EXT = Platform.OS === 'android' ? 'webp' : 'jpg';
 const randomId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
 
-/** Ouvre la galerie ; [] si annulé. `square` propose un recadrage carré (logo, avatar). */
-export async function pickImages({ multiple = false, square = false, max = 6 }: { multiple?: boolean; square?: boolean; max?: number } = {}): Promise<LocalImage[]> {
+/** Format des photos de couverture (cartes marketplace, page publique). */
+export const COVER_ASPECT_RN: [number, number] = [16, 10];
+
+/**
+ * Ouvre la galerie ; [] si annulé. `square` (logo, avatar) ou `aspect` (couverture) ouvrent l'éditeur natif :
+ * l'utilisateur déplace et zoome la photo dans le cadre avant de valider.
+ */
+export async function pickImages({ multiple = false, square = false, aspect, max = 6 }: { multiple?: boolean; square?: boolean; aspect?: [number, number]; max?: number } = {}): Promise<LocalImage[]> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) throw new Error("Autorisez l'accès aux photos dans les réglages pour continuer.");
   const picked = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     allowsMultipleSelection: multiple,
     selectionLimit: multiple ? max : 1,
-    allowsEditing: square && !multiple,
-    aspect: square ? [1, 1] : undefined,
+    allowsEditing: (square || !!aspect) && !multiple,
+    aspect: square ? [1, 1] : aspect,
     quality: 1,
     exif: false,
   });

@@ -6,7 +6,7 @@ import { Camera, Share2 } from 'lucide-react-native';
 import { useMe, useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { MARKET_LABELS_FR, SALON_MAX_PHOTOS, wilayaName } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
-import { pickImages, uploadSalonImage } from '@/lib/images';
+import { COVER_ASPECT_RN, pickImages, uploadSalonImage } from '@/lib/images';
 import { errorText } from '@/lib/errors';
 import { publicHost } from '@/lib/salon';
 import { Alert, Avatar, Badge, Button, Card, Grid, H1, I, Img, Input, ListCard, P, Row, SectionLabel, Toggle, Tx } from '@/ui';
@@ -33,7 +33,7 @@ export default function ProProfile() {
   const upload = async (kind: 'cover' | 'logo') => {
     setError(null);
     try {
-      const [img] = await pickImages({ square: kind === 'logo' });
+      const [img] = await pickImages(kind === 'logo' ? { square: true } : { aspect: COVER_ASPECT_RN });
       if (!img) return;
       setBusy(kind);
       const u = await uploadSalonImage(salon.id, img);

@@ -16,6 +16,7 @@
  * pro (agenda jour/semaine, terminé, report du rendez-vous de passage) → client (avis visible sur la page publique).
  */
 import fs from 'node:fs';
+import zlib from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -104,6 +105,46 @@ function attach(page, who) {
 }
 let n = 0;
 const PAGES = {};
+/** PNG RGBA minimal (dégradé) pour tester l'envoi d'images sans fichier sur disque. */
+function testPng(w, h) {
+  const raw = Buffer.alloc((w * 4 + 1) * h);
+  for (let y = 0; y < h; y++) {
+    raw[y * (w * 4 + 1)] = 0;
+    for (let x = 0; x < w; x++) {
+      const o = y * (w * 4 + 1) + 1 + x * 4;
+      raw[o] = Math.round((255 * x) / w);
+      raw[o + 1] = Math.round((255 * y) / h);
+      raw[o + 2] = 120;
+      raw[o + 3] = 255;
+    }
+  }
+  const crcTable = [];
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    crcTable[n] = c >>> 0;
+  }
+  const crc = (buf) => {
+    let c = 0xffffffff;
+    for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
+    const td = Buffer.concat([Buffer.from(type), data]);
+    const c = Buffer.alloc(4);
+    c.writeUInt32BE(crc(td));
+    return Buffer.concat([len, td, c]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 6;
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+}
+
 const shot = (page, name) => page.screenshot({ path: path.join(SHOTS, `${String(++n).padStart(2, '0')}-${name}.png`), fullPage: true });
 async function step(name, fn) {
   const t = Date.now();
@@ -288,6 +329,30 @@ try {
     await p.getByRole('heading', { name: 'Photos du salon' }).waitFor();
     await p.getByRole('button', { name: /Changer/ }).waitFor();
     await shot(p, 'pro-photos');
+  });
+  await step('pro: logo → recadrage (déplacer + zoom) → envoi → retirer', async () => {
+    // Image de test générée (PNG 600×400, dégradé) : le recadreur s'ouvre, on déplace, on zoome, on valide.
+    await p.locator('input[type=file]').first().setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: testPng(600, 400) });
+    await p.getByText('Recadrer le logo').waitFor();
+    const frame = p.getByRole('img', { name: 'Aperçu du recadrage' });
+    const box = await frame.boundingBox();
+    if (!box) throw new Error('cadre de recadrage absent');
+    await p.locator('input[type=range][aria-label="Zoom"]').fill('1.6');
+    await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await p.mouse.down();
+    await p.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2 + 20, { steps: 5 });
+    await p.mouse.up();
+    await shot(p, 'pro-recadrage');
+    await p.getByRole('button', { name: 'Valider' }).click();
+    await p.getByText('Votre logo').waitFor({ timeout: 40_000 });
+    const src = await p.locator('.crd img').first().getAttribute('src');
+    if (!src || !src.includes('/storage/')) throw new Error(`logo non envoyé : ${src}`);
+    await p.getByRole('button', { name: 'Retirer' }).click();
+    await p.getByText('Aucun logo : la couverture est utilisée').waitFor();
+    // Nettoyage Storage : le fichier envoyé par le test.
+    const { data: s2 } = await admin.from('salons').select('id').eq('owner_id', users.pro.id).single();
+    const { data: files } = await admin.storage.from('salons').list(s2.id);
+    if (files?.length) await admin.storage.from('salons').remove(files.map((f) => `${s2.id}/${f.name}`));
   });
   await step('pro: équipe (ajout membre + horaires personnalisés)', async () => {
     await p.goto(WEB + '/pro/equipe');
