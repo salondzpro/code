@@ -340,9 +340,15 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree, onNow
           </Pressable>
         );
       })}
-      {isToday && now >= startMin && now <= endMin && (
-        <View pointerEvents="none" onLayout={(e) => onNowLayout?.(e.nativeEvent.layout.y)} style={{ position: 'absolute', left: 37, right: 0, top: top(now), borderTopWidth: 1.5, borderTopColor: C.danger }}>
+      {isToday && (
+        <View pointerEvents="none" onLayout={(e) => onNowLayout?.(e.nativeEvent.layout.y)} style={{ position: 'absolute', left: 37, right: 0, top: top(Math.min(Math.max(now, startMin), endMin)), borderTopWidth: 1.5, borderTopColor: C.danger, zIndex: 10 }}>
           <View style={{ position: 'absolute', left: -3, top: -4, width: 6, height: 6, borderRadius: 3, backgroundColor: C.danger }} />
+          <View style={{ position: 'absolute', right: 0, top: -15, backgroundColor: C.danger, borderRadius: 999, paddingHorizontal: 6, paddingVertical: 1 }}>
+            <Tx size={9} weight={600} color="#fff" lh={12}>
+              {hm(now)}
+              {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
+            </Tx>
+          </View>
         </View>
       )}
     </View>

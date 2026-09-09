@@ -257,9 +257,15 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
           </button>
         );
       })}
-      {isToday && now >= startMin && now <= endMin && (
-        <div ref={nowRef} className="pointer-events-none absolute left-[2.875rem] right-0 border-t-[1.5px] border-danger" style={{ top: top(now) }}>
+      {isToday && (
+        // Ligne « maintenant » : dans la journée à sa place ; avant l'ouverture en haut, après la fermeture en bas,
+        // toujours avec l'heure réelle pour se repérer d'un coup d'œil.
+        <div ref={nowRef} className="pointer-events-none absolute left-[2.875rem] right-0 z-10 border-t-[1.5px] border-danger" style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}>
           <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
+          <span className="absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.6875rem] font-semibold text-white">
+            {minutesToTime(now)}
+            {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
+          </span>
         </div>
       )}
     </div>
