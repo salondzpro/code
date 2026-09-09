@@ -7,15 +7,44 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
-import { CANCEL_ABUSE_BLOCK_DAYS, CANCEL_ABUSE_MAX, CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDZPhone, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
+import {
+  CANCEL_ABUSE_BLOCK_DAYS,
+  CANCEL_ABUSE_MAX,
+  CANCEL_ABUSE_WINDOW_DAYS,
+  CLIENT_CANCEL_MIN_HOURS,
+  MAX_CLIENT_RESCHEDULES,
+  formatDA,
+  formatDateLongDZ,
+  formatDZPhone,
+  formatTimeDZ,
+  relativeDayLabelDZ,
+  toLocalDateKey,
+} from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, directionsUrl, open } from '@/lib/salon';
-import { Avatar, Button, Card, ErrorText, Grid, H1, InfoBox, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  ErrorText,
+  Grid,
+  H1,
+  InfoBox,
+  Input,
+  ModalSheet,
+  P,
+  Row,
+  Rows,
+  Soft,
+  StatusBadge,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
-import { CalendarSheet } from './confirme';
+import { GoogleCalendarButton } from './confirme';
 
 export default function BookingDetail() {
   const { id = '' } = useLocalSearchParams<{ id: string }>();
@@ -25,7 +54,6 @@ export default function BookingDetail() {
   const me = useMe();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
-  const [cal, setCal] = useState(false);
   const [done, setDone] = useState(false);
 
   if (booking.isPending) return <Splash />;
@@ -41,9 +69,19 @@ export default function BookingDetail() {
   // Règles du salon (même source que l'API) : délai d'annulation, report client autorisé.
   const minHours = b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS;
   const canModify = active && hoursLeft >= minHours;
-  const canReschedule = canModify && b.salon.allowClientReschedule !== false;
+  const rescheduled = b.clientReschedules >= MAX_CLIENT_RESCHEDULES;
+  const canReschedule = canModify && b.salon.allowClientReschedule !== false && !rescheduled;
   const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
-  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
+  const lines = b.items?.length
+    ? b.items
+    : [
+        {
+          id: b.id,
+          serviceName: b.serviceName,
+          durationMinutes: b.durationMinutes,
+          priceDa: b.priceDa,
+        },
+      ];
   const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
@@ -58,19 +96,37 @@ export default function BookingDetail() {
         </View>
         <Card gap={0}>
           <Rows>
-            <Row py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+            <Row
+              py={13}
+              chevron={false}
+              right={
+                <Tx size={11.5} color={C.muted} lh={15.5}>
+                  {formatDA(b.priceDa)}
+                </Tx>
+              }
+            >
               <Tx size={11.5} lh={15.5}>
                 {b.serviceName}
               </Tx>
             </Row>
-            <Row py={13} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatTimeDZ(b.startsAt)} · annulé</Tx>}>
+            <Row
+              py={13}
+              chevron={false}
+              right={
+                <Tx size={11.5} color={C.muted} lh={15.5}>
+                  {formatTimeDZ(b.startsAt)} · annulé
+                </Tx>
+              }
+            >
               <Tx size={11.5} lh={15.5}>
                 {formatDateLongDZ(b.startsAt)}
               </Tx>
             </Row>
           </Rows>
         </Card>
-        <Button onPress={() => router.replace(`/s/${b.salon.slug}/prestations` as never)}>Réserver un autre créneau</Button>
+        <Button onPress={() => router.replace(`/s/${b.salon.slug}/prestations` as never)}>
+          Réserver un autre créneau
+        </Button>
         <Button variant="g" onPress={() => router.replace('/(client)/(tabs)/rendez-vous')}>
           Retour à mes rendez-vous
         </Button>
@@ -80,7 +136,12 @@ export default function BookingDetail() {
 
   return (
     <Screen gap={13}>
-      <TopBar backTo="/(client)/(tabs)/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />} />
+      <TopBar
+        backTo="/(client)/(tabs)/rendez-vous"
+        right={
+          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
+        }
+      />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={104} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -97,7 +158,11 @@ export default function BookingDetail() {
       {(!!b.salon.phone || !!wa) && (
         <Grid cols={2}>
           {!!b.salon.phone && (
-            <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(`tel:${b.salon.phone}`)}>
+            <Button
+              variant="g"
+              style={{ paddingVertical: 15 }}
+              onPress={() => void open(`tel:${b.salon.phone}`)}
+            >
               <Tx size={11.5} weight={600} ls={-0.2}>
                 Appeler
               </Tx>
@@ -114,7 +179,14 @@ export default function BookingDetail() {
       )}
       {/* L'essentiel en grand : quand, à quelle heure, combien — rassurant et lisible d'un coup d'œil. */}
       <Card gap={10}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
           <Tx size={13} weight={700} lh={17}>
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </Tx>
@@ -122,7 +194,14 @@ export default function BookingDetail() {
             {capitalize(formatDateLongDZ(b.startsAt))}
           </Tx>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
             <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
               {formatTimeDZ(b.startsAt)}
@@ -139,16 +218,34 @@ export default function BookingDetail() {
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </Tx>
       </Card>
-      {active && <LateRule startsAt={b.startsAt} />}
       <Card gap={0}>
         <Rows>
-          <Row py={10} chevron={false} right={<Tx size={11.5} color={C.muted} lh={15.5}>{formatDA(b.priceDa)}</Tx>}>
+          <Row
+            py={10}
+            chevron={false}
+            right={
+              <Tx size={11.5} color={C.muted} lh={15.5}>
+                {formatDA(b.priceDa)}
+              </Tx>
+            }
+          >
             <Tx size={13} weight={700} lh={17}>
               {lines.length} prestation{lines.length > 1 ? 's' : ''}
             </Tx>
           </Row>
           {lines.map((it) => (
-            <Row key={it.id} py={10} chevron={false} right={<Tx size={11} color={C.muted} lh={15}>{it.durationMinutes ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}` : formatDA(it.priceDa)}</Tx>}>
+            <Row
+              key={it.id}
+              py={10}
+              chevron={false}
+              right={
+                <Tx size={11} color={C.muted} lh={15}>
+                  {it.durationMinutes
+                    ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
+                    : formatDA(it.priceDa)}
+                </Tx>
+              }
+            >
               <Tx size={13} weight={600} lh={17}>
                 {it.serviceName}
               </Tx>
@@ -156,6 +253,7 @@ export default function BookingDetail() {
           ))}
         </Rows>
       </Card>
+      {active && <LateRule startsAt={b.startsAt} />}
       {!!b.notes && (
         <Soft>
           <Tx size={10.5} color={C.muted} lh={14.5}>
@@ -175,11 +273,6 @@ export default function BookingDetail() {
         {active && (
           <Button variant="g" onPress={() => void open(directionsUrl(b))}>
             Itinéraire
-          </Button>
-        )}
-        {active && (
-          <Button variant="g" onPress={() => setCal(true)}>
-            Ajouter au calendrier
           </Button>
         )}
         {canReschedule && (
@@ -202,18 +295,31 @@ export default function BookingDetail() {
             Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
           </Tx>
         )}
-        {b.status === 'completed' && b.reviewRating == null && <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>Noter la prestation</Button>}
-        {b.status === 'completed' && b.reviewRating != null && <InfoBox>{`Merci ! Vous avez noté ce rendez-vous ${b.reviewRating}/5. Votre avis est visible sur la page du salon.`}</InfoBox>}
+        {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
+          <Tx size={11.5} color={C.muted} lh={16} center>
+            Déjà reporté une fois. Pour le déplacer encore, contactez le salon.
+          </Tx>
+        )}
+        {b.status === 'completed' && b.reviewRating == null && (
+          <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
+            Noter la prestation
+          </Button>
+        )}
+        {b.status === 'completed' && b.reviewRating != null && (
+          <InfoBox>{`Merci ! Vous avez noté ce rendez-vous ${b.reviewRating}/5. Votre avis est visible sur la page du salon.`}</InfoBox>
+        )}
+        {active && <GoogleCalendarButton booking={b} />}
       </View>
-
-      <CalendarSheet booking={b} open={cal} onClose={() => setCal(false)} />
 
       <ModalSheet open={cancelling} onClose={() => setCancelling(false)}>
         <View style={{ alignItems: 'center', gap: 6 }}>
           <Tx size={16} weight={700} ls={-0.4} lh={20.5} center>
             Annuler ce rendez-vous ?
           </Tx>
-          <P center>Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera libéré immédiatement.</P>
+          <P center>
+            Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera
+            libéré immédiatement.
+          </P>
         </View>
         <InfoBox>
           {cancels >= CANCEL_ABUSE_MAX - 1
@@ -224,7 +330,22 @@ export default function BookingDetail() {
           <Tx size={12} lh={16}>
             Motif (optionnel)
           </Tx>
-          <Input value={reason} onChangeText={setReason} placeholder="Empêchement" maxLength={200} accessibilityLabel="Motif" style={{ flex: 1, backgroundColor: 'transparent', borderColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, textAlign: 'right', fontSize: 12 }} />
+          <Input
+            value={reason}
+            onChangeText={setReason}
+            placeholder="Empêchement"
+            maxLength={200}
+            accessibilityLabel="Motif"
+            style={{
+              flex: 1,
+              backgroundColor: 'transparent',
+              borderColor: 'transparent',
+              paddingVertical: 0,
+              paddingHorizontal: 0,
+              textAlign: 'right',
+              fontSize: 12,
+            }}
+          />
         </Card>
         <ErrorText error={cancel.error} />
         <Button

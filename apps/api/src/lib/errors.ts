@@ -34,6 +34,7 @@ const BUSINESS_MESSAGES: Record<string, { status: number; message: string }> = {
   BOOKING_NOT_CANCELLABLE: { status: 409, message: 'Cette réservation ne peut plus être modifiée.' },
   CANCEL_TOO_LATE: { status: 409, message: 'Trop tard pour modifier en ligne. Contactez le salon.' },
   RESCHEDULE_DISABLED: { status: 409, message: 'Ce salon ne permet pas le report en ligne. Contactez-le.' },
+  RESCHEDULE_LIMIT: { status: 409, message: 'Ce rendez-vous a déjà été reporté une fois. Pour le déplacer encore, contactez le salon.' },
   CLIENT_BLOCKED: { status: 403, message: "Ce salon n'accepte pas vos réservations en ligne. Contactez-le directement." },
   SALON_NOT_FOUND: { status: 404, message: 'Salon introuvable.' },
   BOOKING_NOT_FOUND: { status: 404, message: 'Réservation introuvable.' },

@@ -1,10 +1,15 @@
-/** C-F 12 — Rendez-vous confirmé (ou demande envoyée) ; C-F 13 — feuille « Ajouter au calendrier » (Google Agenda, fichier .ics). */
-import { useState } from 'react';
+/** C-F 12 — Rendez-vous confirmé (ou demande envoyée) ; « Ajouter à votre calendrier Google » en bas (lien direct, sans feuille). */
 import { useNavigate, useParams } from 'react-router';
-import { Calendar, Check, ChevronRight, Download } from 'lucide-react';
+import { Calendar, Check } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
-import { formatDA, formatDateShortDZ, formatDZPhone, formatTimeDZ, wilayaName } from '@salondz/constants';
-import { Avatar, BottomSheet, Button, I, StatusBadge } from '@/components/ui';
+import {
+  formatDA,
+  formatDateShortDZ,
+  formatDZPhone,
+  formatTimeDZ,
+  wilayaName,
+} from '@salondz/constants';
+import { Avatar, Button, I, StatusBadge } from '@/components/ui';
 import { LateRule } from '@/components/LateRule';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -12,49 +17,25 @@ import { Splash } from '@/pages/auth/Splash';
 import type { BookingWithSalon } from '@salondz/types';
 
 function icsDate(iso: string): string {
-  return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return new Date(iso)
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '');
 }
 
-export function calendarLinks(b: BookingWithSalon) {
+/** Lien « Ajouter à votre calendrier Google » (le fichier .ics n'est plus proposé : trop technique pour la V1). */
+export function googleCalendarUrl(b: BookingWithSalon): string {
   const title = `${b.serviceName} · ${b.salon.name}`;
   const location = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
-  const google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${icsDate(b.startsAt)}/${icsDate(b.endsAt)}&location=${encodeURIComponent(location)}&details=${encodeURIComponent('Réservé via Salon DZ')}`;
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Salon DZ//FR', 'BEGIN:VEVENT', `UID:${b.id}@salondz`, `DTSTAMP:${icsDate(new Date().toISOString())}`, `DTSTART:${icsDate(b.startsAt)}`, `DTEND:${icsDate(b.endsAt)}`, `SUMMARY:${title}`, `LOCATION:${location}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-  return { google, icsHref: `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}` };
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${icsDate(b.startsAt)}/${icsDate(b.endsAt)}&location=${encodeURIComponent(location)}&details=${encodeURIComponent('Réservé via Salon DZ')}`;
 }
 
-export function CalendarSheet({ booking, onClose }: { booking: BookingWithSalon; onClose: () => void }) {
-  const links = calendarLinks(booking);
+/** Bouton commun (confirmation + détails) : tout en bas, avec icône. */
+export function GoogleCalendarButton({ booking }: { booking: BookingWithSalon }) {
   return (
-    <>
-      <div className="dim" onClick={onClose} />
-      <BottomSheet>
-        <div className="h2 text-center !text-[1.125rem]">Ajouter au calendrier</div>
-        <div className="flex flex-col">
-          <a href={links.google} target="_blank" rel="noreferrer" className="li !py-5">
-            <span className="flex items-center gap-4">
-              <span className="ib lg">
-                <I icon={Calendar} size={20} />
-              </span>
-              <span className="text-[0.9375rem]">Google Agenda</span>
-            </span>
-            <I icon={ChevronRight} size={18} className="text-disabled" />
-          </a>
-          <a href={links.icsHref} download={`rendez-vous-${booking.id.slice(0, 8)}.ics`} className="li !py-5">
-            <span className="flex items-center gap-4">
-              <span className="ib lg">
-                <I icon={Download} size={20} />
-              </span>
-              <span className="text-[0.9375rem]">Télécharger le fichier .ics</span>
-            </span>
-            <I icon={ChevronRight} size={18} className="text-disabled" />
-          </a>
-        </div>
-        <Button variant="g" onClick={onClose}>
-          Plus tard
-        </Button>
-      </BottomSheet>
-    </>
+    <a href={googleCalendarUrl(booking)} target="_blank" rel="noreferrer" className="btn g">
+      <I icon={Calendar} size={18} /> Ajouter à votre calendrier Google
+    </a>
   );
 }
 
@@ -62,9 +43,9 @@ export function BookingConfirmed() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const booking = useBooking(id);
-  const [cal, setCal] = useState(false);
   if (booking.isPending) return <Splash />;
-  if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
+  if (booking.isError)
+    return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;
   const confirmed = b.status === 'confirmed';
 
@@ -84,7 +65,9 @@ export function BookingConfirmed() {
         <div className="mb-2 flex items-center gap-3.5">
           <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
           <span className="min-w-0">
-            <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{b.salon.name}</span>
+            <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">
+              {b.salon.name}
+            </span>
             <span className="block text-[0.8125rem] text-muted">
               {b.salon.city}
               {b.salon.phone ? ` · ${formatDZPhone(b.salon.phone)}` : ''}
@@ -112,12 +95,15 @@ export function BookingConfirmed() {
         )}
       </div>
       <LateRule startsAt={b.startsAt} />
-      <p className="p text-center">{confirmed ? 'Un rappel vous sera envoyé la veille.' : 'Le salon confirme votre demande sur WhatsApp.'}</p>
-      <Button variant="g" onClick={() => setCal(true)}>
-        Ajouter au calendrier
+      <p className="p text-center">
+        {confirmed
+          ? 'Un rappel vous sera envoyé la veille.'
+          : 'Le salon confirme votre demande sur WhatsApp.'}
+      </p>
+      <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
+        Voir le rendez-vous
       </Button>
-      <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>Voir le rendez-vous</Button>
-      {cal && <CalendarSheet booking={b} onClose={() => setCal(false)} />}
+      <GoogleCalendarButton booking={b} />
       <span className="sr-only">{wilayaName(16)}</span>
     </Screen>
   );

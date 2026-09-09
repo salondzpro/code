@@ -578,6 +578,24 @@ test('règle de retard : annulation « pour retard » après 10 min, refusée av
   assert.equal(me.json().standing.noShows, 1, me.body);
 });
 
+test('un seul report en ligne par rendez-vous (RESCHEDULE_LIMIT au second)', async () => {
+  const upcoming = (await call('GET', '/v1/me/bookings?scope=upcoming', clientC.token)).json().items as { id: string; startsAt: string; clientReschedules: number }[];
+  assert.equal(upcoming.length, 1);
+  const id = upcoming[0]!.id;
+  assert.equal(upcoming[0]!.clientReschedules, 0);
+  const day = addDaysToKey(toLocalDateKey(), 5);
+  const first = await call('POST', `/v1/bookings/${id}/reschedule`, clientC.token, { startsAt: localDateTimeToISO(day, '15:00') });
+  assert.equal(first.statusCode, 200, first.body);
+  assert.equal(first.json().clientReschedules, 1);
+  const second = await call('POST', `/v1/bookings/${id}/reschedule`, clientC.token, { startsAt: localDateTimeToISO(day, '16:00') });
+  assert.equal(second.statusCode, 409, second.body);
+  assert.equal(second.json().error.code, 'RESCHEDULE_LIMIT');
+  // Le report par le pro reste possible et ne compte pas.
+  const byPro = await call('POST', `/v1/pro/bookings/${id}/reschedule`, pro.token, { startsAt: localDateTimeToISO(day, '16:00') });
+  assert.equal(byPro.statusCode, 200, byPro.body);
+  assert.equal(byPro.json().clientReschedules, 1);
+});
+
 test('cron interne : jeton requis ; expire les demandes non traitées', async () => {
   const no = await call('POST', '/internal/cron/tick');
   assert.equal(no.statusCode, 401);

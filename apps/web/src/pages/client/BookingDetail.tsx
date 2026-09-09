@@ -6,14 +6,35 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
-import { CANCEL_ABUSE_BLOCK_DAYS, CANCEL_ABUSE_MAX, CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDZPhone, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
+import {
+  CANCEL_ABUSE_BLOCK_DAYS,
+  CANCEL_ABUSE_MAX,
+  CANCEL_ABUSE_WINDOW_DAYS,
+  CLIENT_CANCEL_MIN_HOURS,
+  MAX_CLIENT_RESCHEDULES,
+  formatDA,
+  formatDateLongDZ,
+  formatDZPhone,
+  formatTimeDZ,
+  relativeDayLabelDZ,
+  toLocalDateKey,
+} from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Avatar, BottomSheet, Button, InfoBox, Input, LinkButton, StatusBadge, TopBar } from '@/components/ui';
+import {
+  Avatar,
+  BottomSheet,
+  Button,
+  InfoBox,
+  Input,
+  LinkButton,
+  StatusBadge,
+  TopBar,
+} from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { LateRule } from '@/components/LateRule';
 import { Splash } from '@/pages/auth/Splash';
-import { CalendarSheet } from './BookingConfirmed';
+import { GoogleCalendarButton } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
 
 export function BookingDetail() {
@@ -23,20 +44,30 @@ export function BookingDetail() {
   const me = useMe();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
-  const [cal, setCal] = useState(false);
   const [done, setDone] = useState(false);
 
   if (booking.isPending) return <Splash />;
-  if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
+  if (booking.isError)
+    return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;
   const active = b.status === 'pending' || b.status === 'confirmed';
   const hoursLeft = Math.floor((new Date(b.startsAt).getTime() - Date.now()) / 3_600_000);
   // Règles du salon (même source que l'API) : délai d'annulation, report client autorisé.
   const minHours = b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS;
   const canModify = active && hoursLeft >= minHours;
-  const canReschedule = canModify && b.salon.allowClientReschedule !== false;
+  const rescheduled = b.clientReschedules >= MAX_CLIENT_RESCHEDULES;
+  const canReschedule = canModify && b.salon.allowClientReschedule !== false && !rescheduled;
   const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
-  const lines = b.items?.length ? b.items : [{ id: b.id, serviceName: b.serviceName, durationMinutes: b.durationMinutes, priceDa: b.priceDa }];
+  const lines = b.items?.length
+    ? b.items
+    : [
+        {
+          id: b.id,
+          serviceName: b.serviceName,
+          durationMinutes: b.durationMinutes,
+          priceDa: b.priceDa,
+        },
+      ];
   const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
@@ -45,7 +76,9 @@ export function BookingDetail() {
       <Screen className="min-h-dvh justify-center" gap={16}>
         <div className="text-center">
           <h1 className="h1">Rendez-vous annulé</h1>
-          <p className="p mt-3">{b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.</p>
+          <p className="p mt-3">
+            {b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.
+          </p>
         </div>
         <div className="crd !gap-0">
           <div className="li !py-4 text-[0.875rem]">
@@ -67,12 +100,19 @@ export function BookingDetail() {
 
   return (
     <Screen className="min-h-dvh" gap={16}>
-      <TopBar backTo="/rendez-vous" right={<StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />} />
+      <TopBar
+        backTo="/rendez-vous"
+        right={
+          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
+        }
+      />
       <div className="flex items-center gap-4">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
         <div className="min-w-0">
           <h1 className="h1 !text-[1.625rem]">{b.salon.name}</h1>
-          {b.salon.phone && <p className="mt-1 text-[0.8125rem] text-muted">{formatDZPhone(b.salon.phone)}</p>}
+          {b.salon.phone && (
+            <p className="mt-1 text-[0.8125rem] text-muted">{formatDZPhone(b.salon.phone)}</p>
+          )}
         </div>
       </div>
       <div className="g2">
@@ -82,7 +122,12 @@ export function BookingDetail() {
           </a>
         )}
         {wa && (
-          <a href={wa} target="_blank" rel="noreferrer" className="btn g !py-[1.125rem] !text-[1.125rem]">
+          <a
+            href={wa}
+            target="_blank"
+            rel="noreferrer"
+            className="btn g !py-[1.125rem] !text-[1.125rem]"
+          >
             WhatsApp
           </a>
         )}
@@ -90,18 +135,26 @@ export function BookingDetail() {
       {/* L'essentiel en grand : quand, à quelle heure, combien — rassurant et lisible d'un coup d'œil. */}
       <div className="crd !gap-3">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[1rem] font-bold">{relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}</span>
-          <span className="text-[0.875rem] text-muted">{formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}</span>
+          <span className="text-[1rem] font-bold">
+            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+          </span>
+          <span className="text-[0.875rem] text-muted">
+            {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
+          </span>
         </div>
         <div className="flex items-end justify-between gap-3">
           <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
-            {formatTimeDZ(b.startsAt)} <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
+            {formatTimeDZ(b.startsAt)}{' '}
+            <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
           </span>
-          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">{formatDA(b.priceDa)}</span>
+          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">
+            {formatDA(b.priceDa)}
+          </span>
         </div>
-        <span className="text-[0.8125rem] text-muted">{formatDuration(b.durationMinutes)} au total · paiement sur place</span>
+        <span className="text-[0.8125rem] text-muted">
+          {formatDuration(b.durationMinutes)} au total · paiement sur place
+        </span>
       </div>
-      {active && <LateRule startsAt={b.startsAt} />}
       <div className="crd !gap-0">
         <div className="li !py-3">
           <span className="text-[1rem] font-bold">
@@ -112,27 +165,29 @@ export function BookingDetail() {
         {lines.map((it) => (
           <div key={it.id} className="li !py-3">
             <span className="text-[1rem] font-semibold">{it.serviceName}</span>
-            <span className="text-[0.875rem] text-muted">{it.durationMinutes ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}` : formatDA(it.priceDa)}</span>
+            <span className="text-[0.875rem] text-muted">
+              {it.durationMinutes
+                ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
+                : formatDA(it.priceDa)}
+            </span>
           </div>
         ))}
       </div>
+      {active && <LateRule startsAt={b.startsAt} />}
       {b.notes && (
         <div className="sf">
           <span className="s block">Votre note</span>
           <span className="block text-[0.9375rem]">« {b.notes} »</span>
         </div>
       )}
-      {b.cancellationReason && <p className="text-[0.9375rem] text-danger">Motif : {b.cancellationReason}</p>}
+      {b.cancellationReason && (
+        <p className="text-[0.9375rem] text-danger">Motif : {b.cancellationReason}</p>
+      )}
       <div className="flex flex-col gap-2.5">
         {active && (
           <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">
             Itinéraire
           </a>
-        )}
-        {active && (
-          <Button variant="g" onClick={() => setCal(true)}>
-            Ajouter au calendrier
-          </Button>
         )}
         {canReschedule && (
           <div className="g2">
@@ -149,21 +204,39 @@ export function BookingDetail() {
             Annuler
           </Button>
         )}
-        {active && !canModify && <p className="p text-center text-[0.875rem]">Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.</p>}
-        {b.status === 'completed' && b.reviewRating == null && <LinkButton to={`/rendez-vous/${b.id}/noter`}>Noter la prestation</LinkButton>}
-        {b.status === 'completed' && b.reviewRating != null && <InfoBox>Merci ! Vous avez noté ce rendez-vous {b.reviewRating}/5. Votre avis est visible sur la page du salon.</InfoBox>}
+        {active && !canModify && (
+          <p className="p text-center text-[0.875rem]">
+            Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
+          </p>
+        )}
+        {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
+          <p className="p text-center text-[0.875rem]">
+            Déjà reporté une fois. Pour le déplacer encore, contactez le salon.
+          </p>
+        )}
+        {b.status === 'completed' && b.reviewRating == null && (
+          <LinkButton to={`/rendez-vous/${b.id}/noter`}>Noter la prestation</LinkButton>
+        )}
+        {b.status === 'completed' && b.reviewRating != null && (
+          <InfoBox>
+            Merci ! Vous avez noté ce rendez-vous {b.reviewRating}/5. Votre avis est visible sur la
+            page du salon.
+          </InfoBox>
+        )}
+        {active && <GoogleCalendarButton booking={b} />}
       </div>
-
-      {cal && <CalendarSheet booking={b} onClose={() => setCal(false)} />}
 
       {cancelling && (
         <>
           <div className="dim" onClick={() => setCancelling(false)} />
           <BottomSheet>
             <div className="text-center">
-              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">Annuler ce rendez-vous ?</div>
+              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
+                Annuler ce rendez-vous ?
+              </div>
               <p className="p mt-2">
-                Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera libéré immédiatement.
+                Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera
+                libéré immédiatement.
               </p>
             </div>
             <InfoBox>
@@ -173,7 +246,14 @@ export function BookingDetail() {
             </InfoBox>
             <div className="crd !flex-row items-center justify-between !py-3">
               <span className="text-[0.9375rem]">Motif (optionnel)</span>
-              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Empêchement" className="!w-auto !bg-transparent !p-0 text-right" maxLength={200} aria-label="Motif" />
+              <Input
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Empêchement"
+                className="!w-auto !bg-transparent !p-0 text-right"
+                maxLength={200}
+                aria-label="Motif"
+              />
             </div>
             <ErrorMessage error={cancel.error} />
             <Button

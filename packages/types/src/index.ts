@@ -167,6 +167,8 @@ export interface Booking {
   cancellationReason: string | null;
   /** 'late' = annulé par le salon pour retard (> LATE_TOLERANCE_MINUTES), sinon null. */
   cancellationKind: CancellationKind | null;
+  /** Reports en ligne déjà effectués par le client (limite MAX_CLIENT_RESCHEDULES). */
+  clientReschedules: number;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
   /** Prestations cumulées (absent = une seule prestation, cf. serviceName). */
