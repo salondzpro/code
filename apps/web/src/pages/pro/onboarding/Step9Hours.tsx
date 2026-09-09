@@ -13,54 +13,52 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
 
+/** Case horaire : petit libellé + heure en grand, champ natif (sélecteur du téléphone) sur toute la case. */
+function TimeBox({ label, value, onChange, ariaLabel }: { label: string; value: string; onChange: (v: string) => void; ariaLabel: string }) {
+  return (
+    <label className="tmb">
+      <span className="tmb-l">{label}</span>
+      <input type="time" className="tmb-i" value={value} onChange={(e) => e.target.value && onChange(e.target.value)} aria-label={ariaLabel} />
+    </label>
+  );
+}
+
 /** Éditeur d'une semaine d'horaires avec pause par jour — partagé avec les horaires d'un membre (Équipe). */
 export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé', breakLabel = 'Pause' }: { rows: DayHoursRow[]; onChange: (rows: DayHoursRow[]) => void; closedLabel?: string; breakLabel?: string }) {
   const patch = (d: DayOfWeek, p: Partial<DayHoursRow>) => onChange(rows.map((r) => (r.dayOfWeek === d ? { ...r, ...p } : r)));
   return (
-    <div className="crd !gap-0 !py-1">
+    <div className="flex flex-col gap-3">
       {rows.map((r) => {
         const err = rowError(r);
         const day = DAY_LABELS_FR[r.dayOfWeek];
         return (
-          <div key={r.dayOfWeek} className="flex flex-col gap-2 border-b border-line-soft py-3 last:border-b-0">
-            <div className="flex items-center gap-3">
-              <span className={`w-[5.5rem] flex-none text-[0.9375rem] ${r.open ? 'font-semibold' : 'text-subtle'}`}>{day}</span>
-              <span className="flex flex-1 items-center gap-1 text-[0.9375rem] text-muted">
-                {r.open ? (
-                  <>
-                    <input type="time" className="tm" value={r.opensAt} onChange={(e) => patch(r.dayOfWeek, { opensAt: e.target.value })} aria-label={`Ouverture ${day}`} />
-                    <span>–</span>
-                    <input type="time" className="tm" value={r.closesAt} onChange={(e) => patch(r.dayOfWeek, { closesAt: e.target.value })} aria-label={`Fermeture ${day}`} />
-                  </>
-                ) : (
-                  <span className="text-disabled">{closedLabel}</span>
-                )}
+          <div key={r.dayOfWeek} className={`crd !gap-3 ${r.open ? '' : '!bg-fill'}`}>
+            <div className="flex items-center justify-between gap-3">
+              <span className={`text-[1rem] font-semibold ${r.open ? '' : 'text-subtle'}`}>{day}</span>
+              <span className="flex items-center gap-3">
+                <span className="text-[0.8125rem] text-muted">{r.open ? formatDayRanges(rangesFromRows([r])) : closedLabel}</span>
+                <Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={day} />
               </span>
-              <Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={day} />
             </div>
             {r.open && (
-              <div className="flex items-center gap-3 pl-[5.5rem]">
-                <span className="flex flex-1 items-center gap-1 text-[0.875rem] text-muted">
-                  <span className="mr-1">{breakLabel}</span>
-                  {r.hasBreak ? (
-                    <>
-                      <input type="time" className="tm" value={r.breakFrom} onChange={(e) => patch(r.dayOfWeek, { breakFrom: e.target.value })} aria-label={`Début de pause ${day}`} />
-                      <span>–</span>
-                      <input type="time" className="tm" value={r.breakTo} onChange={(e) => patch(r.dayOfWeek, { breakTo: e.target.value })} aria-label={`Fin de pause ${day}`} />
-                    </>
-                  ) : (
-                    <span className="text-disabled">aucune</span>
-                  )}
-                </span>
-                <Toggle on={r.hasBreak} onChange={(v) => patch(r.dayOfWeek, { hasBreak: v })} label={`${breakLabel} ${day}`} />
-              </div>
+              <>
+                <div className="g2">
+                  <TimeBox label="Ouvre" value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} ariaLabel={`Ouverture ${day}`} />
+                  <TimeBox label="Ferme" value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} ariaLabel={`Fermeture ${day}`} />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[0.9375rem]">{breakLabel}</span>
+                  <Toggle on={r.hasBreak} onChange={(v) => patch(r.dayOfWeek, { hasBreak: v })} label={`${breakLabel} ${day}`} />
+                </div>
+                {r.hasBreak && (
+                  <div className="g2">
+                    <TimeBox label="Début de pause" value={r.breakFrom} onChange={(v) => patch(r.dayOfWeek, { breakFrom: v })} ariaLabel={`Début de pause ${day}`} />
+                    <TimeBox label="Fin de pause" value={r.breakTo} onChange={(v) => patch(r.dayOfWeek, { breakTo: v })} ariaLabel={`Fin de pause ${day}`} />
+                  </div>
+                )}
+              </>
             )}
-            {r.open && (
-              <div className="pl-[5.5rem] text-[0.75rem] text-subtle" aria-live="polite">
-                {formatDayRanges(rangesFromRows([r]))}
-              </div>
-            )}
-            {err && <p className="pl-[5.5rem] text-[0.8125rem] text-danger">{err}</p>}
+            {err && <p className="text-[0.8125rem] text-danger">{err}</p>}
           </div>
         );
       })}

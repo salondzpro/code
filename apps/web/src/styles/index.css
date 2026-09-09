@@ -725,6 +725,39 @@
 
 /* Champ heure compact (lignes Horaires) : sans icône native, largeur du texte seulement. */
 @layer components {
+  /* Case horaire (éditeur d'horaires) : libellé discret + heure en grand, champ natif sur toute la case */
+  .tmb {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    background: var(--color-fill);
+    border-radius: var(--radius-input);
+    padding: 0.625rem 0.875rem;
+    cursor: pointer;
+  }
+  .crd.\!bg-fill .tmb {
+    background: var(--color-surface);
+  }
+  .tmb-l {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+  .tmb-i {
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    outline: none;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .tmb-i::-webkit-calendar-picker-indicator {
+    opacity: 0.35;
+  }
   .tm {
     @apply bg-transparent p-0 outline-none;
     width: 5.6ch;
