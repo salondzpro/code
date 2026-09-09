@@ -251,9 +251,11 @@ export default function ProBookingDetail() {
             <Tx size={13} weight={700} lh={17}>
               {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
             </Tx>
-            <Tx size={11} color={C.muted} lh={15}>
-              {capitalize(formatDateShortDZ(b.startsAt))}
-            </Tx>
+            {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))) && (
+              <Tx size={11} color={C.muted} lh={15}>
+                {capitalize(formatDateShortDZ(b.startsAt))}
+              </Tx>
+            )}
           </View>
           <StatusBadge
             status={b.status}

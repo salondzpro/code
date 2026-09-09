@@ -128,11 +128,14 @@ export function ProBookingDetail() {
       {/* L'essentiel en grand : quand, à quelle heure, combien — ce que le pro regarde dix fois par jour. */}
       <div className="crd !gap-3">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[0.9375rem] font-semibold">
+          <span className="text-[1rem] font-bold">
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
-            <span className="ml-2 text-[0.875rem] font-normal text-muted">
-              {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
-            </span>
+            {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
+            {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))) && (
+              <span className="ml-2 text-[0.875rem] font-normal text-muted">
+                {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
+              </span>
+            )}
           </span>
           <StatusBadge
             status={b.status}
