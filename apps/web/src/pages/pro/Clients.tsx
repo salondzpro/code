@@ -5,7 +5,7 @@
  */
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Ban, CalendarPlus, ChevronRight, MoreVertical, Phone, Search, ShieldCheck } from 'lucide-react';
+import { Ban, CalendarPlus, ChevronRight, Phone, Search, ShieldCheck } from 'lucide-react';
 import { useProClientMutations, useProClients, useProSalon } from '@salondz/api-client';
 import { formatDZPhone, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import type { ProClient } from '@salondz/types';
@@ -17,7 +17,6 @@ import { Splash } from '@/pages/auth/Splash';
 function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
   const navigate = useNavigate();
   const { block, unblock } = useProClientMutations();
-  const [menu, setMenu] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
   const canBlock = !!(c.clientId || c.phone);
@@ -29,7 +28,6 @@ function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
   );
   const toggleBlock = async () => {
     setError(null);
-    setMenu(false);
     try {
       if (c.blocked) await unblock.mutateAsync(ident);
       else await block.mutateAsync(ident);
@@ -48,30 +46,9 @@ function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
               <span className="block truncate text-[1.125rem] font-bold tracking-[-0.4px]">{c.name}</span>
               <span className="p block text-[0.9375rem]">{c.phone ? formatDZPhone(c.phone) : 'Sans numéro'}</span>
             </span>
-            {c.blocked ? (
-              <Badge tone="cn" dot={false}>
-                Bloqué
-              </Badge>
-            ) : (
-              <Badge tone="ok" dot={false}>
-                Actif
-              </Badge>
-            )}
-            {canBlock && (
-              <div className="relative">
-                <button type="button" className="ib" aria-label="Actions" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
-                  <I icon={MoreVertical} size={18} />
-                </button>
-                {menu && (
-                  <div role="menu" className="absolute right-0 top-11 z-10 min-w-[11rem] rounded-[0.875rem] border border-line bg-surface p-1 shadow-card">
-                    <button type="button" role="menuitem" className="flex w-full items-center gap-2 rounded-[0.625rem] px-3 py-2.5 text-left text-[0.9375rem] hover:bg-fill" onClick={() => void toggleBlock()}>
-                      <I icon={c.blocked ? ShieldCheck : Ban} size={16} className={c.blocked ? 'text-ok-fg' : 'text-danger'} />
-                      {c.blocked ? 'Débloquer' : 'Bloquer'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            <Badge tone={c.blocked ? 'cn' : 'ok'} dot>
+              {c.blocked ? 'Client bloqué' : 'Client actif'}
+            </Badge>
           </div>
           {c.blocked && <p className="text-[0.875rem] text-danger">Ce client ne peut plus prendre de rendez-vous chez vous{c.blockedReason ? ` · ${c.blockedReason}` : ''}. Le blocage ne concerne que votre salon.</p>}
           <div className="grid grid-cols-3 gap-2">
@@ -108,6 +85,11 @@ function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
               <I icon={CalendarPlus} size={18} /> Rendez-vous
             </Button>
           </div>
+          {canBlock && (
+            <Button variant={c.blocked ? 'g' : 'd'} onClick={() => void toggleBlock()} disabled={block.isPending || unblock.isPending}>
+              <I icon={c.blocked ? ShieldCheck : Ban} size={18} /> {c.blocked ? 'Débloquer le client' : 'Bloquer le client'}
+            </Button>
+          )}
           {c.lastBookingId && (
             <button type="button" className="py-1 text-[0.875rem] text-muted underline" onClick={() => navigate(`/pro/rendez-vous/${c.lastBookingId}`)}>
               Voir le dernier rendez-vous

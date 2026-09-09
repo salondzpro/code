@@ -7,7 +7,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react';
 import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
-import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName } from '@salondz/constants';
+import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName, groupServices } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
@@ -118,15 +118,22 @@ export function Salon() {
         />
 
         {tab === 'services' && (
-          <div className="crd !gap-0 !py-1">
-            {s.services.map((sv) => (
-              <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="li !py-5">
-                <span>
-                  <span className="block text-[1rem] font-semibold">{sv.name}</span>
-                  <span className="s block text-[0.9375rem]">{formatDuration(sv.durationMinutes)}</span>
-                </span>
-                <span className="text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
-              </Link>
+          <div className="flex flex-col gap-3">
+            {groupServices(s.services).map((g) => (
+              <div key={g.name} className="flex flex-col gap-2">
+                <span className="h3">{g.name}</span>
+                <div className="crd !gap-0 !py-1">
+                  {g.services.map((sv) => (
+                    <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="li !py-5">
+                      <span>
+                        <span className="block text-[1rem] font-semibold">{sv.name}</span>
+                        <span className="s block text-[0.9375rem]">{formatDuration(sv.durationMinutes)}</span>
+                      </span>
+                      <span className="text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
             {s.services.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
           </div>

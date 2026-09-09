@@ -28,6 +28,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
   const [duration, setDuration] = useState(existing?.durationMinutes ?? 45);
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '');
   const [group, setGroup] = useState(existing?.groupName ?? '');
+  const [creating, setCreating] = useState(false);
   const [description, setDescription] = useState(existing?.description ?? '');
   const [error, setError] = useState<string | null>(null);
   const [catSheet, setCatSheet] = useState(false);
@@ -35,11 +36,13 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
   if (!salon) return <Splash />;
   if (serviceId && !existing) return <Redirect href={stepPath(6) as never} />;
   const market = salon.genderTarget === 'men' ? 'men' : 'women';
-  const cats = categoriesForMarket(market).filter((c) => salon.categoryIds.includes(c.id));
+  // Catégories Salon DZ du marché (toutes) + catégories créées par le pro.
+  const cats = categoriesForMarket(market);
   const first = salon.services.length === 0;
   // Groupes déjà utilisés dans le catalogue : proposés en puces, un nouveau nom crée un nouveau groupe.
-  const groups = [...new Set(salon.services.map((s) => s.groupName).filter((g): g is string => !!g))];
-  const catLabel = categoryId ? (cats.find((c) => c.id === categoryId)?.labelFr ?? CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId) : 'Sans catégorie';
+  const groups = [...new Set(salon.services.map((s) => s.groupName?.trim()).filter((g): g is string => !!g))];
+  const pick = creating ? '__new__' : group ? `g:${group}` : categoryId ? `c:${categoryId}` : '';
+  const catLabel = creating ? 'Nouvelle catégorie' : group ? group : categoryId ? (cats.find((c) => c.id === categoryId)?.labelFr ?? CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId) : 'Sans catégorie';
 
   const submit = async () => {
     const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, groupName: group.trim() || null, description: description.trim() || undefined, isActive: true });
@@ -85,26 +88,42 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
           </Pill>
         ))}
       </PillRow>
-      <Field label="Groupe du catalogue" hint="Ex. Coupes, Barbe, Soins… Tapez un nouveau nom pour créer un groupe.">
-        <Input lg value={group} onChangeText={setGroup} maxLength={40} placeholder="Coupes" accessibilityLabel="Groupe du catalogue" />
-      </Field>
-      {groups.length > 0 && (
-        <PillRow>
-          {groups.map((g) => (
-            <Pill key={g} lg on={group.trim() === g} onPress={() => setGroup(group.trim() === g ? '' : g)}>
-              {g}
-            </Pill>
-          ))}
-        </PillRow>
-      )}
-      <Field label="Catégorie">
+      <Field label="Catégorie" hint="Choisissez une catégorie Salon DZ ou créez la vôtre : elle classe la prestation sur votre profil.">
         <Pressable_ label={catLabel} onPress={() => setCatSheet(true)} />
+        {creating && <Input lg value={group} onChangeText={setGroup} maxLength={40} placeholder="Nom de la nouvelle catégorie (ex. Soins de la barbe)" accessibilityLabel="Nouvelle catégorie" autoFocus style={{ marginTop: 8 }} />}
       </Field>
       <Field label="Description">
         <Input multiline value={description} onChangeText={setDescription} maxLength={500} placeholder="Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines." />
       </Field>
       {error && <Alert>{error}</Alert>}
-      <PickerSheet open={catSheet} onClose={() => setCatSheet(false)} title="Catégorie" options={[{ value: '', label: 'Sans catégorie' }, ...cats.map((c) => ({ value: c.id as string, label: c.labelFr }))]} value={categoryId} onChange={setCategoryId} />
+      <PickerSheet
+        open={catSheet}
+        onClose={() => setCatSheet(false)}
+        title="Catégorie"
+        options={[
+          { value: '', label: 'Sans catégorie' },
+          ...groups.map((g) => ({ value: `g:${g}`, label: g, hint: 'Ma catégorie' })),
+          ...cats.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, hint: 'Salon DZ' })),
+          { value: '__new__', label: '＋ Créer une catégorie…' },
+        ]}
+        value={pick}
+        onChange={(v) => {
+          setCreating(v === '__new__');
+          if (v === '__new__') {
+            setGroup('');
+            setCategoryId('');
+          } else if (v.startsWith('g:')) {
+            setGroup(v.slice(2));
+            setCategoryId('');
+          } else if (v.startsWith('c:')) {
+            setCategoryId(v.slice(2));
+            setGroup('');
+          } else {
+            setGroup('');
+            setCategoryId('');
+          }
+        }}
+      />
     </Screen>
   );
 }

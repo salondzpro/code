@@ -4,9 +4,9 @@ import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { useSalon } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Card, ErrorText, H1, I, Img, P, TopBar, Tx } from '@/ui';
+import { Card, ErrorText, H1, I, Img, P, TopBar, Tx, SectionLabel } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
@@ -27,8 +27,10 @@ export default function SalonServices() {
     <Screen gap={13}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
       <H1>Prestations</H1>
-      <View style={{ gap: 11 }}>
-        {s.services.map((sv) => {
+      {groupServices(s.services).map((g) => (
+      <View key={g.name} style={{ gap: 11 }}>
+        <SectionLabel>{g.name}</SectionLabel>
+        {g.services.map((sv) => {
           const photos = sv.photos ?? [];
           return (
             <Card key={sv.id} row gap={13} onPress={() => router.push(`/s/${s.slug}/prestation/${sv.id}` as never)} accessibilityLabel={sv.name}>
@@ -49,8 +51,9 @@ export default function SalonServices() {
             </Card>
           );
         })}
-        {s.services.length === 0 && <P>Aucune prestation pour le moment.</P>}
       </View>
+      ))}
+      {s.services.length === 0 && <P>Aucune prestation pour le moment.</P>}
     </Screen>
   );
 }

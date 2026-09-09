@@ -2,8 +2,8 @@
  * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
  * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
  */
-import React, { useMemo, useRef, useState } from 'react';
-import { Pressable, View, type GestureResponderEvent, type ViewStyle } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Pressable, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react-native';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
@@ -14,7 +14,7 @@ import { useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
 import { MONTHS_FR, formatDuration } from '@/lib/format';
 import { Badge, I, IconButton, ListCard, P, Row, Segmented, StatusBadge, Tx } from '@/ui';
-import { DayStrip } from '@/ui/DaySelector';
+import { DayCarousel, DayScroller } from '@/ui/DayCarousel';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, CAT, NAV_PAD, SHADOW } from '@/theme/design';
@@ -36,14 +36,15 @@ export default function AgendaPro() {
   const week = useMemo(() => weekKeys(date), [date]);
   const monthStart = `${date.slice(0, 7)}-01`;
   const monthGridStart = addDaysToKey(monthStart, -dayOfWeekFromKey(monthStart));
-  const from = view === 'month' ? monthGridStart : week[0]!;
-  const to = view === 'month' ? addDaysToKey(monthGridStart, 41) : week[6]!;
+  const from = view === 'month' ? monthGridStart : addDaysToKey(week[0]!, view === 'day' ? -7 : 0);
+  const to = view === 'month' ? addDaysToKey(monthGridStart, 41) : addDaysToKey(week[6]!, view === 'day' ? 7 : 0);
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
   useRealtimeBookings(salon?.id);
 
   const toneOf = (b: BookingWithStaff) => categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
   const [staffId, setStaffId] = useStaffFilter();
+  const { width: winWidth } = useWindowDimensions();
   const items = useMemo(() => (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && (!staffId || b.staffId === staffId)), [bookings.data, staffId]);
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
@@ -54,23 +55,6 @@ export default function AgendaPro() {
   if (!salon) return <Splash />;
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !salon.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
   const dayHours = (key: string) => salon.openingHours.filter((h) => h.dayOfWeek === dayOfWeekFromKey(key) && !h.isClosed);
-  const dayItems = (byDay.get(date) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const dayRevenue = dayItems.filter((b) => b.status !== 'no_show').reduce((a, b) => a + b.priceDa, 0);
-  const dayPending = dayItems.filter((b) => b.status === 'pending').length;
-  const dayBlocks = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === date);
-  // Balayage horizontal : jour précédent / suivant en vue jour (mobile-first).
-  const touch = useRef<{ x: number; y: number } | null>(null);
-  const onTouchStart = (e: GestureResponderEvent) => {
-    touch.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY };
-  };
-  const onTouchEnd = (e: GestureResponderEvent) => {
-    const start = touch.current;
-    touch.current = null;
-    if (!start || view !== 'day') return;
-    const dx = e.nativeEvent.pageX - start.x;
-    const dy = e.nativeEvent.pageY - start.y;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
-  };
   const shift = (n: number) => setDate(view === 'month' ? addDaysToKey(monthStart, n > 0 ? 32 : -1).slice(0, 8) + '01' : addDaysToKey(date, n * (view === 'week' ? 7 : 1)));
   const openBooking = (id: string) => router.push(`/pro-rdv/${id}` as never);
   const newBooking = () => router.push({ pathname: '/pro-rdv/nouveau', params: { date } });
@@ -122,8 +106,6 @@ export default function AgendaPro() {
 
   return (
     <Screen
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
       gap={13}
       bottom={NAV_PAD + 60}
       footer={
@@ -149,23 +131,38 @@ export default function AgendaPro() {
 
       {view === 'day' && (
         <>
-          <DayStrip weekOf={date} selected={date} onSelect={setDate} disabledDays={closedDays} />
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Tx size={12} lh={16}>
-              <Tx size={12} weight={700} lh={16}>
-                {dayItems.length} rendez-vous
-              </Tx>{' '}
-              <Tx size={12} color={C.muted} lh={16}>
-                · {formatDA(dayRevenue)}
-              </Tx>
-            </Tx>
-            {dayPending > 0 && (
-              <Badge tone="pd" md>
-                {dayPending} en attente
-              </Badge>
-            )}
-          </View>
-          <DayTimeline date={date} items={dayItems} blocks={dayBlocks} hours={dayHours(date)} toneOf={toneOf} onOpen={openBooking} onFree={(t) => router.push({ pathname: '/pro-rdv/nouveau', params: { date, time: t, ...(staffId ? { staff: staffId } : {}) } } as never)} />
+          <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} />
+          <DayCarousel
+            date={date}
+            onChange={setDate}
+            width={Math.max(0, winWidth - 32)}
+            render={(d) => {
+              const items = (byDay.get(d) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+              const revenue = items.filter((b) => b.status !== 'no_show').reduce((a, b) => a + b.priceDa, 0);
+              const pending = items.filter((b) => b.status === 'pending').length;
+              const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
+              return (
+                <View style={{ gap: 13 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Tx size={12} lh={16}>
+                      <Tx size={12} weight={700} lh={16}>
+                        {items.length} rendez-vous
+                      </Tx>{' '}
+                      <Tx size={12} color={C.muted} lh={16}>
+                        · {formatDA(revenue)}
+                      </Tx>
+                    </Tx>
+                    {pending > 0 && (
+                      <Badge tone="pd" md>
+                        {pending} en attente
+                      </Badge>
+                    )}
+                  </View>
+                  <DayTimeline date={d} items={items} blocks={dayBlk} hours={dayHours(d)} toneOf={toneOf} onOpen={openBooking} onFree={(t) => router.push({ pathname: '/pro-rdv/nouveau', params: { date: d, time: t, ...(staffId ? { staff: staffId } : {}) } } as never)} />
+                </View>
+              );
+            }}
+          />
         </>
       )}
 
@@ -238,6 +235,8 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
     if (s - cursor >= 30) gaps.push({ s: cursor, e: s });
     cursor = Math.max(cursor, localMinutes(b.endsAt));
   }
+  // Fin de journée libre (et journée entière libre sans rendez-vous) : cliquable pour ajouter un rendez-vous.
+  if (endMin - cursor >= 30) gaps.push({ s: cursor, e: endMin });
   const closedRanges: { s: number; e: number; label: string }[] = [];
   const sortedHours = [...hours].sort((a, b) => a.opensAt.localeCompare(b.opensAt));
   for (let i = 1; i < sortedHours.length; i++) closedRanges.push({ s: timeToMinutes(sortedHours[i - 1]!.closesAt), e: timeToMinutes(sortedHours[i]!.opensAt), label: 'Pause' });

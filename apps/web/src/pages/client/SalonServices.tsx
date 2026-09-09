@@ -2,7 +2,7 @@
 import { Link, useParams } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { useSalon } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { I, Img, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
@@ -19,8 +19,10 @@ export function SalonServices() {
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
       <h1 className="h1">Prestations</h1>
-      <div className="flex flex-col gap-3.5">
-        {s.services.map((sv) => {
+      {groupServices(s.services).map((g) => (
+      <div key={g.name} className="flex flex-col gap-3.5">
+        <span className="h3">{g.name}</span>
+        {g.services.map((sv) => {
           const photos = sv.photos ?? [];
           return (
             <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="crd !flex-row items-center gap-4">
@@ -37,8 +39,9 @@ export function SalonServices() {
             </Link>
           );
         })}
-        {s.services.length === 0 && <p className="p">Aucune prestation pour le moment.</p>}
       </div>
+      ))}
+      {s.services.length === 0 && <p className="p">Aucune prestation pour le moment.</p>}
     </Screen>
   );
 }

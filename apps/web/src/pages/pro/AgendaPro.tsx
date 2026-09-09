@@ -2,7 +2,7 @@
  * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
  * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
  */
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
@@ -12,7 +12,7 @@ import { useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
 import { Badge, I, IconButton, Segmented, StatusBadge } from '@/components/ui';
-import { DayStrip } from '@/components/DaySelector';
+import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import type { BookingWithStaff } from '@salondz/types';
@@ -42,8 +42,8 @@ export function AgendaPro() {
   const week = useMemo(() => weekKeys(date), [date]);
   const monthStart = `${date.slice(0, 7)}-01`;
   const monthGridStart = addDaysToKey(monthStart, -dayOfWeekFromKey(monthStart));
-  const from = view === 'month' ? monthGridStart : week[0]!;
-  const to = view === 'month' ? addDaysToKey(monthGridStart, 41) : week[6]!;
+  const from = view === 'month' ? monthGridStart : addDaysToKey(week[0]!, view === 'day' ? -7 : 0);
+  const to = view === 'month' ? addDaysToKey(monthGridStart, 41) : addDaysToKey(week[6]!, view === 'day' ? 7 : 0);
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
   useRealtimeBookings(salon?.id);
@@ -60,10 +60,6 @@ export function AgendaPro() {
   if (!salon) return <Splash />;
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !salon.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
   const dayHours = (key: string) => salon.openingHours.filter((h) => h.dayOfWeek === dayOfWeekFromKey(key) && !h.isClosed);
-  const dayItems = (byDay.get(date) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const dayRevenue = dayItems.filter((b) => b.status !== 'no_show').reduce((a, b) => a + b.priceDa, 0);
-  const dayPending = dayItems.filter((b) => b.status === 'pending').length;
-  const dayBlocks = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === date);
 
   const shift = (n: number) => setDate(view === 'month' ? addDaysToKey(monthStart, n > 0 ? 32 : -1).slice(0, 8) + '01' : addDaysToKey(date, n * (view === 'week' ? 7 : 1)));
 
@@ -106,24 +102,7 @@ export function AgendaPro() {
       </div>
     );
 
-  // Balayage horizontal (tactile) : jour précédent / suivant en vue jour.
-  const touch = useRef<{ x: number; y: number } | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => {
-    const t = e.touches[0];
-    touch.current = t ? { x: t.clientX, y: t.clientY } : null;
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const start = touch.current;
-    const t = e.changedTouches[0];
-    touch.current = null;
-    if (!start || !t || view !== 'day') return;
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
-  };
-
   return (
-    <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
     <Screen bottom={NAV_PAD} gap={16}>
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
@@ -140,18 +119,32 @@ export function AgendaPro() {
 
       {view === 'day' && (
         <>
-          <DayStrip weekOf={date} selected={date} onSelect={setDate} disabledDays={closedDays} />
-          <div className="flex items-center justify-between">
-            <span className="text-[0.9375rem]">
-              <b>{dayItems.length} rendez-vous</b> <span className="text-muted">· {formatDA(dayRevenue)}</span>
-            </span>
-            {dayPending > 0 && (
-              <Badge tone="pd" md>
-                {dayPending} en attente
-              </Badge>
-            )}
-          </div>
-          <DayTimeline date={date} items={dayItems} blocks={dayBlocks} hours={dayHours(date)} toneOf={toneOf} onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)} onFree={(t) => navigate(`/pro/rendez-vous/nouveau?date=${date}&time=${t}${staffId ? `&staff=${staffId}` : ''}`)} />
+          <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} />
+          <DayCarousel
+            date={date}
+            onChange={setDate}
+            render={(d) => {
+              const items = (byDay.get(d) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+              const revenue = items.filter((b) => b.status !== 'no_show').reduce((a, b) => a + b.priceDa, 0);
+              const pending = items.filter((b) => b.status === 'pending').length;
+              const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
+              return (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[0.9375rem]">
+                      <b>{items.length} rendez-vous</b> <span className="text-muted">· {formatDA(revenue)}</span>
+                    </span>
+                    {pending > 0 && (
+                      <Badge tone="pd" md>
+                        {pending} en attente
+                      </Badge>
+                    )}
+                  </div>
+                  <DayTimeline date={d} items={items} blocks={dayBlk} hours={dayHours(d)} toneOf={toneOf} onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)} onFree={(t) => navigate(`/pro/rendez-vous/nouveau?date=${d}&time=${t}${staffId ? `&staff=${staffId}` : ''}`)} />
+                </div>
+              );
+            }}
+          />
           <button type="button" className="fab right-5" aria-label="Nouveau rendez-vous" onClick={() => navigate(`/pro/rendez-vous/nouveau?date=${date}`)} style={{ left: 'auto', right: 'max(20px, calc(50% - var(--app-max-width) / 2 + 20px))' }}>
             <I icon={Plus} size={28} />
           </button>
@@ -166,7 +159,6 @@ export function AgendaPro() {
         <MonthGrid date={date} gridStart={monthGridStart} byDay={byDay} closedDays={closedDays} toneOf={toneOf} selected={date} today={today} onSelect={setDate} onOpenDay={(d) => { setDate(d); setView('day'); }} onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)} />
       )}
     </Screen>
-    </div>
   );
 }
 
@@ -199,6 +191,8 @@ function DayTimeline({ date, items, blocks, hours, toneOf, onOpen, onFree }: { d
     if (s - cursor >= 30) gaps.push({ s: cursor, e: s });
     cursor = Math.max(cursor, localMinutes(b.endsAt));
   }
+  // Fin de journée libre (et journée entière libre sans rendez-vous) : cliquable pour ajouter un rendez-vous.
+  if (endMin - cursor >= 30) gaps.push({ s: cursor, e: endMin });
   // pauses (fermeture entre deux plages) + blocages
   const closedRanges: { s: number; e: number; label: string }[] = [];
   const sortedHours = [...hours].sort((a, b) => a.opensAt.localeCompare(b.opensAt));

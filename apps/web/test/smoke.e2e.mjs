@@ -195,13 +195,10 @@ try {
   let slug = '';
   /** Agenda pro, vue Jour : amène la barre de jours sur la semaine cible puis sélectionne le jour. */
   const agendaPickTarget = async (page) => {
+    // Bande de jours défilable (± 3 semaines) : le jour cible y est directement.
     await page.getByRole('tab', { name: 'Jour' }).waitFor();
-    if (weekStart(target) !== weekStart(today)) {
-      await page.getByRole('tab', { name: 'Semaine' }).click();
-      await page.getByRole('button', { name: 'Suivant' }).click();
-      await page.getByRole('tab', { name: 'Jour' }).click();
-    }
-    await page.locator('button[role=option]:not([disabled])').filter({ has: page.locator('b', { hasText: new RegExp(`^${targetDayNum}$`) }) }).first().click();
+    await page.locator(`button[role=option][data-day="${target}"]`).click();
+    await page.locator(`button[role=option][data-day="${target}"][aria-selected="true"]`).waitFor();
   };
   await step('pro: /pro → étape 1 (marché)', async () => {
     await p.goto(WEB + '/pro');
@@ -516,12 +513,10 @@ try {
     const sheet = p.getByRole('dialog', { name: 'Client Amine Smoke' });
     await sheet.getByText('Prochain rendez-vous').waitFor();
     await shot(p, 'pro-client');
-    await sheet.getByRole('button', { name: 'Actions' }).click();
-    await sheet.getByRole('menuitem', { name: 'Bloquer' }).click();
-    await sheet.getByText('Bloqué', { exact: true }).waitFor();
-    await sheet.getByRole('button', { name: 'Actions' }).click();
-    await sheet.getByRole('menuitem', { name: 'Débloquer' }).click();
-    await sheet.getByText('Actif', { exact: true }).waitFor();
+    await sheet.getByRole('button', { name: 'Bloquer le client' }).click();
+    await sheet.getByText('Client bloqué', { exact: true }).waitFor();
+    await sheet.getByRole('button', { name: 'Débloquer le client' }).click();
+    await sheet.getByText('Client actif', { exact: true }).waitFor();
   });
   await step('client: noter la prestation → avis visible sur la page publique', async () => {
     await c.goto(WEB + '/rendez-vous?scope=past');

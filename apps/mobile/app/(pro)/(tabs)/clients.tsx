@@ -6,15 +6,15 @@
 import React, { useMemo, useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ban, CalendarPlus, ChevronRight, MoreVertical, Phone, ShieldCheck } from 'lucide-react-native';
+import { Ban, CalendarPlus, ChevronRight, Phone, ShieldCheck } from 'lucide-react-native';
 import { useProClientMutations, useProClients, useProSalon } from '@salondz/api-client';
 import { formatDZPhone, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import type { ProClient } from '@salondz/types';
 import { errorText } from '@/lib/errors';
-import { Alert, Avatar, Badge, Button, Grid, H1, I, IconButton, ListCard, ModalSheet, P, Row, SearchBox, Skeleton, Tx } from '@/ui';
+import { Alert, Avatar, Badge, Button, Grid, H1, I, ListCard, ModalSheet, P, Row, SearchBox, Skeleton, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C, NAV_PAD, R } from '@/theme/design';
+import { C, NAV_PAD } from '@/theme/design';
 
 function Stat({ v, l }: { v: number | string; l: string }) {
   return (
@@ -32,13 +32,11 @@ function Stat({ v, l }: { v: number | string; l: string }) {
 function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
   const router = useRouter();
   const { block, unblock } = useProClientMutations();
-  const [menu, setMenu] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
   const canBlock = !!(c.clientId || c.phone);
   const toggleBlock = async () => {
     setError(null);
-    setMenu(false);
     try {
       if (c.blocked) await unblock.mutateAsync(ident);
       else await block.mutateAsync(ident);
@@ -58,23 +56,10 @@ function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
             {c.phone ? formatDZPhone(c.phone) : 'Sans numéro'}
           </Tx>
         </View>
-        <Badge tone={c.blocked ? 'cn' : 'ok'} dot={false}>
-          {c.blocked ? 'Bloqué' : 'Actif'}
+        <Badge tone={c.blocked ? 'cn' : 'ok'} dot>
+          {c.blocked ? 'Client bloqué' : 'Client actif'}
         </Badge>
-        {canBlock && (
-          <IconButton accessibilityLabel="Actions" onPress={() => setMenu((m) => !m)}>
-            <I icon={MoreVertical} size={16} />
-          </IconButton>
-        )}
       </View>
-      {menu && (
-        <Pressable accessibilityRole="menuitem" onPress={() => void toggleBlock()} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: R.cardSm, paddingHorizontal: 12, paddingVertical: 10, alignSelf: 'flex-end' }}>
-          <I icon={c.blocked ? ShieldCheck : Ban} size={14} color={c.blocked ? C.okFg : C.danger} />
-          <Tx size={12} weight={500} lh={16} color={c.blocked ? C.text : C.danger}>
-            {c.blocked ? 'Débloquer' : 'Bloquer'}
-          </Tx>
-        </Pressable>
-      )}
       {c.blocked && <Alert>Ce client ne peut plus prendre de rendez-vous chez vous{c.blockedReason ? ` · ${c.blockedReason}` : ''}. Le blocage ne concerne que votre salon.</Alert>}
       <Grid cols={3} gap={6}>
         <Stat v={c.bookingsCount} l="rendez-vous" />
@@ -117,6 +102,14 @@ function ClientSheet({ c, onClose }: { c: ProClient; onClose: () => void }) {
           </Tx>
         </Button>
       </Grid>
+      {canBlock && (
+        <Button variant={c.blocked ? 'g' : 'd'} onPress={() => void toggleBlock()} disabled={block.isPending || unblock.isPending}>
+          <I icon={c.blocked ? ShieldCheck : Ban} size={14} color={c.blocked ? C.text : C.danger} />
+          <Tx size={12} weight={600} lh={16} color={c.blocked ? C.text : C.danger}>
+            {c.blocked ? 'Débloquer le client' : 'Bloquer le client'}
+          </Tx>
+        </Button>
+      )}
       {c.lastBookingId && (
         <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${c.lastBookingId}` as never)} style={{ alignSelf: 'center', paddingVertical: 4 }}>
           <Tx size={11.5} color={C.muted} lh={15} style={{ textDecorationLine: 'underline' }}>

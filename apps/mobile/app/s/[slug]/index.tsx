@@ -8,7 +8,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react-native';
 import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
-import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName } from '@salondz/constants';
+import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName, groupServices } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatDuration, formatRating } from '@/lib/format';
 import { open, openingStatus, publicUrl, shareUrl } from '@/lib/salon';
@@ -117,25 +117,31 @@ export default function Salon() {
         />
 
         {tab === 'services' && (
-          <ListCard>
-            {s.services.map((sv) => (
-              <Row key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} py={16} chevron={false} right={<Tx size={13} weight={600} lh={17}>{formatDA(sv.priceDa)}</Tx>}>
-                <Tx size={13} weight={600} lh={17}>
-                  {sv.name}
-                </Tx>
-                <Tx size={12} color={C.muted} lh={16}>
-                  {formatDuration(sv.durationMinutes)}
-                </Tx>
-              </Row>
+          <View style={{ gap: 10 }}>
+            {groupServices(s.services).map((g) => (
+              <View key={g.name} style={{ gap: 6 }}>
+                <SectionLabel>{g.name}</SectionLabel>
+                <ListCard>
+                  {g.services.map((sv) => (
+                    <Row key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} py={16} chevron={false} right={<Tx size={13} weight={600} lh={17}>{formatDA(sv.priceDa)}</Tx>}>
+                      <Tx size={13} weight={600} lh={17}>
+                        {sv.name}
+                      </Tx>
+                      <Tx size={12} color={C.muted} lh={16}>
+                        {formatDuration(sv.durationMinutes)}
+                      </Tx>
+                    </Row>
+                  ))}
+                </ListCard>
+              </View>
             ))}
             {s.services.length === 0 && (
               <View style={{ paddingVertical: 10 }}>
                 <P>Aucune prestation pour le moment.</P>
               </View>
             )}
-          </ListCard>
+          </View>
         )}
-
         {tab === 'works' && (
           <>
             {works.length === 0 ? (

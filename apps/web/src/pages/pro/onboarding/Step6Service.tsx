@@ -25,16 +25,19 @@ export function Step6Service() {
   const [duration, setDuration] = useState(existing?.durationMinutes ?? 45);
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '');
   const [group, setGroup] = useState(existing?.groupName ?? '');
+  const [creating, setCreating] = useState(false);
   const [description, setDescription] = useState(existing?.description ?? '');
   const [error, setError] = useState<string | null>(null);
 
   if (!salon) return <Splash />;
   if (serviceId && !existing) return <Navigate to={stepPath(6)} replace />;
   const market = salon.genderTarget === 'men' ? 'men' : 'women';
-  const cats = categoriesForMarket(market).filter((c) => salon.categoryIds.includes(c.id));
+  // Catégories Salon DZ du marché (toutes, pas seulement celles du salon) + catégories créées par le pro.
+  const cats = categoriesForMarket(market);
   const first = salon.services.length === 0;
   // Groupes déjà utilisés dans le catalogue : proposés en saisie, un nouveau nom crée un nouveau groupe.
-  const groups = [...new Set(salon.services.map((s) => s.groupName).filter((g): g is string => !!g))];
+  const groups = [...new Set(salon.services.map((s) => s.groupName?.trim()).filter((g): g is string => !!g))];
+  const pick = creating ? '__new__' : group ? `g:${group}` : categoryId ? `c:${categoryId}` : '';
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -78,27 +81,53 @@ export function Step6Service() {
             </Pill>
           ))}
         </div>
-        <Field label="Groupe du catalogue" htmlFor="svc-group" hint="Ex. Coupes, Barbe, Soins… Tapez un nouveau nom pour créer un groupe.">
-          <Input id="svc-group" lg list="svc-groups" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder="Coupes" />
-          <datalist id="svc-groups">
-            {groups.map((g) => (
-              <option key={g} value={g} />
-            ))}
-          </datalist>
-        </Field>
-        <Field label="Catégorie" htmlFor="svc-cat">
+        <Field label="Catégorie" htmlFor="svc-cat" hint="Choisissez une catégorie Salon DZ ou créez la vôtre : elle classe la prestation sur votre profil.">
           <div className="relative">
-            <select id="svc-cat" className="inp lg appearance-none pr-12" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <select
+              id="svc-cat"
+              className="inp lg appearance-none pr-12"
+              value={pick}
+              onChange={(e) => {
+                const v = e.target.value;
+                setCreating(v === '__new__');
+                if (v === '__new__') {
+                  setGroup('');
+                  setCategoryId('');
+                } else if (v.startsWith('g:')) {
+                  setGroup(v.slice(2));
+                  setCategoryId('');
+                } else if (v.startsWith('c:')) {
+                  setCategoryId(v.slice(2));
+                  setGroup('');
+                } else {
+                  setGroup('');
+                  setCategoryId('');
+                }
+              }}
+            >
               <option value="">Sans catégorie</option>
-              {cats.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.labelFr}
-                </option>
-              ))}
-              {categoryId && !cats.some((c) => c.id === categoryId) && <option value={categoryId}>{CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId}</option>}
+              {groups.length > 0 && (
+                <optgroup label="Mes catégories">
+                  {groups.map((g) => (
+                    <option key={g} value={`g:${g}`}>
+                      {g}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="Catégories Salon DZ">
+                {cats.map((c) => (
+                  <option key={c.id} value={`c:${c.id}`}>
+                    {c.labelFr}
+                  </option>
+                ))}
+                {categoryId && !cats.some((c) => c.id === categoryId) && <option value={`c:${categoryId}`}>{CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId}</option>}
+              </optgroup>
+              <option value="__new__">＋ Créer une catégorie…</option>
             </select>
             <I icon={ChevronDown} size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-subtle" />
           </div>
+          {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder="Nom de la nouvelle catégorie (ex. Soins de la barbe)" aria-label="Nouvelle catégorie" autoFocus />}
         </Field>
         <Field label="Description" htmlFor="svc-desc">
           <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder="Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines." />
