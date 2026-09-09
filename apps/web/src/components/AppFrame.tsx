@@ -4,7 +4,7 @@
  */
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router';
-import { Calendar, Home, LayoutGrid, Menu, User, Users, type LucideIcon } from 'lucide-react';
+import { Calendar, CalendarDays, ContactRound, House, LayoutGrid, Scissors, Store, User, UsersRound, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 
 /** Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée. */
@@ -37,13 +37,14 @@ const CLIENT_NAV: NavItem[] = [
   { to: '/profil', label: 'Profil', icon: User },
 ];
 
+/** Icônes pro toutes différentes : carnet de contacts (clients), groupe (équipe), ciseaux (prestations), boutique (profil du salon). */
 const PRO_NAV: NavItem[] = [
-  { to: '/pro', label: 'Accueil', icon: Home, end: true },
-  { to: '/pro/agenda', label: 'Agenda', icon: Calendar },
-  { to: '/pro/clients', label: 'Clients', icon: User },
-  { to: '/pro/equipe', label: 'Équipe', icon: Users },
-  { to: '/pro/prestations', label: 'Prestations', icon: Menu },
-  { to: '/pro/profil', label: 'Profil', icon: User },
+  { to: '/pro', label: 'Accueil', icon: House, end: true },
+  { to: '/pro/agenda', label: 'Agenda', icon: CalendarDays },
+  { to: '/pro/clients', label: 'Clients', icon: ContactRound },
+  { to: '/pro/equipe', label: 'Équipe', icon: UsersRound },
+  { to: '/pro/prestations', label: 'Prestations', icon: Scissors },
+  { to: '/pro/profil', label: 'Profil', icon: Store },
 ];
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {

@@ -92,6 +92,8 @@ export interface Service {
   durationMinutes: number;
   priceDa: number;
   categoryId: string | null;
+  /** Groupe libre du catalogue (« Coupes », « Barbe », « Soins »…) — créé par le professionnel. */
+  groupName: string | null;
   isActive: boolean;
   sortOrder: number;
   /** Photos de la prestation (design « Prestations illustrées ») — présentes dans les vues salon. */
@@ -112,6 +114,9 @@ export interface Staff {
   avatarUrl: string | null;
   isActive: boolean;
   sortOrder: number;
+  /** true = réalise toutes les prestations du salon ; sinon `serviceIds` liste celles affectées. */
+  allServices: boolean;
+  serviceIds: string[];
 }
 
 export interface OpeningHour {

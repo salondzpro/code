@@ -118,6 +118,8 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         p_date: date,
         p_staff_id: staffId ?? null,
         p_enforce_lead_time: true,
+        p_exclude_booking: null,
+        p_service_ids: serviceIds,
       });
       const rows = unwrap(slotsRes) as { slot_start: string; staff_id: string }[];
 

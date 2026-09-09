@@ -291,9 +291,14 @@ try {
     await shot(p, 'pro-equipe');
     await row.getByRole('button').click();
     const sheet = p.getByRole('dialog', { name: 'Membre Yacine' });
+    // Prestations affectées : « toutes » par défaut, sélection possible.
+    await sheet.getByText(/toutes les prestations du catalogue/).waitFor();
+    await sheet.getByRole('tab', { name: 'Sélection' }).click();
+    await sheet.getByRole('checkbox', { name: 'Coupe + barbe' }).click();
+    await sheet.getByRole('tab', { name: 'Horaires', exact: true }).click();
     await sheet.getByText(/réservable sur tous les horaires/).waitFor(); // horaires chargés
     await sheet.getByRole('tab', { name: 'Horaires personnalisés' }).click();
-    await sheet.getByRole('switch', { name: 'Dimanche' }).click(); // repos le dimanche
+    await sheet.getByRole('switch', { name: 'Dimanche', exact: true }).click(); // repos le dimanche
     await shot(p, 'pro-equipe-membre');
     await sheet.getByRole('button', { name: 'Enregistrer' }).click();
     await sheet.waitFor({ state: 'detached' });

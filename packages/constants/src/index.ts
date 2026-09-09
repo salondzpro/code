@@ -1,5 +1,7 @@
 export * from './wilayas';
 export * from './geocode';
+export * from './hours';
+export * from './services';
 export * from './categories';
 export * from './money';
 export * from './dates';

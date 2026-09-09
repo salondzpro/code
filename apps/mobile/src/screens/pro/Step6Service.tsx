@@ -1,4 +1,4 @@
-/** PRO-F 08 — Étape 6 : première prestation (nom, prix, durée, catégorie, description) → photos. */
+/** PRO-F 08 — Étape 6 : prestation (nom, prix, durée libre en minutes, groupe du catalogue créé librement, catégorie, description) → photos. */
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
@@ -16,7 +16,7 @@ import { Splash } from '@/ui/Splash';
 import { StepBar, StepSheet } from '@/ui/Steps';
 import { C, R } from '@/theme/design';
 
-const DURATIONS = [15, 30, 45, 60, 75, 90, 120, 150, 180];
+const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
 
 export function Step6Service({ serviceId }: { serviceId?: string }) {
   const router = useRouter();
@@ -27,6 +27,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
   const [price, setPrice] = useState(existing ? String(existing.priceDa) : '');
   const [duration, setDuration] = useState(existing?.durationMinutes ?? 45);
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '');
+  const [group, setGroup] = useState(existing?.groupName ?? '');
   const [description, setDescription] = useState(existing?.description ?? '');
   const [error, setError] = useState<string | null>(null);
   const [catSheet, setCatSheet] = useState(false);
@@ -36,10 +37,12 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
   const market = salon.genderTarget === 'men' ? 'men' : 'women';
   const cats = categoriesForMarket(market).filter((c) => salon.categoryIds.includes(c.id));
   const first = salon.services.length === 0;
+  // Groupes déjà utilisés dans le catalogue : proposés en puces, un nouveau nom crée un nouveau groupe.
+  const groups = [...new Set(salon.services.map((s) => s.groupName).filter((g): g is string => !!g))];
   const catLabel = categoryId ? (cats.find((c) => c.id === categoryId)?.labelFr ?? CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId) : 'Sans catégorie';
 
   const submit = async () => {
-    const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, description: description.trim() || undefined, isActive: true });
+    const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, groupName: group.trim() || null, description: description.trim() || undefined, isActive: true });
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Vérifiez les champs.');
     setError(null);
     try {
@@ -51,7 +54,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
   };
 
   return (
-    <Screen gap={13} footer={<StepSheet label="Ajouter des photos" onPress={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price} />}>
+    <Screen gap={13} footer={<StepSheet label="Ajouter des photos" onPress={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price || duration < 5} />}>
       <StepBar step={6} backTo={first ? stepPath(5) : '/(pro)/(tabs)/prestations'} />
       <H1>{existing ? 'Modifier la prestation' : first ? 'Première prestation' : 'Nouvelle prestation'}</H1>
       <Field label="Nom">
@@ -66,10 +69,11 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
             </Tx>
           </View>
         </Field>
-        <Field label="Durée">
-          <View style={{ backgroundColor: C.fill, borderRadius: R.input, paddingVertical: 15, paddingHorizontal: 13 }} accessibilityLabel="Durée">
-            <Tx size={10.5} lh={14.5}>
-              {formatDuration(duration)}
+        <Field label="Durée (minutes)" hint={formatDuration(duration)}>
+          <View>
+            <Input lg keyboardType="number-pad" value={duration ? String(duration) : ''} onChangeText={(v) => setDuration(Math.min(480, Number(v.replace(/\D/g, '')) || 0))} placeholder="45" accessibilityLabel="Durée" style={{ paddingRight: 44 }} />
+            <Tx size={10.5} lh={14.5} style={{ position: 'absolute', right: 13, top: 15 }}>
+              min
             </Tx>
           </View>
         </Field>
@@ -81,6 +85,18 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
           </Pill>
         ))}
       </PillRow>
+      <Field label="Groupe du catalogue" hint="Ex. Coupes, Barbe, Soins… Tapez un nouveau nom pour créer un groupe.">
+        <Input lg value={group} onChangeText={setGroup} maxLength={40} placeholder="Coupes" accessibilityLabel="Groupe du catalogue" />
+      </Field>
+      {groups.length > 0 && (
+        <PillRow>
+          {groups.map((g) => (
+            <Pill key={g} lg on={group.trim() === g} onPress={() => setGroup(group.trim() === g ? '' : g)}>
+              {g}
+            </Pill>
+          ))}
+        </PillRow>
+      )}
       <Field label="Catégorie">
         <Pressable_ label={catLabel} onPress={() => setCatSheet(true)} />
       </Field>

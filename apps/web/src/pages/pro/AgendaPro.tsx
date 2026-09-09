@@ -8,6 +8,8 @@ import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react'
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
 import { DAY_LABELS_FR, DAY_LABELS_SHORT_FR, addDaysToKey, categoryTone, dayOfWeekFromKey, formatDA, formatTimeDZ, timeToMinutes, toLocalDateKey, weekKeys } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
+import { useStaffFilter } from '@/lib/proPrefs';
+import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
 import { Badge, I, IconButton, Segmented, StatusBadge } from '@/components/ui';
 import { DayStrip } from '@/components/DaySelector';
@@ -47,7 +49,8 @@ export function AgendaPro() {
   useRealtimeBookings(salon?.id);
 
   const toneOf = (b: BookingWithStaff) => categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
-  const items = useMemo(() => (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled'), [bookings.data]);
+  const [staffId, setStaffId] = useStaffFilter();
+  const items = useMemo(() => (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && (!staffId || b.staffId === staffId)), [bookings.data, staffId]);
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
@@ -106,6 +109,7 @@ export function AgendaPro() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       {header}
+      <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
       <Segmented
         label="Vue"
         value={view}

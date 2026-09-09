@@ -4,9 +4,9 @@ import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronRight, Plus } from 'lucide-react-native';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Button, Card, ErrorText, H1, I, Img, P, Toggle, Tx } from '@/ui';
+import { Button, Card, ErrorText, H1, I, Img, P, SectionLabel, Toggle, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, NAV_PAD } from '@/theme/design';
@@ -31,8 +31,10 @@ export default function ProServices() {
       </View>
       <ErrorText error={update.error ?? remove.error} />
       {salon.services.length === 0 && <P>Ajoutez votre première prestation : nom, prix, durée et photos.</P>}
-      <View style={{ gap: 10 }}>
-        {salon.services.map((sv) => {
+      {groupServices(salon.services).map((g) => (
+      <View key={g.name} style={{ gap: 10 }}>
+        <SectionLabel right={<Tx size={10.5} color={C.muted}>{String(g.services.length)}</Tx>}>{g.name}</SectionLabel>
+        {g.services.map((sv) => {
           const photos = sv.photos ?? [];
           return (
             <Card key={sv.id} gap={10} style={{ opacity: sv.isActive ? 1 : 0.6 }}>
@@ -66,6 +68,7 @@ export default function ProServices() {
           );
         })}
       </View>
+      ))}
     </Screen>
   );
 }

@@ -2,9 +2,9 @@
 import { useNavigate } from 'react-router';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Button, I, Img, Toggle } from '@/components/ui';
+import { Button, I, Img, SectionLabel, Toggle } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -24,8 +24,10 @@ export function ProServices() {
       </div>
       <ErrorMessage error={update.error ?? remove.error} />
       {salon.services.length === 0 && <p className="p">Ajoutez votre première prestation : nom, prix, durée et photos.</p>}
-      <div className="flex flex-col gap-3">
-        {salon.services.map((sv) => {
+      {groupServices(salon.services).map((g) => (
+      <div key={g.name} className="flex flex-col gap-3">
+        <SectionLabel right={<span className="s">{g.services.length}</span>}>{g.name}</SectionLabel>
+        {g.services.map((sv) => {
           const photos = sv.photos ?? [];
           return (
             <div key={sv.id} className={`crd !gap-3 ${sv.isActive ? '' : 'opacity-60'}`}>
@@ -53,6 +55,7 @@ export function ProServices() {
           );
         })}
       </div>
+      ))}
     </Screen>
   );
 }

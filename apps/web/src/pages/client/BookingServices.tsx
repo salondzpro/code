@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSalon } from '@salondz/api-client';
-import { formatDA, localDateTimeToISO } from '@salondz/constants';
+import { formatDA, groupServices, localDateTimeToISO } from '@salondz/constants';
 import { readDraft, shortDuration, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
 import { Check } from 'lucide-react';
@@ -49,8 +49,7 @@ export function BookingServices() {
   if (salon.isPending) return <Splash />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 
-  const formulas = s.services.filter(isFormula);
-  const carte = s.services.filter((sv) => !isFormula(sv));
+  const groups = groupServices(s.services);
   const toggle = (id: string) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const Row = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => {
@@ -76,21 +75,26 @@ export function BookingServices() {
     <Screen bottom={SHEET_PAD} gap={14}>
       <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[0.9375rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
       <h1 className="h1">Prestations</h1>
-      {formulas.length > 0 && (
-        <>
-          <SectionLabel>Formule</SectionLabel>
-          {formulas.map((sv) => (
-            <Row key={sv.id} sv={sv} boxed />
-          ))}
-        </>
+      {groups.map((g) =>
+        g.name === 'Formule' ? (
+          <div key={g.name} className="flex flex-col gap-3">
+            <SectionLabel>Formule</SectionLabel>
+            {g.services.map((sv) => (
+              <Row key={sv.id} sv={sv} boxed />
+            ))}
+          </div>
+        ) : (
+          <div key={g.name} className="flex flex-col gap-3">
+            <SectionLabel>{g.name}</SectionLabel>
+            <div className="crd !gap-0 !py-1">
+              {g.services.map((sv) => (
+                <Row key={sv.id} sv={sv} />
+              ))}
+            </div>
+          </div>
+        ),
       )}
-      <SectionLabel>À la carte</SectionLabel>
-      <div className="crd !gap-0 !py-1">
-        {carte.map((sv) => (
-          <Row key={sv.id} sv={sv} />
-        ))}
-        {carte.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
-      </div>
+      {groups.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
 
       <BottomSheet>
         {chosen.length > 0 ? (

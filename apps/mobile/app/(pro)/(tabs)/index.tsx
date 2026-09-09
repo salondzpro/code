@@ -6,6 +6,8 @@ import { ChevronRight } from 'lucide-react-native';
 import { useMe, useProBookingMutations, useProBookings, useProPendingBookings, useProSalon, useProStats } from '@salondz/api-client';
 import { formatDA, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
+import { useStaffFilter } from '@/lib/prefs';
+import { StaffFilter } from '@/ui/StaffFilter';
 import { formatDuration } from '@/lib/format';
 import { Avatar, Button, Card, ErrorText, Grid, H1, I, ListCard, P, Row, SectionLabel, Skeleton, StatusBadge, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
@@ -30,7 +32,10 @@ export default function ProHome() {
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = Date.now();
-  const upcoming = (todayList.data?.items ?? []).filter((b) => b.status !== 'cancelled').sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const [staffId, setStaffId] = useStaffFilter();
+  const byStaff = <T extends { staffId: string | null }>(list: T[]) => (staffId ? list.filter((b) => b.staffId === staffId) : list);
+  const upcoming = byStaff(todayList.data?.items ?? []).filter((b) => b.status !== 'cancelled').sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const pendingItems = byStaff(pending.data?.items ?? []);
 
   return (
     <Screen gap={13} bottom={NAV_PAD} refreshing={stats.isRefetching} onRefresh={() => void Promise.all([stats.refetch(), pending.refetch(), todayList.refetch()])}>
@@ -47,6 +52,7 @@ export default function ProHome() {
           <Avatar src={salon?.logoUrl ?? me.data?.profile.avatarUrl} name={firstName || 'Pro'} size={45.5} />
         </Pressable>
       </View>
+      {salon && <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />}
 
       {stats.isPending ? (
         <Skeleton h={114} radius={16} />
@@ -85,15 +91,15 @@ export default function ProHome() {
         right={
           <Pressable accessibilityRole="link" accessibilityLabel="Voir toutes les demandes" onPress={() => router.push('/reservations')}>
             <Tx size={12} weight={700} lh={16}>
-              {pending.data?.items.length ?? 0}
+              {pendingItems.length}
             </Tx>
           </Pressable>
         }
       >
         À valider
       </SectionLabel>
-      {pending.data?.items.length ? (
-        pending.data.items.slice(0, 3).map((b) => (
+      {pendingItems.length ? (
+        pendingItems.slice(0, 3).map((b) => (
           <Card key={b.id} gap={13}>
             <Pressable accessibilityRole="link" onPress={() => router.push(`/pro-rdv/${b.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
               <Avatar name={b.clientName} size={55} />

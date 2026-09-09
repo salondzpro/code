@@ -8,6 +8,8 @@ import { formatDuration } from '@/lib/format';
 import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { StaffFilter } from '@/components/StaffFilter';
+import { useStaffFilter } from '@/lib/proPrefs';
 
 /** « 9,4k » pour les gros montants du bandeau (design). */
 function compactDA(n: number): string {
@@ -24,10 +26,14 @@ export function ProHome() {
   const today = toLocalDateKey();
   const todayList = useProBookings({ from: today, to: today, limit: 50 });
   const { setStatus } = useProBookingMutations();
+  const [staffId, setStaffId] = useStaffFilter();
+  const byStaff = <T extends { staffId: string | null }>(list: T[]) => (staffId ? list.filter((b) => b.staffId === staffId) : list);
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = Date.now();
-  const upcoming = (todayList.data?.items ?? []).filter((b) => b.status !== 'cancelled').sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const upcoming = byStaff(todayList.data?.items ?? []).filter((b) => b.status !== 'cancelled').sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const pendingItems = byStaff(pending.data?.items ?? []);
+  const staffName = salon?.staff.find((m) => m.id === staffId)?.displayName ?? null;
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
@@ -40,6 +46,9 @@ export function ProHome() {
           <Avatar src={salon?.logoUrl ?? me.data?.profile.avatarUrl} name={firstName || 'Pro'} size={56} />
         </Link>
       </div>
+
+      {salon && <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />}
+      {staffName && <p className="s">Vue de {staffName} : demandes et rendez-vous qui lui sont affectés.</p>}
 
       {stats.isPending ? (
         <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
@@ -65,11 +74,11 @@ export function ProHome() {
       <div className="flex items-center justify-between">
         <span className="h3">À valider</span>
         <Link to="/pro/reservations" className="text-[0.9375rem] font-bold" aria-label="Voir toutes les demandes">
-          {pending.data?.items.length ?? 0}
+          {pendingItems.length}
         </Link>
       </div>
-      {pending.data?.items.length ? (
-        pending.data.items.slice(0, 3).map((b) => (
+      {pendingItems.length ? (
+        pendingItems.slice(0, 3).map((b) => (
           <div key={b.id} className="crd !gap-4">
             <button type="button" className="flex items-center gap-3.5 text-left" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
               <Avatar name={b.clientName} size={68} />
@@ -111,6 +120,7 @@ export function ProHome() {
                 <span className={`block text-[1.0625rem] font-bold tracking-[-0.3px] ${new Date(b.endsAt).getTime() < now ? 'text-muted' : ''}`}>{b.clientName}</span>
                 <span className="block text-[0.8125rem] text-muted">
                   {b.serviceName} · {formatDuration(b.durationMinutes)}
+                  {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
                 </span>
               </span>
             </span>

@@ -1,37 +1,68 @@
 /**
- * Espace pro — Équipe : membres, activation et horaires propres (feuille au design).
- * Liste vide côté API = « suit les horaires du salon » ; créneaux = salon ∩ membre (calcul SQL).
+ * Espace pro — Équipe : membres, activation, prestations affectées et horaires propres (feuille au design).
+ * Prestations : « toutes » par défaut, ou une sélection — les créneaux et réservations ne proposent le membre
+ * que pour les prestations qu'il réalise (calcul SQL). Horaires : liste vide côté API = « suit le salon » ;
+ * sinon plages par jour avec pause facultative ; créneaux = salon ∩ membre.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
-import { DAY_LABELS_FR, WEEK_DAYS, type DayOfWeek } from '@salondz/constants';
-import type { OpeningHour, Staff } from '@salondz/types';
+import { formatDA, rangesFromRows, rowError, rowsFromRanges, type DayHoursRow } from '@salondz/constants';
+import type { OpeningHour, Service, Staff } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, BottomSheet, Button, I, Input, Segmented, Skeleton, Toggle } from '@/components/ui';
+import { Avatar, BottomSheet, Button, Checkbox, I, Input, Segmented, Skeleton, Toggle } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { WeekHoursEditor } from './onboarding/Step9Hours';
 
-interface Row {
-  dayOfWeek: DayOfWeek;
-  enabled: boolean;
-  startsAt: string;
-  endsAt: string;
+const salonRanges = (hours: OpeningHour[]) => hours.filter((h) => !h.isClosed).map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.opensAt, end: h.closesAt }));
+
+/** Choix des prestations d'un membre : toutes, ou cases à cocher. */
+function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <Segmented
+        label="Prestations"
+        value={all ? 'all' : 'some'}
+        onChange={(v) => onAll(v === 'all')}
+        options={[
+          { value: 'all', label: 'Toutes les prestations' },
+          { value: 'some', label: 'Sélection' },
+        ]}
+      />
+      {all ? (
+        <p className="p text-[0.9375rem]">Ce membre réalise toutes les prestations du catalogue, y compris celles ajoutées plus tard.</p>
+      ) : services.length === 0 ? (
+        <p className="p text-[0.9375rem]">Aucune prestation au catalogue pour l'instant.</p>
+      ) : (
+        <div className="crd !gap-0 !py-1">
+          {services.map((sv) => (
+            <label key={sv.id} className="li cursor-pointer !py-3">
+              <span className="min-w-0">
+                <span className={`block text-[0.9375rem] ${sv.isActive ? '' : 'text-subtle'}`}>{sv.name}</span>
+                <span className="s block">
+                  {sv.durationMinutes} min · {formatDA(sv.priceDa)}
+                  {sv.groupName ? ` · ${sv.groupName}` : ''}
+                </span>
+              </span>
+              <Checkbox on={selected.includes(sv.id)} onChange={() => onToggle(sv.id)} label={sv.name} />
+            </label>
+          ))}
+        </div>
+      )}
+      {!all && selected.length === 0 && services.length > 0 && <p className="text-[0.8125rem] text-danger">Choisissez au moins une prestation, sinon le membre ne sera jamais proposé.</p>}
+    </div>
+  );
 }
 
-/** Lignes par défaut = horaires d'ouverture du salon. */
-function rowsFromSalon(salonHours: OpeningHour[]): Row[] {
-  return WEEK_DAYS.map((d) => {
-    const h = salonHours.find((x) => x.dayOfWeek === d && !x.isClosed);
-    return { dayOfWeek: d, enabled: !!h, startsAt: h?.opensAt ?? '09:00', endsAt: h?.closesAt ?? '19:00' };
-  });
-}
-
-function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { ownerId: string; openingHours: OpeningHour[] }; onClose: () => void }) {
+function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { ownerId: string; openingHours: OpeningHour[]; services: Service[] }; onClose: () => void }) {
   const hours = useStaffHours(member.id);
   const { update, remove, setHours } = useProStaffMutations();
+  const [tab, setTab] = useState<'services' | 'hours'>('services');
+  const [all, setAll] = useState(member.allServices);
+  const [selected, setSelected] = useState<string[]>(member.serviceIds);
   const [custom, setCustom] = useState(false);
-  const [rows, setRows] = useState<Row[]>(() => rowsFromSalon(salon.openingHours));
+  const [rows, setRows] = useState<DayHoursRow[]>(() => rowsFromRanges([], salonRanges(salon.openingHours)).map((r) => ({ ...r, open: salon.openingHours.some((h) => h.dayOfWeek === r.dayOfWeek && !h.isClosed) })));
   const [error, setError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const isOwner = member.userId === salon.ownerId;
@@ -41,31 +72,21 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
   useEffect(() => {
     if (!hours.data || seeded.current) return;
     seeded.current = true;
-    if (hours.data.length === 0) {
-      setCustom(false);
-      setRows(rowsFromSalon(salon.openingHours));
-      return;
-    }
+    if (hours.data.length === 0) return setCustom(false);
     setCustom(true);
-    const base = rowsFromSalon(salon.openingHours);
-    setRows(
-      WEEK_DAYS.map((d) => {
-        const h = hours.data.find((x) => x.dayOfWeek === d);
-        const def = base.find((r) => r.dayOfWeek === d)!;
-        return h ? { dayOfWeek: d, enabled: true, startsAt: h.startsAt, endsAt: h.endsAt } : { ...def, enabled: false };
-      }),
-    );
+    setRows(rowsFromRanges(hours.data.map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.startsAt, end: h.endsAt })), salonRanges(salon.openingHours)));
   }, [hours.data, salon.openingHours]);
 
-  const patch = (d: DayOfWeek, p: Partial<Row>) => setRows((prev) => prev.map((r) => (r.dayOfWeek === d ? { ...r, ...p } : r)));
-  const invalid = custom && rows.some((r) => r.enabled && r.startsAt >= r.endsAt);
+  const invalidHours = custom && rows.some((r) => rowError(r) !== null);
+  const invalidServices = !all && selected.length === 0 && salon.services.length > 0;
 
   const save = async () => {
     setError(null);
     try {
+      await update.mutateAsync({ id: member.id, allServices: all, serviceIds: all ? [] : selected });
       await setHours.mutateAsync({
         id: member.id,
-        hours: custom ? rows.filter((r) => r.enabled).map(({ dayOfWeek, startsAt, endsAt }) => ({ dayOfWeek, startsAt, endsAt })) : [],
+        hours: custom ? rangesFromRows(rows).map((r) => ({ dayOfWeek: r.dayOfWeek, startsAt: r.start, endsAt: r.end })) : [],
       });
       onClose();
     } catch (err) {
@@ -87,47 +108,37 @@ function MemberSheet({ member, salon, onClose }: { member: Staff; salon: { owner
             {!isOwner && <Toggle on={member.isActive} onChange={(v) => update.mutate({ id: member.id, isActive: v }, { onError: (e) => setError(errorText(e)) })} label="Actif" />}
           </div>
           <Segmented
-            label="Horaires"
-            value={custom ? 'custom' : 'salon'}
-            onChange={(v) => setCustom(v === 'custom')}
+            label="Réglages du membre"
+            value={tab}
+            onChange={setTab}
             options={[
-              { value: 'salon', label: 'Horaires du salon' },
-              { value: 'custom', label: 'Horaires personnalisés' },
+              { value: 'services', label: `Prestations${all ? '' : ` (${selected.length})`}` },
+              { value: 'hours', label: 'Horaires' },
             ]}
           />
-          {hours.isPending ? (
-            <Skeleton className="h-[7.5rem]" />
-          ) : custom ? (
-            <div className="crd !gap-0 !py-1">
-              {rows.map((r) => (
-                <div key={r.dayOfWeek} className="li !py-3">
-                  <span className={`w-[6rem] flex-none text-[0.8125rem] ${r.enabled ? '' : 'text-subtle'}`}>{DAY_LABELS_FR[r.dayOfWeek]}</span>
-                  <span className="flex flex-1 items-center gap-1 text-[0.8125rem] text-muted">
-                    {r.enabled ? (
-                      <>
-                        <input type="time" className="tm" value={r.startsAt} onChange={(e) => patch(r.dayOfWeek, { startsAt: e.target.value })} aria-label={`Début ${DAY_LABELS_FR[r.dayOfWeek]}`} />
-                        <span>–</span>
-                        <input type="time" className="tm" value={r.endsAt} onChange={(e) => patch(r.dayOfWeek, { endsAt: e.target.value })} aria-label={`Fin ${DAY_LABELS_FR[r.dayOfWeek]}`} />
-                      </>
-                    ) : (
-                      <span className="text-disabled">Repos</span>
-                    )}
-                  </span>
-                  <Toggle on={r.enabled} onChange={(v) => patch(r.dayOfWeek, { enabled: v })} label={DAY_LABELS_FR[r.dayOfWeek]} />
-                </div>
-              ))}
-            </div>
+          {tab === 'services' ? (
+            <ServicesPicker services={salon.services} all={all} selected={selected} onAll={setAll} onToggle={(id) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))} />
           ) : (
-            <p className="p text-[0.9375rem]">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>
+            <>
+              <Segmented
+                label="Horaires"
+                value={custom ? 'custom' : 'salon'}
+                onChange={(v) => setCustom(v === 'custom')}
+                options={[
+                  { value: 'salon', label: 'Horaires du salon' },
+                  { value: 'custom', label: 'Horaires personnalisés' },
+                ]}
+              />
+              {hours.isPending ? <Skeleton className="h-[7.5rem]" /> : custom ? <WeekHoursEditor rows={rows} onChange={setRows} closedLabel="Repos" /> : <p className="p text-[0.9375rem]">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>}
+            </>
           )}
-          {invalid && <p className="text-[0.875rem] text-danger">L'heure de début doit précéder la fin.</p>}
           {error && (
             <p className="text-[0.875rem] text-danger" role="alert">
               {error}
             </p>
           )}
-          <Button onClick={() => void save()} disabled={setHours.isPending || invalid || hours.isPending}>
-            {setHours.isPending ? 'Enregistrement…' : 'Enregistrer'}
+          <Button onClick={() => void save()} disabled={setHours.isPending || update.isPending || invalidHours || invalidServices || hours.isPending}>
+            {setHours.isPending || update.isPending ? 'Enregistrement…' : 'Enregistrer'}
           </Button>
           {!isOwner &&
             (confirmRemove ? (
@@ -160,8 +171,11 @@ export function Team() {
   const salon = useProSalon().data?.salon ?? null;
   const { create } = useProStaffMutations();
   const [name, setName] = useState('');
+  const [all, setAll] = useState(true);
+  const [selected, setSelected] = useState<string[]>([]);
   const [open, setOpen] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const activeServices = useMemo(() => (salon?.services ?? []).filter((s) => s.isActive), [salon?.services]);
   if (!salon) return <Splash />;
   const member = salon.staff.find((m) => m.id === open) ?? null;
 
@@ -169,17 +183,25 @@ export function Team() {
     if (name.trim().length < 1) return;
     setError(null);
     try {
-      await create.mutateAsync({ displayName: name.trim() });
+      await create.mutateAsync({ displayName: name.trim(), allServices: all, serviceIds: all ? [] : selected });
       setName('');
+      setAll(true);
+      setSelected([]);
     } catch (err) {
       setError(errorText(err));
     }
   };
 
+  const summary = (m: Staff) => {
+    const state = m.isActive ? 'Actif' : 'Inactif';
+    if (m.allServices) return `${state} · toutes les prestations`;
+    return `${state} · ${m.serviceIds.length} prestation${m.serviceIds.length > 1 ? 's' : ''}`;
+  };
+
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <h1 className="h1">Équipe</h1>
-      <p className="p">Chaque membre a son propre agenda. Les clients choisissent « n'importe qui » ou un membre précis.</p>
+      <p className="p">Chaque membre a son agenda, ses prestations et ses horaires. Les clients choisissent « n'importe qui » ou un membre précis.</p>
       <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (
           <li key={m.id}>
@@ -191,7 +213,7 @@ export function Team() {
                     {m.displayName}
                     {m.userId === salon.ownerId && <span className="text-muted"> (vous)</span>}
                   </span>
-                  <span className="p block text-[0.9375rem]">{m.isActive ? 'Actif' : 'Inactif'}</span>
+                  <span className="p block text-[0.9375rem]">{summary(m)}</span>
                 </span>
               </span>
               <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
@@ -200,6 +222,7 @@ export function Team() {
         ))}
       </ul>
       <div className="crd !gap-3">
+        <span className="h3">Nouveau membre</span>
         <Input
           lg
           value={name}
@@ -211,7 +234,8 @@ export function Team() {
           aria-label="Nouveau membre"
           maxLength={60}
         />
-        <Button onClick={() => void add()} disabled={create.isPending || !name.trim()}>
+        <ServicesPicker services={activeServices} all={all} selected={selected} onAll={setAll} onToggle={(id) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))} />
+        <Button onClick={() => void add()} disabled={create.isPending || !name.trim() || (!all && selected.length === 0 && activeServices.length > 0)}>
           Ajouter
         </Button>
       </div>

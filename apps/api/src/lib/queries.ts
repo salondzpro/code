@@ -6,14 +6,15 @@ import { mapSalon, SALON_COLUMNS } from '../plugins/auth';
 
 export const PHOTO_COLS = 'id, salon_id, url, sort_order';
 export const SERVICE_COLS =
-  'id, salon_id, name, description, duration_minutes, price_da, category_id, is_active, sort_order';
-export const STAFF_COLS = 'id, salon_id, user_id, display_name, avatar_url, is_active, sort_order';
+  'id, salon_id, name, description, duration_minutes, price_da, category_id, group_name, is_active, sort_order';
+export const STAFF_COLS = 'id, salon_id, user_id, display_name, avatar_url, is_active, sort_order, all_services';
+export const STAFF_SELECT = `${STAFF_COLS}, staff_services(service_id)`;
 export const HOURS_COLS = 'id, salon_id, day_of_week, opens_at, closes_at, is_closed';
 export const BOOKING_COLS =
   'id, salon_id, client_id, staff_id, service_id, service_name, duration_minutes, price_da, starts_at, ends_at, status, source, client_name, client_phone, notes, cancelled_at, cancelled_by, cancellation_reason, created_at, updated_at';
 
 export const SERVICE_PHOTO_COLS = 'id, url, sort_order';
-const FULL_SALON_SELECT = `${SALON_COLUMNS}, salon_photos(${PHOTO_COLS}), services(${SERVICE_COLS}, service_photos(${SERVICE_PHOTO_COLS})), staff(${STAFF_COLS}), opening_hours(${HOURS_COLS})`;
+const FULL_SALON_SELECT = `${SALON_COLUMNS}, salon_photos(${PHOTO_COLS}), services(${SERVICE_COLS}, service_photos(${SERVICE_PHOTO_COLS})), staff(${STAFF_SELECT}), opening_hours(${HOURS_COLS})`;
 
 type Row = Record<string, unknown>;
 
@@ -25,6 +26,12 @@ function mapHours(rows: Row[]) {
   return camelize<SalonOwnerView['openingHours']>(rows)
     .map((h) => ({ ...h, opensAt: hm(h.opensAt), closesAt: hm(h.closesAt) }))
     .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.opensAt.localeCompare(b.opensAt));
+}
+
+/** Membre + prestations affectées (staff_services). */
+export function mapStaff(row: Row): SalonOwnerView['staff'][number] {
+  const { staff_services, ...rest } = row as Row & { staff_services?: { service_id: string }[] | null };
+  return { ...camelize<SalonOwnerView['staff'][number]>(rest), serviceIds: (staff_services ?? []).map((x) => x.service_id) };
 }
 
 function composeSalon(row: Row): SalonOwnerView {
@@ -43,7 +50,7 @@ function composeSalon(row: Row): SalonOwnerView {
         return { ...camelize<SalonOwnerView['services'][number]>(rest), photos: sortBy(camelize<{ id: string; url: string; sortOrder: number }[]>(service_photos ?? [])) };
       }),
     ),
-    staff: sortBy(camelize<SalonOwnerView['staff']>(staff ?? [])),
+    staff: sortBy((staff ?? []).map((m) => mapStaff(m))),
     openingHours: mapHours(opening_hours ?? []),
   };
 }

@@ -101,6 +101,17 @@ export function pushRecentSearch(q: string): void {
   notify();
   void AsyncStorage.setItem(RECENT_KEY, JSON.stringify(recent)).catch(() => undefined);
 }
+/** Espace pro : membre filtré sur l'accueil et l'agenda (null = toute l'équipe), en mémoire de session. */
+let staffFilter: string | null = null;
+export function useStaffFilter(): [string | null, (id: string | null) => void] {
+  const value = useSyncExternalStore(subscribe, () => staffFilter, () => staffFilter);
+  const set = useCallback((id: string | null) => {
+    staffFilter = id;
+    notify();
+  }, []);
+  return [value, set];
+}
+
 export function readRecentPlaces(): RecentPlace[] {
   return places;
 }

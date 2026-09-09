@@ -10,6 +10,8 @@ import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
 import { DAY_LABELS_FR, DAY_LABELS_SHORT_FR, addDaysToKey, categoryTone, dayOfWeekFromKey, formatDA, formatTimeDZ, timeToMinutes, toLocalDateKey, weekKeys } from '@salondz/constants';
 import type { BookingWithStaff } from '@salondz/types';
 import { useRealtimeBookings } from '@/lib/realtime';
+import { useStaffFilter } from '@/lib/prefs';
+import { StaffFilter } from '@/ui/StaffFilter';
 import { MONTHS_FR, formatDuration } from '@/lib/format';
 import { Badge, I, IconButton, ListCard, P, Row, Segmented, StatusBadge, Tx } from '@/ui';
 import { DayStrip } from '@/ui/DaySelector';
@@ -41,7 +43,8 @@ export default function AgendaPro() {
   useRealtimeBookings(salon?.id);
 
   const toneOf = (b: BookingWithStaff) => categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
-  const items = useMemo(() => (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled'), [bookings.data]);
+  const [staffId, setStaffId] = useStaffFilter();
+  const items = useMemo(() => (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && (!staffId || b.staffId === staffId)), [bookings.data, staffId]);
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
@@ -116,6 +119,7 @@ export default function AgendaPro() {
       }
     >
       {header}
+      <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
       <Segmented
         label="Vue"
         value={view}

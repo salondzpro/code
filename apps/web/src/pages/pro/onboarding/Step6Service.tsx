@@ -1,4 +1,4 @@
-/** PRO-F 08 — Étape 6 : première prestation (nom, prix, durée, catégorie, description) → photos. */
+/** PRO-F 08 — Étape 6 : prestation (nom, prix, durée libre en minutes, groupe du catalogue créé librement, catégorie, description) → photos. */
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { ChevronDown } from 'lucide-react';
@@ -12,7 +12,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
 
-const DURATIONS = [15, 30, 45, 60, 75, 90, 120, 150, 180];
+const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
 
 export function Step6Service() {
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ export function Step6Service() {
   const [price, setPrice] = useState(existing ? String(existing.priceDa) : '');
   const [duration, setDuration] = useState(existing?.durationMinutes ?? 45);
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '');
+  const [group, setGroup] = useState(existing?.groupName ?? '');
   const [description, setDescription] = useState(existing?.description ?? '');
   const [error, setError] = useState<string | null>(null);
 
@@ -32,10 +33,12 @@ export function Step6Service() {
   const market = salon.genderTarget === 'men' ? 'men' : 'women';
   const cats = categoriesForMarket(market).filter((c) => salon.categoryIds.includes(c.id));
   const first = salon.services.length === 0;
+  // Groupes déjà utilisés dans le catalogue : proposés en saisie, un nouveau nom crée un nouveau groupe.
+  const groups = [...new Set(salon.services.map((s) => s.groupName).filter((g): g is string => !!g))];
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, description: description.trim() || undefined, isActive: true });
+    const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, groupName: group.trim() || null, description: description.trim() || undefined, isActive: true });
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Vérifiez les champs.');
     setError(null);
     try {
@@ -61,17 +64,28 @@ export function Step6Service() {
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.8125rem]">DA</span>
             </div>
           </Field>
-          <Field label="Durée" htmlFor="svc-duration">
-            <div id="svc-duration" className="inp lg">{formatDuration(duration)}</div>
+          <Field label="Durée (minutes)" htmlFor="svc-duration" hint={formatDuration(duration)}>
+            <div className="relative">
+              <Input id="svc-duration" lg inputMode="numeric" value={String(duration || '')} onChange={(e) => setDuration(Math.min(480, Number(e.target.value.replace(/\D/g, '')) || 0))} placeholder="45" className="!pr-14" />
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.8125rem]">min</span>
+            </div>
           </Field>
         </div>
-        <div className="pills -mx-5 px-5">
+        <div className="pills -mx-5 px-5" aria-label="Durées courantes">
           {DURATIONS.map((d) => (
             <Pill key={d} lg on={duration === d} onClick={() => setDuration(d)}>
               {formatDuration(d)}
             </Pill>
           ))}
         </div>
+        <Field label="Groupe du catalogue" htmlFor="svc-group" hint="Ex. Coupes, Barbe, Soins… Tapez un nouveau nom pour créer un groupe.">
+          <Input id="svc-group" lg list="svc-groups" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder="Coupes" />
+          <datalist id="svc-groups">
+            {groups.map((g) => (
+              <option key={g} value={g} />
+            ))}
+          </datalist>
+        </Field>
         <Field label="Catégorie" htmlFor="svc-cat">
           <div className="relative">
             <select id="svc-cat" className="inp lg appearance-none pr-12" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
@@ -95,7 +109,7 @@ export function Step6Service() {
           </p>
         )}
       </form>
-      <StepSheet label="Ajouter des photos" onClick={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price} />
+      <StepSheet label="Ajouter des photos" onClick={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price || duration < 5} />
     </Screen>
   );
 }

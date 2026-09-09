@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSalon } from '@salondz/api-client';
-import { formatDA, localDateTimeToISO } from '@salondz/constants';
+import { formatDA, groupServices, localDateTimeToISO } from '@salondz/constants';
 import type { Service } from '@salondz/types';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration, shortDuration } from '@/lib/format';
@@ -15,7 +15,6 @@ import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
-const isFormula = (sv: Service) => /^formule\b/i.test(sv.name);
 
 export default function BookingServices() {
   const { slug = '', services: fromUrl = '', date: fromDate, time: fromTime } = useLocalSearchParams<{ slug: string; services?: string; date?: string; time?: string }>();
@@ -50,8 +49,7 @@ export default function BookingServices() {
       </Screen>
     );
 
-  const formulas = s.services.filter(isFormula);
-  const carte = s.services.filter((sv) => !isFormula(sv));
+  const groups = groupServices(s.services);
   const toggle = (id: string) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const ServiceRow = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => {
@@ -116,25 +114,30 @@ export default function BookingServices() {
     >
       <TopBar backTo={`/s/${s.slug}`} right={<Pill soft>{`${s.name} · ${s.genderTarget === 'men' ? 'Homme' : 'Femme'}`}</Pill>} />
       <H1>Prestations</H1>
-      {formulas.length > 0 && (
-        <>
-          <SectionLabel>Formule</SectionLabel>
-          {formulas.map((sv) => (
-            <ServiceRow key={sv.id} sv={sv} boxed />
-          ))}
-        </>
-      )}
-      <SectionLabel>À la carte</SectionLabel>
-      <ListCard>
-        {carte.map((sv) => (
-          <ServiceRow key={sv.id} sv={sv} />
-        ))}
-        {carte.length === 0 && (
-          <View style={{ paddingVertical: 10 }}>
-            <P>Aucune prestation pour le moment.</P>
+      {groups.map((g) =>
+        g.name === 'Formule' ? (
+          <View key={g.name} style={{ gap: 10 }}>
+            <SectionLabel>Formule</SectionLabel>
+            {g.services.map((sv) => (
+              <ServiceRow key={sv.id} sv={sv} boxed />
+            ))}
           </View>
-        )}
-      </ListCard>
+        ) : (
+          <View key={g.name} style={{ gap: 10 }}>
+            <SectionLabel>{g.name}</SectionLabel>
+            <ListCard>
+              {g.services.map((sv) => (
+                <ServiceRow key={sv.id} sv={sv} />
+              ))}
+            </ListCard>
+          </View>
+        ),
+      )}
+      {groups.length === 0 && (
+        <View style={{ paddingVertical: 10 }}>
+          <P>Aucune prestation pour le moment.</P>
+        </View>
+      )}
     </Screen>
   );
 }

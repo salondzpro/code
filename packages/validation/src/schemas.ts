@@ -78,6 +78,8 @@ export const createServiceSchema = z.object({
   durationMinutes: p.durationMinutes,
   priceDa: p.priceDa,
   categoryId: p.categoryId.nullable().optional(),
+  /** Groupe libre du catalogue (catégorie créée par le pro). */
+  groupName: p.shortText(40).nullable().optional(),
   isActive: z.boolean().default(true),
 });
 export type CreateServiceInput = z.infer<typeof createServiceSchema>;
@@ -108,6 +110,9 @@ export type SetOpeningHoursInput = z.infer<typeof setOpeningHoursSchema>;
 export const createStaffSchema = z.object({
   displayName: p.shortText(60),
   avatarUrl: p.httpUrl.nullable().optional(),
+  /** Toutes les prestations (défaut) ou une sélection (`serviceIds`). */
+  allServices: z.boolean().default(true),
+  serviceIds: z.array(p.uuid).max(200).optional(),
 });
 export const updateStaffSchema = createStaffSchema.partial().extend({
   isActive: z.boolean().optional(),
