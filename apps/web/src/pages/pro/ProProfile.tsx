@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Camera, ChevronRight, Share2 } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { MARKET_LABELS_FR, wilayaName } from '@salondz/constants';
+import { MARKET_LABELS_FR, SALON_MAX_PHOTOS, wilayaName } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
@@ -22,6 +22,7 @@ export function ProProfile() {
   const [sheet, setSheet] = useState(false);
   const [desc, setDesc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'cover' | 'logo' | null>(null);
   const coverInput = useRef<HTMLInputElement | null>(null);
   const logoInput = useRef<HTMLInputElement | null>(null);
   const { url, short } = usePublicUrl(salon?.slug ?? '');
@@ -31,12 +32,16 @@ export function ProProfile() {
   const upload = async (kind: 'cover' | 'logo', file: File | undefined) => {
     if (!file) return;
     setError(null);
+    setBusy(kind);
     try {
       const u = await uploadSalonPhoto(salon.id, file);
       if (kind === 'logo') await updateSalon.mutateAsync({ logoUrl: u });
-      else await setPhotos.mutateAsync([{ url: u }, ...salon.photos.slice(1).map((p) => ({ url: p.url }))]);
+      // Nouvelle couverture = première photo ; les anciennes couvertures restent dans la galerie.
+      else await setPhotos.mutateAsync([{ url: u }, ...salon.photos.map((p) => ({ url: p.url }))].slice(0, SALON_MAX_PHOTOS));
     } catch (err) {
       setError(errorText(err));
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -47,8 +52,11 @@ export function ProProfile() {
       {/* Page publique */}
       <div className="crd !gap-4">
         <div className="flex items-center gap-3.5">
-          <button type="button" onClick={() => logoInput.current?.click()} aria-label="Changer le logo">
+          <button type="button" className="relative flex-none" onClick={() => logoInput.current?.click()} aria-label="Changer la photo de profil" disabled={busy !== null}>
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+              <I icon={Camera} size={14} />
+            </span>
           </button>
           <span className="min-w-0 flex-1">
             <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">{salon.name}</span>
@@ -58,8 +66,11 @@ export function ProProfile() {
             {salon.isPublished ? 'En ligne' : 'Non publiée'}
           </Badge>
         </div>
-        <button type="button" className="relative h-[8.75rem] w-full overflow-hidden rounded-[1rem] bg-line" onClick={() => coverInput.current?.click()} aria-label="Changer la photo de couverture">
+        <button type="button" className="relative h-[8.75rem] w-full overflow-hidden rounded-[1rem] bg-line" onClick={() => coverInput.current?.click()} aria-label="Changer la photo de couverture" disabled={busy !== null}>
           {salon.coverUrl ? <img src={salon.coverUrl} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-subtle"><I icon={Camera} size={28} /></span>}
+          <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.75rem] font-semibold shadow-sm">
+            <I icon={Camera} size={14} /> {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
+          </span>
         </button>
         <input ref={coverInput} type="file" accept="image/*" hidden onChange={(e) => { void upload('cover', e.target.files?.[0]); e.target.value = ''; }} />
         <input ref={logoInput} type="file" accept="image/*" hidden onChange={(e) => { void upload('logo', e.target.files?.[0]); e.target.value = ''; }} />
@@ -75,6 +86,12 @@ export function ProProfile() {
 
       <SectionLabel>Établissement</SectionLabel>
       <div className="crd !gap-0 !py-1">
+        <ListRow to="/pro/photos">
+          <span className="block text-[0.9375rem]">Photos du salon</span>
+          <span className="p block text-[0.9375rem]">
+            {salon.logoUrl ? 'Logo' : 'Sans logo'} · {salon.photos.length} photo{salon.photos.length > 1 ? 's' : ''} de couverture
+          </span>
+        </ListRow>
         <ListRow to="/pro/salon">
           <span className="block text-[0.9375rem]">Adresse et zone</span>
           <span className="p block text-[0.9375rem]">{[salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)].filter(Boolean).join(', ')}</span>

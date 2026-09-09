@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, Share2 } from 'lucide-react-native';
 import { useMe, useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { MARKET_LABELS_FR, wilayaName } from '@salondz/constants';
+import { MARKET_LABELS_FR, SALON_MAX_PHOTOS, wilayaName } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { pickImages, uploadSalonImage } from '@/lib/images';
 import { errorText } from '@/lib/errors';
@@ -25,6 +25,7 @@ export default function ProProfile() {
   const [sheet, setSheet] = useState(false);
   const [desc, setDesc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'cover' | 'logo' | null>(null);
   if (!salon) return <Splash />;
   const market = salon.genderTarget === 'men' ? 'men' : 'women';
   const short = `${publicHost()}/s/${salon.slug}`;
@@ -34,11 +35,15 @@ export default function ProProfile() {
     try {
       const [img] = await pickImages({ square: kind === 'logo' });
       if (!img) return;
+      setBusy(kind);
       const u = await uploadSalonImage(salon.id, img);
       if (kind === 'logo') await updateSalon.mutateAsync({ logoUrl: u });
-      else await setPhotos.mutateAsync([{ url: u }, ...salon.photos.slice(1).map((p) => ({ url: p.url }))]);
+      // Nouvelle couverture = première photo ; les anciennes couvertures restent dans la galerie.
+      else await setPhotos.mutateAsync([{ url: u }, ...salon.photos.map((p) => ({ url: p.url }))].slice(0, SALON_MAX_PHOTOS));
     } catch (err) {
       setError(errorText(err));
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -51,8 +56,11 @@ export default function ProProfile() {
       {/* Page publique */}
       <Card gap={13}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Changer le logo" onPress={() => void upload('logo')}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de profil" disabled={busy !== null} onPress={() => void upload('logo')}>
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={58.5} />
+            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: C.ink, borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+              <I icon={Camera} size={11} color={C.onInk} />
+            </View>
           </Pressable>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
@@ -66,9 +74,15 @@ export default function ProProfile() {
             {salon.isPublished ? 'En ligne' : 'Non publiée'}
           </Badge>
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de couverture" onPress={() => void upload('cover')}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de couverture" disabled={busy !== null} onPress={() => void upload('cover')}>
           <Img src={salon.coverUrl} radius={13} style={{ height: 114, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
             {!salon.coverUrl && <I icon={Camera} size={23} color={C.subtle} />}
+            <View style={{ position: 'absolute', right: 8, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
+              <I icon={Camera} size={11} />
+              <Tx size={9.5} weight={600} lh={12}>
+                {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
+              </Tx>
+            </View>
           </Img>
         </Pressable>
         <Grid cols={2}>
@@ -86,6 +100,14 @@ export default function ProProfile() {
 
       <SectionLabel>Établissement</SectionLabel>
       <ListCard>
+        <Row py={13} to="/photos">
+          <Tx size={12} lh={16}>
+            Photos du salon
+          </Tx>
+          <Tx size={12} color={C.muted} lh={16}>
+            {`${salon.logoUrl ? 'Logo' : 'Sans logo'} · ${salon.photos.length} photo${salon.photos.length > 1 ? 's' : ''} de couverture`}
+          </Tx>
+        </Row>
         <Row py={13} to="/salon">
           <Tx size={12} lh={16}>
             Adresse et zone

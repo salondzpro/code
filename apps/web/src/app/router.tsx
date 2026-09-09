@@ -47,6 +47,7 @@ import { Step8Works } from '@/pages/pro/onboarding/Step8Works';
 import { Step9Hours } from '@/pages/pro/onboarding/Step9Hours';
 import { Step10Availability } from '@/pages/pro/onboarding/Step10Availability';
 import { Publish } from '@/pages/pro/onboarding/Publish';
+import { ProPhotos } from '@/pages/pro/Photos';
 import { ProLink, ProQr } from '@/pages/pro/Link';
 import { ProHome } from '@/pages/pro/Home';
 import { Revenue } from '@/pages/pro/Revenue';
@@ -165,6 +166,7 @@ export const router = createBrowserRouter([
               { path: 'rendez-vous/:id', element: <ProBookingDetail /> },
               { path: 'rendez-vous/:id/reporter', element: <ProBookingReschedule /> },
               { path: 'salon', element: <Step4Address settings /> },
+              { path: 'photos', element: <ProPhotos /> },
               { path: 'blocages', element: <Closures /> },
               { path: 'services', element: <ProServices /> },
               { path: 'reservations', element: <Requests /> },

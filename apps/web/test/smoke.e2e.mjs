@@ -279,6 +279,16 @@ try {
     slug = s.slug;
     await shot(p, 'pro-lien');
   });
+  await step('pro: profil → photos du salon (logo + couvertures)', async () => {
+    await p.goto(WEB + '/pro/profil');
+    await p.getByRole('heading', { name: 'Profil' }).waitFor();
+    await p.getByRole('button', { name: 'Changer la photo de couverture' }).waitFor();
+    await p.getByRole('link', { name: /Photos du salon/ }).click();
+    await p.waitForURL(/\/pro\/photos$/);
+    await p.getByRole('heading', { name: 'Photos du salon' }).waitFor();
+    await p.getByRole('button', { name: /Changer/ }).waitFor();
+    await shot(p, 'pro-photos');
+  });
   await step('pro: équipe (ajout membre + horaires personnalisés)', async () => {
     await p.goto(WEB + '/pro/equipe');
     await p.getByRole('heading', { name: 'Équipe' }).waitFor();
@@ -439,7 +449,8 @@ try {
   await step('client: détail → report → annulation', async () => {
     await c.getByRole('button', { name: 'Voir le rendez-vous' }).click();
     await c.waitForURL(new RegExp(`/rendez-vous/${bookingId}$`));
-    await c.getByText('1 300 DA').waitFor();
+    // Le prix apparaît deux fois (en grand + total des prestations) : on cible le premier.
+    await c.getByText('1 300 DA').first().waitFor();
     await c.getByText('2 prestations').waitFor();
     await shot(c, 'client-rdv');
     await c.getByRole('link', { name: 'Reporter' }).click();
