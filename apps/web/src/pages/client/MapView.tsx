@@ -12,7 +12,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, formatDA, type CategoryId } from '@salondz/constants';
+import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { BottomNav } from '@/components/AppFrame';
 import { I, IconButton, Img, Pill } from '@/components/ui';
@@ -149,6 +149,7 @@ export function MapView() {
         const a = { lat: Number(p.coords.latitude.toFixed(4)), lng: Number(p.coords.longitude.toFixed(4)), radiusKm: prefs.radiusKm };
         setArea(a);
         setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
+        void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
         setSelected(null);
         setMoved(false);
         setLocating(false);

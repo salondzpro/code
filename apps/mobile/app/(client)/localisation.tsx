@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { Building2, Check, Clock, MapPin, Navigation, Settings, Smartphone } from 'lucide-react-native';
 import { useMe, useSalonCities, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, WILAYAS, geocodeDZ, wilayaName, type GeoPlace } from '@salondz/constants';
+import { MARKET_LABELS_FR, WILAYAS, geocodeDZ, reverseGeocode, wilayaName, type GeoPlace } from '@salondz/constants';
 import { RADIUS_OPTIONS, pushRecentPlace, useLocationPrefs, useRecentPlaces, type RecentPlace } from '@/lib/prefs';
 import { useDebounced } from '@/lib/useDebounced';
 import { formatKm } from '@/lib/format';
@@ -52,6 +52,8 @@ export default function Localisation() {
           : { kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) },
   );
   const [addresses, setAddresses] = useState<GeoPlace[]>([]);
+  /** Libellé de la position réelle (géocodage inverse), jamais le quartier le plus proche ayant des salons. */
+  const [posLabel, setPosLabel] = useState<{ label: string; inDZ: boolean } | null>(prefs.lat != null && !prefs.city && prefs.label !== 'Ma position' && prefs.label !== wilayaName(prefs.wilaya) ? { label: prefs.label, inDZ: true } : null);
 
   const cities = useSalonCities({ wilaya: dq ? undefined : prefs.wilaya, gender: market, lat: pos?.lat, lng: pos?.lng, q: dq || undefined });
   const wilayaHits = useMemo(() => (dq.length < 2 ? [] : WILAYAS.filter((w) => normalize(w.name).includes(normalize(dq))).slice(0, 4)), [dq]);
@@ -64,6 +66,14 @@ export default function Localisation() {
       .catch(() => setAddresses([]));
     return () => ctrl.abort();
   }, [dq]);
+
+  // Libellé de la position réelle, recalculé à chaque nouvelle position (même celle mémorisée).
+  useEffect(() => {
+    if (!pos) return;
+    const ctrl = new AbortController();
+    void reverseGeocode(pos.lat, pos.lng, ctrl.signal).then((r) => r && setPosLabel(r));
+    return () => ctrl.abort();
+  }, [pos?.lat, pos?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const point = choice.kind === 'point' ? choice : choice.kind === 'gps' && pos ? pos : null;
   const preview = useSalonSearch({
@@ -82,7 +92,9 @@ export default function Localisation() {
       const perm = await Location.requestForegroundPermissionsAsync();
       if (!perm.granted) return setGeo('denied');
       const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      setPos({ lat: Number(p.coords.latitude.toFixed(4)), lng: Number(p.coords.longitude.toFixed(4)), accuracy: Math.round(p.coords.accuracy ?? 0) });
+      const lat = Number(p.coords.latitude.toFixed(4));
+      const lng = Number(p.coords.longitude.toFixed(4));
+      setPos({ lat, lng, accuracy: Math.round(p.coords.accuracy ?? 0) });
       setGeo('granted');
       setChoice({ kind: 'gps' });
     } catch {
@@ -95,8 +107,9 @@ export default function Localisation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const nearest = cities.data?.items[0]?.city ?? null;
-  const label = choice.kind === 'gps' ? (nearest ?? 'Ma position') : choice.label;
+  const nearest = cities.data?.items[0] ?? null;
+  const label = choice.kind === 'gps' ? (posLabel?.label ?? 'Ma position') : choice.label;
+  const farAway = choice.kind === 'gps' && posLabel !== null && !posLabel.inDZ;
   const count = preview.data?.total ?? 0;
   const withRadius = choice.kind === 'gps' || choice.kind === 'point';
   const searching = dq.length >= 2;
@@ -293,7 +306,7 @@ export default function Localisation() {
               <Tx size={12} weight={600} lh={16}>
                 Utiliser ma position actuelle
               </Tx>
-              <P>{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${nearest ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</P>
+              <P>{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${posLabel?.label ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</P>
             </View>
             {choice.kind === 'gps' && pos && <I icon={Check} size={18} />}
           </Card>
@@ -326,7 +339,8 @@ export default function Localisation() {
             </>
           )}
 
-          <SectionLabel>{pos ? 'Quartiers proches' : `Quartiers · ${wilayaName(prefs.wilaya)}`}</SectionLabel>
+          {farAway && <P>Vous êtes hors d'Algérie : les professionnels les plus proches sont à {formatKm(nearest?.distanceKm) ?? 'plus de 100 km'}. Choisissez un quartier ci-dessous pour préparer une réservation.</P>}
+          <SectionLabel>{pos ? 'Quartiers les plus proches' : `Quartiers · ${wilayaName(prefs.wilaya)}`}</SectionLabel>
           <ListCard>
             {places.length === 0 && (
               <View style={{ paddingVertical: 10 }}>

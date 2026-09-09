@@ -12,7 +12,7 @@ import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react-native';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, formatDA, type CategoryId } from '@salondz/constants';
+import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, type CategoryId } from '@salondz/constants';
 import type { SalonSummary } from '@salondz/types';
 import { useLocationPrefs } from '@/lib/prefs';
 import { formatKm } from '@/lib/format';
@@ -88,6 +88,7 @@ export default function MapView() {
       setPending(null);
       setSelected(null);
       setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
+      void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
       mapRef.current?.flyTo(a.lat, a.lng, 14);
     } catch {
       mapRef.current?.flyTo(area?.lat ?? ALGIERS.lat, area?.lng ?? ALGIERS.lng, 13);

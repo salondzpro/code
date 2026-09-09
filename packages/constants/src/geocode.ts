@@ -9,6 +9,25 @@ export interface GeoPlace {
   lng: number;
 }
 
+/** Position → libellé lisible (« Hydra, Alger » ; hors Algérie « Roubaix, France »), ou null si inconnu. */
+export async function reverseGeocode(lat: number, lng: number, signal?: AbortSignal): Promise<{ label: string; inDZ: boolean } | null> {
+  try {
+    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=fr`, { signal });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { features?: { properties: Record<string, string | undefined> }[] };
+    const p = json.features?.[0]?.properties;
+    if (!p) return null;
+    const inDZ = p.countrycode === 'DZ';
+    const local = p.district ?? p.locality ?? p.name;
+    const city = p.city ?? p.county ?? p.state;
+    const parts = inDZ ? [local, city] : [city ?? local, p.country];
+    const label = parts.filter((x, i, a): x is string => !!x && a.indexOf(x) === i).join(', ');
+    return label ? { label, inDZ } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Emprise de l'Algérie (lng min, lat min, lng max, lat max). */
 const DZ_BBOX = '-8.7,18.9,12.0,37.2';
 
