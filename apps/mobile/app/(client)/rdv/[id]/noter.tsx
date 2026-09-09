@@ -1,7 +1,7 @@
 /** C-F 20 — Noter la prestation : étoiles, « Ce qui vous a plu », commentaire, publication sous prénom + initiale. */
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Star } from 'lucide-react-native';
 import { useBooking, useCreateReview, useMe } from '@salondz/api-client';
 import { formatDA } from '@salondz/constants';
@@ -32,6 +32,8 @@ export default function Rate() {
       </Screen>
     );
   const b = booking.data;
+  // Un seul avis par rendez-vous, et seulement après un rendez-vous terminé (règle API BOOKING_NOT_COMPLETED / ALREADY_REVIEWED).
+  if (b.reviewRating != null || b.status !== 'completed') return <Redirect href={{ pathname: '/(client)/(tabs)/rendez-vous', params: { scope: 'past' } } as never} />;
   const name = me.data?.profile.fullName ?? '';
   const initials = name ? `${name.split(' ')[0]} ${(name.split(' ')[1] ?? '').charAt(0)}${name.split(' ')[1] ? '.' : ''}`.trim() : 'vous';
   const backToPast = () => router.replace({ pathname: '/(client)/(tabs)/rendez-vous', params: { scope: 'past' } });

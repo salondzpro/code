@@ -9,7 +9,7 @@ import { useBooking, useCancelBooking } from '@salondz/api-client';
 import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, directionsUrl, open } from '@/lib/salon';
-import { Avatar, Button, Card, ErrorText, Grid, H1, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
+import { Avatar, Button, Card, ErrorText, Grid, H1, InfoBox, Input, ModalSheet, P, Row, Rows, Soft, StatusBadge, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
@@ -185,7 +185,8 @@ export default function BookingDetail() {
             Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
           </Tx>
         )}
-        {b.status === 'completed' && <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>Noter la prestation</Button>}
+        {b.status === 'completed' && b.reviewRating == null && <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>Noter la prestation</Button>}
+        {b.status === 'completed' && b.reviewRating != null && <InfoBox>{`Merci ! Vous avez noté ce rendez-vous ${b.reviewRating}/5. Votre avis est visible sur la page du salon.`}</InfoBox>}
       </View>
 
       <CalendarSheet booking={b} open={cal} onClose={() => setCal(false)} />

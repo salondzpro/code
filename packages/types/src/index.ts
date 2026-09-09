@@ -299,6 +299,8 @@ export interface AvailabilityResponse {
 export interface BookingWithSalon extends Booking {
   salon: Pick<Salon, 'id' | 'slug' | 'name' | 'city' | 'coverUrl' | 'logoUrl' | 'phone' | 'address' | 'cancelMinHours' | 'allowClientReschedule'>;
   staff: Pick<Staff, 'id' | 'displayName'> | null;
+  /** Note déjà donnée par le client pour ce rendez-vous (un seul avis par rendez-vous), sinon null. */
+  reviewRating: number | null;
 }
 
 /** Réservation enrichie côté pro. */

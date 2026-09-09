@@ -7,7 +7,7 @@ import { Link, useParams } from 'react-router';
 import { useBooking, useCancelBooking } from '@salondz/api-client';
 import { CLIENT_CANCEL_MIN_HOURS, formatDA, formatDateLongDZ, formatDateShortDZ, formatDZPhone, formatTimeDZ } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Avatar, BottomSheet, Button, Input, LinkButton, StatusBadge, TopBar } from '@/components/ui';
+import { Avatar, BottomSheet, Button, InfoBox, Input, LinkButton, StatusBadge, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
@@ -142,7 +142,8 @@ export function BookingDetail() {
           </Button>
         )}
         {active && !canModify && <p className="p text-center text-[0.875rem]">Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.</p>}
-        {b.status === 'completed' && <LinkButton to={`/rendez-vous/${b.id}/noter`}>Noter la prestation</LinkButton>}
+        {b.status === 'completed' && b.reviewRating == null && <LinkButton to={`/rendez-vous/${b.id}/noter`}>Noter la prestation</LinkButton>}
+        {b.status === 'completed' && b.reviewRating != null && <InfoBox>Merci ! Vous avez noté ce rendez-vous {b.reviewRating}/5. Votre avis est visible sur la page du salon.</InfoBox>}
       </div>
 
       {cal && <CalendarSheet booking={b} onClose={() => setCal(false)} />}

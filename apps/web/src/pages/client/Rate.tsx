@@ -1,6 +1,6 @@
 /** C-F 20 — Noter la prestation : étoiles, « Ce qui vous a plu », commentaire, publication sous prénom + initiale. */
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Navigate, useNavigate, useParams } from 'react-router';
 import { Star } from 'lucide-react';
 import { useBooking, useCreateReview, useMe } from '@salondz/api-client';
 import { formatDA } from '@salondz/constants';
@@ -29,6 +29,8 @@ export function Rate() {
   if (booking.isPending) return <Splash />;
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;
+  // Un seul avis par rendez-vous, et seulement après un rendez-vous terminé (règle API BOOKING_NOT_COMPLETED / ALREADY_REVIEWED).
+  if (b.reviewRating != null || b.status !== 'completed') return <Navigate to="/rendez-vous?scope=past" replace />;
   const name = me.data?.profile.fullName ?? '';
   const initials = name ? `${name.split(' ')[0]} ${(name.split(' ')[1] ?? '').charAt(0)}${name.split(' ')[1] ? '.' : ''}`.trim() : 'vous';
 

@@ -129,11 +129,19 @@ export default function Bookings() {
                     Réserver à nouveau
                   </Tx>
                 </Button>
-                <Button variant="g" sm auto style={{ paddingHorizontal: 20, paddingVertical: 15 }} onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
-                  <Tx size={11.5} weight={600} ls={-0.2}>
-                    Noter
-                  </Tx>
-                </Button>
+                {b.reviewRating != null ? (
+                  <View style={{ justifyContent: 'center', paddingHorizontal: 10 }} accessibilityLabel={`Votre note : ${b.reviewRating} sur 5`}>
+                    <Tx size={11.5} weight={600} lh={15}>
+                      ★ {b.reviewRating}/5
+                    </Tx>
+                  </View>
+                ) : (
+                  <Button variant="g" sm auto style={{ paddingHorizontal: 20, paddingVertical: 15 }} onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
+                    <Tx size={11.5} weight={600} ls={-0.2}>
+                      Noter
+                    </Tx>
+                  </Button>
+                )}
               </View>
             )}
           </Card>

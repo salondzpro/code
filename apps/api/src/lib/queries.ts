@@ -94,12 +94,14 @@ function mapItems(rows: Row[] | null | undefined): BookingItem[] {
 }
 
 export function mapBookingWithSalon(row: Row): BookingWithSalon {
-  const { staff, salons, booking_items, ...rest } = row as Row & { staff: Row | null; salons: Row; booking_items?: Row[] | null };
-  return { ...mapBooking(rest), salon: camelize(salons), staff: staff ? camelize(staff) : null, items: mapItems(booking_items) };
+  const { staff, salons, booking_items, reviews, ...rest } = row as Row & { staff: Row | null; salons: Row; booking_items?: Row[] | null; reviews?: { rating: number }[] | { rating: number } | null };
+  // `reviews.booking_id` est unique : PostgREST renvoie un objet ou un tableau d'un élément selon la version.
+  const review = Array.isArray(reviews) ? reviews[0] : reviews;
+  return { ...mapBooking(rest), salon: camelize(salons), staff: staff ? camelize(staff) : null, items: mapItems(booking_items), reviewRating: review?.rating ?? null };
 }
 
 export const BOOKING_ITEM_COLS = 'id, service_id, service_name, duration_minutes, price_da, sort_order';
-export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, phone, address, cancel_min_hours, allow_client_reschedule), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
+export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, phone, address, cancel_min_hours, allow_client_reschedule), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS}), reviews(rating)`;
 export const BOOKING_WITH_STAFF_SELECT = `${BOOKING_COLS}, staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
 
 export async function getBookingWithSalon(id: string): Promise<BookingWithSalon> {

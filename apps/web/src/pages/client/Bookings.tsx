@@ -120,9 +120,15 @@ export function Bookings() {
                 <LinkButton to={`/s/${b.salon.slug}/prestations`} variant="g" sm className="flex-1 !py-[1.125rem] !text-[0.875rem]">
                   Réserver à nouveau
                 </LinkButton>
-                <LinkButton to={`/rendez-vous/${b.id}/noter`} variant="g" sm auto className="!px-6 !py-[1.125rem] !text-[0.875rem]">
-                  Noter
-                </LinkButton>
+                {b.reviewRating != null ? (
+                  <span className="flex items-center gap-1 self-center px-3 text-[0.875rem] font-semibold" aria-label={`Votre note : ${b.reviewRating} sur 5`}>
+                    ★ {b.reviewRating}/5
+                  </span>
+                ) : (
+                  <LinkButton to={`/rendez-vous/${b.id}/noter`} variant="g" sm auto className="!px-6 !py-[1.125rem] !text-[0.875rem]">
+                    Noter
+                  </LinkButton>
+                )}
               </div>
             )}
           </div>

@@ -137,11 +137,13 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     const b = await getBookingWithSalon(req.params.id);
     if (b.clientId !== req.user!.id) throw forbidden();
     if (b.status !== 'completed') throw conflict('BOOKING_NOT_COMPLETED', 'Vous pourrez laisser un avis après le rendez-vous.');
+    if (b.reviewRating != null) throw conflict('ALREADY_REVIEWED', 'Vous avez déjà noté ce rendez-vous.');
     const res = await db
       .from('reviews')
       .insert({ salon_id: b.salonId, booking_id: b.id, client_id: req.user!.id, rating: req.body.rating, comment: req.body.comment ?? null })
       .select('id, salon_id, booking_id, client_id, rating, comment, created_at')
       .single();
+    if (res.error?.code === '23505') throw conflict('ALREADY_REVIEWED', 'Vous avez déjà noté ce rendez-vous.');
     reply.status(201);
     return camelize<Review>(unwrap(res));
   });
