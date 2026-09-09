@@ -53,13 +53,13 @@ export function DayScroller({ selected, onSelect, disabledDays }: { selected: st
 }
 
 /**
- * Trois panneaux (veille / jour / lendemain) : on glisse librement, l'accroche retombe sur un panneau, puis le
- * jour change et le carrousel se recale silencieusement au centre. `render(day)` dessine un panneau.
+ * Trois panneaux (période précédente / courante / suivante — jour, semaine ou mois) : on glisse librement,
+ * l'accroche retombe sur un panneau, puis la date change et le carrousel se recale silencieusement au centre.
  */
-export function DayCarousel({ date, onChange, render }: { date: string; onChange: (dateKey: string) => void; render: (dateKey: string) => ReactNode }) {
+export function DayCarousel({ date, onChange, render, prev, next }: { date: string; onChange: (dateKey: string) => void; render: (dateKey: string) => ReactNode; /** Clés des périodes voisines (défaut : veille / lendemain) — semaine ± 7 jours, mois ± 1 mois. */ prev?: string; next?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const settling = useRef<number | null>(null);
-  const days = [addDaysToKey(date, -1), date, addDaysToKey(date, 1)];
+  const days = [prev ?? addDaysToKey(date, -1), date, next ?? addDaysToKey(date, 1)];
 
   const recenter = (behavior: ScrollBehavior = 'auto') => {
     const el = ref.current;

@@ -68,9 +68,9 @@ export function DayScroller({ selected, onSelect, disabledDays }: { selected: st
 }
 
 /** Trois panneaux paginés : on glisse, la page retombe, le jour change et le carrousel se recale au centre. */
-export function DayCarousel({ date, onChange, render, width }: { date: string; onChange: (dateKey: string) => void; render: (dateKey: string) => ReactNode; width: number }) {
+export function DayCarousel({ date, onChange, render, width, prev, next }: { date: string; onChange: (dateKey: string) => void; render: (dateKey: string) => ReactNode; width: number; /** Clés des périodes voisines (défaut : veille / lendemain) — semaine ± 7 jours, mois ± 1 mois. */ prev?: string; next?: string }) {
   const ref = useRef<ScrollView>(null);
-  const days = [addDaysToKey(date, -1), date, addDaysToKey(date, 1)];
+  const days = [prev ?? addDaysToKey(date, -1), date, next ?? addDaysToKey(date, 1)];
 
   useEffect(() => {
     ref.current?.scrollTo({ x: width, animated: false });

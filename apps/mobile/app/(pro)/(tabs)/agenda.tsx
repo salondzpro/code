@@ -36,8 +36,15 @@ export default function AgendaPro() {
   const week = useMemo(() => weekKeys(date), [date]);
   const monthStart = `${date.slice(0, 7)}-01`;
   const monthGridStart = addDaysToKey(monthStart, -dayOfWeekFromKey(monthStart));
-  const from = view === 'month' ? monthGridStart : addDaysToKey(week[0]!, view === 'day' ? -7 : 0);
-  const to = view === 'month' ? addDaysToKey(monthGridStart, 41) : addDaysToKey(week[6]!, view === 'day' ? 7 : 0);
+  // Fenêtre de chargement : la période affichée ± 1 (les panneaux voisins du carrousel sont déjà remplis).
+  const from = view === 'month' ? addDaysToKey(monthGridStart, -42) : addDaysToKey(week[0]!, -7);
+  const to = view === 'month' ? addDaysToKey(monthGridStart, 83) : addDaysToKey(week[6]!, 7);
+  const prevMonth = addDaysToKey(monthStart, -1).slice(0, 8) + '01';
+  const nextMonth = addDaysToKey(monthStart, 32).slice(0, 8) + '01';
+  const gridStartOf = (d: string) => {
+    const ms = `${d.slice(0, 7)}-01`;
+    return addDaysToKey(ms, -dayOfWeekFromKey(ms));
+  };
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
   useRealtimeBookings(salon?.id);
@@ -164,35 +171,53 @@ export default function AgendaPro() {
       )}
 
       {view === 'week' && (
-        <WeekGrid
-          week={week}
-          byDay={byDay}
-          closedDays={closedDays}
-          salonHours={salon.openingHours}
-          toneOf={toneOf}
-          selected={date}
-          onSelect={(d) => {
-            setDate(d);
-            setView('day');
-          }}
+        <DayCarousel
+          date={date}
+          prev={addDaysToKey(date, -7)}
+          next={addDaysToKey(date, 7)}
+          onChange={setDate}
+          width={Math.max(0, winWidth - 32)}
+          render={(d) => (
+            <WeekGrid
+              week={weekKeys(d)}
+              byDay={byDay}
+              closedDays={closedDays}
+              salonHours={salon.openingHours}
+              toneOf={toneOf}
+              selected={date}
+              onSelect={(x) => {
+                setDate(x);
+                setView('day');
+              }}
+            />
+          )}
         />
       )}
 
       {view === 'month' && (
-        <MonthGrid
+        <DayCarousel
           date={date}
-          gridStart={monthGridStart}
-          byDay={byDay}
-          closedDays={closedDays}
-          toneOf={toneOf}
-          selected={date}
-          today={today}
-          onSelect={setDate}
-          onOpenDay={(d) => {
-            setDate(d);
-            setView('day');
-          }}
-          onOpen={openBooking}
+          prev={prevMonth}
+          next={nextMonth}
+          onChange={setDate}
+          width={Math.max(0, winWidth - 32)}
+          render={(d) => (
+            <MonthGrid
+              date={d}
+              gridStart={gridStartOf(d)}
+              byDay={byDay}
+              closedDays={closedDays}
+              toneOf={toneOf}
+              selected={date}
+              today={today}
+              onSelect={setDate}
+              onOpenDay={(x) => {
+                setDate(x);
+                setView('day');
+              }}
+              onOpen={openBooking}
+            />
+          )}
         />
       )}
     </Screen>
