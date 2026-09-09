@@ -9,6 +9,7 @@ import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { StaffFilter } from '@/components/StaffFilter';
+import { QuickClose } from '@/components/QuickClose';
 import { useStaffFilter } from '@/lib/proPrefs';
 
 /** « 9,4k » pour les gros montants du bandeau (design). */
@@ -70,6 +71,8 @@ export function ProHome() {
           </div>
         </div>
       )}
+
+      {salon && <QuickClose openingHours={salon.openingHours} />}
 
       <div className="flex items-center justify-between">
         <span className="h3">À valider</span>

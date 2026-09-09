@@ -3,7 +3,7 @@
  * validation manuelle) puis « Règles de réservation » (délai minimum, fenêtre, annulation, report, acompte).
  */
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { errorText } from '@/components/ErrorMessage';
 import { InfoBox, SectionLabel, Slot, Toggle } from '@/components/ui';
@@ -15,8 +15,11 @@ import { StepBar, StepSheet, stepPath } from './Shared';
 const GRANULARITY = [15, 30, 60];
 const BUFFERS = [0, 5, 10, 15, 30];
 const LEAD = [
+  { v: 30, l: '30 min' },
   { v: 60, l: '1 h' },
+  { v: 90, l: '1 h 30' },
   { v: 120, l: '2 h' },
+  { v: 180, l: '3 h' },
   { v: 240, l: '4 h' },
   { v: 1440, l: '24 h' },
 ];
@@ -55,6 +58,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (!salon) return <Splash />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
+  const staffHint = staffCount <= 1 ? '1 employé actif · 1 rendez-vous à la fois' : `${staffCount} employés actifs · ${staffCount} rendez-vous en même temps`;
 
   const save = async () => {
     setError(null);
@@ -98,13 +102,20 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             </span>
             <PickerField inline label="Temps de battement" value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
           </label>
-          <div className="li !py-4">
+          <label className="li !py-4">
+            <span>
+              <span className="block text-[0.9375rem]">Délai minimum de réservation</span>
+              <span className="p block text-[0.8125rem]">Avant le début du rendez-vous</span>
+            </span>
+            <PickerField inline label="Délai minimum de réservation" value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
+          </label>
+          <Link to="/pro/equipe" className="li !py-4">
             <span>
               <span className="block text-[0.9375rem]">Rendez-vous simultanés</span>
-              <span className="p block text-[0.8125rem]">Nombre de postes</span>
+              <span className="p block text-[0.8125rem]">{staffHint}</span>
             </span>
             <span className="text-[0.9375rem] text-muted">{staffCount}</span>
-          </div>
+          </Link>
           <div className="li !py-4">
             <span>
               <span className="block text-[0.9375rem]">Réservation en ligne</span>
@@ -120,7 +131,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             <Toggle on={manual} onChange={setManual} label="Validation manuelle" />
           </div>
         </div>
-        <InfoBox>Sans validation manuelle, les créneaux sont réservés instantanément.</InfoBox>
+        <InfoBox>Sans validation manuelle, les créneaux sont réservés instantanément. Un rendez-vous par employé actif à la fois : ajoutez un membre dans Équipe pour en accueillir plusieurs en même temps.</InfoBox>
         <StepSheet onClick={() => setPhase('rules')} />
       </Screen>
     );
@@ -130,14 +141,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={10} right="Réservation" backTo={undefined} />
       <h1 className="h1">Règles de réservation</h1>
-      <SectionLabel>Délai minimum avant un rendez-vous</SectionLabel>
-      <div className="g4">
-        {LEAD.map((l) => (
-          <Slot key={l.v} on={lead === l.v} onClick={() => setLead(l.v)} className="!py-[1.625rem] !text-[1rem]">
-            {l.l}
-          </Slot>
-        ))}
-      </div>
       <SectionLabel>Fenêtre de réservation</SectionLabel>
       <div className="g3">
         {HORIZON.map((h) => (

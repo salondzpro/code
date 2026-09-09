@@ -1,12 +1,14 @@
 /** PRO-F 07 / PRO-H 04 — Étape 5 : « Vos prestations » — catégories du catalogue du marché, cochables. */
 import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { ChevronDown } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, type CategoryId, type Market } from '@salondz/constants';
+import { MARKET_LABELS_FR, categoriesForMarket, salonMarkets, type CategoryId, type GenderTarget } from '@salondz/constants';
 import { errorText } from '@/lib/errors';
 import { stepPath } from '@/lib/proDraft';
-import { Alert, BottomSheet, Button, Checkbox, H1, Img, InfoBox, ListCard, P, Row, Soft, Tx } from '@/ui';
+import { Alert, BottomSheet, Button, Checkbox, H1, I, Img, InfoBox, ListCard, P, Row, Soft, Tx } from '@/ui';
+import { PickerSheet } from '@/ui/Pickers';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { StepBar } from '@/ui/Steps';
@@ -26,21 +28,42 @@ const HINTS: Record<string, string> = {
   tresses: 'Tresses, twists, nattes',
 };
 
+/** Type de clientèle du salon : détermine le ou les catalogues proposés (mixte = les deux). */
+const GENDER_OPTIONS: { value: GenderTarget; label: string; hint: string }[] = [
+  { value: 'men', label: MARKET_LABELS_FR.men, hint: 'Barbier, coiffure homme' },
+  { value: 'women', label: MARKET_LABELS_FR.women, hint: 'Coiffure, ongles, cils, soins' },
+  { value: 'unisex', label: 'Mixte', hint: 'Hommes et femmes · les deux catalogues' },
+];
+const catalogLabel = (g: GenderTarget) => (g === 'unisex' ? 'Mixte' : MARKET_LABELS_FR[g]);
+const catalogFor = (g: GenderTarget) => salonMarkets(g).flatMap((m) => categoriesForMarket(m));
+
 export default function Step5Catalog() {
   const router = useRouter();
   const salon = useProSalon().data?.salon ?? null;
   const { updateSalon } = useProSalonMutations();
   const [selected, setSelected] = useState<CategoryId[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [genderSheet, setGenderSheet] = useState(false);
 
   useEffect(() => {
     if (salon) setSelected(salon.categoryIds as CategoryId[]);
   }, [salon]);
 
   if (!salon) return <Splash />;
-  const market: Market = salon.genderTarget === 'men' ? 'men' : 'women';
-  const cats = categoriesForMarket(market);
+  const cats = catalogFor(salon.genderTarget);
   const toggle = (id: CategoryId) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  /** Changer de clientèle enregistre tout de suite le choix et retire les catégories qui ne sont plus proposées. */
+  const changeGender = async (genderTarget: GenderTarget) => {
+    if (genderTarget === salon.genderTarget) return;
+    setError(null);
+    const allowed = new Set(catalogFor(genderTarget).map((c) => c.id));
+    try {
+      await updateSalon.mutateAsync({ genderTarget, categoryIds: selected.filter((id) => allowed.has(id)) });
+    } catch (err) {
+      setError(errorText(err));
+    }
+  };
 
   const next = async () => {
     if (selected.length === 0) return setError('Cochez au moins une prestation.');
@@ -72,18 +95,22 @@ export default function Step5Catalog() {
       <StepBar step={5} backTo="/(pro)/(tabs)" />
       <H1>Vos prestations</H1>
       <Soft style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16 }}>
-        <Tx size={12} lh={16}>
-          Catalogue :{' '}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Tx size={12} lh={16}>
+            Catalogue
+          </Tx>
+          <Tx size={10.5} color={C.muted} lh={14.5}>
+            Hommes, femmes ou mixte
+          </Tx>
+        </View>
+        <Pressable accessibilityRole="button" accessibilityLabel="Catalogue" onPress={() => setGenderSheet(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
           <Tx size={12} weight={700} lh={16}>
-            {MARKET_LABELS_FR[market]}
+            {catalogLabel(salon.genderTarget)}
           </Tx>
-        </Tx>
-        <Pressable accessibilityRole="link" onPress={() => router.push('/(pro)/(tabs)/profil-pro')}>
-          <Tx size={10.5} weight={600} color={C.muted} lh={14.5}>
-            Modifier
-          </Tx>
+          <I icon={ChevronDown} size={13} color={C.subtle} />
         </Pressable>
       </Soft>
+      <PickerSheet open={genderSheet} onClose={() => setGenderSheet(false)} title="Votre clientèle" options={GENDER_OPTIONS} value={salon.genderTarget} onChange={(v) => void changeGender(v)} />
       <Tx size={12} color={C.muted} lh={18.5}>
         Cochez ce que vous proposez. Vous fixerez prix, durée et photos à l'étape suivante.
       </Tx>
@@ -107,7 +134,9 @@ export default function Step5Catalog() {
           );
         })}
       </ListCard>
-      <InfoBox>Seules les prestations du catalogue {MARKET_LABELS_FR[market]} vous sont proposées. Elles déterminent les filtres sur lesquels les clients vous trouvent.</InfoBox>
+      <InfoBox>
+        {salon.genderTarget === 'unisex' ? 'Salon mixte : les catalogues Pour Hommes et Pour Femmes vous sont proposés.' : `Seules les prestations du catalogue ${catalogLabel(salon.genderTarget)} vous sont proposées.`} Elles déterminent les filtres sur lesquels les clients vous trouvent.
+      </InfoBox>
       {error && <Alert>{error}</Alert>}
       <P> </P>
     </Screen>

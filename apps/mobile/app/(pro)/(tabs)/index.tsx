@@ -8,6 +8,7 @@ import { formatDA, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
 import { useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
+import { QuickClose } from '@/ui/QuickClose';
 import { formatDuration } from '@/lib/format';
 import { Avatar, Button, Card, ErrorText, Grid, H1, I, ListCard, P, Row, SectionLabel, Skeleton, StatusBadge, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
@@ -86,6 +87,8 @@ export default function ProHome() {
           </Card>
         </Grid>
       )}
+
+      {salon && <QuickClose openingHours={salon.openingHours} />}
 
       <SectionLabel
         right={
