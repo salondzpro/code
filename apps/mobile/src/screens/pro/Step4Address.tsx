@@ -99,7 +99,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
       await updateSalon.mutateAsync({ logoUrl: logoUrl ?? undefined, homeService: home });
       clearProDraft();
       await qc.invalidateQueries({ queryKey: queryKeys.pro.all });
-      router.replace(stepPath(5) as never);
+      router.replace(stepPath(6) as never);
     } catch (err) {
       setError(errorText(err));
     } finally {

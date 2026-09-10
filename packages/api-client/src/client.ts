@@ -244,6 +244,8 @@ export function createApiClient(opts: ApiClientOptions) {
         reorder: (ids: string[]) => put<void>('/pro/services/reorder', { ids }),
         setPhotos: (id: string, photos: { url: string }[]) =>
           put<void>(`/pro/services/${id}/photos`, { photos }),
+        renameCategory: (body: { from: string; name: string }) =>
+          post<{ renamed: number }>('/pro/services/rename-category', body),
       },
       staff: {
         create: (body: {

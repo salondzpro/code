@@ -70,7 +70,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
       await updateSalon.mutateAsync({ logoUrl: logoUrl ?? undefined, homeService: home });
       clearProDraft();
       qc.invalidateQueries({ queryKey: queryKeys.pro.all });
-      navigate(stepPath(5), { replace: true });
+      navigate(stepPath(6), { replace: true });
     } catch (err) {
       setError(errorText(err));
     } finally {

@@ -58,7 +58,17 @@ export function RequireClient() {
   // Mes rendez-vous et notifications se rafraîchissent quand le salon confirme, déplace ou annule.
   useRealtimeMyBookings(session?.user.id);
   if (loading) return <Splash />;
-  if (!session) return <Navigate to={location.pathname === '/' ? '/intro' : `/connexion?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  if (!session)
+    return (
+      <Navigate
+        to={
+          location.pathname === '/'
+            ? '/intro'
+            : `/connexion?next=${encodeURIComponent(location.pathname + location.search)}`
+        }
+        replace
+      />
+    );
   if (me.isPending) return <Splash />;
   if (me.isError) return <ErrorMessage error={me.error} retry={() => me.refetch()} />;
   const p = me.data.profile;
@@ -88,13 +98,16 @@ export function RequirePro() {
     return <Navigate to={`/connexion?role=pro&next=${next}`} replace />;
   }
   if (salonQuery.isPending) return <Splash />;
-  if (salonQuery.isError) return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;
+  if (salonQuery.isError)
+    return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;
 
   const salon = salonQuery.data.salon;
   if (!salon) {
-    if (!onboarding || step === null || step > 4) return <Navigate to="/pro/onboarding/1" replace />;
+    if (!onboarding || step === null || step > 4)
+      return <Navigate to="/pro/onboarding/1" replace />;
     return <Outlet />;
   }
-  if (onboarding && (step === null || step <= 4) && !path.endsWith('/publier')) return <Navigate to={salon.services.length === 0 ? '/pro/onboarding/5' : '/pro'} replace />;
+  if (onboarding && (step === null || step <= 4) && !path.endsWith('/publier'))
+    return <Navigate to={salon.services.length === 0 ? '/pro/onboarding/6' : '/pro'} replace />;
   return <Outlet />;
 }

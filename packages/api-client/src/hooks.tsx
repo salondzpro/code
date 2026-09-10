@@ -302,6 +302,7 @@ export function useProServiceMutations() {
   const qc = useQueryClient();
   const done = () => qc.invalidateQueries({ queryKey: queryKeys.pro.salon });
   return {
+    renameCategory: useMutation({ mutationFn: api.pro.services.renameCategory, onSuccess: done }),
     create: useMutation({ mutationFn: api.pro.services.create, onSuccess: done }),
     update: useMutation({
       mutationFn: ({

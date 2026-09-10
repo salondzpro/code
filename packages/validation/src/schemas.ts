@@ -83,6 +83,12 @@ export const setServicePhotosSchema = z.object({
   photos: z.array(z.object({ url: p.httpUrl })).max(1),
 });
 
+/** Renommer une catégorie du catalogue : toutes les prestations du groupe `from` passent sous `name`. */
+export const renameCategorySchema = z.object({
+  from: p.shortText(60),
+  name: p.shortText(60),
+});
+
 export const createServiceSchema = z.object({
   name: p.shortText(80),
   description: p.longText(500).optional(),

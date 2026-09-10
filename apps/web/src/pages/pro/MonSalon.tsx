@@ -12,10 +12,12 @@ import {
   QrCode,
   Save,
   Sparkles,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { wilayaName } from '@salondz/constants';
+import { MARKET_LABELS_FR, wilayaName, type GenderTarget } from '@salondz/constants';
+import { PickerField } from '@/components/Picker';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, I, ListRow, SectionLabel, Textarea, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -74,6 +76,31 @@ export function MonSalon() {
               <I icon={Pencil} size={16} />
             </button>
           )}
+        </div>
+        <div className="li !py-3">
+          <RowText
+            icon={Users}
+            title="Clientèle"
+            sub="Détermine les catégories proposées et la marketplace"
+          />
+          <PickerField
+            label="Clientèle"
+            title="Votre clientèle"
+            inline
+            value={salon.genderTarget}
+            onChange={(v: GenderTarget) =>
+              updateSalon.mutate({ genderTarget: v }, { onError: (e) => setError(errorText(e)) })
+            }
+            options={[
+              { value: 'men', label: MARKET_LABELS_FR.men, hint: 'Barbier, coiffure homme' },
+              {
+                value: 'women',
+                label: MARKET_LABELS_FR.women,
+                hint: 'Coiffure, ongles, cils, soins',
+              },
+              { value: 'unisex', label: 'Mixte', hint: 'Hommes et femmes · les deux catalogues' },
+            ]}
+          />
         </div>
         {desc !== null && (
           <div className="flex flex-col gap-2 pb-3">

@@ -3,11 +3,32 @@ import type { ReactNode } from 'react';
 import { ONBOARDING_STEPS } from '@/lib/proDraft';
 import { BottomSheet, Button, TopBar } from './index';
 
-export function StepBar({ step, backTo, right }: { step: number; backTo?: string; right?: ReactNode }) {
-  return <TopBar backTo={backTo} right={right ?? `Étape ${step} sur ${ONBOARDING_STEPS}`} />;
+export function StepBar({
+  step,
+  backTo,
+  right,
+}: {
+  step: number;
+  backTo?: string;
+  right?: ReactNode;
+}) {
+  const shown = step > 5 ? step - 1 : step;
+  return <TopBar backTo={backTo} right={right ?? `Étape ${shown} sur ${ONBOARDING_STEPS}`} />;
 }
 
-export function StepSheet({ label = 'Continuer', onPress, disabled, busy, secondary }: { label?: string; onPress: () => void; disabled?: boolean; busy?: boolean; secondary?: ReactNode }) {
+export function StepSheet({
+  label = 'Continuer',
+  onPress,
+  disabled,
+  busy,
+  secondary,
+}: {
+  label?: string;
+  onPress: () => void;
+  disabled?: boolean;
+  busy?: boolean;
+  secondary?: ReactNode;
+}) {
   return (
     <BottomSheet>
       {secondary}

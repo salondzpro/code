@@ -267,17 +267,10 @@ try {
     await p.getByRole('radio', { name: /^Alger\b/ }).click();
     await p.getByLabel('Quartier').fill('Alger-Centre');
     await p.getByRole('button', { name: 'Continuer' }).click();
-    await p.waitForURL(/\/pro\/onboarding\/5$/);
-    await p.getByRole('heading', { name: 'Vos prestations' }).waitFor();
-    await shot(p, 'pro-etape-5');
-  });
-  await step('pro: catalogue (étape 5) → première prestation', async () => {
-    const coiffure = p.getByRole('button', { name: /^Coiffure/ }).first();
-    await coiffure.waitFor();
-    if ((await coiffure.getAttribute('aria-pressed')) !== 'true') await coiffure.click();
-    await p.getByRole('button', { name: 'Continuer' }).click();
+    // Plus d'étape « catégories » : le salon créé, on passe directement à la première prestation.
     await p.waitForURL(/\/pro\/onboarding\/6$/);
     await p.getByRole('heading', { name: 'Première prestation' }).waitFor();
+    await shot(p, 'pro-etape-6');
   });
   await step('pro: 2 prestations (étapes 6 et 7)', async () => {
     await p.getByLabel('Nom').fill('Coupe + barbe');

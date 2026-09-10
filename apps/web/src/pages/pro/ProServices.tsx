@@ -36,7 +36,7 @@ export function ProServices() {
       <button
         type="button"
         className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-left"
-        onClick={() => navigate('/pro/onboarding/5')}
+        onClick={() => navigate('/pro/categories')}
       >
         <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
           <I icon={Tags} size={18} />

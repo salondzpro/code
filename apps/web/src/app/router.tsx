@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import {
   ClientLayout,
   PlainLayout,
@@ -47,7 +47,6 @@ import { Step1Market } from '@/pages/pro/onboarding/Step1Market';
 import { Step2Name } from '@/pages/pro/onboarding/Step2Name';
 import { Step3Identity } from '@/pages/pro/onboarding/Step3Identity';
 import { Step4Address } from '@/pages/pro/onboarding/Step4Address';
-import { Step5Catalog } from '@/pages/pro/onboarding/Step5Catalog';
 import { Step6Service } from '@/pages/pro/onboarding/Step6Service';
 import { Step7ServicePhotos } from '@/pages/pro/onboarding/Step7ServicePhotos';
 import { Step8Works } from '@/pages/pro/onboarding/Step8Works';
@@ -62,6 +61,7 @@ import { AgendaPro } from '@/pages/pro/AgendaPro';
 import { Clients } from '@/pages/pro/Clients';
 import { ClientDetail } from '@/pages/pro/ClientDetail';
 import { ProServices } from '@/pages/pro/ProServices';
+import { ProCategories } from '@/pages/pro/ProCategories';
 import { ProProfile } from '@/pages/pro/ProProfile';
 import { MonSalon } from '@/pages/pro/MonSalon';
 import { ProRules } from '@/pages/pro/ProRules';
@@ -160,7 +160,7 @@ export const router = createBrowserRouter([
               { path: 'onboarding/2', element: <Step2Name /> },
               { path: 'onboarding/3', element: <Step3Identity /> },
               { path: 'onboarding/4', element: <Step4Address /> },
-              { path: 'onboarding/5', element: <Step5Catalog /> },
+              { path: 'onboarding/5', element: <Navigate to="/pro/onboarding/6" replace /> },
               { path: 'onboarding/6', element: <Step6Service /> },
               { path: 'onboarding/6/:serviceId', element: <Step6Service /> },
               { path: 'onboarding/7/:serviceId', element: <Step7ServicePhotos /> },
@@ -197,6 +197,7 @@ export const router = createBrowserRouter([
               { path: 'equipe/:id/horaires', element: <TeamMemberHours /> },
               { path: 'prestations', element: <ProServices /> },
               { path: 'catalogue', element: <ProServices /> },
+              { path: 'categories', element: <ProCategories /> },
               { path: 'reservations', element: <Requests /> },
               { path: 'profil', element: <ProProfile /> },
               { path: 'mon-salon', element: <MonSalon /> },

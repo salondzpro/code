@@ -54,7 +54,7 @@ export function Step6Service() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={6} backTo={first ? stepPath(5) : '/pro/prestations'} />
+      <StepBar step={6} backTo={first ? stepPath(4) : '/pro/catalogue'} />
       <h1 className="h1">{existing ? 'Modifier la prestation' : first ? 'Première prestation' : 'Nouvelle prestation'}</h1>
       <form id="service" onSubmit={submit} className="flex flex-col gap-4">
         <Field label="Nom" htmlFor="svc-name">

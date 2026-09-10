@@ -35,7 +35,7 @@ export default function ProServices() {
         </Button>
       </View>
       <ListCard>
-        <Row py={12} onPress={() => router.push('/onboarding/5' as never)} accessibilityLabel="Catégories">
+        <Row py={12} onPress={() => router.push('/categories' as never)} accessibilityLabel="Catégories">
           <RowText icon={Tags} title="Catégories" sub={groups.length ? groups.map((g) => g.name).join(' · ') : 'Coupe, barbe, coloration, soins…'} />
         </Row>
       </ListCard>

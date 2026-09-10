@@ -49,7 +49,7 @@ export default function ProLayout() {
   if (!salon) {
     if (!onboarding || step === null || step > 4) return <Redirect href="/onboarding/1" />;
   } else if (onboarding && (step === null || step <= 4) && !publish) {
-    return <Redirect href={salon.services.length === 0 ? '/onboarding/5' : '/(pro)/(tabs)'} />;
+    return <Redirect href={salon.services.length === 0 ? '/onboarding/6' : '/(pro)/(tabs)'} />;
   }
 
   return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg }, animation: 'slide_from_right' }} />;

@@ -88,7 +88,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
         />
       }
     >
-      <StepBar step={6} backTo={first ? stepPath(5) : '/prestations'} />
+      <StepBar step={6} backTo={first ? stepPath(4) : '/prestations'} />
       <H1>
         {existing
           ? 'Modifier la prestation'
