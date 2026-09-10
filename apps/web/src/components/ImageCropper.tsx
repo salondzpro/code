@@ -40,12 +40,27 @@ export function ImageCropper({
   useEffect(() => {
     const u = URL.createObjectURL(file);
     setUrl(u);
+    // L'URL n'est libérée qu'une fois l'image chargée : en dev (StrictMode), l'effet est joué deux fois et une
+    // révocation immédiate ferait échouer le premier chargement (erreur console « ERR_FILE_NOT_FOUND »).
+    let loaded = false;
+    let gone = false;
     const im = new Image();
-    im.onload = () => setImg(im);
+    im.onload = () => {
+      loaded = true;
+      if (gone) URL.revokeObjectURL(u);
+      else setImg(im);
+    };
+    im.onerror = () => {
+      loaded = true;
+      if (gone) URL.revokeObjectURL(u);
+    };
     im.src = u;
     setZoom(1);
     setPos({ x: 0, y: 0 });
-    return () => URL.revokeObjectURL(u);
+    return () => {
+      gone = true;
+      if (loaded) URL.revokeObjectURL(u);
+    };
   }, [file]);
 
   useEffect(() => {

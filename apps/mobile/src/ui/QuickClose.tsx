@@ -1,8 +1,10 @@
 /**
- * Accueil pro — « Fermer maintenant » : un blocage tout salon qui suspend les réservations en ligne immédiatement,
- * jusqu'à la fermeture du jour ou pendant 1 h / 2 h / 3 h. Tant qu'il est actif : « Fermé jusqu'à … » + « Rouvrir ».
+ * Accueil pro — « Fermer / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
+ * le choix « jusqu'à la fermeture du jour / 1 h / 2 h / 3 h » et pose un blocage tout salon : plus de réservations
+ * en ligne immédiatement. Pendant une fermeture, le bouton passe en rouge (porte ouverte = rouvrir) et une bannière
+ * « Fermé jusqu'à … » s'affiche sous les chiffres du jour avec « Rouvrir maintenant ».
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { DoorClosed, DoorOpen } from 'lucide-react-native';
 import { useProBlockMutations, useProBlocks } from '@salondz/api-client';
@@ -15,26 +17,45 @@ import {
 } from '@salondz/constants';
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from '@/lib/errors';
-import { Alert, Button, Card, I, Tx } from './index';
+import { Alert, Button, Card, I, IconButton, Toast, Tx } from './index';
 import { PickerSheet } from './Pickers';
 import { C } from '@/theme/design';
 
 const DURATIONS = [1, 2, 3] as const;
 
-export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
+/** Blocage « Fermé … » tout salon en cours (posé par ce bouton). */
+function useActiveClose() {
   const today = toLocalDateKey();
   const blocks = useProBlocks(today, addDaysToKey(today, 1));
-  const { create, remove } = useProBlockMutations();
-  const [error, setError] = useState<string | null>(null);
-  const [choosing, setChoosing] = useState(false);
   const now = Date.now();
-  const active = (blocks.data?.items ?? []).find(
+  return (blocks.data?.items ?? []).find(
     (t) =>
       !t.staffId &&
       new Date(t.startsAt).getTime() <= now &&
       new Date(t.endsAt).getTime() > now &&
       (t.reason ?? '').startsWith('Fermé'),
   );
+}
+
+/** Erreur passagère (toast) : l'action est dans l'en-tête, il n'y a pas de place pour un texte. */
+function useFlash(): [string | null, (m: string | null) => void] {
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(null), 4000);
+    return () => clearTimeout(t);
+  }, [msg]);
+  return [msg, setMsg];
+}
+
+/** Bouton icône de l'en-tête : « Fermer / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
+export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[] }) {
+  const today = toLocalDateKey();
+  const active = useActiveClose();
+  const { create, remove } = useProBlockMutations();
+  const [error, setError] = useFlash();
+  const [choosing, setChoosing] = useState(false);
+  const now = Date.now();
   const closesAt = openingHours
     .filter((h) => h.dayOfWeek === dayOfWeekFromKey(today) && !h.isClosed)
     .map((h) => h.closesAt)
@@ -51,87 +72,30 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
       setError(errorText(err));
     }
   };
-
-  if (active) {
-    return (
-      <Card gap={10} style={{ backgroundColor: C.cancelBg, borderColor: C.dangerLine }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: C.danger,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <I icon={DoorClosed} size={14.5} color="#fff" />
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
-              Fermé jusqu'à {formatTimeDZ(active.endsAt)}
-            </Tx>
-            <Tx size={10.5} lh={14} color={C.cancelFg}>
-              Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.
-            </Tx>
-          </View>
-        </View>
-        {error && <Alert>{error}</Alert>}
-        <Button
-          variant="g"
-          disabled={remove.isPending}
-          loading={remove.isPending}
-          onPress={async () => {
-            setError(null);
-            try {
-              await remove.mutateAsync(active.id);
-            } catch (err) {
-              setError(errorText(err));
-            }
-          }}
-        >
-          <I icon={DoorOpen} size={14} />
-          <Tx size={12} weight={600} lh={16}>
-            Rouvrir maintenant
-          </Tx>
-        </Button>
-      </Card>
-    );
-  }
+  const reopen = async () => {
+    if (!active) return;
+    setError(null);
+    try {
+      await remove.mutateAsync(active.id);
+    } catch (err) {
+      setError(errorText(err));
+    }
+  };
 
   return (
-    <Card gap={10}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 10,
-        }}
+    <>
+      <IconButton
+        lg
+        accessibilityLabel={
+          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Fermer / Pause'
+        }
+        disabled={create.isPending || remove.isPending}
+        onPress={() => (active ? void reopen() : setChoosing(true))}
+        style={active ? { backgroundColor: C.danger, borderColor: C.danger } : undefined}
       >
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={13} weight={600} lh={17}>
-            Fermeture immédiate
-          </Tx>
-          <Tx size={10.5} color={C.muted} lh={14}>
-            Plus de réservations en ligne pendant un moment
-          </Tx>
-        </View>
-        <Button
-          auto
-          sm
-          disabled={create.isPending}
-          loading={create.isPending}
-          onPress={() => setChoosing(true)}
-        >
-          <I icon={DoorClosed} size={14} color={C.onInk} />
-          <Tx size={11.5} weight={600} color={C.onInk} lh={15}>
-            Fermer
-          </Tx>
-        </Button>
-      </View>
-      {error && <Alert>{error}</Alert>}
+        <I icon={active ? DoorOpen : DoorClosed} size={19} color={active ? '#fff' : C.text} />
+      </IconButton>
+      {error && <Toast>{error}</Toast>}
       <PickerSheet
         open={choosing}
         onClose={() => setChoosing(false)}
@@ -160,6 +124,59 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
           })),
         ]}
       />
+    </>
+  );
+}
+
+/** Bannière « Fermé jusqu'à … » + « Rouvrir maintenant », visible seulement pendant une fermeture. */
+export function QuickCloseBanner() {
+  const active = useActiveClose();
+  const { remove } = useProBlockMutations();
+  const [error, setError] = useState<string | null>(null);
+  if (!active) return null;
+  return (
+    <Card gap={10} style={{ backgroundColor: C.cancelBg, borderColor: C.dangerLine }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: C.danger,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <I icon={DoorClosed} size={14.5} color="#fff" />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
+            Fermé jusqu'à {formatTimeDZ(active.endsAt)}
+          </Tx>
+          <Tx size={10.5} lh={14} color={C.cancelFg}>
+            Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.
+          </Tx>
+        </View>
+      </View>
+      {error && <Alert>{error}</Alert>}
+      <Button
+        variant="g"
+        disabled={remove.isPending}
+        loading={remove.isPending}
+        onPress={async () => {
+          setError(null);
+          try {
+            await remove.mutateAsync(active.id);
+          } catch (err) {
+            setError(errorText(err));
+          }
+        }}
+      >
+        <I icon={DoorOpen} size={14} />
+        <Tx size={12} weight={600} lh={16}>
+          Rouvrir maintenant
+        </Tx>
+      </Button>
     </Card>
   );
 }

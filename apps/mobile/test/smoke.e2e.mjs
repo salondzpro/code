@@ -221,6 +221,24 @@ try {
     await pro.getByRole('tab', { name: 'Agenda' }).waitFor();
     await pro.getByText(/rendez-vous/).first().waitFor();
     await shot(pro, 'pro-agenda');
+    // Filtre « Afficher aussi les rendez-vous annulés » (case à cocher, masqués par défaut).
+    await pro.getByRole('checkbox', { name: 'Afficher aussi les rendez-vous annulés' }).first().waitFor();
+  });
+
+  await step("pro: accueil (« Fermer / Pause » en icône dans l'en-tête)", async () => {
+    await pro.goto(`${WEB}/`, { waitUntil: 'load' });
+    await pro.getByText('Votre journée').waitFor();
+    await pro.getByLabel('Fermer / Pause').waitFor();
+    await shot(pro, 'pro-accueil');
+  });
+
+  await step('pro: nouveau rendez-vous → erreurs sur les champs', async () => {
+    await pro.goto(`${WEB}/pro-rdv/nouveau`, { waitUntil: 'load' });
+    await pro.getByText('Ajouter un rendez-vous').waitFor();
+    await pro.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await pro.getByText('Indiquez le nom du client.').waitFor();
+    await pro.getByText('Choisissez au moins une prestation.').waitFor();
+    await shot(pro, 'pro-rdv-nouveau-erreurs');
   });
 
   current = cli;

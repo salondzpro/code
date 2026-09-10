@@ -37,3 +37,40 @@ export function useStaffFilter(): [string | null, (id: string | null) => void] {
   }, []);
   return [value, set];
 }
+
+/**
+ * Agenda : afficher aussi les rendez-vous annulés (en pointillés, avec qui a annulé). Masqués par défaut :
+ * l'agenda montre le planning réel ; on les affiche à la demande. Choix conservé sur l'appareil.
+ */
+const CANCELLED_KEY = 'salondz:pro:showCancelled';
+let cancelledCache: boolean | undefined;
+const cancelledListeners = new Set<() => void>();
+function readShowCancelled(): boolean {
+  if (cancelledCache !== undefined) return cancelledCache;
+  try {
+    cancelledCache = localStorage.getItem(CANCELLED_KEY) === '1';
+  } catch {
+    cancelledCache = false;
+  }
+  return cancelledCache;
+}
+export function useShowCancelled(): [boolean, (v: boolean) => void] {
+  const value = useSyncExternalStore(
+    (cb) => {
+      cancelledListeners.add(cb);
+      return () => cancelledListeners.delete(cb);
+    },
+    readShowCancelled,
+    readShowCancelled,
+  );
+  const set = useCallback((v: boolean) => {
+    cancelledCache = v;
+    try {
+      localStorage.setItem(CANCELLED_KEY, v ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+    cancelledListeners.forEach((l) => l());
+  }, []);
+  return [value, set];
+}

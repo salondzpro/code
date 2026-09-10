@@ -46,19 +46,40 @@ export interface RecentPlace {
 
 const KEY = 'salondz:location';
 const RECENT_KEY = 'salondz:recentSearches';
-const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance', availableToday: false, ratingMin: null, openNow: false, notifConfirmations: true, notifNews: false };
+const DEFAULTS: LocationPrefs = {
+  city: null,
+  wilaya: 16,
+  lat: null,
+  lng: null,
+  radiusKm: 5,
+  label: 'Alger',
+  sort: 'relevance',
+  availableToday: false,
+  ratingMin: null,
+  openNow: false,
+  notifConfirmations: true,
+  notifNews: false,
+};
 const PLACES_KEY = 'salondz:recentPlaces';
+const CANCELLED_KEY = 'salondz:pro:showCancelled';
 
 let prefs: LocationPrefs = DEFAULTS;
 let recent: string[] = [];
 let places: RecentPlace[] = [];
+let showCancelled = false;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
 /** À appeler une fois au démarrage : relit les préférences persistées. */
 export async function hydratePrefs(): Promise<void> {
   try {
-    const [p, r, pl] = await Promise.all([AsyncStorage.getItem(KEY), AsyncStorage.getItem(RECENT_KEY), AsyncStorage.getItem(PLACES_KEY)]);
+    const [p, r, pl, sc] = await Promise.all([
+      AsyncStorage.getItem(KEY),
+      AsyncStorage.getItem(RECENT_KEY),
+      AsyncStorage.getItem(PLACES_KEY),
+      AsyncStorage.getItem(CANCELLED_KEY),
+    ]);
+    showCancelled = sc === '1';
     if (p) prefs = { ...DEFAULTS, ...(JSON.parse(p) as Partial<LocationPrefs>) };
     if (r) recent = JSON.parse(r) as string[];
     if (pl) places = JSON.parse(pl) as RecentPlace[];
@@ -107,10 +128,32 @@ export function pushRecentSearch(q: string): void {
 /** Espace pro : membre filtré sur l'accueil et l'agenda (null = toute l'équipe), en mémoire de session. */
 let staffFilter: string | null = null;
 export function useStaffFilter(): [string | null, (id: string | null) => void] {
-  const value = useSyncExternalStore(subscribe, () => staffFilter, () => staffFilter);
+  const value = useSyncExternalStore(
+    subscribe,
+    () => staffFilter,
+    () => staffFilter,
+  );
   const set = useCallback((id: string | null) => {
     staffFilter = id;
     notify();
+  }, []);
+  return [value, set];
+}
+
+/**
+ * Agenda : afficher aussi les rendez-vous annulés (en pointillés, avec qui a annulé). Masqués par défaut :
+ * l'agenda montre le planning réel ; on les affiche à la demande. Choix conservé sur l'appareil.
+ */
+export function useShowCancelled(): [boolean, (v: boolean) => void] {
+  const value = useSyncExternalStore(
+    subscribe,
+    () => showCancelled,
+    () => showCancelled,
+  );
+  const set = useCallback((v: boolean) => {
+    showCancelled = v;
+    notify();
+    void AsyncStorage.setItem(CANCELLED_KEY, v ? '1' : '0').catch(() => undefined);
   }, []);
   return [value, set];
 }
@@ -122,7 +165,10 @@ export function useRecentPlaces(): RecentPlace[] {
   return useSyncExternalStore(subscribe, readRecentPlaces, readRecentPlaces);
 }
 export function pushRecentPlace(p: RecentPlace): void {
-  places = [p, ...places.filter((x) => x.label.toLowerCase() !== p.label.toLowerCase())].slice(0, 5);
+  places = [p, ...places.filter((x) => x.label.toLowerCase() !== p.label.toLowerCase())].slice(
+    0,
+    5,
+  );
   notify();
   void AsyncStorage.setItem(PLACES_KEY, JSON.stringify(places)).catch(() => undefined);
 }

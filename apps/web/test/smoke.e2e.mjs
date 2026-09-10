@@ -99,6 +99,8 @@ function attach(page, who) {
     if (r.status() >= 400) report.httpErrors.push({ who, status: r.status(), url: r.url(), page: page.url() });
   });
   page.on('requestfailed', (r) => {
+    // blob: révoqué par le double-effet StrictMode (dev, recadrage d'image) : sans effet visible, ignoré.
+    if (r.url().startsWith('blob:')) return;
     if (r.failure()?.errorText !== 'net::ERR_ABORTED') report.httpErrors.push({ who, status: 'FAILED', url: r.url(), err: r.failure()?.errorText, page: page.url() });
   });
   page.on('dialog', (d) => d.accept());
@@ -419,13 +421,23 @@ try {
     await p.getByRole('button', { name: 'Nouveau rendez-vous' }).first().click();
     await p.waitForURL(/\/pro\/rendez-vous\/nouveau\?date=/);
     await p.getByRole('heading', { name: 'Ajouter un rendez-vous' }).waitFor();
+    // Nom obligatoire : l'erreur s'affiche directement sur le champ (et sur les prestations).
+    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await p.getByText('Indiquez le nom du client.').waitFor();
+    await p.locator('#nb-name[aria-invalid="true"]').waitFor();
+    await p.getByText('Choisissez au moins une prestation.').waitFor();
+    await shot(p, 'pro-rdv-nouveau-erreurs');
     await p.getByLabel('Client').fill('Walid Passage');
+    await p.locator('#nb-name[aria-invalid="true"]').waitFor({ state: 'detached' });
     await p.getByLabel('Téléphone (facultatif)').fill('06 61 11 22 33');
     await p.getByRole('button', { name: /Coupe \+ barbe/ }).click();
     await p.locator(`button[role=option][data-day="${target}"]`).first().click();
     await p.getByRole('option', { name: '15:00', exact: true }).click();
     await shot(p, 'pro-rdv-nouveau');
     await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    // Validation animée « Rendez-vous ajouté », puis fiche du rendez-vous.
+    await p.getByTestId('success-splash').getByText('Rendez-vous ajouté').waitFor();
+    await shot(p, 'pro-rdv-ajoute');
     await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
     await p.getByRole('heading', { name: 'Walid P.' }).waitFor();
     await p.getByText('15:00 – 15:30').waitFor();

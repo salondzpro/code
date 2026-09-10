@@ -21,10 +21,22 @@ import {
 } from '@salondz/constants';
 import type { BookingWithStaff } from '@salondz/types';
 import { useRealtimeBookings } from '@/lib/realtime';
-import { useStaffFilter } from '@/lib/prefs';
+import { useShowCancelled, useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
 import { MONTHS_FR, formatDuration } from '@/lib/format';
-import { Badge, I, IconButton, ListCard, P, Row, Segmented, StatusBadge, Tx } from '@/ui';
+import {
+  Badge,
+  Checkbox,
+  I,
+  IconButton,
+  ListCard,
+  P,
+  Row,
+  Segmented,
+  StatusBadge,
+  Tx,
+  cancelledLabel,
+} from '@/ui';
 import { DayCarousel, DayScroller } from '@/ui/DayCarousel';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
@@ -69,6 +81,8 @@ export default function AgendaPro() {
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
   const [staffId, setStaffId] = useStaffFilter();
+  // Annulés masqués par défaut (planning réel) ; à la demande, ils apparaissent en pointillés avec qui a annulé.
+  const [showCancelled, setShowCancelled] = useShowCancelled();
   const { width: winWidth, height: winHeight } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
   const carouselY = useRef(0);
@@ -77,9 +91,9 @@ export default function AgendaPro() {
   const items = useMemo(
     () =>
       (bookings.data?.items ?? []).filter(
-        (b) => b.status !== 'cancelled' && (!staffId || b.staffId === staffId),
+        (b) => (showCancelled || b.status !== 'cancelled') && (!staffId || b.staffId === staffId),
       ),
-    [bookings.data, staffId],
+    [bookings.data, staffId, showCancelled],
   );
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
@@ -199,6 +213,18 @@ export default function AgendaPro() {
     >
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: showCancelled }}
+        accessibilityLabel="Afficher aussi les rendez-vous annulés"
+        onPress={() => setShowCancelled(!showCancelled)}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+      >
+        <Checkbox on={showCancelled} label="Afficher aussi les rendez-vous annulés" />
+        <Tx size={12} lh={16}>
+          Afficher aussi les rendez-vous annulés
+        </Tx>
+      </Pressable>
       <Segmented
         label="Vue"
         value={view}
@@ -219,9 +245,11 @@ export default function AgendaPro() {
               onChange={setDate}
               width={Math.max(0, winWidth - 32)}
               render={(d) => {
-                const items = (byDay.get(d) ?? []).sort((a, b) =>
+                const all = (byDay.get(d) ?? []).sort((a, b) =>
                   a.startsAt.localeCompare(b.startsAt),
                 );
+                const items = all.filter((b) => b.status !== 'cancelled');
+                const cancelled = all.filter((b) => b.status === 'cancelled');
                 const revenue = items
                   .filter((b) => b.status !== 'no_show')
                   .reduce((a, b) => a + b.priceDa, 0);
@@ -258,6 +286,7 @@ export default function AgendaPro() {
                       <DayTimeline
                         date={d}
                         items={items}
+                        cancelled={cancelled}
                         blocks={dayBlk}
                         hours={dayHours(d)}
                         toneOf={toneOf}
@@ -363,6 +392,7 @@ function isoWeek(key: string): number {
 function DayTimeline({
   date,
   items,
+  cancelled = [],
   blocks,
   hours,
   toneOf,
@@ -372,6 +402,8 @@ function DayTimeline({
 }: {
   date: string;
   items: BookingWithStaff[];
+  /** Rendez-vous annulés du jour (affichés en pointillés, sous les vivants, sans bloquer les trous « Libre »). */
+  cancelled?: BookingWithStaff[];
   blocks: { startsAt: string; endsAt: string; reason: string | null }[];
   hours: { opensAt: string; closesAt: string }[];
   toneOf: (b: BookingWithStaff) => string;
@@ -493,6 +525,49 @@ function DayTimeline({
           </Tx>
         </View>
       ))}
+      {cancelled.map((b) => {
+        const s = localMinutes(b.startsAt);
+        const e = localMinutes(b.endsAt);
+        if (e <= startMin || s >= endMin) return null;
+        const who = cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind);
+        return (
+          <Pressable
+            key={b.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${b.clientName} · ${who}`}
+            onPress={() => onOpen(b.id)}
+            style={{
+              position: 'absolute',
+              left: 47,
+              right: 0,
+              top: top(s) + 2,
+              height: Math.max(44, (e - s) * PX - 4),
+              overflow: 'hidden',
+              borderRadius: 10,
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderColor: C.line,
+              backgroundColor: C.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+            }}
+          >
+            <Tx
+              size={10.5}
+              weight={600}
+              lh={14.5}
+              color={C.muted}
+              numberOfLines={1}
+              style={{ textDecorationLine: 'line-through' }}
+            >
+              {b.clientName} · {b.serviceName}
+            </Tx>
+            <Tx size={10.5} lh={14.5} color={C.muted} numberOfLines={1}>
+              {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {who}
+            </Tx>
+          </Pressable>
+        );
+      })}
       {sorted.map((b) => {
         const s = localMinutes(b.startsAt);
         const e = localMinutes(b.endsAt);
@@ -608,13 +683,11 @@ function WeekGrid({
   );
   const H = 720;
   const px = H / (endMin - startMin);
-  const total = week.reduce((a, d) => a + (byDay.get(d)?.length ?? 0), 0);
-  const revenue = week.reduce(
-    (a, d) => a + (byDay.get(d) ?? []).reduce((x, b) => x + b.priceDa, 0),
-    0,
-  );
+  const liveOf = (d: string) => (byDay.get(d) ?? []).filter((b) => b.status !== 'cancelled');
+  const total = week.reduce((a, d) => a + liveOf(d).length, 0);
+  const revenue = week.reduce((a, d) => a + liveOf(d).reduce((x, b) => x + b.priceDa, 0), 0);
   const busyMin = week.reduce(
-    (a, d) => a + (byDay.get(d) ?? []).reduce((x, b) => x + b.durationMinutes, 0),
+    (a, d) => a + liveOf(d).reduce((x, b) => x + b.durationMinutes, 0),
     0,
   );
   const openMin = week.reduce(
@@ -725,9 +798,17 @@ function WeekGrid({
                           top: (s - startMin) * px,
                           height: Math.max(10, (e - s) * px),
                           borderRadius: 6,
-                          borderLeftWidth: 3,
-                          borderLeftColor: t.line,
-                          backgroundColor: t.bg,
+                          ...(b.status === 'cancelled'
+                            ? {
+                                borderWidth: 1,
+                                borderStyle: 'dashed' as const,
+                                borderColor: C.line,
+                              }
+                            : {
+                                borderLeftWidth: 3,
+                                borderLeftColor: t.line,
+                                backgroundColor: t.bg,
+                              }),
                         }}
                       />
                     );
@@ -800,7 +881,9 @@ function MonthGrid({
   const cells = Array.from({ length: 42 }, (_, i) => addDaysToKey(gridStart, i));
   const rows = Array.from({ length: 6 }, (_, r) => cells.slice(r * 7, r * 7 + 7));
   const list = (byDay.get(selected) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const revenue = list.reduce((a, b) => a + b.priceDa, 0);
+  const revenue = list
+    .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
+    .reduce((a, b) => a + b.priceDa, 0);
   return (
     <View style={{ gap: 13 }}>
       <View style={{ gap: 5 }}>
@@ -898,7 +981,14 @@ function MonthGrid({
             py={10}
             chevron={false}
             onPress={() => onOpen(b.id)}
-            right={<StatusBadge status={b.status} />}
+            right={
+              <StatusBadge
+                status={b.status}
+                cancelledBy={b.cancelledBy}
+                kind={b.cancellationKind}
+                viewer="pro"
+              />
+            }
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <View

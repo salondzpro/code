@@ -700,6 +700,44 @@
     background-size: 280px 100%;
     animation: shim 1.5s linear infinite;
   }
+  /* Validation animée (SuccessSplash) */
+  .anim-fade {
+    animation: fadein 0.25s ease-out both;
+  }
+  .anim-pop {
+    animation: pop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  }
+  .anim-rise {
+    animation: rise 0.45s 0.2s ease-out both;
+  }
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop {
+    from {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(0.875rem);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
   @keyframes shim {
     0% {
       background-position: -160px 0;

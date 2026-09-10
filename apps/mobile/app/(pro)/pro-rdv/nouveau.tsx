@@ -19,6 +19,7 @@ import {
   isPastSlot,
   ceilToStep,
   nowTimeDZ,
+  isDeviceOnDZTime,
 } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { errorText } from '@/lib/errors';
@@ -44,6 +45,7 @@ import { DayScroller } from '@/ui/DayCarousel';
 import { capitalize } from '@/lib/salon';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
+import { SuccessSplash } from '@/ui/SuccessSplash';
 import { C } from '@/theme/design';
 
 export default function ProBookingNew() {
@@ -68,6 +70,12 @@ export default function ProBookingNew() {
   const [timeSheet, setTimeSheet] = useState(false);
   const stripRef = useRef<ScrollView>(null);
   const [error, setError] = useState<string | null>(null);
+  // Erreurs de saisie affichées directement sous le champ concerné (nom obligatoire, prestation, téléphone).
+  const [fieldErr, setFieldErr] = useState<{ name?: string; services?: string; phone?: string }>(
+    {},
+  );
+  // Rendez-vous créé : validation animée, puis fiche du rendez-vous.
+  const [done, setDone] = useState<{ id: string } | null | false>(false);
   // Rendez-vous déjà pris ce jour-là (pour griser les créneaux du membre choisi).
   const dayBookings = useProBookings({ from: date, to: date, limit: 200 }, !!salon);
   if (!salon) return <Splash />;
@@ -121,14 +129,17 @@ export default function ProBookingNew() {
   }, [time, date, slots.length]);
 
   const submit = async () => {
-    if (name.trim().length < 2) return setError('Indiquez le nom du client.');
-    if (services.length === 0) return setError('Choisissez au moins une prestation.');
+    const errs: typeof fieldErr = {};
+    if (name.trim().length < 2) errs.name = 'Indiquez le nom du client.';
+    if (services.length === 0) errs.services = 'Choisissez au moins une prestation.';
     let clientPhone: string | undefined;
     if (phone.trim()) {
       const parsed = phoneDZ.safeParse(phone);
-      if (!parsed.success) return setError('Numéro invalide (ex : 05 51 23 45 67).');
-      clientPhone = parsed.data;
+      if (!parsed.success) errs.phone = 'Numéro invalide (ex : 05 51 23 45 67).';
+      else clientPhone = parsed.data;
     }
+    setFieldErr(errs);
+    if (errs.name || errs.services || errs.phone) return;
     setError(null);
     try {
       // Plusieurs prestations : enchaînées à la suite, même membre.
@@ -146,7 +157,7 @@ export default function ProBookingNew() {
         first ??= b;
         start = b.endsAt;
       }
-      router.replace((first ? `/pro-rdv/${first.id}` : '/(pro)/(tabs)/agenda') as never);
+      setDone(first);
     } catch (err) {
       setError(errorText(err));
     }
@@ -221,6 +232,12 @@ export default function ProBookingNew() {
             )}
           </View>
         </View>
+        {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
+        {!isDeviceOnDZTime() && (
+          <Tx size={10.5} color={C.muted} lh={14}>
+            Heures en heure d'Alger · il est {nowTimeDZ()} à Alger.
+          </Tx>
+        )}
         {slots.length === 0 ? (
           <Pressable
             accessibilityRole="button"
@@ -321,9 +338,10 @@ export default function ProBookingNew() {
               py={10}
               chevron={false}
               accessibilityLabel={s.name}
-              onPress={() =>
-                setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))
-              }
+              onPress={() => {
+                setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]));
+                if (fieldErr.services) setFieldErr((f) => ({ ...f, services: undefined }));
+              }}
               right={<Checkbox on={on} label={s.name} />}
             >
               <Tx size={13} weight={600} lh={17}>
@@ -337,27 +355,56 @@ export default function ProBookingNew() {
         })}
       </ListCard>
 
-      {/* 3. Client */}
-      <Field label="Client">
+      {fieldErr.services && (
+        <Tx
+          size={11.5}
+          color={C.danger}
+          lh={15}
+          accessibilityRole="alert"
+          style={{ marginTop: -6 }}
+        >
+          {fieldErr.services}
+        </Tx>
+      )}
+
+      {/* 3. Client — obligatoire : l'erreur s'affiche sur le champ lui-même. */}
+      <Field label="Client" error={fieldErr.name}>
         <Input
           lg
+          err={!!fieldErr.name}
           value={name}
-          onChangeText={setName}
+          onChangeText={(v) => {
+            setName(v);
+            if (fieldErr.name) setFieldErr((f) => ({ ...f, name: undefined }));
+          }}
           placeholder="Mohamed B."
           accessibilityLabel="Client"
         />
       </Field>
-      <Field label="Téléphone (facultatif)">
+      <Field label="Téléphone (facultatif)" error={fieldErr.phone}>
         <Input
           lg
+          err={!!fieldErr.phone}
           keyboardType="phone-pad"
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={(v) => {
+            setPhone(v);
+            if (fieldErr.phone) setFieldErr((f) => ({ ...f, phone: undefined }));
+          }}
           placeholder="05 51 23 45 67"
           accessibilityLabel="Téléphone (facultatif)"
         />
       </Field>
       {error && <Alert>{error}</Alert>}
+      {done !== false && (
+        <SuccessSplash
+          title="Rendez-vous ajouté"
+          subtitle={`${name.trim()} · ${relativeDayLabelDZ(date)} · ${time}`}
+          onDone={() =>
+            router.replace((done ? `/pro-rdv/${done.id}` : '/(pro)/(tabs)/agenda') as never)
+          }
+        />
+      )}
       <TimeSheet
         open={timeSheet}
         onClose={() => setTimeSheet(false)}

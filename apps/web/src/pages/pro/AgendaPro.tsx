@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Calendar, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { Calendar, Check, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
@@ -20,10 +20,10 @@ import {
   minutesToTime,
 } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
-import { useStaffFilter } from '@/lib/proPrefs';
+import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
-import { Badge, I, IconButton, Segmented, StatusBadge } from '@/components/ui';
+import { Badge, I, IconButton, Segmented, StatusBadge, cancelledLabel } from '@/components/ui';
 import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -90,12 +90,14 @@ export function AgendaPro() {
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
   const [staffId, setStaffId] = useStaffFilter();
+  // Annulés masqués par défaut (planning réel) ; à la demande, ils apparaissent en pointillés avec qui a annulé.
+  const [showCancelled, setShowCancelled] = useShowCancelled();
   const items = useMemo(
     () =>
       (bookings.data?.items ?? []).filter(
-        (b) => b.status !== 'cancelled' && (!staffId || b.staffId === staffId),
+        (b) => (showCancelled || b.status !== 'cancelled') && (!staffId || b.staffId === staffId),
       ),
-    [bookings.data, staffId],
+    [bookings.data, staffId, showCancelled],
   );
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
@@ -172,6 +174,18 @@ export function AgendaPro() {
     <Screen bottom={NAV_PAD} gap={16}>
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={showCancelled}
+        onClick={() => setShowCancelled(!showCancelled)}
+        className="flex items-center gap-3 text-left text-[0.9375rem]"
+      >
+        <span className={`chk${showCancelled ? ' on' : ''}`} aria-hidden>
+          {showCancelled && <I icon={Check} size={16} />}
+        </span>
+        Afficher aussi les rendez-vous annulés
+      </button>
       <Segmented
         label="Vue"
         value={view}
@@ -190,9 +204,9 @@ export function AgendaPro() {
             date={date}
             onChange={setDate}
             render={(d) => {
-              const items = (byDay.get(d) ?? []).sort((a, b) =>
-                a.startsAt.localeCompare(b.startsAt),
-              );
+              const all = (byDay.get(d) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+              const items = all.filter((b) => b.status !== 'cancelled');
+              const cancelled = all.filter((b) => b.status === 'cancelled');
               const revenue = items
                 .filter((b) => b.status !== 'no_show')
                 .reduce((a, b) => a + b.priceDa, 0);
@@ -214,6 +228,7 @@ export function AgendaPro() {
                   <DayTimeline
                     date={d}
                     items={items}
+                    cancelled={cancelled}
                     blocks={dayBlk}
                     hours={dayHours(d)}
                     toneOf={toneOf}
@@ -310,6 +325,7 @@ function isoWeek(key: string): number {
 function DayTimeline({
   date,
   items,
+  cancelled = [],
   blocks,
   hours,
   toneOf,
@@ -318,6 +334,8 @@ function DayTimeline({
 }: {
   date: string;
   items: BookingWithStaff[];
+  /** Rendez-vous annulés du jour (affichés en pointillés, sous les vivants, sans bloquer les trous « Libre »). */
+  cancelled?: BookingWithStaff[];
   blocks: { startsAt: string; endsAt: string; reason: string | null }[];
   hours: { opensAt: string; closesAt: string }[];
   toneOf: (b: BookingWithStaff) => string;
@@ -426,6 +444,31 @@ function DayTimeline({
           {String(c.e % 60).padStart(2, '0')}
         </div>
       ))}
+      {cancelled.map((b) => {
+        const s = localMinutes(b.startsAt);
+        const e = localMinutes(b.endsAt);
+        if (e <= startMin || s >= endMin) return null;
+        return (
+          <button
+            key={b.id}
+            type="button"
+            onClick={() => onOpen(b.id)}
+            className="absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.75rem] border border-dashed border-line bg-surface px-3 py-2 text-left text-muted"
+            style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
+            aria-label={`${b.clientName} · ${cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}`}
+          >
+            <span className="block truncate text-[0.8125rem] font-semibold line-through">
+              {b.clientName} · {b.serviceName}
+            </span>
+            <span className="block truncate text-[0.8125rem]">
+              <span className="mono">
+                {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
+              </span>{' '}
+              · {cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}
+            </span>
+          </button>
+        );
+      })}
       {sorted.map((b) => {
         const s = localMinutes(b.startsAt);
         const e = localMinutes(b.endsAt);
@@ -499,13 +542,11 @@ function WeekGrid({
   );
   const H = 720;
   const px = H / (endMin - startMin);
-  const total = week.reduce((a, d) => a + (byDay.get(d)?.length ?? 0), 0);
-  const revenue = week.reduce(
-    (a, d) => a + (byDay.get(d) ?? []).reduce((x, b) => x + b.priceDa, 0),
-    0,
-  );
+  const liveOf = (d: string) => (byDay.get(d) ?? []).filter((b) => b.status !== 'cancelled');
+  const total = week.reduce((a, d) => a + liveOf(d).length, 0);
+  const revenue = week.reduce((a, d) => a + liveOf(d).reduce((x, b) => x + b.priceDa, 0), 0);
   const busyMin = week.reduce(
-    (a, d) => a + (byDay.get(d) ?? []).reduce((x, b) => x + b.durationMinutes, 0),
+    (a, d) => a + liveOf(d).reduce((x, b) => x + b.durationMinutes, 0),
     0,
   );
   const openMin = week.reduce(
@@ -573,7 +614,11 @@ function WeekGrid({
                     return (
                       <span
                         key={b.id}
-                        className={`absolute left-0.5 right-0.5 rounded-[0.5rem] border-l-[3px] ${TONE[toneOf(b)]}`}
+                        className={
+                          b.status === 'cancelled'
+                            ? 'absolute left-0.5 right-0.5 rounded-[0.5rem] border border-dashed border-line'
+                            : `absolute left-0.5 right-0.5 rounded-[0.5rem] border-l-[3px] ${TONE[toneOf(b)]}`
+                        }
                         style={{ top: (s - startMin) * px, height: Math.max(10, (e - s) * px) }}
                       />
                     );
@@ -637,7 +682,9 @@ function MonthGrid({
   const month = date.slice(0, 7);
   const cells = Array.from({ length: 42 }, (_, i) => addDaysToKey(gridStart, i));
   const list = (byDay.get(selected) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const revenue = list.reduce((a, b) => a + b.priceDa, 0);
+  const revenue = list
+    .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
+    .reduce((a, b) => a + b.priceDa, 0);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-7 gap-1.5">
@@ -740,7 +787,12 @@ function MonthGrid({
                 </span>
               </span>
             </span>
-            <StatusBadge status={b.status} />
+            <StatusBadge
+              status={b.status}
+              cancelledBy={b.cancelledBy}
+              kind={b.cancellationKind}
+              viewer="pro"
+            />
           </button>
         ))}
       </div>

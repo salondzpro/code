@@ -129,7 +129,9 @@ export function relativeDayLabelDZ(dateKey: string, today: string = toLocalDateK
 /** Puce de jour des cartes marketplace (style Planity) : « Mer. 9 » — toujours le jour de semaine, plus lisible qu'« Aujourd'hui / Demain ». */
 export function dayChipLabelDZ(dateKey: string): string {
   const [y, m, d] = dateKey.split('-').map(Number);
-  const wd = new Intl.DateTimeFormat('fr-DZ', { weekday: 'short', timeZone: TIMEZONE }).format(new Date(Date.UTC(y!, m! - 1, d!, 12)));
+  const wd = new Intl.DateTimeFormat('fr-DZ', { weekday: 'short', timeZone: TIMEZONE }).format(
+    new Date(Date.UTC(y!, m! - 1, d!, 12)),
+  );
   return `${wd.charAt(0).toUpperCase()}${wd.slice(1).replace(/\.$/, '')}. ${d}`;
 }
 
@@ -150,6 +152,14 @@ export function ceilToStep(hm: string, step: number): string {
 /** Vrai si ce créneau (jour + heure locale) est déjà passé par rapport à maintenant — on ne propose jamais le passé. */
 export function isPastSlot(dateKey: string, timeHM: string, now = Date.now()): boolean {
   return new Date(localDateTimeToISO(dateKey, timeHM)).getTime() < now;
+}
+
+/**
+ * Vrai si l'appareil est réglé sur l'heure d'Alger (UTC+1, sans heure d'été). Sinon les heures affichées
+ * (créneaux, agenda) restent en heure d'Alger et l'écran le rappelle, pour ne pas croire à un « passé » proposé.
+ */
+export function isDeviceOnDZTime(now: Date = new Date()): boolean {
+  return now.getTimezoneOffset() === -UTC_OFFSET_MINUTES;
 }
 
 /** Ajoute n jours à une clé "YYYY-MM-DD". */

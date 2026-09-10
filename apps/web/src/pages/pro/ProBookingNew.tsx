@@ -19,6 +19,7 @@ import {
   isPastSlot,
   ceilToStep,
   nowTimeDZ,
+  isDeviceOnDZTime,
 } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { errorText } from '@/components/ErrorMessage';
@@ -26,6 +27,7 @@ import { BottomSheet, Button, Field, I, Input, TopBar } from '@/components/ui';
 import { DayScroller } from '@/components/DayCarousel';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
 
 export function ProBookingNew() {
@@ -42,6 +44,13 @@ export function ProBookingNew() {
   );
   const [staffId, setStaffId] = useState<string>(params.get('staff') ?? '');
   const [error, setError] = useState<string | null>(null);
+  // Erreurs de saisie affichées directement sous le champ concerné (nom obligatoire, prestation, téléphone).
+  const [fieldErr, setFieldErr] = useState<{ name?: string; services?: string; phone?: string }>(
+    {},
+  );
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  // Rendez-vous créé : validation animée, puis fiche du rendez-vous.
+  const [done, setDone] = useState<{ id: string } | null | false>(false);
   // Rendez-vous déjà pris ce jour-là (pour griser les créneaux du membre choisi).
   const dayBookings = useProBookings({ from: date, to: date, limit: 200 }, !!salon);
   const timeStrip = useRef<HTMLDivElement | null>(null);
@@ -94,14 +103,18 @@ export function ProBookingNew() {
   }, [time, date]);
 
   const submit = async () => {
-    if (name.trim().length < 2) return setError('Indiquez le nom du client.');
-    if (services.length === 0) return setError('Choisissez au moins une prestation.');
+    const errs: typeof fieldErr = {};
+    if (name.trim().length < 2) errs.name = 'Indiquez le nom du client.';
+    if (services.length === 0) errs.services = 'Choisissez au moins une prestation.';
     let clientPhone: string | undefined;
     if (phone.trim()) {
       const parsed = phoneDZ.safeParse(phone);
-      if (!parsed.success) return setError('Numéro invalide (ex : 05 51 23 45 67).');
-      clientPhone = parsed.data;
+      if (!parsed.success) errs.phone = 'Numéro invalide (ex : 05 51 23 45 67).';
+      else clientPhone = parsed.data;
     }
+    setFieldErr(errs);
+    if (errs.name) nameRef.current?.focus();
+    if (errs.name || errs.services || errs.phone) return;
     setError(null);
     try {
       // Plusieurs prestations : enchaînées à la suite, même membre.
@@ -119,7 +132,7 @@ export function ProBookingNew() {
         first ??= b;
         start = b.endsAt;
       }
-      navigate(first ? `/pro/rendez-vous/${first.id}` : '/pro/agenda', { replace: true });
+      setDone(first);
     } catch (err) {
       setError(errorText(err));
     }
@@ -152,6 +165,12 @@ export function ProBookingNew() {
             )}
           </span>
         </div>
+        {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
+        {!isDeviceOnDZTime() && (
+          <p className="text-[0.8125rem] text-muted">
+            Heures en heure d'Alger · il est {nowTimeDZ()} à Alger.
+          </p>
+        )}
         {slots.length === 0 ? (
           <label className="flex items-center justify-between gap-3 text-[0.9375rem]">
             <span className="text-muted">Salon fermé ce jour — heure libre</span>
@@ -218,9 +237,10 @@ export function ProBookingNew() {
               key={s.id}
               type="button"
               className="li w-full !py-3 text-left"
-              onClick={() =>
-                setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))
-              }
+              onClick={() => {
+                setServices((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]));
+                if (fieldErr.services) setFieldErr((f) => ({ ...f, services: undefined }));
+              }}
               aria-pressed={on}
             >
               <span>
@@ -237,24 +257,41 @@ export function ProBookingNew() {
         })}
       </div>
 
-      {/* 3. Client */}
-      <Field label="Client" htmlFor="nb-name">
+      {fieldErr.services && (
+        <p className="-mt-2 text-[0.875rem] text-danger" role="alert">
+          {fieldErr.services}
+        </p>
+      )}
+
+      {/* 3. Client — obligatoire : l'erreur s'affiche sur le champ lui-même. */}
+      <Field label="Client" htmlFor="nb-name" error={fieldErr.name}>
         <Input
           id="nb-name"
+          ref={nameRef}
           lg
+          err={!!fieldErr.name}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (fieldErr.name) setFieldErr((f) => ({ ...f, name: undefined }));
+          }}
           placeholder="Mohamed B."
+          aria-required
+          aria-invalid={!!fieldErr.name || undefined}
         />
       </Field>
-      <Field label="Téléphone (facultatif)" htmlFor="nb-phone">
+      <Field label="Téléphone (facultatif)" htmlFor="nb-phone" error={fieldErr.phone}>
         <Input
           id="nb-phone"
           lg
           type="tel"
           inputMode="tel"
+          err={!!fieldErr.phone}
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            if (fieldErr.phone) setFieldErr((f) => ({ ...f, phone: undefined }));
+          }}
           placeholder="05 51 23 45 67"
         />
       </Field>
@@ -262,6 +299,15 @@ export function ProBookingNew() {
         <p className="text-[0.875rem] text-danger" role="alert">
           {error}
         </p>
+      )}
+      {done !== false && (
+        <SuccessSplash
+          title="Rendez-vous ajouté"
+          subtitle={`${name.trim()} · ${relativeDayLabelDZ(date)} · ${time}`}
+          onDone={() =>
+            navigate(done ? `/pro/rendez-vous/${done.id}` : '/pro/agenda', { replace: true })
+          }
+        />
       )}
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
