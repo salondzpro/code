@@ -156,16 +156,21 @@ export function Salon() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2.5">
-          {s.ratingCount > 0 && (
-            <button
-              type="button"
-              className="pill soft !text-[0.9375rem] !font-semibold"
-              onClick={() => navigate(`/s/${s.slug}/avis`)}
-              aria-label={`${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`}
-            >
-              ★ {formatRating(s.ratingAvg)} · {s.ratingCount} avis
-            </button>
-          )}
+          {/* Toujours cliquable : la liste des avis est fraîche même quand la fiche (cache 60 s) ne compte pas encore le dernier. */}
+          <button
+            type="button"
+            className={`pill soft !text-[0.9375rem] !font-semibold${s.ratingCount > 0 ? '' : ' !text-muted'}`}
+            onClick={() => navigate(`/s/${s.slug}/avis`)}
+            aria-label={
+              s.ratingCount > 0
+                ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                : 'Avis : voir les avis'
+            }
+          >
+            {s.ratingCount > 0
+              ? `★ ${formatRating(s.ratingAvg)} · ${s.ratingCount} avis`
+              : '★ Avis'}
+          </button>
           <span className={`badge md !text-[0.9375rem] ${status.open ? 'b-ok' : 'b-nu'}`}>
             <span className="dot" />
             {status.label}

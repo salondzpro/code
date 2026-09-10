@@ -214,23 +214,27 @@ export default function Salon() {
           </Tx>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-          {s.ratingCount > 0 && (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`}
-              onPress={() => router.push(`/s/${s.slug}/avis` as never)}
-              style={{
-                backgroundColor: C.fill,
-                borderRadius: R.pill,
-                paddingHorizontal: 11,
-                paddingVertical: 7,
-              }}
-            >
-              <Tx size={12} weight={600} lh={15.5}>
-                ★ {formatRating(s.ratingAvg)} · {s.ratingCount} avis
-              </Tx>
-            </Pressable>
-          )}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              s.ratingCount > 0
+                ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                : 'Avis : voir les avis'
+            }
+            onPress={() => router.push(`/s/${s.slug}/avis` as never)}
+            style={{
+              backgroundColor: C.fill,
+              borderRadius: R.pill,
+              paddingHorizontal: 11,
+              paddingVertical: 7,
+            }}
+          >
+            <Tx size={12} weight={600} lh={15.5} color={s.ratingCount > 0 ? C.text : C.muted}>
+              {s.ratingCount > 0
+                ? `★ ${formatRating(s.ratingAvg)} · ${s.ratingCount} avis`
+                : '★ Avis'}
+            </Tx>
+          </Pressable>
           <View
             style={{
               flexDirection: 'row',
