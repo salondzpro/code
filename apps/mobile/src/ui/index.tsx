@@ -3,20 +3,50 @@
  * (mêmes cotes que apps/web/src/styles/index.css). Aucune couleur ni rayon en dur hors theme/design.
  */
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Animated, Modal, Platform, Pressable, StyleSheet, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  type PressableProps,
+  type StyleProp,
+  type TextInputProps,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, ChevronLeft, ChevronRight, Info, Search, X, type LucideIcon } from 'lucide-react-native';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Search,
+  X,
+  type LucideIcon,
+} from 'lucide-react-native';
 import type { BookingStatus, CancellationKind, CancelledBy } from '@salondz/constants';
-import { C, R, SHADOW } from '@/theme/design';
+import { C, R, SHADOW, FONT_SCALE } from '@/theme/design';
 import { H2, P, S, T3, Tx, fontFor } from './Text';
 
 export { H1, H2, H3, P, S, T3, Tx } from './Text';
 
 /** Icône aux réglages du design : 22 px, trait 1.6. */
-export function I({ icon: Icon, size = 22, color = C.text }: { icon: LucideIcon; size?: number; color?: string }) {
+export function I({
+  icon: Icon,
+  size = 22,
+  color = C.text,
+}: {
+  icon: LucideIcon;
+  size?: number;
+  color?: string;
+}) {
   return <Icon size={size} color={color} strokeWidth={size <= 16 ? 1.7 : 1.6} />;
 }
 
@@ -34,11 +64,31 @@ export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> 
   bg?: string;
 }
 
-export function Button({ variant = 'ink', sm, auto, pill, loading, disabled, children, style, textColor, bg, ...props }: ButtonProps) {
+export function Button({
+  variant = 'ink',
+  sm,
+  auto,
+  pill,
+  loading,
+  disabled,
+  children,
+  style,
+  textColor,
+  bg,
+  ...props
+}: ButtonProps) {
   const off = !!disabled || !!loading;
   const background = bg ?? (off ? C.fill : variant === 'ink' ? C.ink : C.surface);
-  const fg = textColor ?? (off ? C.subtle : variant === 'ink' ? C.onInk : variant === 'd' ? C.danger : C.text);
-  const border = off ? 'transparent' : variant === 'g' ? C.line : variant === 'd' ? C.dangerLine : 'transparent';
+  const fg =
+    textColor ??
+    (off ? C.subtle : variant === 'ink' ? C.onInk : variant === 'd' ? C.danger : C.text);
+  const border = off
+    ? 'transparent'
+    : variant === 'g'
+      ? C.line
+      : variant === 'd'
+        ? C.dangerLine
+        : 'transparent';
   return (
     <Pressable
       accessibilityRole="button"
@@ -76,14 +126,35 @@ export function Button({ variant = 'ink', sm, auto, pill, loading, disabled, chi
   );
 }
 
-export function IconButton({ ink, lg, children, style, ...props }: Omit<PressableProps, 'style'> & { ink?: boolean; lg?: boolean; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function IconButton({
+  ink,
+  lg,
+  children,
+  style,
+  ...props
+}: Omit<PressableProps, 'style'> & {
+  ink?: boolean;
+  lg?: boolean;
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   const size = lg ? 44 : 40;
   return (
     <Pressable
       accessibilityRole="button"
       {...props}
       style={({ pressed }) => [
-        { width: size, height: size, borderRadius: size / 2, backgroundColor: ink ? C.ink : C.surface, borderWidth: 1, borderColor: ink ? C.ink : C.line, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.8 : 1 },
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: ink ? C.ink : C.surface,
+          borderWidth: 1,
+          borderColor: ink ? C.ink : C.line,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: pressed ? 0.8 : 1,
+        },
         style,
       ]}
     >
@@ -108,17 +179,53 @@ export function BackButton({ to, close, label }: { to?: string; close?: boolean;
 }
 
 /** En-tête d'écran : bouton rond à gauche, texte ou nœud à droite (« Étape 1 sur 3 »). */
-export function TopBar({ backTo, close, right, noBack }: { backTo?: string; close?: boolean; right?: ReactNode; noBack?: boolean }) {
+export function TopBar({
+  backTo,
+  close,
+  right,
+  noBack,
+}: {
+  backTo?: string;
+  close?: boolean;
+  right?: ReactNode;
+  noBack?: boolean;
+}) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10,
+      }}
+    >
       {noBack ? <View /> : <BackButton to={backTo} close={close} />}
-      {typeof right === 'string' ? <Tx size={12} color={C.muted}>{right}</Tx> : (right ?? null)}
+      {typeof right === 'string' ? (
+        <Tx size={12} color={C.muted}>
+          {right}
+        </Tx>
+      ) : (
+        (right ?? null)
+      )}
     </View>
   );
 }
 
 // ---------- Pastilles / badges / créneaux ----------
-export function Pill({ on, lg, soft, children, style, ...props }: Omit<PressableProps, 'style' | 'children'> & { on?: boolean; lg?: boolean; soft?: boolean; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function Pill({
+  on,
+  lg,
+  soft,
+  children,
+  style,
+  ...props
+}: Omit<PressableProps, 'style' | 'children'> & {
+  on?: boolean;
+  lg?: boolean;
+  soft?: boolean;
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   const color = on ? C.onInk : lg || soft ? C.text : C.muted;
   return (
     <Pressable
@@ -164,11 +271,38 @@ const TONES: Record<BadgeTone, { bg: string; fg: string }> = {
   cf: { bg: '#E7DFFF', fg: '#4B2C91' },
   dk: { bg: '#E3E4E6', fg: '#17181A' },
 };
-export function Badge({ tone, dot = true, md, lg, children }: { tone: BadgeTone; dot?: boolean; md?: boolean; lg?: boolean; children: ReactNode }) {
+export function Badge({
+  tone,
+  dot = true,
+  md,
+  lg,
+  children,
+}: {
+  tone: BadgeTone;
+  dot?: boolean;
+  md?: boolean;
+  lg?: boolean;
+  children: ReactNode;
+}) {
   const t = TONES[tone];
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderRadius: R.pill, backgroundColor: t.bg, paddingVertical: lg ? 7 : md ? 6 : 4, paddingHorizontal: lg ? 13 : md ? 12 : 10 }}>
-      {dot && <View style={{ width: lg ? 6 : 5, height: lg ? 6 : 5, borderRadius: 3, backgroundColor: t.fg }} />}
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        alignSelf: 'flex-start',
+        borderRadius: R.pill,
+        backgroundColor: t.bg,
+        paddingVertical: lg ? 7 : md ? 6 : 4,
+        paddingHorizontal: lg ? 13 : md ? 12 : 10,
+      }}
+    >
+      {dot && (
+        <View
+          style={{ width: lg ? 6 : 5, height: lg ? 6 : 5, borderRadius: 3, backgroundColor: t.fg }}
+        />
+      )}
       <Tx size={lg ? 14.5 : md ? 13 : 11} weight={600} color={t.fg} lh={lg ? 18.5 : md ? 17 : 14}>
         {children}
       </Tx>
@@ -184,24 +318,57 @@ const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boole
   no_show: { tone: 'dk', label: 'Client absent', dot: true },
 };
 /** Libellé d'une annulation selon qui l'a faite et qui regarde (client ou salon). */
-export function cancelledLabel(cancelledBy: CancelledBy | null | undefined, viewer: 'client' | 'pro' = 'client', kind?: CancellationKind | null): string {
+export function cancelledLabel(
+  cancelledBy: CancelledBy | null | undefined,
+  viewer: 'client' | 'pro' = 'client',
+  kind?: CancellationKind | null,
+): string {
   if (kind === 'late') return 'Annulé pour retard';
-  if (cancelledBy === 'client') return viewer === 'client' ? 'Annulé par vous' : 'Annulé par le client';
-  if (cancelledBy === 'salon') return viewer === 'client' ? 'Annulé par le salon' : 'Annulé par vous';
+  if (cancelledBy === 'client')
+    return viewer === 'client' ? 'Annulé par vous' : 'Annulé par le client';
+  if (cancelledBy === 'salon')
+    return viewer === 'client' ? 'Annulé par le salon' : 'Annulé par vous';
   if (cancelledBy === 'system') return 'Demande expirée';
   return 'Annulé';
 }
 
-export function StatusBadge({ status, md, lg, cancelledBy, viewer = 'client', kind }: { status: BookingStatus; md?: boolean; lg?: boolean; cancelledBy?: CancelledBy | null; viewer?: 'client' | 'pro'; kind?: CancellationKind | null }) {
+export function StatusBadge({
+  status,
+  md,
+  lg,
+  cancelledBy,
+  viewer = 'client',
+  kind,
+}: {
+  status: BookingStatus;
+  md?: boolean;
+  lg?: boolean;
+  cancelledBy?: CancelledBy | null;
+  viewer?: 'client' | 'pro';
+  kind?: CancellationKind | null;
+}) {
   const s = STATUS[status];
   return (
     <Badge tone={s.tone} dot={s.dot} md={md} lg={lg}>
-      {status === 'cancelled' && cancelledBy !== undefined ? cancelledLabel(cancelledBy, viewer, kind) : s.label}
+      {status === 'cancelled' && cancelledBy !== undefined
+        ? cancelledLabel(cancelledBy, viewer, kind)
+        : s.label}
     </Badge>
   );
 }
 
-export function Slot({ on, off, children, style, ...props }: Omit<PressableProps, 'style' | 'children'> & { on?: boolean; off?: boolean; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function Slot({
+  on,
+  off,
+  children,
+  style,
+  ...props
+}: Omit<PressableProps, 'style' | 'children'> & {
+  on?: boolean;
+  off?: boolean;
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -209,7 +376,16 @@ export function Slot({ on, off, children, style, ...props }: Omit<PressableProps
       disabled={off}
       {...props}
       style={({ pressed }) => [
-        { borderWidth: 1, borderColor: on ? C.ink : off ? 'transparent' : C.line, backgroundColor: on ? C.ink : off ? C.fill : C.surface, borderRadius: R.slot, paddingVertical: 11, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1 },
+        {
+          borderWidth: 1,
+          borderColor: on ? C.ink : off ? 'transparent' : C.line,
+          backgroundColor: on ? C.ink : off ? C.fill : C.surface,
+          borderRadius: R.slot,
+          paddingVertical: 11,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: pressed ? 0.85 : 1,
+        },
         style,
       ]}
     >
@@ -257,7 +433,7 @@ export function Input({ err, lg, f, style, onFocus, onBlur, multiline, ...props 
           borderRadius: R.input,
           paddingVertical: lg ? 18 : 15,
           paddingHorizontal: lg ? 16 : 15,
-          fontSize: lg ? 14 : 12,
+          fontSize: (lg ? 14 : 12) * FONT_SCALE,
           fontFamily: fontFor(400),
           color: C.text,
           minHeight: multiline ? 96 : undefined,
@@ -273,9 +449,20 @@ export function Input({ err, lg, f, style, onFocus, onBlur, multiline, ...props 
 }
 
 /** Sur le web (react-native-web), la bordure encre signale déjà le focus : pas d'anneau navigateur. */
-const WEB_NO_OUTLINE = Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as TextStyle) : null;
+const WEB_NO_OUTLINE =
+  Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as TextStyle) : null;
 
-export function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string | null; children: ReactNode }) {
+export function Field({
+  label,
+  hint,
+  error,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  error?: string | null;
+  children: ReactNode;
+}) {
   return (
     <View>
       <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
@@ -283,7 +470,13 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
       </Tx>
       {children}
       {error ? (
-        <Tx size={10.5} color={C.danger} lh={14.5} style={{ marginTop: 5 }} accessibilityRole="alert">
+        <Tx
+          size={10.5}
+          color={C.danger}
+          lh={14.5}
+          style={{ marginTop: 5 }}
+          accessibilityRole="alert"
+        >
           {error}
         </Tx>
       ) : hint ? (
@@ -293,9 +486,35 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
   );
 }
 
-export function SearchBox({ value, onChange, placeholder, onSubmit, autoFocus, outlined }: { value: string; onChange: (v: string) => void; placeholder: string; onSubmit?: () => void; autoFocus?: boolean; outlined?: boolean }) {
+export function SearchBox({
+  value,
+  onChange,
+  placeholder,
+  onSubmit,
+  autoFocus,
+  outlined,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  onSubmit?: () => void;
+  autoFocus?: boolean;
+  outlined?: boolean;
+}) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: outlined ? C.surface : C.fill, borderRadius: R.cardSm, paddingVertical: 12, paddingHorizontal: 13, borderWidth: outlined ? 1.5 : 0, borderColor: C.ink }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        backgroundColor: outlined ? C.surface : C.fill,
+        borderRadius: R.cardSm,
+        paddingVertical: 12,
+        paddingHorizontal: 13,
+        borderWidth: outlined ? 1.5 : 0,
+        borderColor: C.ink,
+      }}
+    >
       <I icon={Search} size={18} color={C.subtle} />
       <TextInput
         value={value}
@@ -306,35 +525,135 @@ export function SearchBox({ value, onChange, placeholder, onSubmit, autoFocus, o
         autoFocus={autoFocus}
         returnKeyType="search"
         onSubmitEditing={onSubmit}
-        style={[{ flex: 1, minWidth: 0, fontSize: 13, fontFamily: fontFor(400), color: C.text, padding: 0 }, WEB_NO_OUTLINE]}
+        style={[
+          {
+            flex: 1,
+            minWidth: 0,
+            fontSize: 13 * FONT_SCALE,
+            fontFamily: fontFor(400),
+            color: C.text,
+            padding: 0,
+          },
+          WEB_NO_OUTLINE,
+        ]}
       />
     </View>
   );
 }
 
-export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+export function Toggle({
+  on,
+  onChange,
+  label,
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
   return (
-    <Pressable accessibilityRole="switch" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={() => onChange(!on)} style={{ width: 41, height: 24, borderRadius: 12, backgroundColor: on ? C.green : C.line, padding: 2 }}>
-      <View style={[{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#fff', transform: [{ translateX: on ? 20 : 0 }] }, SHADOW.knob]} />
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityState={{ checked: on }}
+      accessibilityLabel={label}
+      onPress={() => onChange(!on)}
+      style={{
+        width: 41,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: on ? C.green : C.line,
+        padding: 2,
+      }}
+    >
+      <View
+        style={[
+          {
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            backgroundColor: '#fff',
+            transform: [{ translateX: on ? 20 : 0 }],
+          },
+          SHADOW.knob,
+        ]}
+      />
     </Pressable>
   );
 }
 
-export function Checkbox({ on, onChange, label }: { on: boolean; onChange?: (v: boolean) => void; label: string }) {
+export function Checkbox({
+  on,
+  onChange,
+  label,
+}: {
+  on: boolean;
+  onChange?: (v: boolean) => void;
+  label: string;
+}) {
   return (
-    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onChange ? () => onChange(!on) : undefined} style={{ width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: on ? C.ink : C.line, backgroundColor: on ? C.ink : C.surface, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: on }}
+      accessibilityLabel={label}
+      onPress={onChange ? () => onChange(!on) : undefined}
+      style={{
+        width: 20,
+        height: 20,
+        borderRadius: 6,
+        borderWidth: 1.5,
+        borderColor: on ? C.ink : C.line,
+        backgroundColor: on ? C.ink : C.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       {on && <I icon={Check} size={13} color="#fff" />}
     </Pressable>
   );
 }
 
-export function Segmented<T extends string>({ options, value, onChange, label }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label: string }) {
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  label: string;
+}) {
   return (
-    <View accessibilityRole="tablist" accessibilityLabel={label} style={{ flexDirection: 'row', backgroundColor: C.fill, borderRadius: 13, padding: 4, gap: 2 }}>
+    <View
+      accessibilityRole="tablist"
+      accessibilityLabel={label}
+      style={{
+        flexDirection: 'row',
+        backgroundColor: C.fill,
+        borderRadius: 13,
+        padding: 4,
+        gap: 2,
+      }}
+    >
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.value)} style={[{ flex: 1, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', backgroundColor: on ? C.surface : 'transparent' }, on && SHADOW.seg]}>
+          <Pressable
+            key={o.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            onPress={() => onChange(o.value)}
+            style={[
+              {
+                flex: 1,
+                borderRadius: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 6,
+                alignItems: 'center',
+                backgroundColor: on ? C.surface : 'transparent',
+              },
+              on && SHADOW.seg,
+            ]}
+          >
             <Tx size={10.5} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={14}>
               {o.label}
             </Tx>
@@ -346,7 +665,27 @@ export function Segmented<T extends string>({ options, value, onChange, label }:
 }
 
 // ---------- Surfaces ----------
-export function Card({ sm, sel, row, gap, pad, onPress, children, style, accessibilityLabel }: { sm?: boolean; sel?: boolean; row?: boolean; gap?: number; pad?: number; onPress?: () => void; children: ReactNode; style?: StyleProp<ViewStyle>; accessibilityLabel?: string }) {
+export function Card({
+  sm,
+  sel,
+  row,
+  gap,
+  pad,
+  onPress,
+  children,
+  style,
+  accessibilityLabel,
+}: {
+  sm?: boolean;
+  sel?: boolean;
+  row?: boolean;
+  gap?: number;
+  pad?: number;
+  onPress?: () => void;
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+}) {
   const base: ViewStyle = {
     backgroundColor: C.surface,
     borderWidth: 1,
@@ -360,7 +699,13 @@ export function Card({ sm, sel, row, gap, pad, onPress, children, style, accessi
   };
   if (onPress)
     return (
-      <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} accessibilityState={{ selected: !!sel }} onPress={onPress} style={({ pressed }) => [base, { opacity: pressed ? 0.9 : 1 }, style]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ selected: !!sel }}
+        onPress={onPress}
+        style={({ pressed }) => [base, { opacity: pressed ? 0.9 : 1 }, style]}
+      >
         {children}
       </Pressable>
     );
@@ -369,7 +714,11 @@ export function Card({ sm, sel, row, gap, pad, onPress, children, style, accessi
 
 /** Surface douce (design .sf). */
 export function Soft({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[{ backgroundColor: C.fill, borderRadius: R.cardSm, padding: 11 }, style]}>{children}</View>;
+  return (
+    <View style={[{ backgroundColor: C.fill, borderRadius: R.cardSm, padding: 11 }, style]}>
+      {children}
+    </View>
+  );
 }
 
 /** Encadré d'information gris avec l'icône ⓘ. */
@@ -400,7 +749,25 @@ export function SectionLabel({ children, right }: { children: ReactNode; right?:
 }
 
 /** Ligne de liste (design .li) : à utiliser dans <Rows> pour les séparateurs. */
-export function Row({ to, onPress, children, right, chevron, py = 14, style, accessibilityLabel }: { to?: string; onPress?: () => void; children: ReactNode; right?: ReactNode; chevron?: boolean; py?: number; style?: StyleProp<ViewStyle>; accessibilityLabel?: string }) {
+export function Row({
+  to,
+  onPress,
+  children,
+  right,
+  chevron,
+  py = 14,
+  style,
+  accessibilityLabel,
+}: {
+  to?: string;
+  onPress?: () => void;
+  children: ReactNode;
+  right?: ReactNode;
+  chevron?: boolean;
+  py?: number;
+  style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+}) {
   const router = useRouter();
   const press = to ? () => router.push(to as never) : onPress;
   const inner = (
@@ -410,10 +777,21 @@ export function Row({ to, onPress, children, right, chevron, py = 14, style, acc
       {(chevron ?? (!!to || !!onPress)) && <I icon={ChevronRight} size={14.5} color={C.disabled} />}
     </>
   );
-  const base: ViewStyle = { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingVertical: py };
+  const base: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    paddingVertical: py,
+  };
   if (press)
     return (
-      <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={press} style={({ pressed }) => [base, { opacity: pressed ? 0.7 : 1 }, style]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        onPress={press}
+        style={({ pressed }) => [base, { opacity: pressed ? 0.7 : 1 }, style]}
+      >
         {inner}
       </Pressable>
     );
@@ -426,7 +804,14 @@ export function Rows({ children, style }: { children: ReactNode; style?: StylePr
   return (
     <View style={style}>
       {items.map((c, i) => (
-        <View key={i} style={i < items.length - 1 ? { borderBottomWidth: 1, borderBottomColor: C.lineSoft } : undefined}>
+        <View
+          key={i}
+          style={
+            i < items.length - 1
+              ? { borderBottomWidth: 1, borderBottomColor: C.lineSoft }
+              : undefined
+          }
+        >
           {c}
         </View>
       ))}
@@ -435,19 +820,63 @@ export function Rows({ children, style }: { children: ReactNode; style?: StylePr
 }
 
 /** Carte-liste (design .crd avec gap 0 et padding vertical 4). */
-export function ListCard({ children, style, px = 16 }: { children: ReactNode; style?: StyleProp<ViewStyle>; px?: number }) {
+export function ListCard({
+  children,
+  style,
+  px = 16,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  px?: number;
+}) {
   return (
-    <View style={[{ backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: R.card, paddingVertical: 3, paddingHorizontal: px }, style]}>
+    <View
+      style={[
+        {
+          backgroundColor: C.surface,
+          borderWidth: 1,
+          borderColor: C.line,
+          borderRadius: R.card,
+          paddingVertical: 3,
+          paddingHorizontal: px,
+        },
+        style,
+      ]}
+    >
       <Rows>{children}</Rows>
     </View>
   );
 }
 
-export function Avatar({ src, name, size = 44 }: { src?: string | null; name: string; size?: number }) {
+export function Avatar({
+  src,
+  name,
+  size = 44,
+}: {
+  src?: string | null;
+  name: string;
+  size?: number;
+}) {
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: C.line, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }} accessibilityElementsHidden>
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: C.line,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      accessibilityElementsHidden
+    >
       {src ? (
-        <Image source={{ uri: src }} style={{ width: size, height: size }} contentFit="cover" transition={150} />
+        <Image
+          source={{ uri: src }}
+          style={{ width: size, height: size }}
+          contentFit="cover"
+          transition={150}
+        />
       ) : (
         <Tx size={Math.round(size / 2.6)} weight={600} color={C.muted} lh={Math.round(size / 2.2)}>
           {name.trim().charAt(0).toUpperCase()}
@@ -457,10 +886,27 @@ export function Avatar({ src, name, size = 44 }: { src?: string | null; name: st
   );
 }
 
-export function Img({ src, style, radius = R.img, children }: { src?: string | null; style?: StyleProp<ViewStyle>; radius?: number; children?: ReactNode }) {
+export function Img({
+  src,
+  style,
+  radius = R.img,
+  children,
+}: {
+  src?: string | null;
+  style?: StyleProp<ViewStyle>;
+  radius?: number;
+  children?: ReactNode;
+}) {
   return (
     <View style={[{ backgroundColor: C.line, borderRadius: radius, overflow: 'hidden' }, style]}>
-      {src ? <Image source={{ uri: src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} /> : null}
+      {src ? (
+        <Image
+          source={{ uri: src }}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+          transition={200}
+        />
+      ) : null}
       {children}
     </View>
   );
@@ -468,13 +914,30 @@ export function Img({ src, style, radius = R.img, children }: { src?: string | n
 
 /** Dégradé sombre du bas (design .ovl) à poser en absolu sur une image. */
 export function Overlay() {
-  return <LinearGradient colors={['rgba(15,16,17,0)', 'rgba(15,16,17,0.28)', 'rgba(15,16,17,0.72)']} locations={[0.28, 0.58, 1]} style={StyleSheet.absoluteFill} pointerEvents="none" />;
+  return (
+    <LinearGradient
+      colors={['rgba(15,16,17,0)', 'rgba(15,16,17,0.28)', 'rgba(15,16,17,0.72)']}
+      locations={[0.28, 0.58, 1]}
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+    />
+  );
 }
 
 /** Crédit photo (coin bas gauche des visuels du design). */
 export function Credit({ children }: { children: string }) {
   return (
-    <View style={{ position: 'absolute', left: 10, bottom: 6, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 5, paddingHorizontal: 5, paddingVertical: 2 }}>
+    <View
+      style={{
+        position: 'absolute',
+        left: 10,
+        bottom: 6,
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        borderRadius: 5,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+      }}
+    >
       <Tx size={8} color="rgba(255,255,255,0.8)" lh={10.5}>
         {children}
       </Tx>
@@ -484,10 +947,36 @@ export function Credit({ children }: { children: string }) {
 
 // ---------- Superpositions ----------
 /** Feuille basse fixe (design .sheet) — à passer en `footer` de <Screen>. */
-export function BottomSheet({ children, grab = true, style }: { children: ReactNode; grab?: boolean; style?: StyleProp<ViewStyle> }) {
+export function BottomSheet({
+  children,
+  grab = true,
+  style,
+}: {
+  children: ReactNode;
+  grab?: boolean;
+  style?: StyleProp<ViewStyle>;
+}) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 16 + insets.bottom, gap: 11 }, SHADOW.sheet, style]}>
+    <View
+      style={[
+        {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: C.surface,
+          borderTopLeftRadius: R.sheet,
+          borderTopRightRadius: R.sheet,
+          paddingTop: 10,
+          paddingHorizontal: 16,
+          paddingBottom: 16 + insets.bottom,
+          gap: 11,
+        },
+        SHADOW.sheet,
+        style,
+      ]}
+    >
       {grab && <Grab />}
       {children}
     </View>
@@ -495,19 +984,75 @@ export function BottomSheet({ children, grab = true, style }: { children: ReactN
 }
 
 export function Grab() {
-  return <View style={{ width: 31, height: 4, borderRadius: 2, backgroundColor: C.line, alignSelf: 'center', marginBottom: 3 }} />;
+  return (
+    <View
+      style={{
+        width: 31,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: C.line,
+        alignSelf: 'center',
+        marginBottom: 3,
+      }}
+    />
+  );
 }
 
 /** Feuille modale (voile + feuille) pour les confirmations et sélections. */
-export function ModalSheet({ open, onClose, children, grab = true, scroll }: { open: boolean; onClose: () => void; children: ReactNode; grab?: boolean; scroll?: boolean }) {
+export function ModalSheet({
+  open,
+  onClose,
+  children,
+  grab = true,
+  scroll,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  grab?: boolean;
+  scroll?: boolean;
+}) {
   const insets = useSafeAreaInsets();
   return (
-    <Modal visible={open} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={[StyleSheet.absoluteFill, { backgroundColor: C.dim }]} onPress={onClose} accessibilityLabel="Fermer" />
+    <Modal
+      visible={open}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <Pressable
+        style={[StyleSheet.absoluteFill, { backgroundColor: C.dim }]}
+        onPress={onClose}
+        accessibilityLabel="Fermer"
+      />
       <View style={{ flex: 1, justifyContent: 'flex-end' }} pointerEvents="box-none">
-        <View style={[{ backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 16 + insets.bottom, gap: 11, maxHeight: '88%' }, SHADOW.sheet]}>
+        <View
+          style={[
+            {
+              backgroundColor: C.surface,
+              borderTopLeftRadius: R.sheet,
+              borderTopRightRadius: R.sheet,
+              paddingTop: 10,
+              paddingHorizontal: 16,
+              paddingBottom: 16 + insets.bottom,
+              gap: 11,
+              maxHeight: '88%',
+            },
+            SHADOW.sheet,
+          ]}
+        >
           {grab && <Grab />}
-          {scroll ? <Animated.ScrollView contentContainerStyle={{ gap: 11 }} keyboardShouldPersistTaps="handled">{children}</Animated.ScrollView> : children}
+          {scroll ? (
+            <Animated.ScrollView
+              contentContainerStyle={{ gap: 11 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {children}
+            </Animated.ScrollView>
+          ) : (
+            children
+          )}
         </View>
       </View>
     </Modal>
@@ -517,7 +1062,25 @@ export function ModalSheet({ open, onClose, children, grab = true, scroll }: { o
 export function Toast({ children, icon: Icon }: { children: ReactNode; icon?: LucideIcon }) {
   const insets = useSafeAreaInsets();
   return (
-    <View accessibilityRole="alert" style={[{ position: 'absolute', top: 13 + insets.top, left: 16, right: 16, backgroundColor: C.ink, borderRadius: 13, paddingVertical: 11, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 8 }, SHADOW.toast]}>
+    <View
+      accessibilityRole="alert"
+      style={[
+        {
+          position: 'absolute',
+          top: 13 + insets.top,
+          left: 16,
+          right: 16,
+          backgroundColor: C.ink,
+          borderRadius: 13,
+          paddingVertical: 11,
+          paddingHorizontal: 13,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        },
+        SHADOW.toast,
+      ]}
+    >
       {Icon && <I icon={Icon} size={14.5} color="#fff" />}
       <Tx size={11.5} weight={500} color="#fff" lh={14.5} style={{ flex: 1 }}>
         {children}
@@ -526,17 +1089,53 @@ export function Toast({ children, icon: Icon }: { children: ReactNode; icon?: Lu
   );
 }
 
-export function Skeleton({ h = 20, w, radius = 8, style }: { h?: number; w?: number | `${number}%`; radius?: number; style?: StyleProp<ViewStyle> }) {
+export function Skeleton({
+  h = 20,
+  w,
+  radius = 8,
+  style,
+}: {
+  h?: number;
+  w?: number | `${number}%`;
+  radius?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
   const op = useRef(new Animated.Value(0.6)).current;
   useEffect(() => {
-    const loop = Animated.loop(Animated.sequence([Animated.timing(op, { toValue: 1, duration: 750, useNativeDriver: true }), Animated.timing(op, { toValue: 0.6, duration: 750, useNativeDriver: true })]));
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(op, { toValue: 1, duration: 750, useNativeDriver: true }),
+        Animated.timing(op, { toValue: 0.6, duration: 750, useNativeDriver: true }),
+      ]),
+    );
     loop.start();
     return () => loop.stop();
   }, [op]);
-  return <Animated.View style={[{ height: h, width: w ?? '100%', borderRadius: radius, backgroundColor: C.lineSoft, opacity: op }, style]} />;
+  return (
+    <Animated.View
+      style={[
+        {
+          height: h,
+          width: w ?? '100%',
+          borderRadius: radius,
+          backgroundColor: C.lineSoft,
+          opacity: op,
+        },
+        style,
+      ]}
+    />
+  );
 }
 
-export function EmptyState({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
+export function EmptyState({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
   return (
     <View style={{ alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 32 }}>
       <H2 center>{title}</H2>
@@ -548,9 +1147,23 @@ export function EmptyState({ title, description, action }: { title: string; desc
 
 export function ErrorText({ error, retry }: { error: unknown; retry?: () => void }) {
   if (!error) return null;
-  const msg = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : 'Une erreur est survenue.';
+  const msg =
+    error && typeof error === 'object' && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : 'Une erreur est survenue.';
   return (
-    <View accessibilityRole="alert" style={{ borderWidth: 1, borderColor: C.dangerLine, backgroundColor: C.cancelBg, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 13, gap: 5 }}>
+    <View
+      accessibilityRole="alert"
+      style={{
+        borderWidth: 1,
+        borderColor: C.dangerLine,
+        backgroundColor: C.cancelBg,
+        borderRadius: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 13,
+        gap: 5,
+      }}
+    >
       <Tx size={11.5} weight={500} color={C.danger} lh={15.5}>
         {msg}
       </Tx>
@@ -578,7 +1191,17 @@ export function Alert({ icon, children }: { icon?: LucideIcon; children: ReactNo
 }
 
 /** Grille 2/3/4 colonnes (design .g2 .g3 .g4) : rangées de N cellules égales. */
-export function Grid({ cols, gap, children, style }: { cols: 2 | 3 | 4; gap?: number; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function Grid({
+  cols,
+  gap,
+  children,
+  style,
+}: {
+  cols: 2 | 3 | 4;
+  gap?: number;
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   const g = gap ?? (cols === 4 ? 8 : 10);
   const items = Children.toArray(children).filter(Boolean);
   const rows: ReactNode[][] = [];
@@ -599,9 +1222,25 @@ export function Grid({ cols, gap, children, style }: { cols: 2 | 3 | 4; gap?: nu
 }
 
 /** Texte-bouton souligné (liens secondaires du design). */
-export function TextLink({ children, onPress, color = C.muted, size = 14, center = true }: { children: ReactNode; onPress: () => void; color?: string; size?: number; center?: boolean }) {
+export function TextLink({
+  children,
+  onPress,
+  color = C.muted,
+  size = 14,
+  center = true,
+}: {
+  children: ReactNode;
+  onPress: () => void;
+  color?: string;
+  size?: number;
+  center?: boolean;
+}) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={{ alignSelf: center ? 'center' : 'flex-start' }}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={{ alignSelf: center ? 'center' : 'flex-start' }}
+    >
       <Tx size={size} color={color} center={center} style={{ textDecorationLine: 'underline' }}>
         {children}
       </Tx>

@@ -54,7 +54,7 @@ import {
 import { Screen } from '@/ui/Screen';
 import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, FONT_SCALE } from '@/theme/design';
 import { GoogleCalendarButton } from './confirme';
 
 export default function BookingDetail() {
@@ -441,7 +441,7 @@ export default function BookingDetail() {
               paddingVertical: 0,
               paddingHorizontal: 0,
               textAlign: 'right',
-              fontSize: 12,
+              fontSize: 12 * FONT_SCALE,
             }}
           />
         </Card>

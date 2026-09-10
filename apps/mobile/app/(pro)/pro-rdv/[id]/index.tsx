@@ -57,7 +57,7 @@ import {
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, FONT_SCALE } from '@/theme/design';
 
 export default function ProBookingDetail() {
   const { id = '' } = useLocalSearchParams<{ id: string }>();
@@ -369,7 +369,7 @@ export default function ProBookingDetail() {
               paddingVertical: 0,
               paddingHorizontal: 0,
               textAlign: 'right',
-              fontSize: 12,
+              fontSize: 12 * FONT_SCALE,
             }}
           />
         </Card>

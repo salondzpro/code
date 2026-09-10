@@ -10,7 +10,8 @@
   /* Échelle « densité Planity » : tout le design est en rem, le root fixe l'échelle globale
      (13 px ≈ 0,81 × la maquette 390 px : texte courant 12 px, titres 23 px, boutons 42 px). */
   html {
-    font-size: 13px;
+    /* Base rem : 13 px du design × 1,1 — tout le texte du projet est en rem, +10 % demandé (lisibilité). */
+    font-size: 14.3px;
     -webkit-text-size-adjust: 100%;
   }
   body {

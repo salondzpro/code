@@ -1,9 +1,10 @@
 /** Typographie du design (.h1 .h2 .h3 .p .s .t3) — Inter, graisses par famille de police. */
 import { Text as RNText, type TextProps } from 'react-native';
-import { C, FONT } from '@/theme/design';
+import { C, FONT, FONT_SCALE } from '@/theme/design';
 
 export type Weight = 400 | 500 | 600 | 700;
-export const fontFor = (w: Weight): string => (w >= 700 ? FONT.bold : w >= 600 ? FONT.semibold : w >= 500 ? FONT.medium : FONT.regular);
+export const fontFor = (w: Weight): string =>
+  w >= 700 ? FONT.bold : w >= 600 ? FONT.semibold : w >= 500 ? FONT.medium : FONT.regular;
 
 export interface TxProps extends TextProps {
   size?: number;
@@ -18,17 +19,29 @@ export interface TxProps extends TextProps {
   upper?: boolean;
 }
 
-export function Tx({ size = 12, weight = 400, color = C.text, lh, ls, mono, center, right, upper, style, ...props }: TxProps) {
+export function Tx({
+  size = 12,
+  weight = 400,
+  color = C.text,
+  lh,
+  ls,
+  mono,
+  center,
+  right,
+  upper,
+  style,
+  ...props
+}: TxProps) {
   return (
     <RNText
       {...props}
       style={[
         {
           fontFamily: fontFor(weight),
-          fontSize: size,
-          lineHeight: lh ?? Math.round(size * 1.4),
+          fontSize: size * FONT_SCALE,
+          lineHeight: Math.round((lh ?? size * 1.4) * FONT_SCALE),
           color,
-          letterSpacing: ls,
+          letterSpacing: ls === undefined ? undefined : ls * FONT_SCALE,
           fontVariant: mono ? ['tabular-nums'] : undefined,
           textAlign: center ? 'center' : right ? 'right' : undefined,
           textTransform: upper ? 'uppercase' : undefined,
@@ -42,7 +55,9 @@ export function Tx({ size = 12, weight = 400, color = C.text, lh, ls, mono, cent
 
 export const H1 = (p: TxProps) => <Tx size={19.5} weight={700} ls={-0.7} lh={22} {...p} />;
 export const H2 = (p: TxProps) => <Tx size={10.5} weight={600} ls={-0.3} lh={14.5} {...p} />;
-export const H3 = (p: TxProps) => <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper {...p} />;
+export const H3 = (p: TxProps) => (
+  <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper {...p} />
+);
 export const P = (p: TxProps) => <Tx size={12} color={C.muted} lh={18} {...p} />;
 export const S = (p: TxProps) => <Tx size={10.5} color={C.muted} lh={14.5} {...p} />;
 export const T3 = (p: TxProps) => <Tx size={10} color={C.subtle} lh={13} {...p} />;

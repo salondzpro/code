@@ -43,7 +43,16 @@ export const CAT: Record<string, { bg: string; line: string; fg: string }> = {
   lasr: { bg: '#FCE8D8', line: '#D88C52', fg: '#8A4B18' },
 };
 
-export const R = { card: 20, cardSm: 16, btn: 16, input: 14, slot: 14, img: 18, pill: 999, sheet: 28 } as const;
+export const R = {
+  card: 20,
+  cardSm: 16,
+  btn: 16,
+  input: 14,
+  slot: 14,
+  img: 18,
+  pill: 999,
+  sheet: 28,
+} as const;
 
 export const FONT = {
   regular: 'Inter_400Regular',
@@ -53,12 +62,48 @@ export const FONT = {
 } as const;
 
 export const SHADOW: Record<'card' | 'sheet' | 'fab' | 'toast' | 'knob' | 'seg', ViewStyle> = {
-  card: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
-  sheet: { shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: -6 }, elevation: 12 },
-  fab: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
-  toast: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
-  knob: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 2 },
-  seg: { shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+  card: {
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  sheet: {
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 12,
+  },
+  fab: {
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  toast: {
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  knob: {
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  seg: {
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
 };
 
 /** Espace réservé sous le contenu quand une feuille basse est affichée (design). */
@@ -68,3 +113,6 @@ export const NAV_PAD = 85;
 
 /** Chiffres à chasse fixe (design .mono). */
 export const MONO: TextStyle = { fontVariant: ['tabular-nums'] };
+
+/** Facteur global de taille de texte (+10 % demandé : « un peu fin et petit ») appliqué par `Tx` et les champs. */
+export const FONT_SCALE = 1.1;

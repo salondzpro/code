@@ -41,7 +41,7 @@ import { DayCell, MonthNav } from '@/ui/DaySelector';
 import { PickerSheet, TimeField, ValueRow } from '@/ui/Pickers';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, FONT_SCALE } from '@/theme/design';
 
 const HORIZON_DAYS = 90;
 const keyFmt = new Intl.DateTimeFormat('en-CA', {
@@ -293,7 +293,7 @@ export default function Closures() {
                   paddingVertical: 0,
                   paddingHorizontal: 0,
                   textAlign: 'right',
-                  fontSize: 12,
+                  fontSize: 12 * FONT_SCALE,
                 }}
               />
             }
