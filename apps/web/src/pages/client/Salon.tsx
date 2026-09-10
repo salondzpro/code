@@ -2,7 +2,7 @@
  * C-F 04 — Page du salon : couverture (retour, favori), nom, catégories — quartier, note, ouverture,
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import {
@@ -91,15 +91,20 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
 }
 
 /** Hauteur réelle de la feuille du bas (bandeau, résumé, bouton) → espace inférieur du contenu, rien n'est masqué. */
-function useSheetHeight(): [React.RefObject<HTMLDivElement | null>, number] {
-  const ref = useRef<HTMLDivElement | null>(null);
+function useSheetHeight(): [(el: HTMLDivElement | null) => void, number] {
   const [h, setH] = useState(SHEET_PAD);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(() => setH(el.getBoundingClientRect().height + 24));
-    ro.observe(el);
-    return () => ro.disconnect();
+  const ro = useRef<ResizeObserver | null>(null);
+  // Ref de rappel : la feuille n'existe qu'une fois le salon chargé, l'observateur s'attache à ce moment-là.
+  const ref = useCallback((el: HTMLDivElement | null) => {
+    ro.current?.disconnect();
+    ro.current = null;
+    if (!el) return;
+    const update = () => setH(Math.ceil(el.getBoundingClientRect().height) + 24);
+    update();
+    if (typeof ResizeObserver !== 'undefined') {
+      ro.current = new ResizeObserver(update);
+      ro.current.observe(el);
+    }
   }, []);
   return [ref, h];
 }
@@ -440,23 +445,24 @@ export function Salon() {
         )}
         {chosen.length > 0 ? (
           <>
-            {/* Résumé sur une ligne, bouton pleine largeur : stable quel que soit le nombre de prestations. */}
+            {/* Prix et résumé à gauche (tronqués si besoin), bouton à droite qui ne se déforme jamais. */}
             <div className="flex items-center justify-between gap-3">
-              <span className="truncate text-[1rem] text-muted">
-                {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)}{' '}
-                au total
-              </span>
-              <span className="whitespace-nowrap text-[1.25rem] font-bold tracking-[-0.4px]">
-                {formatDA(total)}
-              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[1.5rem] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
+                <div className="truncate text-[0.9375rem] text-muted">
+                  {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
+                  {formatDuration(minutes)} au total
+                </div>
+              </div>
+              <Button
+                auto
+                className="flex-none whitespace-nowrap !rounded-full !px-6 !py-4"
+                onClick={() => navigate(`/s/${s.slug}/reserver/quand`)}
+                disabled={cannotBook}
+              >
+                Choisir un créneau
+              </Button>
             </div>
-            <Button
-              className="whitespace-nowrap"
-              onClick={() => navigate(`/s/${s.slug}/reserver/quand`)}
-              disabled={cannotBook}
-            >
-              Choisir un créneau · {formatDA(total)}
-            </Button>
           </>
         ) : (
           <>

@@ -179,7 +179,7 @@ export default function Salon() {
             )}
             {chosen.length > 0 ? (
               <View style={{ gap: 10 }}>
-                {/* Résumé sur une ligne, bouton pleine largeur : stable quel que soit le nombre de prestations. */}
+                {/* Prix et résumé à gauche (tronqués si besoin), bouton à droite qui ne se déforme jamais. */}
                 <View
                   style={{
                     flexDirection: 'row',
@@ -188,20 +188,26 @@ export default function Salon() {
                     gap: 10,
                   }}
                 >
-                  <Tx size={13} color={C.muted} lh={17} numberOfLines={1} style={{ flex: 1 }}>
-                    {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
-                    {formatDuration(minutes)} au total
-                  </Tx>
-                  <Tx size={16} weight={700} ls={-0.4} lh={20}>
-                    {formatDA(total)}
-                  </Tx>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+                      {formatDA(total)}
+                    </Tx>
+                    <Tx size={12} color={C.muted} lh={16} numberOfLines={1}>
+                      {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
+                      {formatDuration(minutes)} au total
+                    </Tx>
+                  </View>
+                  <Button
+                    pill
+                    onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
+                    style={{ paddingHorizontal: 18, paddingVertical: 13, flexShrink: 0 }}
+                    disabled={cannotBook}
+                  >
+                    <Tx size={12} weight={600} color={C.onInk} lh={16} numberOfLines={1}>
+                      Choisir un créneau
+                    </Tx>
+                  </Button>
                 </View>
-                <Button
-                  onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
-                  disabled={cannotBook}
-                >
-                  {`Choisir un créneau · ${formatDA(total)}`}
-                </Button>
               </View>
             ) : (
               <View style={{ gap: 8 }}>
