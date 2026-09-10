@@ -71,6 +71,9 @@ export interface ApiClientOptions {
 
 type Query = Record<string, string | number | boolean | undefined | null>;
 
+/** Tri des avis publics : mieux notés d'abord (défaut) ou plus récents d'abord. */
+export type ReviewSort = 'best' | 'recent';
+
 export interface ReviewItem {
   id: string;
   rating: number;
@@ -95,7 +98,11 @@ export function createApiClient(opts: ApiClientOptions) {
   const doFetch = opts.fetch ?? globalThis.fetch.bind(globalThis);
   const timeoutMs = opts.timeoutMs ?? 15_000;
 
-  async function request<T>(method: string, path: string, init: { query?: Query; body?: unknown; auth?: boolean } = {}): Promise<T> {
+  async function request<T>(
+    method: string,
+    path: string,
+    init: { query?: Query; body?: unknown; auth?: boolean } = {},
+  ): Promise<T> {
     const url = new URL(`${base}/v1${path}`);
     for (const [k, v] of Object.entries(init.query ?? {})) {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
@@ -119,7 +126,11 @@ export function createApiClient(opts: ApiClientOptions) {
     } catch (err) {
       clearTimeout(timer);
       const aborted = (err as Error)?.name === 'AbortError';
-      throw new ApiError(0, aborted ? 'TIMEOUT' : 'NETWORK', aborted ? 'Connexion trop lente. Réessayez.' : 'Pas de connexion. Vérifiez votre réseau.');
+      throw new ApiError(
+        0,
+        aborted ? 'TIMEOUT' : 'NETWORK',
+        aborted ? 'Connexion trop lente. Réessayez.' : 'Pas de connexion. Vérifiez votre réseau.',
+      );
     }
     clearTimeout(timer);
 
@@ -136,12 +147,18 @@ export function createApiClient(opts: ApiClientOptions) {
     if (!res.ok) {
       const body = json as ApiErrorBody | null;
       if (res.status === 401) opts.onUnauthorized?.();
-      throw new ApiError(res.status, body?.error?.code ?? 'HTTP_ERROR', body?.error?.message ?? `Erreur ${res.status}`, body?.error?.details);
+      throw new ApiError(
+        res.status,
+        body?.error?.code ?? 'HTTP_ERROR',
+        body?.error?.message ?? `Erreur ${res.status}`,
+        body?.error?.details,
+      );
     }
     return json as T;
   }
 
-  const get = <T>(path: string, query?: Query, auth = true) => request<T>('GET', path, { query, auth });
+  const get = <T>(path: string, query?: Query, auth = true) =>
+    request<T>('GET', path, { query, auth });
   const post = <T>(path: string, body?: unknown) => request<T>('POST', path, { body });
   const put = <T>(path: string, body?: unknown) => request<T>('PUT', path, { body });
   const patch = <T>(path: string, body?: unknown) => request<T>('PATCH', path, { body });
@@ -152,25 +169,41 @@ export function createApiClient(opts: ApiClientOptions) {
     auth: {
       /** Comptes de démonstration à accès direct : renvoie une vraie session Supabase (sans SMS). */
       devLogin: (body: { phone: string; code: string }) =>
-        request<{ accessToken: string; refreshToken: string; expiresAt: number | null; role: 'client' | 'pro'; phone: string }>('POST', '/auth/dev-login', { body, auth: false }),
+        request<{
+          accessToken: string;
+          refreshToken: string;
+          expiresAt: number | null;
+          role: 'client' | 'pro';
+          phone: string;
+        }>('POST', '/auth/dev-login', { body, auth: false }),
     },
     public: {
       categories: () => get<Category[]>('/categories', undefined, false),
       wilayas: () => get<Wilaya[]>('/wilayas', undefined, false),
-      searchSalons: (q: Partial<SearchSalonsQuery>) => get<Paginated<SalonSummary> & { total: number }>('/salons', q as Query, false),
-      cities: (q: { wilaya?: number; gender?: string; lat?: number; lng?: number; q?: string }) => get<{ items: CityCount[] }>('/salons/cities', q as Query, false),
-      suggest: (q: { q: string; gender?: string; wilaya?: number }) => get<SearchSuggestions>('/salons/suggest', q as Query, false),
+      searchSalons: (q: Partial<SearchSalonsQuery>) =>
+        get<Paginated<SalonSummary> & { total: number }>('/salons', q as Query, false),
+      cities: (q: { wilaya?: number; gender?: string; lat?: number; lng?: number; q?: string }) =>
+        get<{ items: CityCount[] }>('/salons/cities', q as Query, false),
+      suggest: (q: { q: string; gender?: string; wilaya?: number }) =>
+        get<SearchSuggestions>('/salons/suggest', q as Query, false),
       salon: (slug: string) => get<SalonPublic>(`/salons/${encodeURIComponent(slug)}`),
-      availability: (salonId: string, q: AvailabilityQuery) => get<AvailabilityResponse>(`/salons/${salonId}/availability`, q as Query, false),
-      reviews: (salonId: string, offset = 0, limit = 20) => get<Paginated<ReviewItem>>(`/salons/${salonId}/reviews`, { offset, limit }, false),
+      availability: (salonId: string, q: AvailabilityQuery) =>
+        get<AvailabilityResponse>(`/salons/${salonId}/availability`, q as Query, false),
+      reviews: (salonId: string, offset = 0, limit = 20, sort: ReviewSort = 'best') =>
+        get<Paginated<ReviewItem>>(`/salons/${salonId}/reviews`, { offset, limit, sort }, false),
     },
     me: {
       get: () => get<MeResponse>('/me'),
       update: (body: UpdateProfileInput) => patch<Profile>('/me', body),
       setRole: (role: 'client' | 'pro') => post<Profile>('/me/role', { role }),
-      registerPushToken: (body: { token: string; platform: 'ios' | 'android' | 'web'; deviceName?: string }) => post<void>('/me/push-tokens', body),
+      registerPushToken: (body: {
+        token: string;
+        platform: 'ios' | 'android' | 'web';
+        deviceName?: string;
+      }) => post<void>('/me/push-tokens', body),
       removePushToken: (token: string) => del<void>(`/me/push-tokens/${encodeURIComponent(token)}`),
-      notifications: (cursor = 0, limit = 30) => get<NotificationsResponse>('/me/notifications', { cursor, limit }),
+      notifications: (cursor = 0, limit = 30) =>
+        get<NotificationsResponse>('/me/notifications', { cursor, limit }),
       markNotificationsRead: (ids?: string[]) => post<void>('/me/notifications/read', { ids }),
       favorites: () => get<{ items: SalonSummary[] }>('/me/favorites'),
       stats: () => get<MeStats>('/me/stats'),
@@ -179,56 +212,98 @@ export function createApiClient(opts: ApiClientOptions) {
     },
     bookings: {
       create: (body: CreateBookingInput) => post<BookingWithSalon>('/bookings', body),
-      mine: (q: Partial<MyBookingsQuery> = {}) => get<Paginated<BookingWithSalon>>('/me/bookings', q as Query),
+      mine: (q: Partial<MyBookingsQuery> = {}) =>
+        get<Paginated<BookingWithSalon>>('/me/bookings', q as Query),
       get: (id: string) => get<BookingWithSalon>(`/bookings/${id}`),
-      cancel: (id: string, reason?: string) => post<BookingWithSalon>(`/bookings/${id}/cancel`, { reason }),
-      reschedule: (id: string, body: { startsAt: string; staffId?: string | null }) => post<BookingWithSalon>(`/bookings/${id}/reschedule`, body),
-      review: (id: string, body: { rating: number; comment?: string }) => post<Review>(`/bookings/${id}/review`, body),
+      cancel: (id: string, reason?: string) =>
+        post<BookingWithSalon>(`/bookings/${id}/cancel`, { reason }),
+      reschedule: (id: string, body: { startsAt: string; staffId?: string | null }) =>
+        post<BookingWithSalon>(`/bookings/${id}/reschedule`, body),
+      review: (id: string, body: { rating: number; comment?: string }) =>
+        post<Review>(`/bookings/${id}/review`, body),
     },
     pro: {
       salon: () => get<{ salon: SalonOwnerView | null }>('/pro/salon'),
       createSalon: (body: CreateSalonInput) => post<SalonOwnerView>('/pro/salon', body),
       updateSalon: (body: UpdateSalonInput) => patch<SalonOwnerView>('/pro/salon', body),
-      setPhotos: (photos: { url: string }[]) => put<SalonOwnerView>('/pro/salon/photos', { photos }),
+      setPhotos: (photos: { url: string }[]) =>
+        put<SalonOwnerView>('/pro/salon/photos', { photos }),
       setHours: (body: SetOpeningHoursInput) => put<SalonOwnerView>('/pro/salon/hours', body),
       stats: () => get<ProDashboardStats>('/pro/stats'),
-      statsRange: (from: string, to: string) => get<ProStatsRange>('/pro/stats/range', { from, to }),
-      slugCheck: (name: string) => get<{ slug: string; available: boolean }>('/pro/salon/slug-check', { name }),
+      statsRange: (from: string, to: string) =>
+        get<ProStatsRange>('/pro/stats/range', { from, to }),
+      slugCheck: (name: string) =>
+        get<{ slug: string; available: boolean }>('/pro/salon/slug-check', { name }),
       services: {
         create: (body: CreateServiceInput) => post<Service>('/pro/services', body),
-        update: (id: string, body: UpdateServiceInput) => patch<Service>(`/pro/services/${id}`, body),
-        remove: (id: string) => del<{ deleted: boolean; deactivated: boolean }>(`/pro/services/${id}`),
+        update: (id: string, body: UpdateServiceInput) =>
+          patch<Service>(`/pro/services/${id}`, body),
+        remove: (id: string) =>
+          del<{ deleted: boolean; deactivated: boolean }>(`/pro/services/${id}`),
         reorder: (ids: string[]) => put<void>('/pro/services/reorder', { ids }),
-        setPhotos: (id: string, photos: { url: string }[]) => put<void>(`/pro/services/${id}/photos`, { photos }),
+        setPhotos: (id: string, photos: { url: string }[]) =>
+          put<void>(`/pro/services/${id}/photos`, { photos }),
       },
       staff: {
-        create: (body: { displayName: string; avatarUrl?: string | null; allServices?: boolean; serviceIds?: string[] }) => post<Staff>('/pro/staff', body),
-        update: (id: string, body: Partial<{ displayName: string; phone: string | null; avatarUrl: string | null; isActive: boolean; sortOrder: number; allServices: boolean; serviceIds: string[] }>) => patch<Staff>(`/pro/staff/${id}`, body),
+        create: (body: {
+          displayName: string;
+          avatarUrl?: string | null;
+          allServices?: boolean;
+          serviceIds?: string[];
+        }) => post<Staff>('/pro/staff', body),
+        update: (
+          id: string,
+          body: Partial<{
+            displayName: string;
+            phone: string | null;
+            avatarUrl: string | null;
+            isActive: boolean;
+            sortOrder: number;
+            allServices: boolean;
+            serviceIds: string[];
+          }>,
+        ) => patch<Staff>(`/pro/staff/${id}`, body),
         remove: (id: string) => del<{ deleted: boolean; deactivated: boolean }>(`/pro/staff/${id}`),
         hours: (id: string) => get<StaffHour[]>(`/pro/staff/${id}/hours`),
-        setHours: (id: string, hours: { dayOfWeek: number; startsAt: string; endsAt: string }[]) => put<void>(`/pro/staff/${id}/hours`, { hours }),
+        setHours: (id: string, hours: { dayOfWeek: number; startsAt: string; endsAt: string }[]) =>
+          put<void>(`/pro/staff/${id}/hours`, { hours }),
       },
       clients: {
-        list: (q: { q?: string; cursor?: string; limit?: number } = {}) => get<Paginated<ProClient> & { total: number; blockedCount: number }>('/pro/clients', q as Query),
+        list: (q: { q?: string; cursor?: string; limit?: number } = {}) =>
+          get<Paginated<ProClient> & { total: number; blockedCount: number }>(
+            '/pro/clients',
+            q as Query,
+          ),
         one: (key: string) => get<ProClient>(`/pro/clients/${encodeURIComponent(key)}`),
         block: (body: BlockClientInput) => post<void>('/pro/clients/block', body),
         unblock: (body: BlockClientInput) => post<void>('/pro/clients/unblock', body),
-        history: (key: string, cursor?: string, limit = 50) => get<Paginated<ProClientHistoryItem>>(`/pro/clients/${encodeURIComponent(key)}/history`, { cursor, limit }),
-        setNotes: (key: string, notes: string) => put<void>(`/pro/clients/${encodeURIComponent(key)}/notes`, { notes }),
+        history: (key: string, cursor?: string, limit = 50) =>
+          get<Paginated<ProClientHistoryItem>>(`/pro/clients/${encodeURIComponent(key)}/history`, {
+            cursor,
+            limit,
+          }),
+        setNotes: (key: string, notes: string) =>
+          put<void>(`/pro/clients/${encodeURIComponent(key)}/notes`, { notes }),
       },
       blocks: {
-        list: (from?: string, to?: string) => get<{ items: TimeBlock[] }>('/pro/blocks', { from, to }),
+        list: (from?: string, to?: string) =>
+          get<{ items: TimeBlock[] }>('/pro/blocks', { from, to }),
         create: (body: CreateTimeBlockInput) => post<TimeBlock>('/pro/blocks', body),
         remove: (id: string) => del<void>(`/pro/blocks/${id}`),
       },
       bookings: {
-        list: (q: Partial<ListBookingsQuery> = {}) => get<Paginated<BookingWithStaff>>('/pro/bookings', q as Query),
+        list: (q: Partial<ListBookingsQuery> = {}) =>
+          get<Paginated<BookingWithStaff>>('/pro/bookings', q as Query),
         pending: () => get<Paginated<BookingWithStaff>>('/pro/bookings/pending'),
         get: (id: string) => get<BookingWithStaff>(`/pro/bookings/${id}`),
-        createWalkIn: (body: CreateWalkInBookingInput) => post<BookingWithStaff>('/pro/bookings', body),
-        setStatus: (id: string, status: 'confirmed' | 'completed' | 'no_show') => post<BookingWithStaff>(`/pro/bookings/${id}/status`, { status }),
-        cancel: (id: string, reason?: string, late?: boolean) => post<BookingWithStaff>(`/pro/bookings/${id}/cancel`, { reason, late }),
-        reschedule: (id: string, body: { startsAt: string; staffId?: string | null }) => post<BookingWithStaff>(`/pro/bookings/${id}/reschedule`, body),
+        createWalkIn: (body: CreateWalkInBookingInput) =>
+          post<BookingWithStaff>('/pro/bookings', body),
+        setStatus: (id: string, status: 'confirmed' | 'completed' | 'no_show') =>
+          post<BookingWithStaff>(`/pro/bookings/${id}/status`, { status }),
+        cancel: (id: string, reason?: string, late?: boolean) =>
+          post<BookingWithStaff>(`/pro/bookings/${id}/cancel`, { reason, late }),
+        reschedule: (id: string, body: { startsAt: string; staffId?: string | null }) =>
+          post<BookingWithStaff>(`/pro/bookings/${id}/reschedule`, body),
       },
     },
   };

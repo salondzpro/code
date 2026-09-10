@@ -663,7 +663,8 @@ try {
     await c.getByRole('button', { name: 'Envoyer mon avis' }).click();
     await c.waitForURL(/\/rendez-vous\?scope=past/);
     await c.goto(WEB + `/s/${slug}`);
-    await c.getByRole('tab', { name: 'Infos' }).click();
+    await c.getByRole('tab', { name: /^Avis/ }).click();
+    await c.getByRole('button', { name: 'Mieux notés' }).waitFor();
     await c.getByText(/Hygiène — Très bien/).waitFor();
     await shot(c, 'client-salon-avis');
   });

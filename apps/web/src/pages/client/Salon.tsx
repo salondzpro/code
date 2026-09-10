@@ -13,6 +13,7 @@ import {
   useSalon,
   useSalonReviewsInfinite,
   useToggleFavorite,
+  type ReviewSort,
 } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
@@ -23,17 +24,28 @@ import {
   formatDZPhone,
   wilayaName,
   groupServices,
+  formatDateShortDZ,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
-import { BottomSheet, Button, I, IconButton, Img, LinkButton, Segmented } from '@/components/ui';
+import {
+  BottomSheet,
+  Button,
+  I,
+  IconButton,
+  Img,
+  LinkButton,
+  Segmented,
+  Pill,
+  Skeleton,
+} from '@/components/ui';
 import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import type { SalonPublic } from '@salondz/types';
 
-type Tab = 'services' | 'works' | 'infos';
+type Tab = 'services' | 'works' | 'infos' | 'avis';
 
 /** « Ouvert · ferme à 19:00 » / « Fermé · ouvre demain 09:00 ». */
 export function openingStatus(s: SalonPublic): { open: boolean; label: string } {
@@ -66,7 +78,9 @@ export function Salon() {
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
-  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10);
+  // Avis : mieux notés d'abord (puis plus récents), ou plus récents ; pagination « Voir plus d'avis ».
+  const [sort, setSort] = useState<ReviewSort>('best');
+  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
   const reviewItems = pagesItems(reviews.data);
   const [tab, setTab] = useState<Tab>('services');
 
@@ -131,9 +145,14 @@ export function Salon() {
         </div>
         <div className="flex flex-wrap gap-2.5">
           {s.ratingCount > 0 && (
-            <span className="pill soft !text-[0.9375rem] !font-semibold">
+            <button
+              type="button"
+              className="pill soft !text-[0.9375rem] !font-semibold"
+              onClick={() => setTab('avis')}
+              aria-label={`${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`}
+            >
               ★ {formatRating(s.ratingAvg)} · {s.ratingCount} avis
-            </span>
+            </button>
           )}
           <span className={`badge md !text-[0.9375rem] ${status.open ? 'b-ok' : 'b-nu'}`}>
             <span className="dot" />
@@ -150,6 +169,7 @@ export function Salon() {
             { value: 'services', label: 'Prestations' },
             { value: 'works', label: 'Réalisations' },
             { value: 'infos', label: 'Infos' },
+            { value: 'avis', label: s.ratingCount ? `Avis · ${s.ratingCount}` : 'Avis' },
           ]}
         />
 
@@ -235,28 +255,65 @@ export function Salon() {
                 </div>
               )}
             </div>
-            {reviewItems.length > 0 && (
-              <div className="flex flex-col gap-2.5">
-                <span className="h3">Avis</span>
-                {reviewItems.map((r) => (
-                  <div key={r.id} className="crd sm !gap-1">
-                    <span className="text-[0.9375rem] font-semibold">
-                      {'★'.repeat(r.rating)}
-                      <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span> ·{' '}
-                      {r.authorName}
-                    </span>
-                    {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
-                  </div>
-                ))}
-                <LoadMore
-                  hasMore={reviews.hasNextPage}
-                  loading={reviews.isFetchingNextPage}
-                  onMore={() => void reviews.fetchNextPage()}
-                  label="Voir plus d'avis"
-                  auto={false}
-                />
+          </div>
+        )}
+        {tab === 'avis' && (
+          <div className="flex flex-col gap-3">
+            {s.ratingCount > 0 ? (
+              <div className="crd !flex-row !items-center !gap-4">
+                <span className="text-[2.5rem] font-bold leading-none tracking-[-1px]">
+                  {formatRating(s.ratingAvg)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[1.125rem] font-semibold">
+                    {'★'.repeat(Math.round(s.ratingAvg))}
+                    <span className="text-disabled">{'★'.repeat(5 - Math.round(s.ratingAvg))}</span>
+                  </span>
+                  <span className="block text-[0.9375rem] text-muted">
+                    {s.ratingCount} avis vérifié{s.ratingCount > 1 ? 's' : ''} · après rendez-vous
+                  </span>
+                </span>
+              </div>
+            ) : (
+              <p className="p py-3 text-center">
+                Pas encore d'avis : soyez le premier après votre rendez-vous.
+              </p>
+            )}
+            {s.ratingCount > 0 && (
+              <div className="pills -mx-5 px-5" role="group" aria-label="Trier les avis">
+                <Pill lg on={sort === 'best'} onClick={() => setSort('best')}>
+                  Mieux notés
+                </Pill>
+                <Pill lg on={sort === 'recent'} onClick={() => setSort('recent')}>
+                  Plus récents
+                </Pill>
               </div>
             )}
+            {reviews.isPending && s.ratingCount > 0 && (
+              <Skeleton className="h-[6rem] w-full !rounded-[1.25rem]" />
+            )}
+            {reviewItems.map((r) => (
+              <div key={r.id} className="crd !gap-1.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[1.0625rem] font-semibold">
+                    {'★'.repeat(r.rating)}
+                    <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span>
+                  </span>
+                  <span className="text-[0.8125rem] text-muted">
+                    {formatDateShortDZ(r.createdAt)}
+                  </span>
+                </div>
+                <span className="text-[1rem] font-semibold">{r.authorName}</span>
+                {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
+              </div>
+            ))}
+            <LoadMore
+              hasMore={reviews.hasNextPage}
+              loading={reviews.isFetchingNextPage}
+              onMore={() => void reviews.fetchNextPage()}
+              label="Voir plus d'avis"
+              auto={false}
+            />
           </div>
         )}
       </div>

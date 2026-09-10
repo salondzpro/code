@@ -1,8 +1,20 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { WILAYAS } from '@salondz/constants';
-import { availabilityQuerySchema, citiesQuerySchema, searchSalonsQuerySchema, suggestQuerySchema, uuid } from '@salondz/validation';
-import type { AvailabilityResponse, Category, CityCount, SalonSummary, SearchSuggestions } from '@salondz/types';
+import {
+  availabilityQuerySchema,
+  citiesQuerySchema,
+  searchSalonsQuerySchema,
+  suggestQuerySchema,
+  uuid,
+} from '@salondz/validation';
+import type {
+  AvailabilityResponse,
+  Category,
+  CityCount,
+  SalonSummary,
+  SearchSuggestions,
+} from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
@@ -34,20 +46,34 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
   /** Quartiers / villes avec nombre de professionnels (design « Localisation »). */
   app.get('/salons/cities', { schema: { querystring: citiesQuerySchema } }, async (req, reply) => {
     const q = req.query;
-    const res = await db.rpc('salon_cities', { p_wilaya: q.wilaya ?? null, p_gender: q.gender ?? null, p_lat: q.lat ?? null, p_lng: q.lng ?? null, p_q: q.q ?? null });
+    const res = await db.rpc('salon_cities', {
+      p_wilaya: q.wilaya ?? null,
+      p_gender: q.gender ?? null,
+      p_lat: q.lat ?? null,
+      p_lng: q.lng ?? null,
+      p_q: q.q ?? null,
+    });
     const rows = unwrap(res) as Record<string, unknown>[];
     reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
     return { items: rows.map((r) => camelize<CityCount>(r)) };
   });
 
   /** Suggestions de recherche (design C-H 07) : salons, prestations et lieux, en une requête. */
-  app.get('/salons/suggest', { schema: { querystring: suggestQuerySchema } }, async (req, reply) => {
-    const q = req.query;
-    const res = await db.rpc('search_suggest', { p_q: q.q, p_gender: q.gender ?? null, p_wilaya: q.wilaya ?? null });
-    const data = unwrap(res) as SearchSuggestions | null;
-    reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
-    return data ?? { salons: [], services: [], places: [] };
-  });
+  app.get(
+    '/salons/suggest',
+    { schema: { querystring: suggestQuerySchema } },
+    async (req, reply) => {
+      const q = req.query;
+      const res = await db.rpc('search_suggest', {
+        p_q: q.q,
+        p_gender: q.gender ?? null,
+        p_wilaya: q.wilaya ?? null,
+      });
+      const data = unwrap(res) as SearchSuggestions | null;
+      reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
+      return data ?? { salons: [], services: [], places: [] };
+    },
+  );
 
   /** Marketplace (design C-H 01 / C-F 01) : rayon, tri, dispo du jour, prestations phares, prochains créneaux. */
   app.get('/salons', { schema: { querystring: searchSalonsQuerySchema } }, async (req, reply) => {
@@ -70,33 +96,53 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     const rows = unwrap(res) as Record<string, unknown>[];
     let total = 0;
     const items: SalonSummary[] = rows.map((r) => {
-      const { top_services, next_slots, next_available, is_open_now, total_count, ...rest } = r as Record<string, unknown> & {
-        top_services: { name: string; priceDa: number }[] | null;
-        next_slots: string[] | null;
-        next_available: { date: string; slots: string[] } | null;
-        is_open_now: boolean;
-        total_count: number | string;
-      };
+      const { top_services, next_slots, next_available, is_open_now, total_count, ...rest } =
+        r as Record<string, unknown> & {
+          top_services: { name: string; priceDa: number }[] | null;
+          next_slots: string[] | null;
+          next_available: { date: string; slots: string[] } | null;
+          is_open_now: boolean;
+          total_count: number | string;
+        };
       total = Number(total_count);
-      const s = camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
-      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], nextAvailable: next_available ?? null, photoUrls: [], isOpenNow: !!is_open_now };
+      const s =
+        camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(
+          rest,
+        );
+      return {
+        ...s,
+        ratingAvg: Number(s.ratingAvg),
+        topServices: top_services ?? [],
+        nextSlots: next_slots ?? [],
+        nextAvailable: next_available ?? null,
+        photoUrls: [],
+        isOpenNow: !!is_open_now,
+      };
     });
     // Remplace les 3 créneaux « un par heure » de search_salons_v2 par les 5 premiers créneaux libres.
     await attachNextSlots(items, req.log);
     reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
-    return { items, total, nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null };
+    return {
+      items,
+      total,
+      nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null,
+    };
   });
 
-  app.get('/salons/:slug', { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } }, async (req, reply) => {
-    const salon = await loadPublicBySlug(req.params.slug);
-    if (!salon) throw notFound('Salon');
-    const { ownerId, ...pub } = salon;
-    const isOwner = req.user?.id === ownerId;
-    if (!pub.isPublished && !isOwner) throw notFound('Salon');
-    reply.header('Cache-Control', isOwner ? 'private, no-cache' : CACHE_PUBLIC_SHORT);
-    // L'identifiant du propriétaire (compte auth) ne fait pas partie de la fiche publique.
-    return pub;
-  });
+  app.get(
+    '/salons/:slug',
+    { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } },
+    async (req, reply) => {
+      const salon = await loadPublicBySlug(req.params.slug);
+      if (!salon) throw notFound('Salon');
+      const { ownerId, ...pub } = salon;
+      const isOwner = req.user?.id === ownerId;
+      if (!pub.isPublished && !isOwner) throw notFound('Salon');
+      reply.header('Cache-Control', isOwner ? 'private, no-cache' : CACHE_PUBLIC_SHORT);
+      // L'identifiant du propriétaire (compte auth) ne fait pas partie de la fiche publique.
+      return pub;
+    },
+  );
 
   app.get(
     '/salons/:id/availability',
@@ -104,16 +150,29 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req, reply) => {
       const { id } = req.params;
       const { date, staffId } = req.query;
-      const serviceIds = [...(req.query.serviceIds ? req.query.serviceIds.split(',') : []), ...(req.query.serviceId ? [req.query.serviceId] : [])].filter((v, i, a) => a.indexOf(v) === i);
+      const serviceIds = [
+        ...(req.query.serviceIds ? req.query.serviceIds.split(',') : []),
+        ...(req.query.serviceId ? [req.query.serviceId] : []),
+      ].filter((v, i, a) => a.indexOf(v) === i);
 
       const [salonRes, totalRes] = await Promise.all([
-        db.from('salons').select('id, slot_interval_minutes, is_published, owner_id, booking_horizon_days').eq('id', id).maybeSingle(),
+        db
+          .from('salons')
+          .select('id, slot_interval_minutes, is_published, owner_id, booking_horizon_days')
+          .eq('id', id)
+          .maybeSingle(),
         db.rpc('services_total', { p_salon_id: id, p_service_ids: serviceIds }).single(),
       ]);
       const salon = unwrap(salonRes, 'Salon');
       if (!salon.is_published && req.user?.id !== salon.owner_id) throw notFound('Salon');
-      const total = unwrap(totalRes) as { duration_minutes: number; price_da: number; label: string | null; n: number };
-      if (total.n !== serviceIds.length) throw badRequest('SERVICE_INACTIVE', "Ce service n'est plus proposé.");
+      const total = unwrap(totalRes) as {
+        duration_minutes: number;
+        price_da: number;
+        label: string | null;
+        n: number;
+      };
+      if (total.n !== serviceIds.length)
+        throw badRequest('SERVICE_INACTIVE', "Ce service n'est plus proposé.");
       // Durée totale des prestations enchaînées → une seule source de vérité (SQL)
       const slotsRes = await db.rpc('get_available_slots_for', {
         p_salon_id: id,
@@ -171,18 +230,28 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         querystring: z.object({
           limit: z.coerce.number().int().min(1).max(50).default(20),
           offset: z.coerce.number().int().min(0).default(0),
+          /** 'best' = mieux notés d'abord (puis plus récents) ; 'recent' = plus récents d'abord. */
+          sort: z.enum(['best', 'recent']).default('best'),
         }),
       },
     },
     async (req, reply) => {
-      const { limit, offset } = req.query;
-      const res = await db
+      const { limit, offset, sort } = req.query;
+      let q = db
         .from('reviews')
         .select('id, rating, comment, created_at, profiles(full_name)')
-        .eq('salon_id', req.params.id)
+        .eq('salon_id', req.params.id);
+      if (sort === 'best') q = q.order('rating', { ascending: false });
+      const res = await q
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
-      const rows = unwrap(res) as unknown as { id: string; rating: number; comment: string | null; created_at: string; profiles: { full_name: string | null } | null }[];
+      const rows = unwrap(res) as unknown as {
+        id: string;
+        rating: number;
+        comment: string | null;
+        created_at: string;
+        profiles: { full_name: string | null } | null;
+      }[];
       const items = rows.map((r) => ({
         id: r.id,
         rating: r.rating,

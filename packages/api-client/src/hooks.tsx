@@ -1,8 +1,21 @@
 import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import type { AvailabilityQuery, CreateBookingInput, ListBookingsQuery, MyBookingsQuery, SearchSalonsQuery } from '@salondz/validation';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
+import type {
+  AvailabilityQuery,
+  CreateBookingInput,
+  ListBookingsQuery,
+  MyBookingsQuery,
+  SearchSalonsQuery,
+} from '@salondz/validation';
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
+import type { ReviewSort } from './client';
 
 interface ApiContextValue {
   api: ApiClient;
@@ -28,16 +41,23 @@ export const useSalonSearch = (q: Partial<SearchSalonsQuery>, enabled = true) =>
   const { queries } = useApi();
   return useQuery({ ...queries.salons(q), enabled });
 };
-export const useSalonCities = (q: Parameters<ReturnType<typeof useApi>['api']['public']['cities']>[0], enabled = true) => {
+export const useSalonCities = (
+  q: Parameters<ReturnType<typeof useApi>['api']['public']['cities']>[0],
+  enabled = true,
+) => {
   const { queries } = useApi();
   return useQuery({ ...queries.cities(q), enabled });
 };
-export const useSalonSuggest = (q: Parameters<ReturnType<typeof useApi>['api']['public']['suggest']>[0], enabled = true) => {
+export const useSalonSuggest = (
+  q: Parameters<ReturnType<typeof useApi>['api']['public']['suggest']>[0],
+  enabled = true,
+) => {
   const { queries } = useApi();
   return useQuery({ ...queries.suggest(q), enabled, placeholderData: (prev) => prev });
 };
 export const useSalon = (slug: string) => useQuery(useApi().queries.salon(slug));
-export const useAvailability = (salonId: string, q: AvailabilityQuery) => useQuery(useApi().queries.availability(salonId, q));
+export const useAvailability = (salonId: string, q: AvailabilityQuery) =>
+  useQuery(useApi().queries.availability(salonId, q));
 export const useSalonReviews = (salonId: string) => useQuery(useApi().queries.reviews(salonId));
 
 // ---------- Compte ----------
@@ -64,7 +84,8 @@ export const useMeStats = (enabled = true) => {
 };
 
 // ---------- Listes paginées (« Voir plus ») : jamais tout charger d'un coup ----------
-const nextOffset = (last: { nextCursor: string | null }) => (last.nextCursor ? Number(last.nextCursor) : undefined);
+const nextOffset = (last: { nextCursor: string | null }) =>
+  last.nextCursor ? Number(last.nextCursor) : undefined;
 /** Concatène les pages d'une liste paginée. */
 export function pagesItems<T>(data: { pages: { items: T[] }[] } | undefined): T[] {
   return data ? data.pages.flatMap((p) => p.items) : [];
@@ -87,7 +108,12 @@ export const useMyBookingsInfinite = (q: Partial<MyBookingsQuery> = {}, enabled 
   const { api } = useApi();
   return useInfiniteQuery({
     queryKey: [...queryKeys.myBookings(q), 'pages'] as const,
-    queryFn: ({ pageParam }) => api.bookings.mine({ ...q, cursor: pageParam ? String(pageParam) : undefined, limit: q.limit ?? PAGE_SIZE }),
+    queryFn: ({ pageParam }) =>
+      api.bookings.mine({
+        ...q,
+        cursor: pageParam ? String(pageParam) : undefined,
+        limit: q.limit ?? PAGE_SIZE,
+      }),
     initialPageParam: 0,
     getNextPageParam: nextOffset,
     staleTime: 30_000,
@@ -105,11 +131,11 @@ export const useNotificationsInfinite = (enabled = true) => {
     enabled,
   });
 };
-export const useSalonReviewsInfinite = (salonId: string, size = 10) => {
+export const useSalonReviewsInfinite = (salonId: string, size = 10, sort: ReviewSort = 'best') => {
   const { api } = useApi();
   return useInfiniteQuery({
-    queryKey: [...queryKeys.reviews(salonId), 'pages', size] as const,
-    queryFn: ({ pageParam }) => api.public.reviews(salonId, pageParam, size),
+    queryKey: [...queryKeys.reviews(salonId), 'pages', size, sort] as const,
+    queryFn: ({ pageParam }) => api.public.reviews(salonId, pageParam, size, sort),
     initialPageParam: 0,
     getNextPageParam: nextOffset,
     staleTime: 5 * 60_000,
@@ -139,7 +165,8 @@ export function useToggleFavorite() {
   const { api } = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ salonId, on }: { salonId: string; on: boolean }) => (on ? api.me.addFavorite(salonId) : api.me.removeFavorite(salonId)),
+    mutationFn: ({ salonId, on }: { salonId: string; on: boolean }) =>
+      on ? api.me.addFavorite(salonId) : api.me.removeFavorite(salonId),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.favorites }),
   });
 }
@@ -168,7 +195,8 @@ export function useCancelBooking() {
   const { api } = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason?: string }) => api.bookings.cancel(id, reason),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      api.bookings.cancel(id, reason),
     onSuccess: (b) => {
       qc.setQueryData(queryKeys.booking(b.id), b);
       invalidateClientBookings(qc);
@@ -180,7 +208,15 @@ export function useRescheduleBooking() {
   const { api } = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, startsAt, staffId }: { id: string; startsAt: string; staffId?: string | null }) => api.bookings.reschedule(id, { startsAt, staffId }),
+    mutationFn: ({
+      id,
+      startsAt,
+      staffId,
+    }: {
+      id: string;
+      startsAt: string;
+      staffId?: string | null;
+    }) => api.bookings.reschedule(id, { startsAt, staffId }),
     onSuccess: (b) => {
       qc.setQueryData(queryKeys.booking(b.id), b);
       invalidateClientBookings(qc);
@@ -192,7 +228,15 @@ export function useCreateReview() {
   const { api } = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookingId, rating, comment }: { bookingId: string; rating: number; comment?: string }) => api.bookings.review(bookingId, { rating, comment }),
+    mutationFn: ({
+      bookingId,
+      rating,
+      comment,
+    }: {
+      bookingId: string;
+      rating: number;
+      comment?: string;
+    }) => api.bookings.review(bookingId, { rating, comment }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: queryKeys.reviews(r.salonId) });
       qc.invalidateQueries({ queryKey: ['salon'] }); // note moyenne / nombre d'avis
@@ -223,7 +267,8 @@ export const useProPendingBookings = (enabled = true) => {
   return useQuery({ ...queries.pro.pending(), enabled });
 };
 export const useProBooking = (id: string) => useQuery(useApi().queries.pro.booking(id));
-export const useProBlocks = (from?: string, to?: string) => useQuery(useApi().queries.pro.blocks(from, to));
+export const useProBlocks = (from?: string, to?: string) =>
+  useQuery(useApi().queries.pro.blocks(from, to));
 export const useStaffHours = (id: string, enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.staffHours(id), enabled: enabled && !!id });
@@ -257,10 +302,21 @@ export function useProServiceMutations() {
   const done = () => qc.invalidateQueries({ queryKey: queryKeys.pro.salon });
   return {
     create: useMutation({ mutationFn: api.pro.services.create, onSuccess: done }),
-    update: useMutation({ mutationFn: ({ id, ...body }: { id: string } & Parameters<typeof api.pro.services.update>[1]) => api.pro.services.update(id, body), onSuccess: done }),
+    update: useMutation({
+      mutationFn: ({
+        id,
+        ...body
+      }: { id: string } & Parameters<typeof api.pro.services.update>[1]) =>
+        api.pro.services.update(id, body),
+      onSuccess: done,
+    }),
     remove: useMutation({ mutationFn: api.pro.services.remove, onSuccess: done }),
     reorder: useMutation({ mutationFn: api.pro.services.reorder, onSuccess: done }),
-    setPhotos: useMutation({ mutationFn: ({ id, photos }: { id: string; photos: { url: string }[] }) => api.pro.services.setPhotos(id, photos), onSuccess: done }),
+    setPhotos: useMutation({
+      mutationFn: ({ id, photos }: { id: string; photos: { url: string }[] }) =>
+        api.pro.services.setPhotos(id, photos),
+      onSuccess: done,
+    }),
   };
 }
 
@@ -270,7 +326,12 @@ export const useProClientsInfinite = (q = '', enabled = true) => {
   const { api } = useApi();
   return useInfiniteQuery({
     queryKey: [...queryKeys.pro.clientsPage(q), 'pages'] as const,
-    queryFn: ({ pageParam }) => api.pro.clients.list({ q: q || undefined, cursor: pageParam ? String(pageParam) : undefined, limit: 30 }),
+    queryFn: ({ pageParam }) =>
+      api.pro.clients.list({
+        q: q || undefined,
+        cursor: pageParam ? String(pageParam) : undefined,
+        limit: 30,
+      }),
     initialPageParam: 0,
     getNextPageParam: nextOffset,
     staleTime: 60_000,
@@ -281,7 +342,8 @@ export const useProClientHistoryInfinite = (key: string, enabled = true) => {
   const { api } = useApi();
   return useInfiniteQuery({
     queryKey: [...queryKeys.pro.clientHistory(key), 'pages'] as const,
-    queryFn: ({ pageParam }) => api.pro.clients.history(key, pageParam ? String(pageParam) : undefined, 50),
+    queryFn: ({ pageParam }) =>
+      api.pro.clients.history(key, pageParam ? String(pageParam) : undefined, 50),
     initialPageParam: 0,
     getNextPageParam: nextOffset,
     staleTime: 60_000,
@@ -299,7 +361,11 @@ export function useProClientMutations() {
   return {
     block: useMutation({ mutationFn: api.pro.clients.block, onSuccess: done }),
     unblock: useMutation({ mutationFn: api.pro.clients.unblock, onSuccess: done }),
-    setNotes: useMutation({ mutationFn: ({ key, notes }: { key: string; notes: string }) => api.pro.clients.setNotes(key, notes), onSuccess: done }),
+    setNotes: useMutation({
+      mutationFn: ({ key, notes }: { key: string; notes: string }) =>
+        api.pro.clients.setNotes(key, notes),
+      onSuccess: done,
+    }),
   };
 }
 
@@ -309,10 +375,20 @@ export function useProStaffMutations() {
   const done = () => qc.invalidateQueries({ queryKey: queryKeys.pro.salon });
   return {
     create: useMutation({ mutationFn: api.pro.staff.create, onSuccess: done }),
-    update: useMutation({ mutationFn: ({ id, ...body }: { id: string } & Parameters<typeof api.pro.staff.update>[1]) => api.pro.staff.update(id, body), onSuccess: done }),
+    update: useMutation({
+      mutationFn: ({ id, ...body }: { id: string } & Parameters<typeof api.pro.staff.update>[1]) =>
+        api.pro.staff.update(id, body),
+      onSuccess: done,
+    }),
     remove: useMutation({ mutationFn: api.pro.staff.remove, onSuccess: done }),
     setHours: useMutation({
-      mutationFn: ({ id, hours }: { id: string; hours: Parameters<typeof api.pro.staff.setHours>[1] }) => api.pro.staff.setHours(id, hours),
+      mutationFn: ({
+        id,
+        hours,
+      }: {
+        id: string;
+        hours: Parameters<typeof api.pro.staff.setHours>[1];
+      }) => api.pro.staff.setHours(id, hours),
       onSuccess: (_r, v) => qc.invalidateQueries({ queryKey: queryKeys.pro.staffHours(v.id) }),
     }),
   };
@@ -343,9 +419,28 @@ export function useProBookingMutations() {
   };
   return {
     createWalkIn: useMutation({ mutationFn: api.pro.bookings.createWalkIn, onSuccess: done }),
-    setStatus: useMutation({ mutationFn: ({ id, status }: { id: string; status: 'confirmed' | 'completed' | 'no_show' }) => api.pro.bookings.setStatus(id, status), onSuccess: done }),
-    cancel: useMutation({ mutationFn: ({ id, reason, late }: { id: string; reason?: string; late?: boolean }) => api.pro.bookings.cancel(id, reason, late), onSuccess: done }),
-    reschedule: useMutation({ mutationFn: ({ id, startsAt, staffId }: { id: string; startsAt: string; staffId?: string | null }) => api.pro.bookings.reschedule(id, { startsAt, staffId }), onSuccess: done }),
+    setStatus: useMutation({
+      mutationFn: ({ id, status }: { id: string; status: 'confirmed' | 'completed' | 'no_show' }) =>
+        api.pro.bookings.setStatus(id, status),
+      onSuccess: done,
+    }),
+    cancel: useMutation({
+      mutationFn: ({ id, reason, late }: { id: string; reason?: string; late?: boolean }) =>
+        api.pro.bookings.cancel(id, reason, late),
+      onSuccess: done,
+    }),
+    reschedule: useMutation({
+      mutationFn: ({
+        id,
+        startsAt,
+        staffId,
+      }: {
+        id: string;
+        startsAt: string;
+        staffId?: string | null;
+      }) => api.pro.bookings.reschedule(id, { startsAt, staffId }),
+      onSuccess: done,
+    }),
     invalidateAll: () => invalidatePro(qc),
   };
 }
