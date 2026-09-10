@@ -6,7 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { RotateCcw, Star } from 'lucide-react-native';
-import { useMyBookings } from '@salondz/api-client';
+import { pagesItems, useMyBookingsInfinite } from '@salondz/api-client';
+import { LoadMore } from '@/ui/LoadMore';
 import { formatDA, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useRealtimeMyBookings } from '@/lib/realtime';
@@ -39,9 +40,9 @@ export default function Bookings() {
     if (params.scope === 'past' || params.scope === 'upcoming' || params.scope === 'cancelled')
       setScope(params.scope);
   }, [params.scope]);
-  const list = useMyBookings({ scope });
+  const list = useMyBookingsInfinite({ scope });
   useRealtimeMyBookings(user?.id);
-  const items = list.data?.items ?? [];
+  const items = pagesItems(list.data);
 
   return (
     <Screen
@@ -242,6 +243,7 @@ export default function Bookings() {
           </Card>
         ))
       )}
+      <LoadMore hasMore={list.hasNextPage} loading={list.isFetchingNextPage} onMore={() => void list.fetchNextPage()} label="Voir plus de rendez-vous" />
     </Screen>
   );
 }

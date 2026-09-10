@@ -6,10 +6,17 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { DoorClosed, DoorOpen } from 'lucide-react-native';
 import { useProBlockMutations, useProBlocks } from '@salondz/api-client';
-import { addDaysToKey, dayOfWeekFromKey, formatTimeDZ, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
+import {
+  addDaysToKey,
+  dayOfWeekFromKey,
+  formatTimeDZ,
+  localDateTimeToISO,
+  toLocalDateKey,
+} from '@salondz/constants';
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from '@/lib/errors';
 import { Alert, Button, Card, I, Tx } from './index';
+import { PickerSheet } from './Pickers';
 import { C } from '@/theme/design';
 
 const DURATIONS = [1, 2, 3] as const;
@@ -19,8 +26,15 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
   const blocks = useProBlocks(today, addDaysToKey(today, 1));
   const { create, remove } = useProBlockMutations();
   const [error, setError] = useState<string | null>(null);
+  const [choosing, setChoosing] = useState(false);
   const now = Date.now();
-  const active = (blocks.data?.items ?? []).find((t) => !t.staffId && new Date(t.startsAt).getTime() <= now && new Date(t.endsAt).getTime() > now && (t.reason ?? '').startsWith('Fermé'));
+  const active = (blocks.data?.items ?? []).find(
+    (t) =>
+      !t.staffId &&
+      new Date(t.startsAt).getTime() <= now &&
+      new Date(t.endsAt).getTime() > now &&
+      (t.reason ?? '').startsWith('Fermé'),
+  );
   const closesAt = openingHours
     .filter((h) => h.dayOfWeek === dayOfWeekFromKey(today) && !h.isClosed)
     .map((h) => h.closesAt)
@@ -42,7 +56,16 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
     return (
       <Card gap={10} style={{ backgroundColor: C.cancelBg, borderColor: C.dangerLine }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.danger, alignItems: 'center', justifyContent: 'center' }}>
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: C.danger,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <I icon={DoorClosed} size={14.5} color="#fff" />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -79,32 +102,64 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
 
   return (
     <Card gap={10}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-        <Tx size={13} weight={600} lh={17}>
-          Fermer maintenant
-        </Tx>
-        <Tx size={10.5} color={C.muted} lh={14}>
-          Plus de réservations en ligne
-        </Tx>
-      </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {canCloseDay && (
-          <Button sm pill disabled={create.isPending} onPress={() => void closeFor(untilClose!, `Fermé · jusqu'à ${closesAt}`)} style={{ paddingHorizontal: 13, paddingVertical: 9 }}>
-            <I icon={DoorClosed} size={13} color="#fff" />
-            <Tx size={11.5} weight={600} color="#fff" lh={15}>
-              Jusqu'à la fermeture ({closesAt})
-            </Tx>
-          </Button>
-        )}
-        {DURATIONS.map((h) => (
-          <Button key={h} sm pill variant="g" disabled={create.isPending} onPress={() => void closeFor(new Date(now + h * 3_600_000).toISOString(), `Fermé · ${h} h`)} style={{ paddingHorizontal: 13, paddingVertical: 9 }}>
-            <Tx size={11.5} weight={600} lh={15}>
-              {h} h
-            </Tx>
-          </Button>
-        ))}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+        }}
+      >
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Tx size={13} weight={600} lh={17}>
+            Fermeture immédiate
+          </Tx>
+          <Tx size={10.5} color={C.muted} lh={14}>
+            Plus de réservations en ligne pendant un moment
+          </Tx>
+        </View>
+        <Button
+          auto
+          sm
+          disabled={create.isPending}
+          loading={create.isPending}
+          onPress={() => setChoosing(true)}
+        >
+          <I icon={DoorClosed} size={14} color={C.onInk} />
+          <Tx size={11.5} weight={600} color={C.onInk} lh={15}>
+            Fermer
+          </Tx>
+        </Button>
       </View>
       {error && <Alert>{error}</Alert>}
+      <PickerSheet
+        open={choosing}
+        onClose={() => setChoosing(false)}
+        title="Fermer jusqu'à quand ?"
+        value={null}
+        onChange={(v) => {
+          setChoosing(false);
+          if (v === 'day' && untilClose) void closeFor(untilClose, `Fermé · jusqu'à ${closesAt}`);
+          else if (v !== 'day')
+            void closeFor(new Date(now + Number(v) * 3_600_000).toISOString(), `Fermé · ${v} h`);
+        }}
+        options={[
+          ...(canCloseDay
+            ? [
+                {
+                  value: 'day',
+                  label: `Jusqu'à la fermeture (${closesAt})`,
+                  hint: "Plus aucune réservation aujourd'hui",
+                },
+              ]
+            : []),
+          ...DURATIONS.map((h) => ({
+            value: String(h),
+            label: `Pendant ${h} h`,
+            hint: `Réouverture à ${formatTimeDZ(new Date(now + h * 3_600_000))}`,
+          })),
+        ]}
+      />
     </Card>
   );
 }

@@ -6,7 +6,8 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react';
-import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
+import { pagesItems, useFavorites, useSalon, useSalonReviewsInfinite, useToggleFavorite } from '@salondz/api-client';
+import { LoadMore } from '@/components/LoadMore';
 import {
   DAY_LABELS_FR,
   WEEK_DAYS,
@@ -58,7 +59,8 @@ export function Salon() {
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
-  const reviews = useSalonReviews(salon.data?.id ?? '');
+  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10);
+  const reviewItems = pagesItems(reviews.data);
   const [tab, setTab] = useState<Tab>('services');
 
   if (salon.isPending) return <Splash />;
@@ -235,10 +237,10 @@ export function Salon() {
                 </div>
               )}
             </div>
-            {reviews.data && reviews.data.items.length > 0 && (
+            {reviewItems.length > 0 && (
               <div className="flex flex-col gap-2.5">
                 <span className="h3">Avis</span>
-                {reviews.data.items.slice(0, 5).map((r) => (
+                {reviewItems.map((r) => (
                   <div key={r.id} className="crd sm !gap-1">
                     <span className="text-[0.9375rem] font-semibold">
                       {'★'.repeat(r.rating)}
@@ -248,6 +250,7 @@ export function Salon() {
                     {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
                   </div>
                 ))}
+                <LoadMore hasMore={reviews.hasNextPage} loading={reviews.isFetchingNextPage} onMore={() => void reviews.fetchNextPage()} label="Voir plus d'avis" auto={false} />
               </div>
             )}
           </div>

@@ -8,16 +8,43 @@ import React, { useEffect, useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ban, CalendarPlus, ChevronRight, Mail, Phone, ShieldCheck } from 'lucide-react-native';
-import { useProBookingMutations, useProClientHistory, useProClientMutations, useProClients } from '@salondz/api-client';
+import {
+  pagesItems,
+  useProBookingMutations,
+  useProClient,
+  useProClientHistoryInfinite,
+  useProClientMutations,
+} from '@salondz/api-client';
+import { LoadMore } from '@/ui/LoadMore';
 import { formatDA, formatDZPhone, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import type { ProClientHistoryItem } from '@salondz/types';
 import { errorText } from '@/lib/errors';
-import { Alert, Avatar, Badge, Button, Grid, H1, I, Input, ListCard, P, Row, S, SectionLabel, Skeleton, StatusBadge, TopBar, Tx } from '@/ui';
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Button,
+  Grid,
+  H1,
+  I,
+  Input,
+  ListCard,
+  P,
+  Row,
+  S,
+  SectionLabel,
+  Skeleton,
+  StatusBadge,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
-function historyStatusLabel(h: Pick<ProClientHistoryItem, 'status' | 'cancelledBy'>): string | null {
+function historyStatusLabel(
+  h: Pick<ProClientHistoryItem, 'status' | 'cancelledBy'>,
+): string | null {
   if (h.status !== 'cancelled') return null;
   if (h.cancelledBy === 'client') return 'Annulé par le client';
   if (h.cancelledBy === 'salon') return 'Annulé par le salon';
@@ -26,7 +53,14 @@ function historyStatusLabel(h: Pick<ProClientHistoryItem, 'status' | 'cancelledB
 
 function Stat({ v, l }: { v: number | string; l: string }) {
   return (
-    <View style={{ backgroundColor: C.fill, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
+    <View
+      style={{
+        backgroundColor: C.fill,
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+      }}
+    >
       <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} numberOfLines={1}>
         {String(v)}
       </Tx>
@@ -40,11 +74,12 @@ function Stat({ v, l }: { v: number | string; l: string }) {
 export default function ClientDetail() {
   const { key = '' } = useLocalSearchParams<{ key: string }>();
   const router = useRouter();
-  const clients = useProClients();
-  const history = useProClientHistory(key, !!key);
+  const client = useProClient(key);
+  const history = useProClientHistoryInfinite(key, !!key);
+  const historyItems = pagesItems(history.data);
   const { block, unblock, setNotes } = useProClientMutations();
   const { setStatus } = useProBookingMutations();
-  const c = (clients.data?.items ?? []).find((x) => x.clientKey === key) ?? null;
+  const c = client.data ?? null;
   const [notes, setNotesDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -52,7 +87,7 @@ export default function ClientDetail() {
     if (c) setNotesDraft(c.notes ?? '');
   }, [c?.notes, c]);
 
-  if (clients.isPending) return <Splash />;
+  if (client.isPending) return <Splash />;
   if (!c)
     return (
       <Screen gap={13}>
@@ -85,7 +120,14 @@ export default function ClientDetail() {
 
   return (
     <Screen gap={13}>
-      <TopBar backTo="/(pro)/(tabs)/clients" right={<Badge tone={c.blocked ? 'cn' : 'ok'}>{c.blocked ? 'Client bloqué' : 'Client actif'}</Badge>} />
+      <TopBar
+        backTo="/(pro)/(tabs)/clients"
+        right={
+          <Badge tone={c.blocked ? 'cn' : 'ok'}>
+            {c.blocked ? 'Client bloqué' : 'Client actif'}
+          </Badge>
+        }
+      />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
         <Avatar name={c.name} size={52} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -93,7 +135,11 @@ export default function ClientDetail() {
             {c.name}
           </H1>
           {c.phone && (
-            <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(`tel:${c.phone}`)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => void Linking.openURL(`tel:${c.phone}`)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+            >
               <I icon={Phone} size={12} color={C.muted} />
               <Tx size={12} color={C.muted} lh={16}>
                 {formatDZPhone(c.phone)}
@@ -101,7 +147,11 @@ export default function ClientDetail() {
             </Pressable>
           )}
           {c.email && (
-            <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(`mailto:${c.email}`)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => void Linking.openURL(`mailto:${c.email}`)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+            >
               <I icon={Mail} size={12} color={C.muted} />
               <Tx size={12} color={C.muted} lh={16} numberOfLines={1}>
                 {c.email}
@@ -120,29 +170,68 @@ export default function ClientDetail() {
         <Stat v={c.lastAt ? formatDateShortDZ(c.lastAt) : '—'} l="dernière visite" />
       </Grid>
       <ListCard>
-        <Row py={10} chevron={false} right={<Tx size={12} color={C.muted} lh={16}>{c.nextAt ? `${formatDateShortDZ(c.nextAt)} · ${formatTimeDZ(c.nextAt)}` : 'Aucun'}</Tx>}>
+        <Row
+          py={10}
+          chevron={false}
+          right={
+            <Tx size={12} color={C.muted} lh={16}>
+              {c.nextAt ? `${formatDateShortDZ(c.nextAt)} · ${formatTimeDZ(c.nextAt)}` : 'Aucun'}
+            </Tx>
+          }
+        >
           <Tx size={12} lh={16}>
             Prochain rendez-vous
           </Tx>
         </Row>
       </ListCard>
 
-      <SectionLabel right={<S>{saved ? 'Enregistré' : 'Jamais visibles du client'}</S>}>Notes privées</SectionLabel>
-      <Input multiline value={notes} onChangeText={setNotesDraft} maxLength={2000} placeholder="Préférences, allergies, remarques… visibles uniquement par vous." accessibilityLabel="Notes privées" />
-      <Button variant="g" sm onPress={() => void saveNotes()} disabled={setNotes.isPending || notes.trim() === (c.notes ?? '')} loading={setNotes.isPending}>
+      <SectionLabel right={<S>{saved ? 'Enregistré' : 'Jamais visibles du client'}</S>}>
+        Notes privées
+      </SectionLabel>
+      <Input
+        multiline
+        value={notes}
+        onChangeText={setNotesDraft}
+        maxLength={2000}
+        placeholder="Préférences, allergies, remarques… visibles uniquement par vous."
+        accessibilityLabel="Notes privées"
+      />
+      <Button
+        variant="g"
+        sm
+        onPress={() => void saveNotes()}
+        disabled={setNotes.isPending || notes.trim() === (c.notes ?? '')}
+        loading={setNotes.isPending}
+      >
         Enregistrer les notes
       </Button>
 
       <Grid cols={2} gap={8}>
-        <Button disabled={c.blocked} onPress={() => router.push({ pathname: '/pro-rdv/nouveau', params: { name: c.name, ...(c.phone ? { phone: c.phone } : {}) } } as never)}>
+        <Button
+          disabled={c.blocked}
+          onPress={() =>
+            router.push({
+              pathname: '/pro-rdv/nouveau',
+              params: { name: c.name, ...(c.phone ? { phone: c.phone } : {}) },
+            } as never)
+          }
+        >
           <I icon={CalendarPlus} size={14} color="#fff" />
           <Tx size={12} weight={600} color="#fff" lh={16}>
             Rendez-vous
           </Tx>
         </Button>
         {canBlock ? (
-          <Button variant={c.blocked ? 'g' : 'd'} onPress={() => void toggleBlock()} disabled={block.isPending || unblock.isPending}>
-            <I icon={c.blocked ? ShieldCheck : Ban} size={14} color={c.blocked ? C.text : C.danger} />
+          <Button
+            variant={c.blocked ? 'g' : 'd'}
+            onPress={() => void toggleBlock()}
+            disabled={block.isPending || unblock.isPending}
+          >
+            <I
+              icon={c.blocked ? ShieldCheck : Ban}
+              size={14}
+              color={c.blocked ? C.text : C.danger}
+            />
             <Tx size={12} weight={600} lh={16} color={c.blocked ? C.text : C.danger}>
               {c.blocked ? 'Débloquer' : 'Bloquer le client'}
             </Tx>
@@ -151,7 +240,12 @@ export default function ClientDetail() {
           <View />
         )}
       </Grid>
-      {c.blocked && <Alert>Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.</Alert>}
+      {c.blocked && (
+        <Alert>
+          Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre
+          salon.
+        </Alert>
+      )}
       {error && <Alert>{error}</Alert>}
 
       <SectionLabel>Historique</SectionLabel>
@@ -159,13 +253,31 @@ export default function ClientDetail() {
         <Skeleton h={130} radius={16} />
       ) : (
         <ListCard>
-          {(history.data?.items ?? []).map((h, i, arr) => {
+          {historyItems.map((h, i, arr) => {
             const past = new Date(h.startsAt).getTime() < now;
             const pendingOutcome = h.status === 'confirmed' && past;
             const cancelLabel = historyStatusLabel(h);
             return (
-              <View key={h.id} style={{ paddingVertical: 10, gap: 8, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: C.lineSoft }}>
-                <Pressable accessibilityRole="link" accessibilityLabel={`${h.serviceName} ${formatDateShortDZ(h.startsAt)}`} onPress={() => router.push(`/pro-rdv/${h.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <View
+                key={h.id}
+                style={{
+                  paddingVertical: 10,
+                  gap: 8,
+                  borderBottomWidth: i < arr.length - 1 ? 1 : 0,
+                  borderBottomColor: C.lineSoft,
+                }}
+              >
+                <Pressable
+                  accessibilityRole="link"
+                  accessibilityLabel={`${h.serviceName} ${formatDateShortDZ(h.startsAt)}`}
+                  onPress={() => router.push(`/pro-rdv/${h.id}` as never)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                  }}
+                >
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Tx size={10.5} color={C.muted} lh={14}>
                       {formatDateShortDZ(h.startsAt)}
@@ -179,16 +291,29 @@ export default function ClientDetail() {
                     </Tx>
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    {cancelLabel ? <Badge tone="cn">{cancelLabel}</Badge> : <StatusBadge status={h.status} />}
+                    {cancelLabel ? (
+                      <Badge tone="cn">{cancelLabel}</Badge>
+                    ) : (
+                      <StatusBadge status={h.status} />
+                    )}
                     <I icon={ChevronRight} size={14} color={C.disabled} />
                   </View>
                 </Pressable>
                 {pendingOutcome && (
                   <Grid cols={2} gap={8}>
-                    <Button sm disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: h.id, status: 'completed' })}>
+                    <Button
+                      sm
+                      disabled={setStatus.isPending}
+                      onPress={() => setStatus.mutate({ id: h.id, status: 'completed' })}
+                    >
                       Terminé
                     </Button>
-                    <Button sm variant="g" disabled={setStatus.isPending} onPress={() => setStatus.mutate({ id: h.id, status: 'no_show' })}>
+                    <Button
+                      sm
+                      variant="g"
+                      disabled={setStatus.isPending}
+                      onPress={() => setStatus.mutate({ id: h.id, status: 'no_show' })}
+                    >
                       Client absent
                     </Button>
                   </Grid>
@@ -196,13 +321,19 @@ export default function ClientDetail() {
               </View>
             );
           })}
-          {(history.data?.items ?? []).length === 0 && (
+          {historyItems.length === 0 && (
             <View style={{ paddingVertical: 10 }}>
               <P>Aucun rendez-vous pour l'instant.</P>
             </View>
           )}
         </ListCard>
       )}
+      <LoadMore
+        hasMore={history.hasNextPage}
+        loading={history.isFetchingNextPage}
+        onMore={() => void history.fetchNextPage()}
+        label="Voir plus de rendez-vous"
+      />
     </Screen>
   );
 }

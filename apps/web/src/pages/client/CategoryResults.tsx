@@ -1,7 +1,8 @@
 /** C-H 06 / C-F 02 — Résultats d'une catégorie : filtres rapides (dispo aujourd'hui, < 2 km, prix, note). */
 import { useState } from 'react';
 import { useParams } from 'react-router';
-import { useMe, useSalonSearch } from '@salondz/api-client';
+import { pagesItems, useMe, useSalonSearchInfinite } from '@salondz/api-client';
+import { LoadMore } from '@/components/LoadMore';
 import { categoryLabel } from '@salondz/constants';
 import { useLocationPrefs } from '@/lib/clientPrefs';
 import { Pill, Skeleton, TopBar } from '@/components/ui';
@@ -18,7 +19,7 @@ export function CategoryResults() {
   const [near, setNear] = useState(false);
   const [sort, setSort] = useState<'relevance' | 'price_asc' | 'rating'>('relevance');
 
-  const query = useSalonSearch({
+  const query = useSalonSearchInfinite({
     gender: market,
     category,
     city: prefs.city ?? undefined,
@@ -28,11 +29,11 @@ export function CategoryResults() {
     radiusKm: prefs.lat != null ? (near ? 2 : prefs.radiusKm) : undefined,
     availableToday: today ? '1' : undefined,
     sort,
-    limit: 30,
-  } as Parameters<typeof useSalonSearch>[0]);
+    limit: 20,
+  } as Parameters<typeof useSalonSearchInfinite>[0]);
 
-  const items = query.data?.items ?? [];
-  const total = query.data?.total ?? items.length;
+  const items = pagesItems(query.data);
+  const total = query.data?.pages[0]?.total ?? items.length;
   const noun = market === 'men' ? 'barbiers' : 'salons';
 
   return (
@@ -73,6 +74,7 @@ export function CategoryResults() {
               <SalonListCard key={s.id} salon={s} />
             ))}
           </div>
+          <LoadMore hasMore={query.hasNextPage} loading={query.isFetchingNextPage} onMore={() => void query.fetchNextPage()} label="Voir plus de professionnels" />
         </>
       )}
     </Screen>

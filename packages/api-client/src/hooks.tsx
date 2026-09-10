@@ -1,5 +1,5 @@
 import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { AvailabilityQuery, CreateBookingInput, ListBookingsQuery, MyBookingsQuery, SearchSalonsQuery } from '@salondz/validation';
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
@@ -58,6 +58,64 @@ export const useMyBookings = (q: Partial<MyBookingsQuery> = {}, enabled = true) 
   return useQuery({ ...queries.myBookings(q), enabled });
 };
 export const useBooking = (id: string) => useQuery(useApi().queries.booking(id));
+export const useMeStats = (enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.meStats(), enabled });
+};
+
+// ---------- Listes paginées (« Voir plus ») : jamais tout charger d'un coup ----------
+const nextOffset = (last: { nextCursor: string | null }) => (last.nextCursor ? Number(last.nextCursor) : undefined);
+/** Concatène les pages d'une liste paginée. */
+export function pagesItems<T>(data: { pages: { items: T[] }[] } | undefined): T[] {
+  return data ? data.pages.flatMap((p) => p.items) : [];
+}
+export const PAGE_SIZE = 20;
+
+export const useSalonSearchInfinite = (q: Partial<SearchSalonsQuery>, enabled = true) => {
+  const { api } = useApi();
+  const size = q.limit ?? PAGE_SIZE;
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.salons({ ...q, limit: size }), 'pages'] as const,
+    queryFn: ({ pageParam }) => api.public.searchSalons({ ...q, limit: size, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 2 * 60_000,
+    enabled,
+  });
+};
+export const useMyBookingsInfinite = (q: Partial<MyBookingsQuery> = {}, enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.myBookings(q), 'pages'] as const,
+    queryFn: ({ pageParam }) => api.bookings.mine({ ...q, cursor: pageParam ? String(pageParam) : undefined, limit: q.limit ?? PAGE_SIZE }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 30_000,
+    enabled,
+  });
+};
+export const useNotificationsInfinite = (enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.notifications, 'pages'] as const,
+    queryFn: ({ pageParam }) => api.me.notifications(pageParam, 30),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 30_000,
+    enabled,
+  });
+};
+export const useSalonReviewsInfinite = (salonId: string, size = 10) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.reviews(salonId), 'pages', size] as const,
+    queryFn: ({ pageParam }) => api.public.reviews(salonId, pageParam, size),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 5 * 60_000,
+    enabled: !!salonId,
+  });
+};
 
 export function useUpdateProfile() {
   const { api } = useApi();
@@ -207,6 +265,29 @@ export function useProServiceMutations() {
 }
 
 export const useProClients = () => useQuery(useApi().queries.pro.clients());
+export const useProClient = (key: string) => useQuery(useApi().queries.pro.client(key));
+export const useProClientsInfinite = (q = '', enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.pro.clientsPage(q), 'pages'] as const,
+    queryFn: ({ pageParam }) => api.pro.clients.list({ q: q || undefined, cursor: pageParam ? String(pageParam) : undefined, limit: 30 }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 60_000,
+    enabled,
+  });
+};
+export const useProClientHistoryInfinite = (key: string, enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.pro.clientHistory(key), 'pages'] as const,
+    queryFn: ({ pageParam }) => api.pro.clients.history(key, pageParam ? String(pageParam) : undefined, 50),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 60_000,
+    enabled: enabled && !!key,
+  });
+};
 export const useProClientHistory = (key: string, enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.clientHistory(key), enabled });

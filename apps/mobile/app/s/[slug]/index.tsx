@@ -7,7 +7,8 @@ import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react-native';
-import { useFavorites, useSalon, useSalonReviews, useToggleFavorite } from '@salondz/api-client';
+import { pagesItems, useFavorites, useSalon, useSalonReviewsInfinite, useToggleFavorite } from '@salondz/api-client';
+import { LoadMore } from '@/ui/LoadMore';
 import { DAY_LABELS_FR, WEEK_DAYS, categoryLabel, formatDA, formatDZPhone, wilayaName, groupServices } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatDuration, formatRating } from '@/lib/format';
@@ -27,7 +28,8 @@ export default function Salon() {
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
-  const reviews = useSalonReviews(salon.data?.id ?? '');
+  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10);
+  const reviewItems = pagesItems(reviews.data);
   const [tab, setTab] = useState<Tab>('services');
 
   if (salon.isPending) return <Splash />;
@@ -196,10 +198,10 @@ export default function Salon() {
                 </Row>
               )}
             </ListCard>
-            {reviews.data && reviews.data.items.length > 0 && (
+            {reviewItems.length > 0 && (
               <View style={{ gap: 8 }}>
                 <SectionLabel>Avis</SectionLabel>
-                {reviews.data.items.slice(0, 5).map((r) => (
+                {reviewItems.map((r) => (
                   <Card key={r.id} sm gap={3}>
                     <Tx size={12} weight={600} lh={16}>
                       {'★'.repeat(r.rating)}
@@ -211,6 +213,7 @@ export default function Salon() {
                     {!!r.comment && <P>{r.comment}</P>}
                   </Card>
                 ))}
+                <LoadMore hasMore={reviews.hasNextPage} loading={reviews.isFetchingNextPage} onMore={() => void reviews.fetchNextPage()} label="Voir plus d'avis" />
               </View>
             )}
           </View>

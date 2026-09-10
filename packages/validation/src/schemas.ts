@@ -203,6 +203,18 @@ export const updateBookingStatusSchema = z.object({
   status: z.enum(['confirmed', 'completed', 'no_show']),
 });
 
+/** Clients du salon : recherche et pagination côté serveur (jamais toute la base). */
+export const proClientsQuerySchema = z.object({
+  q: z.string().trim().max(80).optional(),
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+});
+export type ProClientsQuery = z.infer<typeof proClientsQuerySchema>;
+export const pageQuerySchema = z.object({
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+
 export const listBookingsQuerySchema = z.object({
   from: p.dateKey.optional(),
   to: p.dateKey.optional(),

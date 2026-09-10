@@ -12,7 +12,14 @@ import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react-native';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
+import {
+  MARKET_LABELS_FR,
+  categoriesForMarket,
+  formatDA,
+  reverseGeocode,
+  spreadOverlaps,
+  type CategoryId,
+} from '@salondz/constants';
 import type { SalonSummary } from '@salondz/types';
 import { useLocationPrefs } from '@/lib/prefs';
 import { formatKm } from '@/lib/format';
@@ -23,6 +30,8 @@ import { MapCanvas, type MapArea, type MapCanvasHandle, type MapState } from '@/
 import { C, R, SHADOW } from '@/theme/design';
 
 const ALGIERS = { lat: 36.7538, lng: 3.0588 };
+/** Au-delà de ce rayon (carte trop dézoomée), on n'interroge pas le serveur : « Zoomez pour voir les professionnels ». */
+const MAX_ZONE_KM = 20;
 type Pin = SalonSummary & { lat?: number | null; lng?: number | null };
 
 export default function MapView() {
@@ -35,24 +44,38 @@ export default function MapView() {
   const [category, setCategory] = useState(params.category ?? '');
   const [selected, setSelected] = useState<string | null>(null);
   /** Zone recherchée : celle des préférences, ou celle choisie en déplaçant la carte. */
-  const [area, setArea] = useState<MapArea | null>(prefs.lat != null ? { lat: prefs.lat, lng: prefs.lng!, radiusKm: prefs.radiusKm } : null);
-  const [pending, setPending] = useState<MapArea | null>(null);
+  const [area, setArea] = useState<MapArea | null>(
+    prefs.lat != null ? { lat: prefs.lat, lng: prefs.lng!, radiusKm: prefs.radiusKm } : null,
+  );
+  const moveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locating, setLocating] = useState(false);
   const mapRef = useRef<MapCanvasHandle>(null);
 
-  const query = useSalonSearch({
-    gender: market,
-    category: category ? (category as CategoryId) : undefined,
-    city: area ? undefined : (prefs.city ?? undefined),
-    wilaya: area || prefs.city ? undefined : prefs.wilaya,
-    lat: area?.lat,
-    lng: area?.lng,
-    radiusKm: area?.radiusKm,
-    availableToday: prefs.availableToday || undefined,
-    ratingMin: prefs.ratingMin ?? undefined,
-    limit: 50,
-  });
-  const items = useMemo(() => spreadOverlaps(((query.data?.items ?? []) as Pin[]).filter((s): s is Pin & { lat: number; lng: number } => s.lat != null && s.lng != null)), [query.data]);
+  const tooWide = !!area && area.radiusKm > MAX_ZONE_KM;
+  const query = useSalonSearch(
+    {
+      gender: market,
+      category: category ? (category as CategoryId) : undefined,
+      city: area ? undefined : (prefs.city ?? undefined),
+      wilaya: area || prefs.city ? undefined : prefs.wilaya,
+      lat: area?.lat,
+      lng: area?.lng,
+      radiusKm: area?.radiusKm,
+      availableToday: prefs.availableToday || undefined,
+      ratingMin: prefs.ratingMin ?? undefined,
+      limit: 50,
+    },
+    !tooWide,
+  );
+  const items = useMemo(
+    () =>
+      spreadOverlaps(
+        ((query.data?.items ?? []) as Pin[]).filter(
+          (s): s is Pin & { lat: number; lng: number } => s.lat != null && s.lng != null,
+        ),
+      ),
+    [query.data],
+  );
   const cardsRef = useRef<ScrollView>(null);
   const { width: winWidth } = useWindowDimensions();
   const cardW = Math.max(0, winWidth - 32);
@@ -60,11 +83,17 @@ export default function MapView() {
 
   const state = useMemo<MapState>(
     () => ({
-      pins: items.map((s) => ({ id: s.id, lat: s.drawLat, lng: s.drawLng, label: s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name, on: s.id === current?.id })),
+      pins: items.map((s) => ({
+        id: s.id,
+        lat: s.drawLat,
+        lng: s.drawLng,
+        label: s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name,
+        on: s.id === current?.id,
+      })),
       area,
-      fit: !area && !pending,
+      fit: !area,
     }),
-    [items, current?.id, area, pending],
+    [items, current?.id, area],
   );
 
   const select = (id: string, fromCards = false) => {
@@ -75,11 +104,13 @@ export default function MapView() {
     if (!fromCards && idx >= 0) cardsRef.current?.scrollTo({ x: idx * cardW, animated: true });
   };
 
-  const searchHere = () => {
-    if (!pending) return;
-    setArea(pending);
-    setPending(null);
-    setSelected(null);
+  // Zone par zone : chaque déplacement relance la recherche sur la zone visible, après 500 ms de calme.
+  const onMove = (a: MapArea) => {
+    if (moveTimer.current) clearTimeout(moveTimer.current);
+    moveTimer.current = setTimeout(() => {
+      setArea(a);
+      setSelected(null);
+    }, 500);
   };
 
   const locate = async () => {
@@ -88,9 +119,12 @@ export default function MapView() {
       const perm = await Location.requestForegroundPermissionsAsync();
       if (!perm.granted) return;
       const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const a = { lat: Number(p.coords.latitude.toFixed(4)), lng: Number(p.coords.longitude.toFixed(4)), radiusKm: prefs.radiusKm };
+      const a = {
+        lat: Number(p.coords.latitude.toFixed(4)),
+        lng: Number(p.coords.longitude.toFixed(4)),
+        radiusKm: prefs.radiusKm,
+      };
       setArea(a);
-      setPending(null);
       setSelected(null);
       setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
       void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
@@ -107,18 +141,57 @@ export default function MapView() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#EAECEE' }}>
-      <MapCanvas ref={mapRef} state={state} onSelect={select} onMoveEnd={setPending} initialCenter={area ?? ALGIERS} style={{ flex: 1 }} />
+      <MapCanvas
+        ref={mapRef}
+        state={state}
+        onSelect={select}
+        onMoveEnd={onMove}
+        initialCenter={area ?? ALGIERS}
+        style={{ flex: 1 }}
+      />
 
       {/* Barre de recherche + filtres */}
-      <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 16, gap: 10, paddingHorizontal: 16 }} pointerEvents="box-none">
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: insets.top + 16,
+          gap: 10,
+          paddingHorizontal: 16,
+        }}
+        pointerEvents="box-none"
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Pressable accessibilityRole="link" onPress={() => router.push('/recherche')} style={[{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.surface, borderRadius: R.cardSm, paddingVertical: 12, paddingHorizontal: 13 }, SHADOW.card]}>
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => router.push('/recherche')}
+            style={[
+              {
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                backgroundColor: C.surface,
+                borderRadius: R.cardSm,
+                paddingVertical: 12,
+                paddingHorizontal: 13,
+              },
+              SHADOW.card,
+            ]}
+          >
             <I icon={Search} size={18} color={C.subtle} />
             <Tx size={10.5} lh={14} color={C.subtle} numberOfLines={1} style={{ flex: 1 }}>
-              {MARKET_LABELS_FR[market]} · {area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
+              {MARKET_LABELS_FR[market]} ·{' '}
+              {area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
             </Tx>
           </Pressable>
-          <IconButton lg accessibilityLabel="Localisation et rayon" onPress={() => router.push('/localisation')} style={SHADOW.card}>
+          <IconButton
+            lg
+            accessibilityLabel="Localisation et rayon"
+            onPress={() => router.push('/localisation')}
+            style={SHADOW.card}
+          >
             <I icon={SlidersHorizontal} size={16} />
           </IconButton>
         </View>
@@ -127,34 +200,90 @@ export default function MapView() {
             Sans préférence
           </Pill>
           {categoriesForMarket(market).map((c) => (
-            <Pill key={c.id} lg on={category === c.id} onPress={() => setCategory(category === c.id ? '' : c.id)} style={SHADOW.card}>
+            <Pill
+              key={c.id}
+              lg
+              on={category === c.id}
+              onPress={() => setCategory(category === c.id ? '' : c.id)}
+              style={SHADOW.card}
+            >
               {c.labelFr}
             </Pill>
           ))}
         </PillRow>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }} pointerEvents="box-none">
-          <View style={[{ backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 5 }, SHADOW.card]}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          pointerEvents="box-none"
+        >
+          <View
+            style={[
+              {
+                backgroundColor: C.surface,
+                borderRadius: R.pill,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+              },
+              SHADOW.card,
+            ]}
+          >
             <Tx size={10} weight={500} color={C.muted} lh={13}>
-              {query.isFetching ? 'Recherche…' : `${total} ${noun}${total > 1 ? 's' : ''} dans cette zone`}
+              {tooWide
+                ? 'Zoomez pour voir les professionnels'
+                : query.isFetching
+                  ? 'Recherche…'
+                  : `${total} ${noun}${total > 1 ? 's' : ''} dans cette zone`}
             </Tx>
           </View>
-          {pending && (
-            <Button pill onPress={searchHere} style={[{ paddingHorizontal: 13, paddingVertical: 7 }, SHADOW.card]}>
-              Rechercher dans cette zone
-            </Button>
-          )}
         </View>
       </View>
 
-      <IconButton lg accessibilityLabel="Ma position" onPress={() => void locate()} disabled={locating} style={[{ position: 'absolute', right: 16, bottom: 200 + insets.bottom }, SHADOW.card]}>
+      <IconButton
+        lg
+        accessibilityLabel="Ma position"
+        onPress={() => void locate()}
+        disabled={locating}
+        style={[{ position: 'absolute', right: 16, bottom: 200 + insets.bottom }, SHADOW.card]}
+      >
         <I icon={LocateFixed} size={16} color={locating ? C.subtle : C.text} />
       </IconButton>
 
       {/* Feuille : salon sélectionné */}
-      <View style={[{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: C.surface, borderTopLeftRadius: R.sheet, borderTopRightRadius: R.sheet, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 13 + insets.bottom, gap: 11 }, SHADOW.sheet]}>
-        <View style={{ width: 31, height: 4, borderRadius: 2, backgroundColor: C.line, alignSelf: 'center', marginBottom: 3 }} />
+      <View
+        style={[
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: C.surface,
+            borderTopLeftRadius: R.sheet,
+            borderTopRightRadius: R.sheet,
+            paddingTop: 10,
+            paddingHorizontal: 16,
+            paddingBottom: 13 + insets.bottom,
+            gap: 11,
+          },
+          SHADOW.sheet,
+        ]}
+      >
+        <View
+          style={{
+            width: 31,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: C.line,
+            alignSelf: 'center',
+            marginBottom: 3,
+          }}
+        />
         {items.length === 0 ? (
-          <P center>{query.isPending ? 'Chargement…' : 'Aucun salon dans cette zone. Déplacez la carte puis « Rechercher dans cette zone ».'}</P>
+          <P center>
+            {tooWide
+              ? 'Zoomez sur un quartier pour voir les professionnels.'
+              : query.isPending
+                ? 'Chargement…'
+                : 'Aucun salon dans cette zone. Déplacez la carte : la recherche suit la zone visible.'}
+          </P>
         ) : (
           <ScrollView
             ref={cardsRef}
@@ -170,18 +299,43 @@ export default function MapView() {
           >
             {items.map((s) => (
               <View key={s.id} style={{ width: winWidth, paddingHorizontal: 16 }}>
-                <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ backgroundColor: C.surface, borderWidth: 1, borderColor: s.id === current?.id ? C.ink : C.line, borderRadius: R.card, padding: 13, gap: 10 }}>
+                <Pressable
+                  accessibilityRole="link"
+                  accessibilityLabel={s.name}
+                  onPress={() => router.push(`/s/${s.slug}` as never)}
+                  style={{
+                    backgroundColor: C.surface,
+                    borderWidth: 1,
+                    borderColor: s.id === current?.id ? C.ink : C.line,
+                    borderRadius: R.card,
+                    padding: 13,
+                    gap: 10,
+                  }}
+                >
                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
-                    <Img src={s.logoUrl ?? s.coverUrl} radius={13} style={{ width: 78, height: 78 }} />
+                    <Img
+                      src={s.logoUrl ?? s.coverUrl}
+                      radius={13}
+                      style={{ width: 78, height: 78 }}
+                    />
                     <View style={{ flex: 1, minWidth: 0 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          gap: 6,
+                        }}
+                      >
                         <Tx size={14} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
                           {s.name}
                         </Tx>
                         {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
                       </View>
                       <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
-                        {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null].filter(Boolean).join(' · ')}
+                        {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </Tx>
                       <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
                         {s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}
@@ -195,13 +349,29 @@ export default function MapView() {
           </ScrollView>
         )}
         {items.length > 1 && (
-          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}
+          >
             {items.slice(0, 8).map((s) => (
-              <Pressable key={s.id} accessibilityLabel={s.name} onPress={() => select(s.id)} style={{ height: 5, width: s.id === current?.id ? 24 : 6, borderRadius: 2, backgroundColor: s.id === current?.id ? C.ink : C.line }} />
+              <Pressable
+                key={s.id}
+                accessibilityLabel={s.name}
+                onPress={() => select(s.id)}
+                style={{
+                  height: 5,
+                  width: s.id === current?.id ? 24 : 6,
+                  borderRadius: 2,
+                  backgroundColor: s.id === current?.id ? C.ink : C.line,
+                }}
+              />
             ))}
           </View>
         )}
-        <Pressable accessibilityRole="button" onPress={() => (router.canGoBack() ? router.back() : router.replace('/(client)/(tabs)'))} style={{ alignSelf: 'center', paddingVertical: 3 }}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(client)/(tabs)'))}
+          style={{ alignSelf: 'center', paddingVertical: 3 }}
+        >
           <Tx size={12} weight={500} color={C.muted}>
             Retour à la liste
           </Tx>

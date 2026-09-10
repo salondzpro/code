@@ -6,7 +6,7 @@ import {
   updateProfileSchema,
   uuid,
 } from '@salondz/validation';
-import type { Notification, Profile, SalonSummary } from '@salondz/types';
+import type { MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize, snakeize } from '../lib/mappers';
 import { unwrap } from '../lib/errors';
@@ -150,6 +150,21 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   // ---- Favoris ----
+  /** Compteurs du profil (réservations, favoris, avis donnés) : trois COUNT, aucune liste chargée. */
+  app.get('/me/stats', async (req, reply) => {
+    const uid = req.user!.id;
+    const [b, f, r] = await Promise.all([
+      db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', uid).neq('status', 'cancelled'),
+      db.from('favorites').select('salon_id', { count: 'exact', head: true }).eq('user_id', uid),
+      db.from('reviews').select('id', { count: 'exact', head: true }).eq('client_id', uid),
+    ]);
+    if (b.error) throw b.error;
+    if (f.error) throw f.error;
+    if (r.error) throw r.error;
+    reply.header('Cache-Control', 'private, no-store');
+    return { bookings: b.count ?? 0, favorites: f.count ?? 0, reviews: r.count ?? 0 } satisfies MeStats;
+  });
+
   app.get('/me/favorites', async (req, reply) => {
     const res = await db
       .from('favorites')

@@ -14,7 +14,8 @@ import {
   MapPin,
   Search,
 } from 'lucide-react-native';
-import { useMe, useSalonSearch, useUpdateProfile } from '@salondz/api-client';
+import { pagesItems, useMe, useSalonSearchInfinite, useUpdateProfile } from '@salondz/api-client';
+import { LoadMore } from '@/ui/LoadMore';
 import {
   MARKET_LABELS_FR,
   categoriesForMarket,
@@ -64,7 +65,7 @@ export default function Marketplace() {
   const [sortOpen, setSortOpen] = useState(false);
   const [sortDraft, setSortDraft] = useState<SortKey>(prefs.sort);
 
-  const query = useSalonSearch({
+  const query = useSalonSearchInfinite({
     q: q || undefined,
     gender: market,
     category: category ? (category as CategoryId) : undefined,
@@ -76,15 +77,15 @@ export default function Marketplace() {
     sort: prefs.sort,
     availableToday: prefs.availableToday || undefined,
     ratingMin: prefs.ratingMin ?? undefined,
-    limit: 30,
+    limit: 20,
   });
 
   const toggleCategory = (id: string) => setCategory((cur) => (cur === id ? '' : id));
   const swapMarket = () => update.mutate({ market: market === 'men' ? 'women' : 'men' });
-  const all = query.data?.items ?? [];
+  const all = pagesItems(query.data);
   // « Ouvert maintenant » se filtre côté client : l'état d'ouverture est déjà dans chaque carte.
   const items = prefs.openNow ? all.filter((s) => s.isOpenNow) : all;
-  const total = prefs.openNow ? items.length : (query.data?.total ?? items.length);
+  const total = prefs.openNow ? items.length : (query.data?.pages[0]?.total ?? items.length);
 
   const noun = NOUN[market][total > 1 ? 1 : 0];
   // Compteur honnête : « disponibles aujourd'hui » seulement si des créneaux du jour existent dans la page.
@@ -366,6 +367,7 @@ export default function Marketplace() {
               <SalonListCard key={s.id} salon={s} />
             ))}
           </View>
+          <LoadMore hasMore={query.hasNextPage} loading={query.isFetchingNextPage} onMore={() => void query.fetchNextPage()} label="Voir plus de professionnels" />
         </>
       )}
 

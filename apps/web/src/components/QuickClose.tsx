@@ -5,9 +5,16 @@
  * déjà les blocages : rien d'autre à faire côté client.
  */
 import { useState } from 'react';
+import { PickerSheet } from './Picker';
 import { DoorClosed, DoorOpen } from 'lucide-react';
 import { useProBlockMutations, useProBlocks } from '@salondz/api-client';
-import { addDaysToKey, dayOfWeekFromKey, formatTimeDZ, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
+import {
+  addDaysToKey,
+  dayOfWeekFromKey,
+  formatTimeDZ,
+  localDateTimeToISO,
+  toLocalDateKey,
+} from '@salondz/constants';
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from './ErrorMessage';
 import { Button, I } from './ui';
@@ -19,8 +26,15 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
   const blocks = useProBlocks(today, addDaysToKey(today, 1));
   const { create, remove } = useProBlockMutations();
   const [error, setError] = useState<string | null>(null);
+  const [choosing, setChoosing] = useState(false);
   const now = Date.now();
-  const active = (blocks.data?.items ?? []).find((t) => !t.staffId && new Date(t.startsAt).getTime() <= now && new Date(t.endsAt).getTime() > now && (t.reason ?? '').startsWith('Fermé'));
+  const active = (blocks.data?.items ?? []).find(
+    (t) =>
+      !t.staffId &&
+      new Date(t.startsAt).getTime() <= now &&
+      new Date(t.endsAt).getTime() > now &&
+      (t.reason ?? '').startsWith('Fermé'),
+  );
   const closesAt = openingHours
     .filter((h) => h.dayOfWeek === dayOfWeekFromKey(today) && !h.isClosed)
     .map((h) => h.closesAt)
@@ -55,8 +69,12 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
             <I icon={DoorClosed} size={18} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[1rem] font-bold text-cancel-fg">Fermé jusqu'à {formatTimeDZ(active.endsAt)}</span>
-            <span className="block text-[0.8125rem] text-cancel-fg/80">Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.</span>
+            <span className="block text-[1rem] font-bold text-cancel-fg">
+              Fermé jusqu'à {formatTimeDZ(active.endsAt)}
+            </span>
+            <span className="block text-[0.8125rem] text-cancel-fg/80">
+              Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.
+            </span>
           </span>
         </div>
         {error && <p className="text-[0.875rem] text-danger">{error}</p>}
@@ -70,22 +88,45 @@ export function QuickClose({ openingHours }: { openingHours: OpeningHour[] }) {
   return (
     <div className="crd !gap-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[1rem] font-semibold">Fermer maintenant</span>
-        <span className="text-[0.8125rem] text-muted">Plus de réservations en ligne</span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {canCloseDay && (
-          <Button auto sm onClick={() => void closeFor(untilClose!, `Fermé · jusqu'à ${closesAt}`)} disabled={create.isPending}>
-            <I icon={DoorClosed} size={16} /> Jusqu'à la fermeture ({closesAt})
-          </Button>
-        )}
-        {DURATIONS.map((h) => (
-          <Button key={h} auto sm variant="g" onClick={() => void closeFor(new Date(now + h * 3_600_000).toISOString(), `Fermé · ${h} h`)} disabled={create.isPending}>
-            {h} h
-          </Button>
-        ))}
+        <span className="min-w-0">
+          <span className="block text-[1rem] font-semibold">Fermeture immédiate</span>
+          <span className="block text-[0.8125rem] text-muted">
+            Plus de réservations en ligne pendant un moment
+          </span>
+        </span>
+        <Button auto sm onClick={() => setChoosing(true)} disabled={create.isPending}>
+          <I icon={DoorClosed} size={16} /> {create.isPending ? 'Fermeture…' : 'Fermer'}
+        </Button>
       </div>
       {error && <p className="text-[0.875rem] text-danger">{error}</p>}
+      <PickerSheet
+        open={choosing}
+        onClose={() => setChoosing(false)}
+        title="Fermer jusqu'à quand ?"
+        value={null}
+        onChange={(v) => {
+          setChoosing(false);
+          if (v === 'day' && untilClose) void closeFor(untilClose, `Fermé · jusqu'à ${closesAt}`);
+          else if (v !== 'day')
+            void closeFor(new Date(now + Number(v) * 3_600_000).toISOString(), `Fermé · ${v} h`);
+        }}
+        options={[
+          ...(canCloseDay
+            ? [
+                {
+                  value: 'day',
+                  label: `Jusqu'à la fermeture (${closesAt})`,
+                  hint: "Plus aucune réservation aujourd'hui",
+                },
+              ]
+            : []),
+          ...DURATIONS.map((h) => ({
+            value: String(h),
+            label: `Pendant ${h} h`,
+            hint: `Réouverture à ${formatTimeDZ(new Date(now + h * 3_600_000))}`,
+          })),
+        ]}
+      />
     </div>
   );
 }

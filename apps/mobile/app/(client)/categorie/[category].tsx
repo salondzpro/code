@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useMe, useSalonSearch } from '@salondz/api-client';
+import { pagesItems, useMe, useSalonSearchInfinite } from '@salondz/api-client';
+import { LoadMore } from '@/ui/LoadMore';
 import { categoryLabel, type CategoryId } from '@salondz/constants';
 import { useLocationPrefs } from '@/lib/prefs';
 import { ErrorText, H1, P, Pill, Skeleton, TopBar, Tx } from '@/ui';
@@ -20,7 +21,7 @@ export default function CategoryResults() {
   const [near, setNear] = useState(false);
   const [sort, setSort] = useState<'relevance' | 'price_asc' | 'rating'>('relevance');
 
-  const query = useSalonSearch({
+  const query = useSalonSearchInfinite({
     gender: market,
     category: category as CategoryId,
     city: prefs.city ?? undefined,
@@ -30,11 +31,11 @@ export default function CategoryResults() {
     radiusKm: prefs.lat != null ? (near ? 2 : prefs.radiusKm) : undefined,
     availableToday: today ? '1' : undefined,
     sort,
-    limit: 30,
-  } as Parameters<typeof useSalonSearch>[0]);
+    limit: 20,
+  } as Parameters<typeof useSalonSearchInfinite>[0]);
 
-  const items = query.data?.items ?? [];
-  const total = query.data?.total ?? items.length;
+  const items = pagesItems(query.data);
+  const total = query.data?.pages[0]?.total ?? items.length;
   const noun = market === 'men' ? 'barbiers' : 'salons';
 
   return (
@@ -75,6 +76,7 @@ export default function CategoryResults() {
               <SalonListCard key={s.id} salon={s} />
             ))}
           </View>
+          <LoadMore hasMore={query.hasNextPage} loading={query.isFetchingNextPage} onMore={() => void query.fetchNextPage()} label="Voir plus de professionnels" />
         </>
       )}
     </Screen>

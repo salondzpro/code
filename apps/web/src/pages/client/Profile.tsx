@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Camera, ChevronRight, MessageCircle } from 'lucide-react';
-import { useFavorites, useMe, useMyBookings, useUpdateProfile } from '@salondz/api-client';
+import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { formatIntlDZ } from '@/lib/authFlow';
 import { Avatar, Badge, I, ListRow } from '@/components/ui';
@@ -16,9 +16,7 @@ import { errorText } from '@/components/ErrorMessage';
 export function Profile() {
   const { user } = useAuth();
   const me = useMe();
-  const favs = useFavorites();
-  const past = useMyBookings({ scope: 'past', limit: 50 });
-  const upcoming = useMyBookings({ scope: 'upcoming', limit: 50 });
+  const stats = useMeStats();
   const updateProfile = useUpdateProfile();
   const avatarInput = useRef<HTMLInputElement | null>(null);
   const [cropAvatar, setCropAvatar] = useState<File | null>(null);
@@ -27,7 +25,7 @@ export function Profile() {
   if (me.isPending) return <Splash />;
   const p = me.data?.profile;
   const phone = p?.phone ?? (user?.phone ? `+${user.phone.replace(/^\+/, '')}` : null);
-  const bookings = (past.data?.items.length ?? 0) + (upcoming.data?.items.length ?? 0);
+  const bookings = stats.data?.bookings ?? 0;
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
@@ -73,8 +71,8 @@ export function Profile() {
       <div className="g3">
         {[
           { v: String(bookings), l: 'réservations' },
-          { v: String(favs.data?.items.length ?? 0), l: 'favoris' },
-          { v: '—', l: 'note donnée' },
+          { v: String(stats.data?.favorites ?? 0), l: 'favoris' },
+          { v: stats.data ? String(stats.data.reviews) : '—', l: stats.data && stats.data.reviews > 1 ? 'avis donnés' : 'avis donné' },
         ].map((x) => (
           <div key={x.l} className="crd !gap-1 !px-4 !py-5">
             <span className="text-[1.5rem] font-bold tracking-[-0.6px]">{x.v}</span>

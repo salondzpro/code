@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, ChevronRight, MessageCircle } from 'lucide-react-native';
-import { useFavorites, useMe, useMyBookings, useUpdateProfile } from '@salondz/api-client';
+import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { formatIntlDZ } from '@/lib/authFlow';
 import { Alert, Avatar, Badge, Card, Grid, H1, I, ListCard, P, Row, Tx } from '@/ui';
@@ -18,9 +18,7 @@ export default function Profile() {
   const router = useRouter();
   const { user } = useAuth();
   const me = useMe();
-  const favs = useFavorites();
-  const past = useMyBookings({ scope: 'past', limit: 50 });
-  const upcoming = useMyBookings({ scope: 'upcoming', limit: 50 });
+  const stats = useMeStats();
   const updateProfile = useUpdateProfile();
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +38,7 @@ export default function Profile() {
   if (me.isPending) return <Splash />;
   const p = me.data?.profile;
   const phone = p?.phone ?? (user?.phone ? `+${user.phone.replace(/^\+/, '')}` : null);
-  const bookings = (past.data?.items.length ?? 0) + (upcoming.data?.items.length ?? 0);
+  const bookings = stats.data?.bookings ?? 0;
   const salon = me.data?.salon;
 
   return (
@@ -91,8 +89,8 @@ export default function Profile() {
       <Grid cols={3}>
         {[
           { v: String(bookings), l: 'réservations' },
-          { v: String(favs.data?.items.length ?? 0), l: 'favoris' },
-          { v: '—', l: 'note donnée' },
+          { v: String(stats.data?.favorites ?? 0), l: 'favoris' },
+          { v: stats.data ? String(stats.data.reviews) : '—', l: stats.data && stats.data.reviews > 1 ? 'avis donnés' : 'avis donné' },
         ].map((x) => (
           <Card key={x.l} gap={3} pad={12} style={{ paddingVertical: 16 }}>
             <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>

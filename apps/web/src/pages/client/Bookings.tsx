@@ -4,7 +4,8 @@
  */
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { useMyBookings } from '@salondz/api-client';
+import { pagesItems, useMyBookingsInfinite } from '@salondz/api-client';
+import { LoadMore } from '@/components/LoadMore';
 import { formatDA, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import { RotateCcw, Star } from 'lucide-react';
 import {
@@ -45,8 +46,8 @@ export function Bookings() {
         ? 'cancelled'
         : 'upcoming',
   );
-  const list = useMyBookings({ scope });
-  const items = list.data?.items ?? [];
+  const list = useMyBookingsInfinite({ scope });
+  const items = pagesItems(list.data);
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
@@ -225,6 +226,7 @@ export function Bookings() {
           </div>
         ))
       )}
+      <LoadMore hasMore={list.hasNextPage} loading={list.isFetchingNextPage} onMore={() => void list.fetchNextPage()} label="Voir plus de rendez-vous" />
     </Screen>
   );
 }

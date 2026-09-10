@@ -1,19 +1,22 @@
 import { useEffect } from 'react';
-import { useMarkNotificationsRead, useNotifications } from '@salondz/api-client';
+import { pagesItems, useMarkNotificationsRead, useNotificationsInfinite } from '@salondz/api-client';
+import { LoadMore } from '@/components/LoadMore';
 import { formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import { Spinner } from '@/components/Spinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { EmptyState } from '@/components/EmptyState';
 
 export function AccountNotifications() {
-  const notifs = useNotifications();
+  const notifs = useNotificationsInfinite();
+  const items = pagesItems(notifs.data);
+  const unreadCount = notifs.data?.pages[0]?.unreadCount ?? 0;
   const markRead = useMarkNotificationsRead();
 
   // Marque tout lu à l'ouverture (une seule fois par chargement)
   useEffect(() => {
-    if (notifs.data && notifs.data.unreadCount > 0 && !markRead.isPending && !markRead.isSuccess) markRead.mutate(undefined);
+    if (unreadCount > 0 && !markRead.isPending && !markRead.isSuccess) markRead.mutate(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notifs.data?.unreadCount]);
+  }, [unreadCount]);
 
   if (notifs.isPending) return <Spinner />;
   if (notifs.isError) return <ErrorMessage error={notifs.error} retry={() => notifs.refetch()} />;
@@ -21,11 +24,11 @@ export function AccountNotifications() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-bold">Notifications</h1>
-      {notifs.data.items.length === 0 ? (
+      {items.length === 0 ? (
         <EmptyState title="Rien pour le moment" description="Vos confirmations et rappels apparaîtront ici." />
       ) : (
         <ul className="card divide-y divide-line">
-          {notifs.data.items.map((n) => (
+          {items.map((n) => (
             <li key={n.id} className={`flex flex-col gap-0.5 p-4 ${n.readAt ? '' : 'bg-primary/5'}`}>
               <p className="font-medium">{n.title}</p>
               <p className="text-sm text-muted">{n.body}</p>
@@ -36,6 +39,7 @@ export function AccountNotifications() {
           ))}
         </ul>
       )}
+      <LoadMore hasMore={notifs.hasNextPage} loading={notifs.isFetchingNextPage} onMore={() => void notifs.fetchNextPage()} label="Voir plus de notifications" />
     </div>
   );
 }

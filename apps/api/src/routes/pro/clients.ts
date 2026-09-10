@@ -1,34 +1,54 @@
 /** Espace pro — Clients : fiche agrégée (SQL) et blocage/déblocage propre au salon. */
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { blockClientSchema, clientNotesSchema } from '@salondz/validation';
+import { blockClientSchema, clientNotesSchema, proClientsQuerySchema, pageQuerySchema } from '@salondz/validation';
 import type { ProClient, ProClientHistoryItem } from '@salondz/types';
 import { db } from '../../lib/supabase';
-import { badRequest, unwrap } from '../../lib/errors';
+import { badRequest, unwrap, notFound } from '../../lib/errors';
 import { camelize } from '../../lib/mappers';
+
+function mapProClient(r: Record<string, unknown>): ProClient {
+  const { total_count: _t, blocked_count: _b, ...row } = r;
+  const c = camelize<ProClient>(row);
+  return { ...c, bookingsCount: Number(c.bookingsCount), completedCount: Number(c.completedCount), cancelledCount: Number(c.cancelledCount), noShowCount: Number(c.noShowCount), spentDa: Number(c.spentDa) };
+}
 
 const proClientRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireSalon);
 
-  app.get('/clients', async (req, reply) => {
-    const res = await db.rpc('salon_clients', { p_salon_id: req.salon!.id });
+  /** Liste paginée et filtrée côté serveur (30 par page, recherche nom / téléphone). */
+  app.get('/clients', { schema: { querystring: proClientsQuerySchema } }, async (req, reply) => {
+    const { q, cursor, limit } = req.query;
+    const offset = Number(cursor ?? 0) || 0;
+    const res = await db.rpc('salon_clients_page', { p_salon_id: req.salon!.id, p_q: q ?? null, p_key: null, p_limit: limit, p_offset: offset });
     const rows = unwrap(res) as Record<string, unknown>[];
     reply.header('Cache-Control', 'private, no-store');
-    const items = rows.map((r) => {
-      const c = camelize<ProClient>(r);
-      return { ...c, bookingsCount: Number(c.bookingsCount), completedCount: Number(c.completedCount), cancelledCount: Number(c.cancelledCount), noShowCount: Number(c.noShowCount), spentDa: Number(c.spentDa) };
-    });
-    return { items };
+    const items = rows.map(mapProClient);
+    const total = rows.length ? Number(rows[0]!.total_count) : 0;
+    const blockedCount = rows.length ? Number(rows[0]!.blocked_count) : 0;
+    return { items, total, blockedCount, nextCursor: items.length === limit ? String(offset + limit) : null };
   });
 
   const keyParam = z.object({ key: z.string().min(1).max(200) });
 
-  /** Historique complet du client chez ce salon (plus récent en premier). */
-  app.get('/clients/:key/history', { schema: { params: keyParam } }, async (req, reply) => {
-    const res = await db.rpc('salon_client_history', { p_salon_id: req.salon!.id, p_client_key: req.params.key });
+  /** Une seule fiche client (sans charger toute la liste). */
+  app.get('/clients/:key', { schema: { params: keyParam } }, async (req, reply) => {
+    const res = await db.rpc('salon_clients_page', { p_salon_id: req.salon!.id, p_q: null, p_key: req.params.key, p_limit: 1, p_offset: 0 });
+    const rows = unwrap(res) as Record<string, unknown>[];
+    if (!rows[0]) throw notFound('Client');
+    reply.header('Cache-Control', 'private, no-store');
+    return mapProClient(rows[0]);
+  });
+
+  /** Historique du client chez ce salon (plus récent en premier), 50 par page. */
+  app.get('/clients/:key/history', { schema: { params: keyParam, querystring: pageQuerySchema } }, async (req, reply) => {
+    const { cursor, limit } = req.query;
+    const offset = Number(cursor ?? 0) || 0;
+    const res = await db.rpc('salon_client_history', { p_salon_id: req.salon!.id, p_client_key: req.params.key, p_limit: limit, p_offset: offset });
     const rows = unwrap(res) as Record<string, unknown>[];
     reply.header('Cache-Control', 'private, no-store');
-    return { items: rows.map((r) => camelize<ProClientHistoryItem>(r)) };
+    const items = rows.map((r) => camelize<ProClientHistoryItem>(r));
+    return { items, nextCursor: items.length === limit ? String(offset + limit) : null };
   });
 
   /** Notes privées du salon sur ce client. */

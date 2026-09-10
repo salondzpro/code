@@ -233,6 +233,13 @@ export interface SalonSummary {
   lng?: number | null;
 }
 
+/** Compteurs du profil client. */
+export interface MeStats {
+  bookings: number;
+  favorites: number;
+  reviews: number;
+}
+
 /** Situation d'un client vis-à-vis des règles anti-abus (annulations récentes, absences, suspension en cours). */
 export interface ClientStanding {
   /** Annulations par le client sur la fenêtre CANCEL_ABUSE_WINDOW_DAYS. */
