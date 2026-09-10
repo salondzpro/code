@@ -422,8 +422,9 @@ try {
     await p.getByLabel('Client').fill('Walid Passage');
     await p.getByLabel('Téléphone (facultatif)').fill('06 61 11 22 33');
     await p.getByRole('button', { name: /Coupe \+ barbe/ }).click();
-    await p.getByLabel('Date').fill(target);
-    await p.getByLabel('Heure').fill('15:00');
+    await p.locator(`button[role=option][data-day="${target}"]`).first().click();
+    await p.getByRole('option', { name: '15:00', exact: true }).click();
+    await shot(p, 'pro-rdv-nouveau');
     await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
     await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
     await p.getByRole('heading', { name: 'Walid P.' }).waitFor();
