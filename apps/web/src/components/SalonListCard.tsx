@@ -4,7 +4,7 @@
  * APRÈS-MIDI (chaque heure ouvre la réservation avec la date et l'heure déjà choisies) et « Plus d'informations ».
  * Même présentation pour tous les professionnels.
  */
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Heart, MapPin, Star } from 'lucide-react';
 import { useFavorites, useToggleFavorite } from '@salondz/api-client';
@@ -89,9 +89,12 @@ export function nextDayLabel(date: string, today: string = toLocalDateKey()): st
 export function NextSlots({
   salon,
   empty = 'Aucune disponibilité cette semaine',
+  more,
 }: {
   salon: Pick<SalonSummary, 'slug' | 'nextAvailable'>;
   empty?: string;
+  /** Élément affiché à droite de l'en-tête (ex. « Plus d'infos → »). */
+  more?: ReactNode;
 }) {
   const navigate = useNavigate();
   const next = salon.nextAvailable;
@@ -118,36 +121,40 @@ export function NextSlots({
     return (
       <div className="flex items-center justify-between gap-2">
         <span className="s">{empty}</span>
-        <button
-          type="button"
-          className="text-[0.8125rem] font-semibold text-muted"
-          onClick={(e) => go(e, `/s/${salon.slug}`)}
-        >
-          Voir le salon →
-        </button>
+        {more ?? (
+          <button
+            type="button"
+            className="text-[0.8125rem] font-semibold text-muted"
+            onClick={(e) => go(e, `/s/${salon.slug}`)}
+          >
+            Voir le salon →
+          </button>
+        )}
       </div>
     );
   }
   const day = nextDayLabel(next.date);
   return (
-    <div className="flex flex-col gap-2" aria-label={`Prochaines disponibilités ${day}`}>
+    <div className="flex flex-col gap-1.5" aria-label={`Prochaines disponibilités ${day}`}>
+      {/* Le jour est indiqué une seule fois, dans l'en-tête : les lignes MATIN / APRÈS-MIDI restent sur une ligne. */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em] text-muted">
-          Prochaines disponibilités
+          Prochaines disponibilités{' '}
+          <span className="normal-case tracking-normal text-text">· {day}</span>
         </span>
+        {more}
       </div>
       {rows.map((r) => (
         <div key={r.key} className="flex items-center gap-2">
-          <span className="w-[7.75rem] flex-none text-[0.8125rem] font-bold uppercase tracking-[0.06em]">
-            {r.label}{' '}
-            <span className="font-bold normal-case tracking-normal text-text">· {day}</span>
+          <span className="w-[5.75rem] flex-none text-[0.75rem] font-bold uppercase tracking-[0.06em]">
+            {r.label}
           </span>
           <div className="flex flex-1 flex-wrap gap-1.5">
             {r.slots.map((t) => (
               <button
                 key={t}
                 type="button"
-                className="pill mono !border-ink !px-3.5 !py-2.5 !text-[1rem] font-bold hover:!bg-fill"
+                className="pill mono !border-ink !px-3 !py-2 !text-[0.9375rem] font-bold hover:!bg-fill"
                 aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
                 onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
               >
@@ -183,24 +190,24 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
 
   return (
     <Link to={href} className="crd !gap-0 overflow-hidden !p-0">
-      {/* Photos de couverture : carrousel au doigt (scroll-snap), points, cœur favori */}
+      {/* Photos de couverture (hauteur réduite, 2:1) : carrousel au doigt, points, cœur favori */}
       <div className="relative">
         <div
           ref={scroller}
           className="flex w-full snap-x snap-mandatory overflow-x-auto bg-line"
-          style={{ aspectRatio: '16 / 10', scrollbarWidth: 'none' }}
+          style={{ aspectRatio: '2 / 1', scrollbarWidth: 'none' }}
           onScroll={(e) => {
             const el = e.currentTarget;
             setIdx(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
           }}
         >
           {photos.length === 0 && <div className="h-full w-full flex-none" />}
-          {photos.map((u, i) => (
+          {photos.map((u) => (
             <img
               key={u}
               src={u}
               alt=""
-              loading={i === 0 ? 'lazy' : 'lazy'}
+              loading="lazy"
               className="h-full w-full flex-none snap-center object-cover"
               draggable={false}
             />
@@ -208,20 +215,19 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
         </div>
         {photos.length > 1 && (
           <div
-            className="pointer-events-none absolute bottom-3 left-0 right-0 flex justify-center gap-1.5"
+            className="pointer-events-none absolute bottom-2 left-0 right-0 flex justify-center gap-1.5"
             aria-hidden
           >
             {photos.map((u, i) => (
               <span
                 key={u}
-                className={`h-2 w-2 rounded-full ${i === idx ? 'bg-white' : 'bg-white/50'}`}
+                className={`h-1.5 w-1.5 rounded-full ${i === idx ? 'bg-white' : 'bg-white/50'}`}
               />
             ))}
           </div>
         )}
         <IconButton
-          lg
-          className="absolute right-3 top-3 !bg-surface/95 shadow-sm"
+          className="absolute right-2.5 top-2.5 !bg-surface/95 shadow-sm"
           aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           aria-pressed={isFav}
           disabled={toggle.isPending}
@@ -232,26 +238,48 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             else navigate(`/connexion?next=${encodeURIComponent(href)}`);
           }}
         >
-          <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
+          <Heart size={20} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
         </IconButton>
       </div>
-      <div className="flex flex-col gap-1.5 p-4">
-        <span className="text-[1.3125rem] font-bold leading-tight tracking-[-0.5px]">{s.name}</span>
-        <span className="flex items-center gap-1.5 text-[0.9375rem] text-muted">
-          <I icon={MapPin} size={17} className="flex-none" />
-          <span className="truncate">
-            {place}
-            {km ? ` (${km})` : ''}
+      <div className="flex flex-col gap-1.5 px-4 pb-3.5 pt-3">
+        {/* Gauche : nom · Droite : note — une seule ligne */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0 truncate text-[1.1875rem] font-bold leading-tight tracking-[-0.5px]">
+            {s.name}
           </span>
-        </span>
-        <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-        {cats && <span className="text-[0.875rem] text-muted">{cats}</span>}
-        <div className="mt-2">
-          <NextSlots salon={s} />
+          <span className="flex-none">
+            <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
+          </span>
         </div>
-        <span className="mt-2 self-center text-[0.9375rem] font-semibold underline underline-offset-4">
-          Plus d'informations
-        </span>
+        {/* Gauche : lieu (distance) · Droite : catégories — une seule ligne */}
+        <div className="flex items-center justify-between gap-3 text-[0.875rem] text-muted">
+          <span className="flex min-w-0 items-center gap-1">
+            <I icon={MapPin} size={15} className="flex-none" />
+            <span className="truncate">
+              {place}
+              {km ? ` (${km})` : ''}
+            </span>
+          </span>
+          {cats && <span className="min-w-0 flex-none truncate text-right">{cats}</span>}
+        </div>
+        <div className="mt-1">
+          <NextSlots
+            salon={s}
+            more={
+              <button
+                type="button"
+                className="flex-none text-[0.8125rem] font-semibold underline underline-offset-4"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(href);
+                }}
+              >
+                Plus d'infos
+              </button>
+            }
+          />
+        </div>
       </div>
     </Link>
   );

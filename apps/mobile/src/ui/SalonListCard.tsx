@@ -4,7 +4,7 @@
  * APRÈS-MIDI (chaque heure ouvre la réservation avec la date et l'heure déjà choisies) et « Plus d'informations ».
  * Même présentation pour tous les professionnels.
  */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Heart, MapPin, Star } from 'lucide-react-native';
@@ -123,9 +123,12 @@ export function nextDayLabel(date: string, today: string = toLocalDateKey()): st
 export function NextSlots({
   salon,
   empty = 'Aucune disponibilité cette semaine',
+  more,
 }: {
   salon: Pick<SalonSummary, 'slug' | 'nextAvailable'>;
   empty?: string;
+  /** Élément affiché à droite de l'en-tête (ex. « Plus d'infos »). */
+  more?: ReactNode;
 }) {
   const router = useRouter();
   const next = salon.nextAvailable;
@@ -154,20 +157,22 @@ export function NextSlots({
         }}
       >
         <S>{empty}</S>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push(`/s/${salon.slug}` as never)}
-        >
-          <Tx size={10.5} weight={600} color={C.muted} lh={14}>
-            Voir le salon →
-          </Tx>
-        </Pressable>
+        {more ?? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push(`/s/${salon.slug}` as never)}
+          >
+            <Tx size={10.5} weight={600} color={C.muted} lh={14}>
+              Voir le salon →
+            </Tx>
+          </Pressable>
+        )}
       </View>
     );
   }
   const day = nextDayLabel(next.date);
   return (
-    <View style={{ gap: 6 }} accessibilityLabel={`Prochaines disponibilités ${day}`}>
+    <View style={{ gap: 5 }} accessibilityLabel={`Prochaines disponibilités ${day}`}>
       <View
         style={{
           flexDirection: 'row',
@@ -177,19 +182,18 @@ export function NextSlots({
         }}
       >
         <Tx size={9.5} weight={700} ls={0.7} color={C.muted} lh={13}>
-          PROCHAINES DISPONIBILITÉS
+          PROCHAINES DISPONIBILITÉS{' '}
+          <Tx size={9.5} weight={700} lh={13}>
+            · {day}
+          </Tx>
         </Tx>
+        {more}
       </View>
       {rows.map((r) => (
         <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View style={{ width: 88 }}>
-            <Tx size={10.5} weight={700} ls={0.5} lh={14}>
-              {r.label}
-            </Tx>
-            <Tx size={10.5} weight={700} lh={14}>
-              {day}
-            </Tx>
-          </View>
+          <Tx size={9.5} weight={700} ls={0.5} lh={13} style={{ width: 68 }}>
+            {r.label}
+          </Tx>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
             {r.slots.map((t) => (
               <Pressable
@@ -207,11 +211,11 @@ export function NextSlots({
                   borderColor: C.ink,
                   borderRadius: R.pill,
                   paddingHorizontal: 10,
-                  paddingVertical: 7,
+                  paddingVertical: 6,
                   backgroundColor: pressed ? C.fill : C.surface,
                 })}
               >
-                <Tx size={13} weight={700} lh={16} mono>
+                <Tx size={12} weight={700} lh={15} mono>
                   {t}
                 </Tx>
               </Pressable>
@@ -250,7 +254,8 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
     borderRadius: R.card,
     overflow: 'hidden',
   };
-  const height = width ? Math.round((width * 10) / 16) : 200;
+  // Couverture à hauteur réduite (2:1) pour des cartes courtes.
+  const height = width ? Math.round(width / 2) : 160;
 
   return (
     <Pressable
@@ -259,7 +264,6 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
       onPress={go}
       style={({ pressed }) => [base, { opacity: pressed ? 0.92 : 1 }]}
     >
-      {/* Photos de couverture : carrousel au doigt, points, cœur favori */}
       <View
         onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
         style={{ height, backgroundColor: C.line }}
@@ -285,7 +289,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 10,
+              bottom: 8,
               flexDirection: 'row',
               justifyContent: 'center',
               gap: 5,
@@ -295,9 +299,9 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
               <View
                 key={u}
                 style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: 4,
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
                   backgroundColor: i === idx ? '#fff' : 'rgba(255,255,255,0.5)',
                 }}
               />
@@ -316,47 +320,65 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
           }
           style={{
             position: 'absolute',
-            right: 10,
-            top: 10,
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            right: 8,
+            top: 8,
+            width: 34,
+            height: 34,
+            borderRadius: 17,
             backgroundColor: 'rgba(255,255,255,0.95)',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Heart size={18} strokeWidth={1.6} color={C.text} fill={isFav ? C.text : 'none'} />
+          <Heart size={16} strokeWidth={1.6} color={C.text} fill={isFav ? C.text : 'none'} />
         </Pressable>
       </View>
-      <View style={{ padding: 13, gap: 5 }}>
-        <Tx size={17} weight={700} ls={-0.5} lh={21}>
-          {s.name}
-        </Tx>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-          <I icon={MapPin} size={14} color={C.muted} />
-          <Tx size={12} color={C.muted} lh={16} numberOfLines={1} style={{ flex: 1 }}>
-            {`${place}${km ? ` (${km})` : ''}`}
-          </Tx>
-        </View>
-        <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-        {!!cats && (
-          <Tx size={11.5} color={C.muted} lh={16}>
-            {cats}
-          </Tx>
-        )}
-        <View style={{ marginTop: 6 }}>
-          <NextSlots salon={s} />
-        </View>
-        <Tx
-          size={12}
-          weight={600}
-          lh={16}
-          center
-          style={{ marginTop: 6, textDecorationLine: 'underline' }}
+      <View style={{ paddingHorizontal: 13, paddingTop: 10, paddingBottom: 12, gap: 4 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
         >
-          Plus d'informations
-        </Tx>
+          <Tx size={15.5} weight={700} ls={-0.5} lh={19} numberOfLines={1} style={{ flex: 1 }}>
+            {s.name}
+          </Tx>
+          <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 }}>
+            <I icon={MapPin} size={13} color={C.muted} />
+            <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1}>
+              {`${place}${km ? ` (${km})` : ''}`}
+            </Tx>
+          </View>
+          {!!cats && (
+            <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1} style={{ flexShrink: 1 }}>
+              {cats}
+            </Tx>
+          )}
+        </View>
+        <View style={{ marginTop: 4 }}>
+          <NextSlots
+            salon={s}
+            more={
+              <Pressable accessibilityRole="button" onPress={go}>
+                <Tx size={10.5} weight={600} lh={14} style={{ textDecorationLine: 'underline' }}>
+                  Plus d'infos
+                </Tx>
+              </Pressable>
+            }
+          />
+        </View>
       </View>
     </Pressable>
   );
