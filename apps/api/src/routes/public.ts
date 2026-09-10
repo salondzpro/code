@@ -79,7 +79,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       };
       total = Number(total_count);
       const s = camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(rest);
-      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], nextAvailable: next_available ?? null, isOpenNow: !!is_open_now };
+      return { ...s, ratingAvg: Number(s.ratingAvg), topServices: top_services ?? [], nextSlots: next_slots ?? [], nextAvailable: next_available ?? null, photoUrls: [], isOpenNow: !!is_open_now };
     });
     // Remplace les 3 créneaux « un par heure » de search_salons_v2 par les 5 premiers créneaux libres.
     await attachNextSlots(items, req.log);

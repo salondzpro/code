@@ -219,6 +219,8 @@ export interface SalonSummary {
   topServices: { name: string; priceDa: number }[];
   /** Prochains créneaux du jour (HH:mm, heure d'Alger), 3 au plus. */
   nextSlots: string[];
+  /** Photos de couverture (5 au plus, la première = couverture) pour le carrousel de la carte. */
+  photoUrls: string[];
   /** Première journée avec des créneaux (aujourd'hui, sinon les 7 jours suivants) : date locale + heures. */
   nextAvailable: {
     date: string;

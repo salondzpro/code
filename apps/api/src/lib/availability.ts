@@ -10,12 +10,34 @@ import { db } from './supabase';
 export const NEXT_SLOTS_DAYS = 7;
 /** Créneaux par période (MATIN / APRÈS-MIDI) sur la carte. */
 export const NEXT_SLOTS_LIMIT = 3;
+/** Photos par carte (carrousel). */
+export const CARD_PHOTOS = 5;
 
 export async function attachNextSlots(
   items: SalonSummary[],
   log?: { warn: (o: unknown, msg: string) => void },
 ): Promise<void> {
   if (items.length === 0) return;
+  // Photos de couverture (carrousel de la carte, à la Planity) : une requête pour toute la page.
+  const ph = await db
+    .from('salon_photos')
+    .select('salon_id, url, sort_order')
+    .in(
+      'salon_id',
+      items.map((s) => s.id),
+    )
+    .order('sort_order');
+  if (ph.error) log?.warn({ err: ph.error }, 'salon_photos');
+  const photosById = new Map<string, string[]>();
+  for (const row of (ph.data ?? []) as { salon_id: string; url: string }[]) {
+    const list = photosById.get(row.salon_id) ?? [];
+    if (list.length < CARD_PHOTOS) list.push(row.url);
+    photosById.set(row.salon_id, list);
+  }
+  for (const s of items) {
+    const list = photosById.get(s.id) ?? [];
+    s.photoUrls = list.length ? list : s.coverUrl ? [s.coverUrl] : [];
+  }
   const r = await db.rpc('next_slots_many', {
     p_salon_ids: items.map((s) => s.id),
     p_days: NEXT_SLOTS_DAYS,

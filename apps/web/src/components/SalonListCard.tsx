@@ -1,14 +1,18 @@
 /**
- * Carte salon de la marketplace (design C-H 01 / C-F 01) : grande version avec couverture, version compacte
- * avec vignette. Nom, « ★ 4,9 (383 avis) · quartier », prestations phares, puis « Prochaines disponibilités » :
- * les 5 premiers créneaux libres du premier jour disponible, chacun ouvre la réservation avec la date et l'heure
- * déjà choisies (il ne reste que les prestations). « Voir plus » ouvre la fiche du salon.
+ * Carte salon de la marketplace, à la Planity : grande photo de couverture (carrousel si plusieurs, cœur favori),
+ * nom, « quartier (distance) », « ★ 4,9 (383 avis) », catégories, puis « Prochaines disponibilités » MATIN /
+ * APRÈS-MIDI (chaque heure ouvre la réservation avec la date et l'heure déjà choisies) et « Plus d'informations ».
+ * Même présentation pour tous les professionnels.
  */
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { Heart, MapPin, Star } from 'lucide-react';
+import { useFavorites, useToggleFavorite } from '@salondz/api-client';
 import type { SalonSummary } from '@salondz/types';
 import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/clientPrefs';
-import { Img } from './ui';
+import { useAuth } from '@/lib/auth';
+import { I, IconButton, Img } from './ui';
 
 /** Catégories affichées sur une carte avant « … ». */
 const MAX_CARD_CATEGORIES = 3;
@@ -36,9 +40,7 @@ export function RatingPill({
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
     <span className="flex items-center gap-1.5 text-[0.9375rem]">
-      <span aria-hidden className="text-[1rem]">
-        ★
-      </span>
+      <I icon={Star} size={17} className="flex-none" />
       {count > 0 ? (
         <>
           <b className="text-[1rem]">{formatRating(avg)}</b>
@@ -133,14 +135,6 @@ export function NextSlots({
         <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em] text-muted">
           Prochaines disponibilités
         </span>
-        <button
-          type="button"
-          className="text-[0.8125rem] font-semibold text-muted"
-          aria-label="Voir plus de créneaux"
-          onClick={(e) => go(e, `/s/${salon.slug}`)}
-        >
-          Voir plus →
-        </button>
       </div>
       {rows.map((r) => (
         <div key={r.key} className="flex items-center gap-2">
@@ -169,8 +163,16 @@ export function NextSlots({
 
 export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string }) {
   const s = salon;
+  const navigate = useNavigate();
+  const { session } = useAuth();
+  const favs = useFavorites(!!session);
+  const toggle = useToggleFavorite();
+  const isFav = !!favs.data?.items.some((x) => x.id === s.id);
+  const photos = s.photoUrls?.length ? s.photoUrls : s.coverUrl ? [s.coverUrl] : [];
+  const [idx, setIdx] = useState(0);
+  const scroller = useRef<HTMLDivElement | null>(null);
   const km = formatKm(s.distanceKm);
-  const place = s.zone ?? s.city;
+  const place = s.zone && s.zone !== s.city ? `${s.zone}, ${s.city}` : s.city;
   // Catégories seulement (pas de prix ni de prestations sur la carte) : 3 au plus, « … » s'il y en a d'autres.
   const cats =
     s.categoryIds
@@ -180,26 +182,77 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
   const href = to ?? `/s/${s.slug}`;
 
   return (
-    <Link to={href} className="crd !gap-3">
-      <div className="flex items-start gap-3.5">
-        <Img
-          src={s.logoUrl ?? s.coverUrl}
-          className="h-[7rem] w-[7rem] flex-none !rounded-[1rem]"
-        />
-        <div className="min-w-0 flex-1">
-          <span className="text-[1.1875rem] font-bold leading-tight tracking-[-0.5px]">
-            {s.name}
-          </span>
-          {cats && <span className="mt-1 block text-[0.9375rem] font-medium">{cats}</span>}
-          <span className="mt-0.5 block text-[0.875rem] text-muted">
-            {[place, km].filter(Boolean).join(' · ')}
-          </span>
-          <div className="mt-1">
-            <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-          </div>
+    <Link to={href} className="crd !gap-0 overflow-hidden !p-0">
+      {/* Photos de couverture : carrousel au doigt (scroll-snap), points, cœur favori */}
+      <div className="relative">
+        <div
+          ref={scroller}
+          className="flex w-full snap-x snap-mandatory overflow-x-auto bg-line"
+          style={{ aspectRatio: '16 / 10', scrollbarWidth: 'none' }}
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            setIdx(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
+          }}
+        >
+          {photos.length === 0 && <div className="h-full w-full flex-none" />}
+          {photos.map((u, i) => (
+            <img
+              key={u}
+              src={u}
+              alt=""
+              loading={i === 0 ? 'lazy' : 'lazy'}
+              className="h-full w-full flex-none snap-center object-cover"
+              draggable={false}
+            />
+          ))}
         </div>
+        {photos.length > 1 && (
+          <div
+            className="pointer-events-none absolute bottom-3 left-0 right-0 flex justify-center gap-1.5"
+            aria-hidden
+          >
+            {photos.map((u, i) => (
+              <span
+                key={u}
+                className={`h-2 w-2 rounded-full ${i === idx ? 'bg-white' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
+        <IconButton
+          lg
+          className="absolute right-3 top-3 !bg-surface/95 shadow-sm"
+          aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          aria-pressed={isFav}
+          disabled={toggle.isPending}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (session) toggle.mutate({ salonId: s.id, on: !isFav });
+            else navigate(`/connexion?next=${encodeURIComponent(href)}`);
+          }}
+        >
+          <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
+        </IconButton>
       </div>
-      <NextSlots salon={s} />
+      <div className="flex flex-col gap-1.5 p-4">
+        <span className="text-[1.3125rem] font-bold leading-tight tracking-[-0.5px]">{s.name}</span>
+        <span className="flex items-center gap-1.5 text-[0.9375rem] text-muted">
+          <I icon={MapPin} size={17} className="flex-none" />
+          <span className="truncate">
+            {place}
+            {km ? ` (${km})` : ''}
+          </span>
+        </span>
+        <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
+        {cats && <span className="text-[0.875rem] text-muted">{cats}</span>}
+        <div className="mt-2">
+          <NextSlots salon={s} />
+        </div>
+        <span className="mt-2 self-center text-[0.9375rem] font-semibold underline underline-offset-4">
+          Plus d'informations
+        </span>
+      </div>
     </Link>
   );
 }

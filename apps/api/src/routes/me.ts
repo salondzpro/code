@@ -188,6 +188,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
           topServices: [],
           nextSlots: [],
           nextAvailable: null as SalonSummary['nextAvailable'],
+          photoUrls: [],
           isOpenNow: false,
         };
       });

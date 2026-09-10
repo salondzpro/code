@@ -1,16 +1,20 @@
 /**
- * Carte salon de la marketplace (design C-H 01 / C-F 01) : grande version avec couverture, version compacte
- * avec vignette. Nom, « ★ 4,9 (383 avis) · quartier », prestations phares, puis « Prochaines disponibilités » :
- * les 5 premiers créneaux libres du premier jour disponible, chacun ouvre la réservation avec la date et l'heure
- * déjà choisies (il ne reste que les prestations). « Voir plus » ouvre la fiche du salon.
+ * Carte salon de la marketplace, à la Planity : grande photo de couverture (carrousel si plusieurs, cœur favori),
+ * nom, « quartier (distance) », « ★ 4,9 (383 avis) », catégories, puis « Prochaines disponibilités » MATIN /
+ * APRÈS-MIDI (chaque heure ouvre la réservation avec la date et l'heure déjà choisies) et « Plus d'informations ».
+ * Même présentation pour tous les professionnels.
  */
-import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Heart, MapPin, Star } from 'lucide-react-native';
+import { useFavorites, useToggleFavorite } from '@salondz/api-client';
 import type { SalonSummary } from '@salondz/types';
 import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/format';
+import { useAuth } from '@/lib/auth';
 import { C, R } from '@/theme/design';
-import { Img, S, Tx } from './index';
+import { I, Img, S, Tx } from './index';
 
 /** Catégories affichées sur une carte avant « … ». */
 const MAX_CARD_CATEGORIES = 3;
@@ -55,10 +59,8 @@ export function RatingPill({
 /** Ligne d'avis des cartes (Planity : « ☆ 4,9 (383 avis) ») ; sans avis : « Nouveau sur Salon DZ ». */
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      <Tx size={13} lh={17}>
-        ★
-      </Tx>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+      <I icon={Star} size={14} />
       {count > 0 ? (
         <>
           <Tx size={13} weight={700} lh={17}>
@@ -177,15 +179,6 @@ export function NextSlots({
         <Tx size={9.5} weight={700} ls={0.7} color={C.muted} lh={13}>
           PROCHAINES DISPONIBILITÉS
         </Tx>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Voir plus de créneaux"
-          onPress={() => router.push(`/s/${salon.slug}` as never)}
-        >
-          <Tx size={10.5} weight={600} color={C.muted} lh={14}>
-            Voir plus →
-          </Tx>
-        </Pressable>
       </View>
       {rows.map((r) => (
         <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -233,8 +226,15 @@ export function NextSlots({
 export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string }) {
   const router = useRouter();
   const s = salon;
+  const { session } = useAuth();
+  const favs = useFavorites(!!session);
+  const toggle = useToggleFavorite();
+  const isFav = !!favs.data?.items.some((x) => x.id === s.id);
+  const photos = s.photoUrls?.length ? s.photoUrls : s.coverUrl ? [s.coverUrl] : [];
+  const [width, setWidth] = useState(0);
+  const [idx, setIdx] = useState(0);
   const km = formatKm(s.distanceKm);
-  const place = s.zone ?? s.city;
+  const place = s.zone && s.zone !== s.city ? `${s.zone}, ${s.city}` : s.city;
   // Catégories seulement (pas de prix ni de prestations sur la carte) : 3 au plus, « … » s'il y en a d'autres.
   const cats =
     s.categoryIds
@@ -250,34 +250,114 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
     borderRadius: R.card,
     overflow: 'hidden',
   };
+  const height = width ? Math.round((width * 10) / 16) : 200;
 
   return (
     <Pressable
       accessibilityRole="link"
       accessibilityLabel={s.name}
       onPress={go}
-      style={({ pressed }) => [base, { padding: 13, gap: 10, opacity: pressed ? 0.92 : 1 }]}
+      style={({ pressed }) => [base, { opacity: pressed ? 0.92 : 1 }]}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
-        <Img src={s.logoUrl ?? s.coverUrl} radius={13} style={{ width: 91, height: 91 }} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={15.5} weight={700} ls={-0.5} lh={19}>
-            {s.name}
-          </Tx>
-          {!!cats && (
-            <Tx size={12} weight={500} lh={16} style={{ marginTop: 3 }}>
-              {cats}
-            </Tx>
-          )}
-          <Tx size={11.5} color={C.muted} lh={16} style={{ marginTop: 2 }}>
-            {[place, km].filter(Boolean).join(' · ')}
-          </Tx>
-          <View style={{ marginTop: 3 }}>
-            <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
+      {/* Photos de couverture : carrousel au doigt, points, cœur favori */}
+      <View
+        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+        style={{ height, backgroundColor: C.line }}
+      >
+        {width > 0 && photos.length > 0 && (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) =>
+              setIdx(Math.round(e.nativeEvent.contentOffset.x / Math.max(1, width)))
+            }
+          >
+            {photos.map((u) => (
+              <Img key={u} src={u} radius={0} style={{ width, height }} />
+            ))}
+          </ScrollView>
+        )}
+        {photos.length > 1 && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 10,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 5,
+            }}
+          >
+            {photos.map((u, i) => (
+              <View
+                key={u}
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: 4,
+                  backgroundColor: i === idx ? '#fff' : 'rgba(255,255,255,0.5)',
+                }}
+              />
+            ))}
           </View>
-        </View>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          accessibilityState={{ selected: isFav }}
+          disabled={toggle.isPending}
+          onPress={() =>
+            session
+              ? toggle.mutate({ salonId: s.id, on: !isFav })
+              : router.push({ pathname: '/connexion', params: { next: href } } as never)
+          }
+          style={{
+            position: 'absolute',
+            right: 10,
+            top: 10,
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Heart size={18} strokeWidth={1.6} color={C.text} fill={isFav ? C.text : 'none'} />
+        </Pressable>
       </View>
-      <NextSlots salon={s} />
+      <View style={{ padding: 13, gap: 5 }}>
+        <Tx size={17} weight={700} ls={-0.5} lh={21}>
+          {s.name}
+        </Tx>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <I icon={MapPin} size={14} color={C.muted} />
+          <Tx size={12} color={C.muted} lh={16} numberOfLines={1} style={{ flex: 1 }}>
+            {`${place}${km ? ` (${km})` : ''}`}
+          </Tx>
+        </View>
+        <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
+        {!!cats && (
+          <Tx size={11.5} color={C.muted} lh={16}>
+            {cats}
+          </Tx>
+        )}
+        <View style={{ marginTop: 6 }}>
+          <NextSlots salon={s} />
+        </View>
+        <Tx
+          size={12}
+          weight={600}
+          lh={16}
+          center
+          style={{ marginTop: 6, textDecorationLine: 'underline' }}
+        >
+          Plus d'informations
+        </Tx>
+      </View>
     </Pressable>
   );
 }
