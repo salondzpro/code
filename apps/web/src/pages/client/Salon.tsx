@@ -82,6 +82,14 @@ export function Salon() {
   const [sort, setSort] = useState<ReviewSort>('best');
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
   const reviewItems = pagesItems(reviews.data);
+  // La fiche salon est mise en cache 60 s alors que la liste des avis ne l'est pas : juste après un nouvel avis,
+  // on se fie aussi à la liste pour afficher le résumé et le tri (sinon « Pas encore d'avis » avec un avis dessous).
+  const reviewCount = Math.max(salon.data?.ratingCount ?? 0, reviewItems.length);
+  const reviewAvg =
+    (salon.data?.ratingCount ?? 0) > 0 || reviewItems.length === 0
+      ? (salon.data?.ratingAvg ?? 0)
+      : reviewItems.reduce((a, r) => a + r.rating, 0) / reviewItems.length;
+  const hasReviews = reviewCount > 0;
   const [tab, setTab] = useState<Tab>('services');
 
   if (salon.isPending) return <Splash />;
@@ -259,18 +267,18 @@ export function Salon() {
         )}
         {tab === 'avis' && (
           <div className="flex flex-col gap-3">
-            {s.ratingCount > 0 ? (
+            {hasReviews ? (
               <div className="crd !flex-row !items-center !gap-4">
                 <span className="text-[2.5rem] font-bold leading-none tracking-[-1px]">
-                  {formatRating(s.ratingAvg)}
+                  {formatRating(reviewAvg)}
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[1.125rem] font-semibold">
-                    {'★'.repeat(Math.round(s.ratingAvg))}
-                    <span className="text-disabled">{'★'.repeat(5 - Math.round(s.ratingAvg))}</span>
+                    {'★'.repeat(Math.round(reviewAvg))}
+                    <span className="text-disabled">{'★'.repeat(5 - Math.round(reviewAvg))}</span>
                   </span>
                   <span className="block text-[0.9375rem] text-muted">
-                    {s.ratingCount} avis vérifié{s.ratingCount > 1 ? 's' : ''} · après rendez-vous
+                    {reviewCount} avis vérifié{reviewCount > 1 ? 's' : ''} · après rendez-vous
                   </span>
                 </span>
               </div>
@@ -279,7 +287,7 @@ export function Salon() {
                 Pas encore d'avis : soyez le premier après votre rendez-vous.
               </p>
             )}
-            {s.ratingCount > 0 && (
+            {hasReviews && (
               <div className="pills -mx-5 px-5" role="group" aria-label="Trier les avis">
                 <Pill lg on={sort === 'best'} onClick={() => setSort('best')}>
                   Mieux notés
@@ -289,7 +297,7 @@ export function Salon() {
                 </Pill>
               </div>
             )}
-            {reviews.isPending && s.ratingCount > 0 && (
+            {reviews.isPending && hasReviews && (
               <Skeleton className="h-[6rem] w-full !rounded-[1.25rem]" />
             )}
             {reviewItems.map((r) => (

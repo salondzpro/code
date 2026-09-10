@@ -67,6 +67,14 @@ export default function Salon() {
   const [sort, setSort] = useState<ReviewSort>('best');
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
   const reviewItems = pagesItems(reviews.data);
+  // La fiche salon est mise en cache 60 s alors que la liste des avis ne l'est pas : juste après un nouvel avis,
+  // on se fie aussi à la liste pour afficher le résumé et le tri (sinon « Pas encore d'avis » avec un avis dessous).
+  const reviewCount = Math.max(salon.data?.ratingCount ?? 0, reviewItems.length);
+  const reviewAvg =
+    (salon.data?.ratingCount ?? 0) > 0 || reviewItems.length === 0
+      ? (salon.data?.ratingAvg ?? 0)
+      : reviewItems.reduce((a, r) => a + r.rating, 0) / reviewItems.length;
+  const hasReviews = reviewCount > 0;
   const [tab, setTab] = useState<Tab>('services');
 
   if (salon.isPending) return <Splash />;
@@ -347,20 +355,20 @@ export default function Salon() {
         )}
         {tab === 'avis' && (
           <View style={{ gap: 10 }}>
-            {s.ratingCount > 0 ? (
+            {hasReviews ? (
               <Card row gap={13} style={{ alignItems: 'center' }}>
                 <Tx size={32} weight={700} ls={-1} lh={36}>
-                  {formatRating(s.ratingAvg)}
+                  {formatRating(reviewAvg)}
                 </Tx>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Tx size={14.5} weight={600} lh={19}>
-                    {'★'.repeat(Math.round(s.ratingAvg))}
+                    {'★'.repeat(Math.round(reviewAvg))}
                     <Tx size={14.5} weight={600} lh={19} color={C.disabled}>
-                      {'★'.repeat(5 - Math.round(s.ratingAvg))}
+                      {'★'.repeat(5 - Math.round(reviewAvg))}
                     </Tx>
                   </Tx>
                   <Tx size={12} color={C.muted} lh={16}>
-                    {s.ratingCount} avis vérifié{s.ratingCount > 1 ? 's' : ''} · après rendez-vous
+                    {reviewCount} avis vérifié{reviewCount > 1 ? 's' : ''} · après rendez-vous
                   </Tx>
                 </View>
               </Card>
@@ -369,7 +377,7 @@ export default function Salon() {
                 <P center>Pas encore d'avis : soyez le premier après votre rendez-vous.</P>
               </View>
             )}
-            {s.ratingCount > 0 && (
+            {hasReviews && (
               <PillRow>
                 <Pill lg on={sort === 'best'} onPress={() => setSort('best')}>
                   Mieux notés
@@ -379,7 +387,7 @@ export default function Salon() {
                 </Pill>
               </PillRow>
             )}
-            {reviews.isPending && s.ratingCount > 0 && <Skeleton h={78} radius={16} />}
+            {reviews.isPending && hasReviews && <Skeleton h={78} radius={16} />}
             {reviewItems.map((r) => (
               <Card key={r.id} gap={4}>
                 <View
