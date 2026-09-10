@@ -1,5 +1,5 @@
 /**
- * Accueil pro — « Fermer / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
+ * Accueil pro — « Arrêt / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
  * le choix « jusqu'à la fermeture du jour / 1 h / 2 h / 3 h » et pose un blocage tout salon (sans membre) : plus de
  * réservations en ligne immédiatement. Tant qu'il est actif, le bouton passe en rouge (porte ouverte = rouvrir) et
  * une bannière « Fermé jusqu'à … » s'affiche sous les chiffres du jour avec « Rouvrir maintenant ». Le calcul des
@@ -7,7 +7,7 @@
  */
 import { useEffect, useState } from 'react';
 import { PickerSheet } from './Picker';
-import { DoorClosed, DoorOpen } from 'lucide-react';
+import { DoorClosed, DoorOpen, Siren } from 'lucide-react';
 import { useProBlockMutations, useProBlocks } from '@salondz/api-client';
 import {
   addDaysToKey,
@@ -47,7 +47,7 @@ function useFlash(): [string | null, (m: string | null) => void] {
   return [msg, setMsg];
 }
 
-/** Bouton icône de l'en-tête : « Fermer / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
+/** Bouton icône de l'en-tête : « Arrêt / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
 export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[] }) {
   const today = toLocalDateKey();
   const active = useActiveClose();
@@ -86,15 +86,15 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
       <IconButton
         lg
         aria-label={
-          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Fermer / Pause'
+          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Arrêt / Pause'
         }
-        title={active ? 'Rouvrir maintenant' : 'Fermer / Pause'}
+        title={active ? 'Rouvrir maintenant' : 'Arrêt / Pause'}
         className={active ? '!border-danger !bg-danger !text-white' : ''}
         disabled={create.isPending || remove.isPending}
         onClick={() => (active ? void reopen() : setChoosing(true))}
         data-testid="quick-close"
       >
-        <I icon={active ? DoorOpen : DoorClosed} size={20} />
+        <I icon={active ? DoorOpen : Siren} size={20} />
       </IconButton>
       {error && <Toast>{error}</Toast>}
       <PickerSheet

@@ -1,12 +1,12 @@
 /**
- * Accueil pro — « Fermer / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
+ * Accueil pro — « Arrêt / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
  * le choix « jusqu'à la fermeture du jour / 1 h / 2 h / 3 h » et pose un blocage tout salon : plus de réservations
  * en ligne immédiatement. Pendant une fermeture, le bouton passe en rouge (porte ouverte = rouvrir) et une bannière
  * « Fermé jusqu'à … » s'affiche sous les chiffres du jour avec « Rouvrir maintenant ».
  */
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { DoorClosed, DoorOpen } from 'lucide-react-native';
+import { DoorClosed, DoorOpen, Siren } from 'lucide-react-native';
 import { useProBlockMutations, useProBlocks } from '@salondz/api-client';
 import {
   addDaysToKey,
@@ -48,7 +48,7 @@ function useFlash(): [string | null, (m: string | null) => void] {
   return [msg, setMsg];
 }
 
-/** Bouton icône de l'en-tête : « Fermer / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
+/** Bouton icône de l'en-tête : « Arrêt / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
 export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[] }) {
   const today = toLocalDateKey();
   const active = useActiveClose();
@@ -87,13 +87,13 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
       <IconButton
         lg
         accessibilityLabel={
-          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Fermer / Pause'
+          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Arrêt / Pause'
         }
         disabled={create.isPending || remove.isPending}
         onPress={() => (active ? void reopen() : setChoosing(true))}
         style={active ? { backgroundColor: C.danger, borderColor: C.danger } : undefined}
       >
-        <I icon={active ? DoorOpen : DoorClosed} size={19} color={active ? '#fff' : C.text} />
+        <I icon={active ? DoorOpen : Siren} size={19} color={active ? '#fff' : C.text} />
       </IconButton>
       {error && <Toast>{error}</Toast>}
       <PickerSheet

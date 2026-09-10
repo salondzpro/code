@@ -1,8 +1,8 @@
 /** PRO-F 22 — Accueil professionnel : « Votre journée », à valider, prochains, chiffre d'affaires. */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, MessageCircle, Phone } from 'lucide-react-native';
 import {
   useMe,
   useProBookingMutations,
@@ -11,12 +11,13 @@ import {
   useProSalon,
   useProStats,
 } from '@salondz/api-client';
-import { formatDA, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
+import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
 import { useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/ui/QuickClose';
 import { formatDuration } from '@/lib/format';
+import { open } from '@/lib/salon';
 import {
   Avatar,
   Button,
@@ -25,6 +26,7 @@ import {
   Grid,
   H1,
   I,
+  IconButton,
   ListCard,
   P,
   Row,
@@ -35,6 +37,16 @@ import {
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { C, NAV_PAD } from '@/theme/design';
+
+/** Heure courante rafraîchie chaque minute (« dans 25 min », « en cours »). */
+function useNow(): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
 
 /** « 9,4k » pour les gros montants du bandeau (design). */
 function compactDA(n: number): string {
@@ -54,13 +66,21 @@ export default function ProHome() {
   const { setStatus } = useProBookingMutations();
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
-  const now = Date.now();
+  const now = useNow();
   const [staffId, setStaffId] = useStaffFilter();
   const byStaff = <T extends { staffId: string | null }>(list: T[]) =>
     staffId ? list.filter((b) => b.staffId === staffId) : list;
-  const upcoming = byStaff(todayList.data?.items ?? [])
+  const todays = byStaff(todayList.data?.items ?? [])
     .filter((b) => b.status !== 'cancelled')
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  // « Prochains » = ce qui reste à faire aujourd'hui (en cours compris) ; le passé est compté à part.
+  const upcoming = todays.filter(
+    (b) =>
+      new Date(b.endsAt).getTime() > now && (b.status === 'pending' || b.status === 'confirmed'),
+  );
+  const passed = todays.length - upcoming.length;
+  const next = upcoming[0];
+  const inProgress = !!next && new Date(next.startsAt).getTime() <= now;
   const pendingItems = byStaff(pending.data?.items ?? []);
 
   return (
@@ -212,7 +232,11 @@ export default function ProHome() {
 
       <SectionLabel
         right={
-          <Pressable accessibilityRole="link" onPress={() => router.push('/(pro)/(tabs)/agenda')}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Tout voir"
+            onPress={() => router.push('/(pro)/(tabs)/agenda')}
+          >
             <Tx size={10.5} color={C.muted} lh={14.5}>
               Tout voir
             </Tx>
@@ -221,43 +245,140 @@ export default function ProHome() {
       >
         Prochains
       </SectionLabel>
-      <ListCard>
-        {todayList.isPending && <Skeleton h={52} style={{ marginVertical: 10 }} />}
-        {upcoming.length === 0 && !todayList.isPending && (
-          <View style={{ paddingVertical: 10 }}>
-            <P>Journée libre.</P>
-          </View>
-        )}
-        {upcoming.slice(0, 6).map((b) => (
-          <Row
-            key={b.id}
-            py={13}
-            chevron={false}
-            onPress={() => router.push(`/pro-rdv/${b.id}` as never)}
-            right={<StatusBadge status={b.status} md />}
+      {todayList.isPending && <Skeleton h={117} radius={16} />}
+      {!todayList.isPending && !next && (
+        <Card>
+          <P>
+            {passed
+              ? `Journée terminée · ${passed} rendez-vous ${passed > 1 ? 'passés' : 'passé'} aujourd'hui.`
+              : 'Journée libre : aucun rendez-vous prévu aujourd’hui.'}
+          </P>
+        </Card>
+      )}
+      {next && (
+        /* Le prochain (ou celui en cours) en grand : heure, client, prestations, prix, membre — l'essentiel d'un coup d'œil. */
+        <Card
+          gap={10}
+          style={inProgress ? { backgroundColor: C.okBg, borderColor: C.okFg } : undefined}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
-              <Tx size={12} weight={700} lh={16} mono style={{ width: 49 }}>
-                {formatTimeDZ(b.startsAt)}
+            <Tx size={10} weight={700} upper ls={0.8} lh={14} color={inProgress ? C.okFg : C.muted}>
+              {inProgress
+                ? `En cours · fin à ${formatTimeDZ(next.endsAt)}`
+                : `Prochain · ${untilLabelFR(next.startsAt, now)}`}
+            </Tx>
+            <StatusBadge status={next.status} md />
+          </View>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={`Ouvrir le rendez-vous de ${next.clientName}`}
+            onPress={() => router.push(`/pro-rdv/${next.id}` as never)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+              <Tx size={29} weight={700} ls={-1} lh={32} mono>
+                {formatTimeDZ(next.startsAt)}
               </Tx>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx
-                  size={14}
-                  weight={700}
-                  ls={-0.3}
-                  lh={18}
-                  color={new Date(b.endsAt).getTime() < now ? C.muted : C.text}
-                >
-                  {b.clientName}
-                </Tx>
-                <Tx size={10.5} color={C.muted} lh={15.5}>
-                  {b.serviceName} · {formatDuration(b.durationMinutes)}
-                </Tx>
-              </View>
+              <Tx size={13} color={C.muted} lh={22} mono>
+                → {formatTimeDZ(next.endsAt)}
+              </Tx>
             </View>
-          </Row>
-        ))}
-      </ListCard>
+            <Tx size={19.5} weight={700} ls={-0.5} lh={24}>
+              {formatDA(next.priceDa)}
+            </Tx>
+          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push(`/pro-rdv/${next.id}` as never)}
+              style={{ flex: 1, minWidth: 0 }}
+            >
+              <Tx size={18} weight={700} ls={-0.4} lh={23} numberOfLines={1}>
+                {next.clientName}
+              </Tx>
+              <Tx size={13} color={C.muted} lh={18}>
+                {next.serviceName} · {formatDuration(next.durationMinutes)}
+                {next.staff?.displayName ? ` · ${next.staff.displayName}` : ''}
+              </Tx>
+            </Pressable>
+            {next.clientPhone && (
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <IconButton
+                  accessibilityLabel={`Appeler ${next.clientName}`}
+                  onPress={() => void open(`tel:${next.clientPhone}`)}
+                >
+                  <I icon={Phone} size={17} color={C.text} />
+                </IconButton>
+                <IconButton
+                  accessibilityLabel={`WhatsApp ${next.clientName}`}
+                  onPress={() => void open(`https://wa.me/${next.clientPhone!.replace(/\D/g, '')}`)}
+                >
+                  <I icon={MessageCircle} size={17} color={C.text} />
+                </IconButton>
+              </View>
+            )}
+          </View>
+        </Card>
+      )}
+      {upcoming.length > 1 && (
+        <ListCard>
+          {upcoming.slice(1, 6).map((b) => (
+            <Row
+              key={b.id}
+              py={13}
+              chevron={false}
+              onPress={() => router.push(`/pro-rdv/${b.id}` as never)}
+              right={
+                <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                  <Tx size={13} weight={700} lh={17}>
+                    {formatDA(b.priceDa)}
+                  </Tx>
+                  <StatusBadge status={b.status} />
+                </View>
+              }
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Tx size={16} weight={700} ls={-0.5} lh={20} mono style={{ width: 56 }}>
+                  {formatTimeDZ(b.startsAt)}
+                </Tx>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Tx size={14.5} weight={700} ls={-0.3} lh={18.5} numberOfLines={1}>
+                    {b.clientName}
+                  </Tx>
+                  <Tx size={12} color={C.muted} lh={16}>
+                    {b.serviceName} · {formatDuration(b.durationMinutes)}
+                    {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
+                  </Tx>
+                </View>
+              </View>
+            </Row>
+          ))}
+          {upcoming.length > 6 && (
+            <Row py={10} onPress={() => router.push('/(pro)/(tabs)/agenda')}>
+              <Tx size={12} color={C.muted} lh={16}>
+                + {upcoming.length - 6} autres aujourd'hui
+              </Tx>
+            </Row>
+          )}
+        </ListCard>
+      )}
+      {next && passed > 0 && (
+        <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginTop: -6 }}>
+          {passed} rendez-vous déjà {passed > 1 ? 'passés' : 'passé'} aujourd'hui.
+        </Tx>
+      )}
 
       <Card
         gap={13}

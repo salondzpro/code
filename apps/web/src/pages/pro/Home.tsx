@@ -1,6 +1,7 @@
 /** PRO-F 22 — Accueil professionnel : « Votre journée », à valider, prochains, chiffre d'affaires. */
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, MessageCircle, Phone } from 'lucide-react';
 import {
   useMe,
   useProBookingMutations,
@@ -9,7 +10,7 @@ import {
   useProSalon,
   useProStats,
 } from '@salondz/api-client';
-import { formatDA, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
+import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
 import { formatDuration } from '@/lib/format';
 import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
@@ -18,6 +19,16 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { StaffFilter } from '@/components/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/components/QuickClose';
 import { useStaffFilter } from '@/lib/proPrefs';
+
+/** Heure courante rafraîchie chaque minute (« dans 25 min », « en cours »). */
+function useNow(): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(t);
+  }, []);
+  return now;
+}
 
 /** « 9,4k » pour les gros montants du bandeau (design). */
 function compactDA(n: number): string {
@@ -39,10 +50,18 @@ export function ProHome() {
     staffId ? list.filter((b) => b.staffId === staffId) : list;
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
-  const now = Date.now();
-  const upcoming = byStaff(todayList.data?.items ?? [])
+  const now = useNow();
+  const todays = byStaff(todayList.data?.items ?? [])
     .filter((b) => b.status !== 'cancelled')
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  // « Prochains » = ce qui reste à faire aujourd'hui (en cours compris) ; le passé est compté à part.
+  const upcoming = todays.filter(
+    (b) =>
+      new Date(b.endsAt).getTime() > now && (b.status === 'pending' || b.status === 'confirmed'),
+  );
+  const passed = todays.length - upcoming.length;
+  const next = upcoming[0];
+  const inProgress = !!next && new Date(next.startsAt).getTime() <= now;
   const pendingItems = byStaff(pending.data?.items ?? []);
   const staffName = salon?.staff.find((m) => m.id === staffId)?.displayName ?? null;
 
@@ -160,36 +179,123 @@ export function ProHome() {
           Tout voir
         </Link>
       </div>
-      <div className="crd !gap-0 !py-1">
-        {todayList.isPending && <Skeleton className="my-3 h-16 w-full" />}
-        {upcoming.length === 0 && !todayList.isPending && <p className="p py-3">Journée libre.</p>}
-        {upcoming.slice(0, 6).map((b) => (
+      {todayList.isPending && <Skeleton className="h-[9rem] w-full !rounded-[1.25rem]" />}
+      {!todayList.isPending && !next && (
+        <div className="crd">
+          <p className="p">
+            {passed
+              ? `Journée terminée · ${passed} rendez-vous ${passed > 1 ? 'passés' : 'passé'} aujourd'hui.`
+              : 'Journée libre : aucun rendez-vous prévu aujourd’hui.'}
+          </p>
+        </div>
+      )}
+      {next && (
+        /* Le prochain (ou celui en cours) en grand : heure, client, prestations, prix, membre — l'essentiel d'un coup d'œil. */
+        <div className={`crd !gap-3 ${inProgress ? '!border-ok-fg !bg-ok-bg' : ''}`}>
+          <div className="flex items-center justify-between gap-3">
+            <span
+              className={`text-[0.75rem] font-bold uppercase tracking-[0.08em] ${inProgress ? 'text-ok-fg' : 'text-muted'}`}
+            >
+              {inProgress
+                ? `En cours · fin à ${formatTimeDZ(next.endsAt)}`
+                : `Prochain · ${untilLabelFR(next.startsAt, now)}`}
+            </span>
+            <StatusBadge status={next.status} md />
+          </div>
           <button
-            key={b.id}
             type="button"
-            className="li w-full !py-4 text-left"
-            onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
+            className="flex items-end justify-between gap-3 text-left"
+            onClick={() => navigate(`/pro/rendez-vous/${next.id}`)}
+            aria-label={`Ouvrir le rendez-vous de ${next.clientName}`}
           >
-            <span className="flex items-center gap-4">
-              <span className="mono w-[3.75rem] flex-none text-[0.9375rem] font-bold">
-                {formatTimeDZ(b.startsAt)}
-              </span>
-              <span>
-                <span
-                  className={`block text-[1.0625rem] font-bold tracking-[-0.3px] ${new Date(b.endsAt).getTime() < now ? 'text-muted' : ''}`}
-                >
-                  {b.clientName}
-                </span>
-                <span className="block text-[0.8125rem] text-muted">
-                  {b.serviceName} · {formatDuration(b.durationMinutes)}
-                  {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
-                </span>
+            <span className="mono text-[2.25rem] font-bold leading-none tracking-[-1px]">
+              {formatTimeDZ(next.startsAt)}
+              <span className="ml-1 text-[1rem] font-medium tracking-normal text-muted">
+                → {formatTimeDZ(next.endsAt)}
               </span>
             </span>
-            <StatusBadge status={b.status} md />
+            <span className="text-[1.5rem] font-bold leading-none tracking-[-0.5px]">
+              {formatDA(next.priceDa)}
+            </span>
           </button>
-        ))}
-      </div>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              className="min-w-0 flex-1 text-left"
+              onClick={() => navigate(`/pro/rendez-vous/${next.id}`)}
+            >
+              <span className="block truncate text-[1.375rem] font-bold tracking-[-0.4px]">
+                {next.clientName}
+              </span>
+              <span className="block text-[1rem] text-muted">
+                {next.serviceName} · {formatDuration(next.durationMinutes)}
+                {next.staff?.displayName ? ` · ${next.staff.displayName}` : ''}
+              </span>
+            </button>
+            {next.clientPhone && (
+              <span className="flex flex-none gap-2">
+                <a
+                  href={`tel:${next.clientPhone}`}
+                  className="ib"
+                  aria-label={`Appeler ${next.clientName}`}
+                >
+                  <I icon={Phone} size={18} />
+                </a>
+                <a
+                  href={`https://wa.me/${next.clientPhone.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ib"
+                  aria-label={`WhatsApp ${next.clientName}`}
+                >
+                  <I icon={MessageCircle} size={18} />
+                </a>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+      {upcoming.length > 1 && (
+        <div className="crd !gap-0 !py-1">
+          {upcoming.slice(1, 6).map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              className="li w-full !py-4 text-left"
+              onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
+            >
+              <span className="flex min-w-0 items-center gap-4">
+                <span className="mono w-[4.25rem] flex-none text-[1.25rem] font-bold tracking-[-0.5px]">
+                  {formatTimeDZ(b.startsAt)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[1.125rem] font-bold tracking-[-0.3px]">
+                    {b.clientName}
+                  </span>
+                  <span className="block text-[0.9375rem] text-muted">
+                    {b.serviceName} · {formatDuration(b.durationMinutes)}
+                    {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
+                  </span>
+                </span>
+              </span>
+              <span className="flex flex-none flex-col items-end gap-1">
+                <span className="text-[1rem] font-bold">{formatDA(b.priceDa)}</span>
+                <StatusBadge status={b.status} />
+              </span>
+            </button>
+          ))}
+          {upcoming.length > 6 && (
+            <Link to="/pro/agenda" className="li w-full !py-3 text-[0.9375rem] text-muted">
+              + {upcoming.length - 6} autres aujourd'hui
+            </Link>
+          )}
+        </div>
+      )}
+      {next && passed > 0 && (
+        <p className="s -mt-2">
+          {passed} rendez-vous déjà {passed > 1 ? 'passés' : 'passé'} aujourd'hui.
+        </p>
+      )}
 
       <Link to="/pro/chiffre-affaires" className="crd !gap-4">
         <span className="flex items-center justify-between">

@@ -367,34 +367,40 @@ export default function ProBookingNew() {
         </Tx>
       )}
 
-      {/* 3. Client — obligatoire : l'erreur s'affiche sur le champ lui-même. */}
-      <Field label="Client" error={fieldErr.name}>
-        <Input
-          lg
-          err={!!fieldErr.name}
-          value={name}
-          onChangeText={(v) => {
-            setName(v);
-            if (fieldErr.name) setFieldErr((f) => ({ ...f, name: undefined }));
-          }}
-          placeholder="Mohamed B."
-          accessibilityLabel="Client"
-        />
-      </Field>
-      <Field label="Téléphone (facultatif)" error={fieldErr.phone}>
-        <Input
-          lg
-          err={!!fieldErr.phone}
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={(v) => {
-            setPhone(v);
-            if (fieldErr.phone) setFieldErr((f) => ({ ...f, phone: undefined }));
-          }}
-          placeholder="05 51 23 45 67"
-          accessibilityLabel="Téléphone (facultatif)"
-        />
-      </Field>
+      {/* 3. Client (obligatoire, bordure rouge si manquant) et téléphone sur la même ligne. */}
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Field label="Client *" error={fieldErr.name}>
+            <Input
+              lg
+              err={!!fieldErr.name}
+              value={name}
+              onChangeText={(v) => {
+                setName(v);
+                if (fieldErr.name) setFieldErr((f) => ({ ...f, name: undefined }));
+              }}
+              placeholder="Mohamed B."
+              accessibilityLabel="Client"
+            />
+          </Field>
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Field label="Téléphone (facultatif)" error={fieldErr.phone}>
+            <Input
+              lg
+              err={!!fieldErr.phone}
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={(v) => {
+                setPhone(v);
+                if (fieldErr.phone) setFieldErr((f) => ({ ...f, phone: undefined }));
+              }}
+              placeholder="05 51 23 45 67"
+              accessibilityLabel="Téléphone (facultatif)"
+            />
+          </Field>
+        </View>
+      </View>
       {error && <Alert>{error}</Alert>}
       {done !== false && (
         <SuccessSplash

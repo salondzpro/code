@@ -443,6 +443,21 @@ try {
     await p.getByText('15:00 – 15:30').waitFor();
     await shot(p, 'pro-rdv');
   });
+  await step("pro: rendez-vous de passage aujourd'hui → accueil « Prochain » en grand", async () => {
+    // La page propose d'elle-même le premier créneau libre d'aujourd'hui (jamais le passé).
+    await p.goto(WEB + '/pro/rendez-vous/nouveau');
+    await p.getByRole('heading', { name: 'Ajouter un rendez-vous' }).waitFor();
+    await p.getByLabel('Client').fill('Nadir Dujour');
+    await p.getByLabel('Téléphone (facultatif)').fill('06 62 33 44 55');
+    await p.getByRole('button', { name: /Coupe simple/ }).click();
+    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
+    await p.goto(WEB + '/pro');
+    await p.getByText(/^(Prochain|En cours) · /).waitFor();
+    await p.getByText('Nadir Dujour').first().waitFor();
+    await p.getByLabel('Appeler Nadir Dujour').waitFor();
+    await shot(p, 'pro-accueil-prochain');
+  });
 
   // ===== Client (design C-H / C-F) =====
   let bookingId = '';
@@ -584,7 +599,7 @@ try {
     await agendaPickTarget(p);
     await p.getByRole('button', { name: /Amine Smoke · Coupe simple/ }).waitFor();
     await p.getByRole('tab', { name: 'Semaine' }).click();
-    await p.locator('.pill', { hasText: '2 rendez-vous' }).waitFor();
+    await p.locator('.pill', { hasText: /[23] rendez-vous/ }).waitFor();
     await shot(p, 'pro-agenda-semaine');
   });
   await step('pro: marquer terminé (rendez-vous passé)', async () => {

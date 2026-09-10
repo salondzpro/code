@@ -263,38 +263,40 @@ export function ProBookingNew() {
         </p>
       )}
 
-      {/* 3. Client — obligatoire : l'erreur s'affiche sur le champ lui-même. */}
-      <Field label="Client" htmlFor="nb-name" error={fieldErr.name}>
-        <Input
-          id="nb-name"
-          ref={nameRef}
-          lg
-          err={!!fieldErr.name}
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            if (fieldErr.name) setFieldErr((f) => ({ ...f, name: undefined }));
-          }}
-          placeholder="Mohamed B."
-          aria-required
-          aria-invalid={!!fieldErr.name || undefined}
-        />
-      </Field>
-      <Field label="Téléphone (facultatif)" htmlFor="nb-phone" error={fieldErr.phone}>
-        <Input
-          id="nb-phone"
-          lg
-          type="tel"
-          inputMode="tel"
-          err={!!fieldErr.phone}
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            if (fieldErr.phone) setFieldErr((f) => ({ ...f, phone: undefined }));
-          }}
-          placeholder="05 51 23 45 67"
-        />
-      </Field>
+      {/* 3. Client (obligatoire, bordure rouge si manquant) et téléphone sur la même ligne. */}
+      <div className="g2">
+        <Field label="Client *" htmlFor="nb-name" error={fieldErr.name}>
+          <Input
+            id="nb-name"
+            ref={nameRef}
+            lg
+            err={!!fieldErr.name}
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (fieldErr.name) setFieldErr((f) => ({ ...f, name: undefined }));
+            }}
+            placeholder="Mohamed B."
+            aria-required
+            aria-invalid={!!fieldErr.name || undefined}
+          />
+        </Field>
+        <Field label="Téléphone (facultatif)" htmlFor="nb-phone" error={fieldErr.phone}>
+          <Input
+            id="nb-phone"
+            lg
+            type="tel"
+            inputMode="tel"
+            err={!!fieldErr.phone}
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              if (fieldErr.phone) setFieldErr((f) => ({ ...f, phone: undefined }));
+            }}
+            placeholder="05 51 23 45 67"
+          />
+        </Field>
+      </div>
       {error && (
         <p className="text-[0.875rem] text-danger" role="alert">
           {error}

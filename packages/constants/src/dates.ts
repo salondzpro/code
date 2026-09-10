@@ -162,6 +162,16 @@ export function isDeviceOnDZTime(now: Date = new Date()): boolean {
   return now.getTimezoneOffset() === -UTC_OFFSET_MINUTES;
 }
 
+/** « dans 25 min », « dans 2 h 05 », « maintenant » : délai jusqu'à un instant (accueil pro : prochain rendez-vous). */
+export function untilLabelFR(target: string | Date, now = Date.now()): string {
+  const min = Math.round((new Date(target).getTime() - now) / 60_000);
+  if (min < 1) return 'maintenant';
+  if (min < 60) return `dans ${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `dans ${h} h ${String(m).padStart(2, '0')}` : `dans ${h} h`;
+}
+
 /** Ajoute n jours à une clé "YYYY-MM-DD". */
 export function addDaysToKey(dateKey: string, n: number): string {
   const [y, m, d] = dateKey.split('-').map(Number);
