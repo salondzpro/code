@@ -81,7 +81,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
       gap={13}
       footer={
         <StepSheet
-          label="Ajouter des photos"
+          label="Ajouter une photo"
           onPress={() => void submit()}
           busy={create.isPending || update.isPending}
           disabled={!name.trim() || !price || duration < 5}

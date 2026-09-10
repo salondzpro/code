@@ -283,9 +283,9 @@ try {
     await p.getByLabel('Nom').fill('Coupe + barbe');
     await p.getByLabel('Prix').fill('800');
     await p.getByRole('button', { name: '30 min', exact: true }).click();
-    await p.getByRole('button', { name: 'Ajouter des photos' }).click();
+    await p.getByRole('button', { name: 'Ajouter une photo' }).click();
     await p.waitForURL(/\/pro\/onboarding\/7\/[0-9a-f-]+$/);
-    await p.getByRole('heading', { name: /Photos · Coupe \+ barbe/ }).waitFor();
+    await p.getByRole('heading', { name: /Photo · Coupe \+ barbe/ }).waitFor();
     await shot(p, 'pro-etape-7');
     await p.getByRole('button', { name: 'Enregistrer et ajouter une autre' }).click();
     await p.waitForURL(/\/pro\/onboarding\/6$/);
@@ -293,7 +293,7 @@ try {
     await p.getByLabel('Nom').fill('Coupe simple');
     await p.getByLabel('Prix').fill('500');
     await p.getByRole('button', { name: '15 min', exact: true }).click();
-    await p.getByRole('button', { name: 'Ajouter des photos' }).click();
+    await p.getByRole('button', { name: 'Ajouter une photo' }).click();
     await p.waitForURL(/\/pro\/onboarding\/7\/[0-9a-f-]+$/);
     await p.getByRole('button', { name: 'Enregistrer la prestation' }).click();
     await p.waitForURL(/\/pro\/onboarding\/8$/);

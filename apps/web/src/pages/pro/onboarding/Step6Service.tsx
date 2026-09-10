@@ -127,7 +127,7 @@ export function Step6Service() {
           </p>
         )}
       </form>
-      <StepSheet label="Ajouter des photos" onClick={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price || duration < 5} />
+      <StepSheet label="Ajouter une photo" onClick={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price || duration < 5} />
     </Screen>
   );
 }
