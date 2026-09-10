@@ -2,7 +2,7 @@
  * C-F 04 — Page du salon : couverture (retour, favori), nom, catégories — quartier, note, ouverture,
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,7 +26,9 @@ import {
   groupServices,
   formatDateShortDZ,
 } from '@salondz/constants';
+import type { Service } from '@salondz/types';
 import { useAuth } from '@/lib/auth';
+import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration, formatRating } from '@/lib/format';
 import { open, openingStatus, publicUrl, shareUrl } from '@/lib/salon';
 import {
@@ -47,13 +49,14 @@ import {
   Tx,
   Pill,
   Skeleton,
+  Checkbox,
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { PillRow } from '@/ui/Pills';
 import { Splash } from '@/ui/Splash';
 import { C, R } from '@/theme/design';
 
-type Tab = 'services' | 'works' | 'infos' | 'avis';
+type Tab = 'services' | 'works' | 'infos';
 
 export default function Salon() {
   const { slug = '' } = useLocalSearchParams<{ slug: string }>();
@@ -63,19 +66,17 @@ export default function Salon() {
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
-  // Avis : mieux notés d'abord (puis plus récents), ou plus récents ; pagination « Voir plus d'avis ».
-  const [sort, setSort] = useState<ReviewSort>('best');
-  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
-  const reviewItems = pagesItems(reviews.data);
-  // La fiche salon est mise en cache 60 s alors que la liste des avis ne l'est pas : juste après un nouvel avis,
-  // on se fie aussi à la liste pour afficher le résumé et le tri (sinon « Pas encore d'avis » avec un avis dessous).
-  const reviewCount = Math.max(salon.data?.ratingCount ?? 0, reviewItems.length);
-  const reviewAvg =
-    (salon.data?.ratingCount ?? 0) > 0 || reviewItems.length === 0
-      ? (salon.data?.ratingAvg ?? 0)
-      : reviewItems.reduce((a, r) => a + r.rating, 0) / reviewItems.length;
-  const hasReviews = reviewCount > 0;
   const [tab, setTab] = useState<Tab>('services');
+  // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
+  const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
+  const [hint, setHint] = useState(false);
+  useEffect(() => {
+    writeDraft(slug, { serviceIds: selected });
+  }, [slug, selected]);
+  const toggleService = (id: string) => {
+    setHint(false);
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   if (salon.isPending) return <Splash />;
   if (salon.isError)
@@ -90,6 +91,11 @@ export default function Salon() {
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
   const works = s.works;
+  const chosen = selected
+    .map((id) => s.services.find((x) => x.id === id))
+    .filter((x): x is Service => !!x);
+  const total = chosen.reduce((a, x) => a + x.priceDa, 0);
+  const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(client)/(tabs)'));
 
   return (
@@ -100,7 +106,49 @@ export default function Salon() {
       edges={[]}
       footer={
         <BottomSheet grab={false}>
-          <Button onPress={() => router.push(`/s/${s.slug}/prestations` as never)}>Réserver</Button>
+          {chosen.length > 0 ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+                gap: 10,
+              }}
+            >
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+                  {formatDA(total)}
+                </Tx>
+                <P numberOfLines={1}>
+                  {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
+                  {formatDuration(minutes)} au total
+                </P>
+              </View>
+              <Button
+                pill
+                onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
+                style={{ paddingHorizontal: 20, paddingVertical: 13 }}
+              >
+                Choisir un créneau
+              </Button>
+            </View>
+          ) : (
+            <View style={{ gap: 8 }}>
+              {hint && (
+                <Tx size={12} color={C.danger} lh={16} center accessibilityRole="alert">
+                  Cochez une ou plusieurs prestations ci-dessus.
+                </Tx>
+              )}
+              <Button
+                onPress={() => {
+                  setTab('services');
+                  setHint(true);
+                }}
+              >
+                Réserver
+              </Button>
+            </View>
+          )}
         </BottomSheet>
       }
     >
@@ -170,7 +218,7 @@ export default function Salon() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`}
-              onPress={() => setTab('avis')}
+              onPress={() => router.push(`/s/${s.slug}/avis` as never)}
               style={{
                 backgroundColor: C.fill,
                 borderRadius: R.pill,
@@ -221,7 +269,6 @@ export default function Salon() {
             { value: 'services', label: 'Prestations' },
             { value: 'works', label: 'Réalisations' },
             { value: 'infos', label: 'Infos' },
-            { value: 'avis', label: s.ratingCount ? `Avis · ${s.ratingCount}` : 'Avis' },
           ]}
         />
 
@@ -231,26 +278,37 @@ export default function Salon() {
               <View key={g.name} style={{ gap: 6 }}>
                 <SectionLabel>{g.name}</SectionLabel>
                 <ListCard>
-                  {g.services.map((sv) => (
-                    <Row
-                      key={sv.id}
-                      to={`/s/${s.slug}/prestation/${sv.id}`}
-                      py={16}
-                      chevron={false}
-                      right={
-                        <Tx size={13} weight={600} lh={17}>
-                          {formatDA(sv.priceDa)}
-                        </Tx>
-                      }
-                    >
-                      <Tx size={13} weight={600} lh={17}>
-                        {sv.name}
-                      </Tx>
-                      <Tx size={12} color={C.muted} lh={16}>
-                        {formatDuration(sv.durationMinutes)}
-                      </Tx>
-                    </Row>
-                  ))}
+                  {g.services.map((sv) => {
+                    const on = selected.includes(sv.id);
+                    return (
+                      <Row
+                        key={sv.id}
+                        onPress={() => toggleService(sv.id)}
+                        accessibilityLabel={sv.name}
+                        py={13}
+                        chevron={false}
+                        right={<Checkbox on={on} label={sv.name} />}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                          {!!sv.photos?.[0]?.url && (
+                            <Img
+                              src={sv.photos[0].url}
+                              radius={11}
+                              style={{ width: 52, height: 52 }}
+                            />
+                          )}
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <Tx size={13.5} weight={700} ls={-0.3} lh={17.5}>
+                              {sv.name}
+                            </Tx>
+                            <Tx size={12} color={C.muted} lh={16}>
+                              {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
+                            </Tx>
+                          </View>
+                        </View>
+                      </Row>
+                    );
+                  })}
                 </ListCard>
               </View>
             ))}
@@ -351,75 +409,6 @@ export default function Salon() {
                 </Row>
               )}
             </ListCard>
-          </View>
-        )}
-        {tab === 'avis' && (
-          <View style={{ gap: 10 }}>
-            {hasReviews ? (
-              <Card row gap={13} style={{ alignItems: 'center' }}>
-                <Tx size={32} weight={700} ls={-1} lh={36}>
-                  {formatRating(reviewAvg)}
-                </Tx>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={14.5} weight={600} lh={19}>
-                    {'★'.repeat(Math.round(reviewAvg))}
-                    <Tx size={14.5} weight={600} lh={19} color={C.disabled}>
-                      {'★'.repeat(5 - Math.round(reviewAvg))}
-                    </Tx>
-                  </Tx>
-                  <Tx size={12} color={C.muted} lh={16}>
-                    {reviewCount} avis vérifié{reviewCount > 1 ? 's' : ''} · après rendez-vous
-                  </Tx>
-                </View>
-              </Card>
-            ) : (
-              <View style={{ paddingVertical: 10 }}>
-                <P center>Pas encore d'avis : soyez le premier après votre rendez-vous.</P>
-              </View>
-            )}
-            {hasReviews && (
-              <PillRow>
-                <Pill lg on={sort === 'best'} onPress={() => setSort('best')}>
-                  Mieux notés
-                </Pill>
-                <Pill lg on={sort === 'recent'} onPress={() => setSort('recent')}>
-                  Plus récents
-                </Pill>
-              </PillRow>
-            )}
-            {reviews.isPending && hasReviews && <Skeleton h={78} radius={16} />}
-            {reviewItems.map((r) => (
-              <Card key={r.id} gap={4}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 10,
-                  }}
-                >
-                  <Tx size={13.5} weight={600} lh={17.5}>
-                    {'★'.repeat(r.rating)}
-                    <Tx size={13.5} weight={600} lh={17.5} color={C.disabled}>
-                      {'★'.repeat(5 - r.rating)}
-                    </Tx>
-                  </Tx>
-                  <Tx size={10.5} color={C.muted} lh={14}>
-                    {formatDateShortDZ(r.createdAt)}
-                  </Tx>
-                </View>
-                <Tx size={13} weight={600} lh={17}>
-                  {r.authorName}
-                </Tx>
-                {!!r.comment && <P>{r.comment}</P>}
-              </Card>
-            ))}
-            <LoadMore
-              hasMore={reviews.hasNextPage}
-              loading={reviews.isFetchingNextPage}
-              onMore={() => void reviews.fetchNextPage()}
-              label="Voir plus d'avis"
-            />
           </View>
         )}
       </View>

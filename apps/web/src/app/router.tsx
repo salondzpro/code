@@ -27,6 +27,7 @@ import { SearchPage } from '@/pages/client/SearchPage';
 import { CategoryResults } from '@/pages/client/CategoryResults';
 import { Salon } from '@/pages/client/Salon';
 import { SalonWorks } from '@/pages/client/SalonWorks';
+import { SalonReviews } from '@/pages/client/SalonReviews';
 import { SalonServices } from '@/pages/client/SalonServices';
 import { ServiceDetail } from '@/pages/client/ServiceDetail';
 import { BookingServices } from '@/pages/client/BookingServices';
@@ -140,6 +141,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/s/:slug', element: <Salon /> },
           { path: '/s/:slug/realisations', element: <SalonWorks /> },
+          { path: '/s/:slug/avis', element: <SalonReviews /> },
           { path: '/s/:slug/prestations', element: <BookingServices /> },
           { path: '/s/:slug/catalogue', element: <SalonServices /> },
           { path: '/s/:slug/prestation/:serviceId', element: <ServiceDetail /> },

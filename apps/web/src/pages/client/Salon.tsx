@@ -2,10 +2,11 @@
  * C-F 04 — Page du salon : couverture (retour, favori), nom, catégories — quartier, note, ouverture,
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
-import { ChevronLeft, Heart, Share2 } from 'lucide-react';
+import { Check, ChevronLeft, Heart, Share2 } from 'lucide-react';
+import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { PublicHeader } from '@/components/PublicHeader';
 import {
   pagesItems,
@@ -43,9 +44,9 @@ import {
 import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
-import type { SalonPublic } from '@salondz/types';
+import type { SalonPublic, Service } from '@salondz/types';
 
-type Tab = 'services' | 'works' | 'infos' | 'avis';
+type Tab = 'services' | 'works' | 'infos';
 
 /** « Ouvert · ferme à 19:00 » / « Fermé · ouvre demain 09:00 ». */
 export function openingStatus(s: SalonPublic): { open: boolean; label: string } {
@@ -78,19 +79,17 @@ export function Salon() {
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
-  // Avis : mieux notés d'abord (puis plus récents), ou plus récents ; pagination « Voir plus d'avis ».
-  const [sort, setSort] = useState<ReviewSort>('best');
-  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
-  const reviewItems = pagesItems(reviews.data);
-  // La fiche salon est mise en cache 60 s alors que la liste des avis ne l'est pas : juste après un nouvel avis,
-  // on se fie aussi à la liste pour afficher le résumé et le tri (sinon « Pas encore d'avis » avec un avis dessous).
-  const reviewCount = Math.max(salon.data?.ratingCount ?? 0, reviewItems.length);
-  const reviewAvg =
-    (salon.data?.ratingCount ?? 0) > 0 || reviewItems.length === 0
-      ? (salon.data?.ratingAvg ?? 0)
-      : reviewItems.reduce((a, r) => a + r.rating, 0) / reviewItems.length;
-  const hasReviews = reviewCount > 0;
   const [tab, setTab] = useState<Tab>('services');
+  // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
+  const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
+  const [hint, setHint] = useState(false);
+  useEffect(() => {
+    writeDraft(slug, { serviceIds: selected });
+  }, [slug, selected]);
+  const toggle = (id: string) => {
+    setHint(false);
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   if (salon.isPending) return <Splash />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
@@ -100,6 +99,11 @@ export function Salon() {
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
   const works = s.works;
+  const chosen = selected
+    .map((id) => s.services.find((x) => x.id === id))
+    .filter((x): x is Service => !!x);
+  const total = chosen.reduce((a, x) => a + x.priceDa, 0);
+  const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
 
   return (
     <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>
@@ -156,7 +160,7 @@ export function Salon() {
             <button
               type="button"
               className="pill soft !text-[0.9375rem] !font-semibold"
-              onClick={() => setTab('avis')}
+              onClick={() => navigate(`/s/${s.slug}/avis`)}
               aria-label={`${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`}
             >
               ★ {formatRating(s.ratingAvg)} · {s.ratingCount} avis
@@ -177,7 +181,6 @@ export function Salon() {
             { value: 'services', label: 'Prestations' },
             { value: 'works', label: 'Réalisations' },
             { value: 'infos', label: 'Infos' },
-            { value: 'avis', label: s.ratingCount ? `Avis · ${s.ratingCount}` : 'Avis' },
           ]}
         />
 
@@ -187,17 +190,38 @@ export function Salon() {
               <div key={g.name} className="flex flex-col gap-2">
                 <span className="h3">{g.name}</span>
                 <div className="crd !gap-0 !py-1">
-                  {g.services.map((sv) => (
-                    <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="li !py-5">
-                      <span>
-                        <span className="block text-[1rem] font-semibold">{sv.name}</span>
-                        <span className="s block text-[0.9375rem]">
-                          {formatDuration(sv.durationMinutes)}
+                  {g.services.map((sv) => {
+                    const on = selected.includes(sv.id);
+                    return (
+                      <button
+                        key={sv.id}
+                        type="button"
+                        className="li w-full !py-4 text-left"
+                        onClick={() => toggle(sv.id)}
+                        aria-pressed={on}
+                      >
+                        <span className="flex min-w-0 flex-1 items-center gap-3.5">
+                          {sv.photos?.[0]?.url && (
+                            <Img
+                              src={sv.photos[0].url}
+                              className="h-[3.75rem] w-[3.75rem] flex-none !rounded-[0.875rem]"
+                            />
+                          )}
+                          <span className="min-w-0">
+                            <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+                              {sv.name}
+                            </span>
+                            <span className="block text-[0.9375rem] text-muted">
+                              {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
+                            </span>
+                          </span>
                         </span>
-                      </span>
-                      <span className="text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
-                    </Link>
-                  ))}
+                        <span className={`chk${on ? ' on' : ''}`} aria-hidden>
+                          {on && <I icon={Check} size={16} />}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -265,69 +289,44 @@ export function Salon() {
             </div>
           </div>
         )}
-        {tab === 'avis' && (
-          <div className="flex flex-col gap-3">
-            {hasReviews ? (
-              <div className="crd !flex-row !items-center !gap-4">
-                <span className="text-[2.5rem] font-bold leading-none tracking-[-1px]">
-                  {formatRating(reviewAvg)}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[1.125rem] font-semibold">
-                    {'★'.repeat(Math.round(reviewAvg))}
-                    <span className="text-disabled">{'★'.repeat(5 - Math.round(reviewAvg))}</span>
-                  </span>
-                  <span className="block text-[0.9375rem] text-muted">
-                    {reviewCount} avis vérifié{reviewCount > 1 ? 's' : ''} · après rendez-vous
-                  </span>
-                </span>
-              </div>
-            ) : (
-              <p className="p py-3 text-center">
-                Pas encore d'avis : soyez le premier après votre rendez-vous.
-              </p>
-            )}
-            {hasReviews && (
-              <div className="pills -mx-5 px-5" role="group" aria-label="Trier les avis">
-                <Pill lg on={sort === 'best'} onClick={() => setSort('best')}>
-                  Mieux notés
-                </Pill>
-                <Pill lg on={sort === 'recent'} onClick={() => setSort('recent')}>
-                  Plus récents
-                </Pill>
-              </div>
-            )}
-            {reviews.isPending && hasReviews && (
-              <Skeleton className="h-[6rem] w-full !rounded-[1.25rem]" />
-            )}
-            {reviewItems.map((r) => (
-              <div key={r.id} className="crd !gap-1.5">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[1.0625rem] font-semibold">
-                    {'★'.repeat(r.rating)}
-                    <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span>
-                  </span>
-                  <span className="text-[0.8125rem] text-muted">
-                    {formatDateShortDZ(r.createdAt)}
-                  </span>
-                </div>
-                <span className="text-[1rem] font-semibold">{r.authorName}</span>
-                {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
-              </div>
-            ))}
-            <LoadMore
-              hasMore={reviews.hasNextPage}
-              loading={reviews.isFetchingNextPage}
-              onMore={() => void reviews.fetchNextPage()}
-              label="Voir plus d'avis"
-              auto={false}
-            />
-          </div>
-        )}
       </div>
 
+      {/* Un seul parcours : cocher ici → créneau → récapitulatif. */}
       <BottomSheet grab={false}>
-        <Button onClick={() => navigate(`/s/${s.slug}/prestations`)}>Réserver</Button>
+        {chosen.length > 0 ? (
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-[1.5rem] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
+              <div className="p truncate">
+                {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)}{' '}
+                au total
+              </div>
+            </div>
+            <Button
+              auto
+              className="!rounded-full !px-6 !py-4"
+              onClick={() => navigate(`/s/${s.slug}/reserver/quand`)}
+            >
+              Choisir un créneau
+            </Button>
+          </div>
+        ) : (
+          <>
+            {hint && (
+              <p className="p text-center text-danger" role="alert">
+                Cochez une ou plusieurs prestations ci-dessus.
+              </p>
+            )}
+            <Button
+              onClick={() => {
+                setTab('services');
+                setHint(true);
+              }}
+            >
+              Réserver
+            </Button>
+          </>
+        )}
       </BottomSheet>
     </div>
   );
