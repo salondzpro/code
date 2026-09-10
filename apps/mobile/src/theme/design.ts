@@ -16,6 +16,8 @@ export const C = {
   subtle: '#9A9EA3',
   disabled: '#C4C7CA',
   ink: '#111214',
+  /** Titre « Pour Femmes » en mode femmes. */
+  women: '#D6336C',
   onInk: '#FFFFFF',
   danger: '#E5484D',
   dangerLine: '#F4D7D8',

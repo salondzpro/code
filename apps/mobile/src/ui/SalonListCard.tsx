@@ -7,16 +7,13 @@
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { SalonSummary } from '@salondz/types';
-import {
-  addDaysToKey,
-  categoryLabel,
-  dayChipLabelDZ,
-  formatDA,
-  toLocalDateKey,
-} from '@salondz/constants';
+import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/format';
 import { C, R } from '@/theme/design';
 import { Img, S, Tx } from './index';
+
+/** Catégories affichées sur une carte avant « … ». */
+const MAX_CARD_CATEGORIES = 3;
 
 export function RatingPill({
   avg,
@@ -233,44 +230,17 @@ export function NextSlots({
   );
 }
 
-/** Prestations phares : le prix en gras, c'est ce que le client compare en premier. */
-function ServicesLine({ s }: { s: SalonSummary }) {
-  return (
-    <Tx size={12} lh={17}>
-      {s.topServices.map((t, i) => (
-        <Tx key={`${t.name}-${i}`} size={12} lh={17}>
-          {i > 0 ? (
-            <Tx size={12} color={C.subtle} lh={17}>
-              {' · '}
-            </Tx>
-          ) : null}
-          {t.name}{' '}
-          <Tx size={12} weight={700} lh={17}>
-            {formatDA(t.priceDa)}
-          </Tx>
-        </Tx>
-      ))}
-    </Tx>
-  );
-}
-
-export function SalonListCard({
-  salon,
-  large,
-  to,
-}: {
-  salon: SalonSummary;
-  large?: boolean;
-  to?: string;
-}) {
+export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string }) {
   const router = useRouter();
   const s = salon;
   const km = formatKm(s.distanceKm);
   const place = s.zone ?? s.city;
-  const cats = s.categoryIds
-    .slice(0, 2)
-    .map((c) => categoryLabel(c))
-    .join(' · ');
+  // Catégories seulement (pas de prix ni de prestations sur la carte) : 3 au plus, « … » s'il y en a d'autres.
+  const cats =
+    s.categoryIds
+      .slice(0, MAX_CARD_CATEGORIES)
+      .map((c) => categoryLabel(c))
+      .join(' · ') + (s.categoryIds.length > MAX_CARD_CATEGORIES ? ' · …' : '');
   const href = to ?? `/s/${s.slug}`;
   const go = () => router.push(href as never);
   const base: ViewStyle = {
@@ -280,32 +250,6 @@ export function SalonListCard({
     borderRadius: R.card,
     overflow: 'hidden',
   };
-
-  if (large) {
-    return (
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel={s.name}
-        onPress={go}
-        style={({ pressed }) => [base, { opacity: pressed ? 0.92 : 1 }]}
-      >
-        <Img src={s.coverUrl} radius={0} style={{ height: 187, width: '100%' }} />
-        <View style={{ padding: 13, gap: 3 }}>
-          <Tx size={17} weight={700} ls={-0.5} lh={21}>
-            {s.name}
-          </Tx>
-          <Tx size={11.5} color={C.muted} lh={16}>
-            {[cats, place, km].filter(Boolean).join(' · ')}
-          </Tx>
-          <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-          {s.topServices.length > 0 && <ServicesLine s={s} />}
-          <View style={{ marginTop: 8 }}>
-            <NextSlots salon={s} />
-          </View>
-        </View>
-      </Pressable>
-    );
-  }
 
   return (
     <Pressable
@@ -320,17 +264,17 @@ export function SalonListCard({
           <Tx size={15.5} weight={700} ls={-0.5} lh={19}>
             {s.name}
           </Tx>
-          <Tx size={11.5} color={C.muted} lh={16} style={{ marginTop: 3 }}>
-            {[cats, place, km].filter(Boolean).join(' · ')}
+          {!!cats && (
+            <Tx size={12} weight={500} lh={16} style={{ marginTop: 3 }}>
+              {cats}
+            </Tx>
+          )}
+          <Tx size={11.5} color={C.muted} lh={16} style={{ marginTop: 2 }}>
+            {[place, km].filter(Boolean).join(' · ')}
           </Tx>
           <View style={{ marginTop: 3 }}>
             <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
           </View>
-          {s.topServices.length > 0 && (
-            <View style={{ marginTop: 2 }}>
-              <ServicesLine s={s} />
-            </View>
-          )}
         </View>
       </View>
       <NextSlots salon={s} />

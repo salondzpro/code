@@ -6,15 +6,12 @@
  */
 import { Link, useNavigate } from 'react-router';
 import type { SalonSummary } from '@salondz/types';
-import {
-  addDaysToKey,
-  categoryLabel,
-  dayChipLabelDZ,
-  formatDA,
-  toLocalDateKey,
-} from '@salondz/constants';
+import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/clientPrefs';
 import { Img } from './ui';
+
+/** Catégories affichées sur une carte avant « … ». */
+const MAX_CARD_CATEGORIES = 3;
 
 export function RatingPill({
   avg,
@@ -170,62 +167,17 @@ export function NextSlots({
   );
 }
 
-/** Prestations phares : le prix en gras, c'est ce que le client compare en premier. */
-function ServicesLine({ s }: { s: SalonSummary }) {
-  return (
-    <span className="text-[0.9375rem] text-text">
-      {s.topServices.map((t, i) => (
-        <span key={`${t.name}-${i}`}>
-          {i > 0 && <span className="text-subtle"> · </span>}
-          {t.name} <b>{formatDA(t.priceDa)}</b>
-        </span>
-      ))}
-    </span>
-  );
-}
-
-export function SalonListCard({
-  salon,
-  large,
-  to,
-}: {
-  salon: SalonSummary;
-  large?: boolean;
-  to?: string;
-}) {
+export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string }) {
   const s = salon;
   const km = formatKm(s.distanceKm);
   const place = s.zone ?? s.city;
-  const cats = s.categoryIds
-    .slice(0, 2)
-    .map((c) => categoryLabel(c))
-    .join(' · ');
+  // Catégories seulement (pas de prix ni de prestations sur la carte) : 3 au plus, « … » s'il y en a d'autres.
+  const cats =
+    s.categoryIds
+      .slice(0, MAX_CARD_CATEGORIES)
+      .map((c) => categoryLabel(c))
+      .join(' · ') + (s.categoryIds.length > MAX_CARD_CATEGORIES ? ' · …' : '');
   const href = to ?? `/s/${s.slug}`;
-
-  if (large) {
-    return (
-      <Link to={href} className="crd !gap-0 overflow-hidden !p-0">
-        <div className="relative h-[14.375rem] w-full bg-line">
-          {s.coverUrl && (
-            <img src={s.coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
-          )}
-        </div>
-        <div className="flex flex-col gap-1 p-4">
-          <span className="text-[1.3125rem] font-bold leading-tight tracking-[-0.5px]">
-            {s.name}
-          </span>
-          <span className="text-[0.875rem] text-muted">
-            {[cats, place, km].filter(Boolean).join(' · ')}
-          </span>
-          <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-          {s.topServices.length > 0 && <ServicesLine s={s} />}
-          <div className="mt-2.5">
-            <NextSlots salon={s} />
-          </div>
-        </div>
-      </Link>
-    );
-  }
 
   return (
     <Link to={href} className="crd !gap-3">
@@ -238,17 +190,13 @@ export function SalonListCard({
           <span className="text-[1.1875rem] font-bold leading-tight tracking-[-0.5px]">
             {s.name}
           </span>
-          <span className="mt-1 block text-[0.875rem] text-muted">
-            {[cats, place, km].filter(Boolean).join(' · ')}
+          {cats && <span className="mt-1 block text-[0.9375rem] font-medium">{cats}</span>}
+          <span className="mt-0.5 block text-[0.875rem] text-muted">
+            {[place, km].filter(Boolean).join(' · ')}
           </span>
           <div className="mt-1">
             <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
           </div>
-          {s.topServices.length > 0 && (
-            <span className="mt-0.5 block">
-              <ServicesLine s={s} />
-            </span>
-          )}
         </div>
       </div>
       <NextSlots salon={s} />

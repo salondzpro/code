@@ -4,17 +4,37 @@
  */
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { ArrowLeftRight, Check, ChevronDown, List, Map as MapIcon, MapPin, Search } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Check,
+  ChevronDown,
+  List,
+  Map as MapIcon,
+  MapPin,
+  Search,
+} from 'lucide-react';
 import { useMe, useSalonSearch, useUpdateProfile } from '@salondz/api-client';
-import { MARKET_LABELS_FR, categoriesForMarket, categoryLabel, type CategoryId, type Market } from '@salondz/constants';
+import {
+  MARKET_LABELS_FR,
+  categoriesForMarket,
+  categoryLabel,
+  type CategoryId,
+  type Market,
+} from '@salondz/constants';
 import { SORT_OPTIONS, useLocationPrefs, type SortKey } from '@/lib/clientPrefs';
 import { Avatar, BottomSheet, Button, I, IconButton, Pill, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { SalonListCard } from '@/components/SalonListCard';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
-const PLACEHOLDER: Record<Market, string> = { men: 'Barbier, coupe, barbe…', women: 'Coiffure, ongles, cils…' };
-const NOUN: Record<Market, [string, string]> = { men: ['barbier', 'barbiers'], women: ['salon', 'salons'] };
+const PLACEHOLDER: Record<Market, string> = {
+  men: 'Barbier, coupe, barbe…',
+  women: 'Coiffure, ongles, cils…',
+};
+const NOUN: Record<Market, [string, string]> = {
+  men: ['barbier', 'barbiers'],
+  women: ['salon', 'salons'],
+};
 
 export function Marketplace() {
   const navigate = useNavigate();
@@ -78,21 +98,33 @@ export function Marketplace() {
             <I icon={ChevronDown} size={16} className="text-subtle" />
           </Link>
           <div className="mt-1 flex items-center gap-2.5">
-            <h1 className="h1">{MARKET_LABELS_FR[market]}</h1>
-            <IconButton aria-label="Changer de marché" onClick={swapMarket} disabled={update.isPending} className="!h-9 !w-9 !rounded-[0.75rem]">
+            {/* Mode femmes : titre en rose pour lever toute ambiguïté sur le catalogue affiché. */}
+            <h1 className={`h1${market === 'women' ? ' text-women' : ''}`}>{MARKET_LABELS_FR[market]}</h1>
+            <IconButton
+              aria-label="Changer de marché"
+              onClick={swapMarket}
+              disabled={update.isPending}
+              className="!h-9 !w-9 !rounded-[0.75rem]"
+            >
               <I icon={ArrowLeftRight} size={16} />
             </IconButton>
           </div>
         </div>
         <Link to="/profil" aria-label="Profil" className="mt-1">
-          <Avatar src={me.data?.profile.avatarUrl} name={me.data?.profile.fullName ?? 'Moi'} size={40} />
+          <Avatar
+            src={me.data?.profile.avatarUrl}
+            name={me.data?.profile.fullName ?? 'Moi'}
+            size={40}
+          />
         </Link>
       </div>
 
       {/* Recherche */}
       <Link to="/recherche" className="search" aria-label="Rechercher">
         <I icon={Search} size={22} />
-        <span className={`flex-1 ${q ? 'text-text' : 'text-subtle'}`}>{q || PLACEHOLDER[market]}</span>
+        <span className={`flex-1 ${q ? 'text-text' : 'text-subtle'}`}>
+          {q || PLACEHOLDER[market]}
+        </span>
         {q && (
           <button
             type="button"
@@ -121,13 +153,25 @@ export function Marketplace() {
 
       {/* Filtres rapides (vrais filtres : disponibilité du jour et note côté API, ouverture côté client) */}
       <div className="pills -mx-5 px-5" aria-label="Filtres rapides">
-        <Pill on={prefs.availableToday} aria-pressed={prefs.availableToday} onClick={() => setPrefs({ availableToday: !prefs.availableToday })}>
+        <Pill
+          on={prefs.availableToday}
+          aria-pressed={prefs.availableToday}
+          onClick={() => setPrefs({ availableToday: !prefs.availableToday })}
+        >
           Disponible aujourd'hui
         </Pill>
-        <Pill on={prefs.openNow} aria-pressed={prefs.openNow} onClick={() => setPrefs({ openNow: !prefs.openNow })}>
+        <Pill
+          on={prefs.openNow}
+          aria-pressed={prefs.openNow}
+          onClick={() => setPrefs({ openNow: !prefs.openNow })}
+        >
           Ouvert maintenant
         </Pill>
-        <Pill on={prefs.ratingMin != null} aria-pressed={prefs.ratingMin != null} onClick={() => setPrefs({ ratingMin: prefs.ratingMin ? null : 4.5 })}>
+        <Pill
+          on={prefs.ratingMin != null}
+          aria-pressed={prefs.ratingMin != null}
+          onClick={() => setPrefs({ ratingMin: prefs.ratingMin ? null : 4.5 })}
+        >
           Note 4,5+
         </Pill>
       </div>
@@ -135,15 +179,29 @@ export function Marketplace() {
       {/* Liste / Carte + tri */}
       <div className="flex items-center justify-between gap-3">
         <div className="seg !p-1">
-          <button type="button" className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]" aria-pressed>
+          <button
+            type="button"
+            className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]"
+            aria-pressed
+          >
             <I icon={List} size={17} /> Liste
           </button>
-          <button type="button" className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]" onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}>
+          <button
+            type="button"
+            className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]"
+            onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}
+          >
             <I icon={MapIcon} size={17} /> Carte
           </button>
         </div>
-        <button type="button" className="btn g auto !gap-1.5 whitespace-nowrap !px-3.5 !py-3 !text-[1rem] !font-medium" onClick={() => setSortOpen(true)} aria-haspopup="dialog">
-          <span className="text-muted">⇅</span> {sortLabel} <I icon={ChevronDown} size={16} className="text-subtle" />
+        <button
+          type="button"
+          className="btn g auto !gap-1.5 whitespace-nowrap !px-3.5 !py-3 !text-[1rem] !font-medium"
+          onClick={() => setSortOpen(true)}
+          aria-haspopup="dialog"
+        >
+          <span className="text-muted">⇅</span> {sortLabel}{' '}
+          <I icon={ChevronDown} size={16} className="text-subtle" />
         </button>
       </div>
 
@@ -172,7 +230,10 @@ export function Marketplace() {
               </Pill>
             )}
             {(prefs.availableToday || prefs.openNow || prefs.ratingMin != null) && (
-              <Pill lg onClick={() => setPrefs({ availableToday: false, openNow: false, ratingMin: null })}>
+              <Pill
+                lg
+                onClick={() => setPrefs({ availableToday: false, openNow: false, ratingMin: null })}
+              >
                 Retirer les filtres
               </Pill>
             )}
@@ -188,12 +249,10 @@ export function Marketplace() {
         </div>
       ) : (
         <>
-          <p className="text-[0.9375rem] font-semibold text-text">
-            {countLabel}
-          </p>
+          <p className="text-[0.9375rem] font-semibold text-text">{countLabel}</p>
           <div className="flex flex-col gap-3.5">
-            {items.map((s, i) => (
-              <SalonListCard key={s.id} salon={s} large={i === 0} />
+            {items.map((s) => (
+              <SalonListCard key={s.id} salon={s} />
             ))}
           </div>
         </>
@@ -207,7 +266,14 @@ export function Marketplace() {
             <div className="h2 text-center !text-[1.125rem]">Trier par</div>
             <div className="crd !gap-0 !py-1" role="radiogroup" aria-label="Trier par">
               {SORT_OPTIONS.map((o) => (
-                <button key={o.value} type="button" role="radio" aria-checked={sortDraft === o.value} className="li w-full text-left" onClick={() => setSortDraft(o.value)}>
+                <button
+                  key={o.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={sortDraft === o.value}
+                  className="li w-full text-left"
+                  onClick={() => setSortDraft(o.value)}
+                >
                   <span>
                     <span className="block text-[1rem] font-semibold">{o.label}</span>
                     <span className="p block">{o.hint}</span>

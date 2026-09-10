@@ -18,7 +18,8 @@
   --color-muted: #6b6f73;
   --color-subtle: #9a9ea3;
   --color-disabled: #c4c7ca;
-  --color-ink: #111214; /* boutons, états actifs */
+  --color-ink: #111214;
+  --color-women: #d6336c; /* titre « Pour Femmes » en mode femmes */ /* boutons, états actifs */
   --color-on-ink: #ffffff;
 
   /* Statuts */
