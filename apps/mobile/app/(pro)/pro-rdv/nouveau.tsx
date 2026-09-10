@@ -199,9 +199,11 @@ export default function ProBookingNew() {
             <Tx size={12} weight={600} lh={16}>
               {relativeDayLabelDZ(date)}
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={14}>
-              {capitalize(formatDateShortDZ(localDateTimeToISO(date, '12:00')))}
-            </Tx>
+            {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(date)) && (
+              <Tx size={10.5} color={C.muted} lh={14}>
+                {capitalize(formatDateShortDZ(localDateTimeToISO(date, '12:00')))}
+              </Tx>
+            )}
           </View>
         </View>
         {slots.length === 0 ? (

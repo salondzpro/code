@@ -127,11 +127,14 @@ export function ProBookingNew() {
           </span>
           <span className="text-right text-[0.9375rem] font-semibold">
             {relativeDayLabelDZ(date)}
-            <span className="block text-[0.8125rem] font-normal text-muted">
-              {formatDateShortDZ(localDateTimeToISO(date, '12:00')).replace(/^\w/, (c) =>
-                c.toUpperCase(),
-              )}
-            </span>
+            {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
+            {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(date)) && (
+              <span className="block text-[0.8125rem] font-normal text-muted">
+                {formatDateShortDZ(localDateTimeToISO(date, '12:00')).replace(/^\w/, (c) =>
+                  c.toUpperCase(),
+                )}
+              </span>
+            )}
           </span>
         </div>
         {slots.length === 0 ? (
