@@ -6,7 +6,18 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Heart, Share2 } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Heart,
+  Share2,
+  Clock,
+  Info,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Phone,
+  Users,
+} from 'lucide-react-native';
 import {
   pagesItems,
   useFavorites,
@@ -25,6 +36,10 @@ import {
   wilayaName,
   groupServices,
   formatDateShortDZ,
+  ARRIVAL_ADVANCE_MINUTES,
+  LATE_TOLERANCE_MINUTES,
+  dayOfWeekFromKey,
+  toLocalDateKey,
 } from '@salondz/constants';
 import type { Service } from '@salondz/types';
 import { useAuth } from '@/lib/auth';
@@ -50,6 +65,7 @@ import {
   Pill,
   Skeleton,
   Checkbox,
+  Avatar,
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { PillRow } from '@/ui/Pills';
@@ -88,6 +104,9 @@ export default function Salon() {
   const s = salon.data;
   const isFav = !!favs.data?.items.some((x) => x.id === s.id);
   const status = openingStatus(s);
+  const todayDow = dayOfWeekFromKey(toLocalDateKey());
+  const todayRows = s.openingHours.filter((h) => h.dayOfWeek === todayDow && !h.isClosed);
+  const weekFromToday = WEEK_DAYS.map((_, k) => ((todayDow + k) % 7) as (typeof WEEK_DAYS)[number]);
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
   const works = s.works;
@@ -343,76 +362,191 @@ export default function Salon() {
         )}
 
         {tab === 'infos' && (
-          <View style={{ gap: 13 }}>
+          <View style={{ gap: 12 }}>
+            {/* Aujourd'hui en premier et en grand, puis la semaine à partir d'aujourd'hui. */}
+            <Card
+              gap={6}
+              style={status.open ? { backgroundColor: C.okBg, borderColor: C.okFg } : undefined}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <I icon={Clock} size={13} color={C.muted} />
+                <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
+                  Aujourd'hui · {DAY_LABELS_FR[todayDow]}
+                </Tx>
+              </View>
+              <Tx size={23} weight={700} ls={-0.8} lh={27} mono>
+                {todayRows.length
+                  ? todayRows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
+                  : 'Fermé aujourd’hui'}
+              </Tx>
+              <Tx size={13} weight={600} lh={17} color={status.open ? C.okFg : C.muted}>
+                {status.label}
+              </Tx>
+            </Card>
             <ListCard>
-              {WEEK_DAYS.map((d) => {
+              {weekFromToday.map((d, idx) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
                   <Row
                     key={d}
-                    py={10}
+                    py={11}
                     chevron={false}
                     right={
-                      <Tx size={10.5} lh={14.5} mono color={rows.length ? C.muted : C.danger}>
+                      <Tx size={13} lh={17} mono color={rows.length ? C.text : C.danger}>
                         {rows.length
                           ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ')
                           : 'Fermé'}
                       </Tx>
                     }
                   >
-                    <Tx size={10.5} lh={14.5}>
-                      {DAY_LABELS_FR[d]}
+                    <Tx size={13} weight={idx === 0 ? 700 : 400} lh={17}>
+                      {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
+                      {idx <= 1 ? (
+                        <Tx size={12} color={C.muted} lh={17}>
+                          {'  '}
+                          {DAY_LABELS_FR[d]}
+                        </Tx>
+                      ) : null}
                     </Tx>
                   </Row>
                 );
               })}
             </ListCard>
-            <ListCard>
-              <Row
-                py={10}
-                chevron={false}
-                right={
-                  <Tx size={12} lh={16} right style={{ maxWidth: '60%' }}>
-                    {[s.address, place].filter(Boolean).join(', ')}
+
+            <Card gap={10}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: C.fill,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <I icon={MapPin} size={16} />
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Tx size={14} weight={700} lh={18}>
+                    {s.address || place}
                   </Tx>
+                  {!!s.address && (
+                    <Tx size={12} color={C.muted} lh={16}>
+                      {place}
+                    </Tx>
+                  )}
+                </View>
+              </View>
+              <Button
+                variant="g"
+                sm
+                onPress={() =>
+                  void open(
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`,
+                  )
                 }
               >
-                <Tx size={12} color={C.muted} lh={16}>
-                  Adresse
+                <I icon={Navigation} size={14.5} />
+                <Tx size={13} weight={600} lh={17}>
+                  Itinéraire
                 </Tx>
-              </Row>
-              {!!s.phone && (
-                <Row
-                  py={10}
-                  chevron={false}
-                  onPress={() => void open(`tel:${s.phone}`)}
-                  right={
-                    <Tx size={12} lh={16}>
-                      {formatDZPhone(s.phone)}
-                    </Tx>
-                  }
-                >
-                  <Tx size={12} color={C.muted} lh={16}>
-                    Téléphone
+              </Button>
+            </Card>
+
+            {!!s.phone && (
+              <Card gap={10}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+                  <View
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      backgroundColor: C.fill,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <I icon={Phone} size={16} />
+                  </View>
+                  <Tx size={16} weight={700} lh={20} mono>
+                    {formatDZPhone(s.phone)}
                   </Tx>
-                </Row>
-              )}
-              {s.staff.length > 0 && (
-                <Row
-                  py={10}
-                  chevron={false}
-                  right={
-                    <Tx size={12} lh={16} right style={{ maxWidth: '60%' }}>
-                      {s.staff.map((m) => m.displayName).join(' · ')}
+                </View>
+                <Grid cols={2} gap={8}>
+                  <Button variant="g" sm onPress={() => void open(`tel:${s.phone}`)}>
+                    <I icon={Phone} size={14.5} />
+                    <Tx size={13} weight={600} lh={17}>
+                      Appeler
                     </Tx>
-                  }
-                >
-                  <Tx size={12} color={C.muted} lh={16}>
-                    Équipe
+                  </Button>
+                  <Button
+                    variant="g"
+                    sm
+                    onPress={() => void open(`https://wa.me/${s.phone!.replace(/\D/g, '')}`)}
+                  >
+                    <I icon={MessageCircle} size={14.5} />
+                    <Tx size={13} weight={600} lh={17}>
+                      WhatsApp
+                    </Tx>
+                  </Button>
+                </Grid>
+              </Card>
+            )}
+
+            {s.staff.length > 0 && (
+              <Card gap={10}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <I icon={Users} size={13} color={C.muted} />
+                  <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
+                    Équipe · {s.staff.length}
                   </Tx>
-                </Row>
-              )}
-            </ListCard>
+                </View>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {s.staff.map((m) => (
+                    <View
+                      key={m.id}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 6,
+                        borderRadius: 999,
+                        borderWidth: 1,
+                        borderColor: C.line,
+                        backgroundColor: C.surface,
+                        paddingVertical: 3,
+                        paddingLeft: 3,
+                        paddingRight: 11,
+                      }}
+                    >
+                      <Avatar src={m.avatarUrl} name={m.displayName} size={26} />
+                      <Tx size={13} weight={600} lh={17}>
+                        {m.displayName}
+                      </Tx>
+                    </View>
+                  ))}
+                </View>
+              </Card>
+            )}
+
+            <Card gap={6}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <I icon={Info} size={13} color={C.muted} />
+                <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
+                  Bon à savoir
+                </Tx>
+              </View>
+              <Tx size={13} lh={18}>
+                • Réservation en ligne, paiement sur place.
+              </Tx>
+              <Tx size={13} lh={18}>
+                • Annulation ou report en ligne jusqu'à {s.cancelMinHours} h avant le rendez-vous.
+              </Tx>
+              <Tx size={13} lh={18}>
+                • Arrivez {ARRIVAL_ADVANCE_MINUTES} min avant l'heure : retard toléré{' '}
+                {LATE_TOLERANCE_MINUTES} min.
+              </Tx>
+            </Card>
           </View>
         )}
       </View>

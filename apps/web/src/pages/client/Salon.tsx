@@ -5,7 +5,19 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
-import { Check, ChevronLeft, Heart, Share2 } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  Heart,
+  Share2,
+  Clock,
+  Info,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Phone,
+  Users,
+} from 'lucide-react';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { PublicHeader } from '@/components/PublicHeader';
 import {
@@ -26,6 +38,10 @@ import {
   wilayaName,
   groupServices,
   formatDateShortDZ,
+  ARRIVAL_ADVANCE_MINUTES,
+  LATE_TOLERANCE_MINUTES,
+  dayOfWeekFromKey,
+  toLocalDateKey,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatRating } from '@/lib/clientPrefs';
@@ -40,6 +56,7 @@ import {
   Segmented,
   Pill,
   Skeleton,
+  Avatar,
 } from '@/components/ui';
 import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -96,6 +113,9 @@ export function Salon() {
   const s = salon.data;
   const isFav = !!favs.data?.items.some((x) => x.id === s.id);
   const status = openingStatus(s);
+  const todayDow = dayOfWeekFromKey(toLocalDateKey());
+  const todayRows = s.openingHours.filter((h) => h.dayOfWeek === todayDow && !h.isClosed);
+  const weekFromToday = WEEK_DAYS.map((_, k) => ((todayDow + k) % 7) as (typeof WEEK_DAYS)[number]);
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
   const works = s.works;
@@ -255,15 +275,36 @@ export function Salon() {
 
         {tab === 'infos' && (
           <div className="flex flex-col gap-4">
+            {/* Aujourd'hui en premier et en grand, puis la semaine à partir d'aujourd'hui. */}
+            <div className={`crd !gap-2 ${status.open ? '!border-ok-fg !bg-ok-bg' : ''}`}>
+              <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
+                <I icon={Clock} size={15} /> Aujourd'hui · {DAY_LABELS_FR[todayDow]}
+              </span>
+              <span className="mono text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
+                {todayRows.length
+                  ? todayRows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
+                  : 'Fermé aujourd’hui'}
+              </span>
+              <span
+                className={`text-[1rem] font-semibold ${status.open ? 'text-ok-fg' : 'text-muted'}`}
+              >
+                {status.label}
+              </span>
+            </div>
             <div className="crd !gap-0 !py-1">
-              {WEEK_DAYS.map((d) => {
+              {weekFromToday.map((d, idx) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
                   <div key={d} className="li !py-3">
-                    <span className="text-[0.8125rem]">{DAY_LABELS_FR[d]}</span>
-                    <span
-                      className={`mono text-[0.8125rem] ${rows.length ? 'text-muted' : 'text-danger'}`}
-                    >
+                    <span className={`text-[1rem] ${idx === 0 ? 'font-bold' : ''}`}>
+                      {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
+                      {idx <= 1 && (
+                        <span className="ml-1.5 text-[0.875rem] font-normal text-muted">
+                          {DAY_LABELS_FR[d]}
+                        </span>
+                      )}
+                    </span>
+                    <span className={`mono text-[1rem] ${rows.length ? '' : 'text-danger'}`}>
                       {rows.length
                         ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ')
                         : 'Fermé'}
@@ -272,25 +313,83 @@ export function Salon() {
                 );
               })}
             </div>
-            <div className="crd !gap-0 !py-1">
-              <div className="li !py-3">
-                <span className="text-muted">Adresse</span>
-                <span className="text-right">{[s.address, place].filter(Boolean).join(', ')}</span>
+
+            <div className="crd !gap-3">
+              <div className="flex items-center gap-3.5">
+                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-fill">
+                  <I icon={MapPin} size={20} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[1.0625rem] font-bold">{s.address || place}</span>
+                  {s.address && <span className="block text-[0.9375rem] text-muted">{place}</span>}
+                </span>
               </div>
-              {s.phone && (
-                <a href={`tel:${s.phone}`} className="li !py-3">
-                  <span className="text-muted">Téléphone</span>
-                  <span>{formatDZPhone(s.phone)}</span>
-                </a>
-              )}
-              {s.staff.length > 0 && (
-                <div className="li !py-3">
-                  <span className="text-muted">Équipe</span>
-                  <span className="text-right">
-                    {s.staff.map((m) => m.displayName).join(' · ')}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn g sm !py-[1.125rem] !text-[1rem]"
+              >
+                <I icon={Navigation} size={18} /> Itinéraire
+              </a>
+            </div>
+
+            {s.phone && (
+              <div className="crd !gap-3">
+                <div className="flex items-center gap-3.5">
+                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-fill">
+                    <I icon={Phone} size={20} />
                   </span>
+                  <span className="mono text-[1.25rem] font-bold">{formatDZPhone(s.phone)}</span>
                 </div>
-              )}
+                <div className="g2">
+                  <a href={`tel:${s.phone}`} className="btn g sm !py-[1.125rem] !text-[1rem]">
+                    <I icon={Phone} size={18} /> Appeler
+                  </a>
+                  <a
+                    href={`https://wa.me/${s.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn g sm !py-[1.125rem] !text-[1rem]"
+                  >
+                    <I icon={MessageCircle} size={18} /> WhatsApp
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {s.staff.length > 0 && (
+              <div className="crd !gap-3">
+                <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
+                  <I icon={Users} size={15} /> Équipe · {s.staff.length}
+                </span>
+                <div className="flex flex-wrap gap-2.5">
+                  {s.staff.map((m) => (
+                    <span
+                      key={m.id}
+                      className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3.5 text-[1rem] font-semibold"
+                    >
+                      <Avatar src={m.avatarUrl} name={m.displayName} size={32} /> {m.displayName}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="crd !gap-2">
+              <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
+                <I icon={Info} size={15} /> Bon à savoir
+              </span>
+              <ul className="ml-1 flex list-disc flex-col gap-1.5 pl-4 text-[1rem]">
+                <li>Réservation en ligne, paiement sur place.</li>
+                <li>
+                  Annulation ou report en ligne jusqu'à {s.cancelMinHours} h avant le rendez-vous.
+                </li>
+                <li>
+                  Arrivez {ARRIVAL_ADVANCE_MINUTES} min avant l'heure : retard toléré{' '}
+                  {LATE_TOLERANCE_MINUTES} min.
+                </li>
+              </ul>
             </div>
           </div>
         )}
