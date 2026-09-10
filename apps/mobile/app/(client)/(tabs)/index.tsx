@@ -128,7 +128,7 @@ export default function Marketplace() {
           </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
             <H1 size={23} lh={26} ls={-0.8} color={market === 'women' ? C.women : undefined}>
-              {MARKET_LABELS_FR[market]}
+              {market === 'women' ? 'Femmes' : MARKET_LABELS_FR[market]}
             </H1>
             <IconButton
               accessibilityLabel="Changer de marché"

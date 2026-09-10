@@ -99,7 +99,7 @@ export function Marketplace() {
           </Link>
           <div className="mt-1 flex items-center gap-2.5">
             {/* Mode femmes : titre en rose pour lever toute ambiguïté sur le catalogue affiché. */}
-            <h1 className={`h1${market === 'women' ? ' text-women' : ''}`}>{MARKET_LABELS_FR[market]}</h1>
+            <h1 className={`h1${market === 'women' ? ' text-women' : ''}`}>{market === 'women' ? 'Femmes' : MARKET_LABELS_FR[market]}</h1>
             <IconButton
               aria-label="Changer de marché"
               onClick={swapMarket}
