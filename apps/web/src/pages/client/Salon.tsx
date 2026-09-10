@@ -6,7 +6,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import { ChevronLeft, Heart, Share2 } from 'lucide-react';
-import { pagesItems, useFavorites, useSalon, useSalonReviewsInfinite, useToggleFavorite } from '@salondz/api-client';
+import { PublicHeader } from '@/components/PublicHeader';
+import {
+  pagesItems,
+  useFavorites,
+  useSalon,
+  useSalonReviewsInfinite,
+  useToggleFavorite,
+} from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
   DAY_LABELS_FR,
@@ -74,6 +81,8 @@ export function Salon() {
 
   return (
     <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>
+      {/* Visiteur arrivé par le lien du professionnel (sans compte) : en-tête complet Salon DZ, façon Planity. */}
+      {!session && <PublicHeader />}
       {/* Couverture */}
       <div className="relative h-[18.75rem] bg-line">
         {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" />}
@@ -82,17 +91,6 @@ export function Salon() {
             <IconButton lg aria-label="Retour" onClick={back}>
               <I icon={ChevronLeft} />
             </IconButton>
-            {/* Visiteur arrivé par le lien du professionnel (sans compte) : la marque reste visible et mène à l'accueil. */}
-            {!session && (
-              <Link
-                to="/"
-                className="flex h-[3rem] items-center rounded-full border border-line bg-surface px-4 text-[1rem] leading-none tracking-[-0.5px] shadow-sm"
-                aria-label="Salon DZ · accueil"
-              >
-                <span className="font-semibold">Salon</span>
-                <span className="ml-[0.16em] font-light text-muted">DZ</span>
-              </Link>
-            )}
           </div>
           <div className="flex gap-2.5">
             <IconButton
@@ -250,7 +248,13 @@ export function Salon() {
                     {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
                   </div>
                 ))}
-                <LoadMore hasMore={reviews.hasNextPage} loading={reviews.isFetchingNextPage} onMore={() => void reviews.fetchNextPage()} label="Voir plus d'avis" auto={false} />
+                <LoadMore
+                  hasMore={reviews.hasNextPage}
+                  loading={reviews.isFetchingNextPage}
+                  onMore={() => void reviews.fetchNextPage()}
+                  label="Voir plus d'avis"
+                  auto={false}
+                />
               </div>
             )}
           </div>
