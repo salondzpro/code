@@ -28,8 +28,11 @@
         "backgroundColor": "#FFFFFF"
       },
       "permissions": [
-        "NOTIFICATIONS",
-        "VIBRATE"
+        "android.permission.NOTIFICATIONS",
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "edgeToEdgeEnabled": true
     },
@@ -78,8 +81,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+        "projectId": "77c24a0c-3bd9-43f5-8cbb-c1ad0ab08569"
       }
-    }
+    },
+    "owner": "salondz"
   }
 }
