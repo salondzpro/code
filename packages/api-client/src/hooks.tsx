@@ -292,6 +292,7 @@ export function useProSalonMutations() {
     createSalon: useMutation({ mutationFn: api.pro.createSalon, onSuccess: onSalon }),
     updateSalon: useMutation({ mutationFn: api.pro.updateSalon, onSuccess: onSalon }),
     setPhotos: useMutation({ mutationFn: api.pro.setPhotos, onSuccess: onSalon }),
+    setWorks: useMutation({ mutationFn: api.pro.setWorks, onSuccess: onSalon }),
     setHours: useMutation({ mutationFn: api.pro.setHours, onSuccess: onSalon }),
   };
 }

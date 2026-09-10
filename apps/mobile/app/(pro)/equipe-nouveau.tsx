@@ -6,7 +6,7 @@ import { errorText } from '@/lib/errors';
 import { Alert, BottomSheet, Button, Field, H1, Input, P, TopBar } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { ServicesPicker } from './(tabs)/equipe';
+import { ServicesPicker } from './equipe';
 
 export default function TeamNew() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function TeamNew() {
     try {
       await create.mutateAsync({ displayName: name.trim(), allServices: all, serviceIds: all ? [] : selected });
       if (router.canGoBack()) router.back();
-      else router.replace('/(pro)/(tabs)/equipe');
+      else router.replace('/equipe');
     } catch (err) {
       setError(errorText(err));
     }
@@ -43,7 +43,7 @@ export default function TeamNew() {
         </BottomSheet>
       }
     >
-      <TopBar backTo="/(pro)/(tabs)/equipe" right="Équipe" />
+      <TopBar backTo="/equipe" right="Équipe" />
       <H1>Nouveau membre</H1>
       <P>Le membre a son propre agenda. Il reçoit les rendez-vous des prestations qu'il réalise, sur les horaires du salon (modifiables ensuite dans sa fiche).</P>
       <Field label="Prénom">

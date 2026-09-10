@@ -176,7 +176,7 @@ export default function ProHome() {
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Voir toutes les demandes"
-            onPress={() => router.push('/reservations')}
+            onPress={() => router.push('/(pro)/(tabs)/reservations')}
           >
             <Tx size={12} weight={700} lh={16}>
               {pendingItems.length}

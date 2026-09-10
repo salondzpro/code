@@ -10,14 +10,32 @@ import { formatDA, groupServices, localDateTimeToISO } from '@salondz/constants'
 import type { Service } from '@salondz/types';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration, shortDuration } from '@/lib/format';
-import { BottomSheet, Button, Card, Checkbox, ErrorText, H1, Img, ListCard, P, Pill, SectionLabel, TopBar, Tx } from '@/ui';
+import {
+  BottomSheet,
+  Button,
+  Card,
+  Checkbox,
+  ErrorText,
+  H1,
+  Img,
+  ListCard,
+  P,
+  Pill,
+  SectionLabel,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
-
 export default function BookingServices() {
-  const { slug = '', services: fromUrl = '', date: fromDate, time: fromTime } = useLocalSearchParams<{ slug: string; services?: string; date?: string; time?: string }>();
+  const {
+    slug = '',
+    services: fromUrl = '',
+    date: fromDate,
+    time: fromTime,
+  } = useLocalSearchParams<{ slug: string; services?: string; date?: string; time?: string }>();
   const router = useRouter();
   const salon = useSalon(slug);
   const [selected, setSelected] = useState<string[]>(() => {
@@ -31,13 +49,24 @@ export default function BookingServices() {
 
   // Créneau proposé sur la carte marketplace (date + heure) : pré-rempli, l'écran « Quand » s'ouvre dessus.
   useEffect(() => {
-    if (fromDate && fromTime && /^\d{4}-\d{2}-\d{2}$/.test(fromDate) && /^\d{2}:\d{2}$/.test(fromTime)) {
+    if (
+      fromDate &&
+      fromTime &&
+      /^\d{4}-\d{2}-\d{2}$/.test(fromDate) &&
+      /^\d{2}:\d{2}$/.test(fromTime)
+    ) {
       writeDraft(slug, { date: fromDate, startsAt: localDateTimeToISO(fromDate, fromTime) });
     }
   }, [slug, fromDate, fromTime]);
 
   const s = salon.data;
-  const chosen = useMemo(() => (s ? selected.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x) : []), [s, selected]);
+  const chosen = useMemo(
+    () =>
+      s
+        ? selected.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x)
+        : [],
+    [s, selected],
+  );
   const total = chosen.reduce((a, x) => a + x.priceDa, 0);
   const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
 
@@ -50,7 +79,8 @@ export default function BookingServices() {
     );
 
   const groups = groupServices(s.services);
-  const toggle = (id: string) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const ServiceRow = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => {
     const on = selected.includes(sv.id);
@@ -63,7 +93,13 @@ export default function BookingServices() {
             {sv.name}
           </Tx>
           <Tx size={10.5} color={C.muted} lh={15.5}>
-            {[formatDuration(sv.durationMinutes), boxed ? sv.description : null, formatDA(sv.priceDa)].filter(Boolean).join(' · ')}
+            {[
+              formatDuration(sv.durationMinutes),
+              boxed ? sv.description : null,
+              formatDA(sv.priceDa),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </Tx>
         </View>
         <Checkbox on={on} label={sv.name} />
@@ -76,7 +112,19 @@ export default function BookingServices() {
         </Card>
       );
     return (
-      <Pressable accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={sv.name} onPress={() => toggle(sv.id)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 13, paddingVertical: 13, opacity: pressed ? 0.8 : 1 })}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected: on }}
+        accessibilityLabel={sv.name}
+        onPress={() => toggle(sv.id)}
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 13,
+          paddingVertical: 13,
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
         {inner}
       </Pressable>
     );
@@ -89,17 +137,31 @@ export default function BookingServices() {
         <BottomSheet>
           {chosen.length > 0 ? (
             <>
-              <P>{chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}</P>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
+              <P>
+                {chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}
+              </P>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-end',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                }}
+              >
                 <View style={{ flex: 1 }}>
                   <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
                     {formatDA(total)}
                   </Tx>
                   <P>
-                    {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)} au total
+                    {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
+                    {formatDuration(minutes)} au total
                   </P>
                 </View>
-                <Button pill onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)} style={{ paddingHorizontal: 20, paddingVertical: 13 }}>
+                <Button
+                  pill
+                  onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
+                  style={{ paddingHorizontal: 20, paddingVertical: 13 }}
+                >
                   Choisir un créneau
                 </Button>
               </View>
@@ -112,7 +174,10 @@ export default function BookingServices() {
         </BottomSheet>
       }
     >
-      <TopBar backTo={`/s/${s.slug}`} right={<Pill soft>{`${s.name} · ${s.genderTarget === 'men' ? 'Homme' : 'Femme'}`}</Pill>} />
+      <TopBar
+        backTo={`/s/${s.slug}`}
+        right={<Pill soft>{`${s.name} · ${s.genderTarget === 'men' ? 'Homme' : 'Femme'}`}</Pill>}
+      />
       <H1>Prestations</H1>
       {groups.map((g) =>
         g.name === 'Formule' ? (

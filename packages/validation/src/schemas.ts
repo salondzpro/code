@@ -6,6 +6,7 @@ import {
   MAX_TIME_BLOCK_DAYS,
   SALON_MAX_PHOTOS,
   USER_ROLES,
+  SALON_MAX_WORKS,
 } from '@salondz/constants';
 import * as p from './primitives';
 
@@ -71,10 +72,15 @@ export type UpdateSalonInput = z.infer<typeof updateSalonSchema>;
 export const setSalonPhotosSchema = z.object({
   photos: z.array(z.object({ url: p.httpUrl })).max(SALON_MAX_PHOTOS),
 });
+/** Réalisations du salon (plusieurs photos du travail réel). */
+export const setSalonWorksSchema = z.object({
+  photos: z.array(z.object({ url: p.httpUrl })).max(SALON_MAX_WORKS),
+});
 
 // ---------- Services ----------
+/** Une prestation = une seule image représentative (les exemples vont dans les réalisations du salon). */
 export const setServicePhotosSchema = z.object({
-  photos: z.array(z.object({ url: p.httpUrl })).max(7),
+  photos: z.array(z.object({ url: p.httpUrl })).max(1),
 });
 
 export const createServiceSchema = z.object({

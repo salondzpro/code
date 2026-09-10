@@ -89,7 +89,7 @@ export default function Salon() {
   const status = openingStatus(s);
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
-  const works = [...s.photos, ...s.services.flatMap((sv) => sv.photos ?? [])];
+  const works = s.works;
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(client)/(tabs)'));
 
   return (

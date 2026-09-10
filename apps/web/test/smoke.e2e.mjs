@@ -326,6 +326,8 @@ try {
     await p.goto(WEB + '/pro/profil');
     await p.getByRole('heading', { name: 'Profil' }).waitFor();
     await p.getByRole('button', { name: 'Changer la photo de couverture' }).waitFor();
+    await p.getByRole('link', { name: 'Mon salon' }).click();
+    await p.waitForURL(/\/pro\/mon-salon$/);
     await p.getByRole('link', { name: /Photos du salon/ }).click();
     await p.waitForURL(/\/pro\/photos$/);
     await p.getByRole('heading', { name: 'Photos du salon' }).waitFor();

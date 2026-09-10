@@ -16,11 +16,10 @@ import {
   ModalSheet,
   P,
   Skeleton,
-  TopBar,
   Tx,
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
-import { C, FONT_SCALE } from '@/theme/design';
+import { C, FONT_SCALE, NAV_PAD } from '@/theme/design';
 
 export default function Requests() {
   const router = useRouter();
@@ -31,9 +30,10 @@ export default function Requests() {
   const items = pending.data?.items ?? [];
 
   return (
-    <Screen gap={13} bottom={32}>
-      <TopBar backTo="/(pro)/(tabs)" right="À valider" />
-      <H1>Demandes</H1>
+    <Screen gap={13} bottom={NAV_PAD}>
+      <H1 size={23} lh={26} ls={-0.8}>
+        Réservations
+      </H1>
       {pending.isPending && <Skeleton h={130} radius={16} />}
       {pending.isError && <ErrorText error={pending.error} retry={() => void pending.refetch()} />}
       {pending.data && items.length === 0 && (

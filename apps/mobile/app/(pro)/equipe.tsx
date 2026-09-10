@@ -5,11 +5,12 @@
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { ChevronRight, Plus } from 'lucide-react-native';
+import { CalendarOff, ChevronRight, Plus } from 'lucide-react-native';
 import { useProSalon } from '@salondz/api-client';
 import { formatDA } from '@salondz/constants';
 import type { Service, Staff } from '@salondz/types';
-import { Alert, Avatar, Button, Checkbox, H1, I, ListCard, P, Row, Segmented, Tx } from '@/ui';
+import { Alert, Avatar, Button, Checkbox, H1, I, ListCard, P, Row, Segmented, TopBar, Tx } from '@/ui';
+import { RowText } from '@/ui/ProRows';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, NAV_PAD } from '@/theme/design';
@@ -64,10 +65,9 @@ export default function Team() {
   };
 
   return (
-    <Screen gap={13} bottom={NAV_PAD}>
-      <H1 size={23} lh={26} ls={-0.8}>
-        Équipe
-      </H1>
+    <Screen gap={13}>
+      <TopBar backTo="/(pro)/(tabs)/profil-pro" right="Profil" />
+      <H1>Équipe</H1>
       <P>Chaque membre a son agenda, ses prestations et ses horaires. Les clients choisissent « n'importe qui » ou un membre précis.</P>
       <ListCard>
         {salon.staff.map((m) => (
@@ -91,6 +91,11 @@ export default function Team() {
             </View>
           </Row>
         ))}
+      </ListCard>
+      <ListCard>
+        <Row py={12} to="/blocages" accessibilityLabel="Absences et fermetures">
+          <RowText icon={CalendarOff} title="Absences et fermetures" sub="Congés, pauses d'un membre, exceptions" />
+        </Row>
       </ListCard>
       <Button onPress={() => router.push('/equipe-nouveau' as never)}>
         <I icon={Plus} size={14.5} color="#fff" />

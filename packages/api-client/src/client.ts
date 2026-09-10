@@ -228,6 +228,7 @@ export function createApiClient(opts: ApiClientOptions) {
       updateSalon: (body: UpdateSalonInput) => patch<SalonOwnerView>('/pro/salon', body),
       setPhotos: (photos: { url: string }[]) =>
         put<SalonOwnerView>('/pro/salon/photos', { photos }),
+      setWorks: (photos: { url: string }[]) => put<SalonOwnerView>('/pro/salon/works', { photos }),
       setHours: (body: SetOpeningHoursInput) => put<SalonOwnerView>('/pro/salon/hours', body),
       stats: () => get<ProDashboardStats>('/pro/stats'),
       statsRange: (from: string, to: string) =>

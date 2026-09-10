@@ -83,6 +83,8 @@ export interface SalonPhoto {
   salonId: UUID;
   url: string;
   sortOrder: number;
+  /** 'cover' = couverture (cartes, en-tête) ; 'work' = réalisation (section « Réalisations »). */
+  kind: 'cover' | 'work';
 }
 
 export interface Service {
@@ -295,7 +297,10 @@ export interface BookingItem {
 /** Page publique du salon : tout ce qu'il faut en UNE requête. */
 /** Fiche publique : sans l'identifiant du propriétaire (compte auth). */
 export interface SalonPublic extends Omit<Salon, 'ownerId'> {
+  /** Couvertures (kind 'cover'). */
   photos: SalonPhoto[];
+  /** Réalisations (kind 'work'). */
+  works: SalonPhoto[];
   services: Service[];
   staff: Pick<Staff, 'id' | 'displayName' | 'avatarUrl'>[];
   openingHours: OpeningHour[];
@@ -304,6 +309,7 @@ export interface SalonPublic extends Omit<Salon, 'ownerId'> {
 /** Salon vu par son propriétaire (inclut le personnel inactif, etc.). */
 export interface SalonOwnerView extends Salon {
   photos: SalonPhoto[];
+  works: SalonPhoto[];
   services: Service[];
   staff: Staff[];
   openingHours: OpeningHour[];

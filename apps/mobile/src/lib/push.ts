@@ -110,7 +110,9 @@ export function usePushNotificationsListener() {
       if (data.bookingId) {
         router.push((toPro ? `/pro-rdv/${data.bookingId}` : `/rdv/${data.bookingId}`) as never);
       } else {
-        router.push((toPro ? '/reservations' : '/(client)/(tabs)/rendez-vous') as never);
+        router.push(
+          (toPro ? '/(pro)/(tabs)/reservations' : '/(client)/(tabs)/rendez-vous') as never,
+        );
       }
     };
 

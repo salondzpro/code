@@ -6,7 +6,7 @@ import { errorText } from '@/lib/errors';
 import { Alert, BottomSheet, Button, H1, P, TopBar } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { ServicesPicker } from '../../(tabs)/equipe';
+import { ServicesPicker } from '../../equipe';
 
 export default function TeamMemberServices() {
   const { id = '' } = useLocalSearchParams<{ id: string }>();
@@ -21,7 +21,7 @@ export default function TeamMemberServices() {
   if (!member)
     return (
       <Screen gap={13}>
-        <TopBar backTo="/(pro)/(tabs)/equipe" />
+        <TopBar backTo="/equipe" />
         <P>Membre introuvable.</P>
       </Screen>
     );

@@ -1,5 +1,12 @@
 import { createBrowserRouter } from 'react-router';
-import { ClientLayout, PlainLayout, ProLayout, RequireAuth, RequireClient, RequirePro } from './guards';
+import {
+  ClientLayout,
+  PlainLayout,
+  ProLayout,
+  RequireAuth,
+  RequireClient,
+  RequirePro,
+} from './guards';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
 import { NotFound } from '@/pages/NotFound';
 // Parcours de connexion (design AUTH 01 → 16)
@@ -56,6 +63,9 @@ import { Clients } from '@/pages/pro/Clients';
 import { ClientDetail } from '@/pages/pro/ClientDetail';
 import { ProServices } from '@/pages/pro/ProServices';
 import { ProProfile } from '@/pages/pro/ProProfile';
+import { MonSalon } from '@/pages/pro/MonSalon';
+import { ProRules } from '@/pages/pro/ProRules';
+import { ProAccount } from '@/pages/pro/ProAccount';
 import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDetail';
 import { ProBookingNew } from '@/pages/pro/ProBookingNew';
 import { Team } from '@/pages/pro/Team';
@@ -169,7 +179,7 @@ export const router = createBrowserRouter([
               { path: 'photos', element: <ProPhotos /> },
               { path: 'blocages', element: <Closures /> },
               { path: 'services', element: <ProServices /> },
-              { path: 'reservations', element: <Requests /> },
+              { path: 'realisations', element: <Step8Works settings /> },
             ],
           },
           {
@@ -186,7 +196,13 @@ export const router = createBrowserRouter([
               { path: 'equipe/:id/prestations', element: <TeamMemberServices /> },
               { path: 'equipe/:id/horaires', element: <TeamMemberHours /> },
               { path: 'prestations', element: <ProServices /> },
+              { path: 'catalogue', element: <ProServices /> },
+              { path: 'reservations', element: <Requests /> },
               { path: 'profil', element: <ProProfile /> },
+              { path: 'mon-salon', element: <MonSalon /> },
+              { path: 'reglages/rendez-vous', element: <ProRules /> },
+              { path: 'compte', element: <ProAccount /> },
+              { path: 'notifications', element: <AccountNotifications /> },
             ],
           },
         ],

@@ -22,6 +22,7 @@ export async function attachNextSlots(
   const ph = await db
     .from('salon_photos')
     .select('salon_id, url, sort_order')
+    .eq('kind', 'cover')
     .in(
       'salon_id',
       items.map((s) => s.id),

@@ -8,7 +8,7 @@ import { ChevronRight, Search } from 'lucide-react';
 import { pagesItems, useProClientsInfinite, useProSalon } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import { formatDZPhone, formatDateShortDZ } from '@salondz/constants';
-import { Avatar, Badge, I, Skeleton } from '@/components/ui';
+import { Avatar, Badge, I, Skeleton, Pill, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
@@ -16,6 +16,7 @@ export function Clients() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const [q, setQ] = useState('');
+  const [onlyBlocked, setOnlyBlocked] = useState(false);
   // Recherche côté serveur, après une courte pause de saisie : on ne charge jamais toute la clientèle.
   const [needle, setNeedle] = useState('');
   useEffect(() => {
@@ -23,7 +24,7 @@ export function Clients() {
     return () => window.clearTimeout(t);
   }, [q]);
   const clients = useProClientsInfinite(needle);
-  const rows = pagesItems(clients.data);
+  const rows = pagesItems(clients.data).filter((c) => !onlyBlocked || c.blocked);
   const total = clients.data?.pages[0]?.total ?? rows.length;
   const blockedCount = clients.data?.pages[0]?.blockedCount ?? 0;
 
@@ -31,6 +32,7 @@ export function Clients() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
+      <TopBar backTo="/pro/profil" right="Profil" />
       <h1 className="h1">Clients</h1>
       <label className="search">
         <I icon={Search} size={22} />
@@ -41,14 +43,22 @@ export function Clients() {
           aria-label="Rechercher un client"
         />
       </label>
-      <p className="text-[0.8125rem] text-muted">
-        {total} client{total > 1 ? 's' : ''}
-        {blockedCount ? ` · ${blockedCount} bloqué${blockedCount > 1 ? 's' : ''}` : ''}
-      </p>
+      <div className="pills -mx-5 px-5" role="group" aria-label="Filtrer les clients">
+        <Pill lg on={!onlyBlocked} onClick={() => setOnlyBlocked(false)}>
+          Tous · {total}
+        </Pill>
+        <Pill lg on={onlyBlocked} onClick={() => setOnlyBlocked(true)}>
+          Bloqués · {blockedCount}
+        </Pill>
+      </div>
       {clients.isPending ? (
         <Skeleton className="h-[12.5rem] w-full !rounded-[1.25rem]" />
       ) : rows.length === 0 ? (
-        <p className="p">Vos clients apparaîtront ici après leur premier rendez-vous.</p>
+        <p className="p">
+          {onlyBlocked
+            ? 'Aucun client bloqué.'
+            : 'Vos clients apparaîtront ici après leur premier rendez-vous.'}
+        </p>
       ) : (
         <div className="crd !gap-0 !py-1">
           {rows.map((c) => (

@@ -11,7 +11,7 @@ import { camelize, hm } from './mappers';
 import { notFound, unwrap } from './errors';
 import { mapSalon, SALON_COLUMNS } from '../plugins/auth';
 
-export const PHOTO_COLS = 'id, salon_id, url, sort_order';
+export const PHOTO_COLS = 'id, salon_id, url, sort_order, kind';
 export const SERVICE_COLS =
   'id, salon_id, name, description, duration_minutes, price_da, category_id, group_name, is_active, sort_order';
 export const STAFF_COLS =
@@ -56,7 +56,12 @@ function composeSalon(row: Row): SalonOwnerView {
   };
   return {
     ...mapSalon(salonRow),
-    photos: sortBy(camelize<SalonOwnerView['photos']>(salon_photos ?? [])),
+    photos: sortBy(
+      camelize<SalonOwnerView['photos']>(salon_photos ?? []).filter((ph) => ph.kind !== 'work'),
+    ),
+    works: sortBy(
+      camelize<SalonOwnerView['works']>(salon_photos ?? []).filter((ph) => ph.kind === 'work'),
+    ),
     services: sortBy(
       (services ?? []).map((svc) => {
         const { service_photos, ...rest } = svc as Row & { service_photos?: Row[] | null };

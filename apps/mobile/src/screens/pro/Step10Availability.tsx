@@ -28,7 +28,15 @@ const LEAD = [
 const HORIZON = [7, 30, 60];
 const CANCEL = [2, 4, 12, 24];
 
-function BigSlot({ on, onPress, children }: { on: boolean; onPress: () => void; children: string }) {
+function BigSlot({
+  on,
+  onPress,
+  children,
+}: {
+  on: boolean;
+  onPress: () => void;
+  children: string;
+}) {
   return (
     <Slot on={on} onPress={onPress} style={{ paddingVertical: 21 }}>
       <Tx size={13} weight={500} lh={16} color={on ? C.onInk : C.text} mono>
@@ -71,7 +79,10 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (!salon) return <Splash />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
-  const staffHint = staffCount <= 1 ? '1 employé actif · 1 rendez-vous à la fois' : `${staffCount} employés actifs · ${staffCount} rendez-vous en même temps`;
+  const staffHint =
+    staffCount <= 1
+      ? '1 employé actif · 1 rendez-vous à la fois'
+      : `${staffCount} employés actifs · ${staffCount} rendez-vous en même temps`;
 
   const save = async () => {
     setError(null);
@@ -97,7 +108,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   if (phase === 'slots') {
     return (
       <Screen gap={13} footer={<StepSheet onPress={() => setPhase('rules')} />}>
-        <StepBar step={10} backTo={settings ? '/(pro)/(tabs)/profil-pro' : stepPath(9)} right="Disponibilités" />
+        <StepBar
+          step={10}
+          backTo={settings ? '/(pro)/(tabs)/profil-pro' : stepPath(9)}
+          right="Disponibilités"
+        />
         <H1>Vos créneaux</H1>
         <SectionLabel>Granularité</SectionLabel>
         <Grid cols={3}>
@@ -109,9 +124,28 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         </Grid>
         <SectionLabel>Règles</SectionLabel>
         <ListCard>
-          <ValueRow label="Temps de battement" hint="Entre deux rendez-vous" value={`${buffer} min`} onPress={() => setSheet('buffer')} />
-          <ValueRow label="Délai minimum de réservation" hint="Avant le début du rendez-vous" value={`${LEAD.find((l) => l.v === lead)?.l ?? `${lead} min`} avant`} onPress={() => setSheet('lead')} />
-          <Row py={13} to="/(pro)/(tabs)/equipe" accessibilityLabel="Rendez-vous simultanés" right={<Tx size={12} color={C.muted} lh={16}>{String(staffCount)}</Tx>}>
+          <ValueRow
+            label="Temps de battement"
+            hint="Entre deux rendez-vous"
+            value={`${buffer} min`}
+            onPress={() => setSheet('buffer')}
+          />
+          <ValueRow
+            label="Délai minimum de réservation"
+            hint="Avant le début du rendez-vous"
+            value={`${LEAD.find((l) => l.v === lead)?.l ?? `${lead} min`} avant`}
+            onPress={() => setSheet('lead')}
+          />
+          <Row
+            py={13}
+            to="/equipe"
+            accessibilityLabel="Rendez-vous simultanés"
+            right={
+              <Tx size={12} color={C.muted} lh={16}>
+                {String(staffCount)}
+              </Tx>
+            }
+          >
             <Tx size={12} lh={16}>
               Rendez-vous simultanés
             </Tx>
@@ -119,7 +153,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
               {staffHint}
             </Tx>
           </Row>
-          <Row py={13} chevron={false} right={<Toggle on={online} onChange={setOnline} label="Réservation en ligne" />}>
+          <Row
+            py={13}
+            chevron={false}
+            right={<Toggle on={online} onChange={setOnline} label="Réservation en ligne" />}
+          >
             <Tx size={12} lh={16}>
               Réservation en ligne
             </Tx>
@@ -127,7 +165,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
               Visible dans la marketplace
             </Tx>
           </Row>
-          <Row py={13} chevron={false} right={<Toggle on={manual} onChange={setManual} label="Validation manuelle" />}>
+          <Row
+            py={13}
+            chevron={false}
+            right={<Toggle on={manual} onChange={setManual} label="Validation manuelle" />}
+          >
             <Tx size={12} lh={16}>
               Validation manuelle
             </Tx>
@@ -136,15 +178,42 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             </Tx>
           </Row>
         </ListCard>
-        <InfoBox>Sans validation manuelle, les créneaux sont réservés instantanément. Un rendez-vous par employé actif à la fois : ajoutez un membre dans Équipe pour en accueillir plusieurs en même temps.</InfoBox>
-        <PickerSheet open={sheet === 'lead'} onClose={() => setSheet(null)} title="Délai minimum de réservation" options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} value={lead} onChange={setLead} />
-        <PickerSheet open={sheet === 'buffer'} onClose={() => setSheet(null)} title="Temps de battement" options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} value={buffer} onChange={setBuffer} />
+        <InfoBox>
+          Sans validation manuelle, les créneaux sont réservés instantanément. Un rendez-vous par
+          employé actif à la fois : ajoutez un membre dans Équipe pour en accueillir plusieurs en
+          même temps.
+        </InfoBox>
+        <PickerSheet
+          open={sheet === 'lead'}
+          onClose={() => setSheet(null)}
+          title="Délai minimum de réservation"
+          options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))}
+          value={lead}
+          onChange={setLead}
+        />
+        <PickerSheet
+          open={sheet === 'buffer'}
+          onClose={() => setSheet(null)}
+          title="Temps de battement"
+          options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))}
+          value={buffer}
+          onChange={setBuffer}
+        />
       </Screen>
     );
   }
 
   return (
-    <Screen gap={13} footer={<StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onPress={() => void save()} busy={updateSalon.isPending} />}>
+    <Screen
+      gap={13}
+      footer={
+        <StepSheet
+          label={settings ? 'Enregistrer' : 'Continuer'}
+          onPress={() => void save()}
+          busy={updateSalon.isPending}
+        />
+      }
+    >
       <StepBar step={10} right="Réservation" />
       <H1>Règles de réservation</H1>
       <SectionLabel>Fenêtre de réservation</SectionLabel>
@@ -156,8 +225,17 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         ))}
       </Grid>
       <ListCard>
-        <ValueRow label="Annulation client" hint="Gratuite jusqu'à" value={`${cancel} h avant`} onPress={() => setSheet('cancel')} />
-        <Row py={13} chevron={false} right={<Toggle on={report} onChange={setReport} label="Report client" />}>
+        <ValueRow
+          label="Annulation client"
+          hint="Gratuite jusqu'à"
+          value={`${cancel} h avant`}
+          onPress={() => setSheet('cancel')}
+        />
+        <Row
+          py={13}
+          chevron={false}
+          right={<Toggle on={report} onChange={setReport} label="Report client" />}
+        >
           <Tx size={12} lh={16}>
             Report client
           </Tx>
@@ -167,7 +245,14 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         </Row>
       </ListCard>
       {error && <Alert>{error}</Alert>}
-      <PickerSheet open={sheet === 'cancel'} onClose={() => setSheet(null)} title="Annulation gratuite jusqu'à" options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} value={cancel} onChange={setCancel} />
+      <PickerSheet
+        open={sheet === 'cancel'}
+        onClose={() => setSheet(null)}
+        title="Annulation gratuite jusqu'à"
+        options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))}
+        value={cancel}
+        onChange={setCancel}
+      />
     </Screen>
   );
 }

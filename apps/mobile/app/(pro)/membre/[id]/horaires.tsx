@@ -41,7 +41,7 @@ export default function TeamMemberHours() {
   if (!member)
     return (
       <Screen gap={13}>
-        <TopBar backTo="/(pro)/(tabs)/equipe" />
+        <TopBar backTo="/equipe" />
         <P>Membre introuvable.</P>
       </Screen>
     );

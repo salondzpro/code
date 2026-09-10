@@ -151,7 +151,7 @@ export default function ClientDetail() {
   if (!c)
     return (
       <Screen gap={13}>
-        <TopBar backTo="/(pro)/(tabs)/clients" />
+        <TopBar backTo="/clients" />
         <P>Client introuvable.</P>
       </Screen>
     );
@@ -188,7 +188,7 @@ export default function ClientDetail() {
   return (
     <Screen gap={13}>
       <TopBar
-        backTo="/(pro)/(tabs)/clients"
+        backTo="/clients"
         right={
           <Badge tone={c.blocked ? 'cn' : 'ok'} md>
             {c.blocked ? 'Client bloqué' : 'Client actif'}

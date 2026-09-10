@@ -1,72 +1,34 @@
 /**
- * Espace pro — Profil, ordonné par ce qui sert tous les jours :
- *   1. la page publique (logo, couverture, en ligne / non publiée, Aperçu, Partager) ;
- *   2. quatre raccourcis du quotidien en tuiles : Fermetures, Horaires, Équipe, QR code & lien ;
- *   3. la réservation en ligne (page publiée, validation manuelle) ;
- *   4. l'établissement (photos, adresse, catalogue, description, règles de réservation) ;
- *   5. le compte. Une icône par ligne, une page dédiée par sujet.
+ * Espace pro — Profil = porte d'entrée de la gestion, en six rubriques métier (une sous-page dédiée chacune) :
+ * Mon salon · Catalogue · Équipe · Clients · Rendez-vous · Compte. En tête, la page publique (logo, couverture,
+ * en ligne / non publiée, Aperçu, Partager). La navigation basse ne garde que Accueil / Agenda / Réservations / Profil.
  */
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
-  ArrowLeftRight,
-  CalendarOff,
+  CalendarCog,
   Camera,
-  Clock,
+  ContactRound,
   Eye,
-  FileText,
-  Globe,
-  Images,
-  LogOut,
-  MapPin,
-  Pencil,
-  QrCode,
-  Save,
   Share2,
-  ShieldCheck,
-  SlidersHorizontal,
+  Store,
   Tag,
-  User,
+  UserCircle,
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { useMe, useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { MARKET_LABELS_FR, SALON_MAX_PHOTOS, formatDZPhone, wilayaName } from '@salondz/constants';
-import { useAuth } from '@/lib/auth';
+import { useProSalon, useProSalonMutations } from '@salondz/api-client';
+import { SALON_MAX_PHOTOS } from '@salondz/constants';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, Badge, Button, I, ListRow, SectionLabel, Textarea, Toggle } from '@/components/ui';
+import { Avatar, Badge, Button, I, SectionLabel } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { ShareSheet, usePublicUrl } from './Link';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
 
-/** Icône dans une pastille, à gauche d'une ligne ou d'une tuile. */
-function Ic({ icon, ink }: { icon: LucideIcon; ink?: boolean }) {
-  return (
-    <span
-      className={`flex h-10 w-10 flex-none items-center justify-center rounded-full ${ink ? 'bg-ink text-white' : 'bg-fill'}`}
-    >
-      <I icon={icon} size={18} />
-    </span>
-  );
-}
-
-/** Ligne de réglage : icône, titre, sous-titre. */
-function RowText({ icon, title, sub }: { icon: LucideIcon; title: string; sub?: ReactNode }) {
-  return (
-    <span className="flex min-w-0 items-center gap-3.5">
-      <Ic icon={icon} />
-      <span className="min-w-0">
-        <span className="block text-[1rem] font-semibold">{title}</span>
-        {sub && <span className="block truncate text-[0.875rem] text-muted">{sub}</span>}
-      </span>
-    </span>
-  );
-}
-
-/** Tuile de raccourci (2 par ligne) pour les gestes du quotidien. */
+/** Tuile de rubrique (2 par ligne) : icône, titre, ce qu'on y trouve. */
 function Tile({
   to,
   icon,
@@ -79,11 +41,13 @@ function Tile({
   sub: string;
 }) {
   return (
-    <Link to={to} className="crd !gap-3 !p-4">
-      <Ic icon={icon} ink />
+    <Link to={to} className="crd !gap-3 !p-4" aria-label={title}>
+      <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-ink text-white">
+        <I icon={icon} size={20} />
+      </span>
       <span>
-        <span className="block text-[1rem] font-bold tracking-[-0.2px]">{title}</span>
-        <span className="block text-[0.8125rem] text-muted">{sub}</span>
+        <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{title}</span>
+        <span className="block text-[0.8125rem] leading-snug text-muted">{sub}</span>
       </span>
     </Link>
   );
@@ -91,12 +55,9 @@ function Tile({
 
 export function ProProfile() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
-  const me = useMe();
   const salon = useProSalon().data?.salon ?? null;
   const { updateSalon, setPhotos } = useProSalonMutations();
   const [sheet, setSheet] = useState(false);
-  const [desc, setDesc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<'cover' | 'logo' | null>(null);
   const [crop, setCrop] = useState<{ kind: 'cover' | 'logo'; file: File } | null>(null);
@@ -104,8 +65,8 @@ export function ProProfile() {
   const logoInput = useRef<HTMLInputElement | null>(null);
   const { url, short } = usePublicUrl(salon?.slug ?? '');
   if (!salon) return <Splash />;
-  const market = salon.genderTarget === 'men' ? 'men' : 'women';
   const active = salon.staff.filter((m) => m.isActive).length;
+  const services = salon.services.filter((s) => s.isActive).length;
 
   const upload = async (kind: 'cover' | 'logo', file: File | undefined) => {
     if (!file) return;
@@ -130,7 +91,7 @@ export function ProProfile() {
     <Screen bottom={NAV_PAD} gap={16}>
       <h1 className="h1">Profil</h1>
 
-      {/* 1. Page publique */}
+      {/* Page publique */}
       <div className="crd !gap-4">
         <div className="flex items-center gap-3.5">
           <button
@@ -201,178 +162,54 @@ export function ProProfile() {
             <I icon={Share2} size={18} /> Partager
           </Button>
         </div>
+        {error && (
+          <p className="text-[0.875rem] text-danger" role="alert">
+            {error}
+          </p>
+        )}
       </div>
 
-      {/* 2. Les gestes du quotidien */}
-      <SectionLabel>Au quotidien</SectionLabel>
+      {/* Six rubriques métier */}
+      <SectionLabel>Gérer mon activité</SectionLabel>
       <div className="g2">
         <Tile
-          to="/pro/blocages"
-          icon={CalendarOff}
-          title="Fermetures"
-          sub="Congés, pauses, exceptions"
+          to="/pro/mon-salon"
+          icon={Store}
+          title="Mon salon"
+          sub="Photos, réalisations, adresse, horaires"
         />
         <Tile
-          to="/pro/profil/horaires"
-          icon={Clock}
-          title="Horaires"
-          sub="Jours et heures d'ouverture"
+          to="/pro/catalogue"
+          icon={Tag}
+          title="Catalogue"
+          sub={`${services} prestation${services > 1 ? 's' : ''} · catégories, prix, durée`}
         />
         <Tile
           to="/pro/equipe"
           icon={Users}
           title="Équipe"
-          sub={`${active} membre${active > 1 ? 's' : ''} actif${active > 1 ? 's' : ''}`}
+          sub={`${active} membre${active > 1 ? 's' : ''} actif${active > 1 ? 's' : ''} · horaires, absences`}
         />
-        <Tile to="/pro/lien" icon={QrCode} title="QR code & lien" sub="Affiche, partage, copie" />
+        <Tile
+          to="/pro/clients"
+          icon={ContactRound}
+          title="Clients"
+          sub="Fiches, historique, bloqués"
+        />
+        <Tile
+          to="/pro/reglages/rendez-vous"
+          icon={CalendarCog}
+          title="Rendez-vous"
+          sub="Règles de réservation, annulation, retard"
+        />
+        <Tile
+          to="/pro/compte"
+          icon={UserCircle}
+          title="Compte"
+          sub="Profil, notifications, paramètres"
+        />
       </div>
 
-      {/* 3. Réservation en ligne */}
-      <SectionLabel>Réservation en ligne</SectionLabel>
-      <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
-          <RowText icon={Globe} title="Page publiée" sub="Visible dans la marketplace" />
-          <Toggle
-            on={salon.isPublished}
-            onChange={(v) =>
-              updateSalon.mutate({ isPublished: v }, { onError: (e) => setError(errorText(e)) })
-            }
-            label="Page publiée"
-          />
-        </div>
-        <div className="li !py-4">
-          <RowText
-            icon={ShieldCheck}
-            title="Validation manuelle"
-            sub="Vous confirmez chaque demande"
-          />
-          <Toggle
-            on={!salon.autoConfirm}
-            onChange={(v) => updateSalon.mutate({ autoConfirm: !v })}
-            label="Validation manuelle"
-          />
-        </div>
-        <ListRow to="/pro/profil/regles">
-          <RowText
-            icon={SlidersHorizontal}
-            title="Créneaux et règles"
-            sub="Délai minimum, annulation, report"
-          />
-        </ListRow>
-      </div>
-      {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
-          {error}
-        </p>
-      )}
-
-      {/* 4. Établissement */}
-      <SectionLabel>Établissement</SectionLabel>
-      <div className="crd !gap-0 !py-1">
-        <ListRow to="/pro/photos">
-          <RowText
-            icon={Images}
-            title="Photos du salon"
-            sub={`${salon.logoUrl ? 'Logo' : 'Sans logo'} · ${salon.photos.length} photo${salon.photos.length > 1 ? 's' : ''} de couverture`}
-          />
-        </ListRow>
-        <ListRow to="/pro/salon">
-          <RowText
-            icon={MapPin}
-            title="Adresse et zone"
-            sub={[salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)]
-              .filter(Boolean)
-              .join(', ')}
-          />
-        </ListRow>
-        <ListRow to="/pro/onboarding/5">
-          <RowText
-            icon={Tag}
-            title="Catalogue"
-            sub={`${MARKET_LABELS_FR[market]} · ${salon.categoryIds.length} catégorie${salon.categoryIds.length > 1 ? 's' : ''}`}
-          />
-        </ListRow>
-        <div className="li !py-4">
-          <RowText
-            icon={FileText}
-            title="Description du salon"
-            sub={
-              desc === null
-                ? salon.description || 'Recommandé — améliore votre visibilité'
-                : undefined
-            }
-          />
-          {desc === null && (
-            <button
-              type="button"
-              className="ib flex-none"
-              aria-label="Modifier la description"
-              onClick={() => setDesc(salon.description ?? '')}
-            >
-              <I icon={Pencil} size={16} />
-            </button>
-          )}
-        </div>
-        {desc !== null && (
-          <div className="flex flex-col gap-2 pb-3">
-            <Textarea
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              maxLength={1500}
-              placeholder="Salon calme, produits sans parabène…"
-              aria-label="Description du salon"
-            />
-            <div className="g2">
-              <Button variant="g" sm onClick={() => setDesc(null)}>
-                Annuler
-              </Button>
-              <Button
-                sm
-                disabled={updateSalon.isPending}
-                onClick={async () => {
-                  await updateSalon.mutateAsync({ description: desc.trim() || undefined });
-                  setDesc(null);
-                }}
-              >
-                <I icon={Save} size={16} /> Enregistrer
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 5. Compte */}
-      <SectionLabel>Compte</SectionLabel>
-      <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
-          <RowText
-            icon={User}
-            title={me.data?.profile.fullName ?? 'Vous'}
-            sub={me.data?.profile.phone ? formatDZPhone(me.data.profile.phone) : ''}
-          />
-          <Badge tone="ok" md>
-            Actif
-          </Badge>
-        </div>
-        <ListRow to="/">
-          <RowText icon={ArrowLeftRight} title="Espace client" sub="Réserver comme un client" />
-        </ListRow>
-        <button
-          type="button"
-          className="li w-full text-left"
-          onClick={async () => {
-            await signOut();
-            navigate('/intro', { replace: true });
-          }}
-        >
-          <span className="flex items-center gap-3.5 text-danger">
-            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-cancel-bg">
-              <I icon={LogOut} size={18} />
-            </span>
-            <span className="text-[1rem] font-semibold">Se déconnecter</span>
-          </span>
-        </button>
-      </div>
       <BrandFooter />
       {crop && (
         <ImageCropper

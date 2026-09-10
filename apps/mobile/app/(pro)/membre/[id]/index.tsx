@@ -68,7 +68,7 @@ export default function TeamMember() {
   if (!member)
     return (
       <Screen gap={13}>
-        <TopBar backTo="/(pro)/(tabs)/equipe" />
+        <TopBar backTo="/equipe" />
         <P>Membre introuvable.</P>
       </Screen>
     );
@@ -108,7 +108,7 @@ export default function TeamMember() {
 
   return (
     <Screen gap={13}>
-      <TopBar backTo="/(pro)/(tabs)/equipe" right="Équipe" />
+      <TopBar backTo="/equipe" right="Équipe" />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
         <Pressable
           accessibilityRole="button"
@@ -342,7 +342,7 @@ export default function TeamMember() {
             onPress={async () => {
               try {
                 await remove.mutateAsync(member.id);
-                router.replace('/(pro)/(tabs)/equipe');
+                router.replace('/equipe');
               } catch (err) {
                 setError(errorText(err));
               }

@@ -1,19 +1,20 @@
-/** PRO-F 09 — Étape 7 : photos de la prestation (couverture + jusqu'à 6 exemples de résultats). */
+/**
+ * PRO-F 09 — Étape 7 : LA photo de la prestation (une seule image représentative, recadrée en carré).
+ * Les photos du travail réel (plusieurs) vont dans « Réalisations » (étape 8 / Mon salon).
+ */
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Camera, Plus, X } from 'lucide-react-native';
+import { Camera, Trash2 } from 'lucide-react-native';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { errorText } from '@/lib/errors';
 import { pickImages, uploadSalonImage } from '@/lib/images';
 import { stepPath } from '@/lib/proDraft';
-import { Alert, Button, Grid, H1, I, Img, InfoBox, P, SectionLabel, Tx } from '@/ui';
+import { Alert, Button, H1, I, Img, InfoBox, P, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { StepBar, StepSheet } from '@/ui/Steps';
 import { C } from '@/theme/design';
-
-const MAX_EXAMPLES = 6;
 
 export default function Step7ServicePhotos() {
   const router = useRouter();
@@ -21,38 +22,35 @@ export default function Step7ServicePhotos() {
   const salon = useProSalon().data?.salon ?? null;
   const { setPhotos } = useProServiceMutations();
   const service = salon?.services.find((s) => s.id === serviceId);
-  const [urls, setUrls] = useState<string[] | null>(null);
+  const [url, setUrl] = useState<string | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!salon) return <Splash />;
   if (!service) return <Redirect href={stepPath(6) as never} />;
-  const photos = urls ?? (service.photos ?? []).map((p) => p.url);
-  const cover = photos[0] ?? null;
-  const examples = photos.slice(1);
+  const photo = url === undefined ? (service.photos?.[0]?.url ?? null) : url;
+  // Salon déjà publié = on vient du catalogue (retour au catalogue) ; sinon on est dans l'inscription (étape 8).
+  const fromCatalog = salon.isPublished;
 
-  const add = async (asCover: boolean) => {
+  const pick = async () => {
     setBusy(true);
     setError(null);
     try {
-      const imgs = await pickImages({ multiple: !asCover, max: MAX_EXAMPLES });
-      if (!imgs.length) return;
-      const uploaded: string[] = [];
-      for (const img of imgs) uploaded.push(await uploadSalonImage(salon.id, img));
-      setUrls(asCover ? [uploaded[0]!, ...photos.slice(1), ...uploaded.slice(1)].slice(0, MAX_EXAMPLES + 1) : [...(cover ? [cover] : [uploaded[0]!]), ...examples, ...(cover ? uploaded : uploaded.slice(1))].slice(0, MAX_EXAMPLES + 1));
+      const [img] = await pickImages({ square: true });
+      if (!img) return;
+      setUrl(await uploadSalonImage(salon.id, img));
     } catch (err) {
       setError(errorText(err));
     } finally {
       setBusy(false);
     }
   };
-  const remove = (url: string) => setUrls(photos.filter((u) => u !== url));
 
   const save = async (): Promise<boolean> => {
     setBusy(true);
     setError(null);
     try {
-      await setPhotos.mutateAsync({ id: service.id, photos: photos.map((url) => ({ url })) });
+      await setPhotos.mutateAsync({ id: service.id, photos: photo ? [{ url: photo }] : [] });
       return true;
     } catch (err) {
       setError(errorText(err));
@@ -68,25 +66,45 @@ export default function Step7ServicePhotos() {
       footer={
         <StepSheet
           label="Enregistrer la prestation"
-          onPress={() => void save().then((ok) => ok && router.push(stepPath(8) as never))}
+          onPress={() =>
+            void save().then(
+              (ok) => ok && router.push((fromCatalog ? '/prestations' : stepPath(8)) as never),
+            )
+          }
           busy={busy || setPhotos.isPending}
           secondary={
-            <Button variant="g" onPress={() => void save().then((ok) => ok && router.push(stepPath(6) as never))} disabled={busy}>
+            <Button
+              variant="g"
+              onPress={() => void save().then((ok) => ok && router.push(stepPath(6) as never))}
+              disabled={busy}
+            >
               Enregistrer et ajouter une autre
             </Button>
           }
         />
       }
     >
-      <StepBar step={7} backTo={`${stepPath(6)}/${service.id}`} />
+      <StepBar
+        step={7}
+        backTo={`${stepPath(6)}/${service.id}`}
+        right={fromCatalog ? 'Catalogue' : undefined}
+      />
       <View style={{ gap: 6 }}>
-        <H1>Photos · {service.name}</H1>
-        <P>Une photo de couverture et jusqu'à {MAX_EXAMPLES} exemples de résultats.</P>
+        <H1>Photo · {service.name}</H1>
+        <P>Une seule image, celle qui représente le mieux cette prestation.</P>
       </View>
-      <SectionLabel>Couverture</SectionLabel>
-      <Pressable accessibilityRole="button" accessibilityLabel="Choisir la photo de couverture" onPress={() => void add(true)} disabled={busy}>
-        <Img src={cover} radius={16} style={{ height: 260, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-          {!cover && (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={photo ? 'Changer la photo' : 'Ajouter une photo'}
+        onPress={() => void pick()}
+        disabled={busy}
+      >
+        <Img
+          src={photo}
+          radius={16}
+          style={{ width: '100%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
+          {!photo && (
             <View style={{ alignItems: 'center', gap: 6 }}>
               <I icon={Camera} size={26} color={C.subtle} />
               <Tx size={12} color={C.subtle} lh={16}>
@@ -94,25 +112,41 @@ export default function Step7ServicePhotos() {
               </Tx>
             </View>
           )}
+          {!!photo && (
+            <View
+              style={{
+                position: 'absolute',
+                right: 10,
+                bottom: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+              }}
+            >
+              <I icon={Camera} size={11} />
+              <Tx size={9.5} weight={600} lh={12}>
+                {busy ? 'Envoi…' : 'Changer'}
+              </Tx>
+            </View>
+          )}
         </Img>
       </Pressable>
-      <SectionLabel>Exemples de résultats</SectionLabel>
-      <Grid cols={3}>
-        {examples.map((u) => (
-          <View key={u} style={{ aspectRatio: 1 }}>
-            <Img src={u} radius={13} style={{ width: '100%', height: '100%' }} />
-            <Pressable accessibilityRole="button" accessibilityLabel="Retirer" onPress={() => remove(u)} style={{ position: 'absolute', right: 5, top: 5, width: 23, height: 23, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' }}>
-              <I icon={X} size={11.5} color="#fff" />
-            </Pressable>
-          </View>
-        ))}
-        {examples.length < MAX_EXAMPLES && (
-          <Pressable accessibilityRole="button" accessibilityLabel="Ajouter un exemple" onPress={() => void add(false)} disabled={busy} style={{ aspectRatio: 1, borderRadius: 13, borderWidth: 1, borderStyle: 'dashed', borderColor: C.line, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
-            <I icon={Plus} size={23} color={C.subtle} />
-          </Pressable>
-        )}
-      </Grid>
-      <InfoBox>Les prestations avec photos sont réservées 3 fois plus souvent.</InfoBox>
+      {!!photo && (
+        <Button variant="g" sm onPress={() => setUrl(null)} disabled={busy}>
+          <I icon={Trash2} size={14} />
+          <Tx size={11.5} weight={600} lh={15}>
+            Retirer la photo
+          </Tx>
+        </Button>
+      )}
+      <InfoBox>
+        Les prestations avec photo sont réservées 3 fois plus souvent. Vos autres photos ont leur
+        place dans « Réalisations ».
+      </InfoBox>
       {error && <Alert>{error}</Alert>}
     </Screen>
   );

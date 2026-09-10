@@ -99,7 +99,7 @@ export function Salon() {
   const status = openingStatus(s);
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
-  const works = [...s.photos, ...s.services.flatMap((sv) => sv.photos ?? [])];
+  const works = s.works;
 
   return (
     <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>

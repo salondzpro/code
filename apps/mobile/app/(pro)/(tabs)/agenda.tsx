@@ -139,7 +139,7 @@ export default function AgendaPro() {
           <IconButton
             lg
             accessibilityLabel="Rechercher un rendez-vous"
-            onPress={() => router.push('/(pro)/(tabs)/clients')}
+            onPress={() => router.push('/clients')}
           >
             <I icon={Search} size={16} />
           </IconButton>
