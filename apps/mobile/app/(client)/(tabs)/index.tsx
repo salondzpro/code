@@ -127,8 +127,13 @@ export default function Marketplace() {
             <I icon={ChevronDown} size={13} color={C.subtle} />
           </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
-            <H1 size={23} lh={26} ls={-0.8} color={market === 'women' ? C.women : undefined}>
-              {market === 'women' ? 'Femmes' : MARKET_LABELS_FR[market]}
+            <H1 size={23} lh={26} ls={-0.8}>
+              {market === 'women' ? 'Pour ' : MARKET_LABELS_FR[market]}
+              {market === 'women' && (
+                <Tx size={23} weight={700} lh={26} ls={-0.8} color={C.women}>
+                  Femmes
+                </Tx>
+              )}
             </H1>
             <IconButton
               accessibilityLabel="Changer de marché"
