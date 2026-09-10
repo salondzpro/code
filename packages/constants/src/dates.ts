@@ -133,6 +133,25 @@ export function dayChipLabelDZ(dateKey: string): string {
   return `${wd.charAt(0).toUpperCase()}${wd.slice(1).replace(/\.$/, '')}. ${d}`;
 }
 
+/** Heure courante « HH:mm » en heure d'Alger. */
+export function nowTimeDZ(): string {
+  return formatTimeDZ(new Date());
+}
+
+/** Arrondit une heure « HH:mm » au multiple supérieur de `step` minutes (ex. 10:07 → 10:15 avec step 15). */
+export function ceilToStep(hm: string, step: number): string {
+  const [h, m] = hm.split(':').map(Number);
+  const total = Math.ceil(((h ?? 0) * 60 + (m ?? 0)) / step) * step;
+  const hh = Math.min(23, Math.floor(total / 60));
+  const mm = total >= 24 * 60 ? 59 : total % 60;
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+/** Vrai si ce créneau (jour + heure locale) est déjà passé par rapport à maintenant — on ne propose jamais le passé. */
+export function isPastSlot(dateKey: string, timeHM: string, now = Date.now()): boolean {
+  return new Date(localDateTimeToISO(dateKey, timeHM)).getTime() < now;
+}
+
 /** Ajoute n jours à une clé "YYYY-MM-DD". */
 export function addDaysToKey(dateKey: string, n: number): string {
   const [y, m, d] = dateKey.split('-').map(Number);

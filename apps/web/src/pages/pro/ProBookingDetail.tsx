@@ -22,6 +22,8 @@ import {
   localDateTimeToISO,
   relativeDayLabelDZ,
   toLocalDateKey,
+  ceilToStep,
+  nowTimeDZ,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -332,6 +334,7 @@ export function ProBookingReschedule() {
           <input
             type="time"
             step={300}
+            min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
             className="bg-transparent text-right text-[0.9375rem] outline-none"
             value={t}
             onChange={(e) => setTime(e.target.value)}

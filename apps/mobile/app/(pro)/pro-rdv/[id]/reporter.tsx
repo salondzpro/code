@@ -2,7 +2,14 @@
 import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProBooking, useProBookingMutations, useProSalon } from '@salondz/api-client';
-import { formatDateShortDZ, formatTimeDZ, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
+import {
+  formatDateShortDZ,
+  formatTimeDZ,
+  localDateTimeToISO,
+  toLocalDateKey,
+  ceilToStep,
+  nowTimeDZ,
+} from '@salondz/constants';
 import { BottomSheet, Button, ErrorText, H1, ListCard, Soft, TopBar, Tx } from '@/ui';
 import { DateSheet, PickerSheet, TimeSheet, ValueRow } from '@/ui/Pickers';
 import { Screen } from '@/ui/Screen';
@@ -35,7 +42,11 @@ export default function ProBookingReschedule() {
             disabled={reschedule.isPending}
             loading={reschedule.isPending}
             onPress={async () => {
-              await reschedule.mutateAsync({ id: b.id, startsAt: localDateTimeToISO(d, t), staffId: sid });
+              await reschedule.mutateAsync({
+                id: b.id,
+                startsAt: localDateTimeToISO(d, t),
+                staffId: sid,
+              });
               router.replace(`/pro-rdv/${b.id}` as never);
             }}
           >
@@ -48,18 +59,53 @@ export default function ProBookingReschedule() {
       <H1>Nouveau créneau</H1>
       <Soft>
         <Tx size={10.5} color={C.muted} lh={15.5}>
-          Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} · {b.serviceName}
+          Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
+          {b.serviceName}
         </Tx>
       </Soft>
       <ListCard>
-        <ValueRow label="Date" value={formatDateShortDZ(localDateTimeToISO(d, '12:00'))} onPress={() => setSheet('date')} muted={false} />
+        <ValueRow
+          label="Date"
+          value={formatDateShortDZ(localDateTimeToISO(d, '12:00'))}
+          onPress={() => setSheet('date')}
+          muted={false}
+        />
         <ValueRow label="Heure" value={t} onPress={() => setSheet('time')} muted={false} />
-        {staff.length > 1 && <ValueRow label="Membre" value={staff.find((m) => m.id === sid)?.displayName ?? '—'} onPress={() => setSheet('staff')} muted={false} />}
+        {staff.length > 1 && (
+          <ValueRow
+            label="Membre"
+            value={staff.find((m) => m.id === sid)?.displayName ?? '—'}
+            onPress={() => setSheet('staff')}
+            muted={false}
+          />
+        )}
       </ListCard>
       <ErrorText error={reschedule.error} />
-      <DateSheet open={sheet === 'date'} onClose={() => setSheet(null)} title="Nouvelle date" value={d} onChange={setDate} minDate={toLocalDateKey()} />
-      <TimeSheet open={sheet === 'time'} onClose={() => setSheet(null)} title="Nouvelle heure" value={t} onChange={setTime} step={5} />
-      <PickerSheet open={sheet === 'staff'} onClose={() => setSheet(null)} title="Membre" options={staff.map((m) => ({ value: m.id, label: m.displayName }))} value={sid} onChange={setStaffId} />
+      <DateSheet
+        open={sheet === 'date'}
+        onClose={() => setSheet(null)}
+        title="Nouvelle date"
+        value={d}
+        onChange={setDate}
+        minDate={toLocalDateKey()}
+      />
+      <TimeSheet
+        open={sheet === 'time'}
+        onClose={() => setSheet(null)}
+        title="Nouvelle heure"
+        value={t}
+        onChange={setTime}
+        step={5}
+        from={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
+      />
+      <PickerSheet
+        open={sheet === 'staff'}
+        onClose={() => setSheet(null)}
+        title="Membre"
+        options={staff.map((m) => ({ value: m.id, label: m.displayName }))}
+        value={sid}
+        onChange={setStaffId}
+      />
     </Screen>
   );
 }

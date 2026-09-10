@@ -16,6 +16,9 @@ import {
   relativeDayLabelDZ,
   timeToMinutes,
   toLocalDateKey,
+  isPastSlot,
+  ceilToStep,
+  nowTimeDZ,
 } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { errorText } from '@/components/ErrorMessage';
@@ -67,11 +70,23 @@ export function ProBookingNew() {
           new Date(b.startsAt).getTime() < endMs &&
           new Date(b.endsAt).getTime() > new Date(startIso).getTime(),
       );
-      out.push({ t, taken });
+      // Jamais le passé : un créneau déjà commencé n'est pas proposé.
+      if (!isPastSlot(date, t)) out.push({ t, taken });
     }
     return out;
   });
   const endTime = minutesToTime(timeToMinutes(time) + minutes);
+  const firstFree = slots.find((x) => !x.taken)?.t ?? slots[0]?.t;
+  useEffect(() => {
+    if (
+      slots.length > 0 &&
+      (isPastSlot(date, time) || !slots.some((x) => x.t === time)) &&
+      firstFree
+    )
+      setTime(firstFree);
+    else if (slots.length === 0 && isPastSlot(date, time)) setTime(ceilToStep(nowTimeDZ(), 5));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, slots.length, firstFree]);
 
   useEffect(() => {
     const el = timeStrip.current?.querySelector<HTMLElement>(`[data-time="${time}"]`);
@@ -117,7 +132,7 @@ export function ProBookingNew() {
 
       {/* 1. QUAND — jours à faire défiler, heure en grand, créneaux du jour en un tap */}
       <div className="crd !gap-3">
-        <DayScroller selected={date} onSelect={setDate} />
+        <DayScroller selected={date} onSelect={setDate} minDate={toLocalDateKey()} />
         <div className="flex items-end justify-between gap-3">
           <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
             {time}{' '}
@@ -143,6 +158,7 @@ export function ProBookingNew() {
             <input
               type="time"
               step={300}
+              min={date === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
               className="bg-transparent text-right outline-none"
               value={time}
               onChange={(e) => setTime(e.target.value)}

@@ -7,7 +7,7 @@ import { DAY_LABELS_SHORT_FR, addDaysToKey, dayOfWeekFromKey, toLocalDateKey } f
 import { dayNumber, monthLabel } from './DaySelector';
 
 /** Bande de jours défilable (± 3 semaines autour du jour choisi), jour sélectionné centré. */
-export function DayScroller({ selected, onSelect, disabledDays }: { selected: string; onSelect: (dateKey: string) => void; disabledDays?: readonly number[] }) {
+export function DayScroller({ selected, onSelect, disabledDays, minDate }: { selected: string; onSelect: (dateKey: string) => void; disabledDays?: readonly number[]; /** Jours avant cette clé grisés et non sélectionnables (création : jamais le passé). */ minDate?: string | null }) {
   const today = toLocalDateKey();
   const ref = useRef<HTMLDivElement | null>(null);
   const anchor = useRef(selected);
@@ -26,7 +26,8 @@ export function DayScroller({ selected, onSelect, disabledDays }: { selected: st
     <div ref={ref} className="pills -mx-5 !gap-1 px-5" role="listbox" aria-label="Choisir un jour" style={{ scrollSnapType: 'x proximity' }}>
       {days.map((d) => {
         const dow = dayOfWeekFromKey(d);
-        const out = !!disabledDays?.includes(dow);
+        const past = !!minDate && d < minDate;
+        const out = !!disabledDays?.includes(dow) || past;
         const on = d === selected;
         const month = d.slice(0, 7);
         const showMonth = month !== lastMonth;
@@ -37,6 +38,8 @@ export function DayScroller({ selected, onSelect, disabledDays }: { selected: st
             type="button"
             role="option"
             aria-selected={on}
+            aria-disabled={past || undefined}
+            disabled={past}
             data-day={d}
             onClick={() => onSelect(d)}
             className={`flex w-[3.25rem] flex-none flex-col items-center gap-1 rounded-[0.875rem] py-2 ${on ? 'bg-ink text-white' : out ? 'text-disabled' : 'text-text'}`}

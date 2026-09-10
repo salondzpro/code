@@ -12,7 +12,7 @@ import { Tx } from './Text';
 const CELL = 46;
 const GAP = 4;
 
-export function DayScroller({ selected, onSelect, disabledDays }: { selected: string; onSelect: (dateKey: string) => void; disabledDays?: readonly number[] }) {
+export function DayScroller({ selected, onSelect, disabledDays, minDate }: { selected: string; onSelect: (dateKey: string) => void; disabledDays?: readonly number[]; /** Jours avant cette clé grisés et non sélectionnables (création : jamais le passé). */ minDate?: string | null }) {
   const today = toLocalDateKey();
   const ref = useRef<ScrollView>(null);
   const anchor = useRef(selected);
@@ -47,13 +47,14 @@ export function DayScroller({ selected, onSelect, disabledDays }: { selected: st
     >
       {days.map((d) => {
         const dow = dayOfWeekFromKey(d);
-        const out = !!disabledDays?.includes(dow);
+        const past = !!minDate && d < minDate;
+        const out = !!disabledDays?.includes(dow) || past;
         const on = d === selected;
         const month = d.slice(0, 7);
         const showMonth = month !== lastMonth;
         lastMonth = month;
         return (
-          <Pressable key={d} accessibilityRole="radio" accessibilityState={{ selected: on }} accessibilityLabel={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(d)}`} onPress={() => onSelect(d)} style={{ width: CELL, alignItems: 'center', gap: 3, paddingVertical: 7, borderRadius: 12, backgroundColor: on ? C.ink : 'transparent' }}>
+          <Pressable key={d} accessibilityRole="radio" accessibilityState={{ selected: on, disabled: past }} disabled={past} accessibilityLabel={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(d)}`} onPress={() => onSelect(d)} style={{ width: CELL, alignItems: 'center', gap: 3, paddingVertical: 7, borderRadius: 12, backgroundColor: on ? C.ink : 'transparent' }}>
             <Tx size={8.5} lh={11} upper color={on ? 'rgba(255,255,255,0.7)' : C.subtle}>
               {showMonth ? monthLabel(d).split(' ')[0]!.slice(0, 4) : DAY_LABELS_SHORT_FR[dow]}
             </Tx>

@@ -5,7 +5,17 @@
  */
 import { useMemo, useState } from 'react';
 import { useProBlockMutations, useProBlocks, useProSalon } from '@salondz/api-client';
-import { DAY_LABELS_FR, DAY_LABELS_SHORT_FR, addDaysToKey, dayOfWeekFromKey, formatTimeDZ, localDateTimeToISO, toLocalDateKey, weekKeys } from '@salondz/constants';
+import {
+  DAY_LABELS_FR,
+  DAY_LABELS_SHORT_FR,
+  addDaysToKey,
+  dayOfWeekFromKey,
+  formatTimeDZ,
+  localDateTimeToISO,
+  toLocalDateKey,
+  weekKeys,
+  isPastSlot,
+} from '@salondz/constants';
 import { createTimeBlockSchema } from '@salondz/validation';
 import type { TimeBlock } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
@@ -16,8 +26,26 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
 const HORIZON_DAYS = 90;
-const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-const keyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers', year: 'numeric', month: '2-digit', day: '2-digit' });
+const MONTHS = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre',
+];
+const keyFmt = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Africa/Algiers',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
 const localKey = (iso: string) => keyFmt.format(new Date(iso));
 const dayNum = (k: string) => Number(k.slice(8, 10));
 const monthOf = (k: string) => MONTHS[Number(k.slice(5, 7)) - 1]!;
@@ -29,21 +57,27 @@ function isAllDay(b: TimeBlock): boolean {
 
 /** « Jeudi 27 août », « 14 – 21 septembre » ou « 28 septembre – 3 octobre ». */
 export function rangeLabel(from: string, to: string): string {
-  if (from === to) return `${DAY_LABELS_FR[dayOfWeekFromKey(from)]} ${dayNum(from)} ${monthOf(from)}`;
-  if (from.slice(0, 7) === to.slice(0, 7)) return `${dayNum(from)} – ${dayNum(to)} ${monthOf(from)}`;
+  if (from === to)
+    return `${DAY_LABELS_FR[dayOfWeekFromKey(from)]} ${dayNum(from)} ${monthOf(from)}`;
+  if (from.slice(0, 7) === to.slice(0, 7))
+    return `${dayNum(from)} – ${dayNum(to)} ${monthOf(from)}`;
   return `${dayNum(from)} ${monthOf(from)} – ${dayNum(to)} ${monthOf(to)}`;
 }
 
 /** Jours couverts par un blocage (dernier jour inclus). */
 function blockDays(b: TimeBlock): { from: string; to: string } {
   const from = localKey(b.startsAt);
-  const to = isAllDay(b) ? localKey(new Date(new Date(b.endsAt).getTime() - 60_000).toISOString()) : localKey(b.endsAt);
+  const to = isAllDay(b)
+    ? localKey(new Date(new Date(b.endsAt).getTime() - 60_000).toISOString())
+    : localKey(b.endsAt);
   return { from, to };
 }
 
 export function describeBlock(b: TimeBlock): string {
   const { from, to } = blockDays(b);
-  return isAllDay(b) ? rangeLabel(from, to) : `${rangeLabel(from, from)} · ${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)}`;
+  return isAllDay(b)
+    ? rangeLabel(from, to)
+    : `${rangeLabel(from, from)} · ${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)}`;
 }
 
 type Range = { from: string; to: string } | null;
@@ -64,7 +98,10 @@ export function Closures() {
   const [error, setError] = useState<string | null>(null);
   const [del, setDel] = useState<TimeBlock | null>(null);
 
-  const staffName = useMemo(() => new Map((salon?.staff ?? []).map((m) => [m.id, m.displayName])), [salon]);
+  const staffName = useMemo(
+    () => new Map((salon?.staff ?? []).map((m) => [m.id, m.displayName])),
+    [salon],
+  );
   if (!salon) return <Splash />;
   const active = salon.staff.filter((m) => m.isActive);
   const items = blocks.data?.items ?? [];
@@ -75,18 +112,37 @@ export function Closures() {
     if (d > range.from) return setRange({ from: range.from, to: d });
     setRange({ from: d, to: d });
   };
-  const nDays = range ? Math.round((new Date(`${range.to}T12:00:00Z`).getTime() - new Date(`${range.from}T12:00:00Z`).getTime()) / 86_400_000) + 1 : 0;
-  const daysText = nDays <= 1 ? 'ce jour-là' : nDays === 2 ? 'sur ces deux jours' : `sur ces ${nDays} jours`;
+  const nDays = range
+    ? Math.round(
+        (new Date(`${range.to}T12:00:00Z`).getTime() -
+          new Date(`${range.from}T12:00:00Z`).getTime()) /
+          86_400_000,
+      ) + 1
+    : 0;
+  const daysText =
+    nDays <= 1 ? 'ce jour-là' : nDays === 2 ? 'sur ces deux jours' : `sur ces ${nDays} jours`;
 
   const submit = async () => {
     setError(null);
     if (!range) return setError('Choisissez un ou plusieurs jours.');
     if (mode === 'reduced' && from >= to) return setError("L'heure de début doit précéder la fin.");
+    if (mode === 'reduced' && range.from === toLocalDateKey() && isPastSlot(range.from, to))
+      return setError('Cette plage est déjà passée.');
     const base = { staffId: staffId || null, reason: reason.trim() || undefined };
     const inputs =
       mode === 'closed'
-        ? [{ ...base, startsAt: localDateTimeToISO(range.from, '00:00'), endsAt: localDateTimeToISO(addDaysToKey(range.to, 1), '00:00') }]
-        : Array.from({ length: nDays }, (_, i) => addDaysToKey(range.from, i)).map((d) => ({ ...base, startsAt: localDateTimeToISO(d, from), endsAt: localDateTimeToISO(d, to) }));
+        ? [
+            {
+              ...base,
+              startsAt: localDateTimeToISO(range.from, '00:00'),
+              endsAt: localDateTimeToISO(addDaysToKey(range.to, 1), '00:00'),
+            },
+          ]
+        : Array.from({ length: nDays }, (_, i) => addDaysToKey(range.from, i)).map((d) => ({
+            ...base,
+            startsAt: localDateTimeToISO(d, from),
+            endsAt: localDateTimeToISO(d, to),
+          }));
     try {
       for (const input of inputs) {
         const parsed = createTimeBlockSchema.safeParse(input);
@@ -107,13 +163,22 @@ export function Closures() {
 
       <div className="crd !gap-0 !px-4 !py-1">
         {blocks.isPending && <Skeleton className="my-3 h-[4rem]" />}
-        {blocks.data && items.length === 0 && <p className="p py-4 text-[0.8125rem]">Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.</p>}
+        {blocks.data && items.length === 0 && (
+          <p className="p py-4 text-[0.8125rem]">
+            Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.
+          </p>
+        )}
         {items.map((b) => {
           const allDay = isAllDay(b);
           const who = b.staffId ? (staffName.get(b.staffId) ?? 'Membre') : null;
           const title = who ? `${who} · ${b.reason ?? 'Indisponible'}` : (b.reason ?? 'Fermeture');
           return (
-            <button key={b.id} type="button" className="li w-full !py-4 text-left" onClick={() => setDel(b)}>
+            <button
+              key={b.id}
+              type="button"
+              className="li w-full !py-4 text-left"
+              onClick={() => setDel(b)}
+            >
               <span className="min-w-0">
                 <span className="block truncate text-[0.9375rem]">{title}</span>
                 <span className="mono block text-[0.9375rem] text-muted">{describeBlock(b)}</span>
@@ -128,13 +193,26 @@ export function Closures() {
 
       <SectionLabel>Ajouter une exception</SectionLabel>
       <div className="crd !gap-3">
-        <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={addDaysToKey(today, HORIZON_DAYS)} />
+        <MonthNav
+          weekOf={weekOf}
+          onWeekChange={setWeekOf}
+          minDate={today}
+          maxDate={addDaysToKey(today, HORIZON_DAYS)}
+        />
         <div className="dsel" role="listbox" aria-label="Choisir les jours" aria-multiselectable>
           {weekKeys(weekOf).map((d) => {
             const out = d < today;
             const on = !!range && d >= range.from && d <= range.to;
             return (
-              <button key={d} type="button" role="option" aria-selected={on} disabled={out} onClick={() => pick(d)} className={`dcel${on ? ' on' : ''}${out ? ' mut' : ''}`}>
+              <button
+                key={d}
+                type="button"
+                role="option"
+                aria-selected={on}
+                disabled={out}
+                onClick={() => pick(d)}
+                className={`dcel${on ? ' on' : ''}${out ? ' mut' : ''}`}
+              >
                 <span>{DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d)]}</span>
                 <b>{dayNumber(d)}</b>
               </button>
@@ -142,10 +220,18 @@ export function Closures() {
           })}
         </div>
         <div className="flex gap-2">
-          <Pill on={mode === 'closed'} className="flex-1 justify-center" onClick={() => setMode('closed')}>
+          <Pill
+            on={mode === 'closed'}
+            className="flex-1 justify-center"
+            onClick={() => setMode('closed')}
+          >
             Fermé
           </Pill>
-          <Pill on={mode === 'reduced'} className="flex-1 justify-center" onClick={() => setMode('reduced')}>
+          <Pill
+            on={mode === 'reduced'}
+            className="flex-1 justify-center"
+            onClick={() => setMode('reduced')}
+          >
             Horaires réduits
           </Pill>
         </div>
@@ -154,25 +240,58 @@ export function Closures() {
             <div className="li !py-3">
               <span className="text-[0.9375rem]">Fermé de</span>
               <span className="flex items-center gap-2 text-[0.9375rem] text-muted">
-                <input type="time" step={300} className="tm" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="De" />
+                <input
+                  type="time"
+                  step={300}
+                  className="tm"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  aria-label="De"
+                />
                 <span>à</span>
-                <input type="time" step={300} className="tm" value={to} onChange={(e) => setTo(e.target.value)} aria-label="À" />
+                <input
+                  type="time"
+                  step={300}
+                  className="tm"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  aria-label="À"
+                />
               </span>
             </div>
           )}
           {active.length > 1 && (
             <label className="li !py-3">
               <span className="text-[0.9375rem]">Concerne</span>
-              <PickerField inline label="Concerne" value={staffId} onChange={setStaffId} options={[{ value: '', label: 'Tout le salon' }, ...active.map((m) => ({ value: m.id, label: m.displayName }))]} />
+              <PickerField
+                inline
+                label="Concerne"
+                value={staffId}
+                onChange={setStaffId}
+                options={[
+                  { value: '', label: 'Tout le salon' },
+                  ...active.map((m) => ({ value: m.id, label: m.displayName })),
+                ]}
+              />
             </label>
           )}
           <label className="li !border-b-0 !py-3">
             <span className="text-[0.9375rem]">Motif</span>
-            <input className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Congés" maxLength={120} aria-label="Motif (facultatif)" />
+            <input
+              className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Congés"
+              maxLength={120}
+              aria-label="Motif (facultatif)"
+            />
           </label>
         </div>
         <p className="text-[0.9375rem] leading-[1.45] text-muted">
-          {mode === 'closed' ? `Les clients ne verront aucun créneau ${daysText}.` : `Les clients ne pourront pas réserver entre ${from} et ${to} ${daysText}.`} Les rendez-vous déjà confirmés ne sont pas annulés automatiquement.
+          {mode === 'closed'
+            ? `Les clients ne verront aucun créneau ${daysText}.`
+            : `Les clients ne pourront pas réserver entre ${from} et ${to} ${daysText}.`}{' '}
+          Les rendez-vous déjà confirmés ne sont pas annulés automatiquement.
         </p>
       </div>
       {error && (
@@ -192,8 +311,12 @@ export function Closures() {
           <div className="dim" onClick={() => setDel(null)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
-              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">Supprimer cette exception ?</div>
-              <p className="p mt-2">{describeBlock(del)} — les créneaux redeviennent réservables.</p>
+              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
+                Supprimer cette exception ?
+              </div>
+              <p className="p mt-2">
+                {describeBlock(del)} — les créneaux redeviennent réservables.
+              </p>
             </div>
             <Button
               className="!bg-danger !text-white"

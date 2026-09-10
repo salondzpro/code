@@ -16,6 +16,9 @@ import {
   relativeDayLabelDZ,
   timeToMinutes,
   toLocalDateKey,
+  isPastSlot,
+  ceilToStep,
+  nowTimeDZ,
 } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { errorText } from '@/lib/errors';
@@ -92,11 +95,23 @@ export default function ProBookingNew() {
           new Date(b.startsAt).getTime() < endMs &&
           new Date(b.endsAt).getTime() > new Date(startIso).getTime(),
       );
-      out.push({ t, taken });
+      // Jamais le passé : un créneau déjà commencé n'est pas proposé.
+      if (!isPastSlot(date, t)) out.push({ t, taken });
     }
     return out;
   });
   const endTime = minutesToTime(timeToMinutes(time) + minutes);
+  const firstFree = slots.find((x) => !x.taken)?.t ?? slots[0]?.t;
+  useEffect(() => {
+    if (
+      slots.length > 0 &&
+      (isPastSlot(date, time) || !slots.some((x) => x.t === time)) &&
+      firstFree
+    )
+      setTime(firstFree);
+    else if (slots.length === 0 && isPastSlot(date, time)) setTime(ceilToStep(nowTimeDZ(), 5));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, slots.length, firstFree]);
   const CHIP_W = 74;
   useEffect(() => {
     const idx = slots.findIndex((x) => x.t === time);
@@ -176,7 +191,7 @@ export default function ProBookingNew() {
 
       {/* 1. QUAND — jours à faire défiler, heure en grand, créneaux du jour en un tap */}
       <Card gap={10}>
-        <DayScroller selected={date} onSelect={setDate} />
+        <DayScroller selected={date} onSelect={setDate} minDate={toLocalDateKey()} />
         <View
           style={{
             flexDirection: 'row',
@@ -349,6 +364,7 @@ export default function ProBookingNew() {
         value={time}
         onChange={setTime}
         step={5}
+        from={date === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
       />
     </Screen>
   );
