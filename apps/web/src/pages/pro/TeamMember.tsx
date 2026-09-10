@@ -6,7 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Camera, ChevronRight, Clock, Scissors } from 'lucide-react';
+import { Camera, ChevronRight, Clock, Phone, Save, Scissors } from 'lucide-react';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
 import {
   DAY_LABELS_SHORT_FR,
@@ -17,12 +17,16 @@ import {
   type DayHoursRow,
 } from '@salondz/constants';
 import type { OpeningHour, SalonOwnerView, Staff } from '@salondz/types';
+import { phoneDZ } from '@salondz/validation';
+import { formatDZPhone } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
 import {
   Avatar,
   BottomSheet,
   Button,
+  Field,
   I,
+  Input,
   Segmented,
   Skeleton,
   Toggle,
@@ -57,6 +61,15 @@ export function TeamMember() {
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Identité modifiable sur place : nom affiché et téléphone (facultatif).
+  const [name, setName] = useState(member?.displayName ?? '');
+  const [phone, setPhone] = useState(member?.phone ? formatDZPhone(member.phone) : '');
+  const [identErr, setIdentErr] = useState<{ name?: string; phone?: string }>({});
+  const [identSaved, setIdentSaved] = useState(false);
+  useEffect(() => {
+    setName(member?.displayName ?? '');
+    setPhone(member?.phone ? formatDZPhone(member.phone) : '');
+  }, [member?.displayName, member?.phone]);
   if (!salon) return <Splash />;
   if (!member)
     return (
@@ -66,6 +79,29 @@ export function TeamMember() {
       </Screen>
     );
   const isOwner = member.userId === salon.ownerId;
+  const identDirty =
+    name.trim() !== member.displayName ||
+    (phone.trim() ? phone.trim() : '') !== (member.phone ? formatDZPhone(member.phone) : '');
+  const saveIdentity = async () => {
+    const errs: typeof identErr = {};
+    if (name.trim().length < 2) errs.name = 'Indiquez le nom du membre.';
+    let e164: string | null = null;
+    if (phone.trim()) {
+      const parsed = phoneDZ.safeParse(phone);
+      if (!parsed.success) errs.phone = 'Numéro invalide (ex : 05 51 23 45 67).';
+      else e164 = parsed.data;
+    }
+    setIdentErr(errs);
+    if (errs.name || errs.phone) return;
+    setError(null);
+    try {
+      await update.mutateAsync({ id: member.id, displayName: name.trim(), phone: e164 });
+      setIdentSaved(true);
+      setTimeout(() => setIdentSaved(false), 1500);
+    } catch (err) {
+      setError(errorText(err));
+    }
+  };
   const servicesSummary = member.allServices
     ? 'Toutes les prestations'
     : `${member.serviceIds.length} prestation${member.serviceIds.length > 1 ? 's' : ''} sur ${salon.services.length}`;
@@ -113,6 +149,14 @@ export function TeamMember() {
                   ? 'Membre actif'
                   : 'Inactif — masqué à la réservation'}
           </span>
+          {member.phone && (
+            <a
+              href={`tel:${member.phone}`}
+              className="flex items-center gap-1.5 text-[0.9375rem] text-muted"
+            >
+              <I icon={Phone} size={14} /> {formatDZPhone(member.phone)}
+            </a>
+          )}
           {member.avatarUrl && !avatarBusy && (
             <button
               type="button"
@@ -140,6 +184,55 @@ export function TeamMember() {
             label="Actif"
           />
         )}
+      </div>
+
+      {/* Identité : nom affiché aux clients + coordonnées (privées), modifiables sur place. */}
+      <div className="crd !gap-3">
+        <span className="h3">Identité</span>
+        <div className="g2">
+          <Field label="Nom affiché *" htmlFor="tm-name" error={identErr.name}>
+            <Input
+              id="tm-name"
+              value={name}
+              err={!!identErr.name}
+              maxLength={60}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (identErr.name) setIdentErr((f) => ({ ...f, name: undefined }));
+              }}
+              placeholder="Prénom"
+              aria-required
+              aria-invalid={!!identErr.name || undefined}
+            />
+          </Field>
+          <Field label="Téléphone (facultatif)" htmlFor="tm-phone" error={identErr.phone}>
+            <Input
+              id="tm-phone"
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              err={!!identErr.phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (identErr.phone) setIdentErr((f) => ({ ...f, phone: undefined }));
+              }}
+              placeholder="05 51 23 45 67"
+            />
+          </Field>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="s">
+            {identSaved ? 'Enregistré' : 'Le téléphone reste privé (jamais montré aux clients).'}
+          </span>
+          <Button
+            auto
+            sm
+            onClick={() => void saveIdentity()}
+            disabled={update.isPending || !identDirty}
+          >
+            <I icon={Save} size={16} /> Enregistrer
+          </Button>
+        </div>
       </div>
 
       <div className="crd !gap-0 !py-1">

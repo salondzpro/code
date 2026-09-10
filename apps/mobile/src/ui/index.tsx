@@ -617,7 +617,7 @@ export function Segmented<T extends string>({
   onChange,
   label,
 }: {
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; icon?: LucideIcon }[];
   value: T;
   onChange: (v: T) => void;
   label: string;
@@ -654,9 +654,12 @@ export function Segmented<T extends string>({
               on && SHADOW.seg,
             ]}
           >
-            <Tx size={10.5} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={14}>
-              {o.label}
-            </Tx>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              {o.icon && <I icon={o.icon} size={13} color={on ? C.text : C.muted} />}
+              <Tx size={10.5} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={14}>
+                {o.label}
+              </Tx>
+            </View>
           </Pressable>
         );
       })}

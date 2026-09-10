@@ -1,4 +1,11 @@
-import type { Booking, BookingWithSalon, BookingWithStaff, SalonOwnerView, SalonPublic, BookingItem } from '@salondz/types';
+import type {
+  Booking,
+  BookingWithSalon,
+  BookingWithStaff,
+  SalonOwnerView,
+  SalonPublic,
+  BookingItem,
+} from '@salondz/types';
 import { db } from './supabase';
 import { camelize, hm } from './mappers';
 import { notFound, unwrap } from './errors';
@@ -7,7 +14,8 @@ import { mapSalon, SALON_COLUMNS } from '../plugins/auth';
 export const PHOTO_COLS = 'id, salon_id, url, sort_order';
 export const SERVICE_COLS =
   'id, salon_id, name, description, duration_minutes, price_da, category_id, group_name, is_active, sort_order';
-export const STAFF_COLS = 'id, salon_id, user_id, display_name, avatar_url, is_active, sort_order, all_services';
+export const STAFF_COLS =
+  'id, salon_id, user_id, display_name, phone, avatar_url, is_active, sort_order, all_services';
 export const STAFF_SELECT = `${STAFF_COLS}, staff_services(service_id)`;
 export const HOURS_COLS = 'id, salon_id, day_of_week, opens_at, closes_at, is_closed';
 export const BOOKING_COLS =
@@ -30,8 +38,13 @@ function mapHours(rows: Row[]) {
 
 /** Membre + prestations affectées (staff_services). */
 export function mapStaff(row: Row): SalonOwnerView['staff'][number] {
-  const { staff_services, ...rest } = row as Row & { staff_services?: { service_id: string }[] | null };
-  return { ...camelize<SalonOwnerView['staff'][number]>(rest), serviceIds: (staff_services ?? []).map((x) => x.service_id) };
+  const { staff_services, ...rest } = row as Row & {
+    staff_services?: { service_id: string }[] | null;
+  };
+  return {
+    ...camelize<SalonOwnerView['staff'][number]>(rest),
+    serviceIds: (staff_services ?? []).map((x) => x.service_id),
+  };
 }
 
 function composeSalon(row: Row): SalonOwnerView {
@@ -47,7 +60,12 @@ function composeSalon(row: Row): SalonOwnerView {
     services: sortBy(
       (services ?? []).map((svc) => {
         const { service_photos, ...rest } = svc as Row & { service_photos?: Row[] | null };
-        return { ...camelize<SalonOwnerView['services'][number]>(rest), photos: sortBy(camelize<{ id: string; url: string; sortOrder: number }[]>(service_photos ?? [])) };
+        return {
+          ...camelize<SalonOwnerView['services'][number]>(rest),
+          photos: sortBy(
+            camelize<{ id: string; url: string; sortOrder: number }[]>(service_photos ?? []),
+          ),
+        };
       }),
     ),
     staff: sortBy((staff ?? []).map((m) => mapStaff(m))),
@@ -63,7 +81,9 @@ export async function loadOwnerView(salonId: string): Promise<SalonOwnerView> {
 
 /** Vue publique (services/staff actifs uniquement). Retourne null si absent. */
 /** `ownerId` est renvoyé pour le contrôle d'accès de la route, qui le retire de la réponse publique. */
-export async function loadPublicBySlug(slug: string): Promise<(SalonPublic & { ownerId: string }) | null> {
+export async function loadPublicBySlug(
+  slug: string,
+): Promise<(SalonPublic & { ownerId: string }) | null> {
   const res = await db
     .from('salons')
     .select(FULL_SALON_SELECT)
@@ -76,7 +96,11 @@ export async function loadPublicBySlug(slug: string): Promise<(SalonPublic & { o
   const full = composeSalon(res.data as Row);
   return {
     ...full,
-    staff: full.staff.map((s) => ({ id: s.id, displayName: s.displayName, avatarUrl: s.avatarUrl })),
+    staff: full.staff.map((s) => ({
+      id: s.id,
+      displayName: s.displayName,
+      avatarUrl: s.avatarUrl,
+    })),
   };
 }
 
@@ -85,34 +109,63 @@ export function mapBooking(row: Row): Booking {
 }
 
 export function mapBookingWithStaff(row: Row): BookingWithStaff {
-  const { staff, booking_items, ...rest } = row as Row & { staff: Row | null; booking_items?: Row[] | null };
-  return { ...mapBooking(rest), staff: staff ? camelize(staff) : null, items: mapItems(booking_items) };
+  const { staff, booking_items, ...rest } = row as Row & {
+    staff: Row | null;
+    booking_items?: Row[] | null;
+  };
+  return {
+    ...mapBooking(rest),
+    staff: staff ? camelize(staff) : null,
+    items: mapItems(booking_items),
+  };
 }
 
 function mapItems(rows: Row[] | null | undefined): BookingItem[] {
-  return (rows ?? []).map((r) => camelize<BookingItem>(r)).sort((a, b) => a.sortOrder - b.sortOrder);
+  return (rows ?? [])
+    .map((r) => camelize<BookingItem>(r))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export function mapBookingWithSalon(row: Row): BookingWithSalon {
-  const { staff, salons, booking_items, reviews, ...rest } = row as Row & { staff: Row | null; salons: Row; booking_items?: Row[] | null; reviews?: { rating: number }[] | { rating: number } | null };
+  const { staff, salons, booking_items, reviews, ...rest } = row as Row & {
+    staff: Row | null;
+    salons: Row;
+    booking_items?: Row[] | null;
+    reviews?: { rating: number }[] | { rating: number } | null;
+  };
   // `reviews.booking_id` est unique : PostgREST renvoie un objet ou un tableau d'un élément selon la version.
   const review = Array.isArray(reviews) ? reviews[0] : reviews;
-  return { ...mapBooking(rest), salon: camelize(salons), staff: staff ? camelize(staff) : null, items: mapItems(booking_items), reviewRating: review?.rating ?? null };
+  return {
+    ...mapBooking(rest),
+    salon: camelize(salons),
+    staff: staff ? camelize(staff) : null,
+    items: mapItems(booking_items),
+    reviewRating: review?.rating ?? null,
+  };
 }
 
-export const BOOKING_ITEM_COLS = 'id, service_id, service_name, duration_minutes, price_da, sort_order';
+export const BOOKING_ITEM_COLS =
+  'id, service_id, service_name, duration_minutes, price_da, sort_order';
 export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, phone, address, cancel_min_hours, allow_client_reschedule), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS}), reviews(rating)`;
 export const BOOKING_WITH_STAFF_SELECT = `${BOOKING_COLS}, staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
 
 export async function getBookingWithSalon(id: string): Promise<BookingWithSalon> {
-  const res = await db.from('bookings').select(BOOKING_WITH_SALON_SELECT).eq('id', id).maybeSingle();
+  const res = await db
+    .from('bookings')
+    .select(BOOKING_WITH_SALON_SELECT)
+    .eq('id', id)
+    .maybeSingle();
   if (res.error) throw res.error;
   if (!res.data) throw notFound('Réservation');
   return mapBookingWithSalon(res.data as Row);
 }
 
 export async function getBookingWithStaff(id: string): Promise<BookingWithStaff> {
-  const res = await db.from('bookings').select(BOOKING_WITH_STAFF_SELECT).eq('id', id).maybeSingle();
+  const res = await db
+    .from('bookings')
+    .select(BOOKING_WITH_STAFF_SELECT)
+    .eq('id', id)
+    .maybeSingle();
   if (res.error) throw res.error;
   if (!res.data) throw notFound('Réservation');
   return mapBookingWithStaff(res.data as Row);

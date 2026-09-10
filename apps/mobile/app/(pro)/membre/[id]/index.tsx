@@ -1,18 +1,22 @@
 /** Espace pro — Fiche d'un membre : activation, accès aux pages Prestations et Horaires, retrait. */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Camera, ChevronRight, Clock, Scissors } from 'lucide-react-native';
+import { Camera, ChevronRight, Clock, Phone, Save, Scissors } from 'lucide-react-native';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
-import { DAY_LABELS_SHORT_FR, formatDayRanges } from '@salondz/constants';
+import { DAY_LABELS_SHORT_FR, formatDZPhone, formatDayRanges } from '@salondz/constants';
+import { phoneDZ } from '@salondz/validation';
+import { open } from '@/lib/salon';
 import { errorText } from '@/lib/errors';
 import {
   Alert,
   Avatar,
   Button,
   Card,
+  Field,
   H1,
   I,
+  Input,
   ListCard,
   P,
   Row,
@@ -51,6 +55,15 @@ export default function TeamMember() {
   };
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Identité modifiable sur place : nom affiché et téléphone (facultatif).
+  const [name, setName] = useState(member?.displayName ?? '');
+  const [phone, setPhone] = useState(member?.phone ? formatDZPhone(member.phone) : '');
+  const [identErr, setIdentErr] = useState<{ name?: string; phone?: string }>({});
+  const [identSaved, setIdentSaved] = useState(false);
+  useEffect(() => {
+    setName(member?.displayName ?? '');
+    setPhone(member?.phone ? formatDZPhone(member.phone) : '');
+  }, [member?.displayName, member?.phone]);
   if (!salon) return <Splash />;
   if (!member)
     return (
@@ -60,6 +73,29 @@ export default function TeamMember() {
       </Screen>
     );
   const isOwner = member.userId === salon.ownerId;
+  const identDirty =
+    name.trim() !== member.displayName ||
+    (phone.trim() ? phone.trim() : '') !== (member.phone ? formatDZPhone(member.phone) : '');
+  const saveIdentity = async () => {
+    const errs: typeof identErr = {};
+    if (name.trim().length < 2) errs.name = 'Indiquez le nom du membre.';
+    let e164: string | null = null;
+    if (phone.trim()) {
+      const parsed = phoneDZ.safeParse(phone);
+      if (!parsed.success) errs.phone = 'Numéro invalide (ex : 05 51 23 45 67).';
+      else e164 = parsed.data;
+    }
+    setIdentErr(errs);
+    if (errs.name || errs.phone) return;
+    setError(null);
+    try {
+      await update.mutateAsync({ id: member.id, displayName: name.trim(), phone: e164 });
+      setIdentSaved(true);
+      setTimeout(() => setIdentSaved(false), 1500);
+    } catch (err) {
+      setError(errorText(err));
+    }
+  };
   const servicesSummary = member.allServices
     ? 'Toutes les prestations'
     : `${member.serviceIds.length} prestation${member.serviceIds.length > 1 ? 's' : ''} sur ${salon.services.length}`;
@@ -112,6 +148,19 @@ export default function TeamMember() {
                   ? 'Membre actif'
                   : 'Inactif — masqué à la réservation'}
           </P>
+          {!!member.phone && (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`Appeler ${member.displayName}`}
+              onPress={() => void open(`tel:${member.phone}`)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+            >
+              <I icon={Phone} size={12} color={C.muted} />
+              <Tx size={12} color={C.muted} lh={16}>
+                {formatDZPhone(member.phone)}
+              </Tx>
+            </Pressable>
+          )}
           {!!member.avatarUrl && !avatarBusy && (
             <Pressable
               accessibilityRole="button"
@@ -141,6 +190,67 @@ export default function TeamMember() {
           />
         )}
       </View>
+
+      {/* Identité : nom affiché aux clients + coordonnées (privées), modifiables sur place. */}
+      <Card gap={10}>
+        <SectionLabel>Identité</SectionLabel>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Field label="Nom affiché *" error={identErr.name}>
+              <Input
+                value={name}
+                err={!!identErr.name}
+                maxLength={60}
+                onChangeText={(v) => {
+                  setName(v);
+                  if (identErr.name) setIdentErr((f) => ({ ...f, name: undefined }));
+                }}
+                placeholder="Prénom"
+                accessibilityLabel="Nom affiché"
+              />
+            </Field>
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Field label="Téléphone (facultatif)" error={identErr.phone}>
+              <Input
+                value={phone}
+                err={!!identErr.phone}
+                keyboardType="phone-pad"
+                onChangeText={(v) => {
+                  setPhone(v);
+                  if (identErr.phone) setIdentErr((f) => ({ ...f, phone: undefined }));
+                }}
+                placeholder="05 51 23 45 67"
+                accessibilityLabel="Téléphone du membre"
+              />
+            </Field>
+          </View>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <Tx size={10.5} color={C.muted} lh={14} style={{ flex: 1 }}>
+            {identSaved ? 'Enregistré' : 'Le téléphone reste privé (jamais montré aux clients).'}
+          </Tx>
+          <Button
+            auto
+            sm
+            onPress={() => void saveIdentity()}
+            disabled={update.isPending || !identDirty}
+            loading={update.isPending}
+          >
+            <I icon={Save} size={14} color={C.onInk} />
+            <Tx size={11.5} weight={600} color={C.onInk} lh={15}>
+              Enregistrer
+            </Tx>
+          </Button>
+        </View>
+      </Card>
 
       <ListCard>
         <Row

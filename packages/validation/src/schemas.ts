@@ -47,7 +47,12 @@ export const updateSalonSchema = createSalonSchema.partial().extend({
   coverUrl: p.httpUrl.nullable().optional(),
   isPublished: z.boolean().optional(),
   slotIntervalMinutes: p.slotInterval.optional(),
-  bookingLeadTimeMinutes: z.number().int().min(0).max(7 * 24 * 60).optional(),
+  bookingLeadTimeMinutes: z
+    .number()
+    .int()
+    .min(0)
+    .max(7 * 24 * 60)
+    .optional(),
   bookingHorizonDays: z.number().int().min(1).max(90).optional(),
   autoConfirm: z.boolean().optional(),
   /** Annulation client gratuite jusqu'à N h avant (design « Règles de réservation »). */
@@ -109,6 +114,8 @@ export type SetOpeningHoursInput = z.infer<typeof setOpeningHoursSchema>;
 // ---------- Équipe ----------
 export const createStaffSchema = z.object({
   displayName: p.shortText(60),
+  /** Coordonnées du membre (E.164), jamais exposées côté public. */
+  phone: p.phoneDZ.nullable().optional(),
   avatarUrl: p.httpUrl.nullable().optional(),
   /** Toutes les prestations (défaut) ou une sélection (`serviceIds`). */
   allServices: z.boolean().default(true),
@@ -135,7 +142,10 @@ export const blockClientSchema = z
     phone: p.phoneDZ.optional(),
     reason: p.shortText(200).optional(),
   })
-  .refine((v) => !!v.clientId || !!v.phone, { message: 'Compte ou numéro requis', path: ['phone'] });
+  .refine((v) => !!v.clientId || !!v.phone, {
+    message: 'Compte ou numéro requis',
+    path: ['phone'],
+  });
 export type BlockClientInput = z.infer<typeof blockClientSchema>;
 export const clientNotesSchema = z.object({ notes: z.string().trim().max(2000) });
 export type ClientNotesInput = z.infer<typeof clientNotesSchema>;
@@ -152,26 +162,36 @@ export const createTimeBlockSchema = z
     message: 'La fin doit être après le début',
     path: ['endsAt'],
   })
-  .refine((b) => new Date(b.endsAt).getTime() - new Date(b.startsAt).getTime() <= MAX_TIME_BLOCK_DAYS * 86_400_000, {
-    message: 'Un blocage ne peut pas dépasser un an',
-    path: ['endsAt'],
-  });
+  .refine(
+    (b) =>
+      new Date(b.endsAt).getTime() - new Date(b.startsAt).getTime() <=
+      MAX_TIME_BLOCK_DAYS * 86_400_000,
+    {
+      message: 'Un blocage ne peut pas dépasser un an',
+      path: ['endsAt'],
+    },
+  );
 export type CreateTimeBlockInput = z.infer<typeof createTimeBlockSchema>;
 
 // ---------- Réservations ----------
-export const createBookingSchema = z.object({
-  salonId: p.uuid,
-  serviceId: p.uuid.optional(),
-  /** Prestations cumulées (design C-F 08) : ordre = ordre de réalisation. */
-  serviceIds: z.array(p.uuid).min(1).max(8).optional(),
-  /** null/absent = "n'importe quel membre disponible". */
-  staffId: p.uuid.nullable().optional(),
-  startsAt: p.isoDateTime,
-  notes: p.longText(300).optional(),
-  /** Requis si le client n'a pas de nom sur son profil. */
-  clientName: p.shortText(80).optional(),
-  clientPhone: p.phoneDZ.optional(),
-}).refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, { message: 'Choisissez au moins une prestation', path: ['serviceIds'] });
+export const createBookingSchema = z
+  .object({
+    salonId: p.uuid,
+    serviceId: p.uuid.optional(),
+    /** Prestations cumulées (design C-F 08) : ordre = ordre de réalisation. */
+    serviceIds: z.array(p.uuid).min(1).max(8).optional(),
+    /** null/absent = "n'importe quel membre disponible". */
+    staffId: p.uuid.nullable().optional(),
+    startsAt: p.isoDateTime,
+    notes: p.longText(300).optional(),
+    /** Requis si le client n'a pas de nom sur son profil. */
+    clientName: p.shortText(80).optional(),
+    clientPhone: p.phoneDZ.optional(),
+  })
+  .refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, {
+    message: 'Choisissez au moins une prestation',
+    path: ['serviceIds'],
+  });
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
 /** Réservation créée par le pro (client de passage / téléphone). */
@@ -261,11 +281,17 @@ export const availabilityQuerySchema = z
   .object({
     serviceId: p.uuid.optional(),
     /** Prestations cumulées : ids séparés par des virgules (durée = somme). */
-    serviceIds: z.string().regex(/^[0-9a-f-]{36}(,[0-9a-f-]{36}){0,7}$/i).optional(),
+    serviceIds: z
+      .string()
+      .regex(/^[0-9a-f-]{36}(,[0-9a-f-]{36}){0,7}$/i)
+      .optional(),
     date: p.dateKey,
     staffId: p.uuid.optional(),
   })
-  .refine((q) => !!q.serviceId || !!q.serviceIds, { message: 'serviceId ou serviceIds requis', path: ['serviceId'] });
+  .refine((q) => !!q.serviceId || !!q.serviceIds, {
+    message: 'serviceId ou serviceIds requis',
+    path: ['serviceId'],
+  });
 
 export const citiesQuerySchema = z.object({
   wilaya: z.coerce.number().int().min(1).max(58).optional(),
@@ -306,7 +332,10 @@ export const emailOtpRequestSchema = z.object({
 });
 export const emailOtpVerifySchema = z.object({
   email: z.string().trim().toLowerCase().email(),
-  token: z.string().trim().regex(/^\d{4,8}$/),
+  token: z
+    .string()
+    .trim()
+    .regex(/^\d{4,8}$/),
 });
 
 /** Connexion de démonstration (comptes à accès direct, sans SMS). */

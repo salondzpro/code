@@ -112,6 +112,8 @@ export interface Staff {
   salonId: UUID;
   userId: UUID | null;
   displayName: string;
+  /** Téléphone du membre (E.164), visible du pro seulement. */
+  phone: string | null;
   avatarUrl: string | null;
   isActive: boolean;
   sortOrder: number;

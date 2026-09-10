@@ -1,5 +1,5 @@
 /**
- * Accueil pro — « Arrêt / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
+ * Accueil pro — « Fermer/Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
  * le choix « jusqu'à la fermeture du jour / 1 h / 2 h / 3 h » et pose un blocage tout salon (sans membre) : plus de
  * réservations en ligne immédiatement. Tant qu'il est actif, le bouton passe en rouge (porte ouverte = rouvrir) et
  * une bannière « Fermé jusqu'à … » s'affiche sous les chiffres du jour avec « Rouvrir maintenant ». Le calcul des
@@ -18,7 +18,7 @@ import {
 } from '@salondz/constants';
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from './ErrorMessage';
-import { Button, I, IconButton, Toast } from './ui';
+import { Button, I, Toast } from './ui';
 
 const DURATIONS = [1, 2, 3] as const;
 
@@ -47,7 +47,7 @@ function useFlash(): [string | null, (m: string | null) => void] {
   return [msg, setMsg];
 }
 
-/** Bouton icône de l'en-tête : « Arrêt / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
+/** Bouton icône de l'en-tête : « Fermer/Pause » (ou « Rouvrir » quand une fermeture est en cours). */
 export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[] }) {
   const today = toLocalDateKey();
   const active = useActiveClose();
@@ -83,19 +83,21 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
 
   return (
     <>
-      <IconButton
-        lg
+      <Button
+        auto
+        sm
+        variant="g"
         aria-label={
-          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Arrêt / Pause'
+          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Fermer/Pause'
         }
-        title={active ? 'Rouvrir maintenant' : 'Arrêt / Pause'}
-        className={active ? '!border-danger !bg-danger !text-white' : ''}
+        title={active ? 'Rouvrir maintenant' : 'Fermer/Pause'}
+        className={`!rounded-full !px-3.5 !py-2.5 !text-[0.875rem] ${active ? '!border-danger !bg-danger !text-white' : ''}`}
         disabled={create.isPending || remove.isPending}
         onClick={() => (active ? void reopen() : setChoosing(true))}
         data-testid="quick-close"
       >
-        <I icon={active ? DoorOpen : Siren} size={20} />
-      </IconButton>
+        <I icon={active ? DoorOpen : Siren} size={17} /> {active ? 'Rouvrir' : 'Fermer/Pause'}
+      </Button>
       {error && <Toast>{error}</Toast>}
       <PickerSheet
         open={choosing}

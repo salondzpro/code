@@ -1,5 +1,5 @@
 /**
- * Accueil pro — « Arrêt / Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
+ * Accueil pro — « Fermer/Pause » : un bouton icône dans l'en-tête (entre « Votre journée » et le logo) qui ouvre
  * le choix « jusqu'à la fermeture du jour / 1 h / 2 h / 3 h » et pose un blocage tout salon : plus de réservations
  * en ligne immédiatement. Pendant une fermeture, le bouton passe en rouge (porte ouverte = rouvrir) et une bannière
  * « Fermé jusqu'à … » s'affiche sous les chiffres du jour avec « Rouvrir maintenant ».
@@ -17,7 +17,7 @@ import {
 } from '@salondz/constants';
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from '@/lib/errors';
-import { Alert, Button, Card, I, IconButton, Toast, Tx } from './index';
+import { Alert, Button, Card, I, Toast, Tx } from './index';
 import { PickerSheet } from './Pickers';
 import { C } from '@/theme/design';
 
@@ -48,7 +48,7 @@ function useFlash(): [string | null, (m: string | null) => void] {
   return [msg, setMsg];
 }
 
-/** Bouton icône de l'en-tête : « Arrêt / Pause » (ou « Rouvrir » quand une fermeture est en cours). */
+/** Bouton icône de l'en-tête : « Fermer/Pause » (ou « Rouvrir » quand une fermeture est en cours). */
 export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[] }) {
   const today = toLocalDateKey();
   const active = useActiveClose();
@@ -84,17 +84,26 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
 
   return (
     <>
-      <IconButton
-        lg
+      <Button
+        auto
+        sm
+        pill
+        variant="g"
         accessibilityLabel={
-          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Arrêt / Pause'
+          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Fermer/Pause'
         }
         disabled={create.isPending || remove.isPending}
         onPress={() => (active ? void reopen() : setChoosing(true))}
-        style={active ? { backgroundColor: C.danger, borderColor: C.danger } : undefined}
+        style={[
+          { paddingHorizontal: 12, paddingVertical: 9 },
+          active ? { backgroundColor: C.danger, borderColor: C.danger } : null,
+        ]}
       >
-        <I icon={active ? DoorOpen : Siren} size={19} color={active ? '#fff' : C.text} />
-      </IconButton>
+        <I icon={active ? DoorOpen : Siren} size={15} color={active ? '#fff' : C.text} />
+        <Tx size={11.5} weight={600} lh={15} color={active ? '#fff' : C.text}>
+          {active ? 'Rouvrir' : 'Fermer/Pause'}
+        </Tx>
+      </Button>
       {error && <Toast>{error}</Toast>}
       <PickerSheet
         open={choosing}

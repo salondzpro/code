@@ -203,7 +203,7 @@ export function createApiClient(opts: ApiClientOptions) {
       },
       staff: {
         create: (body: { displayName: string; avatarUrl?: string | null; allServices?: boolean; serviceIds?: string[] }) => post<Staff>('/pro/staff', body),
-        update: (id: string, body: Partial<{ displayName: string; avatarUrl: string | null; isActive: boolean; sortOrder: number; allServices: boolean; serviceIds: string[] }>) => patch<Staff>(`/pro/staff/${id}`, body),
+        update: (id: string, body: Partial<{ displayName: string; phone: string | null; avatarUrl: string | null; isActive: boolean; sortOrder: number; allServices: boolean; serviceIds: string[] }>) => patch<Staff>(`/pro/staff/${id}`, body),
         remove: (id: string) => del<{ deleted: boolean; deactivated: boolean }>(`/pro/staff/${id}`),
         hours: (id: string) => get<StaffHour[]>(`/pro/staff/${id}/hours`),
         setHours: (id: string, hours: { dayOfWeek: number; startsAt: string; endsAt: string }[]) => put<void>(`/pro/staff/${id}/hours`, { hours }),

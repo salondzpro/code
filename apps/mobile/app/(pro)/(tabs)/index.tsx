@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, MessageCircle, Phone } from 'lucide-react-native';
+import { ChevronRight, MessageCircle, Phone, Share2 } from 'lucide-react-native';
 import {
   useMe,
   useProBookingMutations,
@@ -16,6 +16,7 @@ import { useRealtimeBookings } from '@/lib/realtime';
 import { useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/ui/QuickClose';
+import { ShareSheet } from '@/ui/ShareSheet';
 import { formatDuration } from '@/lib/format';
 import { open } from '@/lib/salon';
 import {
@@ -67,6 +68,7 @@ export default function ProHome() {
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = useNow();
+  const [share, setShare] = useState(false);
   const [staffId, setStaffId] = useStaffFilter();
   const byStaff = <T extends { staffId: string | null }>(list: T[]) =>
     staffId ? list.filter((b) => b.staffId === staffId) : list;
@@ -426,6 +428,23 @@ export default function ProHome() {
           ))}
         </View>
       </Card>
+      {/* Partage du lien de réservation : tout en bas, après le chiffre d'affaires. */}
+      {salon && (
+        <Button variant="g" onPress={() => setShare(true)}>
+          <I icon={Share2} size={15} color={C.text} />
+          <Tx size={13} weight={600} lh={17}>
+            Partager mon lien
+          </Tx>
+        </Button>
+      )}
+      {salon && (
+        <ShareSheet
+          open={share}
+          onClose={() => setShare(false)}
+          name={salon.name}
+          slug={salon.slug}
+        />
+      )}
     </Screen>
   );
 }

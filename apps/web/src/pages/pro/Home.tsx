@@ -1,7 +1,7 @@
 /** PRO-F 22 — Accueil professionnel : « Votre journée », à valider, prochains, chiffre d'affaires. */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { ChevronRight, MessageCircle, Phone } from 'lucide-react';
+import { ChevronRight, MessageCircle, Phone, Share2 } from 'lucide-react';
 import {
   useMe,
   useProBookingMutations,
@@ -19,6 +19,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { StaffFilter } from '@/components/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/components/QuickClose';
 import { useStaffFilter } from '@/lib/proPrefs';
+import { ShareSheet, usePublicUrl } from './Link';
 
 /** Heure courante rafraîchie chaque minute (« dans 25 min », « en cours »). */
 function useNow(): number {
@@ -51,6 +52,8 @@ export function ProHome() {
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = useNow();
+  const [share, setShare] = useState(false);
+  const link = usePublicUrl(salon?.slug ?? '');
   const todays = byStaff(todayList.data?.items ?? [])
     .filter((b) => b.status !== 'cancelled')
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
@@ -318,6 +321,21 @@ export function ProHome() {
           ))}
         </span>
       </Link>
+      {/* Partage du lien de réservation : tout en bas, après le chiffre d'affaires. */}
+      {salon && (
+        <Button variant="g" onClick={() => setShare(true)}>
+          <I icon={Share2} size={18} /> Partager mon lien
+        </Button>
+      )}
+      {share && salon && (
+        <ShareSheet
+          name={salon.name}
+          url={link.url}
+          short={link.short}
+          logo={salon.logoUrl}
+          onClose={() => setShare(false)}
+        />
+      )}
     </Screen>
   );
 }
