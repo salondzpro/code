@@ -86,7 +86,7 @@ export function Salon() {
   useEffect(() => {
     writeDraft(slug, { serviceIds: selected });
   }, [slug, selected]);
-  const toggle = (id: string) => {
+  const toggleService = (id: string) => {
     setHint(false);
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
@@ -197,7 +197,7 @@ export function Salon() {
                         key={sv.id}
                         type="button"
                         className="li w-full !py-4 text-left"
-                        onClick={() => toggle(sv.id)}
+                        onClick={() => toggleService(sv.id)}
                         aria-pressed={on}
                       >
                         <span className="flex min-w-0 flex-1 items-center gap-3.5">
