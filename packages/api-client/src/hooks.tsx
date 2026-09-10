@@ -65,6 +65,11 @@ export const useMe = (enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.me(), enabled });
 };
+/** Peut-on réserver en ligne chez ce salon (blocage, suspension) ? Pour griser « Réserver » avant toute tentative. */
+export const useBookingStanding = (salonId: string, enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.bookingStanding(salonId), enabled: enabled && !!salonId });
+};
 export const useNotifications = (enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.notifications(), enabled });

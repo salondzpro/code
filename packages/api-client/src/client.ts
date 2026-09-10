@@ -24,6 +24,7 @@ import type {
   SearchSuggestions,
   ProClient,
   ProClientHistoryItem,
+  BookingStanding,
 } from '@salondz/types';
 import type { Wilaya } from '@salondz/constants';
 import type {
@@ -194,6 +195,7 @@ export function createApiClient(opts: ApiClientOptions) {
     },
     me: {
       get: () => get<MeResponse>('/me'),
+      bookingStanding: (salonId: string) => get<BookingStanding>(`/me/booking-standing/${salonId}`),
       update: (body: UpdateProfileInput) => patch<Profile>('/me', body),
       setRole: (role: 'client' | 'pro') => post<Profile>('/me/role', { role }),
       registerPushToken: (body: {

@@ -17,6 +17,7 @@ import {
   Navigation,
   Phone,
   Users,
+  Ban,
 } from 'lucide-react-native';
 import {
   pagesItems,
@@ -25,6 +26,7 @@ import {
   useSalonReviewsInfinite,
   useToggleFavorite,
   type ReviewSort,
+  useBookingStanding,
 } from '@salondz/api-client';
 import { LoadMore } from '@/ui/LoadMore';
 import {
@@ -81,6 +83,8 @@ export default function Salon() {
   const { session } = useAuth();
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
+  const standing = useBookingStanding(salon.data?.id ?? '', !!session);
+  const cannotBook = !!standing.data && !standing.data.canBook;
   const toggle = useToggleFavorite();
   const [tab, setTab] = useState<Tab>('services');
   // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
@@ -125,6 +129,50 @@ export default function Salon() {
       edges={[]}
       footer={
         <BottomSheet grab={false}>
+          {cannotBook && !!standing.data?.message && (
+            <View
+              accessibilityRole="alert"
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: 10,
+                borderRadius: 13,
+                borderWidth: 1,
+                borderColor: C.dangerLine,
+                backgroundColor: C.cancelBg,
+                paddingHorizontal: 13,
+                paddingVertical: 10,
+              }}
+            >
+              <I icon={Ban} size={17} color={C.danger} />
+              <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
+                  Réservation en ligne impossible
+                </Tx>
+                <Tx size={12} lh={16} color={C.cancelFg}>
+                  {standing.data.message}
+                </Tx>
+                {!!s.phone && (
+                  <Pressable
+                    accessibilityRole="link"
+                    onPress={() => void open(`tel:${s.phone}`)}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}
+                  >
+                    <I icon={Phone} size={12} color={C.cancelFg} />
+                    <Tx
+                      size={12}
+                      weight={600}
+                      lh={16}
+                      color={C.cancelFg}
+                      style={{ textDecorationLine: 'underline' }}
+                    >
+                      Appeler le salon
+                    </Tx>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          )}
           {chosen.length > 0 ? (
             <View
               style={{
@@ -147,6 +195,7 @@ export default function Salon() {
                 pill
                 onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
                 style={{ paddingHorizontal: 20, paddingVertical: 13 }}
+                disabled={cannotBook}
               >
                 Choisir un créneau
               </Button>
@@ -163,6 +212,7 @@ export default function Salon() {
                   setTab('services');
                   setHint(true);
                 }}
+                disabled={cannotBook}
               >
                 Réserver
               </Button>

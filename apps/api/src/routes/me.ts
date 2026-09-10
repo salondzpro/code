@@ -6,19 +6,73 @@ import {
   updateProfileSchema,
   uuid,
 } from '@salondz/validation';
-import type { MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
+import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize, snakeize } from '../lib/mappers';
 import { unwrap } from '../lib/errors';
 import { loadOwnedSalon } from '../plugins/auth';
 import { attachNextSlots } from '../lib/availability';
 import { clientStanding } from '../lib/standing';
+import {
+  CANCEL_ABUSE_WINDOW_DAYS,
+  NO_SHOW_ABUSE_MAX,
+  NO_SHOW_ABUSE_WINDOW_DAYS,
+} from '@salondz/constants';
 
 const PROFILE_COLS =
   'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
 
 const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
+
+  /**
+   * Situation de réservation chez un salon : suspension anti-abus (annulations / absences) ou blocage par ce salon.
+   * Sert à griser « Réserver » et à afficher la raison en haut AVANT toute tentative (même règles que POST /bookings).
+   */
+  app.get(
+    '/me/booking-standing/:salonId',
+    { schema: { params: z.object({ salonId: uuid }) } },
+    async (req, reply) => {
+      const uid = req.user!.id;
+      const phone = req.profile!.phone;
+      const [standing, blocked] = await Promise.all([
+        clientStanding(uid),
+        db
+          .from('blocked_clients')
+          .select('id')
+          .eq('salon_id', req.params.salonId)
+          .or(`client_id.eq.${uid}${phone ? `,phone.eq.${phone}` : ''}`)
+          .limit(1),
+      ]);
+      if (blocked.error) throw blocked.error;
+      const isBlocked = (blocked.data ?? []).length > 0;
+      let message: string | null = null;
+      if (isBlocked)
+        message = "Ce salon n'accepte pas vos réservations en ligne. Contactez-le directement.";
+      else if (standing.suspendedUntil) {
+        const when = new Intl.DateTimeFormat('fr-DZ', {
+          day: '2-digit',
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Africa/Algiers',
+        }).format(new Date(standing.suspendedUntil));
+        const why =
+          standing.noShows >= NO_SHOW_ABUSE_MAX
+            ? `${standing.noShows} absences signalées en ${NO_SHOW_ABUSE_WINDOW_DAYS} jours`
+            : `${standing.cancellations} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours`;
+        message = `Réservation en ligne suspendue jusqu'au ${when} (${why}). Vous pouvez appeler le salon.`;
+      }
+      reply.header('Cache-Control', 'private, no-store');
+      const out: BookingStanding = {
+        ...standing,
+        blocked: isBlocked,
+        canBook: message === null,
+        message,
+      };
+      return out;
+    },
+  );
 
   /** Profil + raccourci vers le salon (pour router après connexion). */
   app.get('/me', async (req, reply) => {
@@ -154,7 +208,11 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/me/stats', async (req, reply) => {
     const uid = req.user!.id;
     const [b, f, r] = await Promise.all([
-      db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', uid).neq('status', 'cancelled'),
+      db
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('client_id', uid)
+        .neq('status', 'cancelled'),
       db.from('favorites').select('salon_id', { count: 'exact', head: true }).eq('user_id', uid),
       db.from('reviews').select('id', { count: 'exact', head: true }).eq('client_id', uid),
     ]);
@@ -162,7 +220,11 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     if (f.error) throw f.error;
     if (r.error) throw r.error;
     reply.header('Cache-Control', 'private, no-store');
-    return { bookings: b.count ?? 0, favorites: f.count ?? 0, reviews: r.count ?? 0 } satisfies MeStats;
+    return {
+      bookings: b.count ?? 0,
+      favorites: f.count ?? 0,
+      reviews: r.count ?? 0,
+    } satisfies MeStats;
   });
 
   app.get('/me/favorites', async (req, reply) => {

@@ -34,8 +34,15 @@ export function BookingDetails() {
     setWhatsapp(p.whatsappReminders ?? true);
   }, [me.data]);
 
-  if (!draft.startsAt || draft.serviceIds.length === 0) return <Navigate to={`/s/${slug}/prestations`} replace />;
-  if (!session) return <Navigate to={`/connexion?next=${encodeURIComponent(`/s/${slug}/reserver/coordonnees`)}`} replace />;
+  if (!draft.startsAt || draft.serviceIds.length === 0)
+    return <Navigate to={`/s/${slug}/prestations`} replace />;
+  if (!session)
+    return (
+      <Navigate
+        to={`/connexion?next=${encodeURIComponent(`/s/${slug}/reserver/coordonnees`)}`}
+        replace
+      />
+    );
   if (salon.isPending || me.isPending) return <Splash />;
   const s = salon.data;
   if (!s) return null;
@@ -55,14 +62,28 @@ export function BookingDetails() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 4 sur 4" />
+      <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 2 sur 3" />
       <div>
         <h1 className="h1">Vos coordonnées</h1>
-        <p className="p mt-3">Vous êtes connecté{me.data?.profile.gender === 'female' ? 'e' : ''} : vos coordonnées sont préremplies depuis votre compte.</p>
+        <p className="p mt-3">
+          Vous êtes connecté{me.data?.profile.gender === 'female' ? 'e' : ''} : vos coordonnées sont
+          préremplies depuis votre compte.
+        </p>
       </div>
       <form id="details" onSubmit={submit} className="flex flex-col gap-4">
-        <Field label="Nom et prénom" htmlFor="bk-name" error={error && name.trim().length < 2 ? error : null}>
-          <Input id="bk-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+        <Field
+          label="Nom et prénom"
+          htmlFor="bk-name"
+          error={error && name.trim().length < 2 ? error : null}
+        >
+          <Input
+            id="bk-name"
+            lg
+            className={name ? 'f' : ''}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+          />
         </Field>
         <div>
           <span className="lbl">Téléphone</span>
@@ -70,12 +91,28 @@ export function BookingDetails() {
             <div className="flex flex-none items-center gap-2 rounded-[0.875rem] bg-fill px-4 text-[0.8125rem] font-medium">
               +213 <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
-            <Input lg type="tel" inputMode="numeric" value={groupLocalDigits(digits)} onChange={(e) => setDigits(e.target.value.replace(/\D/g, '').slice(0, 9))} aria-label="Téléphone" err={!!error && name.trim().length >= 2} />
+            <Input
+              lg
+              type="tel"
+              inputMode="numeric"
+              value={groupLocalDigits(digits)}
+              onChange={(e) => setDigits(e.target.value.replace(/\D/g, '').slice(0, 9))}
+              aria-label="Téléphone"
+              err={!!error && name.trim().length >= 2}
+            />
           </div>
-          {error && name.trim().length >= 2 && <p className="mt-1.5 text-[0.8125rem] text-danger">{error}</p>}
+          {error && name.trim().length >= 2 && (
+            <p className="mt-1.5 text-[0.8125rem] text-danger">{error}</p>
+          )}
         </div>
         <Field label="Note pour le salon (optionnel)" htmlFor="bk-notes">
-          <Textarea id="bk-notes" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder="Base fine, gel rose pâle si possible" />
+          <Textarea
+            id="bk-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            maxLength={300}
+            placeholder="Base fine, gel rose pâle si possible"
+          />
         </Field>
         <div className="crd !flex-row items-center gap-4">
           <span className="flex h-[3.25rem] w-[3.25rem] flex-none items-center justify-center rounded-full border border-line bg-surface">
@@ -93,7 +130,9 @@ export function BookingDetails() {
           <div>
             <div className="text-[1.375rem] font-bold tracking-[-0.5px]">{formatDA(price)}</div>
             <div className="p">
-              {formatDuration(minutes)} · {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(draft.startsAt)}
+              {formatDuration(minutes)} ·{' '}
+              {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toLowerCase())},{' '}
+              {formatTimeDZ(draft.startsAt)}
             </div>
           </div>
           <Button type="submit" form="details" auto className="!rounded-full !px-7 !py-3.5">

@@ -36,8 +36,16 @@ export default function BookingDetails() {
     setWhatsapp(p.whatsappReminders ?? true);
   }, [me.data]);
 
-  if (!draft.startsAt || draft.serviceIds.length === 0) return <Redirect href={`/s/${slug}/prestations` as never} />;
-  if (!session) return <Redirect href={{ pathname: '/connexion', params: { next: `/s/${slug}/reserver/coordonnees` } } as never} />;
+  if (!draft.startsAt || draft.serviceIds.length === 0)
+    return <Redirect href={`/s/${slug}/prestations` as never} />;
+  if (!session)
+    return (
+      <Redirect
+        href={
+          { pathname: '/connexion', params: { next: `/s/${slug}/reserver/coordonnees` } } as never
+        }
+      />
+    );
   if (salon.isPending || me.isPending) return <Splash />;
   const s = salon.data;
   if (!s) return null;
@@ -61,13 +69,22 @@ export default function BookingDetails() {
       gap={13}
       footer={
         <BottomSheet>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}
+          >
             <View style={{ flex: 1 }}>
               <Tx size={18} weight={700} ls={-0.5} lh={22}>
                 {formatDA(price)}
               </Tx>
               <P>
-                {formatDuration(minutes)} · {formatDateLongDZ(draft.startsAt).replace(/^\p{L}/u, (c) => c.toLowerCase())}, {formatTimeDZ(draft.startsAt)}
+                {formatDuration(minutes)} ·{' '}
+                {formatDateLongDZ(draft.startsAt).replace(/^\p{L}/u, (c) => c.toLowerCase())},{' '}
+                {formatTimeDZ(draft.startsAt)}
               </P>
             </View>
             <Button pill onPress={submit} style={{ paddingHorizontal: 23, paddingVertical: 11 }}>
@@ -77,30 +94,74 @@ export default function BookingDetails() {
         </BottomSheet>
       }
     >
-      <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 4 sur 4" />
+      <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 2 sur 3" />
       <View style={{ gap: 10 }}>
         <H1>Vos coordonnées</H1>
-        <P>Vous êtes connecté{me.data?.profile.gender === 'female' ? 'e' : ''} : vos coordonnées sont préremplies depuis votre compte.</P>
+        <P>
+          Vous êtes connecté{me.data?.profile.gender === 'female' ? 'e' : ''} : vos coordonnées sont
+          préremplies depuis votre compte.
+        </P>
       </View>
       <Field label="Nom et prénom" error={nameError ? error : null}>
-        <Input lg f={!!name} value={name} onChangeText={setName} autoComplete="name" textContentType="name" />
+        <Input
+          lg
+          f={!!name}
+          value={name}
+          onChangeText={setName}
+          autoComplete="name"
+          textContentType="name"
+        />
       </Field>
       <Field label="Téléphone" error={phoneError ? error : null}>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 13 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              backgroundColor: C.fill,
+              borderRadius: R.input,
+              paddingHorizontal: 13,
+            }}
+          >
             <Tx size={10.5} weight={500} lh={14.5}>
               +213
             </Tx>
             <I icon={ChevronDown} size={13} color={C.subtle} />
           </View>
-          <Input lg style={{ flex: 1 }} keyboardType="number-pad" value={groupLocalDigits(digits)} onChangeText={(v) => setDigits(v.replace(/\D/g, '').slice(0, 9))} accessibilityLabel="Téléphone" err={phoneError} />
+          <Input
+            lg
+            style={{ flex: 1 }}
+            keyboardType="number-pad"
+            value={groupLocalDigits(digits)}
+            onChangeText={(v) => setDigits(v.replace(/\D/g, '').slice(0, 9))}
+            accessibilityLabel="Téléphone"
+            err={phoneError}
+          />
         </View>
       </Field>
       <Field label="Note pour le salon (optionnel)">
-        <Input multiline value={notes} onChangeText={setNotes} maxLength={300} placeholder="Base fine, gel rose pâle si possible" />
+        <Input
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+          maxLength={300}
+          placeholder="Base fine, gel rose pâle si possible"
+        />
       </Field>
       <Card row gap={13}>
-        <View style={{ width: 42, height: 42, borderRadius: 21, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 21,
+            borderWidth: 1,
+            borderColor: C.line,
+            backgroundColor: C.surface,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <I icon={MessageCircle} size={18} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>

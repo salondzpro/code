@@ -17,6 +17,7 @@ import {
   Navigation,
   Phone,
   Users,
+  Ban,
 } from 'lucide-react';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { PublicHeader } from '@/components/PublicHeader';
@@ -27,6 +28,7 @@ import {
   useSalonReviewsInfinite,
   useToggleFavorite,
   type ReviewSort,
+  useBookingStanding,
 } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
@@ -95,6 +97,8 @@ export function Salon() {
   const { session } = useAuth();
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
+  const standing = useBookingStanding(salon.data?.id ?? '', !!session);
+  const cannotBook = !!standing.data && !standing.data.canBook;
   const toggle = useToggleFavorite();
   const [tab, setTab] = useState<Tab>('services');
   // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
@@ -395,8 +399,30 @@ export function Salon() {
         )}
       </div>
 
-      {/* Un seul parcours : cocher ici → créneau → récapitulatif. */}
+      {/* Un seul parcours : cocher ici → créneau → récapitulatif. Blocage / suspension : dit d'emblée, bouton grisé. */}
       <BottomSheet grab={false}>
+        {cannotBook && standing.data?.message && (
+          <div
+            className="flex items-start gap-3 rounded-[1rem] border border-danger-line bg-cancel-bg px-4 py-3"
+            role="alert"
+          >
+            <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
+            <span className="min-w-0">
+              <span className="block text-[1rem] font-bold text-cancel-fg">
+                Réservation en ligne impossible
+              </span>
+              <span className="block text-[0.9375rem] text-cancel-fg">{standing.data.message}</span>
+              {s.phone && (
+                <a
+                  href={`tel:${s.phone}`}
+                  className="mt-1 inline-flex items-center gap-1.5 text-[0.9375rem] font-semibold text-cancel-fg underline"
+                >
+                  <I icon={Phone} size={14} /> Appeler le salon
+                </a>
+              )}
+            </span>
+          </div>
+        )}
         {chosen.length > 0 ? (
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -426,6 +452,7 @@ export function Salon() {
                 setTab('services');
                 setHint(true);
               }}
+              disabled={cannotBook}
             >
               Réserver
             </Button>

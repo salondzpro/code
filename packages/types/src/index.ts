@@ -245,6 +245,15 @@ export interface MeStats {
 }
 
 /** Situation d'un client vis-à-vis des règles anti-abus (annulations récentes, absences, suspension en cours). */
+/** Peut-on réserver en ligne chez CE salon ? Connu avant de confirmer (bouton grisé, message en haut). */
+export interface BookingStanding extends ClientStanding {
+  /** Bloqué par ce salon (liste noire du professionnel). */
+  blocked: boolean;
+  canBook: boolean;
+  /** Raison lisible quand canBook est faux, sinon null. */
+  message: string | null;
+}
+
 export interface ClientStanding {
   /** Annulations par le client sur la fenêtre CANCEL_ABUSE_WINDOW_DAYS. */
   cancellations: number;

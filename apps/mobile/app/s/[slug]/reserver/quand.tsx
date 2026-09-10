@@ -7,17 +7,43 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useAvailability, useSalon } from '@salondz/api-client';
-import { addDaysToKey, dayOfWeekFromKey, formatDA, formatTimeDZ, localDateTimeToISO, minutesToTime, relativeDayLabelDZ, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import {
+  addDaysToKey,
+  dayOfWeekFromKey,
+  formatDA,
+  formatTimeDZ,
+  localDateTimeToISO,
+  minutesToTime,
+  relativeDayLabelDZ,
+  timeToMinutes,
+  toLocalDateKey,
+} from '@salondz/constants';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
-import { Avatar, BottomSheet, Button, Card, ErrorText, Grid, H1, InfoBox, P, SectionLabel, Skeleton, Slot, TopBar, Tx } from '@/ui';
+import {
+  Avatar,
+  BottomSheet,
+  Button,
+  Card,
+  ErrorText,
+  Grid,
+  H1,
+  InfoBox,
+  P,
+  SectionLabel,
+  Skeleton,
+  Slot,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { DayStrip, MonthNav } from '@/ui/DaySelector';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
 type Period = 'Matin' | 'Après-midi' | 'Soir';
-const periodOf = (hm: string): Period => (timeToMinutes(hm) < 12 * 60 ? 'Matin' : timeToMinutes(hm) < 17 * 60 ? 'Après-midi' : 'Soir');
+const periodOf = (hm: string): Period =>
+  timeToMinutes(hm) < 12 * 60 ? 'Matin' : timeToMinutes(hm) < 17 * 60 ? 'Après-midi' : 'Soir';
 
 export default function BookingWhen() {
   const { slug = '' } = useLocalSearchParams<{ slug: string }>();
@@ -36,7 +62,10 @@ export default function BookingWhen() {
     setSlot((cur) => (cur && cur.startsWith(date) ? cur : null));
   }, [date]);
 
-  const chosen = useMemo(() => (s ? serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean) : []), [s, serviceIds]);
+  const chosen = useMemo(
+    () => (s ? serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean) : []),
+    [s, serviceIds],
+  );
   const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);
 
@@ -48,12 +77,18 @@ export default function BookingWhen() {
     const free = new Set(availability.data.slots.map((x) => formatTimeDZ(x.startsAt)));
     const out: { time: string; iso: string; free: boolean }[] = [];
     for (const h of hours) {
-      for (let m = timeToMinutes(h.opensAt); m + minutes <= timeToMinutes(h.closesAt); m += availability.data.slotIntervalMinutes) {
+      for (
+        let m = timeToMinutes(h.opensAt);
+        m + minutes <= timeToMinutes(h.closesAt);
+        m += availability.data.slotIntervalMinutes
+      ) {
         const t = minutesToTime(m);
         out.push({ time: t, iso: localDateTimeToISO(date, t), free: free.has(t) });
       }
     }
-    if (out.length === 0) for (const x of availability.data.slots) out.push({ time: formatTimeDZ(x.startsAt), iso: x.startsAt, free: true });
+    if (out.length === 0)
+      for (const x of availability.data.slots)
+        out.push({ time: formatTimeDZ(x.startsAt), iso: x.startsAt, free: true });
     return out;
   }, [s, availability.data, date, minutes]);
 
@@ -73,11 +108,14 @@ export default function BookingWhen() {
     );
 
   const maxDate = addDaysToKey(today, s.bookingHorizonDays);
-  const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
+  const closedDays = [0, 1, 2, 3, 4, 5, 6].filter(
+    (d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed),
+  );
   const freeGrid = grid.filter((g) => g.free);
   const takenCount = grid.length - freeGrid.length;
   const groups = new Map<Period, typeof grid>();
-  for (const g of freeGrid) groups.set(periodOf(g.time), [...(groups.get(periodOf(g.time)) ?? []), g]);
+  for (const g of freeGrid)
+    groups.set(periodOf(g.time), [...(groups.get(periodOf(g.time)) ?? []), g]);
   const chosenSlot = grid.find((g) => g.iso === slot);
   const endTime = chosenSlot ? minutesToTime(timeToMinutes(chosenSlot.time) + minutes) : null;
   const lastSlot = grid[grid.length - 1] ?? null;
@@ -107,7 +145,7 @@ export default function BookingWhen() {
         </BottomSheet>
       }
     >
-      <TopBar backTo={`/s/${s.slug}/prestations`} right="Étape 3 sur 4" />
+      <TopBar backTo={`/s/${s.slug}`} right="Étape 1 sur 3" />
       <H1>Quand ?</H1>
       <Card row gap={11}>
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={52} />
@@ -121,7 +159,14 @@ export default function BookingWhen() {
         </View>
       </Card>
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} />
-      <DayStrip weekOf={weekOf} selected={date} onSelect={setDate} minDate={today} maxDate={maxDate} disabledDays={closedDays} />
+      <DayStrip
+        weekOf={weekOf}
+        selected={date}
+        onSelect={setDate}
+        minDate={today}
+        maxDate={maxDate}
+        disabledDays={closedDays}
+      />
 
       {closedDays.includes(dayOfWeekFromKey(date)) ? (
         <P>Le salon est fermé ce jour-là.</P>
@@ -146,7 +191,17 @@ export default function BookingWhen() {
               : 'Aucune disponibilité ce jour.'}
           </Tx>
           {next ? (
-            <Button sm pill onPress={goNext} style={{ alignSelf: 'flex-start', marginTop: 4, paddingHorizontal: 14, paddingVertical: 10 }}>
+            <Button
+              sm
+              pill
+              onPress={goNext}
+              style={{
+                alignSelf: 'flex-start',
+                marginTop: 4,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+              }}
+            >
               {`Prochaine disponibilité · ${relativeDayLabelDZ(next.date)} à ${next.slots[0]}`}
             </Button>
           ) : (
@@ -161,8 +216,20 @@ export default function BookingWhen() {
             <SectionLabel>{period}</SectionLabel>
             <Grid cols={3}>
               {list.map((g) => (
-                <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 18 }}>
-                  <Tx size={13} weight={500} lh={16} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
+                <Slot
+                  key={g.iso}
+                  on={slot === g.iso}
+                  off={!g.free}
+                  onPress={() => g.free && setSlot(g.iso)}
+                  style={{ paddingVertical: 18 }}
+                >
+                  <Tx
+                    size={13}
+                    weight={500}
+                    lh={16}
+                    mono
+                    color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}
+                  >
                     {g.time}
                   </Tx>
                 </Slot>
@@ -174,8 +241,12 @@ export default function BookingWhen() {
 
       {freeGrid.length > 0 && (
         <InfoBox>
-          {(chosenSlot ? `Créneau de ${formatDuration(minutes)} : ${chosenSlot.time} → ${endTime}.` : `Durée totale ${formatDuration(minutes)}.`) +
-            (takenCount > 0 ? ` ${takenCount} créneau${takenCount > 1 ? 'x' : ''} déjà pris ce jour ${takenCount > 1 ? 'ne sont' : "n'est"} pas affiché${takenCount > 1 ? 's' : ''}.` : '')}
+          {(chosenSlot
+            ? `Créneau de ${formatDuration(minutes)} : ${chosenSlot.time} → ${endTime}.`
+            : `Durée totale ${formatDuration(minutes)}.`) +
+            (takenCount > 0
+              ? ` ${takenCount} créneau${takenCount > 1 ? 'x' : ''} déjà pris ce jour ${takenCount > 1 ? 'ne sont' : "n'est"} pas affiché${takenCount > 1 ? 's' : ''}.`
+              : '')}
         </InfoBox>
       )}
     </Screen>
