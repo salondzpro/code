@@ -43,6 +43,13 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Salon DZ enregistre votre affiche QR dans votre galerie.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
       "expo-secure-store",
       [
         "expo-notifications",

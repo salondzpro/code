@@ -6,15 +6,38 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import QRCode from 'qrcode';
-import { Check, Copy, Lock, MessageCircle, MoreHorizontal, QrCode, Share2 } from 'lucide-react';
+import {
+  Check,
+  Copy,
+  Download,
+  Lock,
+  MessageCircle,
+  MoreHorizontal,
+  QrCode,
+  Share2,
+} from 'lucide-react';
+import { renderQrPoster } from '@/lib/qrPoster';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { Avatar, Badge, BottomSheet, Button, I, IconButton, Toast, Toggle, TopBar } from '@/components/ui';
+import {
+  Avatar,
+  Badge,
+  BottomSheet,
+  Button,
+  I,
+  IconButton,
+  Toast,
+  Toggle,
+  TopBar,
+} from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
 export function usePublicUrl(slug: string): { url: string; short: string } {
   const origin = window.location.origin;
-  return { url: `${origin}/s/${slug}`, short: `${window.location.host.replace(/^www\./, '')}/s/${slug}` };
+  return {
+    url: `${origin}/s/${slug}`,
+    short: `${window.location.host.replace(/^www\./, '')}/s/${slug}`,
+  };
 }
 
 export function useQr(url: string, size = 320): string | null {
@@ -48,16 +71,52 @@ function share(name: string, url: string) {
   return navigator.clipboard?.writeText(url);
 }
 
-export function ShareSheet({ name, url, short, onClose, logo }: { name: string; url: string; short: string; onClose: () => void; logo?: string | null }) {
+export function ShareSheet({
+  name,
+  url,
+  short,
+  onClose,
+  logo,
+}: {
+  name: string;
+  url: string;
+  short: string;
+  onClose: () => void;
+  logo?: string | null;
+}) {
   const [copied, copy] = useCopy();
   const navigate = useNavigate();
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: React.ReactNode; onClick: () => void }[] = [
-    { label: 'WhatsApp', icon: <I icon={MessageCircle} size={26} />, onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank') },
-    { label: 'Instagram', icon: <span className="text-[1.125rem] font-bold">◎</span>, onClick: () => copy(url) },
-    { label: 'Facebook', icon: <span className="text-[1.25rem] font-bold">f</span>, onClick: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank') },
-    { label: 'TikTok', icon: <span className="text-[1.125rem] font-bold">♪</span>, onClick: () => copy(url) },
-    { label: 'Messages', icon: <span className="text-[1.125rem]">✆</span>, onClick: () => window.open(`sms:?body=${text}`) },
+    {
+      label: 'WhatsApp',
+      icon: <I icon={MessageCircle} size={26} />,
+      onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank'),
+    },
+    {
+      label: 'Instagram',
+      icon: <span className="text-[1.125rem] font-bold">◎</span>,
+      onClick: () => copy(url),
+    },
+    {
+      label: 'Facebook',
+      icon: <span className="text-[1.25rem] font-bold">f</span>,
+      onClick: () =>
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+          '_blank',
+        ),
+    },
+    {
+      label: 'TikTok',
+      icon: <span className="text-[1.125rem] font-bold">♪</span>,
+      onClick: () => copy(url),
+    },
+    {
+      label: 'Messages',
+      icon: <span className="text-[1.125rem]">✆</span>,
+      onClick: () => window.open(`sms:?body=${text}`),
+    },
     { label: 'QR Code', icon: <I icon={QrCode} size={26} />, onClick: () => navigate('/pro/qr') },
     { label: 'Plus', icon: <I icon={Share2} size={26} />, onClick: () => void share(name, url) },
   ];
@@ -75,8 +134,15 @@ export function ShareSheet({ name, url, short, onClose, logo }: { name: string; 
         </div>
         <div className="grid grid-cols-4 gap-3">
           {items.map((it) => (
-            <button key={it.label} type="button" className="flex flex-col items-center gap-2" onClick={it.onClick}>
-              <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1.375rem] border border-line bg-surface">{it.icon}</span>
+            <button
+              key={it.label}
+              type="button"
+              className="flex flex-col items-center gap-2"
+              onClick={it.onClick}
+            >
+              <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1.375rem] border border-line bg-surface">
+                {it.icon}
+              </span>
               <span className="text-[0.9375rem] text-muted">{it.label}</span>
             </button>
           ))}
@@ -97,7 +163,10 @@ export function ProLink() {
   const { url, short } = usePublicUrl(salon?.slug ?? '');
   const qr = useQr(url, 400);
   if (!salon) return <Splash />;
-  const lead = salon.bookingLeadTimeMinutes >= 60 ? `${Math.round(salon.bookingLeadTimeMinutes / 60)} h` : `${salon.bookingLeadTimeMinutes} min`;
+  const lead =
+    salon.bookingLeadTimeMinutes >= 60
+      ? `${Math.round(salon.bookingLeadTimeMinutes / 60)} h`
+      : `${salon.bookingLeadTimeMinutes} min`;
 
   return (
     <Screen bottom={24} gap={16}>
@@ -108,12 +177,25 @@ export function ProLink() {
         réservation
       </h1>
       <div className="crd items-center !gap-4 !py-6">
-        <button type="button" className="flex h-[21.25rem] w-[21.25rem] items-center justify-center overflow-hidden rounded-[1.5rem] bg-fill" onClick={() => navigate('/pro/qr')} aria-label="Agrandir le QR code">
-          {qr ? <img src={qr} alt="QR code de votre page" className="h-[18.75rem] w-[18.75rem]" /> : <span className="text-[0.8125rem] text-subtle">QR code</span>}
+        <button
+          type="button"
+          className="flex h-[21.25rem] w-[21.25rem] items-center justify-center overflow-hidden rounded-[1.5rem] bg-fill"
+          onClick={() => navigate('/pro/qr')}
+          aria-label="Agrandir le QR code"
+        >
+          {qr ? (
+            <img src={qr} alt="QR code de votre page" className="h-[18.75rem] w-[18.75rem]" />
+          ) : (
+            <span className="text-[0.8125rem] text-subtle">QR code</span>
+          )}
         </button>
         <div className="flex w-full items-center justify-between gap-3 rounded-[1rem] bg-fill px-5 py-4 text-[0.9375rem]">
           <span className="truncate">{short}</span>
-          <IconButton aria-label="Copier le lien" onClick={() => copy(url)} className="!h-8 !w-8 !border-0 !bg-transparent">
+          <IconButton
+            aria-label="Copier le lien"
+            onClick={() => copy(url)}
+            className="!h-8 !w-8 !border-0 !bg-transparent"
+          >
             <I icon={copied ? Check : Copy} size={18} />
           </IconButton>
         </div>
@@ -127,15 +209,27 @@ export function ProLink() {
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">
           <span className="text-[0.9375rem] text-muted">Réservation en ligne</span>
-          <Toggle on={salon.isPublished} onChange={(v) => updateSalon.mutate({ isPublished: v })} label="Réservation en ligne" />
+          <Toggle
+            on={salon.isPublished}
+            onChange={(v) => updateSalon.mutate({ isPublished: v })}
+            label="Réservation en ligne"
+          />
         </div>
-        <button type="button" className="li w-full !py-4 text-left" onClick={() => navigate('/pro/profil/regles')}>
+        <button
+          type="button"
+          className="li w-full !py-4 text-left"
+          onClick={() => navigate('/pro/profil/regles')}
+        >
           <span className="text-[0.9375rem] text-muted">Délai minimum</span>
           <span className="text-[1.125rem] font-bold">{lead}</span>
         </button>
         <div className="li !py-4">
           <span className="text-[0.9375rem] text-muted">Validation manuelle</span>
-          <Toggle on={!salon.autoConfirm} onChange={(v) => updateSalon.mutate({ autoConfirm: !v })} label="Validation manuelle" />
+          <Toggle
+            on={!salon.autoConfirm}
+            onChange={(v) => updateSalon.mutate({ autoConfirm: !v })}
+            label="Validation manuelle"
+          />
         </div>
       </div>
       {!salon.isPublished && (
@@ -143,36 +237,62 @@ export function ProLink() {
           Page non publiée · activez la réservation en ligne
         </Badge>
       )}
-      {copied && (
-        <Toast icon={Check}>
-          Lien copié
-        </Toast>
+      {copied && <Toast icon={Check}>Lien copié</Toast>}
+      {sheet && (
+        <ShareSheet
+          name={salon.name}
+          url={url}
+          short={short}
+          logo={salon.logoUrl}
+          onClose={() => setSheet(false)}
+        />
       )}
-      {sheet && <ShareSheet name={salon.name} url={url} short={short} logo={salon.logoUrl} onClose={() => setSheet(false)} />}
       <span className="sr-only">{SHEET_PAD}</span>
     </Screen>
   );
 }
 
-/** PRO-F 21 — QR code en vitrine. */
+/** PRO-F 21 — QR code en vitrine : l'aperçu est l'affiche Salon DZ elle-même, « Enregistrer » la télécharge en PNG. */
 export function ProQr() {
   const salon = useProSalon().data?.salon ?? null;
   const { url, short } = usePublicUrl(salon?.slug ?? '');
-  const qr = useQr(url, 800);
+  const [poster, setPoster] = useState<string | null>(null);
+  useEffect(() => {
+    if (!salon) return;
+    let alive = true;
+    setPoster(null);
+    renderQrPoster({ name: salon.name, url, short, logoUrl: salon.logoUrl ?? salon.coverUrl })
+      .then((d) => alive && setPoster(d))
+      .catch(() => alive && setPoster(null));
+    return () => {
+      alive = false;
+    };
+  }, [salon?.name, salon?.logoUrl, salon?.coverUrl, url, short, salon]);
   if (!salon) return <Splash />;
   return (
     <Screen bottom={24} gap={16}>
       <TopBar backTo="/pro/lien" right="QR code" />
-      <div className="crd items-center !gap-3 !py-8">
-        <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={64} />
-        <div className="text-[1.25rem] font-bold tracking-[-0.4px]">{salon.name}</div>
-        <div className="text-[0.8125rem] text-muted">{short}</div>
-        {qr ? <img src={qr} alt="QR code" className="mt-2 h-[17.5rem] w-[17.5rem] rounded-[1rem]" /> : <div className="sk mt-2 h-[17.5rem] w-[17.5rem]" />}
-      </div>
-      <p className="p text-center">À imprimer en vitrine ou à coller sur le miroir. Le scan ouvre directement votre page de réservation.</p>
+      {poster ? (
+        <img
+          src={poster}
+          alt={`Affiche QR de ${salon.name}`}
+          className="w-full rounded-[1.25rem] border border-line"
+        />
+      ) : (
+        <div className="sk aspect-[3/4] w-full !rounded-[1.25rem]" />
+      )}
+      <p className="p text-center">
+        Votre affiche Salon DZ, prête à imprimer en vitrine ou à coller sur le miroir. Le scan ouvre
+        directement votre page de réservation.
+      </p>
       <div className="g2">
-        <a href={qr ?? '#'} download={`qr-${salon.slug}.png`} className="btn g">
-          Enregistrer
+        <a
+          href={poster ?? '#'}
+          download={`affiche-qr-${salon.slug}.png`}
+          className={`btn g${poster ? '' : ' opacity-50 pointer-events-none'}`}
+          aria-disabled={!poster}
+        >
+          <I icon={Download} size={18} /> Enregistrer
         </a>
         <Button onClick={() => void share(salon.name, url)}>
           <I icon={MoreHorizontal} size={18} /> Partager
