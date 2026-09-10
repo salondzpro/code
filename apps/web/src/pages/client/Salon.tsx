@@ -2,7 +2,7 @@
  * C-F 04 — Page du salon : couverture (retour, favori), nom, catégories — quartier, note, ouverture,
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import {
@@ -90,6 +90,20 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
   return { open: false, label: 'Fermé' };
 }
 
+/** Hauteur réelle de la feuille du bas (bandeau, résumé, bouton) → espace inférieur du contenu, rien n'est masqué. */
+function useSheetHeight(): [React.RefObject<HTMLDivElement | null>, number] {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [h, setH] = useState(SHEET_PAD);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setH(el.getBoundingClientRect().height + 24));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, h];
+}
+
 export function Salon() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
@@ -101,6 +115,7 @@ export function Salon() {
   const cannotBook = !!standing.data && !standing.data.canBook;
   const toggle = useToggleFavorite();
   const [tab, setTab] = useState<Tab>('services');
+  const [sheetRef, sheetH] = useSheetHeight();
   // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
   const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
   const [hint, setHint] = useState(false);
@@ -130,7 +145,7 @@ export function Salon() {
   const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
 
   return (
-    <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>
+    <div className="min-h-dvh" style={{ paddingBottom: sheetH }}>
       {/* Visiteur arrivé par le lien du professionnel (sans compte) : en-tête complet Salon DZ, façon Planity. */}
       {!session && <PublicHeader />}
       {/* Couverture */}
@@ -400,7 +415,7 @@ export function Salon() {
       </div>
 
       {/* Un seul parcours : cocher ici → créneau → récapitulatif. Blocage / suspension : dit d'emblée, bouton grisé. */}
-      <BottomSheet grab={false}>
+      <BottomSheet grab={false} sheetRef={sheetRef}>
         {cannotBook && standing.data?.message && (
           <div
             className="flex items-start gap-3 rounded-[1rem] border border-danger-line bg-cancel-bg px-4 py-3"
@@ -424,22 +439,25 @@ export function Salon() {
           </div>
         )}
         {chosen.length > 0 ? (
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-[1.5rem] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
-              <div className="p truncate">
+          <>
+            {/* Résumé sur une ligne, bouton pleine largeur : stable quel que soit le nombre de prestations. */}
+            <div className="flex items-center justify-between gap-3">
+              <span className="truncate text-[1rem] text-muted">
                 {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)}{' '}
                 au total
-              </div>
+              </span>
+              <span className="whitespace-nowrap text-[1.25rem] font-bold tracking-[-0.4px]">
+                {formatDA(total)}
+              </span>
             </div>
             <Button
-              auto
-              className="!rounded-full !px-6 !py-4"
+              className="whitespace-nowrap"
               onClick={() => navigate(`/s/${s.slug}/reserver/quand`)}
+              disabled={cannotBook}
             >
-              Choisir un créneau
+              Choisir un créneau · {formatDA(total)}
             </Button>
-          </div>
+          </>
         ) : (
           <>
             {hint && (

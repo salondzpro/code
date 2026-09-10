@@ -87,6 +87,8 @@ export default function Salon() {
   const cannotBook = !!standing.data && !standing.data.canBook;
   const toggle = useToggleFavorite();
   const [tab, setTab] = useState<Tab>('services');
+  // Hauteur réelle de la feuille du bas (bandeau, résumé, bouton) → espace inférieur du contenu.
+  const [sheetH, setSheetH] = useState(0);
   // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
   const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
   const [hint, setHint] = useState(false);
@@ -124,100 +126,102 @@ export default function Salon() {
   return (
     <Screen
       px={0}
+      bottom={sheetH ? sheetH + 24 : undefined}
       top={0}
       gap={0}
       edges={[]}
       footer={
         <BottomSheet grab={false}>
-          {cannotBook && !!standing.data?.message && (
-            <View
-              accessibilityRole="alert"
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                gap: 10,
-                borderRadius: 13,
-                borderWidth: 1,
-                borderColor: C.dangerLine,
-                backgroundColor: C.cancelBg,
-                paddingHorizontal: 13,
-                paddingVertical: 10,
-              }}
-            >
-              <I icon={Ban} size={17} color={C.danger} />
-              <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
-                  Réservation en ligne impossible
-                </Tx>
-                <Tx size={12} lh={16} color={C.cancelFg}>
-                  {standing.data.message}
-                </Tx>
-                {!!s.phone && (
-                  <Pressable
-                    accessibilityRole="link"
-                    onPress={() => void open(`tel:${s.phone}`)}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}
-                  >
-                    <I icon={Phone} size={12} color={C.cancelFg} />
-                    <Tx
-                      size={12}
-                      weight={600}
-                      lh={16}
-                      color={C.cancelFg}
-                      style={{ textDecorationLine: 'underline' }}
-                    >
-                      Appeler le salon
-                    </Tx>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-          )}
-          {chosen.length > 0 ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-end',
-                justifyContent: 'space-between',
-                gap: 10,
-              }}
-            >
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
-                  {formatDA(total)}
-                </Tx>
-                <P numberOfLines={1}>
-                  {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
-                  {formatDuration(minutes)} au total
-                </P>
-              </View>
-              <Button
-                pill
-                onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
-                style={{ paddingHorizontal: 20, paddingVertical: 13 }}
-                disabled={cannotBook}
-              >
-                Choisir un créneau
-              </Button>
-            </View>
-          ) : (
-            <View style={{ gap: 8 }}>
-              {hint && (
-                <Tx size={12} color={C.danger} lh={16} center accessibilityRole="alert">
-                  Cochez une ou plusieurs prestations ci-dessus.
-                </Tx>
-              )}
-              <Button
-                onPress={() => {
-                  setTab('services');
-                  setHint(true);
+          <View onLayout={(e) => setSheetH(e.nativeEvent.layout.height + 40)} style={{ gap: 10 }}>
+            {cannotBook && !!standing.data?.message && (
+              <View
+                accessibilityRole="alert"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  borderRadius: 13,
+                  borderWidth: 1,
+                  borderColor: C.dangerLine,
+                  backgroundColor: C.cancelBg,
+                  paddingHorizontal: 13,
+                  paddingVertical: 10,
                 }}
-                disabled={cannotBook}
               >
-                Réserver
-              </Button>
-            </View>
-          )}
+                <I icon={Ban} size={17} color={C.danger} />
+                <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                  <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
+                    Réservation en ligne impossible
+                  </Tx>
+                  <Tx size={12} lh={16} color={C.cancelFg}>
+                    {standing.data.message}
+                  </Tx>
+                  {!!s.phone && (
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => void open(`tel:${s.phone}`)}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}
+                    >
+                      <I icon={Phone} size={12} color={C.cancelFg} />
+                      <Tx
+                        size={12}
+                        weight={600}
+                        lh={16}
+                        color={C.cancelFg}
+                        style={{ textDecorationLine: 'underline' }}
+                      >
+                        Appeler le salon
+                      </Tx>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+            )}
+            {chosen.length > 0 ? (
+              <View style={{ gap: 10 }}>
+                {/* Résumé sur une ligne, bouton pleine largeur : stable quel que soit le nombre de prestations. */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                  }}
+                >
+                  <Tx size={13} color={C.muted} lh={17} numberOfLines={1} style={{ flex: 1 }}>
+                    {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
+                    {formatDuration(minutes)} au total
+                  </Tx>
+                  <Tx size={16} weight={700} ls={-0.4} lh={20}>
+                    {formatDA(total)}
+                  </Tx>
+                </View>
+                <Button
+                  onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
+                  disabled={cannotBook}
+                >
+                  {`Choisir un créneau · ${formatDA(total)}`}
+                </Button>
+              </View>
+            ) : (
+              <View style={{ gap: 8 }}>
+                {hint && (
+                  <Tx size={12} color={C.danger} lh={16} center accessibilityRole="alert">
+                    Cochez une ou plusieurs prestations ci-dessus.
+                  </Tx>
+                )}
+                <Button
+                  onPress={() => {
+                    setTab('services');
+                    setHint(true);
+                  }}
+                  disabled={cannotBook}
+                >
+                  Réserver
+                </Button>
+              </View>
+            )}
+          </View>
         </BottomSheet>
       }
     >
