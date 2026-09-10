@@ -7,8 +7,7 @@ import {
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
-  type TextareaHTMLAttributes,
-} from 'react';
+  type TextareaHTMLAttributes, type Ref } from 'react';
 import { Link } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import { Check, ChevronLeft, ChevronRight, Info, X, type LucideIcon } from 'lucide-react';
@@ -557,13 +556,16 @@ export function BottomSheet({
   children,
   grab = true,
   className = '',
+  sheetRef,
 }: {
   children: ReactNode;
   grab?: boolean;
   className?: string;
+  /** Pour mesurer la hauteur réelle de la feuille (espace inférieur du contenu). */
+  sheetRef?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={`sheet ${className}`}>
+    <div ref={sheetRef} className={`sheet ${className}`}>
       {grab && <div className="grab" />}
       {children}
     </div>
