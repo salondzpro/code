@@ -608,3 +608,79 @@ test('cron interne : jeton requis ; expire les demandes non traitées', async ()
   assert.equal(stale.json().status, 'cancelled');
   assert.equal(stale.json().cancelledBy, 'system');
 });
+
+test("suppression d'une catégorie : prestation réservée archivée, historique financier intact", async () => {
+  // Une prestation dans sa propre catégorie, réservée par un client : elle porte du chiffre d'affaires.
+  const svc = await call('POST', '/v1/pro/services', pro.token, {
+    name: 'Soin compta',
+    durationMinutes: 30,
+    priceDa: 1500,
+    groupName: 'Compta',
+  });
+  assert.equal(svc.statusCode, 201, svc.body);
+  const svcId = svc.json().id;
+  const booked = await call('POST', '/v1/pro/bookings', pro.token, {
+    serviceId: svcId,
+    staffId,
+    startsAt: localDateTimeToISO(addDaysToKey(dateKey, 1), '11:00'),
+    clientName: 'Compta Test',
+    source: 'walk_in',
+  });
+  assert.equal(booked.statusCode, 201, booked.body);
+  const bookingId = booked.json().id;
+
+  // Une prestation jamais réservée dans la même catégorie : celle-là peut vraiment disparaître.
+  const spare = await call('POST', '/v1/pro/services', pro.token, {
+    name: 'Soin jamais réservé',
+    durationMinutes: 15,
+    priceDa: 300,
+    groupName: 'Compta',
+  });
+  assert.equal(spare.statusCode, 201, spare.body);
+  const spareId = spare.json().id;
+
+  const del = await call('POST', '/v1/pro/services/delete-category', pro.token, {
+    name: 'Compta',
+    mode: 'with-services',
+  });
+  assert.equal(del.statusCode, 200, del.body);
+  assert.equal(del.json().deleted, 1, del.body);
+  assert.equal(del.json().archived, 1, del.body);
+
+  const salon = (await call('GET', '/v1/pro/salon', pro.token)).json().salon;
+  const kept = salon.services.find((s) => s.id === svcId);
+  assert.ok(kept, 'la prestation réservée reste en base (archivée)');
+  assert.equal(kept.isActive, false);
+  assert.equal(salon.services.some((s) => s.id === spareId), false, 'la prestation libre est supprimée');
+
+  // Le rendez-vous et son montant sont inchangés : le chiffre d'affaires ne bouge pas.
+  const b = await call('GET', `/v1/pro/bookings/${bookingId}`, pro.token);
+  assert.equal(b.statusCode, 200, b.body);
+  assert.equal(b.json().priceDa, 1500);
+  assert.equal(b.json().serviceName, 'Soin compta');
+});
+
+test("suppression d'une catégorie seule : les prestations restent réservables, sans catégorie", async () => {
+  const svc = await call('POST', '/v1/pro/services', pro.token, {
+    name: 'Soin sans catégorie',
+    durationMinutes: 20,
+    priceDa: 700,
+    groupName: 'À ranger',
+  });
+  assert.equal(svc.statusCode, 201, svc.body);
+  const svcId = svc.json().id;
+
+  const del = await call('POST', '/v1/pro/services/delete-category', pro.token, {
+    name: 'À ranger',
+    mode: 'keep-services',
+  });
+  assert.equal(del.statusCode, 200, del.body);
+  assert.equal(del.json().moved, 1, del.body);
+
+  const salon = (await call('GET', '/v1/pro/salon', pro.token)).json().salon;
+  const kept = salon.services.find((s) => s.id === svcId);
+  assert.ok(kept);
+  assert.equal(kept.isActive, true);
+  assert.equal(kept.groupName, null);
+  assert.equal(kept.categoryId, null);
+});

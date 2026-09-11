@@ -63,10 +63,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
       />
       <div>
         <h1 className="h1">{settings ? 'Réalisations' : 'Vos réalisations'}</h1>
-        <p className="p mt-2">
-          Coupes, coiffures, barbes, colorations, ongles… Montrez votre travail réel : ces photos
-          apparaissent dans l'onglet « Réalisations » de votre page.
-        </p>
+        <p className="p mt-2">Vos photos de travail, visibles dans l'onglet « Réalisations ».</p>
       </div>
       <div className="g3">
         {works.map((w) => (

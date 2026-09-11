@@ -1,27 +1,31 @@
 /**
- * Catalogue → Catégories : une catégorie n'est qu'un titre qui organise les prestations (ni image, ni description).
- * Le pro renomme librement ses catégories ; une catégorie existe dès qu'une prestation l'utilise (on la crée en
- * ajoutant une prestation), et disparaît quand plus aucune prestation ne la porte.
+ * Catalogue → Catégories : une catégorie n'est qu'un titre qui range les prestations (ni image, ni description).
+ * Le pro la renomme sur place, ou la supprime avec un choix explicite : emporter les prestations, ou les garder
+ * en « Sans catégorie ». Une prestation déjà réservée n'est jamais effacée : elle est archivée, l'historique
+ * financier (chiffre d'affaires, fiches client) reste intact.
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Check, Pencil, Plus, Tags, X } from 'lucide-react';
+import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-react';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { groupServices } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
-import { Button, I, InfoBox, Input, TopBar } from '@/components/ui';
+import { BottomSheet, Button, I, Input, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+
+type Mode = 'with-services' | 'keep-services';
 
 export function ProCategories() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  const { renameCategory } = useProServiceMutations();
+  const { renameCategory, deleteCategory } = useProServiceMutations();
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
+  const [del, setDel] = useState<{ name: string; count: number; mode?: Mode } | null>(null);
   const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;
-  const groups = groupServices(salon.services);
+  const groups = groupServices(salon.services.filter((sv) => sv.isActive));
 
   const save = async (from: string) => {
     const name = draft.trim();
@@ -35,17 +39,23 @@ export function ProCategories() {
     }
   };
 
+  const confirmDelete = async () => {
+    if (!del?.mode) return;
+    setError(null);
+    try {
+      await deleteCategory.mutateAsync({ name: del.name, mode: del.mode });
+      setDel(null);
+    } catch (e) {
+      setError(errorText(e));
+    }
+  };
+
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/catalogue" right="Catalogue" />
       <h1 className="h1">Catégories</h1>
-      <p className="p -mt-2">
-        Un titre, rien d'autre : les catégories servent à ranger vos prestations sur votre page.
-      </p>
       {groups.length === 0 ? (
-        <p className="p">
-          Aucune catégorie pour l'instant : elle apparaît dès que vous ajoutez une prestation.
-        </p>
+        <p className="p">Une catégorie apparaît dès que vous ajoutez une prestation.</p>
       ) : (
         <div className="crd !gap-0 !py-1">
           {groups.map((g) => (
@@ -94,18 +104,31 @@ export function ProCategories() {
                       </span>
                     </span>
                   </span>
-                  <button
-                    type="button"
-                    className="ib flex-none"
-                    aria-label={`Renommer ${g.name}`}
-                    onClick={() => {
-                      setDraft(g.name);
-                      setEditing(g.name);
-                      setError(null);
-                    }}
-                  >
-                    <I icon={Pencil} size={16} />
-                  </button>
+                  <span className="flex flex-none gap-2">
+                    <button
+                      type="button"
+                      className="ib"
+                      aria-label={`Renommer ${g.name}`}
+                      onClick={() => {
+                        setDraft(g.name);
+                        setEditing(g.name);
+                        setError(null);
+                      }}
+                    >
+                      <I icon={Pencil} size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="ib !text-danger"
+                      aria-label={`Supprimer ${g.name}`}
+                      onClick={() => {
+                        setDel({ name: g.name, count: g.services.length });
+                        setError(null);
+                      }}
+                    >
+                      <I icon={Trash2} size={16} />
+                    </button>
+                  </span>
                 </>
               )}
             </div>
@@ -120,10 +143,52 @@ export function ProCategories() {
       <Button variant="g" onClick={() => navigate('/pro/onboarding/6')}>
         <I icon={Plus} size={18} /> Nouvelle catégorie avec une prestation
       </Button>
-      <InfoBox>
-        Renommer une catégorie déplace toutes ses prestations sous le nouveau nom, sur votre page
-        comme dans l'agenda.
-      </InfoBox>
+
+      {del && (
+        <>
+          <div className="dim" onClick={() => setDel(null)} />
+          <BottomSheet className="!z-50">
+            <div className="h2 text-center !text-[1.125rem]">Supprimer « {del.name} » ?</div>
+            {del.mode ? (
+              <>
+                <p className="p text-center">
+                  {del.mode === 'with-services'
+                    ? `Les ${del.count} prestation${del.count > 1 ? 's' : ''} de cette catégorie seront retirées du catalogue. Celles déjà réservées sont archivées : vos rendez-vous, revenus et statistiques ne changent pas.`
+                    : `La catégorie disparaît, ses ${del.count} prestation${del.count > 1 ? 's' : ''} restent réservables dans « Sans catégorie ».`}
+                </p>
+                <div className="g2">
+                  <Button variant="g" onClick={() => setDel({ ...del, mode: undefined })}>
+                    Retour
+                  </Button>
+                  <Button
+                    variant="d"
+                    onClick={() => void confirmDelete()}
+                    disabled={deleteCategory.isPending}
+                  >
+                    <I icon={Trash2} size={18} />{' '}
+                    {deleteCategory.isPending ? 'Suppression…' : 'Confirmer'}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Button variant="g" onClick={() => setDel({ ...del, mode: 'keep-services' })}>
+                  Supprimer la catégorie seulement
+                </Button>
+                <p className="s -mt-2 text-center">
+                  Les prestations restent réservables, sans catégorie.
+                </p>
+                <Button variant="d" onClick={() => setDel({ ...del, mode: 'with-services' })}>
+                  Supprimer avec les {del.count} prestation{del.count > 1 ? 's' : ''}
+                </Button>
+                <button type="button" className="py-2 text-[1rem]" onClick={() => setDel(null)}>
+                  Annuler
+                </button>
+              </>
+            )}
+          </BottomSheet>
+        </>
+      )}
     </Screen>
   );
 }

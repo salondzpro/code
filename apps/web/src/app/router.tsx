@@ -7,6 +7,7 @@ import {
   RequireClient,
   RequirePro,
 } from './guards';
+import { ScrollToTop } from './ScrollToTop';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
 import { NotFound } from '@/pages/NotFound';
 // Parcours de connexion (design AUTH 01 → 16)
@@ -78,6 +79,8 @@ import { Requests } from '@/pages/pro/Requests';
 export const router = createBrowserRouter([
   {
     errorElement: <ErrorBoundary />,
+    // Chaque page s'ouvre en haut : le navigateur restaurerait sinon la position de la precedente.
+    element: <ScrollToTop />,
     children: [
       // ---- Connexion (sans barre d'onglets) ----
       {
@@ -180,7 +183,7 @@ export const router = createBrowserRouter([
               { path: 'salon', element: <Step4Address settings /> },
               { path: 'photos', element: <ProPhotos /> },
               { path: 'blocages', element: <Closures /> },
-              { path: 'services', element: <ProServices /> },
+              { path: 'services', element: <Navigate to="/pro/catalogue" replace /> },
               { path: 'realisations', element: <Step8Works settings /> },
             ],
           },
@@ -197,7 +200,7 @@ export const router = createBrowserRouter([
               { path: 'equipe/:id', element: <TeamMember /> },
               { path: 'equipe/:id/prestations', element: <TeamMemberServices /> },
               { path: 'equipe/:id/horaires', element: <TeamMemberHours /> },
-              { path: 'prestations', element: <ProServices /> },
+              { path: 'prestations', element: <Navigate to="/pro/catalogue" replace /> },
               { path: 'catalogue', element: <ProServices /> },
               { path: 'categories', element: <ProCategories /> },
               { path: 'reservations', element: <Requests /> },

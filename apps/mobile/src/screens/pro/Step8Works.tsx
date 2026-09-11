@@ -72,10 +72,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
       />
       <View style={{ gap: 6 }}>
         <H1>{settings ? 'Réalisations' : 'Vos réalisations'}</H1>
-        <P>
-          Coupes, coiffures, barbes, colorations, ongles… Montrez votre travail réel : ces photos
-          apparaissent dans l'onglet « Réalisations » de votre page.
-        </P>
+        <P>Vos photos de travail, visibles dans l'onglet « Réalisations ».</P>
       </View>
       <Grid cols={3}>
         {works.map((w) => (

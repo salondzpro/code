@@ -52,11 +52,7 @@ export function ProServices() {
         <I icon={ChevronRight} size={18} className="text-disabled" />
       </button>
       <ErrorMessage error={update.error ?? remove.error} />
-      {salon.services.length === 0 && (
-        <p className="p">
-          Ajoutez votre première prestation : nom, catégorie, prix, durée et une photo.
-        </p>
-      )}
+      {salon.services.length === 0 && <p className="p">Ajoutez votre première prestation.</p>}
       {groups.map((g) => (
         <div key={g.name} className="flex flex-col gap-3">
           <SectionLabel right={<span className="s">{g.services.length}</span>}>

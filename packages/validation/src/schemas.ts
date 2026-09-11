@@ -89,6 +89,15 @@ export const renameCategorySchema = z.object({
   name: p.shortText(60),
 });
 
+/**
+ * Supprimer une catégorie : soit avec ses prestations, soit seule (les prestations passent « Sans catégorie »).
+ * Une prestation déjà réservée n'est jamais effacée : elle est archivée (désactivée) pour préserver l'historique.
+ */
+export const deleteCategorySchema = z.object({
+  name: p.shortText(60),
+  mode: z.enum(['with-services', 'keep-services']),
+});
+
 export const createServiceSchema = z.object({
   name: p.shortText(80),
   description: p.longText(500).optional(),

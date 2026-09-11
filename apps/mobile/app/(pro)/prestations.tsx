@@ -10,7 +10,20 @@ import { Camera, ChevronRight, Plus, Tags } from 'lucide-react-native';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Button, ErrorText, H1, I, Img, ListCard, P, Row, SectionLabel, Toggle, TopBar, Tx } from '@/ui';
+import {
+  Button,
+  ErrorText,
+  H1,
+  I,
+  Img,
+  ListCard,
+  P,
+  Row,
+  SectionLabel,
+  Toggle,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { RowText } from '@/ui/ProRows';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
@@ -25,9 +38,21 @@ export default function ProServices() {
   return (
     <Screen gap={13}>
       <TopBar backTo="/(pro)/(tabs)/profil-pro" right="Profil" />
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+        }}
+      >
         <H1>Catalogue</H1>
-        <Button pill sm onPress={() => router.push('/onboarding/6' as never)} style={{ paddingHorizontal: 13, paddingVertical: 9 }}>
+        <Button
+          pill
+          sm
+          onPress={() => router.push('/onboarding/6' as never)}
+          style={{ paddingHorizontal: 13, paddingVertical: 9 }}
+        >
           <I icon={Plus} size={14.5} color="#fff" />
           <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
             Ajouter
@@ -35,25 +60,81 @@ export default function ProServices() {
         </Button>
       </View>
       <ListCard>
-        <Row py={12} onPress={() => router.push('/categories' as never)} accessibilityLabel="Catégories">
-          <RowText icon={Tags} title="Catégories" sub={groups.length ? groups.map((g) => g.name).join(' · ') : 'Coupe, barbe, coloration, soins…'} />
+        <Row
+          py={12}
+          onPress={() => router.push('/categories' as never)}
+          accessibilityLabel="Catégories"
+        >
+          <RowText
+            icon={Tags}
+            title="Catégories"
+            sub={
+              groups.length
+                ? groups.map((g) => g.name).join(' · ')
+                : 'Coupe, barbe, coloration, soins…'
+            }
+          />
         </Row>
       </ListCard>
       <ErrorText error={update.error ?? remove.error} />
-      {salon.services.length === 0 && <P>Ajoutez votre première prestation : nom, catégorie, prix, durée et une photo.</P>}
+      {salon.services.length === 0 && <P>Ajoutez votre première prestation.</P>}
       {groups.map((g) => (
         <View key={g.name} style={{ gap: 8 }}>
-          <SectionLabel right={<Tx size={10.5} color={C.muted}>{String(g.services.length)}</Tx>}>{g.name}</SectionLabel>
+          <SectionLabel
+            right={
+              <Tx size={10.5} color={C.muted}>
+                {String(g.services.length)}
+              </Tx>
+            }
+          >
+            {g.name}
+          </SectionLabel>
           <ListCard>
             {g.services.map((sv) => {
               const photo = sv.photos?.[0]?.url ?? null;
               return (
-                <Row key={sv.id} py={10} chevron={false} right={<Toggle on={sv.isActive} onChange={(v) => update.mutate({ id: sv.id, isActive: v })} label={`Activer ${sv.name}`} />}>
-                  <Pressable accessibilityRole="link" accessibilityLabel={`Modifier ${sv.name}`} onPress={() => router.push(`/onboarding/6/${sv.id}` as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11, opacity: sv.isActive ? 1 : 0.6 }}>
+                <Row
+                  key={sv.id}
+                  py={10}
+                  chevron={false}
+                  right={
+                    <Toggle
+                      on={sv.isActive}
+                      onChange={(v) => update.mutate({ id: sv.id, isActive: v })}
+                      label={`Activer ${sv.name}`}
+                    />
+                  }
+                >
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Modifier ${sv.name}`}
+                    onPress={() => router.push(`/onboarding/6/${sv.id}` as never)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 11,
+                      opacity: sv.isActive ? 1 : 0.6,
+                    }}
+                  >
                     {photo ? (
                       <Img src={photo} radius={11} style={{ width: 52, height: 52 }} />
                     ) : (
-                      <Pressable accessibilityRole="button" accessibilityLabel={`Ajouter la photo de ${sv.name}`} onPress={() => router.push(`/onboarding/7/${sv.id}` as never)} style={{ width: 52, height: 52, borderRadius: 11, borderWidth: 1, borderStyle: 'dashed', borderColor: C.line, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Ajouter la photo de ${sv.name}`}
+                        onPress={() => router.push(`/onboarding/7/${sv.id}` as never)}
+                        style={{
+                          width: 52,
+                          height: 52,
+                          borderRadius: 11,
+                          borderWidth: 1,
+                          borderStyle: 'dashed',
+                          borderColor: C.line,
+                          backgroundColor: C.fill,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
                         <I icon={Camera} size={16} color={C.subtle} />
                       </Pressable>
                     )}

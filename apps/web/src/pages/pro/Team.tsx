@@ -89,10 +89,6 @@ export function Team() {
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
       <h1 className="h1">Équipe</h1>
-      <p className="p">
-        Chaque membre a son agenda, ses prestations et ses horaires. Les clients choisissent «
-        n'importe qui » ou un membre précis.
-      </p>
       <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (
           <li key={m.id}>

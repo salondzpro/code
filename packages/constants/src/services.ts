@@ -1,12 +1,13 @@
 /**
  * Classement du catalogue par catégorie — partagé web/mobile, client et pro.
  * Une prestation est rangée dans la catégorie créée par le pro (`groupName`), sinon dans la catégorie
- * Salon DZ choisie (`categoryId`), sinon dans « Formule » (nom commençant par « Formule ») ou « À la carte ».
+ * Salon DZ choisie (`categoryId`), sinon dans « Formule » (nom commençant par « Formule ») ou « Sans catégorie ».
  */
 import { categoryLabel } from './categories';
 
 export const FORMULA_RE = /^formule\b/i;
-export const DEFAULT_GROUP = 'À la carte';
+/** Prestations sans catégorie : groupe affiché en dernier, jamais stocké en base. */
+export const DEFAULT_GROUP = 'Sans catégorie';
 
 export interface ServiceGroup<T> {
   name: string;
@@ -21,7 +22,7 @@ export function serviceCategoryName(s: { name: string; groupName?: string | null
   return null;
 }
 
-/** Groupes dans l'ordre de première apparition (ordre du catalogue) ; Formule et À la carte en dernier. */
+/** Groupes dans l'ordre de première apparition (ordre du catalogue) ; Formule et Sans catégorie en dernier. */
 export function groupServices<T extends { name: string; groupName?: string | null; categoryId?: string | null }>(services: T[]): ServiceGroup<T>[] {
   const named = new Map<string, T[]>();
   const formulas: T[] = [];

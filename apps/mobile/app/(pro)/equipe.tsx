@@ -9,13 +9,38 @@ import { CalendarOff, ChevronRight, Plus } from 'lucide-react-native';
 import { useProSalon } from '@salondz/api-client';
 import { formatDA } from '@salondz/constants';
 import type { Service, Staff } from '@salondz/types';
-import { Alert, Avatar, Button, Checkbox, H1, I, ListCard, P, Row, Segmented, TopBar, Tx } from '@/ui';
+import {
+  Alert,
+  Avatar,
+  Button,
+  Checkbox,
+  H1,
+  I,
+  ListCard,
+  P,
+  Row,
+  Segmented,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { RowText } from '@/ui/ProRows';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, NAV_PAD } from '@/theme/design';
 
-export function ServicesPicker({ services, all, selected, onAll, onToggle }: { services: Service[]; all: boolean; selected: string[]; onAll: (v: boolean) => void; onToggle: (id: string) => void }) {
+export function ServicesPicker({
+  services,
+  all,
+  selected,
+  onAll,
+  onToggle,
+}: {
+  services: Service[];
+  all: boolean;
+  selected: string[];
+  onAll: (v: boolean) => void;
+  onToggle: (id: string) => void;
+}) {
   return (
     <View style={{ gap: 10 }}>
       <Segmented
@@ -28,13 +53,23 @@ export function ServicesPicker({ services, all, selected, onAll, onToggle }: { s
         ]}
       />
       {all ? (
-        <P>Ce membre réalise toutes les prestations du catalogue, y compris celles ajoutées plus tard.</P>
+        <P>
+          Ce membre réalise toutes les prestations du catalogue, y compris celles ajoutées plus
+          tard.
+        </P>
       ) : services.length === 0 ? (
         <P>Aucune prestation au catalogue pour l'instant.</P>
       ) : (
         <ListCard>
           {services.map((sv) => (
-            <Row key={sv.id} py={10} chevron={false} onPress={() => onToggle(sv.id)} accessibilityLabel={sv.name} right={<Checkbox on={selected.includes(sv.id)} label={sv.name} />}>
+            <Row
+              key={sv.id}
+              py={10}
+              chevron={false}
+              onPress={() => onToggle(sv.id)}
+              accessibilityLabel={sv.name}
+              right={<Checkbox on={selected.includes(sv.id)} label={sv.name} />}
+            >
               <View>
                 <Tx size={12} lh={16} color={sv.isActive ? C.text : C.subtle}>
                   {sv.name}
@@ -48,7 +83,9 @@ export function ServicesPicker({ services, all, selected, onAll, onToggle }: { s
           ))}
         </ListCard>
       )}
-      {!all && selected.length === 0 && services.length > 0 && <Alert>Choisissez au moins une prestation, sinon le membre ne sera jamais proposé.</Alert>}
+      {!all && selected.length === 0 && services.length > 0 && (
+        <Alert>Choisissez au moins une prestation, sinon le membre ne sera jamais proposé.</Alert>
+      )}
     </View>
   );
 }
@@ -68,10 +105,16 @@ export default function Team() {
     <Screen gap={13}>
       <TopBar backTo="/(pro)/(tabs)/profil-pro" right="Profil" />
       <H1>Équipe</H1>
-      <P>Chaque membre a son agenda, ses prestations et ses horaires. Les clients choisissent « n'importe qui » ou un membre précis.</P>
       <ListCard>
         {salon.staff.map((m) => (
-          <Row key={m.id} py={13} onPress={() => router.push(`/membre/${m.id}` as never)} accessibilityLabel={m.displayName} chevron={false} right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}>
+          <Row
+            key={m.id}
+            py={13}
+            onPress={() => router.push(`/membre/${m.id}` as never)}
+            accessibilityLabel={m.displayName}
+            chevron={false}
+            right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
               <Avatar src={m.avatarUrl} name={m.displayName} size={42} />
               <View style={{ flex: 1, minWidth: 0 }}>
@@ -94,7 +137,11 @@ export default function Team() {
       </ListCard>
       <ListCard>
         <Row py={12} to="/blocages" accessibilityLabel="Absences et fermetures">
-          <RowText icon={CalendarOff} title="Absences et fermetures" sub="Congés, pauses d'un membre, exceptions" />
+          <RowText
+            icon={CalendarOff}
+            title="Absences et fermetures"
+            sub="Congés, pauses d'un membre, exceptions"
+          />
         </Row>
       </ListCard>
       <Button onPress={() => router.push('/equipe-nouveau' as never)}>

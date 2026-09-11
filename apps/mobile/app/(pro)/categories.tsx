@@ -1,23 +1,26 @@
 /**
- * Catalogue → Catégories : une catégorie n'est qu'un titre qui organise les prestations (ni image, ni description).
- * Le pro renomme librement ses catégories ; une catégorie existe dès qu'une prestation l'utilise.
+ * Catalogue → Catégories : une catégorie n'est qu'un titre qui range les prestations (ni image, ni description).
+ * Le pro la renomme sur place, ou la supprime avec un choix explicite : emporter les prestations, ou les garder
+ * en « Sans catégorie ». Une prestation déjà réservée n'est jamais effacée : elle est archivée, l'historique
+ * financier (chiffre d'affaires, fiches client) reste intact.
  */
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Check, Pencil, Plus, Tags, X } from 'lucide-react-native';
+import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-react-native';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { groupServices } from '@salondz/constants';
 import { errorText } from '@/lib/errors';
 import {
   Alert,
   Button,
+  Grid,
   H1,
   I,
   IconButton,
-  InfoBox,
   Input,
   ListCard,
+  ModalSheet,
   P,
   Row,
   TopBar,
@@ -28,15 +31,18 @@ import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
 
+type Mode = 'with-services' | 'keep-services';
+
 export default function ProCategories() {
   const router = useRouter();
   const salon = useProSalon().data?.salon ?? null;
-  const { renameCategory } = useProServiceMutations();
+  const { renameCategory, deleteCategory } = useProServiceMutations();
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
+  const [del, setDel] = useState<{ name: string; count: number; mode?: Mode } | null>(null);
   const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;
-  const groups = groupServices(salon.services);
+  const groups = groupServices(salon.services.filter((sv) => sv.isActive));
 
   const save = async (from: string) => {
     const name = draft.trim();
@@ -50,15 +56,23 @@ export default function ProCategories() {
     }
   };
 
+  const confirmDelete = async () => {
+    if (!del?.mode) return;
+    setError(null);
+    try {
+      await deleteCategory.mutateAsync({ name: del.name, mode: del.mode });
+      setDel(null);
+    } catch (e) {
+      setError(errorText(e));
+    }
+  };
+
   return (
     <Screen gap={13}>
       <TopBar backTo="/prestations" right="Catalogue" />
       <H1>Catégories</H1>
-      <P>
-        Un titre, rien d'autre : les catégories servent à ranger vos prestations sur votre page.
-      </P>
       {groups.length === 0 ? (
-        <P>Aucune catégorie pour l'instant : elle apparaît dès que vous ajoutez une prestation.</P>
+        <P>Une catégorie apparaît dès que vous ajoutez une prestation.</P>
       ) : (
         <ListCard>
           {groups.map((g) =>
@@ -95,16 +109,27 @@ export default function ProCategories() {
                 py={10}
                 chevron={false}
                 right={
-                  <IconButton
-                    accessibilityLabel={`Renommer ${g.name}`}
-                    onPress={() => {
-                      setDraft(g.name);
-                      setEditing(g.name);
-                      setError(null);
-                    }}
-                  >
-                    <I icon={Pencil} size={14} color={C.text} />
-                  </IconButton>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <IconButton
+                      accessibilityLabel={`Renommer ${g.name}`}
+                      onPress={() => {
+                        setDraft(g.name);
+                        setEditing(g.name);
+                        setError(null);
+                      }}
+                    >
+                      <I icon={Pencil} size={14} color={C.text} />
+                    </IconButton>
+                    <IconButton
+                      accessibilityLabel={`Supprimer ${g.name}`}
+                      onPress={() => {
+                        setDel({ name: g.name, count: g.services.length });
+                        setError(null);
+                      }}
+                    >
+                      <I icon={Trash2} size={14} color={C.danger} />
+                    </IconButton>
+                  </View>
                 }
               >
                 <RowText
@@ -124,10 +149,51 @@ export default function ProCategories() {
           Nouvelle catégorie avec une prestation
         </Tx>
       </Button>
-      <InfoBox>
-        Renommer une catégorie déplace toutes ses prestations sous le nouveau nom, sur votre page
-        comme dans l'agenda.
-      </InfoBox>
+
+      <ModalSheet open={!!del} onClose={() => setDel(null)}>
+        <Tx size={16} weight={700} ls={-0.5} lh={20} center>
+          Supprimer « {del?.name} » ?
+        </Tx>
+        {del?.mode ? (
+          <>
+            <P center>
+              {del.mode === 'with-services'
+                ? `Les ${del.count} prestation${del.count > 1 ? 's' : ''} de cette catégorie seront retirées du catalogue. Celles déjà réservées sont archivées : vos rendez-vous, revenus et statistiques ne changent pas.`
+                : `La catégorie disparaît, ses ${del.count} prestation${del.count > 1 ? 's' : ''} restent réservables dans « Sans catégorie ».`}
+            </P>
+            <Grid cols={2} gap={8}>
+              <Button variant="g" onPress={() => setDel({ ...del, mode: undefined })}>
+                Retour
+              </Button>
+              <Button
+                variant="d"
+                onPress={() => void confirmDelete()}
+                disabled={deleteCategory.isPending}
+                loading={deleteCategory.isPending}
+              >
+                <I icon={Trash2} size={14} color={C.danger} />
+                <Tx size={12} weight={600} lh={16} color={C.danger}>
+                  Confirmer
+                </Tx>
+              </Button>
+            </Grid>
+          </>
+        ) : (
+          <>
+            <Button variant="g" onPress={() => del && setDel({ ...del, mode: 'keep-services' })}>
+              Supprimer la catégorie seulement
+            </Button>
+            <Tx size={11} color={C.muted} lh={15} center style={{ marginTop: -4 }}>
+              Les prestations restent réservables, sans catégorie.
+            </Tx>
+            <Button variant="d" onPress={() => del && setDel({ ...del, mode: 'with-services' })}>
+              <Tx size={12} weight={600} lh={16} color={C.danger}>
+                Supprimer avec les {del?.count} prestation{(del?.count ?? 0) > 1 ? 's' : ''}
+              </Tx>
+            </Button>
+          </>
+        )}
+      </ModalSheet>
     </Screen>
   );
 }

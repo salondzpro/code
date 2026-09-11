@@ -248,6 +248,11 @@ export function createApiClient(opts: ApiClientOptions) {
           put<void>(`/pro/services/${id}/photos`, { photos }),
         renameCategory: (body: { from: string; name: string }) =>
           post<{ renamed: number }>('/pro/services/rename-category', body),
+        deleteCategory: (body: { name: string; mode: 'with-services' | 'keep-services' }) =>
+          post<{ deleted: number; archived: number; moved: number }>(
+            '/pro/services/delete-category',
+            body,
+          ),
       },
       staff: {
         create: (body: {

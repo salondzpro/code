@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { MAX_SERVICES_PER_SALON, categoryLabel } from '@salondz/constants';
 import {
   createServiceSchema,
+  deleteCategorySchema,
   renameCategorySchema,
   setServicePhotosSchema,
   updateServiceSchema,
@@ -41,6 +42,50 @@ async function syncSalonCategories(salonId: string): Promise<void> {
   if (ins.error) throw ins.error;
 }
 
+/**
+ * Une prestation déjà réservée porte de l'historique financier (chiffre d'affaires, fiches client) : on ne
+ * l'efface jamais, on l'archive (désactivation). Les rendez-vous gardent de toute façon nom, durée et prix figés.
+ */
+async function serviceIsBooked(serviceId: string): Promise<boolean> {
+  const [b, items] = await Promise.all([
+    db.from('bookings').select('id', { count: 'exact', head: true }).eq('service_id', serviceId),
+    db
+      .from('booking_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('service_id', serviceId),
+  ]);
+  if (b.error) throw b.error;
+  if (items.error) throw items.error;
+  return (b.count ?? 0) > 0 || (items.count ?? 0) > 0;
+}
+
+/** Supprime la prestation si elle n'a jamais ete reservee, sinon l'archive. */
+async function removeOrArchiveService(
+  salonId: string,
+  serviceId: string,
+): Promise<'deleted' | 'archived'> {
+  const archive = async () => {
+    const upd = await db
+      .from('services')
+      .update({ is_active: false, group_name: null, category_id: null })
+      .eq('id', serviceId)
+      .eq('salon_id', salonId);
+    if (upd.error) throw upd.error;
+  };
+  if (await serviceIsBooked(serviceId)) {
+    await archive();
+    return 'archived';
+  }
+  const del = await db.from('services').delete().eq('id', serviceId).eq('salon_id', salonId);
+  if (del.error) {
+    // Filet de securite : une contrainte d'historique l'emporte toujours sur la suppression.
+    if (del.error.code !== '23503') throw del.error;
+    await archive();
+    return 'archived';
+  }
+  return 'deleted';
+}
+
 const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireSalon);
 
@@ -73,6 +118,45 @@ const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
       if (upd.error) throw upd.error;
     }
     return { renamed: targets.length };
+  });
+
+  /**
+   * Supprime une categorie : avec ses prestations, ou seule (les prestations passent « Sans categorie »).
+   * Aucune donnee d'historique n'est touchee : une prestation deja reservee est archivee, jamais effacee.
+   */
+  app.post('/services/delete-category', { schema: { body: deleteCategorySchema } }, async (req) => {
+    const salonId = req.salon!.id;
+    const { name, mode } = req.body;
+    const res = await db
+      .from('services')
+      .select('id, category_id, group_name')
+      .eq('salon_id', salonId)
+      .eq('is_active', true);
+    if (res.error) throw res.error;
+    const rows = res.data as {
+      id: string;
+      category_id: string | null;
+      group_name: string | null;
+    }[];
+    const current = (r: (typeof rows)[number]) =>
+      r.group_name?.trim() || (r.category_id ? categoryLabel(r.category_id) : null);
+    const targets = rows.filter((r) => current(r) === name);
+    if (targets.length === 0) throw notFound('Categorie');
+    let deleted = 0;
+    let archived = 0;
+    for (const r of targets) {
+      if (mode === 'keep-services') {
+        const upd = await db
+          .from('services')
+          .update({ group_name: null, category_id: null })
+          .eq('id', r.id)
+          .eq('salon_id', salonId);
+        if (upd.error) throw upd.error;
+      } else if ((await removeOrArchiveService(salonId, r.id)) === 'deleted') deleted += 1;
+      else archived += 1;
+    }
+    await syncSalonCategories(salonId);
+    return { deleted, archived, moved: mode === 'keep-services' ? targets.length : 0 };
   });
 
   app.post('/services', { schema: { body: createServiceSchema } }, async (req, reply) => {
@@ -115,35 +199,24 @@ const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
-  /** Supprime si jamais réservé, sinon désactive (historique préservé). */
+  /** Supprime si jamais reserve, sinon archive (desactive) : l'historique financier reste intact. */
   app.delete(
     '/services/:id',
     { schema: { params: z.object({ id: uuid }) } },
     async (req, reply) => {
       const salonId = req.salon!.id;
-      const del = await db
+      const exists = await db
         .from('services')
-        .delete()
+        .select('id')
         .eq('id', req.params.id)
         .eq('salon_id', salonId)
-        .select('id')
         .maybeSingle();
-      if (del.error) {
-        if (del.error.code !== '23503') throw del.error;
-        const upd = await db
-          .from('services')
-          .update({ is_active: false })
-          .eq('id', req.params.id)
-          .eq('salon_id', salonId)
-          .select('id')
-          .maybeSingle();
-        if (upd.error) throw upd.error;
-        if (!upd.data) throw notFound('Service');
-        return { deleted: false, deactivated: true };
-      }
-      if (!del.data) throw notFound('Service');
+      if (exists.error) throw exists.error;
+      if (!exists.data) throw notFound('Service');
+      const outcome = await removeOrArchiveService(salonId, req.params.id);
+      await syncSalonCategories(salonId);
       reply.status(200);
-      return { deleted: true, deactivated: false };
+      return { deleted: outcome === 'deleted', deactivated: outcome === 'archived' };
     },
   );
 
@@ -180,15 +253,13 @@ const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
       const del = await db.from('service_photos').delete().eq('service_id', req.params.id);
       if (del.error) throw del.error;
       if (req.body.photos.length) {
-        const ins = await db
-          .from('service_photos')
-          .insert(
-            req.body.photos.map((p, i) => ({
-              service_id: req.params.id,
-              url: p.url,
-              sort_order: i,
-            })),
-          );
+        const ins = await db.from('service_photos').insert(
+          req.body.photos.map((p, i) => ({
+            service_id: req.params.id,
+            url: p.url,
+            sort_order: i,
+          })),
+        );
         if (ins.error) throw ins.error;
       }
       reply.status(204);
