@@ -1,16 +1,14 @@
 /**
- * Profil → Mon salon : tout ce qui fait la présence du salon sur Salon DZ — informations (nom, description),
- * photos de couverture, réalisations, adresse et localisation, horaires d'ouverture, lien et QR code.
+ * Profil → Mon salon : ce qui fait la présence du salon sur Salon DZ — informations (nom, description),
+ * photos de couverture, réalisations, adresse. Horaires et lien public sont sur Profil, à portée de main.
  */
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import {
-  Clock,
   FileText,
   Images,
   MapPin,
   Pencil,
-  QrCode,
   Save,
   Sparkles,
   Users,
@@ -52,8 +50,6 @@ export default function MonSalon() {
   const place = [salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)]
     .filter(Boolean)
     .join(', ');
-  const openDays = new Set(salon.openingHours.filter((h) => !h.isClosed).map((h) => h.dayOfWeek))
-    .size;
 
   return (
     <Screen gap={13}>
@@ -81,7 +77,7 @@ export default function MonSalon() {
             title={salon.name}
             sub={
               desc === null
-                ? salon.description || 'Ajoutez une description : elle améliore votre visibilité'
+                ? salon.description || 'Ajouter une description'
                 : undefined
             }
           />
@@ -99,7 +95,7 @@ export default function MonSalon() {
           <RowText
             icon={Users}
             title="Clientèle"
-            sub="Détermine les catégories proposées et la marketplace"
+            sub="Hommes, femmes ou mixte"
           />
         </Row>
         {desc !== null && (
@@ -155,26 +151,16 @@ export default function MonSalon() {
             sub={
               salon.works.length
                 ? `${salon.works.length} photo${salon.works.length > 1 ? 's' : ''} de votre travail`
-                : 'Montrez vos coupes, coiffures, barbes, colorations…'
+                : 'Ajouter vos photos'
             }
           />
         </Row>
-        <Row py={12} to="/lien">
-          <RowText icon={QrCode} title="Lien et QR code" sub="Affiche à imprimer, partage" />
-        </Row>
       </ListCard>
 
-      <SectionLabel>Adresse et horaires</SectionLabel>
+      <SectionLabel>Adresse</SectionLabel>
       <ListCard>
         <Row py={12} to="/salon">
           <RowText icon={MapPin} title="Adresse et localisation" sub={place} />
-        </Row>
-        <Row py={12} to="/reglages-pro/horaires">
-          <RowText
-            icon={Clock}
-            title="Horaires d'ouverture"
-            sub={`Ouvert ${openDays} jour${openDays > 1 ? 's' : ''} sur 7`}
-          />
         </Row>
       </ListCard>
       {error && <Alert>{error}</Alert>}

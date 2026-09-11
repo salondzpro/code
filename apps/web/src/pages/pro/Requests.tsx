@@ -18,7 +18,6 @@ export function Requests() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <h1 className="h1">Réservations</h1>
-      <p className="p -mt-2">Les demandes à valider avant qu'elles n'entrent dans votre agenda.</p>
       {pending.isPending && <Skeleton className="h-[10rem]" />}
       {pending.isError && <ErrorMessage error={pending.error} retry={() => pending.refetch()} />}
       {pending.data && items.length === 0 && (

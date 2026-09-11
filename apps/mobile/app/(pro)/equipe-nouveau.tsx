@@ -45,7 +45,7 @@ export default function TeamNew() {
     >
       <TopBar backTo="/equipe" right="Équipe" />
       <H1>Nouveau membre</H1>
-      <P>Le membre a son propre agenda. Il reçoit les rendez-vous des prestations qu'il réalise, sur les horaires du salon (modifiables ensuite dans sa fiche).</P>
+      <P>Agenda propre, horaires du salon — modifiables ensuite dans sa fiche.</P>
       <Field label="Prénom">
         <Input lg value={name} onChangeText={setName} onSubmitEditing={() => void add()} placeholder="Prénom du membre" accessibilityLabel="Nouveau membre" maxLength={60} returnKeyType="done" autoFocus />
       </Field>

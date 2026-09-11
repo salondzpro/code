@@ -75,11 +75,6 @@ export default function ProPhotos() {
       <Tx size={23} weight={700} ls={-0.8} lh={26}>
         Photos du salon
       </Tx>
-      <P>
-        Elles s'affichent sur vos cartes dans la marketplace, sur votre page publique et sur les
-        rendez-vous de vos clients.
-      </P>
-
       <SectionLabel>Photo de profil</SectionLabel>
       <Card row gap={13} style={{ alignItems: 'center' }}>
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={65} />

@@ -102,10 +102,7 @@ export default function ProQr() {
           />
         </View>
       </View>
-      <P center>
-        Votre affiche Salon DZ, prête à imprimer en vitrine ou à coller sur le miroir. Le scan ouvre
-        directement votre page de réservation.
-      </P>
+      <P center>À imprimer en vitrine : le scan ouvre votre page de réservation.</P>
       {error && <Alert>{error}</Alert>}
       <Grid cols={2}>
         <Button variant="g" onPress={() => void save()} disabled={busy} loading={busy}>

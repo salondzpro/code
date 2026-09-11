@@ -170,7 +170,7 @@ export default function Closures() {
         </BottomSheet>
       }
     >
-      <TopBar backTo="/(pro)/(tabs)/profil" right="Exceptions" />
+      <TopBar backTo="/equipe" right="Équipe" />
       <H1>Fermetures</H1>
 
       <ListCard>

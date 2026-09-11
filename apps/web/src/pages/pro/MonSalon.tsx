@@ -1,15 +1,13 @@
 /**
- * Profil → Mon salon : tout ce qui fait la présence du salon sur Salon DZ — informations (nom, description),
- * photos de couverture, réalisations, adresse et localisation, horaires d'ouverture, lien et QR code.
+ * Profil → Mon salon : ce qui fait la présence du salon sur Salon DZ — informations (nom, description),
+ * photos de couverture, réalisations, adresse. Horaires et lien public sont sur Profil, à portée de main.
  */
 import { useState } from 'react';
 import {
-  Clock,
   FileText,
   Images,
   MapPin,
   Pencil,
-  QrCode,
   Save,
   Sparkles,
   Users,
@@ -46,8 +44,6 @@ export function MonSalon() {
   const place = [salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)]
     .filter(Boolean)
     .join(', ');
-  const openDays = new Set(salon.openingHours.filter((h) => !h.isClosed).map((h) => h.dayOfWeek))
-    .size;
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
@@ -60,11 +56,7 @@ export function MonSalon() {
           <RowText
             icon={FileText}
             title={salon.name}
-            sub={
-              desc === null
-                ? salon.description || 'Ajoutez une description : elle améliore votre visibilité'
-                : undefined
-            }
+            sub={desc === null ? salon.description || 'Ajouter une description' : undefined}
           />
           {desc === null && (
             <button
@@ -78,11 +70,7 @@ export function MonSalon() {
           )}
         </div>
         <div className="li !py-3">
-          <RowText
-            icon={Users}
-            title="Clientèle"
-            sub="Détermine les catégories proposées et la marketplace"
-          />
+          <RowText icon={Users} title="Clientèle" sub="Hommes, femmes ou mixte" />
           <PickerField
             label="Clientèle"
             title="Votre clientèle"
@@ -150,26 +138,16 @@ export function MonSalon() {
             sub={
               salon.works.length
                 ? `${salon.works.length} photo${salon.works.length > 1 ? 's' : ''} de votre travail`
-                : 'Montrez vos coupes, coiffures, barbes, colorations…'
+                : 'Ajouter vos photos'
             }
           />
         </ListRow>
-        <ListRow to="/pro/lien">
-          <RowText icon={QrCode} title="Lien et QR code" sub="Affiche à imprimer, partage" />
-        </ListRow>
       </div>
 
-      <SectionLabel>Adresse et horaires</SectionLabel>
+      <SectionLabel>Adresse</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/salon">
           <RowText icon={MapPin} title="Adresse et localisation" sub={place} />
-        </ListRow>
-        <ListRow to="/pro/profil/horaires">
-          <RowText
-            icon={Clock}
-            title="Horaires d'ouverture"
-            sub={`Ouvert ${openDays} jour${openDays > 1 ? 's' : ''} sur 7`}
-          />
         </ListRow>
       </div>
       {error && (

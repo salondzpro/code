@@ -158,7 +158,7 @@ export function Closures() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/profil" right="Exceptions" />
+      <TopBar backTo="/pro/equipe" right="Équipe" />
       <h1 className="h1">Fermetures</h1>
 
       <div className="crd !gap-0 !px-4 !py-1">

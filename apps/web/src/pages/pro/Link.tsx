@@ -282,8 +282,7 @@ export function ProQr() {
         <div className="sk aspect-[3/4] w-full !rounded-[1.25rem]" />
       )}
       <p className="p text-center">
-        Votre affiche Salon DZ, prête à imprimer en vitrine ou à coller sur le miroir. Le scan ouvre
-        directement votre page de réservation.
+        À imprimer en vitrine : le scan ouvre votre page de réservation.
       </p>
       <div className="g2">
         <a

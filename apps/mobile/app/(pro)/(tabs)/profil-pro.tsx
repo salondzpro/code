@@ -6,14 +6,14 @@
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CalendarCog, Camera, ContactRound, Eye, Share2, Store, Tag, CircleUser, Users } from 'lucide-react-native';
+import { CalendarCog, Camera, Clock, ContactRound, Eye, Share2, Store, Tag, CircleUser, Users } from 'lucide-react-native';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { SALON_MAX_PHOTOS } from '@salondz/constants';
+import { DAY_LABELS_FR, SALON_MAX_PHOTOS, dayOfWeekFromKey, toLocalDateKey } from '@salondz/constants';
 import { COVER_ASPECT_RN, pickImages, uploadSalonImage } from '@/lib/images';
 import { errorText } from '@/lib/errors';
 import { publicHost } from '@/lib/salon';
-import { Alert, Avatar, Badge, Button, Card, Grid, H1, I, Img, SectionLabel, Tx } from '@/ui';
-import { Tile } from '@/ui/ProRows';
+import { Alert, Avatar, Badge, Button, Card, Grid, H1, I, Img, ListCard, Row, SectionLabel, Tx } from '@/ui';
+import { RowText, Tile } from '@/ui/ProRows';
 import { BrandFooter } from '@/ui/BrandFooter';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
@@ -31,6 +31,11 @@ export default function ProProfile() {
   const short = `${publicHost()}/s/${salon.slug}`;
   const active = salon.staff.filter((m) => m.isActive).length;
   const services = salon.services.filter((s) => s.isActive).length;
+  const todayDow = dayOfWeekFromKey(toLocalDateKey());
+  const todayHours = salon.openingHours.filter((h) => h.dayOfWeek === todayDow && !h.isClosed);
+  const todayLabel = todayHours.length
+    ? todayHours.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
+    : 'Fermé aujourd’hui';
 
   const upload = async (kind: 'cover' | 'logo') => {
     setError(null);
@@ -107,13 +112,21 @@ export default function ProProfile() {
       {/* Six rubriques métier */}
       <SectionLabel>Gérer mon activité</SectionLabel>
       <Grid cols={2} gap={8}>
-        <Tile onPress={() => router.push('/mon-salon' as never)} icon={Store} title="Mon salon" sub="Photos, réalisations, adresse, horaires" />
+        <Tile onPress={() => router.push('/mon-salon' as never)} icon={Store} title="Mon salon" sub="Photos, réalisations, adresse" />
         <Tile onPress={() => router.push('/prestations' as never)} icon={Tag} title="Catalogue" sub={`${services} prestation${services > 1 ? 's' : ''} · catégories, prix, durée`} />
         <Tile onPress={() => router.push('/equipe' as never)} icon={Users} title="Équipe" sub={`${active} membre${active > 1 ? 's' : ''} actif${active > 1 ? 's' : ''} · horaires, absences`} />
         <Tile onPress={() => router.push('/clients' as never)} icon={ContactRound} title="Clients" sub="Fiches, historique, bloqués" />
         <Tile onPress={() => router.push('/reglages-pro/rendez-vous' as never)} icon={CalendarCog} title="Rendez-vous" sub="Règles de réservation, annulation, retard" />
         <Tile onPress={() => router.push('/compte' as never)} icon={CircleUser} title="Compte" sub="Profil, notifications, paramètres" />
       </Grid>
+
+      {/* Horaires d’ouverture : la question du quotidien, à un tap depuis Profil. */}
+      <SectionLabel>Horaires d’ouverture</SectionLabel>
+      <ListCard>
+        <Row py={12} to="/reglages-pro/horaires">
+          <RowText icon={Clock} title={todayLabel} sub={`Aujourd’hui · ${DAY_LABELS_FR[todayDow]}`} />
+        </Row>
+      </ListCard>
 
       <ShareSheet open={sheet} onClose={() => setSheet(false)} name={salon.name} slug={salon.slug} />
       <BrandFooter />

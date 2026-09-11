@@ -76,11 +76,6 @@ export function ProPhotos() {
     <Screen gap={16}>
       <TopBar backTo="/pro/profil" />
       <h1 className="h1">Photos du salon</h1>
-      <p className="p text-[0.9375rem]">
-        Elles s'affichent sur vos cartes dans la marketplace, sur votre page publique et sur les
-        rendez-vous de vos clients.
-      </p>
-
       <SectionLabel>Photo de profil</SectionLabel>
       <div className="crd !flex-row items-center gap-4">
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={80} />

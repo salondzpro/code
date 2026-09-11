@@ -53,10 +53,7 @@ export function ServicesPicker({
         ]}
       />
       {all ? (
-        <P>
-          Ce membre réalise toutes les prestations du catalogue, y compris celles ajoutées plus
-          tard.
-        </P>
+        <P>Toutes les prestations, y compris les futures.</P>
       ) : services.length === 0 ? (
         <P>Aucune prestation au catalogue pour l'instant.</P>
       ) : (

@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router';
 import {
   CalendarCog,
   Camera,
+  Clock,
   ContactRound,
   Eye,
   Share2,
@@ -18,14 +19,20 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { SALON_MAX_PHOTOS } from '@salondz/constants';
+import {
+  DAY_LABELS_FR,
+  SALON_MAX_PHOTOS,
+  dayOfWeekFromKey,
+  toLocalDateKey,
+} from '@salondz/constants';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, Badge, Button, I, SectionLabel } from '@/components/ui';
+import { Avatar, Badge, Button, I, ListRow, SectionLabel } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { ShareSheet, usePublicUrl } from './Link';
+import { RowText } from './MonSalon';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
 
 /** Tuile de rubrique (2 par ligne) : icône, titre, ce qu'on y trouve. */
@@ -67,6 +74,8 @@ export function ProProfile() {
   if (!salon) return <Splash />;
   const active = salon.staff.filter((m) => m.isActive).length;
   const services = salon.services.filter((s) => s.isActive).length;
+  const todayDow = dayOfWeekFromKey(toLocalDateKey());
+  const todayHours = salon.openingHours.filter((h) => h.dayOfWeek === todayDow && !h.isClosed);
 
   const upload = async (kind: 'cover' | 'logo', file: File | undefined) => {
     if (!file) return;
@@ -176,7 +185,7 @@ export function ProProfile() {
           to="/pro/mon-salon"
           icon={Store}
           title="Mon salon"
-          sub="Photos, réalisations, adresse, horaires"
+          sub="Photos, réalisations, adresse"
         />
         <Tile
           to="/pro/catalogue"
@@ -208,6 +217,22 @@ export function ProProfile() {
           title="Compte"
           sub="Profil, notifications, paramètres"
         />
+      </div>
+
+      {/* Horaires d’ouverture : la question du quotidien, à un tap depuis Profil. */}
+      <SectionLabel>Horaires d’ouverture</SectionLabel>
+      <div className="crd !gap-0 !py-1">
+        <ListRow to="/pro/profil/horaires">
+          <RowText
+            icon={Clock}
+            title={
+              todayHours.length
+                ? todayHours.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
+                : 'Fermé aujourd’hui'
+            }
+            sub={`Aujourd’hui · ${DAY_LABELS_FR[todayDow]}`}
+          />
+        </ListRow>
       </div>
 
       <BrandFooter />

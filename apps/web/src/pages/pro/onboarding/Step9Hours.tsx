@@ -105,7 +105,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={9} backTo={settings ? '/pro/profil' : stepPath(8)} right={settings ? 'Horaires' : undefined} />
       <h1 className="h1">Horaires</h1>
-      <p className="p">Ouverture et fermeture par jour. Ajoutez une ou plusieurs pauses sur les jours qui en ont, par exemple le vendredi de 12:00 à 14:00.</p>
+      <p className="p">Ajoutez une pause sur les jours concernés, par exemple 12:00 – 14:00.</p>
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <div className="crd !gap-0 !py-1">
         <div className="li !py-4">

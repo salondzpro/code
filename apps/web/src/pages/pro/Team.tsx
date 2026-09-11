@@ -37,10 +37,7 @@ export function ServicesPicker({
         ]}
       />
       {all ? (
-        <p className="p text-[0.9375rem]">
-          Ce membre réalise toutes les prestations du catalogue, y compris celles ajoutées plus
-          tard.
-        </p>
+        <p className="p text-[0.9375rem]">Toutes les prestations, y compris les futures.</p>
       ) : services.length === 0 ? (
         <p className="p text-[0.9375rem]">Aucune prestation au catalogue pour l'instant.</p>
       ) : (
