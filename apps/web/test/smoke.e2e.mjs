@@ -367,7 +367,7 @@ try {
     await p.waitForURL(/\/pro\/equipe\/[0-9a-f-]+$/);
     await p.getByRole('heading', { name: 'Yacine' }).waitFor();
     await p.getByRole('button', { name: /^Prestations/ }).click();
-    await p.getByText(/toutes les prestations du catalogue/).waitFor();
+    await p.getByText(/Toutes les prestations, y compris/).waitFor();
     await p.getByRole('tab', { name: 'Sélection' }).click();
     await p.getByRole('checkbox', { name: 'Coupe + barbe' }).click();
     await p.getByRole('button', { name: 'Enregistrer' }).click();
