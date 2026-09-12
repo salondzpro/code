@@ -621,9 +621,14 @@ try {
     await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
     await p.getByText('16:00 – 16:30').waitFor();
   });
-  await step('pro: demandes en attente (vide, auto-confirmation)', async () => {
+  await step('pro: réservations (rien à valider, rendez-vous à venir listés par jour)', async () => {
     await p.goto(WEB + '/pro/reservations');
-    await p.getByText('Tout est à jour').waitFor();
+    await p.getByRole('heading', { name: 'Réservations' }).waitFor();
+    // Auto-confirmation : aucune demande, mais la liste « à venir » montre le rendez-vous de passage reporté.
+    if (await p.getByText('À valider').count()) throw new Error('demande en attente inattendue');
+    await p.getByText('Walid Passage').first().waitFor();
+    await p.getByText('16:00').first().waitFor();
+    await shot(p, 'pro-reservations');
   });
   await step('pro: fiche client (statistiques, bloquer puis débloquer)', async () => {
     await p.goto(WEB + '/pro/clients');

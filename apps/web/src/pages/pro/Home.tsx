@@ -1,7 +1,7 @@
 /** PRO-F 22 — Accueil professionnel : « Votre journée », à valider, prochains, chiffre d'affaires. */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { ChevronRight, MessageCircle, Phone, Share2 } from 'lucide-react';
+import { ChevronRight, MessageCircle, Phone, Plus, Share2 } from 'lucide-react';
 import {
   useMe,
   useProBookingMutations,
@@ -29,12 +29,6 @@ function useNow(): number {
     return () => window.clearInterval(t);
   }, []);
   return now;
-}
-
-/** « 9,4k » pour les gros montants du bandeau (design). */
-function compactDA(n: number): string {
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1).replace('.', ',')}k`;
-  return String(n);
 }
 
 export function ProHome() {
@@ -66,7 +60,6 @@ export function ProHome() {
   const next = upcoming[0];
   const inProgress = !!next && new Date(next.startsAt).getTime() <= now;
   const pendingItems = byStaff(pending.data?.items ?? []);
-  const staffName = salon?.staff.find((m) => m.id === staffId)?.displayName ?? null;
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
@@ -75,7 +68,7 @@ export function ProHome() {
           <div className="text-[0.9375rem] text-muted">Bonjour, {firstName}</div>
           <h1 className="h1">Votre journée</h1>
         </div>
-        {/* « Fermer / Pause » en icône, entre le titre et le logo. */}
+        {/* « Arrêt / Pause » en icône, entre le titre et le logo. */}
         <div className="flex items-center gap-3">
           {salon && <QuickCloseButton openingHours={salon.openingHours} />}
           <Link to="/pro/profil" aria-label="Profil">
@@ -89,52 +82,54 @@ export function ProHome() {
       </div>
 
       {salon && <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />}
-      {staffName && (
-        <p className="s">Vue de {staffName} : demandes et rendez-vous qui lui sont affectés.</p>
-      )}
 
       {stats.isPending ? (
         <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
       ) : stats.isError ? (
         <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
       ) : (
-        <div className="g3">
+        /* Deux chiffres, pas trois : le prévisionnel du jour est déjà dans « Chiffre d'affaires ». */
+        <div className="g2">
           <div className="crd !gap-1 !bg-ink !px-5 !py-6 !text-white">
-            <span className="text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
+            <span className="text-[2rem] font-bold leading-none tracking-[-0.8px]">
               {stats.data.todayCount}
             </span>
-            <span className="text-[0.8125rem] text-white/70">rendez-vous</span>
+            <span className="text-[0.875rem] text-white/70">rendez-vous aujourd'hui</span>
           </div>
-          <div className="crd !gap-1 !px-5 !py-6">
+          <Link
+            to="/pro/reservations"
+            className="crd !gap-1 !px-5 !py-6"
+            aria-label="Demandes à valider"
+          >
             <span
-              className={`text-[1.75rem] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}
+              className={`text-[2rem] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}
             >
               {stats.data.pendingCount}
             </span>
-            <span className="text-[0.8125rem] text-muted">en attente</span>
-          </div>
-          <div className="crd !gap-1 !px-5 !py-6">
-            <span className="text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
-              {compactDA(stats.data.todayRevenueDa)}
-            </span>
-            <span className="text-[0.8125rem] text-muted">DA prévu</span>
-          </div>
+            <span className="text-[0.875rem] text-muted">à valider</span>
+          </Link>
         </div>
       )}
 
       {salon && <QuickCloseBanner />}
 
-      <div className="flex items-center justify-between">
-        <span className="h3">À valider</span>
-        <Link
-          to="/pro/reservations"
-          className="text-[0.9375rem] font-bold"
-          aria-label="Voir toutes les demandes"
-        >
-          {pendingItems.length}
-        </Link>
-      </div>
-      {pendingItems.length ? (
+      <Button onClick={() => navigate('/pro/rendez-vous/nouveau')}>
+        <I icon={Plus} size={18} /> Nouveau rendez-vous
+      </Button>
+
+      {pendingItems.length > 0 && (
+        <div className="flex items-center justify-between">
+          <span className="h3">À valider</span>
+          <Link
+            to="/pro/reservations"
+            className="text-[0.9375rem] font-bold"
+            aria-label="Voir toutes les demandes"
+          >
+            {pendingItems.length}
+          </Link>
+        </div>
+      )}
+      {pendingItems.length > 0 &&
         pendingItems.slice(0, 3).map((b) => (
           <div key={b.id} className="crd !gap-4">
             <button
@@ -171,10 +166,7 @@ export function ProHome() {
               </Button>
             </div>
           </div>
-        ))
-      ) : (
-        <p className="p">Aucune demande en attente.</p>
-      )}
+        ))}
 
       <div className="flex items-center justify-between">
         <span className="h3">Prochains</span>
@@ -188,7 +180,7 @@ export function ProHome() {
           <p className="p">
             {passed
               ? `Journée terminée · ${passed} rendez-vous ${passed > 1 ? 'passés' : 'passé'} aujourd'hui.`
-              : 'Journée libre : aucun rendez-vous prévu aujourd’hui.'}
+              : 'Aucun rendez-vous aujourd’hui.'}
           </p>
         </div>
       )}

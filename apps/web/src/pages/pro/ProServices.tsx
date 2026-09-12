@@ -22,17 +22,7 @@ export function ProServices() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="h1">Catalogue</h1>
-        <Button
-          auto
-          sm
-          className="!rounded-full !px-4"
-          onClick={() => navigate('/pro/onboarding/6')}
-        >
-          <I icon={Plus} size={18} /> Ajouter une prestation
-        </Button>
-      </div>
+      <h1 className="h1">Catalogue</h1>
       <button
         type="button"
         className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-left"
@@ -108,6 +98,10 @@ export function ProServices() {
           </div>
         </div>
       ))}
+      {/* L'ajout ferme la liste, comme sur Équipe et Catégories. */}
+      <Button onClick={() => navigate('/pro/onboarding/6')}>
+        <I icon={Plus} size={18} /> Ajouter une prestation
+      </Button>
     </Screen>
   );
 }

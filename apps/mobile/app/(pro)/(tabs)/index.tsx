@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, MessageCircle, Phone, Share2 } from 'lucide-react-native';
+import { ChevronRight, MessageCircle, Phone, Plus, Share2 } from 'lucide-react-native';
 import {
   useMe,
   useProBookingMutations,
@@ -49,11 +49,6 @@ function useNow(): number {
   return now;
 }
 
-/** « 9,4k » pour les gros montants du bandeau (design). */
-function compactDA(n: number): string {
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1).replace('.', ',')}k`;
-  return String(n);
-}
 const fmt = (n: number) => n.toLocaleString('fr-DZ').replace(/ /g, ' ');
 
 export default function ProHome() {
@@ -108,7 +103,7 @@ export default function ProHome() {
             Votre journée
           </H1>
         </View>
-        {/* « Fermer / Pause » en icône, entre le titre et le logo. */}
+        {/* « Arrêt / Pause » en icône, entre le titre et le logo. */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           {salon && <QuickCloseButton openingHours={salon.openingHours} />}
           <Pressable
@@ -131,39 +126,38 @@ export default function ProHome() {
       ) : stats.isError ? (
         <ErrorText error={stats.error} retry={() => void stats.refetch()} />
       ) : (
-        <Grid cols={3}>
+        /* Deux chiffres, pas trois : le prévisionnel du jour est déjà dans « Chiffre d'affaires ». */
+        <Grid cols={2}>
           <Card
             gap={3}
             pad={20}
             style={{ backgroundColor: C.ink, borderColor: C.ink, paddingVertical: 20 }}
           >
-            <Tx size={23} weight={700} ls={-0.8} lh={24.5} color="#fff">
+            <Tx size={26} weight={700} ls={-0.8} lh={28} color="#fff">
               {stats.data.todayCount}
             </Tx>
-            <Tx size={10.5} color={C.white70} lh={14.5}>
-              rendez-vous
+            <Tx size={11.5} color={C.white70} lh={15.5}>
+              rendez-vous aujourd'hui
             </Tx>
           </Card>
-          <Card gap={3} pad={20} style={{ paddingVertical: 20 }}>
+          <Card
+            gap={3}
+            pad={20}
+            style={{ paddingVertical: 20 }}
+            onPress={() => router.push('/(pro)/(tabs)/reservations')}
+            accessibilityLabel="Demandes à valider"
+          >
             <Tx
-              size={23}
+              size={26}
               weight={700}
               ls={-0.8}
-              lh={24.5}
+              lh={28}
               color={stats.data.pendingCount ? C.pendingFg : C.text}
             >
               {stats.data.pendingCount}
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={14.5}>
-              en attente
-            </Tx>
-          </Card>
-          <Card gap={3} pad={20} style={{ paddingVertical: 20 }}>
-            <Tx size={23} weight={700} ls={-0.8} lh={24.5}>
-              {compactDA(stats.data.todayRevenueDa)}
-            </Tx>
-            <Tx size={10.5} color={C.muted} lh={14.5}>
-              DA prévu
+            <Tx size={11.5} color={C.muted} lh={15.5}>
+              à valider
             </Tx>
           </Card>
         </Grid>
@@ -171,22 +165,31 @@ export default function ProHome() {
 
       {salon && <QuickCloseBanner />}
 
-      <SectionLabel
-        right={
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Voir toutes les demandes"
-            onPress={() => router.push('/(pro)/(tabs)/reservations')}
-          >
-            <Tx size={12} weight={700} lh={16}>
-              {pendingItems.length}
-            </Tx>
-          </Pressable>
-        }
-      >
-        À valider
-      </SectionLabel>
-      {pendingItems.length ? (
+      <Button onPress={() => router.push('/pro-rdv/nouveau' as never)}>
+        <I icon={Plus} size={15} color={C.onInk} />
+        <Tx size={13} weight={600} color={C.onInk} lh={17}>
+          Nouveau rendez-vous
+        </Tx>
+      </Button>
+
+      {pendingItems.length > 0 && (
+        <SectionLabel
+          right={
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Voir toutes les demandes"
+              onPress={() => router.push('/(pro)/(tabs)/reservations')}
+            >
+              <Tx size={12} weight={700} lh={16}>
+                {pendingItems.length}
+              </Tx>
+            </Pressable>
+          }
+        >
+          À valider
+        </SectionLabel>
+      )}
+      {pendingItems.length > 0 &&
         pendingItems.slice(0, 3).map((b) => (
           <Card key={b.id} gap={13}>
             <Pressable
@@ -227,10 +230,7 @@ export default function ProHome() {
               </Button>
             </Grid>
           </Card>
-        ))
-      ) : (
-        <P>Aucune demande en attente.</P>
-      )}
+        ))}
 
       <SectionLabel
         right={
@@ -253,7 +253,7 @@ export default function ProHome() {
           <P>
             {passed
               ? `Journée terminée · ${passed} rendez-vous ${passed > 1 ? 'passés' : 'passé'} aujourd'hui.`
-              : 'Journée libre : aucun rendez-vous prévu aujourd’hui.'}
+              : 'Aucun rendez-vous aujourd’hui.'}
           </P>
         </Card>
       )}

@@ -95,6 +95,14 @@ export default function AgendaPro() {
       ),
     [bookings.data, staffId, showCancelled],
   );
+  // La case n'a de sens que si la période en contient : sinon elle occupe une ligne pour rien.
+  const cancelledCount = useMemo(
+    () =>
+      (bookings.data?.items ?? []).filter(
+        (b) => b.status === 'cancelled' && (!staffId || b.staffId === staffId),
+      ).length,
+    [bookings.data, staffId],
+  );
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
@@ -213,18 +221,20 @@ export default function AgendaPro() {
     >
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: showCancelled }}
-        accessibilityLabel="Afficher aussi les rendez-vous annulés"
-        onPress={() => setShowCancelled(!showCancelled)}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
-      >
-        <Checkbox on={showCancelled} label="Afficher aussi les rendez-vous annulés" />
-        <Tx size={12} lh={16}>
-          Afficher aussi les rendez-vous annulés
-        </Tx>
-      </Pressable>
+      {cancelledCount > 0 && (
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: showCancelled }}
+          accessibilityLabel={`Afficher les ${cancelledCount} annulés`}
+          onPress={() => setShowCancelled(!showCancelled)}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+        >
+          <Checkbox on={showCancelled} label={`Afficher les ${cancelledCount} annulés`} />
+          <Tx size={12} lh={16}>
+            Afficher les {cancelledCount} annulé{cancelledCount > 1 ? 's' : ''}
+          </Tx>
+        </Pressable>
+      )}
       <Segmented
         label="Vue"
         value={view}

@@ -225,10 +225,10 @@ try {
     await pro.getByRole('checkbox', { name: 'Afficher aussi les rendez-vous annulés' }).first().waitFor();
   });
 
-  await step("pro: accueil (« Fermer/Pause » en icône dans l'en-tête)", async () => {
+  await step("pro: accueil (« Arrêt/Pause » en icône dans l'en-tête)", async () => {
     await pro.goto(`${WEB}/`, { waitUntil: 'load' });
     await pro.getByText('Votre journée').waitFor();
-    await pro.getByLabel('Fermer/Pause').waitFor();
+    await pro.getByLabel('Arrêt/Pause').waitFor();
     await shot(pro, 'pro-accueil');
   });
 

@@ -99,6 +99,14 @@ export function AgendaPro() {
       ),
     [bookings.data, staffId, showCancelled],
   );
+  // La case n'a de sens que si la période en contient : sinon elle occupe une ligne pour rien.
+  const cancelledCount = useMemo(
+    () =>
+      (bookings.data?.items ?? []).filter(
+        (b) => b.status === 'cancelled' && (!staffId || b.staffId === staffId),
+      ).length,
+    [bookings.data, staffId],
+  );
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
@@ -174,18 +182,20 @@ export function AgendaPro() {
     <Screen bottom={NAV_PAD} gap={16}>
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={showCancelled}
-        onClick={() => setShowCancelled(!showCancelled)}
-        className="flex items-center gap-3 text-left text-[0.9375rem]"
-      >
-        <span className={`chk${showCancelled ? ' on' : ''}`} aria-hidden>
-          {showCancelled && <I icon={Check} size={16} />}
-        </span>
-        Afficher aussi les rendez-vous annulés
-      </button>
+      {cancelledCount > 0 && (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={showCancelled}
+          onClick={() => setShowCancelled(!showCancelled)}
+          className="flex items-center gap-3 text-left text-[0.9375rem]"
+        >
+          <span className={`chk${showCancelled ? ' on' : ''}`} aria-hidden>
+            {showCancelled && <I icon={Check} size={16} />}
+          </span>
+          Afficher les {cancelledCount} annulé{cancelledCount > 1 ? 's' : ''}
+        </button>
+      )}
       <Segmented
         label="Vue"
         value={view}

@@ -38,27 +38,7 @@ export default function ProServices() {
   return (
     <Screen gap={13}>
       <TopBar backTo="/(pro)/(tabs)/profil-pro" right="Profil" />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 10,
-        }}
-      >
-        <H1>Catalogue</H1>
-        <Button
-          pill
-          sm
-          onPress={() => router.push('/onboarding/6' as never)}
-          style={{ paddingHorizontal: 13, paddingVertical: 9 }}
-        >
-          <I icon={Plus} size={14.5} color="#fff" />
-          <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
-            Ajouter
-          </Tx>
-        </Button>
-      </View>
+      <H1>Catalogue</H1>
       <ListCard>
         <Row
           py={12}
@@ -155,6 +135,13 @@ export default function ProServices() {
           </ListCard>
         </View>
       ))}
+      {/* L'ajout ferme la liste, comme sur Équipe et Catégories. */}
+      <Button onPress={() => router.push('/onboarding/6' as never)}>
+        <I icon={Plus} size={15} color={C.onInk} />
+        <Tx size={13} weight={600} color={C.onInk} lh={17}>
+          Ajouter une prestation
+        </Tx>
+      </Button>
     </Screen>
   );
 }

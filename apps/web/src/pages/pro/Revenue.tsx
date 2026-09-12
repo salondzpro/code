@@ -2,26 +2,62 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { useProStatsRange } from '@salondz/api-client';
-import { DAY_LABELS_SHORT_FR, addDaysToKey, dayOfWeekFromKey, formatDA, toLocalDateKey, weekKeys } from '@salondz/constants';
-import { Badge, I, IconButton, SectionLabel, Segmented, Skeleton } from '@/components/ui';
+import {
+  DAY_LABELS_SHORT_FR,
+  addDaysToKey,
+  dayOfWeekFromKey,
+  formatDA,
+  toLocalDateKey,
+  weekKeys,
+} from '@salondz/constants';
+import { Badge, I, IconButton, SectionLabel, Segmented, Skeleton, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
 type Period = 'day' | 'week' | 'month';
-const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const MONTHS = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre',
+];
 
 function range(period: Period, today: string): { from: string; to: string; label: string } {
-  if (period === 'day') return { from: today, to: today, label: `${Number(today.slice(8, 10))} ${MONTHS[Number(today.slice(5, 7)) - 1]}` };
+  if (period === 'day')
+    return {
+      from: today,
+      to: today,
+      label: `${Number(today.slice(8, 10))} ${MONTHS[Number(today.slice(5, 7)) - 1]}`,
+    };
   if (period === 'week') {
     const days = weekKeys(today);
     const from = days[0]!;
     const to = days[6]!;
     const sameMonth = from.slice(0, 7) === to.slice(0, 7);
-    return { from, to, label: `${Number(from.slice(8, 10))}${sameMonth ? '' : ` ${MONTHS[Number(from.slice(5, 7)) - 1]}`} – ${Number(to.slice(8, 10))} ${MONTHS[Number(to.slice(5, 7)) - 1]}` };
+    return {
+      from,
+      to,
+      label: `${Number(from.slice(8, 10))}${sameMonth ? '' : ` ${MONTHS[Number(from.slice(5, 7)) - 1]}`} – ${Number(to.slice(8, 10))} ${MONTHS[Number(to.slice(5, 7)) - 1]}`,
+    };
   }
   const from = `${today.slice(0, 7)}-01`;
-  const next = Number(today.slice(5, 7)) === 12 ? `${Number(today.slice(0, 4)) + 1}-01-01` : `${today.slice(0, 4)}-${String(Number(today.slice(5, 7)) + 1).padStart(2, '0')}-01`;
-  return { from, to: addDaysToKey(next, -1), label: `${MONTHS[Number(today.slice(5, 7)) - 1]} ${today.slice(0, 4)}` };
+  const next =
+    Number(today.slice(5, 7)) === 12
+      ? `${Number(today.slice(0, 4)) + 1}-01-01`
+      : `${today.slice(0, 4)}-${String(Number(today.slice(5, 7)) + 1).padStart(2, '0')}-01`;
+  return {
+    from,
+    to: addDaysToKey(next, -1),
+    label: `${MONTHS[Number(today.slice(5, 7)) - 1]} ${today.slice(0, 4)}`,
+  };
 }
 
 export function Revenue() {
@@ -32,12 +68,20 @@ export function Revenue() {
   const prev = range(period, addDaysToKey(r.from, -1));
   const prevStats = useProStatsRange(prev.from, prev.to);
   const s = stats.data;
-  const delta = s && prevStats.data && prevStats.data.revenueDa > 0 ? Math.round(((s.revenueDa - prevStats.data.revenueDa) / prevStats.data.revenueDa) * 100) : null;
+  const delta =
+    s && prevStats.data && prevStats.data.revenueDa > 0
+      ? Math.round(((s.revenueDa - prevStats.data.revenueDa) / prevStats.data.revenueDa) * 100)
+      : null;
   const max = Math.max(1, ...(s?.byDay.map((d) => d.revenueDa) ?? [1]));
   const exportCsv = () => {
     if (!s) return;
-    const rows = [['date', 'rendez-vous', 'chiffre_affaires_da'], ...s.byDay.map((d) => [d.date, String(d.bookings), String(d.revenueDa)])];
-    const blob = new Blob([rows.map((x) => x.join(';')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const rows = [
+      ['date', 'rendez-vous', 'chiffre_affaires_da'],
+      ...s.byDay.map((d) => [d.date, String(d.bookings), String(d.revenueDa)]),
+    ];
+    const blob = new Blob([rows.map((x) => x.join(';')).join('\n')], {
+      type: 'text/csv;charset=utf-8',
+    });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `chiffre-affaires-${r.from}-${r.to}.csv`;
@@ -46,6 +90,7 @@ export function Revenue() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
+      <TopBar backTo="/pro" right="Accueil" />
       <div className="flex items-center justify-between">
         <h1 className="h1">Chiffre d'affaires</h1>
         <IconButton lg aria-label="Exporter" onClick={exportCsv}>
@@ -71,7 +116,9 @@ export function Revenue() {
           <div className="crd !gap-5">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-[2.375rem] font-bold leading-none tracking-[-1px]">{formatDA(s!.revenueDa)}</div>
+                <div className="text-[2.375rem] font-bold leading-none tracking-[-1px]">
+                  {formatDA(s!.revenueDa)}
+                </div>
                 <div className="p mt-2">
                   {r.label} · {s!.bookings} rendez-vous
                 </div>
@@ -89,9 +136,31 @@ export function Revenue() {
                   const isToday = d.date === today;
                   const h = Math.max(6, Math.round((d.revenueDa / max) * 170));
                   return (
-                    <div key={d.date} className="flex flex-1 flex-col items-center justify-end gap-2" style={{ minWidth: 0 }}>
-                      <div className={`w-full rounded-[0.625rem] ${isToday ? 'bg-ink' : 'bg-line'}`} style={{ height: h }} title={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
-                      {period === 'week' ? <span className={`text-[0.9375rem] ${isToday ? 'font-bold' : 'text-muted'}`}>{DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)]}</span> : (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && <span className={`text-[0.75rem] ${isToday ? 'font-bold' : 'text-muted'}`}>{Number(d.date.slice(8, 10))}</span>}
+                    <div
+                      key={d.date}
+                      className="flex flex-1 flex-col items-center justify-end gap-2"
+                      style={{ minWidth: 0 }}
+                    >
+                      <div
+                        className={`w-full rounded-[0.625rem] ${isToday ? 'bg-ink' : 'bg-line'}`}
+                        style={{ height: h }}
+                        title={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`}
+                      />
+                      {period === 'week' ? (
+                        <span
+                          className={`text-[0.9375rem] ${isToday ? 'font-bold' : 'text-muted'}`}
+                        >
+                          {DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)]}
+                        </span>
+                      ) : (
+                        (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && (
+                          <span
+                            className={`text-[0.75rem] ${isToday ? 'font-bold' : 'text-muted'}`}
+                          >
+                            {Number(d.date.slice(8, 10))}
+                          </span>
+                        )
+                      )}
                     </div>
                   );
                 })}
@@ -115,11 +184,15 @@ export function Revenue() {
           </div>
           <SectionLabel>Par prestation</SectionLabel>
           <div className="crd !gap-0 !py-1">
-            {s!.byService.length === 0 && <p className="p py-3">Aucune prestation sur la période.</p>}
+            {s!.byService.length === 0 && (
+              <p className="p py-3">Aucune prestation sur la période.</p>
+            )}
             {s!.byService.map((x) => (
               <div key={x.name} className="li !py-5">
                 <span>
-                  <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{x.name}</span>
+                  <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+                    {x.name}
+                  </span>
                   <span className="p block text-[0.8125rem]">
                     {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
                   </span>
