@@ -16,7 +16,26 @@ export interface PickerOption<T extends string | number> {
   icon?: ReactNode;
 }
 
-export function PickerSheet<T extends string | number>({ open, onClose, title, options, value, onChange, action }: { open: boolean; onClose: () => void; title: string; options: PickerOption<T>[]; value: T | null | undefined; onChange: (v: T) => void; /** Bouton distinct sous la liste (ex. « Créer une catégorie »). */ action?: { label: string; onClick: () => void } }) {
+export function PickerSheet<T extends string | number>({
+  open,
+  onClose,
+  title,
+  options,
+  value,
+  onChange,
+  action,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  options: PickerOption<T>[];
+  value: T | null | undefined;
+  onChange: (v: T) => void;
+  /** Bouton distinct sous la liste (ex. « Créer une catégorie »). */ action?: {
+    label: string;
+    onClick: () => void;
+  };
+}) {
   if (!open) return null;
   let lastGroup: string | undefined;
   return (
@@ -45,7 +64,8 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
                   <span className="flex min-w-0 items-center gap-3">
                     {o.icon}
                     <span className="min-w-0">
-                      <span className={`block text-[1rem] ${on ? 'font-semibold' : ''}`}>{o.label}</span>
+                      {/* Le choix se lit d'abord : en gras, l'explication en gris dessous. */}
+                      <span className="block text-[1rem] font-semibold">{o.label}</span>
                       {o.hint && <span className="p block">{o.hint}</span>}
                     </span>
                   </span>
@@ -72,7 +92,29 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
 }
 
 /** Champ de sélection : `inline` = texte à droite d'une ligne de liste, sinon un champ pleine largeur. */
-export function PickerField<T extends string | number>({ label, title, options, value, onChange, placeholder = 'Choisir', inline, className = '', action, display }: { label: string; title?: string; options: PickerOption<T>[]; value: T | null | undefined; onChange: (v: T) => void; placeholder?: string; inline?: boolean; className?: string; action?: { label: string; onClick: () => void }; /** Texte affiché dans le champ quand la valeur n'est pas dans la liste (ex. catégorie en cours de création). */ display?: string }) {
+export function PickerField<T extends string | number>({
+  label,
+  title,
+  options,
+  value,
+  onChange,
+  placeholder = 'Choisir',
+  inline,
+  className = '',
+  action,
+  display,
+}: {
+  label: string;
+  title?: string;
+  options: PickerOption<T>[];
+  value: T | null | undefined;
+  onChange: (v: T) => void;
+  placeholder?: string;
+  inline?: boolean;
+  className?: string;
+  action?: { label: string; onClick: () => void };
+  /** Texte affiché dans le champ quand la valeur n'est pas dans la liste (ex. catégorie en cours de création). */ display?: string;
+}) {
   const [open, setOpen] = useState(false);
   const current = options.find((o) => o.value === value);
   return (
@@ -82,12 +124,24 @@ export function PickerField<T extends string | number>({ label, title, options, 
         aria-label={label}
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className={inline ? `flex max-w-[60%] items-center gap-1 text-right text-[0.9375rem] ${current ? '' : 'text-subtle'} ${className}` : `inp lg flex items-center justify-between gap-3 text-left ${current ? '' : 'text-subtle'} ${className}`}
+        className={
+          inline
+            ? `flex max-w-[60%] items-center gap-1 text-right text-[0.9375rem] ${current ? '' : 'text-subtle'} ${className}`
+            : `inp lg flex items-center justify-between gap-3 text-left ${current ? '' : 'text-subtle'} ${className}`
+        }
       >
         <span className="truncate">{current?.label ?? display ?? placeholder}</span>
         <I icon={ChevronDown} size={inline ? 16 : 18} className="flex-none text-subtle" />
       </button>
-      <PickerSheet open={open} onClose={() => setOpen(false)} title={title ?? label} options={options} value={value} onChange={onChange} action={action} />
+      <PickerSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title ?? label}
+        options={options}
+        value={value}
+        onChange={onChange}
+        action={action}
+      />
     </>
   );
 }

@@ -65,7 +65,8 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
                     onClose();
                   }}
                 >
-                  <Tx size={12} lh={16} weight={o.value === value ? 600 : 400}>
+                  {/* Le choix se lit d'abord : en gras, l'explication en gris dessous. */}
+                  <Tx size={12} lh={16} weight={600}>
                     {o.label}
                   </Tx>
                   {o.hint && <P>{o.hint}</P>}

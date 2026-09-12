@@ -13,6 +13,7 @@ import {
   addDaysToKey,
   dayOfWeekFromKey,
   formatTimeDZ,
+  isDeviceOnDZTime,
   localDateTimeToISO,
   toLocalDateKey,
 } from '@salondz/constants';
@@ -62,6 +63,8 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
     .pop();
   const untilClose = closesAt ? localDateTimeToISO(today, closesAt) : null;
   const canCloseDay = !!untilClose && new Date(untilClose).getTime() > now + 60_000;
+  // Depuis un appareil hors UTC+1, l'heure de réouverture semble fausse d'une heure : on la nomme.
+  const dzNote = isDeviceOnDZTime() ? '' : " (heure d'Alger)";
 
   const closeFor = async (endsAt: string, reason: string) => {
     setError(null);
@@ -123,7 +126,7 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
           ...DURATIONS.map((h) => ({
             value: String(h),
             label: `Pendant ${h} h`,
-            hint: `Réouverture à ${formatTimeDZ(new Date(now + h * 3_600_000))}`,
+            hint: `Réouverture à ${formatTimeDZ(new Date(now + h * 3_600_000))}${dzNote}`,
           })),
         ]}
       />
