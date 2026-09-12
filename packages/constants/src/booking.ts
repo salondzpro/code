@@ -56,14 +56,19 @@ export const MAX_UPCOMING_BOOKINGS_PER_CLIENT = 10;
 export const MAX_STAFF_PER_SALON = 30;
 export const MAX_SERVICES_PER_SALON = 200;
 /**
- * Anti-abus d'annulation (API `assertClientCanBook`) : au-delà de CANCEL_ABUSE_MAX annulations par le client sur
- * CANCEL_ABUSE_WINDOW_DAYS jours, la réservation en ligne est suspendue CANCEL_ABUSE_BLOCK_DAYS jours après la
- * dernière annulation. Même logique pour les absences (« Client absent ») signalées par les pros, plus sévère.
+ * Anti-abus d'annulation (API `assertClientCanBook`). Annuler reste un droit : le client peut annuler
+ * jusqu'à CANCEL_ABUSE_MAX rendez-vous sur CANCEL_ABUSE_WINDOW_DAYS jours sans aucune conséquence.
+ * Ce n'est qu'au-delà (strictement plus d'annulations que ce seuil) que la réservation en ligne est
+ * suspendue CANCEL_ABUSE_BLOCK_DAYS jours après la dernière annulation.
+ * Les absences (« Client absent » signalé par le pro) restent plus sévères : la suspension tombe dès
+ * NO_SHOW_ABUSE_MAX absences, parce qu'un créneau perdu sans prévenir ne se rattrape pas.
  * Les rendez-vous déjà pris restent valables ; le client peut toujours appeler le salon.
  */
-export const CANCEL_ABUSE_MAX = 3;
+/** Annulations tolérées par client sur la fenêtre (la suspension ne démarre qu'au-delà). */
+export const CANCEL_ABUSE_MAX = 8;
 export const CANCEL_ABUSE_WINDOW_DAYS = 30;
 export const CANCEL_ABUSE_BLOCK_DAYS = 7;
+/** Absences tolérées : la suspension tombe dès la NO_SHOW_ABUSE_MAX-ième. */
 export const NO_SHOW_ABUSE_MAX = 2;
 export const NO_SHOW_ABUSE_WINDOW_DAYS = 60;
 export const NO_SHOW_ABUSE_BLOCK_DAYS = 14;

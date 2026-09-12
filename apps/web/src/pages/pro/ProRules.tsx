@@ -87,11 +87,11 @@ export function ProRules() {
       <SectionLabel>Blocage automatique</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <Fact
-          label={`${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} j`}
+          label={`Plus de ${CANCEL_ABUSE_MAX} annulations / ${CANCEL_ABUSE_WINDOW_DAYS} j`}
           value={`${CANCEL_ABUSE_BLOCK_DAYS} j suspendu`}
         />
         <Fact
-          label={`${NO_SHOW_ABUSE_MAX} absences en ${NO_SHOW_ABUSE_WINDOW_DAYS} j`}
+          label={`Dès ${NO_SHOW_ABUSE_MAX} absences / ${NO_SHOW_ABUSE_WINDOW_DAYS} j`}
           value={`${NO_SHOW_ABUSE_BLOCK_DAYS} j suspendu`}
         />
       </div>

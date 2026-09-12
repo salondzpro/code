@@ -8,7 +8,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createClient } from '@supabase/supabase-js';
-import { addDaysToKey, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, CANCEL_ABUSE_MAX, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
 import { buildApp, type App } from '../src/app';
 import { config } from '../src/config';
 import { db } from '../src/lib/supabase';
@@ -46,6 +46,7 @@ let pro: TestUser;
 let clientA: TestUser;
 let clientB: TestUser;
 let clientC: TestUser;
+let clientD: TestUser;
 let salonId = '';
 let salonSlug = '';
 let serviceId = '';
@@ -77,7 +78,7 @@ before(async () => {
 
 after(async () => {
   await app?.close();
-  for (const u of [pro, clientA, clientB, clientC]) {
+  for (const u of [pro, clientA, clientB, clientC, clientD]) {
     if (u?.id) await db.auth.admin.deleteUser(u.id);
   }
 });
@@ -306,24 +307,38 @@ test('client : mes réservations à venir, déplacement, annulation', async () =
   assert.equal(again.statusCode, 409);
 });
 
-test('anti-abus : 3 annulations en 30 jours → réservation en ligne suspendue (BOOKING_SUSPENDED)', async () => {
-  // Le client « gagnant » a déjà annulé une fois (test précédent) : deux annulations de plus déclenchent la suspension.
-  for (const hm of ['15:00', '16:30']) {
-    const r = await call('POST', '/v1/bookings', winnerToken, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, hm) });
+test(`anti-abus : ${CANCEL_ABUSE_MAX} annulations tolérées en 30 jours, la suivante suspend (BOOKING_SUSPENDED)`, async () => {
+  // Client dédié : le compteur d'annulations est propre, sans dépendre des tests précédents.
+  clientD = await createUser('clientd', 'client', 'Nadia Test');
+  const times = ['09:00', '09:30', '11:30', '12:00', '12:30', '13:00', '13:30', '15:00', '15:30', '16:30'];
+  assert.ok(times.length > CANCEL_ABUSE_MAX, 'il faut un créneau libre de plus que le seuil toléré');
+  for (const hm of times.slice(0, CANCEL_ABUSE_MAX)) {
+    const r = await call('POST', '/v1/bookings', clientD.token, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, hm) });
     assert.equal(r.statusCode, 201, r.body);
-    const c = await call('POST', `/v1/bookings/${r.json().id}/cancel`, winnerToken, { reason: 'Test' });
+    const c = await call('POST', `/v1/bookings/${r.json().id}/cancel`, clientD.token, { reason: 'Test' });
     assert.equal(c.statusCode, 200, c.body);
   }
-  const me = await call('GET', '/v1/me', winnerToken);
-  assert.equal(me.json().standing.cancellations, 3, me.body);
+
+  // Le seuil est une tolérance : à CANCEL_ABUSE_MAX annulations, rien n'est suspendu et le client réserve encore.
+  const tolerated = await call('GET', '/v1/me', clientD.token);
+  assert.equal(tolerated.json().standing.cancellations, CANCEL_ABUSE_MAX, tolerated.body);
+  assert.equal(tolerated.json().standing.suspendedUntil, null, tolerated.body);
+  const again = await call('POST', '/v1/bookings', clientD.token, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, times[CANCEL_ABUSE_MAX]!) });
+  assert.equal(again.statusCode, 201, again.body);
+
+  // L'annulation suivante (au-delà du seuil) déclenche la suspension.
+  const overLimit = await call('POST', `/v1/bookings/${again.json().id}/cancel`, clientD.token, { reason: 'Test' });
+  assert.equal(overLimit.statusCode, 200, overLimit.body);
+  const me = await call('GET', '/v1/me', clientD.token);
+  assert.equal(me.json().standing.cancellations, CANCEL_ABUSE_MAX + 1, me.body);
   assert.ok(me.json().standing.suspendedUntil, 'suspension active');
-  const blocked = await call('POST', '/v1/bookings', winnerToken, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, '17:30') });
+  const blocked = await call('POST', '/v1/bookings', clientD.token, { salonId, serviceId, startsAt: localDateTimeToISO(dateKey, times[CANCEL_ABUSE_MAX + 1]!) });
   assert.equal(blocked.statusCode, 409, blocked.body);
   assert.equal(blocked.json().error.code, 'BOOKING_SUSPENDED');
-  // L'autre client n'est pas concerné.
-  const otherToken = winnerToken === clientA.token ? clientB.token : clientA.token;
-  const other = await call('GET', '/v1/me', otherToken);
-  assert.equal(other.json().standing.suspendedUntil, null);
+
+  // Les autres clients ne sont pas concernés.
+  const other = await call('GET', '/v1/me', clientA.token);
+  assert.equal(other.json().standing.suspendedUntil, null, other.body);
 });
 
 test('sécurité : fiche publique sans propriétaire, lien définitif, téléphone vérifié immuable', async () => {

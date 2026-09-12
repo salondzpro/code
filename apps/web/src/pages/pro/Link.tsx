@@ -1,6 +1,8 @@
 /**
  * PRO-F 17 — Votre page de réservation : QR code, lien, Partager / Copier, réglages rapides.
  * PRO-F 18 — feuille « Partagez votre page » (WhatsApp, Instagram, Facebook, TikTok, Messages, QR, Plus).
+ *   Les quatre réseaux portent leur vrai logo de marque (voir components/BrandIcons) et non les icônes
+ *   génériques du design : demandé explicitement, à conserver lors d'une resynchronisation du design.
  * PRO-F 21 — QR code à imprimer.
  */
 import { useEffect, useState } from 'react';
@@ -11,12 +13,18 @@ import {
   Copy,
   Download,
   Lock,
-  MessageCircle,
+  MessageSquareText,
   MoreHorizontal,
   QrCode,
   Share2,
 } from 'lucide-react';
 import { renderQrPoster } from '@/lib/qrPoster';
+import {
+  FacebookLogo,
+  InstagramLogo,
+  TikTokLogo,
+  WhatsAppLogo,
+} from '@/components/BrandIcons';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import {
   Avatar,
@@ -90,17 +98,17 @@ export function ShareSheet({
   const items: { label: string; icon: React.ReactNode; onClick: () => void }[] = [
     {
       label: 'WhatsApp',
-      icon: <I icon={MessageCircle} size={34} />,
+      icon: <WhatsAppLogo />,
       onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank'),
     },
     {
       label: 'Instagram',
-      icon: <span className="text-[1.75rem] font-bold">◎</span>,
+      icon: <InstagramLogo />,
       onClick: () => copy(url),
     },
     {
       label: 'Facebook',
-      icon: <span className="text-[1.875rem] font-bold">f</span>,
+      icon: <FacebookLogo />,
       onClick: () =>
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
@@ -109,12 +117,12 @@ export function ShareSheet({
     },
     {
       label: 'TikTok',
-      icon: <span className="text-[1.75rem] font-bold">♪</span>,
+      icon: <TikTokLogo />,
       onClick: () => copy(url),
     },
     {
       label: 'Messages',
-      icon: <span className="text-[1.75rem]">✆</span>,
+      icon: <I icon={MessageSquareText} size={34} />,
       onClick: () => window.open(`sms:?body=${text}`),
     },
     { label: 'QR Code', icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },

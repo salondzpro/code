@@ -1,11 +1,16 @@
-/** PRO-F 18 — feuille « Partagez votre page » (WhatsApp, Instagram, Facebook, TikTok, Messages, QR, Plus). */
+/**
+ * PRO-F 18 — feuille « Partagez votre page » (WhatsApp, Instagram, Facebook, TikTok, Messages, QR, Plus).
+ * Les quatre réseaux portent leur vrai logo de marque (voir BrandIcons) et non les icônes génériques du
+ * design : demandé explicitement, à conserver lors d'une resynchronisation du design.
+ */
 import { useState, type ReactNode } from 'react';
 import { Linking, Pressable, Share, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { Lock, MessageCircle, QrCode, Share2 } from 'lucide-react-native';
+import { Lock, MessageSquareText, QrCode, Share2 } from 'lucide-react-native';
 import { publicHost, publicUrl } from '@/lib/salon';
 import { C, R } from '@/theme/design';
+import { FacebookLogo, InstagramLogo, TikTokLogo, WhatsAppLogo } from './BrandIcons';
 import { Button, I, ModalSheet, Tx } from './index';
 
 export function useCopy(): [boolean, (text: string) => void] {
@@ -33,11 +38,11 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
   const short = `${publicHost()}/s/${slug}`;
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: ReactNode; onPress: () => void }[] = [
-    { label: 'WhatsApp', icon: <I icon={MessageCircle} size={27} />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
-    { label: 'Instagram', icon: <Tx size={19} weight={700}>◎</Tx>, onPress: () => copy(url) },
-    { label: 'Facebook', icon: <Tx size={21} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
-    { label: 'TikTok', icon: <Tx size={19} weight={700}>♪</Tx>, onPress: () => copy(url) },
-    { label: 'Messages', icon: <Tx size={19}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
+    { label: 'WhatsApp', icon: <WhatsAppLogo />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
+    { label: 'Instagram', icon: <InstagramLogo />, onPress: () => copy(url) },
+    { label: 'Facebook', icon: <FacebookLogo />, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
+    { label: 'TikTok', icon: <TikTokLogo />, onPress: () => copy(url) },
+    { label: 'Messages', icon: <I icon={MessageSquareText} size={27} />, onPress: () => void openOr(`sms:?body=${text}`) },
     {
       label: 'QR Code',
       icon: <I icon={QrCode} size={27} />,

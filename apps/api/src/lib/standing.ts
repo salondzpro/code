@@ -1,5 +1,5 @@
 /**
- * Règles anti-abus côté client : trop d'annulations ou d'absences récentes → réservation en ligne suspendue
+ * Règles anti-abus côté client : trop d'annulations (au-delà du seuil toléré) ou d'absences récentes → réservation en ligne suspendue
  * quelques jours (constantes dans packages/constants/src/booking.ts). Une seule source pour l'API (refus à la
  * création) et pour l'écran client (avertissement dans la feuille d'annulation, compteur dans /me).
  */
@@ -39,7 +39,8 @@ export async function clientStanding(clientId: string, now = Date.now()): Promis
   const c = (cancels.data ?? []) as { cancelled_at: string }[];
   const n = (noShows.data ?? []) as { starts_at: string }[];
   let until: number | null = null;
-  if (c.length >= CANCEL_ABUSE_MAX && c[0]) until = Math.max(until ?? 0, new Date(c[0].cancelled_at).getTime() + CANCEL_ABUSE_BLOCK_DAYS * DAY);
+  // Les CANCEL_ABUSE_MAX premières annulations sont tolérées : la suspension ne démarre qu'au-delà (`>`).
+  if (c.length > CANCEL_ABUSE_MAX && c[0]) until = Math.max(until ?? 0, new Date(c[0].cancelled_at).getTime() + CANCEL_ABUSE_BLOCK_DAYS * DAY);
   if (n.length >= NO_SHOW_ABUSE_MAX && n[0]) until = Math.max(until ?? 0, new Date(n[0].starts_at).getTime() + NO_SHOW_ABUSE_BLOCK_DAYS * DAY);
   return { cancellations: c.length, noShows: n.length, suspendedUntil: until && until > now ? new Date(until).toISOString() : null };
 }
