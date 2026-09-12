@@ -20,6 +20,7 @@ import {
 
 type LogoProps = { size?: number };
 
+/** Taille convertie en rem comme dans `I` : sinon les logos dépassent les icônes lucide voisines. */
 function Logo({
   size = 34,
   label,
@@ -27,12 +28,11 @@ function Logo({
 }: LogoProps & { label: string; children: React.ReactNode }) {
   return (
     <svg
-      width={size}
-      height={size}
       viewBox="0 0 24 24"
       role="img"
       aria-label={label}
       focusable="false"
+      style={{ width: `${size / 16}rem`, height: `${size / 16}rem` }}
     >
       {children}
     </svg>
