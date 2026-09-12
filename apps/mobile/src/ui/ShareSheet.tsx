@@ -33,20 +33,20 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
   const short = `${publicHost()}/s/${slug}`;
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: ReactNode; onPress: () => void }[] = [
-    { label: 'WhatsApp', icon: <I icon={MessageCircle} size={21} />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
-    { label: 'Instagram', icon: <Tx size={14.5} weight={700}>◎</Tx>, onPress: () => copy(url) },
-    { label: 'Facebook', icon: <Tx size={16} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
-    { label: 'TikTok', icon: <Tx size={14.5} weight={700}>♪</Tx>, onPress: () => copy(url) },
-    { label: 'Messages', icon: <Tx size={14.5}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
+    { label: 'WhatsApp', icon: <I icon={MessageCircle} size={27} />, onPress: () => void openOr(`whatsapp://send?text=${text}`, `https://wa.me/?text=${text}`) },
+    { label: 'Instagram', icon: <Tx size={19} weight={700}>◎</Tx>, onPress: () => copy(url) },
+    { label: 'Facebook', icon: <Tx size={21} weight={700}>f</Tx>, onPress: () => void openOr(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`) },
+    { label: 'TikTok', icon: <Tx size={19} weight={700}>♪</Tx>, onPress: () => copy(url) },
+    { label: 'Messages', icon: <Tx size={19}>✆</Tx>, onPress: () => void openOr(`sms:?body=${text}`) },
     {
       label: 'QR Code',
-      icon: <I icon={QrCode} size={21} />,
+      icon: <I icon={QrCode} size={27} />,
       onPress: () => {
         onClose();
         router.push('/qr');
       },
     },
-    { label: 'Plus', icon: <I icon={Share2} size={21} />, onPress: () => void shareSalon(name, url) },
+    { label: 'Plus', icon: <I icon={Share2} size={27} />, onPress: () => void shareSalon(name, url) },
   ];
   return (
     <ModalSheet open={open} onClose={onClose}>

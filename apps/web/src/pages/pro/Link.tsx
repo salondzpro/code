@@ -90,17 +90,17 @@ export function ShareSheet({
   const items: { label: string; icon: React.ReactNode; onClick: () => void }[] = [
     {
       label: 'WhatsApp',
-      icon: <I icon={MessageCircle} size={26} />,
+      icon: <I icon={MessageCircle} size={34} />,
       onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank'),
     },
     {
       label: 'Instagram',
-      icon: <span className="text-[1.125rem] font-bold">◎</span>,
+      icon: <span className="text-[1.75rem] font-bold">◎</span>,
       onClick: () => copy(url),
     },
     {
       label: 'Facebook',
-      icon: <span className="text-[1.25rem] font-bold">f</span>,
+      icon: <span className="text-[1.875rem] font-bold">f</span>,
       onClick: () =>
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
@@ -109,16 +109,16 @@ export function ShareSheet({
     },
     {
       label: 'TikTok',
-      icon: <span className="text-[1.125rem] font-bold">♪</span>,
+      icon: <span className="text-[1.75rem] font-bold">♪</span>,
       onClick: () => copy(url),
     },
     {
       label: 'Messages',
-      icon: <span className="text-[1.125rem]">✆</span>,
+      icon: <span className="text-[1.75rem]">✆</span>,
       onClick: () => window.open(`sms:?body=${text}`),
     },
-    { label: 'QR Code', icon: <I icon={QrCode} size={26} />, onClick: () => navigate('/pro/qr') },
-    { label: 'Plus', icon: <I icon={Share2} size={26} />, onClick: () => void share(name, url) },
+    { label: 'QR Code', icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },
+    { label: 'Plus', icon: <I icon={Share2} size={34} />, onClick: () => void share(name, url) },
   ];
   return (
     <>
