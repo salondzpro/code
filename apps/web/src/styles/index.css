@@ -522,7 +522,10 @@
   }
 
   /* Panneau plein écran (prestations, filtres) : en-tête fixe, contenu défilant, bouton
-     d'enregistrement toujours visible — on ne perd jamais la sortie de vue. */
+     d'enregistrement toujours visible — on ne perd jamais la sortie de vue.
+     Z-INDEX 1000 : sur la carte, le bandeau de recherche et la feuille des fiches sont à
+     400 et les contrôles Leaflet montent à 800. À 55, le panneau s'ouvrait DESSOUS : sa
+     croix et son bouton « Enregistrer » étaient recouverts, donc incliquables. */
   .pnl {
     position: fixed;
     top: 0;
@@ -531,7 +534,7 @@
     width: 100%;
     max-width: var(--app-max-width);
     transform: translateX(-50%);
-    z-index: 55;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
     background: var(--color-bg);
