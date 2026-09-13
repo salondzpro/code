@@ -20,10 +20,11 @@ import {
   minutesToTime,
 } from '@salondz/constants';
 import { useRealtimeBookings } from '@/lib/realtime';
+import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
-import { Badge, I, IconButton, Segmented, StatusBadge, cancelledLabel } from '@/components/ui';
+import { Badge, I, IconButton, Segmented, StatusBadge, cancelledLabel, Pill} from '@/components/ui';
 import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -86,6 +87,8 @@ export function AgendaPro() {
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
   useRealtimeBookings(salon?.id);
+  // Un rendez-vous s'ouvre en fenêtre : l'agenda reste derrière, à sa date et sa position.
+  const [peek, setPeek] = useState<string | null>(null);
 
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
@@ -182,20 +185,6 @@ export function AgendaPro() {
     <Screen bottom={NAV_PAD} gap={16}>
       {header}
       <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
-      {cancelledCount > 0 && (
-        <button
-          type="button"
-          role="checkbox"
-          aria-checked={showCancelled}
-          onClick={() => setShowCancelled(!showCancelled)}
-          className="flex items-center gap-3 text-left text-[1rem]"
-        >
-          <span className={`chk${showCancelled ? ' on' : ''}`} aria-hidden>
-            {showCancelled && <I icon={Check} size={16} />}
-          </span>
-          Afficher les {cancelledCount} annulé{cancelledCount > 1 ? 's' : ''}
-        </button>
-      )}
       <Segmented
         label="Vue"
         value={view}
@@ -224,16 +213,26 @@ export function AgendaPro() {
               const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
               return (
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[1rem]">
                       <b>{items.length} rendez-vous</b>{' '}
                       <span className="text-muted">· {formatDA(revenue)}</span>
                     </span>
-                    {pending > 0 && (
-                      <Badge tone="pd" md>
-                        {pending} en attente
-                      </Badge>
-                    )}
+                    <span className="flex items-center gap-2">
+                      {pending > 0 && (
+                        <Badge tone="pd" md>
+                          {pending} en attente
+                        </Badge>
+                      )}
+                      {cancelledCount > 0 && (
+                        <Pill
+                          on={showCancelled}
+                          onClick={() => setShowCancelled(!showCancelled)}
+                        >
+                          {cancelledCount} annulé{cancelledCount > 1 ? 's' : ''}
+                        </Pill>
+                      )}
+                    </span>
                   </div>
                   <DayTimeline
                     date={d}
@@ -242,7 +241,7 @@ export function AgendaPro() {
                     blocks={dayBlk}
                     hours={dayHours(d)}
                     toneOf={toneOf}
-                    onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)}
+                    onOpen={setPeek}
                     onFree={(t) =>
                       navigate(
                         `/pro/rendez-vous/nouveau?date=${d}&time=${t}${staffId ? `&staff=${staffId}` : ''}`,
@@ -311,11 +310,12 @@ export function AgendaPro() {
                 setDate(x);
                 setView('day');
               }}
-              onOpen={(id) => navigate(`/pro/rendez-vous/${id}`)}
+              onOpen={setPeek}
             />
           )}
         />
       )}
+      {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
     </Screen>
   );
 }
@@ -362,7 +362,7 @@ function DayTimeline({
     ...(hours.length ? hours.map((h) => timeToMinutes(h.closesAt)) : [19 * 60]),
     ...items.map((b) => localMinutes(b.endsAt)),
   );
-  const PX = 92 / 60; // 92 px par heure (design)
+  const PX = 64 / 60; // 64 px par heure : une journée entière tient à l'écran
   const top = (m: number) => (m - startMin) * PX;
   const height = (endMin - startMin) * PX + 24;
   const hourMarks: number[] = [];

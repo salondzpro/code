@@ -40,7 +40,17 @@ import {
 } from '@salondz/constants';
 import type { ProClientHistoryItem } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, Badge, Button, I, Skeleton, StatusBadge, Textarea, TopBar } from '@/components/ui';
+import {
+  Avatar,
+  Badge,
+  Button,
+  I,
+  Pill,
+  Skeleton,
+  StatusBadge,
+  Textarea,
+  TopBar,
+} from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
@@ -82,6 +92,17 @@ export function ClientDetail() {
   const client = useProClient(key);
   const history = useProClientHistoryInfinite(key, !!key);
   const historyItems = pagesItems(history.data);
+  /** Tri du fichier client : on vient y chercher une catégorie, rarement la liste entière. */
+  const [filter, setFilter] = useState<'all' | 'done' | 'cancelled' | 'noshow'>('all');
+  const shown = historyItems.filter((h) =>
+    filter === 'all'
+      ? true
+      : filter === 'done'
+        ? h.status === 'completed'
+        : filter === 'cancelled'
+          ? h.status === 'cancelled'
+          : h.status === 'no_show',
+  );
   const { block, unblock, setNotes } = useProClientMutations();
   const { setStatus } = useProBookingMutations();
   const c = client.data ?? null;
@@ -224,10 +245,17 @@ export function ClientDetail() {
           </span>
         ))}
       </div>
-      <p className={`-mt-2 text-[1rem] ${warn ? 'text-danger' : 'text-muted'}`}>
-        {c.bookingsCount} rendez-vous au total · {c.cancelledCount} annulé
-        {c.cancelledCount > 1 ? 's' : ''} · {c.noShowCount} absence{c.noShowCount > 1 ? 's' : ''}
-      </p>
+      {/* La ligne d'alerte ne s'affiche que s'il y a quelque chose à signaler : « 0 absence »
+          en rouge inquiétait pour rien, et « X rendez-vous au total » contredisait la tuile
+          « visites » juste au-dessus, qui ne compte que les visites honorées. */}
+      {warn && (
+        <p className="-mt-1 text-[1rem] text-danger">
+          {c.cancelledCount > 0 &&
+            `${c.cancelledCount} annulation${c.cancelledCount > 1 ? 's' : ''}`}
+          {c.cancelledCount > 0 && c.noShowCount > 0 && ' · '}
+          {c.noShowCount > 0 && `${c.noShowCount} absence${c.noShowCount > 1 ? 's' : ''}`}
+        </p>
+      )}
 
       {/* Notes privées */}
       <div className="crd !gap-3">
@@ -282,13 +310,27 @@ export function ClientDetail() {
         </p>
       )}
 
-      {/* Historique */}
+      {/* Historique, filtrable : « qu'est-ce qu'il a annulé ? » est la question la plus posée. */}
       <span className="h3">Historique</span>
+      <div className="pills -mx-4 px-4" role="group" aria-label="Filtrer l'historique">
+        {(
+          [
+            ['all', 'Tout'],
+            ['done', 'Terminés'],
+            ['cancelled', 'Annulés'],
+            ['noshow', 'Absences'],
+          ] as const
+        ).map(([v, label]) => (
+          <Pill key={v} lg on={filter === v} onClick={() => setFilter(v)}>
+            {label}
+          </Pill>
+        ))}
+      </div>
       {history.isPending ? (
         <Skeleton className="h-[10rem] w-full !rounded-[1.25rem]" />
       ) : (
         <div className="crd !gap-0 !py-1">
-          {historyItems.map((h) => {
+          {shown.map((h) => {
             const past = new Date(h.startsAt).getTime() < now;
             const pendingOutcome = h.status === 'confirmed' && past;
             const cancelled = h.status === 'cancelled';
@@ -305,17 +347,17 @@ export function ClientDetail() {
                   <DateBlock iso={h.startsAt} muted={cancelled} />
                   <span className="min-w-0 flex-1">
                     <span
-                      className={`block truncate text-[1.143rem] font-bold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
+                      className={`block truncate text-[1rem] font-semibold ${cancelled ? 'text-muted' : ''}`}
                     >
                       {h.serviceName}
                     </span>
-                    <span className="block text-[1rem] text-muted">
+                    <span className="block truncate text-[0.857rem] text-muted">
                       <span className="mono">{formatTimeDZ(h.startsAt)}</span> ·{' '}
                       {formatDA(h.priceDa)}
                       {h.staffName ? ` · ${h.staffName}` : ''}
                     </span>
                   </span>
-                  <span className="flex flex-none items-center gap-2">
+                  <span className="flex flex-none items-center gap-1.5">
                     {cancelled ? (
                       <Badge tone="cn">{historyStatusLabel(h)}</Badge>
                     ) : (
@@ -346,7 +388,11 @@ export function ClientDetail() {
               </div>
             );
           })}
-          {historyItems.length === 0 && <p className="p py-3">Aucun rendez-vous pour l'instant.</p>}
+          {shown.length === 0 && (
+            <p className="p py-3">
+              {filter === 'all' ? "Aucun rendez-vous pour l'instant." : 'Rien dans cette catégorie.'}
+            </p>
+          )}
           <LoadMore
             hasMore={history.hasNextPage}
             loading={history.isFetchingNextPage}

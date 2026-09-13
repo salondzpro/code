@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { errorText } from '@/components/ErrorMessage';
-import { InfoBox, SectionLabel, Slot, Toggle } from '@/components/ui';
+import { SectionLabel, Slot, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -58,7 +58,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (!salon) return <Splash />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
-  const staffHint = staffCount <= 1 ? '1 employé actif · 1 rendez-vous à la fois' : `${staffCount} employés actifs · ${staffCount} rendez-vous en même temps`;
 
   const save = async () => {
     setError(null);
@@ -85,7 +84,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <Screen bottom={SHEET_PAD} gap={16}>
         <StepBar step={10} backTo={settings ? '/pro/profil' : stepPath(9)} right="Disponibilités" />
         <h1 className="h1">Vos créneaux</h1>
-        <SectionLabel>Granularité</SectionLabel>
+        <SectionLabel>Créneaux proposés toutes les</SectionLabel>
         <div className="g3">
           {GRANULARITY.map((g) => (
             <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
@@ -96,42 +95,26 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <SectionLabel>Règles</SectionLabel>
         <div className="crd !gap-0 !py-1">
           <label className="li">
-            <span>
-              <span className="block text-[1rem]">Temps de battement</span>
-              <span className="p block text-[0.857rem]">Entre deux rendez-vous</span>
-            </span>
+            <span className="text-[1rem]">Pause entre deux rendez-vous</span>
             <PickerField inline label="Temps de battement" value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
           </label>
           <label className="li">
-            <span>
-              <span className="block text-[1rem]">Délai minimum de réservation</span>
-              <span className="p block text-[0.857rem]">Avant le début du rendez-vous</span>
-            </span>
+            <span className="text-[1rem]">Réserver au plus tard</span>
             <PickerField inline label="Délai minimum de réservation" value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
           </label>
           <Link to="/pro/equipe" className="li">
-            <span>
-              <span className="block text-[1rem]">Rendez-vous simultanés</span>
-              <span className="p block text-[0.857rem]">{staffHint}</span>
-            </span>
+            <span className="text-[1rem]">Rendez-vous en même temps</span>
             <span className="text-[1rem] text-muted">{staffCount}</span>
           </Link>
           <div className="li">
-            <span>
-              <span className="block text-[1rem]">Réservation en ligne</span>
-              <span className="p block text-[0.857rem]">Visible dans la marketplace</span>
-            </span>
+            <span className="text-[1rem]">Réservation en ligne</span>
             <Toggle on={online} onChange={setOnline} label="Réservation en ligne" />
           </div>
           <div className="li">
-            <span>
-              <span className="block text-[1rem]">Validation manuelle</span>
-              <span className="p block text-[0.857rem]">Vous confirmez chaque demande</span>
-            </span>
+            <span className="text-[1rem]">Je valide chaque demande</span>
             <Toggle on={manual} onChange={setManual} label="Validation manuelle" />
           </div>
         </div>
-        <InfoBox>Sans validation manuelle, les créneaux sont réservés instantanément. Un rendez-vous par employé actif à la fois : ajoutez un membre dans Équipe pour en accueillir plusieurs en même temps.</InfoBox>
         <StepSheet onClick={() => setPhase('rules')} />
       </Screen>
     );
@@ -141,7 +124,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={10} right="Réservation" backTo={undefined} />
       <h1 className="h1">Règles de réservation</h1>
-      <SectionLabel>Fenêtre de réservation</SectionLabel>
+      <SectionLabel>Réservable jusqu’à</SectionLabel>
       <div className="g3">
         {HORIZON.map((h) => (
           <Slot key={h} on={horizon === h} onClick={() => setHorizon(h)} className="!py-[1.625rem] !text-[1rem]">
@@ -151,17 +134,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li">
-          <span>
-            <span className="block text-[1rem]">Annulation client</span>
-            <span className="p block text-[0.857rem]">Gratuite jusqu'à</span>
-          </span>
+          <span className="text-[1rem]">Annulation gratuite jusqu'à</span>
           <PickerField inline label="Annulation gratuite jusqu'à" value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
         </label>
         <div className="li">
-          <span>
-            <span className="block text-[1rem]">Report client</span>
-            <span className="p block text-[0.857rem]">Sur demande, avec validation</span>
-          </span>
+          <span className="text-[1rem]">Le client peut reporter</span>
           <Toggle on={report} onChange={setReport} label="Report client" />
         </div>
       </div>
