@@ -33,6 +33,7 @@ import {
   lateRule,
   relativeDayLabelDZ,
   toLocalDateKey,
+  SALON_CANCEL_REASONS_FR,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, open } from '@/lib/salon';
@@ -55,6 +56,7 @@ import {
   TopBar,
   Tx,
 } from '@/ui';
+import { ReasonField } from '@/ui/ReasonField';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, FONT_SCALE } from '@/theme/design';
@@ -352,34 +354,19 @@ export default function ProBookingDetail() {
           </Tx>
           <P center>Le client sera prévenu sur WhatsApp et le créneau sera libéré.</P>
         </View>
-        <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
-          <Tx size={12} lh={16}>
-            Motif (optionnel)
-          </Tx>
-          <Input
-            value={reason}
-            onChangeText={setReason}
-            placeholder="Indisponible"
-            maxLength={200}
-            accessibilityLabel="Motif"
-            style={{
-              flex: 1,
-              backgroundColor: 'transparent',
-              borderColor: 'transparent',
-              paddingVertical: 0,
-              paddingHorizontal: 0,
-              textAlign: 'right',
-              fontSize: 12 * FONT_SCALE,
-            }}
-          />
-        </Card>
+        <ReasonField
+          reasons={SALON_CANCEL_REASONS_FR}
+          value={reason}
+          onChange={setReason}
+          title="Pourquoi annuler ?"
+        />
         <Button
           bg={C.danger}
           textColor="#fff"
           disabled={cancel.isPending}
           loading={cancel.isPending}
           onPress={async () => {
-            await cancel.mutateAsync({ id: b.id, reason: reason.trim() || undefined });
+            await cancel.mutateAsync({ id: b.id, reason: reason || undefined });
             setCancelling(false);
           }}
         >

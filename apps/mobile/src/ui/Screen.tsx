@@ -18,13 +18,17 @@ import {
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { C, SHEET_PAD } from '@/theme/design';
 
+/**
+ * Les valeurs par défaut commandent la densité de TOUTE l'application mobile : un écran qui
+ * ne passe rien reprend ces chiffres, donc c'est ici qu'on gagne du scroll partout à la fois.
+ */
 export function Screen({
   children,
   footer,
-  gap = 16,
+  gap = 12,
   bottom,
-  top = 16,
-  px = 20,
+  top = 12,
+  px = 16,
   scroll = true,
   edges = ['top', 'left', 'right'],
   bg = C.bg,
@@ -63,7 +67,7 @@ export function Screen({
       innerRef.current?.scrollTo({ y: 0, animated: false });
     }, [scrollRef]),
   );
-  const padBottom = bottom ?? (footer ? SHEET_PAD : 24);
+  const padBottom = bottom ?? (footer ? SHEET_PAD : 16);
   const content: ViewStyle = {
     paddingHorizontal: px,
     paddingTop: top,

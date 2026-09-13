@@ -62,16 +62,16 @@ export function BookingConfirmed() {
         },
       ];
 
+  // Pas de centrage vertical : il poussait la coche vers le milieu et laissait un grand vide
+  // en haut, alors que la page se lit de haut en bas comme toutes les autres.
   return (
-    <Screen className="min-h-dvh justify-center" gap={16}>
-      <div className="flex flex-col items-center gap-5 text-center">
-        <div className="flex h-[9.25rem] w-[9.25rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
-          <I icon={Check} size={56} />
+    <Screen gap={12}>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+          <I icon={Check} size={40} />
         </div>
         <h1 className="h1">
-          {confirmed ? 'Rendez-vous' : 'Demande'}
-          <br />
-          {confirmed ? 'confirmé' : 'envoyée'}
+          {confirmed ? 'Rendez-vous' : 'Demande'} {confirmed ? 'confirmé' : 'envoyée'}
         </h1>
       </div>
       <div className="crd">

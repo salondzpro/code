@@ -28,6 +28,8 @@ import {
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
+  CLIENT_CANCEL_REASONS_FR,
+  reasonOptions,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -42,6 +44,7 @@ import {
   TopBar,
 } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { PickerField } from '@/components/Picker';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { LateRule } from '@/components/LateRule';
 import { Splash } from '@/pages/auth/Splash';
@@ -286,13 +289,14 @@ export function BookingDetail() {
             </InfoBox>
             <div className="crd !flex-row items-center justify-between !py-3">
               <span className="text-[0.9375rem]">Motif (optionnel)</span>
-              <Input
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Empêchement"
-                className="!w-auto !bg-transparent !p-0 text-right"
-                maxLength={200}
-                aria-label="Motif"
+              <PickerField
+                label="Motif"
+                title="Pourquoi annuler ?"
+                options={reasonOptions(CLIENT_CANCEL_REASONS_FR)}
+                value={reason || null}
+                onChange={setReason}
+                placeholder="Choisir"
+                inline
               />
             </div>
             <ErrorMessage error={cancel.error} />
@@ -300,7 +304,7 @@ export function BookingDetail() {
               className="!bg-danger !text-white"
               disabled={cancel.isPending}
               onClick={async () => {
-                await cancel.mutateAsync({ id: b.id, reason: reason.trim() || undefined });
+                await cancel.mutateAsync({ id: b.id, reason: reason || undefined });
                 setCancelling(false);
                 setDone(true);
               }}

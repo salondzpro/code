@@ -29,6 +29,7 @@ import {
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
+  CLIENT_CANCEL_REASONS_FR,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, directionsUrl, open } from '@/lib/salon';
@@ -51,6 +52,7 @@ import {
   TopBar,
   Tx,
 } from '@/ui';
+import { ReasonField } from '@/ui/ReasonField';
 import { Screen } from '@/ui/Screen';
 import { LateRule } from '@/ui/LateRule';
 import { Splash } from '@/ui/Splash';
@@ -424,27 +426,12 @@ export default function BookingDetail() {
             ? `Attention : ce serait votre ${cancels + 1}ᵉ annulation en ${CANCEL_ABUSE_WINDOW_DAYS} jours. Au-delà de ${CANCEL_ABUSE_MAX}, la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`
             : `Pour respecter le travail des salons, au-delà de ${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`}
         </InfoBox>
-        <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
-          <Tx size={12} lh={16}>
-            Motif (optionnel)
-          </Tx>
-          <Input
-            value={reason}
-            onChangeText={setReason}
-            placeholder="Empêchement"
-            maxLength={200}
-            accessibilityLabel="Motif"
-            style={{
-              flex: 1,
-              backgroundColor: 'transparent',
-              borderColor: 'transparent',
-              paddingVertical: 0,
-              paddingHorizontal: 0,
-              textAlign: 'right',
-              fontSize: 12 * FONT_SCALE,
-            }}
-          />
-        </Card>
+        <ReasonField
+          reasons={CLIENT_CANCEL_REASONS_FR}
+          value={reason}
+          onChange={setReason}
+          title="Pourquoi annuler ?"
+        />
         <ErrorText error={cancel.error} />
         <Button
           bg={C.danger}
@@ -452,7 +439,7 @@ export default function BookingDetail() {
           disabled={cancel.isPending}
           loading={cancel.isPending}
           onPress={async () => {
-            await cancel.mutateAsync({ id: b.id, reason: reason.trim() || undefined });
+            await cancel.mutateAsync({ id: b.id, reason: reason || undefined });
             setCancelling(false);
             setDone(true);
           }}

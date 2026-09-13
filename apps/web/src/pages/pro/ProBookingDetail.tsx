@@ -24,6 +24,8 @@ import {
   toLocalDateKey,
   ceilToStep,
   nowTimeDZ,
+  SALON_CANCEL_REASONS_FR,
+  reasonOptions,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -263,20 +265,21 @@ export function ProBookingDetail() {
             </div>
             <div className="crd !flex-row items-center justify-between !py-3">
               <span className="text-[0.9375rem]">Motif (optionnel)</span>
-              <Input
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Indisponible"
-                className="!w-auto !bg-transparent !p-0 text-right"
-                maxLength={200}
-                aria-label="Motif"
+              <PickerField
+                label="Motif"
+                title="Pourquoi annuler ?"
+                options={reasonOptions(SALON_CANCEL_REASONS_FR)}
+                value={reason || null}
+                onChange={setReason}
+                placeholder="Choisir"
+                inline
               />
             </div>
             <Button
               className="!bg-danger !text-white"
               disabled={cancel.isPending}
               onClick={async () => {
-                await cancel.mutateAsync({ id: b.id, reason: reason.trim() || undefined });
+                await cancel.mutateAsync({ id: b.id, reason: reason || undefined });
                 setCancelling(false);
               }}
             >

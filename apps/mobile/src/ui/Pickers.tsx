@@ -11,7 +11,7 @@ import { Button, Grid, I, ListCard, ModalSheet, P, Row, SectionLabel, Slot, Tx }
 import { DayStrip, MonthNav } from './DaySelector';
 
 /** Ligne « libellé … valeur ⌄ » (design .li avec select). */
-export function ValueRow({ label, hint, value, onPress, py = 16, muted = true }: { label: string; hint?: string; value: ReactNode; onPress?: () => void; py?: number; muted?: boolean }) {
+export function ValueRow({ label, hint, value, onPress, py = 12, muted = true }: { label: string; hint?: string; value: ReactNode; onPress?: () => void; py?: number; muted?: boolean }) {
   return (
     <Row py={py} onPress={onPress} chevron={false} accessibilityLabel={label} right={
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, maxWidth: '55%' }}>

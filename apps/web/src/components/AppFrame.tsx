@@ -7,9 +7,13 @@ import { NavLink } from 'react-router';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 
-/** Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée. */
-export const NAV_PAD = 104;
-export const SHEET_PAD = 150;
+/**
+ * Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée.
+ * La barre flottante mesure 4 rem et se pose à 0.875 rem du bas, soit 78 px : 88 laisse
+ * juste le dégagement nécessaire au lieu des 26 px de vide qu'on réservait avant.
+ */
+export const NAV_PAD = 88;
+export const SHEET_PAD = 132;
 
 export function AppFrame({
   children,
@@ -27,11 +31,15 @@ export function AppFrame({
   );
 }
 
-/** Corps d'écran (design .bd : padding 6px 20px 0, gap 16px). */
+/**
+ * Corps d'écran. Les valeurs par défaut commandent la densité de TOUTE l'application :
+ * un écran qui ne passe rien reprend ces chiffres, donc c'est ici qu'on gagne du scroll
+ * partout à la fois. Gouttière latérale de 16 px, l'écart entre blocs fait le reste.
+ */
 export function Screen({
   children,
-  bottom = 24,
-  gap = 16,
+  bottom = 16,
+  gap = 12,
   className = '',
 }: {
   children: ReactNode;
@@ -41,7 +49,7 @@ export function Screen({
 }) {
   return (
     <div
-      className={`flex flex-col px-5 pt-4 ${className}`}
+      className={`flex flex-col px-4 pt-3 ${className}`}
       style={{ gap: `${gap / 16}rem`, paddingBottom: `${bottom / 16}rem` }}
     >
       {children}

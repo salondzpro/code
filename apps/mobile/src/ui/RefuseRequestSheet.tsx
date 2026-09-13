@@ -8,8 +8,10 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useProBookingMutations } from '@salondz/api-client';
-import { C, FONT_SCALE } from '@/theme/design';
-import { Button, Card, ErrorText, Input, ModalSheet, P, Tx } from './index';
+import { REFUSAL_REASONS_FR } from '@salondz/constants';
+import { C } from '@/theme/design';
+import { Button, ErrorText, ModalSheet, P, Tx } from './index';
+import { ReasonField } from './ReasonField';
 
 export interface RefusedRequest {
   id: string;
@@ -37,27 +39,12 @@ export function RefuseRequestSheet({
         </Tx>
         <P center>{request?.clientName} sera prévenu·e et le créneau sera libéré.</P>
       </View>
-      <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
-        <Tx size={12} lh={16}>
-          Motif (optionnel)
-        </Tx>
-        <Input
-          value={reason}
-          onChangeText={setReason}
-          placeholder="Complet"
-          maxLength={200}
-          accessibilityLabel="Motif"
-          style={{
-            flex: 1,
-            backgroundColor: 'transparent',
-            borderColor: 'transparent',
-            paddingVertical: 0,
-            paddingHorizontal: 0,
-            textAlign: 'right',
-            fontSize: 12 * FONT_SCALE,
-          }}
-        />
-      </Card>
+      <ReasonField
+        reasons={REFUSAL_REASONS_FR}
+        value={reason}
+        onChange={setReason}
+        title="Pourquoi refuser ?"
+      />
       <ErrorText error={cancel.error} />
       <Button
         bg={C.danger}
@@ -66,7 +53,7 @@ export function RefuseRequestSheet({
         loading={cancel.isPending}
         onPress={async () => {
           if (!request) return;
-          await cancel.mutateAsync({ id: request.id, reason: reason.trim() || undefined });
+          await cancel.mutateAsync({ id: request.id, reason: reason || undefined });
           close();
         }}
       >

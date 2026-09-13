@@ -7,8 +7,10 @@
  */
 import { useState } from 'react';
 import { useProBookingMutations } from '@salondz/api-client';
+import { REFUSAL_REASONS_FR, reasonOptions } from '@salondz/constants';
 import { ErrorMessage } from './ErrorMessage';
-import { BottomSheet, Button, Input } from './ui';
+import { PickerField } from './Picker';
+import { BottomSheet, Button } from './ui';
 
 export interface RefusedRequest {
   id: string;
@@ -34,13 +36,14 @@ export function RefuseRequestSheet({
         </div>
         <div className="crd !flex-row items-center justify-between !py-3">
           <span className="text-[0.9375rem]">Motif (optionnel)</span>
-          <Input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Complet"
-            className="!w-auto !bg-transparent !p-0 text-right"
-            maxLength={200}
-            aria-label="Motif"
+          <PickerField
+            label="Motif du refus"
+            title="Pourquoi refuser ?"
+            options={reasonOptions(REFUSAL_REASONS_FR)}
+            value={reason || null}
+            onChange={setReason}
+            placeholder="Choisir"
+            inline
           />
         </div>
         <ErrorMessage error={cancel.error} />
@@ -48,7 +51,7 @@ export function RefuseRequestSheet({
           className="!bg-danger !text-white"
           disabled={cancel.isPending}
           onClick={async () => {
-            await cancel.mutateAsync({ id: request.id, reason: reason.trim() || undefined });
+            await cancel.mutateAsync({ id: request.id, reason: reason || undefined });
             onClose();
           }}
         >
