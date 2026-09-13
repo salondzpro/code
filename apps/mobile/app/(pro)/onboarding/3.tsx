@@ -55,7 +55,7 @@ export default function Step3Identity() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
         <Pressable accessibilityRole="button" accessibilityLabel="Choisir le logo" onPress={() => void choose('logo')}>
           <Img src={logo?.uri} radius={52} style={{ width: 104, height: 104, alignItems: 'center', justifyContent: 'center' }}>
-            {!logo && <I icon={Camera} size={23} color={C.subtle} />}
+            {!logo && <I icon={Camera} size={24} color={C.subtle} />}
           </Img>
         </Pressable>
         <View style={{ flex: 1 }}>

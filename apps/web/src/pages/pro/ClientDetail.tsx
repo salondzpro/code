@@ -161,7 +161,7 @@ export function ClientDetail() {
                 href={`mailto:${c.email}`}
                 className="flex items-center gap-1.5 text-[0.875rem] text-muted"
               >
-                <I icon={Mail} size={14} /> <span className="truncate">{c.email}</span>
+                <I icon={Mail} size={16} /> <span className="truncate">{c.email}</span>
               </a>
             )}
           </span>

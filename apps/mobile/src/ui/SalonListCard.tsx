@@ -356,7 +356,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 }}>
-            <I icon={MapPin} size={13} color={C.muted} />
+            <I icon={MapPin} size={14} color={C.muted} />
             <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1}>
               {`${place}${km ? ` (${km})` : ''}`}
             </Tx>

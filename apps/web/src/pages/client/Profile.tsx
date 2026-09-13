@@ -40,7 +40,7 @@ export function Profile() {
         >
           <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={88} />
           <span className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
-            <I icon={Camera} size={15} />
+            <I icon={Camera} size={16} />
           </span>
         </button>
         <input

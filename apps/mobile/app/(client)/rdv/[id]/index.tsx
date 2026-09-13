@@ -213,13 +213,13 @@ export default function BookingDetail() {
           </Rows>
         </Card>
         <Button onPress={() => router.replace(`/s/${b.salon.slug}/prestations` as never)}>
-          <I icon={RotateCcw} size={15} color={C.onInk} />
+          <I icon={RotateCcw} size={16} color={C.onInk} />
           <Tx size={12} weight={600} lh={16} color={C.onInk}>
             Réserver un autre créneau
           </Tx>
         </Button>
         <Button variant="g" onPress={() => router.replace('/(client)/(tabs)/rendez-vous')}>
-          <I icon={ArrowLeft} size={15} />
+          <I icon={ArrowLeft} size={16} />
           <Tx size={12} weight={600} lh={16}>
             Retour à mes rendez-vous
           </Tx>
@@ -361,7 +361,7 @@ export default function BookingDetail() {
       <View style={{ gap: 8 }}>
         {active && (
           <Button variant="g" onPress={() => void open(directionsUrl(b))}>
-            <I icon={Navigation} size={15} />
+            <I icon={Navigation} size={16} />
             <Tx size={12} weight={600} lh={16}>
               Itinéraire
             </Tx>
@@ -370,13 +370,13 @@ export default function BookingDetail() {
         {canReschedule && (
           <Grid cols={2}>
             <Button variant="g" onPress={() => router.push(`/rdv/${b.id}/reporter` as never)}>
-              <I icon={CalendarClock} size={15} />
+              <I icon={CalendarClock} size={16} />
               <Tx size={12} weight={600} lh={16}>
                 Reporter
               </Tx>
             </Button>
             <Button variant="d" onPress={() => setCancelling(true)}>
-              <I icon={XCircle} size={15} color={C.danger} />
+              <I icon={XCircle} size={16} color={C.danger} />
               <Tx size={12} weight={600} lh={16} color={C.danger}>
                 Annuler
               </Tx>
@@ -385,7 +385,7 @@ export default function BookingDetail() {
         )}
         {canModify && !canReschedule && (
           <Button variant="d" onPress={() => setCancelling(true)}>
-            <I icon={XCircle} size={15} color={C.danger} />
+            <I icon={XCircle} size={16} color={C.danger} />
             <Tx size={12} weight={600} lh={16} color={C.danger}>
               Annuler
             </Tx>
@@ -403,7 +403,7 @@ export default function BookingDetail() {
         )}
         {b.status === 'completed' && b.reviewRating == null && (
           <Button onPress={() => router.push(`/rdv/${b.id}/noter` as never)}>
-            <I icon={Star} size={15} color={C.onInk} />
+            <I icon={Star} size={16} color={C.onInk} />
             <Tx size={12} weight={600} lh={16} color={C.onInk}>
               Noter la prestation
             </Tx>

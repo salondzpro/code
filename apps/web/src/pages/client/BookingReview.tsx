@@ -168,7 +168,7 @@ export function BookingReview() {
 
       <div className="crd !gap-2">
         <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
-          <I icon={CalendarCheck} size={15} /> Bon à savoir
+          <I icon={CalendarCheck} size={16} /> Bon à savoir
         </span>
         <ul className="ml-1 flex list-disc flex-col gap-1.5 pl-4 text-[1rem]">
           <li>

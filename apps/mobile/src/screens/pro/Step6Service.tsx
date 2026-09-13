@@ -244,7 +244,7 @@ function Pressable_({ label, onPress }: { label: string; onPress: () => void }) 
       <Tx size={10.5} lh={14.5}>
         {label}
       </Tx>
-      <I icon={ChevronDown} size={14.5} color={C.subtle} />
+      <I icon={ChevronDown} size={14} color={C.subtle} />
     </Pressable>
   );
 }

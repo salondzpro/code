@@ -26,7 +26,7 @@ const normalize = (s: string) =>
 function Icon({ icon, ink }: { icon: typeof Scissors; ink?: boolean }) {
   return (
     <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: ink ? C.ink : C.fill, alignItems: 'center', justifyContent: 'center' }}>
-      <I icon={icon} size={14.5} color={ink ? C.onInk : C.text} />
+      <I icon={icon} size={14} color={ink ? C.onInk : C.text} />
     </View>
   );
 }
@@ -61,7 +61,7 @@ export default function SearchPage() {
   const noun = market === 'men' ? 'barbier' : 'salon';
   const totalHits = (data?.salons.length ?? 0) + (data?.services.length ?? 0) + (data?.places.length ?? 0) + categoryHits.length;
   const nothing = active && !suggest.isPending && totalHits === 0;
-  const right = <I icon={ChevronRight} size={14.5} color={C.disabled} />;
+  const right = <I icon={ChevronRight} size={14} color={C.disabled} />;
 
   return (
     <Screen gap={11}>
@@ -70,7 +70,7 @@ export default function SearchPage() {
       <PillRow>
         <Pill soft>{MARKET_LABELS_FR[market].replace('Pour ', '')}</Pill>
         <Pill soft onPress={() => router.push('/localisation')}>
-          <I icon={MapPin} size={12} color={C.text} />
+          <I icon={MapPin} size={14} color={C.text} />
           <Tx size={10.5} weight={500} lh={14}>
             {prefs.label}
           </Tx>
@@ -183,7 +183,7 @@ export default function SearchPage() {
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {recent.map((r) => (
                   <Pill key={r} lg onPress={() => submit(r)}>
-                    <I icon={Clock} size={13} color={C.subtle} />
+                    <I icon={Clock} size={14} color={C.subtle} />
                     <Tx size={10.5} weight={500} lh={14}>
                       {r}
                     </Tx>

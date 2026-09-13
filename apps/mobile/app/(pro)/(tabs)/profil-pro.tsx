@@ -66,7 +66,7 @@ export default function ProProfile() {
           <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de profil" disabled={busy !== null} onPress={() => void upload('logo')}>
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={58.5} />
             <View style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: C.ink, borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
-              <I icon={Camera} size={11} color={C.onInk} />
+              <I icon={Camera} size={14} color={C.onInk} />
             </View>
           </Pressable>
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -83,9 +83,9 @@ export default function ProProfile() {
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de couverture" disabled={busy !== null} onPress={() => void upload('cover')}>
           <Img src={salon.coverUrl} radius={13} style={{ height: 114, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-            {!salon.coverUrl && <I icon={Camera} size={23} color={C.subtle} />}
+            {!salon.coverUrl && <I icon={Camera} size={24} color={C.subtle} />}
             <View style={{ position: 'absolute', right: 8, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
-              <I icon={Camera} size={11} />
+              <I icon={Camera} size={14} />
               <Tx size={9.5} weight={600} lh={12}>
                 {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
               </Tx>
@@ -94,13 +94,13 @@ export default function ProProfile() {
         </Pressable>
         <Grid cols={2}>
           <Button variant="g" sm onPress={() => router.push(`/s/${salon.slug}` as never)}>
-            <I icon={Eye} size={14.5} />
+            <I icon={Eye} size={14} />
             <Tx size={11.5} weight={600} ls={-0.2}>
               Aperçu
             </Tx>
           </Button>
           <Button sm onPress={() => setSheet(true)}>
-            <I icon={Share2} size={14.5} color="#fff" />
+            <I icon={Share2} size={14} color="#fff" />
             <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
               Partager
             </Tx>

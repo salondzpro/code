@@ -246,7 +246,7 @@ export function Salon() {
         <div className="g2">
           {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
             <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[0.9375rem]">
-              <I icon={Phone} size={17} /> Appeler
+              <I icon={Phone} size={18} /> Appeler
             </a>
           ) : (
             <button
@@ -259,7 +259,7 @@ export function Salon() {
                 else void navigator.clipboard.writeText(url);
               }}
             >
-              <I icon={Share2} size={17} /> Partager
+              <I icon={Share2} size={18} /> Partager
             </button>
           )}
           <a
@@ -268,7 +268,7 @@ export function Salon() {
             rel="noreferrer"
             className="btn g sm !py-[0.9375rem] !text-[0.9375rem]"
           >
-            <I icon={Navigation} size={17} /> Itinéraire
+            <I icon={Navigation} size={18} /> Itinéraire
           </a>
         </div>
 
@@ -294,7 +294,7 @@ export function Salon() {
                       href={`tel:${s.phone}`}
                       className="mt-1 inline-flex items-center gap-1.5 text-[0.9375rem] font-semibold text-cancel-fg underline"
                     >
-                      <I icon={Phone} size={14} /> Appeler le salon
+                      <I icon={Phone} size={16} /> Appeler le salon
                     </a>
                   )}
                 </span>
@@ -442,7 +442,7 @@ export function Salon() {
                 rel="noreferrer"
                 className="btn auto absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-1/2 !rounded-full !px-5 !py-3 !text-[0.9375rem]"
               >
-                <I icon={MapIcon} size={17} /> Afficher la carte
+                <I icon={MapIcon} size={18} /> Afficher la carte
               </a>
             </div>
 

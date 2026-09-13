@@ -127,7 +127,7 @@ export default function Step7ServicePhotos() {
                 paddingVertical: 5,
               }}
             >
-              <I icon={Camera} size={11} />
+              <I icon={Camera} size={14} />
               <Tx size={9.5} weight={600} lh={12}>
                 {busy ? 'Envoi…' : 'Changer'}
               </Tx>

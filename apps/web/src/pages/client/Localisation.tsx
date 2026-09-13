@@ -190,7 +190,7 @@ export function Localisation() {
         <div className="pills -mx-5 px-5">
           {recent.map((r) => (
             <Pill key={r.label} lg on={choice.kind !== 'gps' && choice.label === r.label} onClick={() => pickRecent(r)}>
-              <I icon={Clock} size={14} className="text-subtle" /> {r.label}
+              <I icon={Clock} size={16} className="text-subtle" /> {r.label}
             </Pill>
           ))}
         </div>

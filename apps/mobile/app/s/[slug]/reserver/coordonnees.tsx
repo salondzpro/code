@@ -127,7 +127,7 @@ export default function BookingDetails() {
             <Tx size={10.5} weight={500} lh={14.5}>
               +213
             </Tx>
-            <I icon={ChevronDown} size={13} color={C.subtle} />
+            <I icon={ChevronDown} size={14} color={C.subtle} />
           </View>
           <Input
             lg

@@ -155,7 +155,7 @@ export default function TeamMember() {
               onPress={() => void open(`tel:${member.phone}`)}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
             >
-              <I icon={Phone} size={12} color={C.muted} />
+              <I icon={Phone} size={14} color={C.muted} />
               <Tx size={12} color={C.muted} lh={16}>
                 {formatDZPhone(member.phone)}
               </Tx>
@@ -258,7 +258,7 @@ export default function TeamMember() {
           chevron={false}
           onPress={() => router.push(`/membre/${member.id}/prestations` as never)}
           accessibilityLabel="Prestations"
-          right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}
+          right={<I icon={ChevronRight} size={14} color={C.disabled} />}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
             <View
@@ -271,7 +271,7 @@ export default function TeamMember() {
                 justifyContent: 'center',
               }}
             >
-              <I icon={Scissors} size={14.5} />
+              <I icon={Scissors} size={14} />
             </View>
             <View>
               <Tx size={13} weight={600} lh={17}>
@@ -286,7 +286,7 @@ export default function TeamMember() {
           chevron={false}
           onPress={() => router.push(`/membre/${member.id}/horaires` as never)}
           accessibilityLabel="Horaires"
-          right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}
+          right={<I icon={ChevronRight} size={14} color={C.disabled} />}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
             <View
@@ -299,7 +299,7 @@ export default function TeamMember() {
                 justifyContent: 'center',
               }}
             >
-              <I icon={Clock} size={14.5} />
+              <I icon={Clock} size={14} />
             </View>
             <View>
               <Tx size={13} weight={600} lh={17}>

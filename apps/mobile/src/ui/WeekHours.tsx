@@ -55,13 +55,13 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
                       </Grid>
                     </View>
                     <IconButton accessibilityLabel={`Supprimer la pause ${idx + 1} ${day}`} onPress={() => patch(r.dayOfWeek, { breaks: r.breaks.filter((_, k) => k !== idx) })}>
-                      <I icon={X} size={13} />
+                      <I icon={X} size={14} />
                     </IconButton>
                   </View>
                 ))}
                 {r.breaks.length < MAX_BREAKS_PER_DAY && (
                   <Pressable accessibilityRole="button" accessibilityLabel={`Ajouter une pause ${day}`} onPress={() => patch(r.dayOfWeek, { breaks: [...r.breaks, nextBreakSuggestion(r)] })} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingVertical: 2 }}>
-                    <I icon={Plus} size={13} />
+                    <I icon={Plus} size={14} />
                     <Tx size={12} weight={600} lh={16}>
                       {r.breaks.length ? 'Ajouter une autre pause' : 'Ajouter une pause'}
                     </Tx>

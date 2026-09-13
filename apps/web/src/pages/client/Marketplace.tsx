@@ -193,14 +193,14 @@ export function Marketplace() {
             className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]"
             aria-pressed
           >
-            <I icon={List} size={17} /> Liste
+            <I icon={List} size={18} /> Liste
           </button>
           <button
             type="button"
             className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]"
             onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}
           >
-            <I icon={MapIcon} size={17} /> Carte
+            <I icon={MapIcon} size={18} /> Carte
           </button>
         </div>
         <button

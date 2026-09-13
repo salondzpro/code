@@ -40,7 +40,7 @@ export function RatingPill({
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
     <span className="flex items-center gap-1.5 text-[0.9375rem]">
-      <I icon={Star} size={17} className="flex-none" />
+      <I icon={Star} size={18} className="flex-none" />
       {count > 0 ? (
         <>
           <b className="text-[1rem]">{formatRating(avg)}</b>
@@ -254,7 +254,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
         {/* Gauche : lieu (distance) · Droite : catégories — une seule ligne */}
         <div className="flex items-center justify-between gap-3 text-[0.875rem] text-muted">
           <span className="flex min-w-0 items-center gap-1">
-            <I icon={MapPin} size={15} className="flex-none" />
+            <I icon={MapPin} size={16} className="flex-none" />
             <span className="truncate">
               {place}
               {km ? ` (${km})` : ''}

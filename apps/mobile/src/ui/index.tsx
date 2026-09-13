@@ -615,7 +615,7 @@ export function Checkbox({
         justifyContent: 'center',
       }}
     >
-      {on && <I icon={Check} size={13} color="#fff" />}
+      {on && <I icon={Check} size={14} color="#fff" />}
     </Pressable>
   );
 }
@@ -738,7 +738,7 @@ export function InfoBox({ children }: { children: ReactNode }) {
   return (
     <Soft style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
       <View style={{ marginTop: 2 }}>
-        <I icon={Info} size={14.5} color={C.muted} />
+        <I icon={Info} size={14} color={C.muted} />
       </View>
       <View style={{ flex: 1 }}>
         <Tx size={12} color={C.muted} lh={18}>
@@ -786,7 +786,7 @@ export function Row({
     <>
       <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
       {right}
-      {(chevron ?? (!!to || !!onPress)) && <I icon={ChevronRight} size={14.5} color={C.disabled} />}
+      {(chevron ?? (!!to || !!onPress)) && <I icon={ChevronRight} size={14} color={C.disabled} />}
     </>
   );
   const base: ViewStyle = {
@@ -1093,7 +1093,7 @@ export function Toast({ children, icon: Icon }: { children: ReactNode; icon?: Lu
         SHADOW.toast,
       ]}
     >
-      {Icon && <I icon={Icon} size={14.5} color="#fff" />}
+      {Icon && <I icon={Icon} size={14} color="#fff" />}
       <Tx size={11.5} weight={500} color="#fff" lh={14.5} style={{ flex: 1 }}>
         {children}
       </Tx>
@@ -1194,7 +1194,7 @@ export function ErrorText({ error, retry }: { error: unknown; retry?: () => void
 export function Alert({ icon, children }: { icon?: LucideIcon; children: ReactNode }) {
   return (
     <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-      {icon && <I icon={icon} size={13} color={C.danger} />}
+      {icon && <I icon={icon} size={14} color={C.danger} />}
       <Tx size={11.5} color={C.danger} lh={15.5} style={{ flex: 1 }}>
         {children}
       </Tx>

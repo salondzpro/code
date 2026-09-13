@@ -76,7 +76,7 @@ export default function BookingReschedule() {
       <TopBar backTo={`/rdv/${b.id}`} right="Reporter" />
       <H1>Nouveau créneau</H1>
       <Soft style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <I icon={Clock} size={14.5} color={C.muted} />
+        <I icon={Clock} size={14} color={C.muted} />
         <Tx size={10.5} color={C.muted} lh={15.5} style={{ flex: 1 }}>
           Actuel · {formatDateLongDZ(b.startsAt).replace(/^\p{L}/u, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
         </Tx>

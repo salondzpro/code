@@ -153,7 +153,7 @@ export function ProPhotos() {
               onClick={() => remove(p.url)}
               disabled={setPhotos.isPending}
             >
-              <I icon={X} size={14} />
+              <I icon={X} size={16} />
             </button>
           </div>
         ))}

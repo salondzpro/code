@@ -52,10 +52,10 @@ export function MonthNav({ weekOf, onWeekChange, minDate, maxDate }: { weekOf: s
       </Tx>
       <View style={{ flexDirection: 'row', gap: 6 }}>
         <IconButton accessibilityLabel="Semaine précédente" disabled={!canPrev} style={{ opacity: canPrev ? 1 : 0.35 }} onPress={() => onWeekChange(addDaysToKey(first, -7))}>
-          <I icon={ChevronLeft} size={14.5} />
+          <I icon={ChevronLeft} size={14} />
         </IconButton>
         <IconButton accessibilityLabel="Semaine suivante" disabled={!canNext} style={{ opacity: canNext ? 1 : 0.35 }} onPress={() => onWeekChange(addDaysToKey(first, 7))}>
-          <I icon={ChevronRight} size={14.5} />
+          <I icon={ChevronRight} size={14} />
         </IconButton>
       </View>
     </View>

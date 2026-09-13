@@ -159,7 +159,7 @@ export function QuickCloseBanner() {
             justifyContent: 'center',
           }}
         >
-          <I icon={DoorClosed} size={14.5} color="#fff" />
+          <I icon={DoorClosed} size={14} color="#fff" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Tx size={13} weight={700} lh={17} color={C.cancelFg}>

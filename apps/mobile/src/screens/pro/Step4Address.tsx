@@ -180,7 +180,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             SHADOW.fab,
           ]}
         >
-          <I icon={MapPin} size={21} color="#fff" />
+          <I icon={MapPin} size={20} color="#fff" />
         </View>
         <View
           style={[

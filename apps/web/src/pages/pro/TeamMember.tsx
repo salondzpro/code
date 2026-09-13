@@ -154,7 +154,7 @@ export function TeamMember() {
               href={`tel:${member.phone}`}
               className="flex items-center gap-1.5 text-[0.9375rem] text-muted"
             >
-              <I icon={Phone} size={14} /> {formatDZPhone(member.phone)}
+              <I icon={Phone} size={16} /> {formatDZPhone(member.phone)}
             </a>
           )}
           {member.avatarUrl && !avatarBusy && (

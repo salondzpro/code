@@ -185,7 +185,7 @@ export default function Localisation() {
         </Card>
         <InfoBox>Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».</InfoBox>
         <Button onPress={() => void Linking.openSettings().catch(() => locate())}>
-          <I icon={Settings} size={14.5} color="#fff" />
+          <I icon={Settings} size={14} color="#fff" />
           <Tx size={10.5} weight={600} color="#fff" ls={-0.2}>
             Ouvrir les réglages
           </Tx>
@@ -247,7 +247,7 @@ export default function Localisation() {
         <PillRow>
           {recent.map((r) => (
             <Pill key={r.label} lg on={choice.kind !== 'gps' && choice.label === r.label} onPress={() => pickRecent(r)}>
-              <I icon={Clock} size={12} color={choice.kind !== 'gps' && choice.label === r.label ? C.onInk : C.subtle} />
+              <I icon={Clock} size={14} color={choice.kind !== 'gps' && choice.label === r.label ? C.onInk : C.subtle} />
               <Tx size={10.5} weight={500} lh={14} color={choice.kind !== 'gps' && choice.label === r.label ? C.onInk : C.text}>
                 {r.label}
               </Tx>

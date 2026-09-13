@@ -76,7 +76,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
               onClick={() => void remove(w.url)}
               disabled={setWorks.isPending}
             >
-              <I icon={X} size={14} />
+              <I icon={X} size={16} />
             </button>
           </div>
         ))}

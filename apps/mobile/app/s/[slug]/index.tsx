@@ -284,7 +284,7 @@ export default function Salon() {
                   paddingVertical: 10,
                 }}
               >
-                <I icon={Ban} size={17} color={C.danger} />
+                <I icon={Ban} size={18} color={C.danger} />
                 <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
                   <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
                     Réservation en ligne impossible
@@ -298,7 +298,7 @@ export default function Salon() {
                       onPress={() => void open(`tel:${s.phone}`)}
                       style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}
                     >
-                      <I icon={Phone} size={12} color={C.cancelFg} />
+                      <I icon={Phone} size={14} color={C.cancelFg} />
                       <Tx
                         size={12}
                         weight={600}

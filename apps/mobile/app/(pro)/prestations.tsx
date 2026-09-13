@@ -127,7 +127,7 @@ export default function ProServices() {
                         {sv.isActive ? '' : ' · désactivée'}
                       </Tx>
                     </View>
-                    <I icon={ChevronRight} size={14.5} color={C.disabled} />
+                    <I icon={ChevronRight} size={14} color={C.disabled} />
                   </Pressable>
                 </Row>
               );
@@ -137,7 +137,7 @@ export default function ProServices() {
       ))}
       {/* L'ajout ferme la liste, comme sur Équipe et Catégories. */}
       <Button onPress={() => router.push('/onboarding/6' as never)}>
-        <I icon={Plus} size={15} color={C.onInk} />
+        <I icon={Plus} size={16} color={C.onInk} />
         <Tx size={13} weight={600} color={C.onInk} lh={17}>
           Ajouter une prestation
         </Tx>

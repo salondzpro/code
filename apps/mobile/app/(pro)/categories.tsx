@@ -144,7 +144,7 @@ export default function ProCategories() {
       )}
       {error && <Alert>{error}</Alert>}
       <Button variant="g" onPress={() => router.push('/onboarding/6' as never)}>
-        <I icon={Plus} size={14.5} />
+        <I icon={Plus} size={14} />
         <Tx size={12} weight={600} lh={16}>
           Nouvelle catégorie avec une prestation
         </Tx>

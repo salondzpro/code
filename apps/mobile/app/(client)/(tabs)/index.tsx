@@ -118,14 +118,14 @@ export default function Marketplace() {
             onPress={() => router.push('/localisation')}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
           >
-            <I icon={MapPin} size={14.5} color={C.muted} />
+            <I icon={MapPin} size={14} color={C.muted} />
             <Tx size={10.5} lh={14.5} numberOfLines={1} style={{ flexShrink: 1 }}>
               {prefs.label}
             </Tx>
             <Tx size={10.5} lh={14.5} color={C.muted}>
               · {prefs.radiusKm} km
             </Tx>
-            <I icon={ChevronDown} size={13} color={C.subtle} />
+            <I icon={ChevronDown} size={14} color={C.subtle} />
           </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
             <H1 size={23} lh={26} ls={-0.8}>
@@ -142,7 +142,7 @@ export default function Marketplace() {
               disabled={update.isPending}
               style={{ width: 29, height: 29, borderRadius: 10 }}
             >
-              <I icon={ArrowLeftRight} size={13} />
+              <I icon={ArrowLeftRight} size={14} />
             </IconButton>
           </View>
         </View>
@@ -301,7 +301,7 @@ export default function Marketplace() {
           <Tx size={10.5} weight={500} lh={14} numberOfLines={1} style={{ flexShrink: 1 }}>
             {sortLabel}
           </Tx>
-          <I icon={ChevronDown} size={13} color={C.subtle} />
+          <I icon={ChevronDown} size={14} color={C.subtle} />
         </Pressable>
       </View>
 

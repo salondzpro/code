@@ -64,7 +64,7 @@ export default function Clients() {
               }
               accessibilityLabel={c.name}
               chevron={false}
-              right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}
+              right={<I icon={ChevronRight} size={14} color={C.disabled} />}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                 <Avatar name={c.name} size={42} />

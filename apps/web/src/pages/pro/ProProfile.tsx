@@ -112,7 +112,7 @@ export function ProProfile() {
           >
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
             <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
-              <I icon={Camera} size={14} />
+              <I icon={Camera} size={16} />
             </span>
           </button>
           <span className="min-w-0 flex-1">
@@ -138,7 +138,7 @@ export function ProProfile() {
             </span>
           )}
           <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.75rem] font-semibold shadow-sm">
-            <I icon={Camera} size={14} /> {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
+            <I icon={Camera} size={16} /> {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
           </span>
         </button>
         <input

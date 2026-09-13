@@ -130,7 +130,7 @@ export default function ProBookingDetail() {
               disabled={setStatus.isPending}
               onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
             >
-              <I icon={Check} size={15} color={C.onInk} />
+              <I icon={Check} size={16} color={C.onInk} />
               <Tx size={12} weight={600} lh={16} color={C.onInk}>
                 Confirmer le rendez-vous
               </Tx>
@@ -142,7 +142,7 @@ export default function ProBookingDetail() {
                 disabled={setStatus.isPending}
                 onPress={() => setStatus.mutate({ id: b.id, status: 'completed' })}
               >
-                <I icon={CheckCircle2} size={15} color={C.onInk} />
+                <I icon={CheckCircle2} size={16} color={C.onInk} />
                 <Tx size={12} weight={600} lh={16} color={C.onInk}>
                   Terminé
                 </Tx>
@@ -152,7 +152,7 @@ export default function ProBookingDetail() {
                 disabled={setStatus.isPending}
                 onPress={() => setStatus.mutate({ id: b.id, status: 'no_show' })}
               >
-                <I icon={UserX} size={15} />
+                <I icon={UserX} size={16} />
                 <Tx size={12} weight={600} lh={16}>
                   Client absent
                 </Tx>
@@ -166,7 +166,7 @@ export default function ProBookingDetail() {
               loading={cancel.isPending}
               onPress={() => cancel.mutate({ id: b.id, late: true })}
             >
-              <I icon={AlarmClock} size={15} color={C.danger} />
+              <I icon={AlarmClock} size={16} color={C.danger} />
               <Tx size={12} weight={600} lh={16} color={C.danger}>
                 {`Annuler pour retard (plus de ${LATE_TOLERANCE_MINUTES} min)`}
               </Tx>
@@ -175,13 +175,13 @@ export default function ProBookingDetail() {
           {active && !past && (
             <Grid cols={2}>
               <Button variant="g" onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
-                <I icon={CalendarClock} size={15} />
+                <I icon={CalendarClock} size={16} />
                 <Tx size={12} weight={600} lh={16}>
                   Reporter
                 </Tx>
               </Button>
               <Button variant="d" onPress={() => setCancelling(true)}>
-                <I icon={XCircle} size={15} color={C.danger} />
+                <I icon={XCircle} size={16} color={C.danger} />
                 <Tx size={12} weight={600} lh={16} color={C.danger}>
                   Annuler
                 </Tx>
@@ -190,7 +190,7 @@ export default function ProBookingDetail() {
           )}
           {(!active || (past && b.status === 'pending')) && (
             <Button variant="g" onPress={back}>
-              <I icon={ArrowLeft} size={15} />
+              <I icon={ArrowLeft} size={16} />
               <Tx size={12} weight={600} lh={16}>
                 Retour à l'agenda
               </Tx>

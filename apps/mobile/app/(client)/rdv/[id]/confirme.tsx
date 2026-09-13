@@ -182,7 +182,7 @@ export default function BookingConfirmed() {
           : 'Le salon confirme votre demande sur WhatsApp.'}
       </P>
       <Button onPress={() => router.replace(`/rdv/${b.id}` as never)}>
-        <I icon={CalendarCheck} size={15} color={C.onInk} />
+        <I icon={CalendarCheck} size={16} color={C.onInk} />
         <Tx size={12} weight={600} lh={16} color={C.onInk}>
           Voir le rendez-vous
         </Tx>

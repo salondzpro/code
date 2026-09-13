@@ -203,7 +203,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
       </div>
       {cancelled && b.cancellationReason && (
         <p className="flex items-start gap-1.5 text-[0.875rem] text-danger">
-          <I icon={Info} size={15} className="mt-0.5 flex-none" /> Motif : {b.cancellationReason}
+          <I icon={Info} size={16} className="mt-0.5 flex-none" /> Motif : {b.cancellationReason}
         </p>
       )}
       {(b.status === 'completed' || cancelled) && (
@@ -222,7 +222,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 className="flex items-center gap-1.5 self-center px-3 text-[1rem] font-bold"
                 aria-label={`Votre note : ${b.reviewRating} sur 5`}
               >
-                <I icon={Star} size={17} className="fill-current" /> {b.reviewRating}/5
+                <I icon={Star} size={18} className="fill-current" /> {b.reviewRating}/5
               </span>
             ) : (
               <LinkButton

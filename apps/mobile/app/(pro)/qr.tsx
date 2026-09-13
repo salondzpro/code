@@ -106,13 +106,13 @@ export default function ProQr() {
       {error && <Alert>{error}</Alert>}
       <Grid cols={2}>
         <Button variant="g" onPress={() => void save()} disabled={busy} loading={busy}>
-          <I icon={Download} size={14.5} />
+          <I icon={Download} size={14} />
           <Tx size={12} weight={600} ls={-0.2} lh={16}>
             Enregistrer
           </Tx>
         </Button>
         <Button onPress={() => void share()} disabled={busy}>
-          <I icon={MoreHorizontal} size={14.5} color="#fff" />
+          <I icon={MoreHorizontal} size={14} color="#fff" />
           <Tx size={12} weight={600} color="#fff" ls={-0.2} lh={16}>
             Partager
           </Tx>

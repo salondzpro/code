@@ -111,7 +111,7 @@ export default function ProPhotos() {
               }
               style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}
             >
-              <I icon={Trash2} size={11} color={C.danger} />
+              <I icon={Trash2} size={14} color={C.danger} />
               <Tx size={10} weight={600} color={C.danger} lh={13}>
                 Retirer
               </Tx>
@@ -183,7 +183,7 @@ export default function ProPhotos() {
                 justifyContent: 'center',
               }}
             >
-              <I icon={X} size={12} />
+              <I icon={X} size={14} />
             </Pressable>
           </View>
         ))}

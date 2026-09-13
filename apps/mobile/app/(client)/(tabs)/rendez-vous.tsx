@@ -176,7 +176,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             </Tx>
             {!!place && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                <I icon={MapPin} size={11} color={C.muted} />
+                <I icon={MapPin} size={14} color={C.muted} />
                 <Tx size={10.5} color={C.muted} lh={14} numberOfLines={1} style={{ flex: 1 }}>
                   {place}
                 </Tx>
@@ -213,7 +213,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               accessibilityLabel={`Appeler ${b.salon.name}`}
               onPress={() => void open(`tel:${b.salon.phone}`)}
             >
-              <I icon={Phone} size={17} color={C.text} />
+              <I icon={Phone} size={18} color={C.text} />
             </IconButton>
           )}
         </View>
@@ -256,7 +256,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
       </Pressable>
       {cancelled && !!b.cancellationReason && (
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
-          <I icon={Info} size={13} color={C.danger} />
+          <I icon={Info} size={14} color={C.danger} />
           <Tx size={11.5} color={C.danger} lh={15} style={{ flex: 1 }}>
             Motif : {b.cancellationReason}
           </Tx>
@@ -284,7 +284,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 }}
                 accessibilityLabel={`Votre note : ${b.reviewRating} sur 5`}
               >
-                <I icon={Star} size={15} color={C.text} />
+                <I icon={Star} size={16} color={C.text} />
                 <Tx size={13} weight={700} lh={16}>
                   {b.reviewRating}/5
                 </Tx>
@@ -387,7 +387,7 @@ export default function Bookings() {
           </Tx>
           <P center>{empty.text}</P>
           <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 6 }}>
-            <I icon={Search} size={15} color={C.onInk} />
+            <I icon={Search} size={16} color={C.onInk} />
             <Tx size={13} weight={600} color={C.onInk} lh={17}>
               Explorer les salons
             </Tx>

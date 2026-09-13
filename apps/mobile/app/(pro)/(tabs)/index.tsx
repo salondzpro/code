@@ -168,7 +168,7 @@ export default function ProHome() {
       {salon && <QuickCloseBanner />}
 
       <Button onPress={() => router.push('/pro-rdv/nouveau' as never)}>
-        <I icon={Plus} size={15} color={C.onInk} />
+        <I icon={Plus} size={16} color={C.onInk} />
         <Tx size={13} weight={600} color={C.onInk} lh={17}>
           Nouveau rendez-vous
         </Tx>
@@ -334,13 +334,13 @@ export default function ProHome() {
                   accessibilityLabel={`Appeler ${next.clientName}`}
                   onPress={() => void open(`tel:${next.clientPhone}`)}
                 >
-                  <I icon={Phone} size={17} color={C.text} />
+                  <I icon={Phone} size={18} color={C.text} />
                 </IconButton>
                 <IconButton
                   accessibilityLabel={`WhatsApp ${next.clientName}`}
                   onPress={() => void open(`https://wa.me/${next.clientPhone!.replace(/\D/g, '')}`)}
                 >
-                  <I icon={MessageCircle} size={17} color={C.text} />
+                  <I icon={MessageCircle} size={18} color={C.text} />
                 </IconButton>
               </View>
             )}
@@ -444,7 +444,7 @@ export default function ProHome() {
       {/* Partage du lien de réservation : tout en bas, après le chiffre d'affaires. */}
       {salon && (
         <Button variant="g" onPress={() => setShare(true)}>
-          <I icon={Share2} size={15} color={C.text} />
+          <I icon={Share2} size={16} color={C.text} />
           <Tx size={13} weight={600} lh={17}>
             Partager mon lien
           </Tx>

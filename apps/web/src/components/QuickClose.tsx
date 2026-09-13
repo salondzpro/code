@@ -99,7 +99,7 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
         onClick={() => (active ? void reopen() : setChoosing(true))}
         data-testid="quick-close"
       >
-        <I icon={active ? DoorOpen : Siren} size={17} /> {active ? 'Rouvrir' : 'Arrêt/Pause'}
+        <I icon={active ? DoorOpen : Siren} size={18} /> {active ? 'Rouvrir' : 'Arrêt/Pause'}
       </Button>
       {error && <Toast>{error}</Toast>}
       <PickerSheet

@@ -74,7 +74,7 @@ export function SearchPage() {
       <div className="pills -mx-5 px-5">
         <Pill soft>{MARKET_LABELS_FR[market].replace('Pour ', '')}</Pill>
         <Pill soft onClick={() => navigate('/localisation')}>
-          <I icon={MapPin} size={14} /> {prefs.label}
+          <I icon={MapPin} size={16} /> {prefs.label}
         </Pill>
         <Pill soft on={prefs.ratingMin != null} aria-pressed={prefs.ratingMin != null} onClick={() => setPrefs({ ratingMin: prefs.ratingMin ? null : 4.5 })}>
           Note 4,5+

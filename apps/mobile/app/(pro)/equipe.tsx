@@ -110,7 +110,7 @@ export default function Team() {
             onPress={() => router.push(`/membre/${m.id}` as never)}
             accessibilityLabel={m.displayName}
             chevron={false}
-            right={<I icon={ChevronRight} size={14.5} color={C.disabled} />}
+            right={<I icon={ChevronRight} size={14} color={C.disabled} />}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
               <Avatar src={m.avatarUrl} name={m.displayName} size={42} />
@@ -142,7 +142,7 @@ export default function Team() {
         </Row>
       </ListCard>
       <Button onPress={() => router.push('/equipe-nouveau' as never)}>
-        <I icon={Plus} size={14.5} color="#fff" />
+        <I icon={Plus} size={14} color="#fff" />
         <Tx size={12} weight={600} color="#fff" lh={16}>
           Ajouter un membre
         </Tx>

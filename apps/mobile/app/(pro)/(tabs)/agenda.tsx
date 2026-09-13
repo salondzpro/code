@@ -214,7 +214,7 @@ export default function AgendaPro() {
               SHADOW.fab,
             ]}
           >
-            <I icon={Plus} size={23} color="#fff" />
+            <I icon={Plus} size={24} color="#fff" />
           </Pressable>
         ) : undefined
       }

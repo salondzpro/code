@@ -204,7 +204,7 @@ export default function Requests() {
           title="Aucun rendez-vous à venir"
           action={
             <Button onPress={() => router.push('/pro-rdv/nouveau' as never)}>
-              <I icon={Plus} size={14.5} color="#fff" />
+              <I icon={Plus} size={14} color="#fff" />
               <Tx size={12} weight={600} color="#fff" lh={16}>
                 Nouveau rendez-vous
               </Tx>

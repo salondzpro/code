@@ -21,8 +21,9 @@
     @apply bg-canvas text-text font-sans antialiased;
     margin: 0;
     min-height: 100dvh;
-    font-size: 0.9375rem;
-    line-height: 1.4;
+    /* 1 rem = 14 px : la taille de corps relevée sur la référence. */
+    font-size: 1rem;
+    line-height: 1.45;
   }
   a {
     color: inherit;
@@ -83,12 +84,12 @@
     text-transform: uppercase;
   }
   .p {
-    font-size: 0.9375rem;
+    font-size: 1rem;
     color: var(--color-muted);
     line-height: 1.5;
   }
   .s {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--color-muted);
   }
   .t3 {

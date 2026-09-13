@@ -130,7 +130,7 @@ export default function BookingReview() {
           </Tx>
           {!!s.phone && (
             <Button variant="g" sm onPress={() => void open(`tel:${s.phone}`)}>
-              <I icon={Phone} size={14.5} />
+              <I icon={Phone} size={14} />
               <Tx size={13} weight={600} lh={17}>
                 Appeler le salon
               </Tx>
@@ -233,7 +233,7 @@ export default function BookingReview() {
 
       <Card gap={6}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <I icon={CalendarCheck} size={13} color={C.muted} />
+          <I icon={CalendarCheck} size={14} color={C.muted} />
           <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
             Bon à savoir
           </Tx>

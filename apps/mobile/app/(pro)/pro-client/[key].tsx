@@ -219,7 +219,7 @@ export default function ClientDetail() {
                 onPress={() => void open(`mailto:${c.email}`)}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
               >
-                <I icon={Mail} size={12} color={C.muted} />
+                <I icon={Mail} size={14} color={C.muted} />
                 <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1} style={{ flex: 1 }}>
                   {c.email}
                 </Tx>
@@ -308,7 +308,7 @@ export default function ClientDetail() {
       {/* Notes privées */}
       <Card gap={10}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <I icon={StickyNote} size={15} />
+          <I icon={StickyNote} size={16} />
           <Tx size={13} weight={700} lh={17}>
             Notes privées
           </Tx>

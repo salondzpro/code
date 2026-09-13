@@ -17,7 +17,7 @@ export function Ic({ icon, ink, danger }: { icon: LucideIcon; ink?: boolean; dan
         justifyContent: 'center',
       }}
     >
-      <I icon={icon} size={14.5} color={ink ? C.onInk : danger ? C.danger : C.text} />
+      <I icon={icon} size={14} color={ink ? C.onInk : danger ? C.danger : C.text} />
     </View>
   );
 }

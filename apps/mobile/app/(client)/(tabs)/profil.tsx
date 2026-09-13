@@ -69,7 +69,7 @@ export default function Profile() {
               justifyContent: 'center',
             }}
           >
-            <I icon={Camera} size={12} color={C.onInk} />
+            <I icon={Camera} size={14} color={C.onInk} />
           </View>
         </Pressable>
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -159,7 +159,7 @@ export default function Profile() {
             justifyContent: 'center',
           }}
         >
-          <I icon={MessageCircle} size={21} />
+          <I icon={MessageCircle} size={20} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Tx size={13} weight={700} ls={-0.4} lh={17}>
