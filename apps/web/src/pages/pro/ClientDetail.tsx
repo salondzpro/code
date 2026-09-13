@@ -168,14 +168,14 @@ export function ClientDetail() {
         </div>
         {c.phone && (
           <div className="g2">
-            <a href={`tel:${c.phone}`} className="btn g sm !py-[1.125rem] !text-[1rem]">
+            <a href={`tel:${c.phone}`} className="btn g sm !text-[1rem]">
               <I icon={Phone} size={16} /> Appeler
             </a>
             <a
               href={`https://wa.me/${c.phone.replace(/\D/g, '')}`}
               target="_blank"
               rel="noreferrer"
-              className="btn g sm !py-[1.125rem] !text-[1rem]"
+              className="btn g sm !text-[1rem]"
             >
               <I icon={MessageCircle} size={16} /> WhatsApp
             </a>

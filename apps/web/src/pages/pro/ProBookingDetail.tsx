@@ -114,7 +114,7 @@ export function ProBookingDetail() {
       </div>
       {b.clientPhone && (
         <div className="g2">
-          <a href={`tel:${b.clientPhone}`} className="btn g !py-[1.125rem] !text-[1.143rem]">
+          <a href={`tel:${b.clientPhone}`} className="btn g !text-[1.143rem]">
             <I icon={Phone} size={20} /> Appeler
           </a>
           {wa && (
@@ -122,7 +122,7 @@ export function ProBookingDetail() {
               href={wa}
               target="_blank"
               rel="noreferrer"
-              className="btn g !py-[1.125rem] !text-[1.143rem]"
+              className="btn g !text-[1.143rem]"
             >
               <I icon={MessageCircle} size={20} /> WhatsApp
             </a>

@@ -105,7 +105,7 @@ export function BookingReview() {
           </span>
           <p className="text-[1rem] text-cancel-fg">{blockedMessage}</p>
           {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
-            <a href={`tel:${s.phone}`} className="btn g sm !py-[1.125rem] !text-[1rem]">
+            <a href={`tel:${s.phone}`} className="btn g sm !text-[1rem]">
               <I icon={Phone} size={18} /> Appeler le salon
             </a>
           )}

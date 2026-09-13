@@ -69,33 +69,33 @@ export function Requests() {
         <SectionLabel right={<span className="s">{items.length}</span>}>À valider</SectionLabel>
       )}
       {items.map((b) => (
-        <div key={b.id} className="crd !gap-4">
+        /* Même carte compacte que l'accueil : le pro doit pouvoir traiter quatre demandes
+           d'affilée sans défiler entre chacune. */
+        <div key={b.id} className="crd !gap-2.5">
           <button
             type="button"
-            className="flex items-center gap-3.5 text-left"
+            className="flex items-center gap-3 text-left"
             onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
           >
-            <Avatar name={b.clientName} size={68} />
-            <span className="min-w-0">
-              <span className="block truncate text-[1.429rem] font-bold tracking-[-0.4px]">
-                {b.clientName}
+            <Avatar name={b.clientName} size={40} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
+              <span className="block truncate text-[0.857rem] text-muted">
+                {b.serviceName} · {formatDA(b.priceDa)}
+                {b.staff ? ` · ${b.staff.displayName}` : ''}
               </span>
+            </span>
+            <span className="flex-none text-right">
+              <span className="block text-[1rem] font-semibold">{formatTimeDZ(b.startsAt)}</span>
               <span className="block text-[0.857rem] text-muted">
-                {b.serviceName} · {formatDateShortDZ(b.startsAt)} {formatTimeDZ(b.startsAt)} ·{' '}
-                {formatDA(b.priceDa)}
+                {formatDateShortDZ(b.startsAt)}
               </span>
-              {b.staff && (
-                <span className="block text-[1rem] text-muted">
-                  avec {b.staff.displayName}
-                </span>
-              )}
             </span>
           </button>
-          <div className="g2">
+          <div className="g3">
             <Button
               variant="ok"
               sm
-              className="!py-[1.125rem] !text-[1rem]"
               disabled={setStatus.isPending}
               onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
             >
@@ -104,20 +104,18 @@ export function Requests() {
             <Button
               variant="g"
               sm
-              className="!py-[1.125rem] !text-[1rem]"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
             >
               Reporter
             </Button>
+            <Button
+              variant="d"
+              sm
+              onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
+            >
+              Refuser
+            </Button>
           </div>
-          <Button
-            variant="d"
-            sm
-            className="!py-[1.125rem] !text-[1rem]"
-            onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
-          >
-            Refuser la demande
-          </Button>
         </div>
       ))}
       <ErrorMessage error={setStatus.error} />

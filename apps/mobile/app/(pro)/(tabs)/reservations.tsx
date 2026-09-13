@@ -92,33 +92,35 @@ export default function Requests() {
         </SectionLabel>
       )}
       {items.map((b) => (
-        <Card key={b.id} gap={13}>
+        <Card key={b.id} gap={9}>
           <Pressable
             accessibilityRole="link"
             onPress={() => router.push(`/pro-rdv/${b.id}` as never)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
           >
-            <Avatar name={b.clientName} size={55} />
+            <Avatar name={b.clientName} size={40} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Tx size={16} weight={700} ls={-0.4} lh={20.5} numberOfLines={1}>
+              <Tx size={14} weight={600} ls={-0.2} lh={18} numberOfLines={1}>
                 {b.clientName}
               </Tx>
-              <Tx size={12} color={C.muted} lh={15.5}>
-                {b.serviceName} · {formatDateShortDZ(b.startsAt)} {formatTimeDZ(b.startsAt)} ·{' '}
-                {formatDA(b.priceDa)}
+              <Tx size={12} color={C.muted} lh={16} numberOfLines={1}>
+                {b.serviceName} · {formatDA(b.priceDa)}
+                {b.staff ? ` · ${b.staff.displayName}` : ''}
               </Tx>
-              {b.staff && (
-                <Tx size={12} color={C.muted} lh={16}>
-                  avec {b.staff.displayName}
-                </Tx>
-              )}
+            </View>
+            <View>
+              <Tx size={14} weight={600} lh={18} right>
+                {formatTimeDZ(b.startsAt)}
+              </Tx>
+              <Tx size={12} color={C.muted} lh={16} right>
+                {formatDateShortDZ(b.startsAt)}
+              </Tx>
             </View>
           </Pressable>
-          <Grid cols={2}>
+          <Grid cols={3}>
             <Button
               variant="ok"
               sm
-              style={{ paddingVertical: 15 }}
               disabled={setStatus.isPending}
               onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
             >
@@ -126,27 +128,21 @@ export default function Requests() {
                 Confirmer
               </Tx>
             </Button>
-            <Button
-              variant="g"
-              sm
-              style={{ paddingVertical: 15 }}
-              onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}
-            >
+            <Button variant="g" sm onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}>
               <Tx size={12} weight={600} ls={-0.2}>
                 Reporter
               </Tx>
             </Button>
+            <Button
+              variant="d"
+              sm
+              onPress={() => setRefusing({ id: b.id, clientName: b.clientName })}
+            >
+              <Tx size={12} weight={600} color={C.danger} ls={-0.2}>
+                Refuser
+              </Tx>
+            </Button>
           </Grid>
-          <Button
-            variant="d"
-            sm
-            style={{ paddingVertical: 15 }}
-            onPress={() => setRefusing({ id: b.id, clientName: b.clientName })}
-          >
-            <Tx size={12} weight={600} color={C.danger} ls={-0.2}>
-              Refuser la demande
-            </Tx>
-          </Button>
         </Card>
       ))}
       <ErrorText error={setStatus.error} />

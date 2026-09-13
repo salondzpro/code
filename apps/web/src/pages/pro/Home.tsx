@@ -96,7 +96,7 @@ export function ProHome() {
             <span className="text-[2.286rem] font-bold leading-none tracking-[-0.8px]">
               {stats.data.todayCount}
             </span>
-            <span className="text-[1.143rem] font-bold leading-[1.2] text-white/90">
+            <span className="text-[1rem] font-semibold leading-[1.25] text-white/90">
               rendez-vous aujourd'hui
             </span>
           </div>
@@ -110,7 +110,7 @@ export function ProHome() {
             >
               {stats.data.pendingCount}
             </span>
-            <span className="text-[1.143rem] font-bold leading-[1.2]">à valider</span>
+            <span className="text-[1rem] font-semibold leading-[1.25]">à valider</span>
           </Link>
         </div>
       )}
@@ -134,28 +134,31 @@ export function ProHome() {
         </div>
       )}
       {pendingItems.length > 0 &&
-        pendingItems.slice(0, 3).map((b) => (
-          <div key={b.id} className="crd !gap-4">
+        pendingItems.slice(0, 4).map((b) => (
+          /* Carte compacte : un pro qui reçoit quatre demandes d'un coup doit les voir
+             toutes sans défiler. Avatar réduit, une ligne d'information, et les trois
+             décisions sur une seule rangée au lieu de trois boutons pleine largeur. */
+          <div key={b.id} className="crd !gap-2.5">
             <button
               type="button"
-              className="flex items-center gap-3.5 text-left"
+              className="flex items-center gap-3 text-left"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
             >
-              <Avatar name={b.clientName} size={68} />
-              <span className="min-w-0">
-                <span className="block text-[1.429rem] font-bold tracking-[-0.4px]">
-                  {b.clientName}
-                </span>
-                <span className="block text-[0.857rem] text-muted">
-                  {b.serviceName} · {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
+              <Avatar name={b.clientName} size={40} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
+                <span className="block truncate text-[0.857rem] text-muted">
+                  {b.serviceName} · {formatDA(b.priceDa)}
                 </span>
               </span>
+              <span className="flex-none text-[1rem] font-semibold">
+                {formatTimeDZ(b.startsAt)}
+              </span>
             </button>
-            <div className="g2">
+            <div className="g3">
               <Button
                 variant="ok"
                 sm
-                className="!py-[1.125rem] !text-[1rem]"
                 disabled={setStatus.isPending}
                 onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
               >
@@ -164,20 +167,18 @@ export function ProHome() {
               <Button
                 variant="g"
                 sm
-                className="!py-[1.125rem] !text-[1rem]"
                 onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
               >
                 Reporter
               </Button>
+              <Button
+                variant="d"
+                sm
+                onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
+              >
+                Refuser
+              </Button>
             </div>
-            <Button
-              variant="d"
-              sm
-              className="!py-[1.125rem] !text-[1rem]"
-              onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
-            >
-              Refuser la demande
-            </Button>
           </div>
         ))}
 

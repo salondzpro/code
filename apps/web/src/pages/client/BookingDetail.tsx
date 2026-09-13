@@ -165,7 +165,7 @@ export function BookingDetail() {
       </div>
       <div className="g2">
         {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-          <a href={`tel:${b.salon.phone}`} className="btn g !py-[1.125rem] !text-[1.143rem]">
+          <a href={`tel:${b.salon.phone}`} className="btn g !text-[1.143rem]">
             <I icon={Phone} size={20} /> Appeler
           </a>
         )}
@@ -174,7 +174,7 @@ export function BookingDetail() {
             href={wa}
             target="_blank"
             rel="noreferrer"
-            className="btn g !py-[1.125rem] !text-[1.143rem]"
+            className="btn g !text-[1.143rem]"
           >
             <I icon={MessageCircle} size={20} /> WhatsApp
           </a>

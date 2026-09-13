@@ -144,7 +144,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             href={directionsUrl(b)}
             target="_blank"
             rel="noreferrer"
-            className="btn g sm flex-1 !py-[1.125rem] !text-[1rem]"
+            className="btn g sm flex-1 !text-[1rem]"
           >
             <I icon={Navigation} size={16} /> Itinéraire
           </a>
@@ -153,7 +153,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               to={`/rendez-vous/${b.id}/reporter`}
               variant="g"
               sm
-              className="flex-1 !py-[1.125rem] !text-[1rem]"
+              className="flex-1 !text-[1rem]"
             >
               <I icon={CalendarClock} size={16} /> Reporter
             </LinkButton>
@@ -212,7 +212,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
             to={`/s/${b.salon.slug}/prestations`}
             variant="g"
             sm
-            className="flex-1 !py-[1.125rem] !text-[1rem]"
+            className="flex-1 !text-[1rem]"
           >
             <I icon={RotateCcw} size={16} /> Réserver à nouveau
           </LinkButton>
@@ -230,7 +230,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 variant="g"
                 sm
                 auto
-                className="!px-5 !py-[1.125rem] !text-[1rem]"
+                className="!px-5 !text-[1rem]"
               >
                 <I icon={Star} size={16} /> Noter
               </LinkButton>
