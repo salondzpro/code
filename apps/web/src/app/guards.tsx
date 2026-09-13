@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
+import { PublicHeader } from '@/components/PublicHeader';
 import { useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
@@ -13,8 +14,24 @@ import { AppFrame, BottomNav } from '@/components/AppFrame';
 export function ClientLayout() {
   return (
     <AppFrame>
+      <PublicHeader />
       <Outlet />
       <BottomNav kind="client" />
+    </AppFrame>
+  );
+}
+
+/**
+ * Parcours client SANS barre d'onglets (fiche salon, détail d'un rendez-vous, réservation) :
+ * l'en-tête Salon DZ y reste, car c'est le seul moyen de revenir à l'accueil ou d'ouvrir le
+ * menu depuis ces écrans. Distinct de `PlainLayout`, qui sert la connexion et l'onboarding
+ * pro, où cet en-tête n'aurait rien à faire.
+ */
+export function ClientPlainLayout() {
+  return (
+    <AppFrame>
+      <PublicHeader />
+      <Outlet />
     </AppFrame>
   );
 }

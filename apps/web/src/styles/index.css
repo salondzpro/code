@@ -126,6 +126,30 @@
     padding: 0.75rem;
   }
 
+  /* Tiroir de menu : glisse depuis la gauche par-dessus la page assombrie. Il ne repousse
+     pas le contenu, ouvrir le menu ne doit pas déplacer ce qu'on lisait. */
+  .drw {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: min(85vw, 22rem);
+    padding: 0.75rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+    background: var(--color-surface);
+    overflow-y: auto;
+    animation: drw-in 0.22s ease-out;
+  }
+  @keyframes drw-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
   /* Onglets de fiche : soulignement de l'onglet actif, collés sous l'en-tête pour rester
      atteignables pendant le défilement. Trois onglets au plus, sinon le texte se serre. */
   .tabs {

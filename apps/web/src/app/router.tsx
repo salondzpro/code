@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import {
   ClientLayout,
+  ClientPlainLayout,
   PlainLayout,
   ProLayout,
   RequireAuth,
@@ -125,7 +126,7 @@ export const router = createBrowserRouter([
           },
           { path: '/carte', element: <MapView /> },
           {
-            element: <PlainLayout />,
+            element: <ClientPlainLayout />,
             children: [
               { path: '/localisation', element: <Localisation /> },
               { path: '/rendez-vous/:id', element: <BookingDetail /> },
@@ -140,7 +141,7 @@ export const router = createBrowserRouter([
       },
       // ---- Pages salon (publiques, lisibles sans compte) ----
       {
-        element: <PlainLayout />,
+        element: <ClientPlainLayout />,
         children: [
           { path: '/s/:slug', element: <Salon /> },
           { path: '/s/:slug/realisations', element: <SalonWorks /> },

@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { writeDraft } from '@/lib/bookingDraft';
 import { MiniMap } from '@/components/MiniMap';
-import { PublicHeader } from '@/components/PublicHeader';
 import { SalonGallery } from '@/components/SalonGallery';
 import {
   pagesItems,
@@ -144,15 +143,14 @@ export function Salon() {
 
   return (
     <div className="min-h-dvh pb-6">
-      {/* Visiteur arrivé par le lien du professionnel (sans compte) : en-tête complet Salon DZ, façon Planity. */}
-      {!session && <PublicHeader />}
       {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
           qu'on descend dans les prestations, sans avoir à remonter tout en haut. */}
       <Tabs
         label="Sections du salon"
         value={tab}
         onChange={setTab}
-        className={`sticky z-20 ${session ? 'top-0' : 'top-[3.75rem]'}`}
+        // L'en-tête fait 3,5 rem et reste collé : les onglets se posent juste dessous.
+        className="sticky top-[3.5rem] z-20"
         options={[
           { value: 'book', label: 'Prendre RDV' },
           { value: 'reviews', label: 'Avis' },
