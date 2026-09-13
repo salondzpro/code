@@ -201,7 +201,7 @@ export function ProBookingNew() {
                 aria-label={sl.t}
                 data-time={sl.t}
                 disabled={sl.taken}
-                className={`pill mono flex-none !px-3.5 !py-2.5 !text-[1rem] font-semibold ${sl.t === time ? 'on' : sl.taken ? 'soft !text-disabled line-through' : '!border-ink'}`}
+                className={`pill mono flex-none !rounded-[0.571rem] !px-3.5 !py-2.5 !text-[1rem] font-semibold ${sl.t === time ? 'on' : sl.taken ? 'soft !text-disabled line-through' : '!border-ink'}`}
                 onClick={() => setTime(sl.t)}
               >
                 {sl.t}

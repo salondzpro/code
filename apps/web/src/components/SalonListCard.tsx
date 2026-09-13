@@ -148,7 +148,7 @@ export function NextSlots({
           <button
             key={t}
             type="button"
-            className="pill mono !border-ink !px-3 !py-1.5 !text-[1rem] font-bold hover:!bg-fill"
+            className="pill mono !rounded-[0.571rem] !border-ink !px-3 !py-1.5 !text-[1rem] font-bold hover:!bg-fill"
             aria-label={`Réserver ${day} à ${t}`}
             onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
           >
@@ -178,7 +178,7 @@ export function NextSlots({
               <button
                 key={t}
                 type="button"
-                className="pill mono !border-ink !px-3 !py-2 !text-[1rem] font-bold hover:!bg-fill"
+                className="pill mono !rounded-[0.571rem] !border-ink !px-3 !py-2 !text-[1rem] font-bold hover:!bg-fill"
                 aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
                 onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
               >

@@ -37,7 +37,7 @@ export function RatingPill({
           gap: 3,
           alignSelf: 'flex-start',
           backgroundColor: C.fill,
-          borderRadius: R.pill,
+          borderRadius: R.slot,
           paddingHorizontal: 10,
           paddingVertical: 5,
         },
@@ -94,7 +94,7 @@ export function SlotPills({
           key={t}
           style={{
             backgroundColor: C.fill,
-            borderRadius: R.pill,
+            borderRadius: R.slot,
             paddingHorizontal: 13,
             paddingVertical: 8,
           }}
@@ -201,7 +201,7 @@ export function NextSlots({
               style={({ pressed }) => ({
                 borderWidth: 1,
                 borderColor: C.ink,
-                borderRadius: R.pill,
+                borderRadius: R.slot,
                 paddingHorizontal: 10,
                 paddingVertical: 5,
                 backgroundColor: pressed ? C.fill : C.surface,
@@ -252,7 +252,7 @@ export function NextSlots({
                 style={({ pressed }) => ({
                   borderWidth: 1,
                   borderColor: C.ink,
-                  borderRadius: R.pill,
+                  borderRadius: R.slot,
                   paddingHorizontal: 10,
                   paddingVertical: 6,
                   backgroundColor: pressed ? C.fill : C.surface,
