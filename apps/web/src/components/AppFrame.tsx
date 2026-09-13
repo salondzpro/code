@@ -2,17 +2,17 @@
  * Cadre d'application : une colonne de largeur téléphone (390–430 px) centrée sur
  * grand écran, fond « écran » du design, barre d'onglets flottante « verre » en bas.
  */
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 
 /**
  * Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée.
- * La barre flottante mesure 4 rem et se pose à 0.875 rem du bas, soit 78 px : 88 laisse
- * juste le dégagement nécessaire au lieu des 26 px de vide qu'on réservait avant.
+ * La barre flottante déployée mesure 4,5 rem et se pose à 0,875 rem du bas, soit 76 px :
+ * 96 laisse le dégagement nécessaire, voile compris, sans réserver de vide inutile.
  */
-export const NAV_PAD = 88;
+export const NAV_PAD = 96;
 export const SHEET_PAD = 132;
 
 export function AppFrame({
@@ -80,25 +80,56 @@ const PRO_NAV: NavItem[] = [
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
   const items = kind === 'client' ? CLIENT_NAV : PRO_NAV;
+  /**
+   * La barre se réduit aux icônes pendant le défilement, et se rouvre avec ses libellés dès
+   * qu'on s'arrête : elle rend de la hauteur au contenu quand on parcourt, et redevient
+   * explicite quand on cherche où aller.
+   */
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const onScroll = () => {
+      // Tout en haut, la barre reste ouverte : rien à gagner à la réduire.
+      setCompact(window.scrollY > 24);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setCompact(false), 700);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   return (
-    <nav
-      className="nvb"
-      aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}
-    >
-      {items.map((it) => (
-        <NavLink
-          key={it.to}
-          to={it.to}
-          end={it.end}
-          className={({ isActive }) => `nvi${isActive ? ' on' : ''}`}
-          aria-label={it.label}
-          title={it.label}
-        >
-          {({ isActive }) => (
-            <I icon={it.icon} size={24} strokeWidth={isActive ? 2 : 1.6} className="text-current" />
-          )}
-        </NavLink>
-      ))}
-    </nav>
+    <>
+      <span aria-hidden className="nvb-veil" />
+      <nav
+        className={`nvb${compact ? ' cmp' : ''}`}
+        aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}
+      >
+        {items.map((it) => (
+          <NavLink
+            key={it.to}
+            to={it.to}
+            end={it.end}
+            className={({ isActive }) => `nvi${isActive ? ' on' : ''}`}
+            title={it.label}
+          >
+            {({ isActive }) => (
+              <>
+                <I
+                  icon={it.icon}
+                  size={22}
+                  strokeWidth={isActive ? 2 : 1.6}
+                  className="text-current"
+                />
+                <span className="nvl">{it.label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+    </>
   );
 }
