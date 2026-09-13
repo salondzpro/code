@@ -22,14 +22,15 @@ export function BookingServices() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const salon = useSalon(slug);
-  const [selected, setSelected] = useState<string[]>(() => {
-    const fromUrl = (params.get('services') ?? '').split(',').filter(Boolean);
-    return fromUrl.length ? fromUrl : readDraft(slug).serviceIds;
-  });
-
-  useEffect(() => {
-    writeDraft(slug, { serviceIds: selected });
-  }, [slug, selected]);
+  /**
+   * UNE prestation par rendez-vous, comme sur la fiche du salon : « Choisir » écrase le
+   * brouillon avec un seul identifiant et passe à l'horaire. Deux prestations = deux
+   * rendez-vous.
+   */
+  const chooseService = (id: string) => {
+    writeDraft(slug, { serviceIds: [id] });
+    navigate(`/s/${slug}/reserver/quand`);
+  };
 
   // Créneau proposé sur la carte marketplace (?date=YYYY-MM-DD&time=HH:mm) : pré-rempli dans le brouillon,
   // l'écran « Quand » s'ouvre directement dessus (et le libère s'il n'est plus disponible).
@@ -42,39 +43,38 @@ export function BookingServices() {
   }, [slug, params]);
 
   const s = salon.data;
-  const chosen = useMemo(() => (s ? selected.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x) : []), [s, selected]);
-  const total = chosen.reduce((a, x) => a + x.priceDa, 0);
-  const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
 
   if (salon.isPending) return <Splash />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 
   const groups = groupServices(s.services);
-  const toggle = (id: string) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const Row = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => {
-    const on = selected.includes(sv.id);
-    const photo = sv.photos?.[0]?.url ?? s.coverUrl;
-    return (
-      <button type="button" onClick={() => toggle(sv.id)} className={`flex w-full items-center gap-4 text-left ${boxed ? 'crd !flex-row' : 'li'}`} aria-pressed={on}>
-        <Img src={photo} className="h-[5.5rem] w-[5.5rem] flex-none !rounded-[1rem]" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>
-          <span className="block text-[0.8125rem] text-muted">
-            {[formatDuration(sv.durationMinutes), boxed ? sv.description : null, formatDA(sv.priceDa)].filter(Boolean).join(' · ')}
-          </span>
+  const Row = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => (
+    <div className={`flex w-full items-start gap-3 ${boxed ? 'crd !flex-row' : 'li !items-start'}`}>
+      <div className="min-w-0 flex-1">
+        <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>
+        {sv.description && (
+          <span className="mt-0.5 block text-[0.875rem] text-muted">{sv.description}</span>
+        )}
+        <span className="mt-1 block text-[0.9375rem] font-semibold">
+          {formatDA(sv.priceDa)}
+          <span className="font-normal text-muted"> · {formatDuration(sv.durationMinutes)}</span>
         </span>
-        <span className={`chk${on ? ' on' : ''}`} aria-hidden>
-          {on && <I icon={Check} size={16} />}
-        </span>
-      </button>
-    );
-  };
+      </div>
+      <Button sm auto className="mt-0.5 flex-none !rounded-full !px-5" onClick={() => chooseService(sv.id)}>
+        Choisir
+      </Button>
+    </div>
+  );
 
   return (
-    <Screen bottom={SHEET_PAD} gap={14}>
+    <Screen gap={12}>
       <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[0.9375rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
       <h1 className="h1">Prestations</h1>
+      <p className="p !text-[0.875rem]">
+        Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par
+        prestation.
+      </p>
       {groups.map((g) =>
         g.name === 'Formule' ? (
           <div key={g.name} className="flex flex-col gap-3">
@@ -96,26 +96,6 @@ export function BookingServices() {
       )}
       {groups.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
 
-      <BottomSheet>
-        {chosen.length > 0 ? (
-          <>
-            <p className="p">{chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}</p>
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <div className="text-[1.5rem] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
-                <div className="p">
-                  {chosen.length} prestation{chosen.length > 1 ? 's' : ''} · {formatDuration(minutes)} au total
-                </div>
-              </div>
-              <Button auto className="!rounded-full !px-6 !py-4" onClick={() => navigate(`/s/${s.slug}/reserver/quand`)}>
-                Choisir un créneau
-              </Button>
-            </div>
-          </>
-        ) : (
-          <p className="p py-2 text-center">Cochez une ou plusieurs prestations.</p>
-        )}
-      </BottomSheet>
     </Screen>
   );
 }

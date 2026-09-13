@@ -38,14 +38,14 @@ export default function BookingServices() {
   } = useLocalSearchParams<{ slug: string; services?: string; date?: string; time?: string }>();
   const router = useRouter();
   const salon = useSalon(slug);
-  const [selected, setSelected] = useState<string[]>(() => {
-    const ids = fromUrl.split(',').filter(Boolean);
-    return ids.length ? ids : readDraft(slug).serviceIds;
-  });
-
-  useEffect(() => {
-    writeDraft(slug, { serviceIds: selected });
-  }, [slug, selected]);
+  /**
+   * UNE prestation par rendez-vous, comme sur la fiche du salon : « Choisir » écrase le
+   * brouillon avec un seul identifiant et passe à l'horaire.
+   */
+  const chooseService = (id: string) => {
+    writeDraft(slug, { serviceIds: [id] });
+    router.push(`/s/${slug}/reserver/quand` as never);
+  };
 
   // Créneau proposé sur la carte marketplace (date + heure) : pré-rempli, l'écran « Quand » s'ouvre dessus.
   useEffect(() => {
@@ -60,15 +60,6 @@ export default function BookingServices() {
   }, [slug, fromDate, fromTime]);
 
   const s = salon.data;
-  const chosen = useMemo(
-    () =>
-      s
-        ? selected.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x)
-        : [],
-    [s, selected],
-  );
-  const total = chosen.reduce((a, x) => a + x.priceDa, 0);
-  const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
 
   if (salon.isPending) return <Splash />;
   if (salon.isError || !s)
@@ -79,106 +70,61 @@ export default function BookingServices() {
     );
 
   const groups = groupServices(s.services);
-  const toggle = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const ServiceRow = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => {
-    const on = selected.includes(sv.id);
-    const photo = sv.photos?.[0]?.url ?? s.coverUrl;
     const inner = (
       <>
-        <Img src={photo} radius={13} style={{ width: 72, height: 72 }} />
-        <View style={{ flex: 1, minWidth: 0 }}>
+        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
           <Tx size={14} weight={700} ls={-0.3} lh={18}>
             {sv.name}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
-            {[
-              formatDuration(sv.durationMinutes),
-              boxed ? sv.description : null,
-              formatDA(sv.priceDa),
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+          {!!sv.description && (
+            <Tx size={11.5} color={C.muted} lh={15}>
+              {sv.description}
+            </Tx>
+          )}
+          <Tx size={12.5} weight={600} lh={16}>
+            {formatDA(sv.priceDa)}
+            <Tx size={12.5} color={C.muted} lh={16}>
+              {` · ${formatDuration(sv.durationMinutes)}`}
+            </Tx>
           </Tx>
         </View>
-        <Checkbox on={on} label={sv.name} />
+        <Button sm auto pill onPress={() => chooseService(sv.id)}>
+          <Tx size={12} weight={600} color="#fff" ls={-0.2}>
+            Choisir
+          </Tx>
+        </Button>
       </>
     );
     if (boxed)
       return (
-        <Card row gap={13} onPress={() => toggle(sv.id)} accessibilityLabel={sv.name}>
+        <Card row gap={10} style={{ alignItems: 'flex-start' }}>
           {inner}
         </Card>
       );
     return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ selected: on }}
-        accessibilityLabel={sv.name}
-        onPress={() => toggle(sv.id)}
-        style={({ pressed }) => ({
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-          paddingVertical: 13,
-          opacity: pressed ? 0.8 : 1,
-        })}
+      <View
+        style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 11 }}
       >
         {inner}
-      </Pressable>
+      </View>
     );
   };
 
   return (
     <Screen
       gap={11}
-      footer={
-        <BottomSheet>
-          {chosen.length > 0 ? (
-            <>
-              <P>
-                {chosen.map((x) => `${x.name} ${shortDuration(x.durationMinutes)}`).join(' + ')}
-              </P>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-end',
-                  justifyContent: 'space-between',
-                  gap: 10,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
-                    {formatDA(total)}
-                  </Tx>
-                  <P>
-                    {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
-                    {formatDuration(minutes)} au total
-                  </P>
-                </View>
-                <Button
-                  pill
-                  onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
-                  style={{ paddingHorizontal: 20, paddingVertical: 13 }}
-                >
-                  Choisir un créneau
-                </Button>
-              </View>
-            </>
-          ) : (
-            <View style={{ paddingVertical: 6 }}>
-              <P center>Cochez une ou plusieurs prestations.</P>
-            </View>
-          )}
-        </BottomSheet>
-      }
     >
       <TopBar
         backTo={`/s/${s.slug}`}
         right={<Pill soft>{`${s.name} · ${s.genderTarget === 'men' ? 'Homme' : 'Femme'}`}</Pill>}
       />
       <H1>Prestations</H1>
+      <P>
+        Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par
+        prestation.
+      </P>
       {groups.map((g) =>
         g.name === 'Formule' ? (
           <View key={g.name} style={{ gap: 10 }}>

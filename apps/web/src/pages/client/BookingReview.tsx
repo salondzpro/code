@@ -26,6 +26,7 @@ import {
   timeToMinutes,
   toLocalDateKey,
   wilayaName,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { clearDraft, readDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
@@ -103,7 +104,7 @@ export function BookingReview() {
             <I icon={Ban} size={22} /> Réservation en ligne impossible
           </span>
           <p className="text-[1rem] text-cancel-fg">{blockedMessage}</p>
-          {s.phone && (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
             <a href={`tel:${s.phone}`} className="btn g sm !py-[1.125rem] !text-[1rem]">
               <I icon={Phone} size={18} /> Appeler le salon
             </a>

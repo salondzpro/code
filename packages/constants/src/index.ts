@@ -11,6 +11,7 @@ export * from './phone';
 export * from './brandLogos';
 export * from './realtime';
 export * from './reasons';
+export * from './visibility';
 
 export const APP_NAME = 'SalonDZ';
 export const DEFAULT_LOCALE = 'fr' as const;

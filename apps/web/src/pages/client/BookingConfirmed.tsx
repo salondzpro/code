@@ -10,6 +10,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   wilayaName,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { Avatar, Button, I, StatusBadge } from '@/components/ui';
 import { LateRule } from '@/components/LateRule';
@@ -83,7 +84,9 @@ export function BookingConfirmed() {
             </span>
             <span className="block text-[0.8125rem] text-muted">
               {b.salon.city}
-              {b.salon.phone ? ` · ${formatDZPhone(b.salon.phone)}` : ''}
+              {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
+                ? ` · ${formatDZPhone(b.salon.phone)}`
+                : ''}
             </span>
           </span>
         </div>

@@ -26,6 +26,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   untilLabelFR,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import type { BookingWithSalon } from '@salondz/types';
 import { useAuth } from '@/lib/auth';
@@ -206,7 +207,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               <ActionLabel>Reporter</ActionLabel>
             </Button>
           )}
-          {!!b.salon.phone && (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && !!b.salon.phone && (
             <IconButton
               lg
               accessibilityLabel={`Appeler ${b.salon.name}`}

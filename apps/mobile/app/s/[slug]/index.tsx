@@ -43,6 +43,7 @@ import {
   LATE_TOLERANCE_MINUTES,
   dayOfWeekFromKey,
   toLocalDateKey,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import type { Service } from '@salondz/types';
 import { useAuth } from '@/lib/auth';
@@ -91,19 +92,17 @@ export default function Salon() {
   const [tab, setTab] = useState<Tab>('book');
   // Catégories repliées par défaut : le client voit d'abord le salon, puis ouvre la sienne.
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 5, 'best');
   const reviewItems = pagesItems(reviews.data);
   // Hauteur réelle de la feuille du bas (bandeau, résumé, bouton) → espace inférieur du contenu.
-  const [sheetH, setSheetH] = useState(0);
-  // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
-  const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
-  const [hint, setHint] = useState(false);
-  useEffect(() => {
-    writeDraft(slug, { serviceIds: selected });
-  }, [slug, selected]);
-  const toggleService = (id: string) => {
-    setHint(false);
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  /**
+   * UNE prestation par rendez-vous. Deux prestations, c'est deux rendez-vous : le salon
+   * garde ainsi la main sur la durée réelle de chaque créneau.
+   */
+  const chooseService = (id: string) => {
+    writeDraft(slug, { serviceIds: [id] });
+    router.push(`/s/${slug}/reserver/quand` as never);
   };
 
   if (salon.isPending) return <Splash />;
@@ -128,120 +127,15 @@ export default function Salon() {
     : null;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`;
   const works = s.works;
-  const chosen = selected
-    .map((id) => s.services.find((x) => x.id === id))
-    .filter((x): x is Service => !!x);
-  const total = chosen.reduce((a, x) => a + x.priceDa, 0);
-  const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(client)/(tabs)'));
 
   return (
     <Screen
       px={0}
-      bottom={sheetH ? sheetH + 24 : undefined}
+      bottom={24}
       top={0}
       gap={0}
       edges={[]}
-      footer={
-        <BottomSheet grab={false}>
-          <View onLayout={(e) => setSheetH(e.nativeEvent.layout.height + 40)} style={{ gap: 10 }}>
-            {cannotBook && !!standing.data?.message && (
-              <View
-                accessibilityRole="alert"
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  gap: 10,
-                  borderRadius: 13,
-                  borderWidth: 1,
-                  borderColor: C.dangerLine,
-                  backgroundColor: C.cancelBg,
-                  paddingHorizontal: 13,
-                  paddingVertical: 10,
-                }}
-              >
-                <I icon={Ban} size={17} color={C.danger} />
-                <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                  <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
-                    Réservation en ligne impossible
-                  </Tx>
-                  <Tx size={12} lh={16} color={C.cancelFg}>
-                    {standing.data.message}
-                  </Tx>
-                  {!!s.phone && (
-                    <Pressable
-                      accessibilityRole="link"
-                      onPress={() => void open(`tel:${s.phone}`)}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}
-                    >
-                      <I icon={Phone} size={12} color={C.cancelFg} />
-                      <Tx
-                        size={12}
-                        weight={600}
-                        lh={16}
-                        color={C.cancelFg}
-                        style={{ textDecorationLine: 'underline' }}
-                      >
-                        Appeler le salon
-                      </Tx>
-                    </Pressable>
-                  )}
-                </View>
-              </View>
-            )}
-            {chosen.length > 0 ? (
-              <View style={{ gap: 10 }}>
-                {/* Prix et résumé à gauche (tronqués si besoin), bouton à droite qui ne se déforme jamais. */}
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 10,
-                  }}
-                >
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
-                      {formatDA(total)}
-                    </Tx>
-                    <Tx size={12} color={C.muted} lh={16} numberOfLines={1}>
-                      {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
-                      {formatDuration(minutes)} au total
-                    </Tx>
-                  </View>
-                  <Button
-                    pill
-                    onPress={() => router.push(`/s/${s.slug}/reserver/quand` as never)}
-                    style={{ paddingHorizontal: 18, paddingVertical: 13, flexShrink: 0 }}
-                    disabled={cannotBook}
-                  >
-                    <Tx size={12} weight={600} color={C.onInk} lh={16} numberOfLines={1}>
-                      Choisir un créneau
-                    </Tx>
-                  </Button>
-                </View>
-              </View>
-            ) : (
-              <View style={{ gap: 8 }}>
-                {hint && (
-                  <Tx size={12} color={C.danger} lh={16} center accessibilityRole="alert">
-                    Cochez une ou plusieurs prestations ci-dessus.
-                  </Tx>
-                )}
-                <Button
-                  onPress={() => {
-                    setTab('book');
-                    setHint(true);
-                  }}
-                  disabled={cannotBook}
-                >
-                  Réserver
-                </Button>
-              </View>
-            )}
-          </View>
-        </BottomSheet>
-      }
     >
       {/* Onglets avant la couverture, comme sur le web : ils commandent la page. */}
       <Tabs
@@ -353,7 +247,7 @@ export default function Salon() {
 
         {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
         <Grid cols={2}>
-          {s.phone ? (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
             <Button variant="g" sm onPress={() => void Linking.openURL(`tel:${s.phone}`).catch(() => undefined)}>
               <Tx size={12.5} weight={600} ls={-0.2}>
                 Appeler
@@ -375,9 +269,57 @@ export default function Salon() {
 
         {tab === 'book' && (
           <View style={{ gap: 9 }}>
+            {cannotBook && !!standing.data?.message && (
+              <View
+                accessibilityRole="alert"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  borderRadius: 13,
+                  borderWidth: 1,
+                  borderColor: C.dangerLine,
+                  backgroundColor: C.cancelBg,
+                  paddingHorizontal: 13,
+                  paddingVertical: 10,
+                }}
+              >
+                <I icon={Ban} size={17} color={C.danger} />
+                <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                  <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
+                    Réservation en ligne impossible
+                  </Tx>
+                  <Tx size={12} lh={16} color={C.cancelFg}>
+                    {standing.data.message}
+                  </Tx>
+                  {SHOW_SALON_CONTACT_TO_CLIENTS && !!s.phone && (
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => void open(`tel:${s.phone}`)}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}
+                    >
+                      <I icon={Phone} size={12} color={C.cancelFg} />
+                      <Tx
+                        size={12}
+                        weight={600}
+                        lh={16}
+                        color={C.cancelFg}
+                        style={{ textDecorationLine: 'underline' }}
+                      >
+                        Appeler le salon
+                      </Tx>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+            )}
             <Tx size={15} weight={700} ls={-0.5} lh={19}>
               Choix de la prestation
             </Tx>
+            <P>
+              Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par
+              prestation.
+            </P>
             {groups.map((g) => (
               <Accordion
                 key={g.name}
@@ -387,37 +329,47 @@ export default function Salon() {
                 onToggle={() => setOpenGroup((cur) => (cur === g.name ? null : g.name))}
               >
                 <View>
-                  {g.services.map((sv) => {
-                    const on = selected.includes(sv.id);
-                    return (
-                      <Row
-                        key={sv.id}
-                        onPress={() => toggleService(sv.id)}
-                        accessibilityLabel={sv.name}
-                        py={13}
-                        chevron={false}
-                        right={<Checkbox on={on} label={sv.name} />}
+                  {g.services.map((sv, i) => (
+                    <View
+                      key={sv.id}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                        gap: 10,
+                        paddingVertical: 11,
+                        borderBottomWidth: i === g.services.length - 1 ? 0 : 1,
+                        borderBottomColor: C.lineSoft,
+                      }}
+                    >
+                      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                        <Tx size={13.5} weight={700} ls={-0.3} lh={17.5}>
+                          {sv.name}
+                        </Tx>
+                        {!!sv.description && (
+                          <Tx size={11.5} color={C.muted} lh={15}>
+                            {sv.description}
+                          </Tx>
+                        )}
+                        <Tx size={12.5} weight={600} lh={16}>
+                          {formatDA(sv.priceDa)}
+                          <Tx size={12.5} color={C.muted} lh={16}>
+                            {` · ${formatDuration(sv.durationMinutes)}`}
+                          </Tx>
+                        </Tx>
+                      </View>
+                      <Button
+                        sm
+                        auto
+                        pill
+                        disabled={cannotBook}
+                        onPress={() => chooseService(sv.id)}
                       >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-                          {!!sv.photos?.[0]?.url && (
-                            <Img
-                              src={sv.photos[0].url}
-                              radius={11}
-                              style={{ width: 52, height: 52 }}
-                            />
-                          )}
-                          <View style={{ flex: 1, minWidth: 0 }}>
-                            <Tx size={13.5} weight={700} ls={-0.3} lh={17.5}>
-                              {sv.name}
-                            </Tx>
-                            <Tx size={12} color={C.muted} lh={16}>
-                              {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
-                            </Tx>
-                          </View>
-                        </View>
-                      </Row>
-                    );
-                  })}
+                        <Tx size={12} weight={600} color="#fff" ls={-0.2}>
+                          Choisir
+                        </Tx>
+                      </Button>
+                    </View>
+                  ))}
                 </View>
               </Accordion>
             ))}
@@ -472,218 +424,126 @@ export default function Salon() {
         )}
 
         {tab === 'about' && (
-          <>
-            {!!s.description && <P>{s.description}</P>}
-            {!!cats && (
-              <Tx size={12} color={C.muted} lh={16}>
-                {cats}
-              </Tx>
-            )}
-            <Tx size={15} weight={700} ls={-0.5} lh={19}>
-              Réalisations
-            </Tx>
-            {works.length === 0 ? (
-              <P>Pas encore de réalisations.</P>
-            ) : (
-              <Grid cols={2}>
-                {works.slice(0, 8).map((p) => (
-                  <Img key={p.id} src={p.url} style={{ width: '100%', aspectRatio: 1 }} />
-                ))}
-              </Grid>
-            )}
-            {works.length > 8 && (
-              <Button variant="g" onPress={() => router.push(`/s/${s.slug}/realisations` as never)}>
-                Voir toutes les réalisations
-              </Button>
-            )}
-          </>
-        )}
-
-        {tab === 'about' && (
           <View style={{ gap: 9 }}>
+            {/* 1. Où. L'adresse d'abord, la carte ensuite. */}
             <Tx size={15} weight={700} ls={-0.5} lh={19}>
-              Informations
+              Où se situe le salon ?
             </Tx>
-            {/* Aujourd'hui en premier et en grand, puis la semaine à partir d'aujourd'hui. */}
-            <Card
-              gap={6}
-              style={status.open ? { backgroundColor: C.okBg, borderColor: C.okFg } : undefined}
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Itinéraire vers le salon"
+              onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <I icon={Clock} size={13} color={C.muted} />
-                <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
-                  Aujourd'hui · {DAY_LABELS_FR[todayDow]}
-                </Tx>
-              </View>
-              <Tx size={23} weight={700} ls={-0.8} lh={27} mono>
-                {todayRows.length
-                  ? todayRows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
-                  : 'Fermé aujourd’hui'}
+              <I icon={MapPin} size={14} color={C.muted} />
+              <Tx size={12} lh={16} style={{ flex: 1, textDecorationLine: 'underline' }}>
+                {s.address ? `${s.address}, ${place}` : place}
               </Tx>
-              <Tx size={13} weight={600} lh={17} color={status.open ? C.okFg : C.muted}>
-                {status.label}
+            </Pressable>
+            <Button onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
+              <Tx size={13} weight={600} color="#fff" ls={-0.2}>
+                Afficher la carte
               </Tx>
-            </Card>
+            </Button>
+
+            {/* 2. Quand. Aujourd'hui en tête, puis la semaine. */}
+            <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+              Horaires d'ouverture
+            </Tx>
             <ListCard>
               {weekFromToday.map((d, idx) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
-                  <Row
-                    key={d}
-                    py={11}
-                    chevron={false}
-                    right={
-                      <Tx size={13} lh={17} mono color={rows.length ? C.text : C.danger}>
-                        {rows.length
-                          ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ')
-                          : 'Fermé'}
-                      </Tx>
-                    }
-                  >
-                    <Tx size={13} weight={idx === 0 ? 700 : 400} lh={17}>
+                  <Row key={d} chevron={false} right={
+                    <Tx size={12.5} weight={rows.length ? 600 : 400} lh={16} color={rows.length ? C.text : C.muted} mono>
+                      {rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}
+                    </Tx>
+                  }>
+                    <Tx size={12.5} weight={idx === 0 ? 700 : 400} lh={16}>
                       {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
-                      {idx <= 1 ? (
-                        <Tx size={12} color={C.muted} lh={17}>
-                          {'  '}
-                          {DAY_LABELS_FR[d]}
-                        </Tx>
-                      ) : null}
                     </Tx>
                   </Row>
                 );
               })}
             </ListCard>
 
-            <Card gap={10}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-                <View
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: C.fill,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <I icon={MapPin} size={16} />
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={14} weight={700} lh={18}>
-                    {s.address || place}
-                  </Tx>
-                  {!!s.address && (
-                    <Tx size={12} color={C.muted} lh={16}>
-                      {place}
-                    </Tx>
-                  )}
-                </View>
-              </View>
-              <Button
-                variant="g"
-                sm
-                onPress={() =>
-                  void open(
-                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`,
-                  )
-                }
-              >
-                <I icon={Navigation} size={14.5} />
-                <Tx size={13} weight={600} lh={17}>
-                  Itinéraire
+            {/* 3. Qui. */}
+            {s.staff.length > 0 && (
+              <>
+                <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+                  {s.staff.length > 1 ? 'Collaborateurs' : 'Collaborateur'}
                 </Tx>
-              </Button>
-            </Card>
+                <ListCard>
+                  {s.staff.map((m) => (
+                    <Row key={m.id} chevron={false}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Avatar src={m.avatarUrl} name={m.displayName} size={40} />
+                        <Tx size={13} weight={600} lh={17}>
+                          {m.displayName}
+                        </Tx>
+                      </View>
+                    </Row>
+                  ))}
+                </ListCard>
+              </>
+            )}
 
-            {!!s.phone && (
-              <Card gap={10}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-                  <View
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 18,
-                      backgroundColor: C.fill,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <I icon={Phone} size={16} />
+            {/* 4. Ce qu'il faut savoir, replié. */}
+            {(!!s.description || !!cats) && (
+              <>
+                <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+                  Informations
+                </Tx>
+                <Accordion
+                  title="À propos du salon"
+                  open={aboutOpen}
+                  onToggle={() => setAboutOpen((v) => !v)}
+                >
+                  <View style={{ gap: 4, paddingVertical: 10 }}>
+                    {!!s.description && <P>{s.description}</P>}
+                    {!!cats && (
+                      <Tx size={12} color={C.muted} lh={16}>
+                        {cats}
+                      </Tx>
+                    )}
                   </View>
-                  <Tx size={16} weight={700} lh={20} mono>
-                    {formatDZPhone(s.phone)}
-                  </Tx>
-                </View>
-                <Grid cols={2} gap={8}>
-                  <Button variant="g" sm onPress={() => void open(`tel:${s.phone}`)}>
-                    <I icon={Phone} size={14.5} />
-                    <Tx size={13} weight={600} lh={17}>
-                      Appeler
-                    </Tx>
-                  </Button>
+                </Accordion>
+              </>
+            )}
+
+            {/* 5. Réalisations. */}
+            {works.length > 0 && (
+              <>
+                <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+                  Réalisations
+                </Tx>
+                <Grid cols={2}>
+                  {works.slice(0, 6).map((ph) => (
+                    <Img key={ph.id} src={ph.url} style={{ width: '100%', aspectRatio: 1 }} />
+                  ))}
+                </Grid>
+                {works.length > 6 && (
                   <Button
                     variant="g"
-                    sm
-                    onPress={() => void open(`https://wa.me/${s.phone!.replace(/\D/g, '')}`)}
+                    onPress={() => router.push(`/s/${s.slug}/realisations` as never)}
                   >
-                    <I icon={MessageCircle} size={14.5} />
-                    <Tx size={13} weight={600} lh={17}>
-                      WhatsApp
-                    </Tx>
+                    Voir toutes les réalisations
                   </Button>
-                </Grid>
-              </Card>
+                )}
+              </>
             )}
 
-            {s.staff.length > 0 && (
-              <Card gap={10}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <I icon={Users} size={13} color={C.muted} />
-                  <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
-                    Équipe · {s.staff.length}
-                  </Tx>
-                </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {s.staff.map((m) => (
-                    <View
-                      key={m.id}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 6,
-                        borderRadius: 999,
-                        borderWidth: 1,
-                        borderColor: C.line,
-                        backgroundColor: C.surface,
-                        paddingVertical: 3,
-                        paddingLeft: 3,
-                        paddingRight: 11,
-                      }}
-                    >
-                      <Avatar src={m.avatarUrl} name={m.displayName} size={26} />
-                      <Tx size={13} weight={600} lh={17}>
-                        {m.displayName}
-                      </Tx>
-                    </View>
-                  ))}
-                </View>
-              </Card>
-            )}
-
-            <Card gap={6}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <I icon={Info} size={13} color={C.muted} />
-                <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
-                  Bon à savoir
-                </Tx>
-              </View>
-              <Tx size={13} lh={18}>
+            <Card gap={5}>
+              <Tx size={12} weight={700} lh={16}>
+                Bon à savoir
+              </Tx>
+              <Tx size={12} lh={16}>
                 • Réservation en ligne, paiement sur place.
               </Tx>
-              <Tx size={13} lh={18}>
+              <Tx size={12} lh={16}>
                 • Annulation ou report en ligne jusqu'à {s.cancelMinHours} h avant le rendez-vous.
               </Tx>
-              <Tx size={13} lh={18}>
+              <Tx size={12} lh={16}>
                 • Arrivez {ARRIVAL_ADVANCE_MINUTES} min avant l'heure : retard toléré{' '}
                 {LATE_TOLERANCE_MINUTES} min.
               </Tx>

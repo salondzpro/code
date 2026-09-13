@@ -11,6 +11,7 @@ import {
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import type { BookingWithSalon } from '@salondz/types';
 import { api } from '@/lib/api';
@@ -93,7 +94,9 @@ export default function BookingConfirmed() {
             </Tx>
             <Tx size={10.5} color={C.muted} lh={15.5}>
               {b.salon.city}
-              {b.salon.phone ? ` · ${formatDZPhone(b.salon.phone)}` : ''}
+              {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
+                ? ` · ${formatDZPhone(b.salon.phone)}`
+                : ''}
             </Tx>
           </View>
         </View>

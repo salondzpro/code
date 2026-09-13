@@ -6,21 +6,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
 import {
-  Check,
   ChevronLeft,
   Heart,
   Share2,
-  Clock,
   Info,
   MapPin,
-  MessageCircle,
+  Map as MapIcon,
   Navigation,
   Phone,
-  Users,
   Ban,
   Star,
 } from 'lucide-react';
-import { readDraft, writeDraft } from '@/lib/bookingDraft';
+import { writeDraft } from '@/lib/bookingDraft';
+import { MiniMap } from '@/components/MiniMap';
 import { PublicHeader } from '@/components/PublicHeader';
 import {
   pagesItems,
@@ -37,7 +35,6 @@ import {
   WEEK_DAYS,
   categoryLabel,
   formatDA,
-  formatDZPhone,
   wilayaName,
   groupServices,
   formatDateShortDZ,
@@ -45,13 +42,13 @@ import {
   LATE_TOLERANCE_MINUTES,
   dayOfWeekFromKey,
   toLocalDateKey,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
 import {
   Accordion,
-  BottomSheet,
   Button,
   I,
   IconButton,
@@ -92,24 +89,6 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
   return { open: false, label: 'Fermé' };
 }
 
-/** Hauteur réelle de la feuille du bas (bandeau, résumé, bouton) → espace inférieur du contenu, rien n'est masqué. */
-function useSheetHeight(): [(el: HTMLDivElement | null) => void, number] {
-  const [h, setH] = useState(SHEET_PAD);
-  const ro = useRef<ResizeObserver | null>(null);
-  // Ref de rappel : la feuille n'existe qu'une fois le salon chargé, l'observateur s'attache à ce moment-là.
-  const ref = useCallback((el: HTMLDivElement | null) => {
-    ro.current?.disconnect();
-    ro.current = null;
-    if (!el) return;
-    const update = () => setH(Math.ceil(el.getBoundingClientRect().height) + 24);
-    update();
-    if (typeof ResizeObserver !== 'undefined') {
-      ro.current = new ResizeObserver(update);
-      ro.current.observe(el);
-    }
-  }, []);
-  return [ref, h];
-}
 
 export function Salon() {
   const { slug = '' } = useParams();
@@ -125,17 +104,16 @@ export function Salon() {
   // Catégories repliées par défaut : le client voit d'abord le salon, puis ouvre la sienne.
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [reviewSort, setReviewSort] = useState<ReviewSort>('best');
-  const [sheetRef, sheetH] = useSheetHeight();
+  const [aboutOpen, setAboutOpen] = useState(false);
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 5, reviewSort);
-  // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
-  const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
-  const [hint, setHint] = useState(false);
-  useEffect(() => {
-    writeDraft(slug, { serviceIds: selected });
-  }, [slug, selected]);
-  const toggleService = (id: string) => {
-    setHint(false);
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  /**
+   * UNE prestation par rendez-vous. Deux prestations, c'est deux rendez-vous : le salon
+   * garde ainsi la main sur la durée réelle de chaque créneau. « Choisir » écrit donc un
+   * brouillon d'un seul élément, en écrasant ce qu'il contenait, et enchaîne sur l'horaire.
+   */
+  const chooseService = (id: string) => {
+    writeDraft(slug, { serviceIds: [id] });
+    navigate(`/s/${slug}/reserver/quand`);
   };
 
   if (salon.isPending) return <Splash />;
@@ -156,14 +134,9 @@ export function Salon() {
     : null;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`;
   const reviewItems = pagesItems(reviews.data);
-  const chosen = selected
-    .map((id) => s.services.find((x) => x.id === id))
-    .filter((x): x is Service => !!x);
-  const total = chosen.reduce((a, x) => a + x.priceDa, 0);
-  const minutes = chosen.reduce((a, x) => a + x.durationMinutes, 0);
 
   return (
-    <div className="min-h-dvh" style={{ paddingBottom: sheetH }}>
+    <div className="min-h-dvh pb-6">
       {/* Visiteur arrivé par le lien du professionnel (sans compte) : en-tête complet Salon DZ, façon Planity. */}
       {!session && <PublicHeader />}
       {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
@@ -271,7 +244,7 @@ export function Salon() {
 
         {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
         <div className="g2">
-          {s.phone ? (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
             <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[0.9375rem]">
               <I icon={Phone} size={17} /> Appeler
             </a>
@@ -301,7 +274,37 @@ export function Salon() {
 
         {tab === 'book' && (
           <div className="flex flex-col gap-2.5">
+            {/* Blocage ou suspension : dit d'emblée, en haut du choix, et non dans une
+                feuille en bas d'écran que l'on découvre après avoir tout parcouru. */}
+            {cannotBook && standing.data?.message && (
+              <div
+                className="flex items-start gap-3 rounded-[1rem] border border-danger-line bg-cancel-bg px-4 py-3"
+                role="alert"
+              >
+                <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
+                <span className="min-w-0">
+                  <span className="block text-[1rem] font-bold text-cancel-fg">
+                    Réservation en ligne impossible
+                  </span>
+                  <span className="block text-[0.9375rem] text-cancel-fg">
+                    {standing.data.message}
+                  </span>
+                  {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
+                    <a
+                      href={`tel:${s.phone}`}
+                      className="mt-1 inline-flex items-center gap-1.5 text-[0.9375rem] font-semibold text-cancel-fg underline"
+                    >
+                      <I icon={Phone} size={14} /> Appeler le salon
+                    </a>
+                  )}
+                </span>
+              </div>
+            )}
             <h2 className="h1 !text-[1.375rem]">Choix de la prestation</h2>
+            <p className="p !text-[0.875rem]">
+              Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un
+              rendez-vous par prestation.
+            </p>
             {groups.map((g) => (
               <Accordion
                 key={g.name}
@@ -310,38 +313,44 @@ export function Salon() {
                 open={openGroup === g.name}
                 onToggle={() => setOpenGroup((cur) => (cur === g.name ? null : g.name))}
               >
-                {g.services.map((sv) => {
-                  const on = selected.includes(sv.id);
-                  return (
-                    <button
-                      key={sv.id}
-                      type="button"
-                      className="li w-full text-left"
-                      onClick={() => toggleService(sv.id)}
-                      aria-pressed={on}
-                    >
-                      <span className="flex min-w-0 flex-1 items-center gap-3">
-                        {sv.photos?.[0]?.url && (
-                          <Img
-                            src={sv.photos[0].url}
-                            className="h-[3rem] w-[3rem] flex-none !rounded-[0.75rem]"
-                          />
-                        )}
-                        <span className="min-w-0">
-                          <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
-                            {sv.name}
+                {g.services.map((sv) => (
+                  <div key={sv.id} className="li !items-start">
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                      {sv.photos?.[0]?.url && (
+                        <Img
+                          src={sv.photos[0].url}
+                          className="h-[3rem] w-[3rem] flex-none !rounded-[0.75rem]"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+                          {sv.name}
+                        </span>
+                        {sv.description && (
+                          <span className="mt-0.5 block text-[0.875rem] text-muted">
+                            {sv.description}
                           </span>
-                          <span className="block text-[0.9375rem] text-muted">
-                            {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
+                        )}
+                        <span className="mt-1 block text-[0.9375rem] font-semibold">
+                          {formatDA(sv.priceDa)}
+                          <span className="font-normal text-muted">
+                            {' '}
+                            · {formatDuration(sv.durationMinutes)}
                           </span>
                         </span>
-                      </span>
-                      <span className={`chk${on ? ' on' : ''}`} aria-hidden>
-                        {on && <I icon={Check} size={16} />}
-                      </span>
-                    </button>
-                  );
-                })}
+                      </div>
+                    </div>
+                    <Button
+                      sm
+                      auto
+                      className="mt-0.5 flex-none !rounded-full !px-5"
+                      onClick={() => chooseService(sv.id)}
+                      disabled={cannotBook}
+                    >
+                      Choisir
+                    </Button>
+                  </div>
+                ))}
               </Accordion>
             ))}
             {s.services.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
@@ -407,53 +416,43 @@ export function Salon() {
         )}
 
         {tab === 'about' && (
-          <>
-            {/* La description a quitté le haut de page : elle appartient à « À propos »,
-                pas au premier écran où le client cherche d'abord une prestation. */}
-            {s.description && <p className="p">{s.description}</p>}
-            {cats && <p className="text-[0.9375rem] text-muted">{cats}</p>}
-            <h2 className="h1 !text-[1.375rem]">Réalisations</h2>
-            {works.length === 0 ? (
-              <p className="p">Pas encore de réalisations.</p>
-            ) : (
-              <div className="g2">
-                {works.slice(0, 8).map((p) => (
-                  <Img key={p.id} src={p.url} className="aspect-square w-full" />
-                ))}
-              </div>
-            )}
-            {works.length > 8 && (
-              <LinkButton to={`/s/${s.slug}/realisations`} variant="g">
-                Voir toutes les réalisations
-              </LinkButton>
-            )}
-          </>
-        )}
-
-        {tab === 'about' && (
           <div className="flex flex-col gap-2.5">
-            <h2 className="h1 !text-[1.375rem]">Informations</h2>
-            {/* Aujourd'hui en premier et en grand, puis la semaine à partir d'aujourd'hui. */}
-            <div className={`crd !gap-2 ${status.open ? '!border-ok-fg !bg-ok-bg' : ''}`}>
-              <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
-                <I icon={Clock} size={15} /> Aujourd'hui · {DAY_LABELS_FR[todayDow]}
-              </span>
-              <span className="mono text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
-                {todayRows.length
-                  ? todayRows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
-                  : 'Fermé aujourd’hui'}
-              </span>
-              <span
-                className={`text-[1rem] font-semibold ${status.open ? 'text-ok-fg' : 'text-muted'}`}
+            {/* 1. Où. L'adresse d'abord, la carte ensuite : on situe avant d'illustrer. */}
+            <h2 className="h1 !text-[1.375rem]">Où se situe le salon&nbsp;?</h2>
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 text-[0.9375rem] underline decoration-line-soft underline-offset-2"
+            >
+              <I icon={MapPin} size={16} className="flex-none text-muted" />
+              <span className="min-w-0">{s.address ? `${s.address}, ${place}` : place}</span>
+            </a>
+            <div className="relative">
+              {s.lat != null && s.lng != null ? (
+                <MiniMap lat={s.lat} lng={s.lng} radiusKm={0.4} className="h-[11rem]" />
+              ) : (
+                <div className="flex h-[11rem] items-center justify-center rounded-[1.25rem] border border-line bg-fill">
+                  <span className="p">Position non renseignée</span>
+                </div>
+              )}
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn auto absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-1/2 !rounded-full !px-5 !py-3 !text-[0.9375rem]"
               >
-                {status.label}
-              </span>
+                <I icon={MapIcon} size={17} /> Afficher la carte
+              </a>
             </div>
+
+            {/* 2. Quand. Aujourd'hui en tête, puis la semaine à partir d'aujourd'hui. */}
+            <h2 className="h1 !text-[1.375rem]">Horaires d'ouverture</h2>
             <div className="crd !gap-0 !py-1">
               {weekFromToday.map((d, idx) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
-                  <div key={d} className="li !py-3">
+                  <div key={d} className="li">
                     <span className={`text-[1rem] ${idx === 0 ? 'font-bold' : ''}`}>
                       {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
                       {idx <= 1 && (
@@ -462,7 +461,9 @@ export function Salon() {
                         </span>
                       )}
                     </span>
-                    <span className={`mono text-[1rem] ${rows.length ? '' : 'text-danger'}`}>
+                    <span
+                      className={`mono text-[1rem] ${rows.length ? 'font-semibold' : 'text-muted'}`}
+                    >
                       {rows.length
                         ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ')
                         : 'Fermé'}
@@ -472,151 +473,63 @@ export function Salon() {
               })}
             </div>
 
-            <div className="crd !gap-3">
-              <div className="flex items-center gap-3.5">
-                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-fill">
-                  <I icon={MapPin} size={20} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[1.0625rem] font-bold">{s.address || place}</span>
-                  {s.address && <span className="block text-[0.9375rem] text-muted">{place}</span>}
-                </span>
-              </div>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn g sm !py-[1.125rem] !text-[1rem]"
-              >
-                <I icon={Navigation} size={18} /> Itinéraire
-              </a>
-            </div>
-
-            {s.phone && (
-              <div className="crd !gap-3">
-                <div className="flex items-center gap-3.5">
-                  <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-fill">
-                    <I icon={Phone} size={20} />
-                  </span>
-                  <span className="mono text-[1.25rem] font-bold">{formatDZPhone(s.phone)}</span>
-                </div>
-                <div className="g2">
-                  <a href={`tel:${s.phone}`} className="btn g sm !py-[1.125rem] !text-[1rem]">
-                    <I icon={Phone} size={18} /> Appeler
-                  </a>
-                  <a
-                    href={`https://wa.me/${s.phone.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn g sm !py-[1.125rem] !text-[1rem]"
-                  >
-                    <I icon={MessageCircle} size={18} /> WhatsApp
-                  </a>
-                </div>
-              </div>
-            )}
-
+            {/* 3. Qui. Un prénom et un visage : on choisit aussi une personne. */}
             {s.staff.length > 0 && (
-              <div className="crd !gap-3">
-                <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
-                  <I icon={Users} size={15} /> Équipe · {s.staff.length}
-                </span>
-                <div className="flex flex-wrap gap-2.5">
+              <>
+                <h2 className="h1 !text-[1.375rem]">
+                  {s.staff.length > 1 ? 'Collaborateurs' : 'Collaborateur'}
+                </h2>
+                <div className="crd !gap-0 !py-1">
                   {s.staff.map((m) => (
-                    <span
-                      key={m.id}
-                      className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3.5 text-[1rem] font-semibold"
-                    >
-                      <Avatar src={m.avatarUrl} name={m.displayName} size={32} /> {m.displayName}
-                    </span>
+                    <div key={m.id} className="li">
+                      <span className="flex min-w-0 items-center gap-3">
+                        <Avatar src={m.avatarUrl} name={m.displayName} size={44} />
+                        <span className="truncate text-[1.0625rem] font-semibold">
+                          {m.displayName}
+                        </span>
+                      </span>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </>
             )}
 
-            <div className="crd !gap-2">
-              <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
-                <I icon={Info} size={15} /> Bon à savoir
-              </span>
-              <ul className="ml-1 flex list-disc flex-col gap-1.5 pl-4 text-[1rem]">
-                <li>Réservation en ligne, paiement sur place.</li>
-                <li>
-                  Annulation ou report en ligne jusqu'à {s.cancelMinHours} h avant le rendez-vous.
-                </li>
-                <li>
-                  Arrivez {ARRIVAL_ADVANCE_MINUTES} min avant l'heure : retard toléré{' '}
-                  {LATE_TOLERANCE_MINUTES} min.
-                </li>
-              </ul>
-            </div>
+            {/* 4. Ce qu'il faut savoir : replié, on ne le lit que si on le cherche. */}
+            {(s.description || cats) && (
+              <>
+                <h2 className="h1 !text-[1.375rem]">Informations</h2>
+                <Accordion
+                  title="À propos du salon"
+                  open={aboutOpen}
+                  onToggle={() => setAboutOpen((v) => !v)}
+                >
+                  <div className="flex flex-col gap-1.5 py-3">
+                    {s.description && <p className="p">{s.description}</p>}
+                    {cats && <p className="text-[0.9375rem] text-muted">{cats}</p>}
+                  </div>
+                </Accordion>
+              </>
+            )}
+
+            {/* 5. Réalisations : la vitrine du travail, propre à Salon DZ. */}
+            {works.length > 0 && (
+              <>
+                <h2 className="h1 !text-[1.375rem]">Réalisations</h2>
+                <div className="g2">
+                  {works.slice(0, 6).map((ph) => (
+                    <Img key={ph.id} src={ph.url} className="aspect-square w-full" />
+                  ))}
+                </div>
+                {works.length > 6 && (
+                  <LinkButton to={`/s/${s.slug}/realisations`} variant="g">
+                    Voir toutes les réalisations
+                  </LinkButton>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>
-
-      {/* Un seul parcours : cocher ici → créneau → récapitulatif. Blocage / suspension : dit d'emblée, bouton grisé. */}
-      <BottomSheet grab={false} sheetRef={sheetRef}>
-        {cannotBook && standing.data?.message && (
-          <div
-            className="flex items-start gap-3 rounded-[1rem] border border-danger-line bg-cancel-bg px-4 py-3"
-            role="alert"
-          >
-            <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
-            <span className="min-w-0">
-              <span className="block text-[1rem] font-bold text-cancel-fg">
-                Réservation en ligne impossible
-              </span>
-              <span className="block text-[0.9375rem] text-cancel-fg">{standing.data.message}</span>
-              {s.phone && (
-                <a
-                  href={`tel:${s.phone}`}
-                  className="mt-1 inline-flex items-center gap-1.5 text-[0.9375rem] font-semibold text-cancel-fg underline"
-                >
-                  <I icon={Phone} size={14} /> Appeler le salon
-                </a>
-              )}
-            </span>
-          </div>
-        )}
-        {chosen.length > 0 ? (
-          <>
-            {/* Prix et résumé à gauche (tronqués si besoin), bouton à droite qui ne se déforme jamais. */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="text-[1.5rem] font-bold tracking-[-0.6px]">{formatDA(total)}</div>
-                <div className="truncate text-[0.9375rem] text-muted">
-                  {chosen.length} prestation{chosen.length > 1 ? 's' : ''} ·{' '}
-                  {formatDuration(minutes)} au total
-                </div>
-              </div>
-              <Button
-                auto
-                className="flex-none whitespace-nowrap !rounded-full !px-6 !py-4"
-                onClick={() => navigate(`/s/${s.slug}/reserver/quand`)}
-                disabled={cannotBook}
-              >
-                Choisir un créneau
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            {hint && (
-              <p className="p text-center text-danger" role="alert">
-                Cochez une ou plusieurs prestations ci-dessus.
-              </p>
-            )}
-            <Button
-              onClick={() => {
-                setTab('book');
-                setHint(true);
-              }}
-              disabled={cannotBook}
-            >
-              Réserver
-            </Button>
-          </>
-        )}
-      </BottomSheet>
     </div>
   );
 }

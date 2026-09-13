@@ -13,6 +13,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   untilLabelFR,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import {
   CalendarClock,
@@ -157,7 +158,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               <I icon={CalendarClock} size={16} /> Reporter
             </LinkButton>
           )}
-          {b.salon.phone && (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
             <a
               href={`tel:${b.salon.phone}`}
               className="ib lg flex-none"

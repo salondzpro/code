@@ -30,6 +30,7 @@ import {
   toLocalDateKey,
   CLIENT_CANCEL_REASONS_FR,
   reasonOptions,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -71,7 +72,10 @@ export function BookingDetail() {
   const canModify = active && hoursLeft >= minHours;
   const rescheduled = b.clientReschedules >= MAX_CLIENT_RESCHEDULES;
   const canReschedule = canModify && b.salon.allowClientReschedule !== false && !rescheduled;
-  const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
+  const wa =
+    SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
+      ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}`
+      : null;
   const lines = b.items?.length
     ? b.items
     : [
@@ -154,13 +158,13 @@ export function BookingDetail() {
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
         <div className="min-w-0">
           <h1 className="h1 !text-[1.625rem]">{b.salon.name}</h1>
-          {b.salon.phone && (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
             <p className="mt-1 text-[0.8125rem] text-muted">{formatDZPhone(b.salon.phone)}</p>
           )}
         </div>
       </div>
       <div className="g2">
-        {b.salon.phone && (
+        {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
           <a href={`tel:${b.salon.phone}`} className="btn g !py-[1.125rem] !text-[1.125rem]">
             <I icon={Phone} size={20} /> Appeler
           </a>

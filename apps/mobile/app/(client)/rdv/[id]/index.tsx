@@ -30,6 +30,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   CLIENT_CANCEL_REASONS_FR,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { capitalize, directionsUrl, open } from '@/lib/salon';
@@ -84,7 +85,10 @@ export default function BookingDetail() {
   const canModify = active && hoursLeft >= minHours;
   const rescheduled = b.clientReschedules >= MAX_CLIENT_RESCHEDULES;
   const canReschedule = canModify && b.salon.allowClientReschedule !== false && !rescheduled;
-  const wa = b.salon.phone ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}` : null;
+  const wa =
+    SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
+      ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}`
+      : null;
   const lines = b.items?.length
     ? b.items
     : [
@@ -233,16 +237,16 @@ export default function BookingDetail() {
           <H1 size={21} lh={24.5} ls={-0.8}>
             {b.salon.name}
           </H1>
-          {!!b.salon.phone && (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && !!b.salon.phone && (
             <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
               {formatDZPhone(b.salon.phone)}
             </Tx>
           )}
         </View>
       </View>
-      {(!!b.salon.phone || !!wa) && (
+      {((SHOW_SALON_CONTACT_TO_CLIENTS && !!b.salon.phone) || !!wa) && (
         <Grid cols={2}>
-          {!!b.salon.phone && (
+          {SHOW_SALON_CONTACT_TO_CLIENTS && !!b.salon.phone && (
             <Button
               variant="g"
               style={{ paddingVertical: 15 }}
