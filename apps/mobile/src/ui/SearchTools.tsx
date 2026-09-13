@@ -162,7 +162,7 @@ export function SearchField({
     <View style={[{ gap: 8 }, style]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Fermer la recherche"
+        accessibilityLabel="Fermer"
         onPress={close}
         hitSlop={10}
         style={{ alignSelf: 'flex-start' }}

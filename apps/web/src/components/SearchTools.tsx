@@ -140,7 +140,7 @@ export function SearchField({
       <button
         type="button"
         className="ib -ml-2.5 !border-0 !bg-transparent"
-        aria-label="Fermer la recherche"
+        aria-label="Fermer"
         onClick={close}
       >
         <I icon={X} size={24} />

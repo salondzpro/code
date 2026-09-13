@@ -473,15 +473,15 @@ try {
     // (professionnel, lieu), et suggère dès deux caractères.
     await c.goto(WEB + '/');
     await c.getByRole('button', { name: 'Modifier la recherche' }).click();
-    await c.getByLabel('Recherche').fill('cou');
+    await c.getByLabel('Recherche', { exact: true }).fill('cou');
     await c.locator('.crd button', { hasText: 'Coupe' }).first().waitFor();
-    await c.getByLabel('Recherche').fill('Barber Smoke');
+    await c.getByLabel('Recherche', { exact: true }).fill('Barber Smoke');
     await c.locator('a.li', { hasText: 'Barber Smoke' }).first().waitFor();
     await shot(c, 'client-recherche');
     // Le champ lieu propose des quartiers : c'est ainsi qu'on change de zone.
-    await c.getByLabel('Lieu').fill('Alg');
+    await c.getByLabel('Lieu', { exact: true }).fill('Alg');
     await c.getByRole('link', { name: /Autour de moi/ }).waitFor();
-    await c.getByRole('button', { name: 'Fermer la recherche' }).click();
+    await c.getByRole('button', { name: 'Fermer', exact: true }).click();
     await c.getByRole('heading', { name: 'Pour Hommes' }).waitFor();
   });
   await step('client: page salon (design C-F 04)', async () => {
