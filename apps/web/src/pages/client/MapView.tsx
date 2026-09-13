@@ -16,7 +16,7 @@ import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salo
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { BottomNav } from '@/components/AppFrame';
 import { I, Img } from '@/components/ui';
-import { SearchSummary, SearchTools } from '@/components/SearchTools';
+import { SearchField, SearchTools } from '@/components/SearchTools';
 import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
 
@@ -76,6 +76,8 @@ export function MapView() {
     },
     !tooWide,
   );
+  // « Ouvert maintenant » se filtre ici comme dans la liste : la touche Filtres annonce ce
+  // filtre, une carte qui l'ignorerait montrerait des bulles que le compteur ne compte pas.
   const items = useMemo(
     () =>
       spreadOverlaps(
@@ -85,10 +87,11 @@ export function MapView() {
             lng?: number | null;
           })[]
         ).filter(
-          (s): s is SalonSummary & { lat: number; lng: number } => s.lat != null && s.lng != null,
+          (s): s is SalonSummary & { lat: number; lng: number } =>
+            s.lat != null && s.lng != null && (!prefs.openNow || s.isOpenNow),
         ),
       ),
-    [query.data],
+    [query.data, prefs.openNow],
   );
   const cardsRef = useRef<HTMLDivElement | null>(null);
   const cardSettle = useRef<number | null>(null);
@@ -236,7 +239,8 @@ export function MapView() {
     setParams(next, { replace: true });
   };
 
-  const total = query.data?.total ?? 0;
+  // Compté sur les bulles réellement posées, filtre « ouvert » compris.
+  const total = prefs.openNow ? items.length : (query.data?.total ?? 0);
   const noun = market === 'men' ? 'barbier' : 'salon';
 
   return (
@@ -252,12 +256,16 @@ export function MapView() {
       {/* Recherche et outils : les mêmes trois touches que la liste, la deuxième ramenant
           à la liste. Le tri est absent : sur une carte, il n'y a pas de premier résultat. */}
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-[400] flex flex-col gap-2 px-5 pt-3">
-        <SearchSummary
-          className="pointer-events-auto !shadow-card"
+        <SearchField
+          shadow
+          className="pointer-events-auto"
           market={market}
           q=""
           place={area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
           radiusKm={area?.radiusKm ?? prefs.radiusKm}
+          wilaya={prefs.wilaya}
+          // Chercher un nom depuis la carte ramène à la liste : c'est là que les noms se lisent.
+          onQuery={(v) => navigate(v ? `/?q=${encodeURIComponent(v)}` : '/')}
         />
         <SearchTools
           className="pointer-events-auto sh"

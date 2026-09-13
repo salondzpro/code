@@ -45,7 +45,6 @@ export interface RecentPlace {
 }
 
 const KEY = 'salondz:location';
-const RECENT_KEY = 'salondz:recentSearches';
 const DEFAULTS: LocationPrefs = {
   city: null,
   wilaya: 16,
@@ -64,7 +63,6 @@ const PLACES_KEY = 'salondz:recentPlaces';
 const CANCELLED_KEY = 'salondz:pro:showCancelled';
 
 let prefs: LocationPrefs = DEFAULTS;
-let recent: string[] = [];
 let places: RecentPlace[] = [];
 let showCancelled = false;
 const listeners = new Set<() => void>();
@@ -73,15 +71,13 @@ const notify = () => listeners.forEach((l) => l());
 /** À appeler une fois au démarrage : relit les préférences persistées. */
 export async function hydratePrefs(): Promise<void> {
   try {
-    const [p, r, pl, sc] = await Promise.all([
+    const [p, pl, sc] = await Promise.all([
       AsyncStorage.getItem(KEY),
-      AsyncStorage.getItem(RECENT_KEY),
       AsyncStorage.getItem(PLACES_KEY),
       AsyncStorage.getItem(CANCELLED_KEY),
     ]);
     showCancelled = sc === '1';
     if (p) prefs = { ...DEFAULTS, ...(JSON.parse(p) as Partial<LocationPrefs>) };
-    if (r) recent = JSON.parse(r) as string[];
     if (pl) places = JSON.parse(pl) as RecentPlace[];
     notify();
   } catch {
@@ -112,19 +108,6 @@ export function useLocationPrefs(): [LocationPrefs, (patch: Partial<LocationPref
   return [value, update];
 }
 
-export function readRecentSearches(): string[] {
-  return recent;
-}
-export function useRecentSearches(): string[] {
-  return useSyncExternalStore(subscribe, readRecentSearches, readRecentSearches);
-}
-export function pushRecentSearch(q: string): void {
-  const v = q.trim();
-  if (!v) return;
-  recent = [v, ...recent.filter((x) => x.toLowerCase() !== v.toLowerCase())].slice(0, 6);
-  notify();
-  void AsyncStorage.setItem(RECENT_KEY, JSON.stringify(recent)).catch(() => undefined);
-}
 /** Espace pro : membre filtré sur l'accueil et l'agenda (null = toute l'équipe), en mémoire de session. */
 let staffFilter: string | null = null;
 export function useStaffFilter(): [string | null, (id: string | null) => void] {
@@ -171,9 +154,4 @@ export function pushRecentPlace(p: RecentPlace): void {
   );
   notify();
   void AsyncStorage.setItem(PLACES_KEY, JSON.stringify(places)).catch(() => undefined);
-}
-export function clearRecentSearches(): void {
-  recent = [];
-  notify();
-  void AsyncStorage.removeItem(RECENT_KEY).catch(() => undefined);
 }

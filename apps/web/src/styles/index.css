@@ -470,6 +470,10 @@
     padding: 0.6875rem 0.875rem;
   }
 
+  .srch.sh {
+    box-shadow: var(--shadow-card);
+  }
+
   /* Barre d'outils : trois touches, jamais plus — prestations, vue opposée, filtres.
      Tout autre réglage vit dans un panneau, pas à l'écran. */
   .tools {

@@ -22,7 +22,7 @@ import {
 } from '@salondz/constants';
 import { useLocationPrefs } from '@/lib/clientPrefs';
 import { I, IconButton, Pill, Skeleton } from '@/components/ui';
-import { SearchSummary, SearchTools } from '@/components/SearchTools';
+import { SearchField, SearchTools } from '@/components/SearchTools';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { SalonListCard } from '@/components/SalonListCard';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -64,6 +64,13 @@ export function Marketplace() {
     setParams(next, { replace: true });
   };
 
+  const setQuery = (v: string) => {
+    const next = new URLSearchParams(params);
+    if (v) next.set('q', v);
+    else next.delete('q');
+    setParams(next, { replace: true });
+  };
+
   const swapMarket = () => update.mutate({ market: market === 'men' ? 'women' : 'men' });
 
   const all = pagesItems(query.data);
@@ -81,7 +88,14 @@ export function Marketplace() {
 
   return (
     <Screen bottom={NAV_PAD} gap={10}>
-      <SearchSummary market={market} q={q} place={prefs.label} radiusKm={prefs.radiusKm} />
+      <SearchField
+        market={market}
+        q={q}
+        place={prefs.label}
+        radiusKm={prefs.radiusKm}
+        wilaya={prefs.wilaya}
+        onQuery={setQuery}
+      />
       <SearchTools
         market={market}
         category={category}

@@ -118,8 +118,8 @@ if (deployId) await follow(site.id, deployId, 'Déploiement du site');
 const r = await fetch(`${siteUrl}/`, { redirect: 'manual' });
 const html = await r.text();
 console.log(`GET ${siteUrl}/ → ${r.status} ${/<div id="root">/.test(html) ? '(index Vite ok)' : '(contenu inattendu)'}`);
-const deep = await fetch(`${siteUrl}/recherche`, { redirect: 'manual' });
-console.log(`GET ${siteUrl}/recherche → ${deep.status} (règle SPA ${deep.status === 200 ? 'ok' : 'KO'})`);
+const deep = await fetch(`${siteUrl}/favoris`, { redirect: 'manual' });
+console.log(`GET ${siteUrl}/favoris → ${deep.status} (règle SPA ${deep.status === 200 ? 'ok' : 'KO'})`);
 
 // ---------------------------------------------------------------------------
 async function get(path) {

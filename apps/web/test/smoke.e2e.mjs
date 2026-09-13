@@ -469,14 +469,19 @@ try {
     await c.locator('button.map-bubble').first().click();
     await c.locator('a.crd.sel').first().waitFor();
     await shot(c, 'client-carte');
-    // Recherche interactive : suggestions typées (prestation / salon / lieu) dès deux caractères.
-    await c.goto(WEB + '/recherche');
+    // Recherche : elle s'ouvre SUR PLACE depuis la marketplace, sur deux saisies seulement
+    // (professionnel, lieu), et suggère dès deux caractères.
+    await c.goto(WEB + '/');
+    await c.getByRole('button', { name: 'Modifier la recherche' }).click();
     await c.getByLabel('Recherche').fill('cou');
-    await c.getByText(/Prestation · /).first().waitFor();
+    await c.locator('.crd button', { hasText: 'Coupe' }).first().waitFor();
     await c.getByLabel('Recherche').fill('Barber Smoke');
     await c.locator('a.li', { hasText: 'Barber Smoke' }).first().waitFor();
     await shot(c, 'client-recherche');
-    await c.goto(WEB + '/');
+    // Le champ lieu propose des quartiers : c'est ainsi qu'on change de zone.
+    await c.getByLabel('Lieu').fill('Alg');
+    await c.getByRole('link', { name: /Autour de moi/ }).waitFor();
+    await c.getByRole('button', { name: 'Fermer la recherche' }).click();
     await c.getByRole('heading', { name: 'Pour Hommes' }).waitFor();
   });
   await step('client: page salon (design C-F 04)', async () => {

@@ -1,6 +1,6 @@
 /**
  * Préférences locales du client (design « Localisation et rayon », « Trier ») :
- * position/quartier, rayon, tri, recherches récentes. Stockées dans le navigateur.
+ * position/quartier, rayon, tri, lieux récents. Stockées dans le navigateur.
  */
 import { useCallback, useSyncExternalStore } from 'react';
 
@@ -44,7 +44,6 @@ export interface RecentPlace {
 }
 
 const KEY = 'salondz:location';
-const RECENT_KEY = 'salondz:recentSearches';
 const DEFAULTS: LocationPrefs = { city: null, wilaya: 16, lat: null, lng: null, radiusKm: 5, label: 'Alger', sort: 'relevance', availableToday: false, ratingMin: null, openNow: false, notifConfirmations: true, notifNews: false };
 const PLACES_KEY = 'salondz:recentPlaces';
 
@@ -86,30 +85,6 @@ export function useLocationPrefs(): [LocationPrefs, (patch: Partial<LocationPref
   return [prefs, update];
 }
 
-export function readRecentSearches(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]') as string[];
-  } catch {
-    return [];
-  }
-}
-export function pushRecentSearch(q: string): void {
-  const v = q.trim();
-  if (!v) return;
-  const next = [v, ...readRecentSearches().filter((x) => x.toLowerCase() !== v.toLowerCase())].slice(0, 6);
-  try {
-    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-  } catch {
-    /* ignore */
-  }
-}
-export function clearRecentSearches(): void {
-  try {
-    localStorage.removeItem(RECENT_KEY);
-  } catch {
-    /* ignore */
-  }
-}
 
 export function readRecentPlaces(): RecentPlace[] {
   try {

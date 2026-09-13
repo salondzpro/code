@@ -25,7 +25,6 @@ import { ProWelcome } from '@/pages/pro/Welcome';
 import { Marketplace } from '@/pages/client/Marketplace';
 import { Localisation } from '@/pages/client/Localisation';
 import { MapView } from '@/pages/client/MapView';
-import { SearchPage } from '@/pages/client/SearchPage';
 import { CategoryResults } from '@/pages/client/CategoryResults';
 import { Salon } from '@/pages/client/Salon';
 import { SalonWorks } from '@/pages/client/SalonWorks';
@@ -111,7 +110,6 @@ export const router = createBrowserRouter([
             element: <ClientLayout />,
             children: [
               { path: '/', element: <Marketplace /> },
-              { path: '/recherche', element: <SearchPage /> },
               { path: '/categorie/:category', element: <CategoryResults /> },
               { path: '/rendez-vous', element: <Bookings /> },
               { path: '/favoris', element: <Favorites /> },

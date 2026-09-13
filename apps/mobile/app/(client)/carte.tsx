@@ -10,21 +10,14 @@ import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react-native';
+import { LocateFixed } from 'lucide-react-native';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import {
-  MARKET_LABELS_FR,
-  categoriesForMarket,
-  formatDA,
-  reverseGeocode,
-  spreadOverlaps,
-  type CategoryId,
-} from '@salondz/constants';
+import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import type { SalonSummary } from '@salondz/types';
 import { useLocationPrefs } from '@/lib/prefs';
 import { formatKm } from '@/lib/format';
-import { Button, I, IconButton, Img, P, Pill, Tx } from '@/ui';
-import { PillRow } from '@/ui/Pills';
+import { Button, I, IconButton, Img, P, Tx } from '@/ui';
+import { SearchField, SearchTools } from '@/ui/SearchTools';
 import { RatingPill, NextSlots } from '@/ui/SalonListCard';
 import { MapCanvas, type MapArea, type MapCanvasHandle, type MapState } from '@/ui/MapCanvas';
 import { C, R, SHADOW } from '@/theme/design';
@@ -67,14 +60,17 @@ export default function MapView() {
     },
     !tooWide,
   );
+  // « Ouvert maintenant » se filtre ici comme dans la liste : la touche Filtres annonce ce
+  // filtre, une carte qui l'ignorerait poserait des bulles que le compteur ne compte pas.
   const items = useMemo(
     () =>
       spreadOverlaps(
         ((query.data?.items ?? []) as Pin[]).filter(
-          (s): s is Pin & { lat: number; lng: number } => s.lat != null && s.lng != null,
+          (s): s is Pin & { lat: number; lng: number } =>
+            s.lat != null && s.lng != null && (!prefs.openNow || s.isOpenNow),
         ),
       ),
-    [query.data],
+    [query.data, prefs.openNow],
   );
   const cardsRef = useRef<ScrollView>(null);
   const { width: winWidth } = useWindowDimensions();
@@ -136,7 +132,8 @@ export default function MapView() {
     }
   };
 
-  const total = query.data?.total ?? 0;
+  // Compté sur les bulles réellement posées, filtre « ouvert » compris.
+  const total = prefs.openNow ? items.length : (query.data?.total ?? 0);
   const noun = market === 'men' ? 'barbier' : 'salon';
 
   return (
@@ -162,55 +159,31 @@ export default function MapView() {
         }}
         pointerEvents="box-none"
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Pressable
-            accessibilityRole="link"
-            onPress={() => router.push('/recherche')}
-            style={[
-              {
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 10,
-                backgroundColor: C.surface,
-                borderRadius: R.cardSm,
-                paddingVertical: 12,
-                paddingHorizontal: 13,
-              },
-              SHADOW.card,
-            ]}
-          >
-            <I icon={Search} size={18} color={C.subtle} />
-            <Tx size={12} lh={14} color={C.subtle} numberOfLines={1} style={{ flex: 1 }}>
-              {MARKET_LABELS_FR[market]} ·{' '}
-              {area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
-            </Tx>
-          </Pressable>
-          <IconButton
-            lg
-            accessibilityLabel="Localisation et rayon"
-            onPress={() => router.push('/localisation')}
-            style={SHADOW.card}
-          >
-            <I icon={SlidersHorizontal} size={16} />
-          </IconButton>
-        </View>
-        <PillRow>
-          <Pill lg on={!category} onPress={() => setCategory('')} style={SHADOW.card}>
-            Sans préférence
-          </Pill>
-          {categoriesForMarket(market).map((c) => (
-            <Pill
-              key={c.id}
-              lg
-              on={category === c.id}
-              onPress={() => setCategory(category === c.id ? '' : c.id)}
-              style={SHADOW.card}
-            >
-              {c.labelFr}
-            </Pill>
-          ))}
-        </PillRow>
+        {/* Les mêmes trois touches que la liste, la deuxième ramenant à la liste. Le tri
+            est absent : sur une carte, il n'y a pas de premier résultat. */}
+        <SearchField
+          market={market}
+          q=""
+          place={area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
+          radiusKm={area?.radiusKm ?? prefs.radiusKm}
+          wilaya={prefs.wilaya}
+          // Chercher un nom depuis la carte ramene a la liste : les noms se lisent la-bas.
+          onQuery={(v) =>
+            router.push({ pathname: '/(client)/(tabs)', params: v ? { q: v } : {} })
+          }
+          shadow
+        />
+        <SearchTools
+          market={market}
+          category={category}
+          onCategory={setCategory}
+          view="map"
+          onView={() =>
+            router.push({ pathname: '/(client)/(tabs)', params: category ? { category } : {} })
+          }
+          withSort={false}
+          shadow
+        />
         <View
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           pointerEvents="box-none"
