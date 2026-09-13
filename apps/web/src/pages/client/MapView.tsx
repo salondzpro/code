@@ -10,19 +10,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { LocateFixed, Search, SlidersHorizontal } from 'lucide-react';
+import { LocateFixed } from 'lucide-react';
 import { useMe, useSalonSearch } from '@salondz/api-client';
-import {
-  MARKET_LABELS_FR,
-  categoriesForMarket,
-  formatDA,
-  reverseGeocode,
-  spreadOverlaps,
-  type CategoryId,
-} from '@salondz/constants';
+import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { BottomNav } from '@/components/AppFrame';
-import { I, IconButton, Img, Pill } from '@/components/ui';
+import { I, Img } from '@/components/ui';
+import { SearchSummary, SearchTools } from '@/components/SearchTools';
 import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
 
@@ -255,41 +249,25 @@ export function MapView() {
 .leaflet-container{background:#eaecee;font-family:inherit}`}</style>
       <div ref={mapEl} className="absolute inset-0" aria-label="Carte des salons" />
 
-      {/* Barre de recherche + filtres */}
-      <div className="pointer-events-none absolute left-0 right-0 top-0 z-[400] flex flex-col gap-3 px-5 pt-4">
-        <div className="pointer-events-auto flex items-center gap-2.5">
-          <Link to="/recherche" className="search flex-1 !bg-surface !shadow-card">
-            <I icon={Search} size={22} />
-            <span className="flex-1 truncate text-subtle">
-              {MARKET_LABELS_FR[market]} ·{' '}
-              {area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
-            </span>
-          </Link>
-          <IconButton
-            lg
-            className="!shadow-card"
-            aria-label="Localisation et rayon"
-            onClick={() => navigate('/localisation')}
-          >
-            <I icon={SlidersHorizontal} size={20} />
-          </IconButton>
-        </div>
-        <div className="pills pointer-events-auto">
-          <Pill lg on={!category} onClick={() => setCategory('')} className="!shadow-card">
-            Sans préférence
-          </Pill>
-          {categoriesForMarket(market).map((c) => (
-            <Pill
-              key={c.id}
-              lg
-              on={category === c.id}
-              onClick={() => setCategory(c.id)}
-              className="!shadow-card"
-            >
-              {c.labelFr}
-            </Pill>
-          ))}
-        </div>
+      {/* Recherche et outils : les mêmes trois touches que la liste, la deuxième ramenant
+          à la liste. Le tri est absent : sur une carte, il n'y a pas de premier résultat. */}
+      <div className="pointer-events-none absolute left-0 right-0 top-0 z-[400] flex flex-col gap-2 px-5 pt-3">
+        <SearchSummary
+          className="pointer-events-auto !shadow-card"
+          market={market}
+          q=""
+          place={area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
+          radiusKm={area?.radiusKm ?? prefs.radiusKm}
+        />
+        <SearchTools
+          className="pointer-events-auto sh"
+          market={market}
+          category={category}
+          onCategory={setCategory}
+          view="map"
+          onView={() => navigate(`/${category ? `?category=${category}` : ''}`)}
+          withSort={false}
+        />
         <div className="pointer-events-auto flex items-center justify-center gap-2">
           <span
             className="rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-medium text-muted shadow-card"

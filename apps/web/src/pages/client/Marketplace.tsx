@@ -1,37 +1,32 @@
 /**
- * C-H 01 / C-F 01 — Marketplace « Pour Hommes » / « Pour Femmes » : localisation, recherche,
- * catégories (filtres), Liste/Carte, tri, résultats. C-H 05 — feuille « Trier par ». C-H 08 — aucun résultat.
+ * C-H 01 / C-F 01 — Marketplace « Pour Hommes » / « Pour Femmes ».
+ *
+ * L'écran ne garde que ce qui INFORME : la recherche en cours, le marché affiché et les
+ * résultats. Les CHOIX (prestations, disponibilité, note, tri) vivent dans les deux
+ * panneaux de `SearchTools` — avant, une quinzaine de cibles s'empilaient avant le premier
+ * salon (localisation, titre, avatar, champ, toutes les catégories, trois puces, Liste/Carte,
+ * tri), et il fallait défiler pour voir un seul professionnel.
+ *
+ * L'avatar a disparu d'ici : l'en-tête client porte déjà le bouton de compte à droite, et la
+ * même destination deux fois sur un écran ne sert personne. C-H 08 — aucun résultat.
  */
-import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import {
-  ArrowLeftRight,
-  Check,
-  ChevronDown,
-  List,
-  Map as MapIcon,
-  MapPin,
-  Search,
-} from 'lucide-react';
+import { ArrowLeftRight, Search } from 'lucide-react';
 import { pagesItems, useMe, useSalonSearchInfinite, useUpdateProfile } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
   MARKET_LABELS_FR,
-  categoriesForMarket,
   categoryLabel,
   type CategoryId,
   type Market,
 } from '@salondz/constants';
-import { SORT_OPTIONS, useLocationPrefs, type SortKey } from '@/lib/clientPrefs';
-import { Avatar, BottomSheet, Button, I, IconButton, Pill, Skeleton } from '@/components/ui';
+import { useLocationPrefs } from '@/lib/clientPrefs';
+import { I, IconButton, Pill, Skeleton } from '@/components/ui';
+import { SearchSummary, SearchTools } from '@/components/SearchTools';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { SalonListCard } from '@/components/SalonListCard';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
-const PLACEHOLDER: Record<Market, string> = {
-  men: 'Barbier, coupe, barbe…',
-  women: 'Coiffure, ongles, cils…',
-};
 const NOUN: Record<Market, [string, string]> = {
   men: ['barbier', 'barbiers'],
   women: ['salon', 'salons'],
@@ -46,8 +41,6 @@ export function Marketplace() {
   const market: Market = me.data?.profile.market ?? 'women';
   const category = params.get('category') ?? '';
   const q = params.get('q') ?? '';
-  const [sortOpen, setSortOpen] = useState(false);
-  const [sortDraft, setSortDraft] = useState<SortKey>(prefs.sort);
 
   const query = useSalonSearchInfinite({
     q: q || undefined,
@@ -66,7 +59,7 @@ export function Marketplace() {
 
   const setCategory = (id: string) => {
     const next = new URLSearchParams(params);
-    if (id && id !== category) next.set('category', id);
+    if (id) next.set('category', id);
     else next.delete('category');
     setParams(next, { replace: true });
   };
@@ -85,133 +78,38 @@ export function Marketplace() {
     todayCount > 0
       ? `${todayCount} ${NOUN[market][todayCount > 1 ? 1 : 0]} disponible${todayCount > 1 ? 's' : ''} aujourd'hui`
       : `${total} ${noun} · prochaines disponibilités ci-dessous`;
-  const sortLabel = SORT_OPTIONS.find((o) => o.value === prefs.sort)?.label ?? 'Sans préférence';
 
   return (
-    <Screen bottom={NAV_PAD} gap={14}>
-      {/* En-tête : localisation, titre + bascule, avatar */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Link to="/localisation" className="flex items-center gap-1.5 text-[0.857rem]">
-            <I icon={MapPin} size={18} className="text-muted" />
-            <span className="truncate">{prefs.label}</span>
-            <span className="text-muted">· {prefs.radiusKm} km</span>
-            <I icon={ChevronDown} size={16} className="text-subtle" />
-          </Link>
-          <div className="mt-1 flex items-center gap-2.5">
-            {/* Mode femmes : titre en rose pour lever toute ambiguïté sur le catalogue affiché. */}
-            <h1 className="h1">
-              {market === 'women' ? (
-                <>
-                  Pour <span className="text-women">Femmes</span>
-                </>
-              ) : (
-                MARKET_LABELS_FR[market]
-              )}
-            </h1>
-            <IconButton
-              aria-label="Changer de marché"
-              onClick={swapMarket}
-              disabled={update.isPending}
-              className="!h-9 !w-9 !rounded-[0.75rem]"
-            >
-              <I icon={ArrowLeftRight} size={16} />
-            </IconButton>
-          </div>
-        </div>
-        <Link to="/profil" aria-label="Profil" className="mt-1">
-          <Avatar
-            src={me.data?.profile.avatarUrl}
-            name={me.data?.profile.fullName ?? 'Moi'}
-            size={40}
-          />
-        </Link>
-      </div>
+    <Screen bottom={NAV_PAD} gap={10}>
+      <SearchSummary market={market} q={q} place={prefs.label} radiusKm={prefs.radiusKm} />
+      <SearchTools
+        market={market}
+        category={category}
+        onCategory={setCategory}
+        view="list"
+        onView={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}
+      />
 
-      {/* Recherche */}
-      <Link to="/recherche" className="search" aria-label="Rechercher">
-        <I icon={Search} size={22} />
-        <span className={`flex-1 ${q ? 'text-text' : 'text-subtle'}`}>
-          {q || PLACEHOLDER[market]}
-        </span>
-        {q && (
-          <button
-            type="button"
-            className="text-[1rem] text-muted"
-            aria-label="Effacer la recherche"
-            onClick={(e) => {
-              e.preventDefault();
-              const next = new URLSearchParams(params);
-              next.delete('q');
-              setParams(next, { replace: true });
-            }}
-          >
-            ✕
-          </button>
-        )}
-      </Link>
-
-      {/* Catégories = filtres */}
-      <div className="pills -mx-5 px-5">
-        {categoriesForMarket(market).map((c) => (
-          <Pill key={c.id} lg on={category === c.id} onClick={() => setCategory(c.id)}>
-            {c.labelFr}
-          </Pill>
-        ))}
-      </div>
-
-      {/* Filtres rapides (vrais filtres : disponibilité du jour et note côté API, ouverture côté client) */}
-      <div className="pills -mx-5 px-5" aria-label="Filtres rapides">
-        <Pill
-          on={prefs.availableToday}
-          aria-pressed={prefs.availableToday}
-          onClick={() => setPrefs({ availableToday: !prefs.availableToday })}
+      {/* Titre du marché affiché, au-dessus des résultats qu'il commande. */}
+      <div className="flex items-center justify-between gap-3 border-t border-line pt-2.5">
+        <h1 className="h1">
+          {/* Mode femmes : titre en rose pour lever toute ambiguïté sur le catalogue affiché. */}
+          {market === 'women' ? (
+            <>
+              Pour <span className="text-women">Femmes</span>
+            </>
+          ) : (
+            MARKET_LABELS_FR[market]
+          )}
+        </h1>
+        <IconButton
+          aria-label="Changer de marché"
+          onClick={swapMarket}
+          disabled={update.isPending}
+          className="!h-9 !w-9 !rounded-[0.75rem]"
         >
-          Disponible aujourd'hui
-        </Pill>
-        <Pill
-          on={prefs.openNow}
-          aria-pressed={prefs.openNow}
-          onClick={() => setPrefs({ openNow: !prefs.openNow })}
-        >
-          Ouvert maintenant
-        </Pill>
-        <Pill
-          on={prefs.ratingMin != null}
-          aria-pressed={prefs.ratingMin != null}
-          onClick={() => setPrefs({ ratingMin: prefs.ratingMin ? null : 4.5 })}
-        >
-          Note 4,5+
-        </Pill>
-      </div>
-
-      {/* Liste / Carte + tri */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="seg !p-1">
-          <button
-            type="button"
-            className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.857rem]"
-            aria-pressed
-          >
-            <I icon={List} size={18} /> Liste
-          </button>
-          <button
-            type="button"
-            className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.857rem]"
-            onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}
-          >
-            <I icon={MapIcon} size={18} /> Carte
-          </button>
-        </div>
-        <button
-          type="button"
-          className="btn g auto !gap-1.5 whitespace-nowrap !px-3.5 !py-3 !text-[1rem] !font-medium"
-          onClick={() => setSortOpen(true)}
-          aria-haspopup="dialog"
-        >
-          <span className="text-muted">⇅</span> {sortLabel}{' '}
-          <I icon={ChevronDown} size={16} className="text-subtle" />
-        </button>
+          <I icon={ArrowLeftRight} size={16} />
+        </IconButton>
       </div>
 
       {/* Résultats */}
@@ -251,9 +149,9 @@ export function Marketplace() {
                 Retirer « {categoryLabel(category).split(' ')[0]} »
               </Pill>
             )}
-            <Pill lg onClick={() => navigate('/localisation')}>
+            <Link to="/localisation" className="pill lg">
               Autres quartiers
-            </Pill>
+            </Link>
           </div>
         </div>
       ) : (
@@ -264,43 +162,12 @@ export function Marketplace() {
               <SalonListCard key={s.id} salon={s} />
             ))}
           </div>
-          <LoadMore hasMore={query.hasNextPage} loading={query.isFetchingNextPage} onMore={() => void query.fetchNextPage()} label="Voir plus de professionnels" />
-        </>
-      )}
-
-      {/* C-H 05 — Trier par */}
-      {sortOpen && (
-        <>
-          <div className="dim" onClick={() => setSortOpen(false)} />
-          <BottomSheet>
-            <div className="h2 text-center !text-[1.143rem]">Trier par</div>
-            <div className="crd !gap-0 !py-1" role="radiogroup" aria-label="Trier par">
-              {SORT_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={sortDraft === o.value}
-                  className="li w-full text-left"
-                  onClick={() => setSortDraft(o.value)}
-                >
-                  <span>
-                    <span className="block text-[1rem] font-semibold">{o.label}</span>
-                    <span className="p block">{o.hint}</span>
-                  </span>
-                  {sortDraft === o.value && <I icon={Check} size={20} />}
-                </button>
-              ))}
-            </div>
-            <Button
-              onClick={() => {
-                setPrefs({ sort: sortDraft });
-                setSortOpen(false);
-              }}
-            >
-              Appliquer
-            </Button>
-          </BottomSheet>
+          <LoadMore
+            hasMore={query.hasNextPage}
+            loading={query.isFetchingNextPage}
+            onMore={() => void query.fetchNextPage()}
+            label="Voir plus de professionnels"
+          />
         </>
       )}
     </Screen>
