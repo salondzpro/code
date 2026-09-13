@@ -18,6 +18,7 @@ import {
   Phone,
   Users,
   Ban,
+  Star,
 } from 'lucide-react';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { PublicHeader } from '@/components/PublicHeader';
@@ -49,15 +50,16 @@ import { useAuth } from '@/lib/auth';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
 import {
+  Accordion,
   BottomSheet,
   Button,
   I,
   IconButton,
   Img,
   LinkButton,
-  Segmented,
   Pill,
   Skeleton,
+  Tabs,
   Avatar,
 } from '@/components/ui';
 import { SHEET_PAD } from '@/components/AppFrame';
@@ -65,7 +67,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import type { SalonPublic, Service } from '@salondz/types';
 
-type Tab = 'services' | 'works' | 'infos';
+type Tab = 'book' | 'reviews' | 'about';
 
 /** « Ouvert · ferme à 19:00 » / « Fermé · ouvre demain 09:00 ». */
 export function openingStatus(s: SalonPublic): { open: boolean; label: string } {
@@ -119,8 +121,12 @@ export function Salon() {
   const standing = useBookingStanding(salon.data?.id ?? '', !!session);
   const cannotBook = !!standing.data && !standing.data.canBook;
   const toggle = useToggleFavorite();
-  const [tab, setTab] = useState<Tab>('services');
+  const [tab, setTab] = useState<Tab>('book');
+  // Catégories repliées par défaut : le client voit d'abord le salon, puis ouvre la sienne.
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [reviewSort, setReviewSort] = useState<ReviewSort>('best');
   const [sheetRef, sheetH] = useSheetHeight();
+  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 5, reviewSort);
   // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
   const [selected, setSelected] = useState<string[]>(() => readDraft(slug).serviceIds);
   const [hint, setHint] = useState(false);
@@ -143,6 +149,13 @@ export function Salon() {
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
   const works = s.works;
+  const groups = groupServices(s.services);
+  const prices = s.services.map((x) => x.priceDa).filter((x) => x > 0);
+  const priceRange = prices.length
+    ? `${formatDA(Math.min(...prices))} – ${formatDA(Math.max(...prices))}`
+    : null;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`;
+  const reviewItems = pagesItems(reviews.data);
   const chosen = selected
     .map((id) => s.services.find((x) => x.id === id))
     .filter((x): x is Service => !!x);
@@ -153,6 +166,19 @@ export function Salon() {
     <div className="min-h-dvh" style={{ paddingBottom: sheetH }}>
       {/* Visiteur arrivé par le lien du professionnel (sans compte) : en-tête complet Salon DZ, façon Planity. */}
       {!session && <PublicHeader />}
+      {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
+          qu'on descend dans les prestations, sans avoir à remonter tout en haut. */}
+      <Tabs
+        label="Sections du salon"
+        value={tab}
+        onChange={setTab}
+        className={`sticky z-20 ${session ? 'top-0' : 'top-[3.75rem]'}`}
+        options={[
+          { value: 'book', label: 'Prendre RDV' },
+          { value: 'reviews', label: 'Avis' },
+          { value: 'about', label: 'À propos' },
+        ]}
+      />
       {/* Couverture */}
       <div className="relative h-[14rem] bg-line">
         {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" />}
@@ -192,94 +218,201 @@ export function Salon() {
         </div>
       </div>
 
-      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[1.5rem] bg-bg px-5 pt-6">
-        <div>
+      <div className="relative -mt-5 flex flex-col gap-3 rounded-t-[1.5rem] bg-bg px-4 pt-5">
+        {/* Identité : le nom, où c'est, ce que ça vaut. Trois lignes, rien de plus. */}
+        <div className="flex flex-col gap-1.5">
           <h1 className="h1 !text-[1.625rem]">{s.name}</h1>
-          <p className="mt-1 text-[0.8125rem] text-muted">
-            {cats} — {place}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          {/* Toujours cliquable : la liste des avis est fraîche même quand la fiche (cache 60 s) ne compte pas encore le dernier. */}
-          <button
-            type="button"
-            className={`pill soft !text-[0.9375rem] !font-semibold${s.ratingCount > 0 ? '' : ' !text-muted'}`}
-            onClick={() => navigate(`/s/${s.slug}/avis`)}
-            aria-label={
-              s.ratingCount > 0
-                ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
-                : 'Avis : voir les avis'
-            }
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 text-[0.9375rem] underline decoration-line-soft underline-offset-2"
           >
-            {s.ratingCount > 0
-              ? `★ ${formatRating(s.ratingAvg)} · ${s.ratingCount} avis`
-              : '★ Avis'}
-          </button>
-          <span className={`badge md !text-[0.9375rem] ${status.open ? 'b-ok' : 'b-nu'}`}>
-            <span className="dot" />
-            {status.label}
-          </span>
+            <I icon={MapPin} size={16} className="flex-none text-muted" />
+            <span className="min-w-0 truncate">{s.address ? `${s.address}, ${place}` : place}</span>
+          </a>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem]">
+            <button
+              type="button"
+              className={`flex items-center gap-1${s.ratingCount > 0 ? '' : ' text-muted'}`}
+              onClick={() => setTab('reviews')}
+              aria-label={
+                s.ratingCount > 0
+                  ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                  : 'Avis : voir les avis'
+              }
+            >
+              <I icon={Star} size={16} className="flex-none" />
+              {s.ratingCount > 0 ? (
+                <>
+                  <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
+                  <span className="text-muted">({s.ratingCount} avis)</span>
+                </>
+              ) : (
+                <span>Pas encore d'avis</span>
+              )}
+            </button>
+            {priceRange && (
+              <>
+                <span className="text-disabled" aria-hidden>
+                  ·
+                </span>
+                <span className="text-muted">{priceRange}</span>
+              </>
+            )}
+            <span className="text-disabled" aria-hidden>
+              ·
+            </span>
+            <span className={status.open ? 'font-semibold text-ok-fg' : 'text-muted'}>
+              {status.label}
+            </span>
+          </div>
         </div>
-        {s.description && <p className="p text-[0.8125rem]">{s.description}</p>}
 
-        <Segmented
-          label="Sections"
-          value={tab}
-          onChange={setTab}
-          options={[
-            { value: 'services', label: 'Prestations' },
-            { value: 'works', label: 'Réalisations' },
-            { value: 'infos', label: 'Infos' },
-          ]}
-        />
+        {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
+        <div className="g2">
+          {s.phone ? (
+            <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[0.9375rem]">
+              <I icon={Phone} size={17} /> Appeler
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="btn g sm !py-[0.9375rem] !text-[0.9375rem]"
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share)
+                  void navigator.share({ title: s.name, url }).catch(() => undefined);
+                else void navigator.clipboard.writeText(url);
+              }}
+            >
+              <I icon={Share2} size={17} /> Partager
+            </button>
+          )}
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="btn g sm !py-[0.9375rem] !text-[0.9375rem]"
+          >
+            <I icon={Navigation} size={17} /> Itinéraire
+          </a>
+        </div>
 
-        {tab === 'services' && (
-          <div className="flex flex-col gap-3">
-            {groupServices(s.services).map((g) => (
-              <div key={g.name} className="flex flex-col gap-2">
-                <span className="h3">{g.name}</span>
-                <div className="crd !gap-0 !py-1">
-                  {g.services.map((sv) => {
-                    const on = selected.includes(sv.id);
-                    return (
-                      <button
-                        key={sv.id}
-                        type="button"
-                        className="li w-full text-left"
-                        onClick={() => toggleService(sv.id)}
-                        aria-pressed={on}
-                      >
-                        <span className="flex min-w-0 flex-1 items-center gap-3.5">
-                          {sv.photos?.[0]?.url && (
-                            <Img
-                              src={sv.photos[0].url}
-                              className="h-[3.75rem] w-[3.75rem] flex-none !rounded-[0.875rem]"
-                            />
-                          )}
-                          <span className="min-w-0">
-                            <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
-                              {sv.name}
-                            </span>
-                            <span className="block text-[0.9375rem] text-muted">
-                              {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
-                            </span>
+        {tab === 'book' && (
+          <div className="flex flex-col gap-2.5">
+            <h2 className="h1 !text-[1.375rem]">Choix de la prestation</h2>
+            {groups.map((g) => (
+              <Accordion
+                key={g.name}
+                title={g.name}
+                hint={`${g.services.length} prestation${g.services.length > 1 ? 's' : ''}`}
+                open={openGroup === g.name}
+                onToggle={() => setOpenGroup((cur) => (cur === g.name ? null : g.name))}
+              >
+                {g.services.map((sv) => {
+                  const on = selected.includes(sv.id);
+                  return (
+                    <button
+                      key={sv.id}
+                      type="button"
+                      className="li w-full text-left"
+                      onClick={() => toggleService(sv.id)}
+                      aria-pressed={on}
+                    >
+                      <span className="flex min-w-0 flex-1 items-center gap-3">
+                        {sv.photos?.[0]?.url && (
+                          <Img
+                            src={sv.photos[0].url}
+                            className="h-[3rem] w-[3rem] flex-none !rounded-[0.75rem]"
+                          />
+                        )}
+                        <span className="min-w-0">
+                          <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+                            {sv.name}
+                          </span>
+                          <span className="block text-[0.9375rem] text-muted">
+                            {formatDuration(sv.durationMinutes)} · {formatDA(sv.priceDa)}
                           </span>
                         </span>
-                        <span className={`chk${on ? ' on' : ''}`} aria-hidden>
-                          {on && <I icon={Check} size={16} />}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+                      </span>
+                      <span className={`chk${on ? ' on' : ''}`} aria-hidden>
+                        {on && <I icon={Check} size={16} />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </Accordion>
             ))}
             {s.services.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
           </div>
         )}
 
-        {tab === 'works' && (
+        {tab === 'reviews' && (
+          <div className="flex flex-col gap-2.5">
+            <h2 className="h1 !text-[1.375rem]">Avis</h2>
+            {s.ratingCount > 0 ? (
+              <div className="crd !flex-row !items-center !gap-3.5">
+                <span className="text-[2.25rem] font-bold leading-none tracking-[-1px]">
+                  {formatRating(s.ratingAvg)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[1.0625rem] font-semibold">
+                    {'★'.repeat(Math.round(s.ratingAvg))}
+                    <span className="text-disabled">
+                      {'★'.repeat(5 - Math.round(s.ratingAvg))}
+                    </span>
+                  </span>
+                  <span className="block text-[0.875rem] text-muted">
+                    {s.ratingCount} avis vérifié{s.ratingCount > 1 ? 's' : ''} · après rendez-vous
+                  </span>
+                </span>
+              </div>
+            ) : (
+              <p className="p py-2">Pas encore d'avis : soyez le premier après votre rendez-vous.</p>
+            )}
+            {s.ratingCount > 0 && (
+              <div className="pills -mx-4 px-4" role="group" aria-label="Trier les avis">
+                <Pill lg on={reviewSort === 'best'} onClick={() => setReviewSort('best')}>
+                  Mieux notés
+                </Pill>
+                <Pill lg on={reviewSort === 'recent'} onClick={() => setReviewSort('recent')}>
+                  Plus récents
+                </Pill>
+              </div>
+            )}
+            {reviews.isPending && s.ratingCount > 0 && (
+              <Skeleton className="h-[5rem] w-full !rounded-[1.25rem]" />
+            )}
+            {reviewItems.map((r) => (
+              <div key={r.id} className="crd !gap-1">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[1rem] font-semibold">
+                    {'★'.repeat(r.rating)}
+                    <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span>
+                  </span>
+                  <span className="text-[0.8125rem] text-muted">
+                    {formatDateShortDZ(r.createdAt)}
+                  </span>
+                </div>
+                {r.comment && <p className="p">{r.comment}</p>}
+              </div>
+            ))}
+            {reviewItems.length > 0 && (
+              <LinkButton to={`/s/${s.slug}/avis`} variant="g">
+                Tous les avis
+              </LinkButton>
+            )}
+          </div>
+        )}
+
+        {tab === 'about' && (
           <>
+            {/* La description a quitté le haut de page : elle appartient à « À propos »,
+                pas au premier écran où le client cherche d'abord une prestation. */}
+            {s.description && <p className="p">{s.description}</p>}
+            {cats && <p className="text-[0.9375rem] text-muted">{cats}</p>}
+            <h2 className="h1 !text-[1.375rem]">Réalisations</h2>
             {works.length === 0 ? (
               <p className="p">Pas encore de réalisations.</p>
             ) : (
@@ -297,8 +430,9 @@ export function Salon() {
           </>
         )}
 
-        {tab === 'infos' && (
-          <div className="flex flex-col gap-4">
+        {tab === 'about' && (
+          <div className="flex flex-col gap-2.5">
+            <h2 className="h1 !text-[1.375rem]">Informations</h2>
             {/* Aujourd'hui en premier et en grand, puis la semaine à partir d'aujourd'hui. */}
             <div className={`crd !gap-2 ${status.open ? '!border-ok-fg !bg-ok-bg' : ''}`}>
               <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
@@ -473,7 +607,7 @@ export function Salon() {
             )}
             <Button
               onClick={() => {
-                setTab('services');
+                setTab('book');
                 setHint(true);
               }}
               disabled={cannotBook}

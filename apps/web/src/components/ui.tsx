@@ -10,7 +10,15 @@ import {
   type TextareaHTMLAttributes, type Ref } from 'react';
 import { Link } from 'react-router';
 import { useBack } from '@/lib/useBack';
-import { Check, ChevronLeft, ChevronRight, Info, X, type LucideIcon } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import type { BookingStatus, CancellationKind, CancelledBy } from '@salondz/constants';
 
 /** Icône aux réglages du design : 22 px, trait 1.6. */
@@ -387,6 +395,83 @@ export function Checkbox({
     >
       {on && <I icon={Check} size={16} />}
     </button>
+  );
+}
+
+/**
+ * Onglets d'une fiche : soulignement de l'onglet actif, collés sous l'en-tête.
+ * À préférer au `Segmented` quand les onglets commandent toute la page et non un
+ * simple filtre : ils restent à leur place, on sait toujours où l'on est.
+ */
+export function Tabs<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+  className = '',
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <div className={`tabs ${className}`} role="tablist" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          role="tab"
+          aria-selected={o.value === value}
+          className={o.value === value ? 'on' : ''}
+          onClick={() => onChange(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Section repliable. Une liste de prestations tout ouverte oblige à défiler longtemps
+ * avant de trouver sa catégorie : replié, le client voit d'abord la carte du salon,
+ * et n'ouvre que ce qui l'intéresse.
+ */
+export function Accordion({
+  title,
+  hint,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="crd !gap-0 !py-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
+      >
+        <span className="min-w-0">
+          <span className="block text-[1.125rem] font-bold tracking-[-0.3px]">{title}</span>
+          {hint && <span className="block text-[0.875rem] text-muted">{hint}</span>}
+        </span>
+        <I
+          icon={ChevronDown}
+          size={20}
+          className={`flex-none text-muted transition-transform duration-150${open ? ' rotate-180' : ''}`}
+        />
+      </button>
+      {open && <div className="border-t border-line-soft pb-1">{children}</div>}
+    </div>
   );
 }
 

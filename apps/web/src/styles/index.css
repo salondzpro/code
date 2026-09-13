@@ -121,6 +121,32 @@
     padding: 0.75rem;
   }
 
+  /* Onglets de fiche : soulignement de l'onglet actif, collés sous l'en-tête pour rester
+     atteignables pendant le défilement. Trois onglets au plus, sinon le texte se serre. */
+  .tabs {
+    display: flex;
+    align-items: stretch;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .tabs > button {
+    flex: 1 1 0;
+    padding: 0.8125rem 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    color: var(--color-muted);
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .tabs > button.on {
+    color: var(--color-text);
+    border-bottom-color: var(--color-ink);
+  }
+
   /* Boutons */
   .btn,
   .btn-primary,
