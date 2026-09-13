@@ -116,4 +116,10 @@ export const NAV_PAD = 85;
 export const MONO: TextStyle = { fontVariant: ['tabular-nums'] };
 
 /** Facteur global de taille de texte (+10 % demandé : « un peu fin et petit ») appliqué par `Tx` et les champs. */
-export const FONT_SCALE = 1.1;
+/**
+ * Facteur d'échelle du texte mobile. Les tailles des écrans sont exprimées dans la base 13 px
+ * du design ; la référence mesurée en conditions téléphone tourne à 14 px de base, d'où ce
+ * rapport. On était à 1,1 (un +10 % ajouté jadis « pour la lisibilité »), ce qui rendait le
+ * mobile visiblement plus gros que le web et que la référence.
+ */
+export const FONT_SCALE = 14 / 13;

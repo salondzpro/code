@@ -7,11 +7,14 @@
 /* Dans @layer base : sinon ces règles non-« layered » l'emporteraient sur les composants
    (ex. `a { color: inherit }` écraserait le blanc des boutons noirs). */
 @layer base {
-  /* Échelle « densité Planity » : tout le design est en rem, le root fixe l'échelle globale
-     (13 px ≈ 0,81 × la maquette 390 px : texte courant 12 px, titres 23 px, boutons 42 px). */
+  /**
+   * Base rem = 14 px, valeur MESURÉE sur la référence en conditions téléphone (racine 14 px,
+   * police Inter, échelle 12 / 14 / 16 / 20 / 24 / 32). On était à 14,3 px : un +10 % appliqué
+   * jadis « pour la lisibilité » sur une base de 13 px. Tout le projet étant en rem, ce seul
+   * chiffre cale l'échelle entière.
+   */
   html {
-    /* Base rem : 13 px du design × 1,1 — tout le texte du projet est en rem, +10 % demandé (lisibilité). */
-    font-size: 14.3px;
+    font-size: 14px;
     -webkit-text-size-adjust: 100%;
   }
   body {
@@ -62,9 +65,9 @@
   /* Typographie */
   .h1 {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.7px;
-    line-height: 1.12;
+    line-height: 1.15;
     margin: 0;
   }
   .h2 {

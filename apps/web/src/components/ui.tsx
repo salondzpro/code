@@ -461,7 +461,7 @@ export function Accordion({
         className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
       >
         <span className="min-w-0">
-          <span className="block text-[1.125rem] font-bold tracking-[-0.3px]">{title}</span>
+          <span className="block text-[1.125rem] font-semibold tracking-[-0.3px]">{title}</span>
           {hint && <span className="block text-[0.875rem] text-muted">{hint}</span>}
         </span>
         <I

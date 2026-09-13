@@ -362,7 +362,7 @@ export function Salon() {
             <h2 className="h1 !text-[1.375rem]">Avis</h2>
             {s.ratingCount > 0 ? (
               <div className="crd !flex-row !items-center !gap-3.5">
-                <span className="text-[2.25rem] font-bold leading-none tracking-[-1px]">
+                <span className="text-[2.25rem] font-semibold leading-none tracking-[-1px]">
                   {formatRating(s.ratingAvg)}
                 </span>
                 <span className="min-w-0">
