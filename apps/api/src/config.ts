@@ -18,6 +18,13 @@ const schema = z.object({
   /** Jeton partagé pour /internal/* (appelé par pg_cron via pg_net). */
   INTERNAL_CRON_TOKEN: z.string().min(8),
   SENTRY_DSN: z.string().optional(),
+  /**
+   * Web Push (VAPID). Absentes, l'envoi vers les navigateurs est simplement désactivé :
+   * le mobile continue de recevoir ses notifications par Expo, et rien ne casse.
+   */
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_SUBJECT: z.string().default('mailto:contact@salondz.dz'),
   /** Comptes de démonstration à accès direct (POST /v1/auth/dev-login). Mettre `0` pour désactiver. */
   TEST_LOGIN_ENABLED: z
     .string()

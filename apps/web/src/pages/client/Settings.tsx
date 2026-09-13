@@ -7,6 +7,12 @@ import { MARKET_LABELS_FR } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
 import { Badge, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { api } from '@/lib/api';
+import {
+  disableWebPush,
+  enableWebPush,
+  webPushPermission,
+} from '@/lib/webpush';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 
 function since(iso: string): string {
@@ -14,6 +20,9 @@ function since(iso: string): string {
 }
 
 export function Settings() {
+  const [webPush, setWebPush] = useState<NotificationPermission | 'unsupported'>(() =>
+    webPushPermission(),
+  );
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const me = useMe();
@@ -33,6 +42,32 @@ export function Settings() {
 
       <SectionLabel>Notifications</SectionLabel>
       <div className="crd !gap-0 !py-1">
+        {/* Notifications du navigateur : sans elles, l'application ne peut prévenir que
+            lorsqu'elle est ouverte. C'est le seul réglage qui dépend d'une permission
+            système, d'où l'état « refusé » explicite plutôt qu'un interrupteur qui ne
+            bougerait pas. */}
+        {webPush !== 'unsupported' && (
+          <div className="li">
+            <span className="text-[1rem]">Notifications sur cet appareil</span>
+            {webPush === 'denied' ? (
+              <span className="text-[0.857rem] text-muted">Bloquées par le navigateur</span>
+            ) : (
+              <Toggle
+                on={webPush === 'granted'}
+                onChange={async (v) => {
+                  if (v) {
+                    const ok = await enableWebPush(api);
+                    setWebPush(ok ? 'granted' : webPushPermission());
+                  } else {
+                    await disableWebPush(api);
+                    setWebPush('default');
+                  }
+                }}
+                label="Notifications sur cet appareil"
+              />
+            )}
+          </div>
+        )}
         <div className="li">
           <span>
             <span className="block text-[1rem]">Rappels de rendez-vous</span>

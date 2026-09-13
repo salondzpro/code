@@ -425,21 +425,11 @@ export default function Salon() {
 
         {tab === 'about' && (
           <View style={{ gap: 9 }}>
-            {/* 1. Où. L'adresse d'abord, la carte ensuite. */}
-            <Tx size={16} weight={700} ls={-0.5} lh={19}>
+            {/* 1. Où. L'adresse n'est PAS répétée ici : le bloc d'identité, juste au-dessus,
+                reste visible sur tous les onglets et la porte déjà, cliquable. */}
+            <Tx size={16} weight={700} ls={-0.5} lh={20}>
               Où se situe le salon ?
             </Tx>
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel="Itinéraire vers le salon"
-              onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-            >
-              <I icon={MapPin} size={14} color={C.muted} />
-              <Tx size={12} lh={16} style={{ flex: 1, textDecorationLine: 'underline' }}>
-                {s.address ? `${s.address}, ${place}` : place}
-              </Tx>
-            </Pressable>
             <Button onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
               <Tx size={14} weight={600} color="#fff" ls={-0.2}>
                 Afficher la carte

@@ -1,7 +1,10 @@
+import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { useRealtimeMyBookings } from '@/lib/realtime';
+import { api } from '@/lib/api';
+import { refreshWebPushIfGranted } from '@/lib/webpush';
 import { Splash } from '@/pages/auth/Splash';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
@@ -57,6 +60,17 @@ export function RequireClient() {
   const me = useMe(!!session);
   // Mes rendez-vous et notifications se rafraîchissent quand le salon confirme, déplace ou annule.
   useRealtimeMyBookings(session?.user.id);
+  /**
+   * Abonnement navigateur rafraîchi quand la permission est DÉJÀ accordée : un abonnement
+   * peut être renouvelé par le navigateur, et un jeton périmé ne reçoit plus rien sans que
+   * personne s'en aperçoive. Aucune demande n'est affichée ici — elle vient du réglage.
+   */
+  const pushRefreshed = useRef(false);
+  useEffect(() => {
+    if (!session || pushRefreshed.current) return;
+    pushRefreshed.current = true;
+    void refreshWebPushIfGranted(api);
+  }, [session]);
   if (loading) return <Splash />;
   if (!session)
     return (

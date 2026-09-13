@@ -340,8 +340,13 @@ export const createReviewSchema = z.object({
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 
 // ---------- Push ----------
+/**
+ * Jeton de notification. Sur mobile c'est un jeton Expo (~50 caractères) ; sur le web c'est
+ * l'abonnement Web Push sérialisé (endpoint + deux clés), qui dépasse régulièrement 350
+ * caractères. Le plafond de 300 rejetait donc tout abonnement navigateur.
+ */
 export const registerPushTokenSchema = z.object({
-  token: z.string().min(10).max(300),
+  token: z.string().min(10).max(1000),
   platform: z.enum(['ios', 'android', 'web']),
   deviceName: z.string().max(80).optional(),
 });

@@ -417,17 +417,10 @@ export function Salon() {
 
         {tab === 'about' && (
           <div className="flex flex-col gap-2.5">
-            {/* 1. Où. L'adresse d'abord, la carte ensuite : on situe avant d'illustrer. */}
+            {/* 1. Où. L'adresse n'est PAS répétée ici : le bloc d'identité, juste au-dessus,
+                reste visible sur tous les onglets et la porte déjà, cliquable. Cette section
+                n'ajoute que ce qu'il n'a pas, la carte. */}
             <h2 className="h1 !text-[1.429rem]">Où se situe le salon&nbsp;?</h2>
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
-            >
-              <I icon={MapPin} size={16} className="flex-none text-muted" />
-              <span className="min-w-0">{s.address ? `${s.address}, ${place}` : place}</span>
-            </a>
             <div className="relative">
               {s.lat != null && s.lng != null ? (
                 <MiniMap lat={s.lat} lng={s.lng} radiusKm={0.4} className="h-[11rem]" />

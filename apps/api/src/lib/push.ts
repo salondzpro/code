@@ -1,6 +1,7 @@
 import { Expo, type ExpoPushMessage, type ExpoPushTicket } from 'expo-server-sdk';
 import type { FastifyBaseLogger } from 'fastify';
 import { db } from './supabase';
+import { isWebPushToken, sendWebPush, webPushEnabled } from './webpush';
 
 const expo = new Expo({ useFcmV1: true });
 
@@ -37,12 +38,21 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     .in('user_id', userIds);
   if (tErr) throw tErr;
 
+  // Deux canaux, deux protocoles : Expo pour les applications mobiles, Web Push pour les
+  // navigateurs. Un jeton qui n'est ni l'un ni l'autre est ignoré plutôt que de faire échouer
+  // le lot entier.
   const tokensByUser = new Map<string, string[]>();
+  const webByUser = new Map<string, string[]>();
   for (const t of tokens ?? []) {
-    if (!Expo.isExpoPushToken(t.token)) continue;
-    const list = tokensByUser.get(t.user_id) ?? [];
-    list.push(t.token);
-    tokensByUser.set(t.user_id, list);
+    if (Expo.isExpoPushToken(t.token)) {
+      const list = tokensByUser.get(t.user_id) ?? [];
+      list.push(t.token);
+      tokensByUser.set(t.user_id, list);
+    } else if (webPushEnabled && isWebPushToken(t.token)) {
+      const list = webByUser.get(t.user_id) ?? [];
+      list.push(t.token);
+      webByUser.set(t.user_id, list);
+    }
   }
 
   const messages: ExpoPushMessage[] = [];
@@ -76,6 +86,20 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     }
   }
 
+  // Navigateurs : un envoi par abonnement, les abonnements morts sont supprimés.
+  let webSent = 0;
+  for (const n of pending as PendingNotification[]) {
+    for (const token of webByUser.get(n.user_id) ?? []) {
+      const r = await sendWebPush(log, token, {
+        title: n.title,
+        body: n.body,
+        data: { ...n.data, type: n.type, notificationId: n.id },
+      });
+      if (r === 'sent') webSent++;
+      if (r === 'gone') invalidTokens.push(token);
+    }
+  }
+
   if (invalidTokens.length) {
     await db.from('push_tokens').delete().in('token', invalidTokens);
   }
@@ -86,7 +110,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     .in('id', pending.map((n) => n.id as string));
   if (uErr) throw uErr;
 
-  return messages.length;
+  return messages.length + webSent;
 }
 
 /** Fire-and-forget après une mutation de réservation (ne bloque pas la réponse HTTP). */
