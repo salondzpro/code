@@ -136,7 +136,7 @@ export default function ProHome() {
             <Tx size={26} weight={700} ls={-0.8} lh={28} color="#fff">
               {stats.data.todayCount}
             </Tx>
-            <Tx size={11.5} color={C.white70} lh={15.5}>
+            <Tx size={14} weight={700} color={C.white90} lh={17}>
               rendez-vous aujourd'hui
             </Tx>
           </Card>
@@ -156,7 +156,7 @@ export default function ProHome() {
             >
               {stats.data.pendingCount}
             </Tx>
-            <Tx size={11.5} color={C.muted} lh={15.5}>
+            <Tx size={14} weight={700} lh={17}>
               à valider
             </Tx>
           </Card>
@@ -209,6 +209,7 @@ export default function ProHome() {
             </Pressable>
             <Grid cols={2}>
               <Button
+                variant="ok"
                 sm
                 style={{ paddingVertical: 15 }}
                 disabled={setStatus.isPending}

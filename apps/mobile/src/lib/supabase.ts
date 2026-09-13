@@ -3,6 +3,7 @@ import { AppState, Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupportedStorage } from '@supabase/supabase-js';
+import { REALTIME_EVENTS_PER_SECOND } from '@salondz/constants';
 import { env } from './env';
 
 /**
@@ -52,6 +53,8 @@ export const supabase = createClient(env.supabaseUrl, env.supabasePublishableKey
     persistSession: true,
     detectSessionInUrl: false,
   },
+  // Même plafond que le web : le filtre serveur limite déjà chaque pro à son salon.
+  realtime: { params: { eventsPerSecond: REALTIME_EVENTS_PER_SECOND } },
 });
 
 // Rafraîchissement du jeton uniquement quand l'app est au premier plan.

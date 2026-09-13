@@ -95,6 +95,7 @@ export function Requests() {
           </button>
           <div className="g2">
             <Button
+              variant="ok"
               sm
               className="!py-[1.125rem] !text-[0.875rem]"
               disabled={setStatus.isPending}
@@ -111,13 +112,14 @@ export function Requests() {
               Reporter
             </Button>
           </div>
-          <button
-            type="button"
-            className="text-[0.8125rem] text-danger"
+          <Button
+            variant="d"
+            sm
+            className="!py-[1.125rem] !text-[0.875rem]"
             onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
           >
             Refuser la demande
-          </button>
+          </Button>
         </div>
       ))}
       <ErrorMessage error={setStatus.error ?? cancel.error} />

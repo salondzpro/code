@@ -37,7 +37,7 @@ export function I({
 }
 
 // ---------- Boutons ----------
-type Variant = 'ink' | 'g' | 'd' | 'off';
+type Variant = 'ink' | 'g' | 'd' | 'ok' | 'off';
 export function Button({
   variant = 'ink',
   sm,

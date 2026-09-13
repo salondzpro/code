@@ -9,6 +9,7 @@ export * from './lateness';
 export * from './booking';
 export * from './phone';
 export * from './brandLogos';
+export * from './realtime';
 
 export const APP_NAME = 'SalonDZ';
 export const DEFAULT_LOCALE = 'fr' as const;

@@ -51,7 +51,7 @@ export function I({
 }
 
 // ---------- Boutons ----------
-type Variant = 'ink' | 'g' | 'd';
+type Variant = 'ink' | 'g' | 'd' | 'ok';
 export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   variant?: Variant;
   sm?: boolean;
@@ -78,10 +78,19 @@ export function Button({
   ...props
 }: ButtonProps) {
   const off = !!disabled || !!loading;
-  const background = bg ?? (off ? C.fill : variant === 'ink' ? C.ink : C.surface);
+  const background =
+    bg ?? (off ? C.fill : variant === 'ink' ? C.ink : variant === 'ok' ? C.okFg : C.surface);
   const fg =
     textColor ??
-    (off ? C.subtle : variant === 'ink' ? C.onInk : variant === 'd' ? C.danger : C.text);
+    (off
+      ? C.subtle
+      : variant === 'ink'
+        ? C.onInk
+        : variant === 'ok'
+          ? '#FFFFFF'
+          : variant === 'd'
+            ? C.danger
+            : C.text);
   const border = off
     ? 'transparent'
     : variant === 'g'

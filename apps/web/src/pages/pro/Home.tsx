@@ -94,7 +94,9 @@ export function ProHome() {
             <span className="text-[2rem] font-bold leading-none tracking-[-0.8px]">
               {stats.data.todayCount}
             </span>
-            <span className="text-[0.875rem] text-white/70">rendez-vous aujourd'hui</span>
+            <span className="text-[1.0625rem] font-bold leading-[1.2] text-white/90">
+              rendez-vous aujourd'hui
+            </span>
           </div>
           <Link
             to="/pro/reservations"
@@ -106,7 +108,7 @@ export function ProHome() {
             >
               {stats.data.pendingCount}
             </span>
-            <span className="text-[0.875rem] text-muted">à valider</span>
+            <span className="text-[1.0625rem] font-bold leading-[1.2]">à valider</span>
           </Link>
         </div>
       )}
@@ -149,6 +151,7 @@ export function ProHome() {
             </button>
             <div className="g2">
               <Button
+                variant="ok"
                 sm
                 className="!py-[1.125rem] !text-[0.875rem]"
                 disabled={setStatus.isPending}

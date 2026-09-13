@@ -30,6 +30,7 @@ export const C = {
   green: '#18A66A',
   dim: 'rgba(23,24,26,0.32)',
   white70: 'rgba(255,255,255,0.7)',
+  white90: 'rgba(255,255,255,0.9)',
   white85: 'rgba(255,255,255,0.85)',
 } as const;
 

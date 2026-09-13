@@ -119,6 +119,7 @@ export default function Requests() {
           </Pressable>
           <Grid cols={2}>
             <Button
+              variant="ok"
               sm
               style={{ paddingVertical: 15 }}
               disabled={setStatus.isPending}
@@ -139,15 +140,16 @@ export default function Requests() {
               </Tx>
             </Button>
           </Grid>
-          <Pressable
-            accessibilityRole="button"
+          <Button
+            variant="d"
+            sm
+            style={{ paddingVertical: 15 }}
             onPress={() => setRefusing({ id: b.id, clientName: b.clientName })}
-            style={{ alignSelf: 'center' }}
           >
-            <Tx size={10.5} color={C.danger} lh={14.5}>
+            <Tx size={11.5} weight={600} color={C.danger} ls={-0.2}>
               Refuser la demande
             </Tx>
-          </Pressable>
+          </Button>
         </Card>
       ))}
       <ErrorText error={setStatus.error ?? cancel.error} />
