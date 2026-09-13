@@ -71,7 +71,7 @@ export function Step7ServicePhotos() {
       </div>
       <button
         type="button"
-        className="relative aspect-square w-full overflow-hidden rounded-[1.25rem] bg-line"
+        className="relative aspect-square w-full overflow-hidden rounded-[0.857rem] bg-line"
         onClick={() => input.current?.click()}
         aria-label={photo ? 'Changer la photo' : 'Ajouter une photo'}
         disabled={busy}

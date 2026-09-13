@@ -120,7 +120,7 @@ export function Marketplace() {
           aria-label="Changer de marché"
           onClick={swapMarket}
           disabled={update.isPending}
-          className="!h-9 !w-9 !rounded-[0.75rem]"
+          className="!h-9 !w-9 !rounded-[0.571rem]"
         >
           <I icon={ArrowLeftRight} size={16} />
         </IconButton>
@@ -130,8 +130,8 @@ export function Marketplace() {
       {query.isPending ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-5 w-56" />
-          <Skeleton className="h-[23.75rem] w-full !rounded-[1.25rem]" />
-          <Skeleton className="h-[12.5rem] w-full !rounded-[1.25rem]" />
+          <Skeleton className="h-[23.75rem] w-full !rounded-[0.857rem]" />
+          <Skeleton className="h-[12.5rem] w-full !rounded-[0.857rem]" />
         </div>
       ) : query.isError ? (
         <ErrorMessage error={query.error} retry={() => query.refetch()} />

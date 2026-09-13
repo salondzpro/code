@@ -61,7 +61,7 @@ export default function Profile() {
               bottom: 2,
               width: 26,
               height: 26,
-              borderRadius: 13,
+              borderRadius: 8,
               backgroundColor: C.ink,
               borderWidth: 2,
               borderColor: C.surface,

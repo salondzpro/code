@@ -58,6 +58,9 @@ export function MapView() {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const areaLayerRef = useRef<L.LayerGroup | null>(null);
+  const meLayerRef = useRef<L.LayerGroup | null>(null);
+  /** Position de l'appareil, suivie en continu : point bleu + halo de précision. */
+  const [mePos, setMePos] = useState<{ lat: number; lng: number; acc: number } | null>(null);
   const programmatic = useRef(false);
 
   const tooWide = !!area && area.radiusKm > MAX_ZONE_KM;
@@ -70,6 +73,7 @@ export function MapView() {
       lat: area?.lat,
       lng: area?.lng,
       radiusKm: area?.radiusKm,
+      sort: prefs.sort,
       availableToday: prefs.availableToday || undefined,
       ratingMin: prefs.ratingMin ?? undefined,
       limit: 50,
@@ -134,6 +138,8 @@ export function MapView() {
     }).addTo(map);
     areaLayerRef.current = L.layerGroup().addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
+    // Le point bleu passe au-dessus du reste, mais laisse les clics filer vers les bulles.
+    meLayerRef.current = L.layerGroup().addTo(map);
     // Zone par zone : chaque déplacement (même programmé) relance la recherche sur la zone visible, après 500 ms de calme.
     map.on('moveend', () => {
       programmatic.current = false;
@@ -153,6 +159,47 @@ export function MapView() {
   }, []);
 
   useEffect(() => drawArea(area), [area, drawArea]);
+
+  /**
+   * Position en TEMPS RÉEL : `watchPosition` pousse chaque nouvelle mesure, donc le point
+   * bleu suit le déplacement sans qu'on redemande quoi que ce soit. La carte, elle, ne
+   * bouge pas : recentrer sous le doigt de quelqu'un qui explore un quartier est odieux.
+   * Refus ou absence de capteur : aucun point, et rien d'autre ne change.
+   */
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return;
+    const id = navigator.geolocation.watchPosition(
+      (p) =>
+        setMePos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy ?? 0 }),
+      () => setMePos(null),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+
+  useEffect(() => {
+    const layer = meLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    if (!mePos) return;
+    // Halo = précision réelle du relevé, borné : par mauvaise réception il couvrirait la ville.
+    if (mePos.acc > 0)
+      L.circle([mePos.lat, mePos.lng], {
+        radius: Math.min(mePos.acc, 150),
+        stroke: false,
+        fillColor: '#1a73e8',
+        fillOpacity: 0.12,
+        interactive: false,
+      }).addTo(layer);
+    L.circleMarker([mePos.lat, mePos.lng], {
+      radius: 7,
+      color: '#ffffff',
+      weight: 3,
+      fillColor: '#1a73e8',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(layer);
+  }, [mePos]);
 
   // Bulles de prix
   useEffect(() => {
@@ -274,7 +321,6 @@ export function MapView() {
           onCategory={setCategory}
           view="map"
           onView={() => navigate(`/${category ? `?category=${category}` : ''}`)}
-          withSort={false}
         />
         <div className="pointer-events-auto flex items-center justify-center gap-2">
           <span
@@ -301,7 +347,7 @@ export function MapView() {
       </button>
 
       {/* Feuille : fiches glissables (une par salon), synchronisées avec les bulles */}
-      <div className="sheet !bottom-[4.75rem] !z-[400] !pb-4">
+      <div className="sheet !bottom-[4.75rem] !z-[400] !gap-2 !pb-3 !pt-2">
         {items.length === 0 ? (
           <p className="p py-2 text-center">
             {tooWide
@@ -324,33 +370,33 @@ export function MapView() {
                 className="w-full flex-none px-5"
                 style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
               >
+                {/* Fiche volontairement basse : sur une carte, ce qu'on veut voir d'abord,
+                    c'est le plan. Le nom, le lieu et le prochain créneau suffisent à choisir ;
+                    les prestations et les prix se lisent sur la fiche du salon. */}
                 <Link
                   to={`/s/${s.slug}`}
-                  className={`crd !gap-3 ${s.id === current?.id ? 'sel' : ''}`}
+                  className={`crd !gap-2 !p-3 ${s.id === current?.id ? 'sel' : ''}`}
                 >
-                  <div className="flex items-start gap-3.5">
+                  <div className="flex items-center gap-3">
                     <Img
                       src={s.logoUrl ?? s.coverUrl}
-                      className="h-[6rem] w-[6rem] flex-none !rounded-[1rem]"
+                      className="h-[3.25rem] w-[3.25rem] flex-none !rounded-[0.571rem]"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-[1.143rem] font-bold leading-tight tracking-[-0.4px]">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[1.143rem] font-bold leading-tight tracking-[-0.4px]">
                           {s.name}
                         </span>
                         {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
                       </div>
-                      <span className="mt-1 block text-[0.857rem] text-muted">
+                      <span className="mt-0.5 block truncate text-[0.857rem] text-muted">
                         {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null]
                           .filter(Boolean)
                           .join(' · ')}
                       </span>
-                      <span className="mt-0.5 block text-[1rem] text-subtle">
-                        {s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}
-                      </span>
                     </div>
                   </div>
-                  <NextSlots salon={s} />
+                  <NextSlots salon={s} compact />
                 </Link>
               </div>
             ))}

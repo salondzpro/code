@@ -31,7 +31,7 @@ export function ErrorMessage({ error, retry, className = '' }: { error: unknown;
   if (!error) return null;
   const details = errorDetails(error);
   return (
-    <div role="alert" className={`rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger ${className}`}>
+    <div role="alert" className={`rounded-[0.857rem] border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger ${className}`}>
       <p className="font-medium">{errorText(error)}</p>
       {details.length > 0 && (
         <ul className="mt-1 list-disc pl-5 text-text/80">

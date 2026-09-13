@@ -76,7 +76,7 @@ const monthShort = (iso: string) =>
 function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
   return (
     <span
-      className={`flex w-[3.25rem] flex-none flex-col items-center rounded-[0.75rem] bg-fill py-1.5 ${muted ? 'text-muted' : ''}`}
+      className={`flex w-[3.25rem] flex-none flex-col items-center rounded-[0.571rem] bg-fill py-1.5 ${muted ? 'text-muted' : ''}`}
     >
       <span className="text-[1.429rem] font-bold leading-none tracking-[-0.5px]">
         {dayNum(iso)}
@@ -239,7 +239,7 @@ export function ClientDetail() {
           { v: formatDA(c.spentDa), l: 'dépensés' },
           { v: c.lastAt ? formatDateShortDZ(c.lastAt) : '—', l: 'dernière visite' },
         ].map((x) => (
-          <span key={x.l} className="flex flex-col rounded-[0.875rem] bg-fill px-3 py-3">
+          <span key={x.l} className="flex flex-col rounded-[0.571rem] bg-fill px-3 py-3">
             <span className="text-[1.429rem] font-bold leading-tight tracking-[-0.5px]">{x.v}</span>
             <span className="text-[0.857rem] text-muted">{x.l}</span>
           </span>
@@ -327,7 +327,7 @@ export function ClientDetail() {
         ))}
       </div>
       {history.isPending ? (
-        <Skeleton className="h-[10rem] w-full !rounded-[1.25rem]" />
+        <Skeleton className="h-[10rem] w-full !rounded-[0.857rem]" />
       ) : (
         <div className="crd !gap-0 !py-1">
           {shown.map((h) => {

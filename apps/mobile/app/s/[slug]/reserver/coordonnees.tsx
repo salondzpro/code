@@ -154,7 +154,7 @@ export default function BookingDetails() {
           style={{
             width: 42,
             height: 42,
-            borderRadius: 21,
+            borderRadius: 12,
             borderWidth: 1,
             borderColor: C.line,
             backgroundColor: C.surface,

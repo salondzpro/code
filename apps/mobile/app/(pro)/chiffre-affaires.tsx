@@ -65,7 +65,7 @@ export default function Revenue() {
         ]}
       />
       {stats.isPending ? (
-        <Skeleton h={244} radius={16} />
+        <Skeleton h={244} radius={12} />
       ) : stats.isError ? (
         <ErrorText error={stats.error} retry={() => void stats.refetch()} />
       ) : (

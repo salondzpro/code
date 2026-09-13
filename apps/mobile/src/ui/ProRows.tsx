@@ -11,7 +11,7 @@ export function Ic({ icon, ink, danger }: { icon: LucideIcon; ink?: boolean; dan
       style={{
         width: 32,
         height: 32,
-        borderRadius: 16,
+        borderRadius: 12,
         backgroundColor: ink ? C.ink : danger ? C.cancelBg : C.fill,
         alignItems: 'center',
         justifyContent: 'center',
@@ -65,7 +65,7 @@ export function Tile({
         style={{
           width: 36,
           height: 36,
-          borderRadius: 18,
+          borderRadius: 12,
           backgroundColor: C.ink,
           alignItems: 'center',
           justifyContent: 'center',

@@ -77,7 +77,7 @@ export default function SalonReviews() {
           </Pill>
         </PillRow>
       )}
-      {reviews.isPending && has && <Skeleton h={78} radius={16} />}
+      {reviews.isPending && has && <Skeleton h={78} radius={12} />}
       {reviewItems.map((r) => (
         <Card key={r.id} gap={4}>
           <View

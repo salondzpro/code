@@ -125,7 +125,7 @@ export function ProProfile() {
         </div>
         <button
           type="button"
-          className="relative h-[8.75rem] w-full overflow-hidden rounded-[1rem] bg-line"
+          className="relative h-[8.75rem] w-full overflow-hidden rounded-[0.571rem] bg-line"
           onClick={() => coverInput.current?.click()}
           aria-label="Changer la photo de couverture"
           disabled={busy !== null}

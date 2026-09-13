@@ -124,7 +124,7 @@ export default function ProHome() {
       {salon && <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />}
 
       {stats.isPending ? (
-        <Skeleton h={114} radius={16} />
+        <Skeleton h={114} radius={12} />
       ) : stats.isError ? (
         <ErrorText error={stats.error} retry={() => void stats.refetch()} />
       ) : (
@@ -262,7 +262,7 @@ export default function ProHome() {
       >
         Prochains
       </SectionLabel>
-      {todayList.isPending && <Skeleton h={117} radius={16} />}
+      {todayList.isPending && <Skeleton h={117} radius={12} />}
       {!todayList.isPending && !next && (
         <Card>
           <P>

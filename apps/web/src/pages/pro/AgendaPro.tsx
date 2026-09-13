@@ -426,7 +426,7 @@ function DayTimeline({
         <button
           key={`gap-${g.s}`}
           type="button"
-          className="absolute left-[3.625rem] right-0 flex items-center justify-between rounded-[0.75rem] px-4 text-left text-[1rem] text-subtle hover:text-text"
+          className="absolute left-[3.625rem] right-0 flex items-center justify-between rounded-[0.571rem] px-4 text-left text-[1rem] text-subtle hover:text-text"
           style={{
             top: top(g.s) + 2,
             height: (g.e - g.s) * PX - 4,
@@ -442,7 +442,7 @@ function DayTimeline({
       {closedRanges.map((c) => (
         <div
           key={`c-${c.s}-${c.label}`}
-          className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[1rem] text-subtle"
+          className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.571rem] px-4 text-[1rem] text-subtle"
           style={{
             top: top(c.s) + 2,
             height: Math.max(20, (c.e - c.s) * PX - 4),
@@ -463,7 +463,7 @@ function DayTimeline({
             key={b.id}
             type="button"
             onClick={() => onOpen(b.id)}
-            className="absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.75rem] border border-dashed border-line bg-surface px-3 py-2 text-left text-muted"
+            className="absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.571rem] border border-dashed border-line bg-surface px-3 py-2 text-left text-muted"
             style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
             aria-label={`${b.clientName} · ${cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}`}
           >
@@ -487,7 +487,7 @@ function DayTimeline({
             key={b.id}
             type="button"
             onClick={() => onOpen(b.id)}
-            className={`absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.75rem] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`}
+            className={`absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.571rem] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`}
             style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
           >
             <span className="block truncate text-[0.857rem] font-semibold">
@@ -604,12 +604,12 @@ function WeekGrid({
                 {DAY_LABELS_SHORT_FR[dow]}
               </span>
               <span
-                className={`flex h-9 w-full items-center justify-center rounded-[0.75rem] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
+                className={`flex h-9 w-full items-center justify-center rounded-[0.571rem] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
               >
                 {Number(d.slice(8, 10))}
               </span>
               <span
-                className={`relative block w-full overflow-hidden rounded-[0.75rem] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`}
+                className={`relative block w-full overflow-hidden rounded-[0.571rem] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`}
                 style={{
                   height: H,
                   background: closed
@@ -626,8 +626,8 @@ function WeekGrid({
                         key={b.id}
                         className={
                           b.status === 'cancelled'
-                            ? 'absolute left-0.5 right-0.5 rounded-[0.5rem] border border-dashed border-line'
-                            : `absolute left-0.5 right-0.5 rounded-[0.5rem] border-l-[3px] ${TONE[toneOf(b)]}`
+                            ? 'absolute left-0.5 right-0.5 rounded-[0.571rem] border border-dashed border-line'
+                            : `absolute left-0.5 right-0.5 rounded-[0.571rem] border-l-[3px] ${TONE[toneOf(b)]}`
                         }
                         style={{ top: (s - startMin) * px, height: Math.max(10, (e - s) * px) }}
                       />
@@ -716,7 +716,7 @@ function MonthGrid({
               key={d}
               type="button"
               onClick={() => (on ? onOpenDay(d) : onSelect(d))}
-              className={`flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[0.875rem] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`}
+              className={`flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[0.571rem] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`}
               style={
                 closed && !on
                   ? {

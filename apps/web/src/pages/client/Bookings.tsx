@@ -60,7 +60,7 @@ function useNow(): number {
 function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
   return (
     <span
-      className={`flex w-[3.75rem] flex-none flex-col items-center rounded-[0.875rem] bg-fill py-2 ${muted ? 'text-muted' : ''}`}
+      className={`flex w-[3.75rem] flex-none flex-col items-center rounded-[0.571rem] bg-fill py-2 ${muted ? 'text-muted' : ''}`}
     >
       <span className="text-[0.857rem] font-semibold uppercase tracking-[0.06em] text-muted">
         {weekday(iso).replace('.', '')}
@@ -118,7 +118,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
       <div className="flex items-center gap-3.5">
         <Img
           src={b.salon.coverUrl}
-          className={`h-[4.5rem] w-[4.5rem] flex-none !rounded-[0.875rem] ${active ? '' : 'opacity-60'}`}
+          className={`h-[4.5rem] w-[4.5rem] flex-none !rounded-[0.571rem] ${active ? '' : 'opacity-60'}`}
         />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
@@ -288,8 +288,8 @@ export function Bookings() {
       />
       {list.isPending ? (
         <>
-          <Skeleton className="h-[13rem] w-full !rounded-[1.25rem]" />
-          <Skeleton className="h-[7.5rem] w-full !rounded-[1.25rem]" />
+          <Skeleton className="h-[13rem] w-full !rounded-[0.857rem]" />
+          <Skeleton className="h-[7.5rem] w-full !rounded-[0.857rem]" />
         </>
       ) : list.isError ? (
         <ErrorMessage error={list.error} retry={() => list.refetch()} />

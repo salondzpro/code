@@ -70,7 +70,7 @@ export function DayScroller({
             disabled={past}
             data-day={d}
             onClick={() => onSelect(d)}
-            className={`flex w-[3.25rem] flex-none flex-col items-center gap-1 rounded-[0.875rem] py-2 ${on ? 'bg-ink text-white' : out ? 'text-disabled' : 'text-text'}`}
+            className={`flex w-[3.25rem] flex-none flex-col items-center gap-1 rounded-[0.571rem] py-2 ${on ? 'bg-ink text-white' : out ? 'text-disabled' : 'text-text'}`}
             style={{ scrollSnapAlign: 'center' }}
             aria-label={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(d)}`}
           >

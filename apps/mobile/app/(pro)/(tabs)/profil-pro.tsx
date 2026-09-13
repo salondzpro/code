@@ -65,7 +65,7 @@ export default function ProProfile() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de profil" disabled={busy !== null} onPress={() => void upload('logo')}>
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={58.5} />
-            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: C.ink, borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 8, backgroundColor: C.ink, borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
               <I icon={Camera} size={14} color={C.onInk} />
             </View>
           </Pressable>
@@ -82,7 +82,7 @@ export default function ProProfile() {
           </Badge>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de couverture" disabled={busy !== null} onPress={() => void upload('cover')}>
-          <Img src={salon.coverUrl} radius={13} style={{ height: 114, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+          <Img src={salon.coverUrl} radius={8} style={{ height: 114, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
             {!salon.coverUrl && <I icon={Camera} size={24} color={C.subtle} />}
             <View style={{ position: 'absolute', right: 8, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
               <I icon={Camera} size={14} />

@@ -77,7 +77,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
       <Grid cols={3}>
         {works.map((w) => (
           <View key={w.id} style={{ aspectRatio: 1 }}>
-            <Img src={w.url} radius={13} style={{ width: '100%', height: '100%' }} />
+            <Img src={w.url} radius={8} style={{ width: '100%', height: '100%' }} />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Retirer"
@@ -89,7 +89,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
                 top: 5,
                 width: 23,
                 height: 23,
-                borderRadius: 11,
+                borderRadius: 8,
                 backgroundColor: 'rgba(0,0,0,0.6)',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -107,7 +107,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             disabled={busy}
             style={{
               aspectRatio: 1,
-              borderRadius: 13,
+              borderRadius: 8,
               borderWidth: 1,
               borderStyle: 'dashed',
               borderColor: C.line,

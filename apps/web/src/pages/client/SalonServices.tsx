@@ -26,7 +26,7 @@ export function SalonServices() {
           const photos = sv.photos ?? [];
           return (
             <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="crd !flex-row items-center gap-4">
-              <Img src={photos[0]?.url ?? s.coverUrl} className="h-[7rem] w-[7rem] flex-none !rounded-[1rem]" />
+              <Img src={photos[0]?.url ?? s.coverUrl} className="h-[7rem] w-[7rem] flex-none !rounded-[0.571rem]" />
               <span className="min-w-0 flex-1">
                 <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{sv.name}</span>
                 <span className="block text-[0.857rem] text-muted">

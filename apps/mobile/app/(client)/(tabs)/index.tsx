@@ -116,7 +116,7 @@ export default function Marketplace() {
           accessibilityLabel="Changer de marché"
           onPress={swapMarket}
           disabled={update.isPending}
-          style={{ width: 29, height: 29, borderRadius: 10 }}
+          style={{ width: 29, height: 29, borderRadius: 8 }}
         >
           <I icon={ArrowLeftRight} size={14} />
         </IconButton>
@@ -126,8 +126,8 @@ export default function Marketplace() {
       {query.isPending ? (
         <View style={{ gap: 10 }}>
           <Skeleton h={16} w={182} />
-          <Skeleton h={309} radius={16} />
-          <Skeleton h={162} radius={16} />
+          <Skeleton h={309} radius={12} />
+          <Skeleton h={162} radius={12} />
         </View>
       ) : query.isError ? (
         <ErrorText error={query.error} retry={() => void query.refetch()} />

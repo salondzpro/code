@@ -124,11 +124,14 @@ export function NextSlots({
   salon,
   empty = 'Aucune disponibilité cette semaine',
   more,
+  compact,
 }: {
   salon: Pick<SalonSummary, 'slug' | 'nextAvailable'>;
   empty?: string;
   /** Élément affiché à droite de l'en-tête (ex. « Plus d'infos »). */
   more?: ReactNode;
+  /** Un seul rang de créneaux (fiche posée sur la carte, où la hauteur est comptée). */
+  compact?: boolean;
 }) {
   const router = useRouter();
   const next = salon.nextAvailable;
@@ -171,6 +174,46 @@ export function NextSlots({
     );
   }
   const day = nextDayLabel(next.date);
+  const goto = (t: string) =>
+    router.push({
+      pathname: `/s/${salon.slug}/prestations`,
+      params: { date: next.date, time: t },
+    } as never);
+  // Sur la carte, la fiche ne doit pas manger le plan : un seul rang, le jour devant.
+  if (compact)
+    return (
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+        accessibilityLabel={`Prochaines disponibilités ${day}`}
+      >
+        <Tx size={12} weight={700} lh={15}>
+          {day}
+        </Tx>
+        {rows
+          .flatMap((r) => r.slots)
+          .slice(0, 3)
+          .map((t) => (
+            <Pressable
+              key={t}
+              accessibilityRole="button"
+              accessibilityLabel={`Réserver ${day} à ${t}`}
+              onPress={() => goto(t)}
+              style={({ pressed }) => ({
+                borderWidth: 1,
+                borderColor: C.ink,
+                borderRadius: R.pill,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                backgroundColor: pressed ? C.fill : C.surface,
+              })}
+            >
+              <Tx size={12} weight={700} lh={15} mono>
+                {t}
+              </Tx>
+            </Pressable>
+          ))}
+      </View>
+    );
   return (
     <View style={{ gap: 5 }} accessibilityLabel={`Prochaines disponibilités ${day}`}>
       <View
@@ -324,7 +367,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             top: 8,
             width: 34,
             height: 34,
-            borderRadius: 17,
+            borderRadius: 12,
             backgroundColor: 'rgba(255,255,255,0.95)',
             alignItems: 'center',
             justifyContent: 'center',

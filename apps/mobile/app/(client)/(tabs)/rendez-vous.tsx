@@ -78,7 +78,7 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
       style={{
         width: 49,
         alignItems: 'center',
-        borderRadius: 11,
+        borderRadius: 8,
         backgroundColor: C.fill,
         paddingVertical: 7,
       }}
@@ -163,7 +163,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Img
             src={b.salon.coverUrl}
-            radius={11}
+            radius={8}
             style={{ width: 58, height: 58, opacity: active ? 1 : 0.6 }}
           />
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -363,8 +363,8 @@ export default function Bookings() {
       />
       {list.isPending ? (
         <>
-          <Skeleton h={170} radius={16} />
-          <Skeleton h={98} radius={16} />
+          <Skeleton h={170} radius={12} />
+          <Skeleton h={98} radius={12} />
         </>
       ) : list.isError ? (
         <ErrorText error={list.error} retry={() => void list.refetch()} />

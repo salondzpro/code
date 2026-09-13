@@ -62,12 +62,12 @@ export function ProServices() {
                     {photo ? (
                       <Img
                         src={photo}
-                        className="h-[3.75rem] w-[3.75rem] flex-none !rounded-[0.875rem]"
+                        className="h-[3.75rem] w-[3.75rem] flex-none !rounded-[0.571rem]"
                       />
                     ) : (
                       <button
                         type="button"
-                        className="flex h-[3.75rem] w-[3.75rem] flex-none items-center justify-center rounded-[0.875rem] border border-dashed border-line bg-fill text-subtle"
+                        className="flex h-[3.75rem] w-[3.75rem] flex-none items-center justify-center rounded-[0.571rem] border border-dashed border-line bg-fill text-subtle"
                         aria-label={`Ajouter la photo de ${sv.name}`}
                         onClick={(e) => {
                           e.stopPropagation();

@@ -42,7 +42,7 @@ export default function SalonServices() {
               >
                 <Img
                   src={photos[0]?.url ?? s.coverUrl}
-                  radius={13}
+                  radius={8}
                   style={{ width: 91, height: 91 }}
                 />
                 <View style={{ flex: 1, minWidth: 0 }}>

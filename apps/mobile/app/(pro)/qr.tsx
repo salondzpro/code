@@ -87,7 +87,7 @@ export default function ProQr() {
             height: POSTER_H,
             transform: [{ scale }],
             transformOrigin: 'top center',
-            borderRadius: 16,
+            borderRadius: 12,
             overflow: 'hidden',
             borderWidth: 1,
             borderColor: C.line,

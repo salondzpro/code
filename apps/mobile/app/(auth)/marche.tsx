@@ -37,7 +37,7 @@ export default function Market() {
         <H1>Que recherchez-vous ?</H1>
       </View>
       {CARDS.map((c) => (
-        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} onPress={() => void choose(c.id)} disabled={update.isPending} style={({ pressed }) => ({ height: 168, borderRadius: 20, overflow: 'hidden', backgroundColor: C.line, opacity: pressed ? 0.9 : 1 })}>
+        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} onPress={() => void choose(c.id)} disabled={update.isPending} style={({ pressed }) => ({ height: 168, borderRadius: 12, overflow: 'hidden', backgroundColor: C.line, opacity: pressed ? 0.9 : 1 })}>
           <Image source={{ uri: c.img.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
           <Overlay />
           <View style={{ position: 'absolute', left: 16, right: 16, bottom: 29, gap: 5 }}>

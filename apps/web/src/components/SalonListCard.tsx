@@ -90,11 +90,14 @@ export function NextSlots({
   salon,
   empty = 'Aucune disponibilité cette semaine',
   more,
+  compact,
 }: {
   salon: Pick<SalonSummary, 'slug' | 'nextAvailable'>;
   empty?: string;
   /** Élément affiché à droite de l'en-tête (ex. « Plus d'infos → »). */
   more?: ReactNode;
+  /** Un seul rang de créneaux (fiche posée sur la carte, où la hauteur est comptée). */
+  compact?: boolean;
 }) {
   const navigate = useNavigate();
   const next = salon.nextAvailable;
@@ -134,6 +137,27 @@ export function NextSlots({
     );
   }
   const day = nextDayLabel(next.date);
+  // Sur la carte, la fiche ne doit pas manger le plan : un seul rang de créneaux, le jour
+  // devant, et pas de rangées Matin / Après-midi qui doublent la hauteur.
+  if (compact) {
+    const slots = rows.flatMap((r) => r.slots).slice(0, 3);
+    return (
+      <div className="flex items-center gap-2" aria-label={`Prochaines disponibilités ${day}`}>
+        <span className="flex-none text-[0.857rem] font-bold">{day}</span>
+        {slots.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className="pill mono !border-ink !px-3 !py-1.5 !text-[1rem] font-bold hover:!bg-fill"
+            aria-label={`Réserver ${day} à ${t}`}
+            onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-1.5" aria-label={`Prochaines disponibilités ${day}`}>
       {/* Le jour est indiqué une seule fois, dans l'en-tête : les lignes MATIN / APRÈS-MIDI restent sur une ligne. */}

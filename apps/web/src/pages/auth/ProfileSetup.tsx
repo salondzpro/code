@@ -59,7 +59,7 @@ export function ProfileSetup() {
         </Field>
         <div>
           <span className="lbl">{phone ? 'Numéro vérifié' : 'Adresse vérifiée'}</span>
-          <div className="flex items-center justify-between rounded-[0.875rem] bg-fill px-4 py-[1.125rem] text-[0.857rem]">
+          <div className="flex items-center justify-between rounded-[0.571rem] bg-fill px-4 py-[1.125rem] text-[0.857rem]">
             <span>{phone ? formatIntlDZ(phone) : email}</span>
             <Badge tone="ok" md>
               Vérifié

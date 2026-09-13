@@ -62,7 +62,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string | null; onClose: 
 
   return (
     <ModalSheet open={!!id} onClose={close} scroll>
-      {booking.isPending && !!id && <Skeleton h={160} radius={16} />}
+      {booking.isPending && !!id && <Skeleton h={160} radius={12} />}
       {booking.isError && <ErrorText error={booking.error} retry={() => void booking.refetch()} />}
       {!!b && (
         <>

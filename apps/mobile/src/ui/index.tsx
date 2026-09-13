@@ -568,7 +568,7 @@ export function Toggle({
       style={{
         width: 41,
         height: 24,
-        borderRadius: 12,
+        borderRadius: 8,
         backgroundColor: on ? C.green : C.line,
         padding: 2,
       }}
@@ -578,7 +578,7 @@ export function Toggle({
           {
             width: 20,
             height: 20,
-            borderRadius: 10,
+            borderRadius: 8,
             backgroundColor: '#fff',
             transform: [{ translateX: on ? 20 : 0 }],
           },
@@ -638,7 +638,7 @@ export function Segmented<T extends string>({
       style={{
         flexDirection: 'row',
         backgroundColor: C.fill,
-        borderRadius: 13,
+        borderRadius: 8,
         padding: 4,
         gap: 2,
       }}
@@ -654,7 +654,7 @@ export function Segmented<T extends string>({
             style={[
               {
                 flex: 1,
-                borderRadius: 10,
+                borderRadius: 8,
                 paddingVertical: 10,
                 paddingHorizontal: 6,
                 alignItems: 'center',
@@ -1083,7 +1083,7 @@ export function Toast({ children, icon: Icon }: { children: ReactNode; icon?: Lu
           left: 16,
           right: 16,
           backgroundColor: C.ink,
-          borderRadius: 13,
+          borderRadius: 8,
           paddingVertical: 11,
           paddingHorizontal: 13,
           flexDirection: 'row',
@@ -1170,7 +1170,7 @@ export function ErrorText({ error, retry }: { error: unknown; retry?: () => void
         borderWidth: 1,
         borderColor: C.dangerLine,
         backgroundColor: C.cancelBg,
-        borderRadius: 10,
+        borderRadius: 8,
         paddingVertical: 10,
         paddingHorizontal: 13,
         gap: 5,

@@ -31,7 +31,7 @@ export function SalonGallery({
     top: height / 2 - 18,
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 12,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     backgroundColor: 'rgba(0,0,0,0.35)',

@@ -37,7 +37,7 @@ export function Market() {
           type="button"
           onClick={() => void choose(c.id)}
           disabled={update.isPending}
-          className="relative h-[12rem] w-full overflow-hidden rounded-[1.5rem] text-left"
+          className="relative h-[12rem] w-full overflow-hidden rounded-[0.857rem] text-left"
           aria-label={MARKET_LABELS_FR[c.id]}
         >
           <img src={c.img.src} alt="" className="h-full w-full object-cover" />

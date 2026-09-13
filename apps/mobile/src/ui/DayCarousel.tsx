@@ -101,7 +101,7 @@ export function DayScroller({
               alignItems: 'center',
               gap: 3,
               paddingVertical: 7,
-              borderRadius: 12,
+              borderRadius: 8,
               backgroundColor: on ? C.ink : 'transparent',
             }}
           >

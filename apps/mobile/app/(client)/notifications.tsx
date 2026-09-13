@@ -24,7 +24,7 @@ export default function Notifications() {
       <TopBar backTo="/(client)/(tabs)/profil" right="Notifications" />
       <H1>Notifications</H1>
       {notifs.isPending ? (
-        <Skeleton h={130} radius={16} />
+        <Skeleton h={130} radius={12} />
       ) : notifs.isError ? (
         <ErrorText error={notifs.error} retry={() => void notifs.refetch()} />
       ) : items.length === 0 ? (

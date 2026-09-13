@@ -26,7 +26,7 @@ export const QrPoster = forwardRef<
         style={{
           flex: 1,
           backgroundColor: '#fff',
-          borderRadius: 16,
+          borderRadius: 12,
           borderWidth: 1,
           borderColor: C.line,
           alignItems: 'center',
@@ -66,7 +66,7 @@ export const QrPoster = forwardRef<
           style={{
             marginTop: 14,
             padding: 9,
-            borderRadius: 12,
+            borderRadius: 8,
             borderWidth: 1,
             borderColor: C.line,
             backgroundColor: '#fff',

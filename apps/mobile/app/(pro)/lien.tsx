@@ -28,7 +28,7 @@ export default function ProLink() {
       <TopBar backTo="/(pro)/(tabs)" />
       <H1>Votre page de{'\n'}réservation</H1>
       <Card gap={13} style={{ alignItems: 'center', paddingVertical: 13 }}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Agrandir le QR code" onPress={() => router.push('/qr')} style={{ width: 276, maxWidth: '100%', aspectRatio: 1, borderRadius: 20, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Agrandir le QR code" onPress={() => router.push('/qr')} style={{ width: 276, maxWidth: '100%', aspectRatio: 1, borderRadius: 12, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
           <QRCode value={url} size={244} color={C.ink} backgroundColor={C.fill} />
         </Pressable>
         <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 16, paddingVertical: 13 }}>

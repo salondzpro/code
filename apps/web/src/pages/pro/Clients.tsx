@@ -52,7 +52,7 @@ export function Clients() {
         </Pill>
       </div>
       {clients.isPending ? (
-        <Skeleton className="h-[12.5rem] w-full !rounded-[1.25rem]" />
+        <Skeleton className="h-[12.5rem] w-full !rounded-[0.857rem]" />
       ) : rows.length === 0 ? (
         <p className="p">
           {onlyBlocked

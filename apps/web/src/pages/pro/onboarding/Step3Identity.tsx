@@ -36,7 +36,7 @@ export function Step3Identity() {
       <SectionLabel>Photo de couverture</SectionLabel>
       <button
         type="button"
-        className="relative h-[13.75rem] w-full overflow-hidden rounded-[1.25rem] bg-line"
+        className="relative h-[13.75rem] w-full overflow-hidden rounded-[0.857rem] bg-line"
         onClick={() => coverInput.current?.click()}
         aria-label="Choisir la photo de couverture"
       >

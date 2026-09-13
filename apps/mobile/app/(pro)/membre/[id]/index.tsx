@@ -124,7 +124,7 @@ export default function TeamMember() {
               bottom: -2,
               width: 20,
               height: 20,
-              borderRadius: 10,
+              borderRadius: 8,
               backgroundColor: C.ink,
               borderWidth: 2,
               borderColor: C.surface,
@@ -265,7 +265,7 @@ export default function TeamMember() {
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 16,
+                borderRadius: 12,
                 backgroundColor: C.fill,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -293,7 +293,7 @@ export default function TeamMember() {
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 16,
+                borderRadius: 12,
                 backgroundColor: C.fill,
                 alignItems: 'center',
                 justifyContent: 'center',

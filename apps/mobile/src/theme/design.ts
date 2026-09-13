@@ -44,15 +44,21 @@ export const CAT: Record<string, { bg: string; line: string; fg: string }> = {
   lasr: { bg: '#FCE8D8', line: '#D88C52', fg: '#8A4B18' },
 };
 
+/**
+ * Rayons relevés sur la référence en conditions téléphone : 12 px pour les cartes, 8 px
+ * pour tout le petit mobilier (boutons, champs, créneaux, vignettes), pilules inchangées.
+ * On était à 20 / 16 / 14 px : des coins de jouet là où il faut un outil de travail.
+ * Mêmes valeurs que les jetons web (apps/web/src/styles/tokens.css).
+ */
 export const R = {
-  card: 20,
-  cardSm: 16,
-  btn: 16,
-  input: 14,
-  slot: 14,
-  img: 18,
+  card: 12,
+  cardSm: 8,
+  btn: 8,
+  input: 8,
+  slot: 8,
+  img: 8,
   pill: 999,
-  sheet: 28,
+  sheet: 16,
 } as const;
 
 export const FONT = {

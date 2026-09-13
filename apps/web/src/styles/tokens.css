@@ -63,14 +63,20 @@
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
 
-  --radius-card: 1.25rem;
-  --radius-card-sm: 1rem;
-  --radius-btn: 1rem;
-  --radius-input: 0.875rem;
-  --radius-slot: 0.875rem;
-  --radius-img: 1.125rem;
+  /**
+   * Rayons relevés sur la référence en conditions téléphone : 12 px pour les cartes,
+   * 8 px pour tout le petit mobilier (boutons, champs, créneaux, vignettes), pilules
+   * inchangées. Racine 14 px, donc 0,857 rem = 12 px et 0,571 rem = 8 px. On était à
+   * 20 / 16 / 14 px : des coins de jouet là où il faut un outil de travail.
+   */
+  --radius-card: 0.857rem;
+  --radius-card-sm: 0.571rem;
+  --radius-btn: 0.571rem;
+  --radius-input: 0.571rem;
+  --radius-slot: 0.571rem;
+  --radius-img: 0.571rem;
   --radius-pill: 62.4375rem;
-  --radius-sheet: 1.75rem;
+  --radius-sheet: 1.143rem;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 18px 40px -12px rgb(0 0 0 / 0.18);
   --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.22);

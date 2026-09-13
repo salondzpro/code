@@ -314,7 +314,7 @@ function Bubble({ icon }: { icon: LucideIcon }) {
       style={{
         width: 36,
         height: 36,
-        borderRadius: 18,
+        borderRadius: 12,
         backgroundColor: C.fill,
         alignItems: 'center',
         justifyContent: 'center',

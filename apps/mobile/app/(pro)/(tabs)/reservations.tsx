@@ -147,7 +147,7 @@ export default function Requests() {
       ))}
       <ErrorText error={setStatus.error} />
 
-      {next.isPending && <Skeleton h={130} radius={16} />}
+      {next.isPending && <Skeleton h={130} radius={12} />}
       {next.isError && <ErrorText error={next.error} retry={() => void next.refetch()} />}
       {days.map(([key, list]) => (
         <View key={key} style={{ gap: 10 }}>

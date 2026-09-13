@@ -59,8 +59,8 @@ export default function CategoryResults() {
       {query.isPending ? (
         <View style={{ gap: 10 }}>
           <Skeleton h={16} w={182} />
-          <Skeleton h={162} radius={16} />
-          <Skeleton h={162} radius={16} />
+          <Skeleton h={162} radius={12} />
+          <Skeleton h={162} radius={12} />
         </View>
       ) : query.isError ? (
         <ErrorText error={query.error} retry={() => void query.refetch()} />

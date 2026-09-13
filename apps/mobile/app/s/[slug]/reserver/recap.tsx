@@ -112,7 +112,7 @@ export default function BookingReview() {
           accessibilityRole="alert"
           style={{
             gap: 8,
-            borderRadius: 16,
+            borderRadius: 12,
             borderWidth: 1,
             borderColor: C.dangerLine,
             backgroundColor: C.cancelBg,

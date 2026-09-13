@@ -81,7 +81,7 @@ export function Accordion({
         backgroundColor: C.surface,
         borderWidth: 1,
         borderColor: C.line,
-        borderRadius: 16,
+        borderRadius: 12,
         overflow: 'hidden',
       }}
     >

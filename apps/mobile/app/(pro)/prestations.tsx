@@ -97,7 +97,7 @@ export default function ProServices() {
                     }}
                   >
                     {photo ? (
-                      <Img src={photo} radius={11} style={{ width: 52, height: 52 }} />
+                      <Img src={photo} radius={8} style={{ width: 52, height: 52 }} />
                     ) : (
                       <Pressable
                         accessibilityRole="button"
@@ -106,7 +106,7 @@ export default function ProServices() {
                         style={{
                           width: 52,
                           height: 52,
-                          borderRadius: 11,
+                          borderRadius: 8,
                           borderWidth: 1,
                           borderStyle: 'dashed',
                           borderColor: C.line,

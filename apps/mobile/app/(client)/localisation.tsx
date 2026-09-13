@@ -155,7 +155,7 @@ export default function Localisation() {
           <P center>Nous ne pouvons pas trouver les professionnels proches de vous. Autorisez la localisation dans les réglages de votre téléphone, ou choisissez un quartier manuellement.</P>
         </View>
         <Card row gap={13}>
-          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
             <I icon={Smartphone} size={16} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -171,7 +171,7 @@ export default function Localisation() {
           </Badge>
         </Card>
         <Card row gap={13} onPress={chooseManually} accessibilityLabel="Choisir un quartier">
-          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
             <I icon={MapPin} size={16} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -300,7 +300,7 @@ export default function Localisation() {
       ) : (
         <>
           <Card row gap={13} sel={choice.kind === 'gps'} onPress={() => (pos ? setChoice({ kind: 'gps' }) : void locate())} accessibilityLabel="Utiliser ma position actuelle">
-            <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
               <I icon={MapPin} size={18} color="#fff" />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>

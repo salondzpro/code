@@ -116,7 +116,7 @@ export default function Code() {
       {fresh && (
         <View style={{ borderRadius: R.card, backgroundColor: C.okBg, padding: 13, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
               <I icon={MessageCircle} size={16} color={C.okFg} />
             </View>
             <View>

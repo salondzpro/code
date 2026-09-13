@@ -5,7 +5,7 @@
  * Interactive : déplacer la carte propose « Rechercher dans cette zone » (centre + rayon déduits de l'emprise),
  * le bouton de position utilise la géolocalisation, une bulle touchée sélectionne le salon (et inversement).
  */
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Location from 'expo-location';
@@ -19,7 +19,13 @@ import { formatKm } from '@/lib/format';
 import { Button, I, IconButton, Img, P, Tx } from '@/ui';
 import { SearchField, SearchTools } from '@/ui/SearchTools';
 import { RatingPill, NextSlots } from '@/ui/SalonListCard';
-import { MapCanvas, type MapArea, type MapCanvasHandle, type MapState } from '@/ui/MapCanvas';
+import {
+  MapCanvas,
+  type MapArea,
+  type MapCanvasHandle,
+  type MapMe,
+  type MapState,
+} from '@/ui/MapCanvas';
 import { C, R, SHADOW } from '@/theme/design';
 
 const ALGIERS = { lat: 36.7538, lng: 3.0588 };
@@ -42,6 +48,8 @@ export default function MapView() {
   );
   const moveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locating, setLocating] = useState(false);
+  /** Position de l'appareil, suivie en continu : point bleu + halo de précision. */
+  const [mePos, setMePos] = useState<MapMe | null>(null);
   const mapRef = useRef<MapCanvasHandle>(null);
 
   const tooWide = !!area && area.radiusKm > MAX_ZONE_KM;
@@ -54,6 +62,7 @@ export default function MapView() {
       lat: area?.lat,
       lng: area?.lng,
       radiusKm: area?.radiusKm,
+      sort: prefs.sort,
       availableToday: prefs.availableToday || undefined,
       ratingMin: prefs.ratingMin ?? undefined,
       limit: 50,
@@ -87,9 +96,10 @@ export default function MapView() {
         on: s.id === current?.id,
       })),
       area,
+      me: mePos,
       fit: !area,
     }),
-    [items, current?.id, area],
+    [items, current?.id, area, mePos],
   );
 
   const select = (id: string, fromCards = false) => {
@@ -99,6 +109,40 @@ export default function MapView() {
     if (s) mapRef.current?.flyTo(s.drawLat, s.drawLng);
     if (!fromCards && idx >= 0) cardsRef.current?.scrollTo({ x: idx * cardW, animated: true });
   };
+
+  /**
+   * Position en TEMPS RÉEL : l'abonnement pousse chaque nouvelle mesure, donc le point bleu
+   * suit le déplacement sans qu'on redemande quoi que ce soit. La carte, elle, ne bouge pas :
+   * recentrer sous le doigt de quelqu'un qui explore un quartier est odieux. Permission
+   * refusée : aucun point, et rien d'autre ne change.
+   */
+  useEffect(() => {
+    let sub: Location.LocationSubscription | null = null;
+    let alive = true;
+    void (async () => {
+      try {
+        const has = await Location.getForegroundPermissionsAsync();
+        const granted =
+          has.granted || (await Location.requestForegroundPermissionsAsync()).granted;
+        if (!granted || !alive) return;
+        sub = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 10 },
+          (p) =>
+            setMePos({
+              lat: p.coords.latitude,
+              lng: p.coords.longitude,
+              acc: p.coords.accuracy ?? 0,
+            }),
+        );
+      } catch {
+        /* capteur indisponible : pas de point bleu */
+      }
+    })();
+    return () => {
+      alive = false;
+      sub?.remove();
+    };
+  }, []);
 
   // Zone par zone : chaque déplacement relance la recherche sur la zone visible, après 500 ms de calme.
   const onMove = (a: MapArea) => {
@@ -159,8 +203,8 @@ export default function MapView() {
         }}
         pointerEvents="box-none"
       >
-        {/* Les mêmes trois touches que la liste, la deuxième ramenant à la liste. Le tri
-            est absent : sur une carte, il n'y a pas de premier résultat. */}
+        {/* Les mêmes trois touches que la liste, la deuxième ramenant à la liste. Tri
+            compris : il ordonne le carrousel de fiches, qui est une liste comme une autre. */}
         <SearchField
           market={market}
           q=""
@@ -181,7 +225,6 @@ export default function MapView() {
           onView={() =>
             router.push({ pathname: '/(client)/(tabs)', params: category ? { category } : {} })
           }
-          withSort={false}
           shadow
         />
         <View
@@ -281,41 +324,40 @@ export default function MapView() {
                     borderWidth: 1,
                     borderColor: s.id === current?.id ? C.ink : C.line,
                     borderRadius: R.card,
-                    padding: 13,
-                    gap: 10,
+                    padding: 11,
+                    gap: 8,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 11 }}>
+                  {/* Fiche volontairement basse : sur une carte, ce qu on veut voir d abord,
+                      c est le plan. Prestations et prix se lisent sur la fiche du salon. */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <Img
                       src={s.logoUrl ?? s.coverUrl}
-                      radius={13}
-                      style={{ width: 78, height: 78 }}
+                      radius={8}
+                      style={{ width: 44, height: 44 }}
                     />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <View
                         style={{
                           flexDirection: 'row',
-                          alignItems: 'flex-start',
+                          alignItems: 'center',
                           justifyContent: 'space-between',
                           gap: 6,
                         }}
                       >
-                        <Tx size={16} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
+                        <Tx size={16} weight={700} ls={-0.4} lh={17} numberOfLines={1} style={{ flex: 1 }}>
                           {s.name}
                         </Tx>
                         {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
                       </View>
-                      <Tx size={12} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+                      <Tx size={12} color={C.muted} lh={15.5} numberOfLines={1} style={{ marginTop: 2 }}>
                         {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null]
                           .filter(Boolean)
                           .join(' · ')}
                       </Tx>
-                      <Tx size={12} color={C.subtle} lh={17} style={{ marginTop: 2 }}>
-                        {s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}
-                      </Tx>
                     </View>
                   </View>
-                  <NextSlots salon={s} />
+                  <NextSlots salon={s} compact />
                 </Pressable>
               </View>
             ))}

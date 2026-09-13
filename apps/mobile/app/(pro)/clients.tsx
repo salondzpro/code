@@ -47,7 +47,7 @@ export default function Clients() {
         </Pill>
       </PillRow>
       {clients.isPending ? (
-        <Skeleton h={162} radius={16} />
+        <Skeleton h={162} radius={12} />
       ) : rows.length === 0 ? (
         <P>{onlyBlocked ? 'Aucun client bloqué.' : 'Vos clients apparaîtront ici après leur premier rendez-vous.'}</P>
       ) : (

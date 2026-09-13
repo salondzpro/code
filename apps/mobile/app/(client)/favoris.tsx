@@ -36,8 +36,8 @@ export default function Favorites() {
       </PillRow>
       {favs.isPending ? (
         <>
-          <Skeleton h={114} radius={16} />
-          <Skeleton h={114} radius={16} />
+          <Skeleton h={114} radius={12} />
+          <Skeleton h={114} radius={12} />
         </>
       ) : favs.isError ? (
         <ErrorText error={favs.error} retry={() => void favs.refetch()} />

@@ -86,7 +86,7 @@ export function ProHome() {
       {salon && <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />}
 
       {stats.isPending ? (
-        <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
+        <Skeleton className="h-[8.75rem] w-full !rounded-[0.857rem]" />
       ) : stats.isError ? (
         <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
       ) : (
@@ -188,7 +188,7 @@ export function ProHome() {
           Tout voir
         </Link>
       </div>
-      {todayList.isPending && <Skeleton className="h-[9rem] w-full !rounded-[1.25rem]" />}
+      {todayList.isPending && <Skeleton className="h-[9rem] w-full !rounded-[0.857rem]" />}
       {!todayList.isPending && !next && (
         <div className="crd">
           <p className="p">

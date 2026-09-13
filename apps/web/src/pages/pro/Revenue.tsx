@@ -108,7 +108,7 @@ export function Revenue() {
         ]}
       />
       {stats.isPending ? (
-        <Skeleton className="h-[18.75rem] w-full !rounded-[1.25rem]" />
+        <Skeleton className="h-[18.75rem] w-full !rounded-[0.857rem]" />
       ) : stats.isError ? (
         <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
       ) : (
@@ -142,7 +142,7 @@ export function Revenue() {
                       style={{ minWidth: 0 }}
                     >
                       <div
-                        className={`w-full rounded-[0.625rem] ${isToday ? 'bg-ink' : 'bg-line'}`}
+                        className={`w-full rounded-[0.571rem] ${isToday ? 'bg-ink' : 'bg-line'}`}
                         style={{ height: h }}
                         title={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`}
                       />

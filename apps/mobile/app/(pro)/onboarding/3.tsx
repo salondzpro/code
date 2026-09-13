@@ -40,7 +40,7 @@ export default function Step3Identity() {
       <H1>Votre identité visuelle</H1>
       <SectionLabel>Photo de couverture</SectionLabel>
       <Pressable accessibilityRole="button" accessibilityLabel="Choisir la photo de couverture" onPress={() => void choose('cover')}>
-        <Img src={cover?.uri} radius={16} style={{ height: 179, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <Img src={cover?.uri} radius={12} style={{ height: 179, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
           {!cover && (
             <View style={{ alignItems: 'center', gap: 6 }}>
               <I icon={Camera} size={26} color={C.subtle} />

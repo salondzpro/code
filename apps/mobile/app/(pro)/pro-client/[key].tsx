@@ -89,7 +89,7 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
       style={{
         width: 42,
         alignItems: 'center',
-        borderRadius: 10,
+        borderRadius: 8,
         backgroundColor: C.fill,
         paddingVertical: 6,
       }}
@@ -109,7 +109,7 @@ function Stat({ v, l }: { v: string; l: string }) {
     <View
       style={{
         backgroundColor: C.fill,
-        borderRadius: 11,
+        borderRadius: 8,
         paddingHorizontal: 10,
         paddingVertical: 10,
       }}
@@ -417,7 +417,7 @@ export default function ClientDetail() {
         ))}
       </View>
       {history.isPending ? (
-        <Skeleton h={130} radius={16} />
+        <Skeleton h={130} radius={12} />
       ) : (
         <ListCard>
           {shown.map((h, i, arr) => {

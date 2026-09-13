@@ -14,7 +14,7 @@ const LABEL: Record<OtpChannel, string> = { whatsapp: 'WhatsApp', sms: 'SMS', em
 
 function ChannelIcon({ icon, ok }: { icon: typeof Mail; ok?: boolean }) {
   return (
-    <View style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? C.okBg : C.surface, borderWidth: ok ? 0 : 1, borderColor: C.line }}>
+    <View style={{ width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? C.okBg : C.surface, borderWidth: ok ? 0 : 1, borderColor: C.line }}>
       <I icon={icon} size={16} color={ok ? C.okFg : C.text} />
     </View>
   );

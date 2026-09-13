@@ -88,7 +88,7 @@ export function BookingDetails() {
         <div>
           <span className="lbl">Téléphone</span>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[0.875rem] bg-fill px-4 text-[0.857rem] font-medium">
+            <div className="flex flex-none items-center gap-2 rounded-[0.571rem] bg-fill px-4 text-[0.857rem] font-medium">
               +213 <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
             <Input

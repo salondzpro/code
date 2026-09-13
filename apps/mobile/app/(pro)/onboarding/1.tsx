@@ -39,11 +39,11 @@ export default function Step1Market() {
         <P>Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.</P>
       </View>
       {CARDS.map((c) => (
-        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} accessibilityState={{ selected: market === c.id }} onPress={() => setMarket(c.id)} style={{ height: 132, borderRadius: 20, overflow: 'hidden', backgroundColor: C.line, borderWidth: 2, borderColor: market === c.id ? C.ink : 'transparent' }}>
+        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} accessibilityState={{ selected: market === c.id }} onPress={() => setMarket(c.id)} style={{ height: 132, borderRadius: 12, overflow: 'hidden', backgroundColor: C.line, borderWidth: 2, borderColor: market === c.id ? C.ink : 'transparent' }}>
           <Image source={{ uri: c.img }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
           <Overlay />
           {market === c.id && (
-            <View style={{ position: 'absolute', right: 13, top: 13, width: 29, height: 29, borderRadius: 15, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ position: 'absolute', right: 13, top: 13, width: 29, height: 29, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
               <I icon={Check} size={16} color={C.ink} />
             </View>
           )}

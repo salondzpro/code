@@ -124,7 +124,7 @@ export default function ProPhotos() {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {photos.map((p, i) => (
           <View key={p.id} style={{ width: '48%', aspectRatio: 4 / 3 }}>
-            <Img src={p.url} radius={13} style={{ width: '100%', height: '100%' }} />
+            <Img src={p.url} radius={8} style={{ width: '100%', height: '100%' }} />
             {i === 0 ? (
               <View
                 style={{
@@ -177,7 +177,7 @@ export default function ProPhotos() {
                 top: 6,
                 width: 24,
                 height: 24,
-                borderRadius: 12,
+                borderRadius: 8,
                 backgroundColor: 'rgba(255,255,255,0.95)',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -196,7 +196,7 @@ export default function ProPhotos() {
             style={{
               width: '48%',
               aspectRatio: 4 / 3,
-              borderRadius: 13,
+              borderRadius: 8,
               borderWidth: 1,
               borderStyle: 'dashed',
               borderColor: C.line,

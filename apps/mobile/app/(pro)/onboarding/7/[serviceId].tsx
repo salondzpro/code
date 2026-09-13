@@ -101,7 +101,7 @@ export default function Step7ServicePhotos() {
       >
         <Img
           src={photo}
-          radius={16}
+          radius={12}
           style={{ width: '100%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}
         >
           {!photo && (

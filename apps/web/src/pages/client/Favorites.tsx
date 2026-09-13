@@ -33,8 +33,8 @@ export function Favorites() {
       </div>
       {favs.isPending ? (
         <>
-          <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
-          <Skeleton className="h-[8.75rem] w-full !rounded-[1.25rem]" />
+          <Skeleton className="h-[8.75rem] w-full !rounded-[0.857rem]" />
+          <Skeleton className="h-[8.75rem] w-full !rounded-[0.857rem]" />
         </>
       ) : favs.isError ? (
         <ErrorMessage error={favs.error} retry={() => favs.refetch()} />

@@ -72,7 +72,7 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {items.map((it) => (
           <Pressable key={it.label} accessibilityRole="button" accessibilityLabel={it.label} onPress={it.onPress} style={{ width: '22%', flexGrow: 1, alignItems: 'center', gap: 6 }}>
-            <View style={{ width: 62, height: 62, borderRadius: 18, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>{it.icon}</View>
+            <View style={{ width: 62, height: 62, borderRadius: 12, borderWidth: 1, borderColor: C.line, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>{it.icon}</View>
             <Tx size={12} color={C.muted} lh={16}>
               {it.label}
             </Tx>
