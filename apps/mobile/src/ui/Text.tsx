@@ -39,7 +39,7 @@ export function Tx({
         {
           fontFamily: fontFor(weight),
           fontSize: size * FONT_SCALE,
-          lineHeight: Math.round((lh ?? size * 1.4) * FONT_SCALE),
+          lineHeight: Math.round((lh ?? size * 1.3) * FONT_SCALE),
           color,
           letterSpacing: ls === undefined ? undefined : ls * FONT_SCALE,
           fontVariant: mono ? ['tabular-nums'] : undefined,
@@ -58,6 +58,6 @@ export const H2 = (p: TxProps) => <Tx size={10.5} weight={600} ls={-0.3} lh={14.
 export const H3 = (p: TxProps) => (
   <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper {...p} />
 );
-export const P = (p: TxProps) => <Tx size={12} color={C.muted} lh={18} {...p} />;
+export const P = (p: TxProps) => <Tx size={12} color={C.muted} lh={16} {...p} />;
 export const S = (p: TxProps) => <Tx size={10.5} color={C.muted} lh={14.5} {...p} />;
 export const T3 = (p: TxProps) => <Tx size={10} color={C.subtle} lh={13} {...p} />;

@@ -86,7 +86,7 @@ export default function BookingConfirmed() {
       </View>
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-          <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={71.5} />
+          <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={64} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
               {b.salon.name}

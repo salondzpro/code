@@ -108,7 +108,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
       <p className="p">Ajoutez une pause sur les jours concernés, par exemple 12:00 – 14:00.</p>
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <span className="text-[0.9375rem]">Semaine commençant</span>
           <span className="text-[0.9375rem] text-muted">Dimanche</span>
         </div>

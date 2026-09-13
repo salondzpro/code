@@ -53,7 +53,7 @@ export default function Profile() {
           disabled={avatarBusy}
           onPress={() => void changeAvatar()}
         >
-          <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={97.5} />
+          <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={76} />
           <View
             style={{
               position: 'absolute',

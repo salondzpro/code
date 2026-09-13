@@ -595,7 +595,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+    <div className="flex flex-col items-center gap-2 px-5 py-6 text-center">
       <div className="h2">{title}</div>
       {description && <p className="p">{description}</p>}
       {action && <div className="mt-3 w-full">{action}</div>}

@@ -111,7 +111,7 @@ export function Code() {
     // AUTH 12 — Vérification réussie
     return (
       <Screen className="min-h-dvh justify-center" gap={16}>
-        <div className="flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+        <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
           <I icon={Check} size={40} />
         </div>
         <div>

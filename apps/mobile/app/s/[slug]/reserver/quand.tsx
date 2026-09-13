@@ -221,7 +221,7 @@ export default function BookingWhen() {
                   on={slot === g.iso}
                   off={!g.free}
                   onPress={() => g.free && setSlot(g.iso)}
-                  style={{ paddingVertical: 18 }}
+                  style={{ paddingVertical: 12 }}
                 >
                   <Tx
                     size={13}

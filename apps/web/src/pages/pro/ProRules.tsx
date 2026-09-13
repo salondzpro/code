@@ -53,7 +53,7 @@ export function ProRules() {
             sub="Délai, horizon, annulation, report"
           />
         </ListRow>
-        <div className="li !py-4">
+        <div className="li">
           <RowText
             icon={ShieldCheck}
             title="Validation manuelle"

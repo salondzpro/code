@@ -6,7 +6,7 @@ import { LinkButton } from '@/components/ui';
 export function Intro() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className="relative h-[29.375rem] flex-none overflow-hidden">
+      <div className="relative h-[20rem] flex-none overflow-hidden">
         <img src={DESIGN_IMAGES.intro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />
         <div className="ovl-t">

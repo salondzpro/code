@@ -232,8 +232,8 @@ export default function Salon() {
       }
     >
       {/* Couverture */}
-      <View style={{ height: 244, backgroundColor: C.line }}>
-        <Img src={s.coverUrl} radius={0} style={{ height: 244 }} />
+      <View style={{ height: 190, backgroundColor: C.line }}>
+        <Img src={s.coverUrl} radius={0} style={{ height: 190 }} />
         <View
           style={{
             position: 'absolute',

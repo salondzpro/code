@@ -113,7 +113,7 @@ export function Revenue() {
         <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
       ) : (
         <>
-          <div className="crd !gap-5">
+          <div className="crd !gap-3">
             <div className="flex items-end justify-between gap-3">
               <div>
                 <div className="text-[2.375rem] font-bold leading-none tracking-[-1px]">
@@ -168,11 +168,11 @@ export function Revenue() {
             )}
           </div>
           <div className="crd !gap-0 !py-1">
-            <div className="li !py-5">
+            <div className="li">
               <span className="text-[1rem]">Encaissé</span>
               <span className="text-[1.25rem] font-bold">{formatDA(s!.collectedDa)}</span>
             </div>
-            <div className="li !py-5">
+            <div className="li">
               <span>
                 <span className="block text-[1rem]">Reste à encaisser</span>
                 <span className="p block text-[0.8125rem]">
@@ -188,7 +188,7 @@ export function Revenue() {
               <p className="p py-3">Aucune prestation sur la période.</p>
             )}
             {s!.byService.map((x) => (
-              <div key={x.name} className="li !py-5">
+              <div key={x.name} className="li">
                 <span>
                   <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
                     {x.name}

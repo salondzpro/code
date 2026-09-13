@@ -238,7 +238,7 @@ export function TeamMember() {
       <div className="crd !gap-0 !py-1">
         <button
           type="button"
-          className="li w-full !py-4 text-left"
+          className="li w-full text-left"
           onClick={() => navigate(`/pro/equipe/${member.id}/prestations`)}
         >
           <span className="flex items-center gap-3.5">
@@ -254,7 +254,7 @@ export function TeamMember() {
         </button>
         <button
           type="button"
-          className="li w-full !py-4 text-left"
+          className="li w-full text-left"
           onClick={() => navigate(`/pro/equipe/${member.id}/horaires`)}
         >
           <span className="flex items-center gap-3.5">

@@ -43,7 +43,7 @@ export function Publish() {
       <h1 className="h1 mt-2">Tout est prêt</h1>
       <div className="crd !gap-0 !py-1">
         {items.map((it) => (
-          <button key={it.label} type="button" className="li w-full !py-4 text-left" onClick={() => navigate(it.to)}>
+          <button key={it.label} type="button" className="li w-full text-left" onClick={() => navigate(it.to)}>
             <span>
               <span className="block text-[0.9375rem]">{it.label}</span>
               {!it.ok && it.hint && <span className="p block text-[0.8125rem]">{it.hint}</span>}

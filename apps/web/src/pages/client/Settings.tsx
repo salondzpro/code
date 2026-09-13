@@ -33,7 +33,7 @@ export function Settings() {
 
       <SectionLabel>Notifications</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <span>
             <span className="block text-[0.9375rem]">Rappels WhatsApp</span>
             <span className="p block text-[0.8125rem]">2 h avant le rendez-vous</span>
@@ -47,14 +47,14 @@ export function Settings() {
             label="Rappels WhatsApp"
           />
         </div>
-        <div className="li !py-4">
+        <div className="li">
           <span>
             <span className="block text-[0.9375rem]">Confirmations</span>
             <span className="p block text-[0.8125rem]">Réservation, report, annulation</span>
           </span>
           <Toggle on={prefs.notifConfirmations} onChange={(v) => setPrefs({ notifConfirmations: v })} label="Confirmations" />
         </div>
-        <div className="li !py-4">
+        <div className="li">
           <span>
             <span className="block text-[0.9375rem]">Nouveautés des salons suivis</span>
             <span className="p block text-[0.8125rem]">Maximum une fois par semaine</span>
@@ -65,7 +65,7 @@ export function Settings() {
 
       <SectionLabel>Préférences</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <span>
             <span className="block text-[0.9375rem]">Langue</span>
             <span className="p block text-[0.8125rem]">L'interface en arabe arrive bientôt</span>
@@ -81,7 +81,7 @@ export function Settings() {
             ]}
           />
         </div>
-        <div className="li !py-4">
+        <div className="li">
           <span>
             <span className="block text-[0.9375rem]">Catalogue affiché</span>
             <span className="p block text-[0.8125rem]">Marketplace et recherche</span>
@@ -98,7 +98,7 @@ export function Settings() {
             ]}
           />
         </div>
-        <Link to="/localisation" className="li !py-4">
+        <Link to="/localisation" className="li">
           <span>
             <span className="block text-[0.9375rem]">Ville</span>
             <span className="p block text-[0.8125rem]">{prefs.lat != null ? `Autour de vous · ${prefs.radiusKm} km` : prefs.city ? 'Quartier choisi' : 'Toute la wilaya'}</span>
@@ -109,7 +109,7 @@ export function Settings() {
 
       <SectionLabel>Compte</SectionLabel>
       <div className="crd !gap-0 !py-1" id="contact">
-        <div className="li !py-4">
+        <div className="li">
           <span>
             <span className="block text-[0.9375rem]">Session</span>
             <span className="p block text-[0.8125rem]">{p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}</span>

@@ -201,7 +201,7 @@ export default function ProBookingDetail() {
     >
       <TopBar backTo="/(pro)/(tabs)/agenda" />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
-        <Avatar name={b.clientName} size={104} />
+        <Avatar name={b.clientName} size={72} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <H1 size={21} lh={24.5} ls={-0.8}>
             {initials}

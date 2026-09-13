@@ -48,6 +48,9 @@ export const NOTIFICATION_TYPES = [
   'booking_rescheduled',
   'booking_reminder',
   'booking_completed',
+  /** Absence signalée par le salon : la cliente doit le savoir, une absence compte double
+   *  dans les règles anti-abus (voir NO_SHOW_ABUSE_MAX). Ajouté par la migration 0028. */
+  'booking_no_show',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

@@ -38,7 +38,7 @@ export function Profile() {
           aria-label="Changer la photo de profil"
           disabled={avatarBusy || !user}
         >
-          <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={120} />
+          <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={88} />
           <span className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
             <I icon={Camera} size={15} />
           </span>

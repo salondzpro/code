@@ -31,7 +31,7 @@ export default function WelcomeBack() {
   return (
     <Screen center gap={13}>
       <View style={{ alignItems: 'center', gap: 13 }}>
-        <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={78} />
+        <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={64} />
         <View style={{ alignItems: 'center', gap: 6 }}>
           <H1 center>Bon retour, {firstName}</H1>
           <P center>{contact}</P>

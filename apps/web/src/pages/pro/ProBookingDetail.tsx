@@ -103,7 +103,7 @@ export function ProBookingDetail() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo="/pro/agenda" />
       <div className="flex items-center gap-4">
-        <Avatar name={b.clientName} size={128} />
+        <Avatar name={b.clientName} size={88} />
         <div className="min-w-0">
           <h1 className="h1 !text-[1.625rem]">{initials}</h1>
           {b.clientPhone && (
@@ -321,7 +321,7 @@ export function ProBookingReschedule() {
         {b.serviceName}
       </div>
       <div className="crd !gap-0 !py-1">
-        <label className="li !py-4">
+        <label className="li">
           <span className="text-[0.9375rem]">Date</span>
           <input
             type="date"
@@ -332,7 +332,7 @@ export function ProBookingReschedule() {
             aria-label="Nouvelle date"
           />
         </label>
-        <label className="li !py-4">
+        <label className="li">
           <span className="text-[0.9375rem]">Heure</span>
           <input
             type="time"
@@ -345,7 +345,7 @@ export function ProBookingReschedule() {
           />
         </label>
         {staff.length > 1 && (
-          <label className="li !py-4">
+          <label className="li">
             <span className="text-[0.9375rem]">Membre</span>
             <PickerField
               inline

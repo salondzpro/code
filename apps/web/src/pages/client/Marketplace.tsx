@@ -224,8 +224,8 @@ export function Marketplace() {
       ) : query.isError ? (
         <ErrorMessage error={query.error} retry={() => query.refetch()} />
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 px-2 pt-16 text-center">
-          <div className="flex h-[8rem] w-[8rem] items-center justify-center rounded-full bg-fill text-subtle">
+        <div className="flex flex-col items-center gap-3 px-2 pt-6 text-center">
+          <div className="flex h-[5rem] w-[5rem] items-center justify-center rounded-full bg-fill text-subtle">
             <I icon={Search} size={44} />
           </div>
           <div className="mt-2 text-[1.25rem] font-bold leading-tight tracking-[-0.4px]">

@@ -31,7 +31,7 @@ export function ProAccount() {
 
       <SectionLabel>Profil professionnel</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <RowText
             icon={User}
             title={me.data?.profile.fullName ?? 'Vous'}
@@ -50,7 +50,7 @@ export function ProAccount() {
 
       <SectionLabel>Paramètres</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <RowText icon={Globe} title="Page publiée" sub="Visible dans la marketplace" />
           <Toggle
             on={salon.isPublished}

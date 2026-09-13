@@ -138,8 +138,8 @@ export function Localisation() {
     return (
       <Screen className="min-h-dvh" gap={16}>
         <TopBar close right={MARKET_LABELS_FR[market]} />
-        <div className="flex flex-col items-center gap-3 pt-8 text-center">
-          <div className="flex h-[6rem] w-[6rem] items-center justify-center rounded-full bg-fill text-muted">
+        <div className="flex flex-col items-center gap-3 pt-5 text-center">
+          <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
             <I icon={MapPin} size={36} />
           </div>
           <span className="badge b-cn md">Position indisponible</span>

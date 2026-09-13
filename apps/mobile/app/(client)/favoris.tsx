@@ -42,7 +42,7 @@ export default function Favorites() {
       ) : favs.isError ? (
         <ErrorText error={favs.error} retry={() => void favs.refetch()} />
       ) : items.length === 0 ? (
-        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 46 }}>
+        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 22 }}>
           <Tx size={14.5} weight={700} lh={18.5} center>
             Aucun salon en favori
           </Tx>
@@ -55,7 +55,7 @@ export default function Favorites() {
         items.map((s) => (
           <Card key={s.id} row gap={11}>
             <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-              <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={88} />
+              <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
                   {s.name}

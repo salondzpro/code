@@ -28,7 +28,7 @@ export function WelcomeBack() {
   return (
     <Screen className="min-h-dvh justify-center" gap={16}>
       <div className="flex flex-col items-center gap-4 text-center">
-        <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={96} />
+        <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={72} />
         <div>
           <h1 className="h1">Bon retour, {firstName}</h1>
           <p className="p mt-2">{contact}</p>

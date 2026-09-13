@@ -97,7 +97,7 @@ export default function BookingReschedule() {
       ) : (
         <Grid cols={3}>
           {grid.map((g) => (
-            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 18 }}>
+            <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 12 }}>
               <Tx size={13} weight={500} lh={16} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
                 {g.time}
               </Tx>

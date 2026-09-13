@@ -228,7 +228,7 @@ export default function BookingDetail() {
     <Screen gap={13}>
       <TopBar backTo="/(client)/(tabs)/rendez-vous" />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
-        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={104} />
+        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={72} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <H1 size={21} lh={24.5} ls={-0.8}>
             {b.salon.name}

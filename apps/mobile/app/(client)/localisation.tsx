@@ -144,7 +144,7 @@ export default function Localisation() {
     return (
       <Screen gap={13}>
         <TopBar close right={MARKET_LABELS_FR[market]} />
-        <View style={{ alignItems: 'center', gap: 10, paddingTop: 26 }}>
+        <View style={{ alignItems: 'center', gap: 10, paddingTop: 16 }}>
           <View style={{ width: 78, height: 78, borderRadius: 39, backgroundColor: C.fill, alignItems: 'center', justifyContent: 'center' }}>
             <I icon={MapPin} size={29} color={C.muted} />
           </View>

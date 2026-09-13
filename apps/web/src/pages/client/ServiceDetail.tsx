@@ -32,7 +32,7 @@ export function ServiceDetail() {
 
   return (
     <div className="min-h-dvh" style={{ paddingBottom: SHEET_PAD }}>
-      <div className="relative h-[20.625rem] bg-line">
+      <div className="relative h-[15rem] bg-line">
         {(photos[0]?.url ?? s.coverUrl) && <img src={photos[0]?.url ?? s.coverUrl ?? ''} alt="" className="h-full w-full object-cover" />}
         <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
           <IconButton lg aria-label="Retour" onClick={back}>

@@ -184,15 +184,15 @@ export function ProLink() {
         <br />
         réservation
       </h1>
-      <div className="crd items-center !gap-4 !py-6">
+      <div className="crd items-center !gap-3 !py-4">
         <button
           type="button"
-          className="flex h-[21.25rem] w-[21.25rem] items-center justify-center overflow-hidden rounded-[1.5rem] bg-fill"
+          className="flex h-[15rem] w-[15rem] items-center justify-center overflow-hidden rounded-[1.5rem] bg-fill"
           onClick={() => navigate('/pro/qr')}
           aria-label="Agrandir le QR code"
         >
           {qr ? (
-            <img src={qr} alt="QR code de votre page" className="h-[18.75rem] w-[18.75rem]" />
+            <img src={qr} alt="QR code de votre page" className="h-[13rem] w-[13rem]" />
           ) : (
             <span className="text-[0.8125rem] text-subtle">QR code</span>
           )}
@@ -215,7 +215,7 @@ export function ProLink() {
         </Button>
       </div>
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <span className="text-[0.9375rem] text-muted">Réservation en ligne</span>
           <Toggle
             on={salon.isPublished}
@@ -225,13 +225,13 @@ export function ProLink() {
         </div>
         <button
           type="button"
-          className="li w-full !py-4 text-left"
+          className="li w-full text-left"
           onClick={() => navigate('/pro/profil/regles')}
         >
           <span className="text-[0.9375rem] text-muted">Délai minimum</span>
           <span className="text-[1.125rem] font-bold">{lead}</span>
         </button>
-        <div className="li !py-4">
+        <div className="li">
           <span className="text-[0.9375rem] text-muted">Validation manuelle</span>
           <Toggle
             on={!salon.autoConfirm}

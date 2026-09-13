@@ -315,7 +315,7 @@ export default function Marketplace() {
       ) : query.isError ? (
         <ErrorText error={query.error} retry={() => void query.refetch()} />
       ) : items.length === 0 ? (
-        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 6, paddingTop: 52 }}>
+        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 6, paddingTop: 22 }}>
           <View
             style={{
               width: 104,

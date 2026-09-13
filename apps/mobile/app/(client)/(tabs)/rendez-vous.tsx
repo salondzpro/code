@@ -29,7 +29,6 @@ import {
 } from '@salondz/constants';
 import type { BookingWithSalon } from '@salondz/types';
 import { useAuth } from '@/lib/auth';
-import { useRealtimeMyBookings } from '@/lib/realtime';
 import { directionsUrl, open } from '@/lib/salon';
 import {
   Button,
@@ -337,7 +336,6 @@ export default function Bookings() {
       setScope(params.scope);
   }, [params.scope]);
   const list = useMyBookingsInfinite({ scope });
-  useRealtimeMyBookings(user?.id);
   const items = pagesItems(list.data);
   const now = useNow();
   const empty = EMPTY[scope];
@@ -370,7 +368,7 @@ export default function Bookings() {
       ) : list.isError ? (
         <ErrorText error={list.error} retry={() => void list.refetch()} />
       ) : items.length === 0 ? (
-        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 40 }}>
+        <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 22 }}>
           <View
             style={{
               width: 58,

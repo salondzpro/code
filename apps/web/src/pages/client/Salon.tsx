@@ -154,7 +154,7 @@ export function Salon() {
       {/* Visiteur arrivé par le lien du professionnel (sans compte) : en-tête complet Salon DZ, façon Planity. */}
       {!session && <PublicHeader />}
       {/* Couverture */}
-      <div className="relative h-[18.75rem] bg-line">
+      <div className="relative h-[14rem] bg-line">
         {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" />}
         <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -245,7 +245,7 @@ export function Salon() {
                       <button
                         key={sv.id}
                         type="button"
-                        className="li w-full !py-4 text-left"
+                        className="li w-full text-left"
                         onClick={() => toggleService(sv.id)}
                         aria-pressed={on}
                       >

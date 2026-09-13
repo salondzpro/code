@@ -25,7 +25,7 @@ export function Step1Market() {
         <p className="p mt-3">Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.</p>
       </div>
       {CARDS.map((c) => (
-        <button key={c.id} type="button" onClick={() => setMarket(c.id)} aria-pressed={market === c.id} className={`relative h-[13.125rem] w-full overflow-hidden rounded-[1.5rem] text-left ${market === c.id ? 'ring-2 ring-ink' : ''}`}>
+        <button key={c.id} type="button" onClick={() => setMarket(c.id)} aria-pressed={market === c.id} className={`relative h-[10rem] w-full overflow-hidden rounded-[1.5rem] text-left ${market === c.id ? 'ring-2 ring-ink' : ''}`}>
           <img src={c.img} alt="" className="h-full w-full object-cover" />
           <div className="ovl" />
           {market === c.id && (

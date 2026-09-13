@@ -56,7 +56,7 @@ export function BookingServices() {
     const on = selected.includes(sv.id);
     const photo = sv.photos?.[0]?.url ?? s.coverUrl;
     return (
-      <button type="button" onClick={() => toggle(sv.id)} className={`flex w-full items-center gap-4 text-left ${boxed ? 'crd !flex-row' : 'li !py-4'}`} aria-pressed={on}>
+      <button type="button" onClick={() => toggle(sv.id)} className={`flex w-full items-center gap-4 text-left ${boxed ? 'crd !flex-row' : 'li'}`} aria-pressed={on}>
         <Img src={photo} className="h-[5.5rem] w-[5.5rem] flex-none !rounded-[1rem]" />
         <span className="min-w-0 flex-1">
           <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>

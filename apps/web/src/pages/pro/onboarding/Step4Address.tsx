@@ -95,21 +95,21 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           <span className="absolute bottom-4 left-6 max-w-[80%] truncate rounded-full bg-surface px-4 py-2 text-[0.8125rem] font-semibold shadow-card">{address.trim() ? `${address.trim()}${zone ? `, ${zone}` : ''}` : zone || wilayaName(wilaya)}</span>
         </div>
         <div className="crd !gap-0 !py-1">
-          <label className="li !py-4">
+          <label className="li">
             <span className="text-[0.9375rem]">Ville</span>
             <PickerField inline label="Ville" title="Wilaya" value={wilaya} onChange={setWilaya} options={WILAYAS.map((w) => ({ value: w.code, label: w.name, hint: `Wilaya ${String(w.code).padStart(2, '0')}` }))} />
           </label>
-          <label className="li !py-4">
+          <label className="li">
             <span className="text-[0.9375rem]">Quartier</span>
             <input className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
           </label>
           {settings && (
-            <label className="li !py-4">
+            <label className="li">
               <span className="text-[0.9375rem]">Téléphone</span>
               <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
             </label>
           )}
-          <div className="li !py-4">
+          <div className="li">
             <span>
               <span className="block text-[0.9375rem]">Se déplacer à domicile</span>
               <span className="p block text-[0.9375rem]">Prestations hors salon</span>

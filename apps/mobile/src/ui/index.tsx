@@ -115,7 +115,7 @@ export function Button({
           borderWidth: 1,
           borderColor: border,
           borderRadius: pill ? R.pill : sm ? 14 : R.btn,
-          paddingVertical: pill ? 10 : sm ? 11 : 16,
+          paddingVertical: pill ? 10 : sm ? 11 : 14,
           paddingHorizontal: pill ? 18 : sm ? 14 : 16,
           opacity: pressed ? 0.85 : 1,
         },
@@ -1149,7 +1149,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <View style={{ alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 32 }}>
+    <View style={{ alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 20 }}>
       <H2 center>{title}</H2>
       {description && <P center>{description}</P>}
       {action && <View style={{ marginTop: 10, alignSelf: 'stretch' }}>{action}</View>}

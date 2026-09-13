@@ -65,7 +65,7 @@ export function Clients() {
             <button
               key={c.clientKey}
               type="button"
-              className="li w-full !py-4 text-left"
+              className="li w-full text-left"
               onClick={() => navigate(`/pro/clients/${encodeURIComponent(c.clientKey)}`)}
             >
               <span className="flex min-w-0 items-center gap-3.5">

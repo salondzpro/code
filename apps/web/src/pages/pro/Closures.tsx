@@ -176,7 +176,7 @@ export function Closures() {
             <button
               key={b.id}
               type="button"
-              className="li w-full !py-4 text-left"
+              className="li w-full text-left"
               onClick={() => setDel(b)}
             >
               <span className="min-w-0">

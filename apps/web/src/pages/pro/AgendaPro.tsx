@@ -762,7 +762,7 @@ function MonthGrid({
       <div className="crd !gap-0 !py-1">
         <button
           type="button"
-          className="li w-full !py-4 text-left"
+          className="li w-full text-left"
           onClick={() => onOpenDay(selected)}
         >
           <span>

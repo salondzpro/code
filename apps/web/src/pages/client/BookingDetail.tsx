@@ -86,11 +86,13 @@ export function BookingDetail() {
 
   if (done) {
     // C-F 18 — Annulation confirmée : même lecture en grand que la fiche, avec le statut « Annulé » bien visible.
+    // Pas de centrage plein écran : du contenu utile suit la pastille, le centrage ne faisait
+    // que pousser l'ensemble vers le bas de l'écran.
     return (
-      <Screen className="min-h-dvh justify-center" gap={16}>
-        <div className="flex flex-col items-center gap-4 text-center">
-          <span className="flex h-[7.5rem] w-[7.5rem] items-center justify-center rounded-full bg-cancel-bg text-cancel-fg">
-            <I icon={XCircle} size={56} />
+      <Screen gap={12}>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <span className="flex h-[5rem] w-[5rem] items-center justify-center rounded-full bg-cancel-bg text-cancel-fg">
+            <I icon={XCircle} size={40} />
           </span>
           <h1 className="h1">Rendez-vous annulé</h1>
           <p className="p">
@@ -149,7 +151,7 @@ export function BookingDetail() {
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo="/rendez-vous" />
       <div className="flex items-center gap-4">
-        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={128} />
+        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
         <div className="min-w-0">
           <h1 className="h1 !text-[1.625rem]">{b.salon.name}</h1>
           {b.salon.phone && (

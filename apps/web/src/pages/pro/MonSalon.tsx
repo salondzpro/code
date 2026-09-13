@@ -52,7 +52,7 @@ export function MonSalon() {
 
       <SectionLabel>Informations</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li !py-4">
+        <div className="li">
           <RowText
             icon={FileText}
             title={salon.name}

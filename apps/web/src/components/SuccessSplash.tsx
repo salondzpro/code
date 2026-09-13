@@ -33,13 +33,13 @@ export function SuccessSplash({
   }, [duration]);
   return (
     <div
-      className="anim-fade fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-surface px-6 text-center"
+      className="anim-fade fixed inset-0 z-50 flex flex-col items-center justify-center gap-2 bg-surface px-6 text-center"
       role="status"
       aria-live="polite"
       onClick={fire}
       data-testid="success-splash"
     >
-      <div className="anim-pop flex h-[9.25rem] w-[9.25rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+      <div className="anim-pop flex h-[5.5rem] w-[5.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
         <I icon={Check} size={64} />
       </div>
       <h1 className="h1 anim-rise">{title}</h1>

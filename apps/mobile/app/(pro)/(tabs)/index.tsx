@@ -133,7 +133,7 @@ export default function ProHome() {
           <Card
             gap={3}
             pad={20}
-            style={{ backgroundColor: C.ink, borderColor: C.ink, paddingVertical: 20 }}
+            style={{ backgroundColor: C.ink, borderColor: C.ink, paddingVertical: 14 }}
           >
             <Tx size={26} weight={700} ls={-0.8} lh={28} color="#fff">
               {stats.data.todayCount}
@@ -145,7 +145,7 @@ export default function ProHome() {
           <Card
             gap={3}
             pad={20}
-            style={{ paddingVertical: 20 }}
+            style={{ paddingVertical: 14 }}
             onPress={() => router.push('/(pro)/(tabs)/reservations')}
             accessibilityLabel="Demandes à valider"
           >

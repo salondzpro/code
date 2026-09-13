@@ -293,7 +293,7 @@ export function Bookings() {
       ) : list.isError ? (
         <ErrorMessage error={list.error} retry={() => list.refetch()} />
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 px-4 pt-12 text-center">
+        <div className="flex flex-col items-center gap-3 px-4 pt-6 text-center">
           <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
             <I icon={empty.icon} size={30} />
           </span>

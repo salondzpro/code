@@ -16,7 +16,7 @@ export function ProWelcome() {
   };
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className="relative h-[26.25rem] flex-none overflow-hidden">
+      <div className="relative h-[18rem] flex-none overflow-hidden">
         <img src={DESIGN_IMAGES.pro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />
         <div className="ovl-t">

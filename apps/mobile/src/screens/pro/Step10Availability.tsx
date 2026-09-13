@@ -38,7 +38,7 @@ function BigSlot({
   children: string;
 }) {
   return (
-    <Slot on={on} onPress={onPress} style={{ paddingVertical: 21 }}>
+    <Slot on={on} onPress={onPress} style={{ paddingVertical: 13 }}>
       <Tx size={13} weight={500} lh={16} color={on ? C.onInk : C.text} mono>
         {children}
       </Tx>

@@ -423,7 +423,7 @@ function DayTimeline({
 }) {
   if (hours.length === 0 && items.length === 0)
     return (
-      <View style={{ paddingVertical: 20 }}>
+      <View style={{ paddingVertical: 14 }}>
         <P center>Fermé ce jour.</P>
       </View>
     );

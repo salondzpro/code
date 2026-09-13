@@ -25,7 +25,7 @@ export default function ProWelcome() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: C.bg }} contentContainerStyle={{ flexGrow: 1 }} bounces={false}>
       <StatusBar style="light" />
-      <View style={{ height: 341, overflow: 'hidden' }}>
+      <View style={{ height: 240, overflow: 'hidden' }}>
         <Image source={{ uri: DESIGN_IMAGES.pro.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
         <Overlay />
         <View style={{ position: 'absolute', left: 16, right: 16, bottom: 16, gap: 6 }}>

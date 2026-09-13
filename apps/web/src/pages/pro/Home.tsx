@@ -92,7 +92,7 @@ export function ProHome() {
       ) : (
         /* Deux chiffres, pas trois : le prévisionnel du jour est déjà dans « Chiffre d'affaires ». */
         <div className="g2">
-          <div className="crd !gap-1 !bg-ink !px-5 !py-6 !text-white">
+          <div className="crd !gap-1 !bg-ink !px-4 !py-4 !text-white">
             <span className="text-[2rem] font-bold leading-none tracking-[-0.8px]">
               {stats.data.todayCount}
             </span>
@@ -102,7 +102,7 @@ export function ProHome() {
           </div>
           <Link
             to="/pro/reservations"
-            className="crd !gap-1 !px-5 !py-6"
+            className="crd !gap-1 !px-4 !py-4"
             aria-label="Demandes à valider"
           >
             <span
@@ -269,7 +269,7 @@ export function ProHome() {
             <button
               key={b.id}
               type="button"
-              className="li w-full !py-4 text-left"
+              className="li w-full text-left"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
             >
               <span className="flex min-w-0 items-center gap-4">

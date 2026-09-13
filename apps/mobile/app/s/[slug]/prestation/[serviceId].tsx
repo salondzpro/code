@@ -53,8 +53,8 @@ export default function ServiceDetail() {
         </BottomSheet>
       }
     >
-      <View style={{ height: 268, backgroundColor: C.line }}>
-        <Img src={photos[0]?.url ?? s.coverUrl} radius={0} style={{ height: 268 }} />
+      <View style={{ height: 205, backgroundColor: C.line }}>
+        <Img src={photos[0]?.url ?? s.coverUrl} radius={0} style={{ height: 205 }} />
         <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <IconButton lg accessibilityLabel="Retour" onPress={() => (router.canGoBack() ? router.back() : router.replace(`/s/${s.slug}` as never))}>
             <I icon={ChevronLeft} />

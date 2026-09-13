@@ -134,7 +134,7 @@ export function Requests() {
               <button
                 key={b.id}
                 type="button"
-                className="li w-full !py-4 text-left"
+                className="li w-full text-left"
                 onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
               >
                 <span className="flex min-w-0 items-center gap-4">

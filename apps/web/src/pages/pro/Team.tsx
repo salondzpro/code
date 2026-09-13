@@ -91,7 +91,7 @@ export function Team() {
           <li key={m.id}>
             <button
               type="button"
-              className="li w-full !py-4 text-left"
+              className="li w-full text-left"
               onClick={() => navigate(`/pro/equipe/${m.id}`)}
             >
               <span className="flex min-w-0 items-center gap-3.5">
