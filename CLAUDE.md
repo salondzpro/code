@@ -8,6 +8,8 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - `pnpm test:e2e:mobile` : parcours client + pro sur l'app mobile rendue par Expo web (`apps/mobile/test/smoke.e2e.mjs`) ; exige `pnpm dev:api` et, depuis `apps/mobile`, `CI=1 EXPO_PUBLIC_API_URL=http://localhost:8090 npx expo start --web --port 8082`. Captures dans `apps/mobile/test/shots/`.
 - `pnpm demo:seed` / `pnpm demo:cleanup` : deux salons de démonstration (Sarah Beauty Studio, Amine Barber) + une cliente avec rendez-vous, pour captures et tests manuels ; sessions dans `scripts/.demo.json` (gitignoré). Exige `pnpm dev:api`.
 - `pnpm check:realtime` : rejoue contre la **prod** le scénario « le pro est sur son accueil, la cliente réserve » et dit si l'événement Realtime arrive sans actualiser (`scripts/check-realtime.mjs`, comptes de démonstration, rendez-vous de test annulé à la fin). À lancer après toute modification du temps réel ou de la publication Postgres.
+- `pnpm check:contact` : ouvre les écrans clients en **prod** et vérifie qu'aucun numéro, appel ou WhatsApp du salon n'y apparaît (drapeau `SHOW_SALON_CONTACT_TO_CLIENTS`).
+- `pnpm check:webpush` : chaîne complète des notifications navigateur en **prod**. Le dernier saut exige une fenêtre réelle : `CHECK_HEADLESS=0 pnpm check:webpush`. Sans affichage, Chrome fait juger son inscription FCM périmée (410) — ce n'est pas une régression.
 - `pnpm db:migrate` (lit `DATABASE_URL` dans `.env`, suit `public.schema_migrations`). Les migrations déjà appliquées sont immuables : toute correction = nouveau fichier `000N_*.sql`.
 - API locale : `pnpm dev:api` sur le port `PORT` du `.env` (8090 en local, 8080 sur Render) ; web toujours sur http://localhost:9000 (Vite `strictPort`).
 

@@ -24,7 +24,8 @@
     "demo:cleanup": "node --env-file=.env scripts/seed-demo.mjs --cleanup",
     "test:e2e:mobile": "pnpm --filter @salondz/mobile test:e2e",
     "check:realtime": "node --env-file=.env scripts/check-realtime.mjs",
-    "check:contact": "node --env-file=.env scripts/check-contact-hidden.mjs"
+    "check:contact": "node --env-file=.env scripts/check-contact-hidden.mjs",
+    "check:webpush": "node --env-file=.env scripts/check-webpush.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
