@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT, NO_SHOW_ABUSE_MAX, NO_SHOW_ABUSE_WINDOW_DAYS } from '@salondz/constants';
+import { CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT, NO_SHOW_ABUSE_MAX, NO_SHOW_ABUSE_WINDOW_DAYS, SHOW_SALON_CONTACT_TO_CLIENTS} from '@salondz/constants';
 import {
   cancelBookingSchema,
   createBookingSchema,
@@ -166,7 +166,7 @@ async function assertClientCanBook(clientId: string, salonId: string, serviceIds
   // Anti-abus : trop d'annulations ou d'absences récentes → réservation en ligne suspendue quelques jours.
   if (standing.suspendedUntil) {
     const why = standing.noShows >= NO_SHOW_ABUSE_MAX ? `${standing.noShows} absences signalées en ${NO_SHOW_ABUSE_WINDOW_DAYS} jours` : `${standing.cancellations} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours`;
-    throw conflict('BOOKING_SUSPENDED', `Réservation en ligne suspendue jusqu'au ${fmtWhen(standing.suspendedUntil)} (${why}). Vous pouvez appeler le salon.`);
+    throw conflict('BOOKING_SUSPENDED', `Réservation en ligne suspendue jusqu'au ${fmtWhen(standing.suspendedUntil)} (${why}).${SHOW_SALON_CONTACT_TO_CLIENTS ? ' Vous pouvez appeler le salon.' : ''}`);
   }
   if ((upcoming.count ?? 0) >= MAX_UPCOMING_BOOKINGS_PER_CLIENT) {
     throw conflict('TOO_MANY_BOOKINGS', `Vous avez déjà ${MAX_UPCOMING_BOOKINGS_PER_CLIENT} rendez-vous à venir. Annulez-en un pour réserver.`);

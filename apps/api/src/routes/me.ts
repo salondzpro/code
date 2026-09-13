@@ -17,6 +17,7 @@ import {
   CANCEL_ABUSE_WINDOW_DAYS,
   NO_SHOW_ABUSE_MAX,
   NO_SHOW_ABUSE_WINDOW_DAYS,
+  SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 
 const PROFILE_COLS =
@@ -61,7 +62,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
           standing.noShows >= NO_SHOW_ABUSE_MAX
             ? `${standing.noShows} absences signalées en ${NO_SHOW_ABUSE_WINDOW_DAYS} jours`
             : `${standing.cancellations} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours`;
-        message = `Réservation en ligne suspendue jusqu'au ${when} (${why}). Vous pouvez appeler le salon.`;
+        message = `Réservation en ligne suspendue jusqu'au ${when} (${why}).${SHOW_SALON_CONTACT_TO_CLIENTS ? ' Vous pouvez appeler le salon.' : ''}`;
       }
       reply.header('Cache-Control', 'private, no-store');
       const out: BookingStanding = {
