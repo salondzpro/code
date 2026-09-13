@@ -3,7 +3,7 @@
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
 import React, { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -18,6 +18,7 @@ import {
   Phone,
   Users,
   Ban,
+  Star,
 } from 'lucide-react-native';
 import {
   pagesItems,
@@ -69,12 +70,13 @@ import {
   Checkbox,
   Avatar,
 } from '@/ui';
+import { Accordion, Tabs } from '@/ui/Sections';
 import { Screen } from '@/ui/Screen';
 import { PillRow } from '@/ui/Pills';
 import { Splash } from '@/ui/Splash';
 import { C, R } from '@/theme/design';
 
-type Tab = 'services' | 'works' | 'infos';
+type Tab = 'book' | 'reviews' | 'about';
 
 export default function Salon() {
   const { slug = '' } = useLocalSearchParams<{ slug: string }>();
@@ -86,7 +88,11 @@ export default function Salon() {
   const standing = useBookingStanding(salon.data?.id ?? '', !!session);
   const cannotBook = !!standing.data && !standing.data.canBook;
   const toggle = useToggleFavorite();
-  const [tab, setTab] = useState<Tab>('services');
+  const [tab, setTab] = useState<Tab>('book');
+  // Catégories repliées par défaut : le client voit d'abord le salon, puis ouvre la sienne.
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 5, 'best');
+  const reviewItems = pagesItems(reviews.data);
   // Hauteur réelle de la feuille du bas (bandeau, résumé, bouton) → espace inférieur du contenu.
   const [sheetH, setSheetH] = useState(0);
   // Sélection directe des prestations sur la page (brouillon partagé avec « Quand ? » et le récapitulatif).
@@ -115,6 +121,12 @@ export default function Salon() {
   const weekFromToday = WEEK_DAYS.map((_, k) => ((todayDow + k) % 7) as (typeof WEEK_DAYS)[number]);
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
+  const groups = groupServices(s.services);
+  const prices = s.services.map((x) => x.priceDa).filter((x) => x > 0);
+  const priceRange = prices.length
+    ? `${formatDA(Math.min(...prices))} – ${formatDA(Math.max(...prices))}`
+    : null;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`;
   const works = s.works;
   const chosen = selected
     .map((id) => s.services.find((x) => x.id === id))
@@ -218,7 +230,7 @@ export default function Salon() {
                 )}
                 <Button
                   onPress={() => {
-                    setTab('services');
+                    setTab('book');
                     setHint(true);
                   }}
                   disabled={cannotBook}
@@ -231,6 +243,17 @@ export default function Salon() {
         </BottomSheet>
       }
     >
+      {/* Onglets avant la couverture, comme sur le web : ils commandent la page. */}
+      <Tabs
+        label="Sections du salon"
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: 'book', label: 'Prendre RDV' },
+          { value: 'reviews', label: 'Avis' },
+          { value: 'about', label: 'À propos' },
+        ]}
+      />
       {/* Couverture */}
       <View style={{ height: 190, backgroundColor: C.line }}>
         <Img src={s.coverUrl} radius={0} style={{ height: 190 }} />
@@ -284,83 +307,86 @@ export default function Salon() {
           gap: 13,
         }}
       >
-        <View>
+        <View style={{ gap: 5 }}>
           <H1 size={21} lh={24.5} ls={-0.8}>
             {s.name}
           </H1>
-          <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
-            {cats} — {place}
-          </Tx>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              s.ratingCount > 0
-                ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
-                : 'Avis : voir les avis'
-            }
-            onPress={() => router.push(`/s/${s.slug}/avis` as never)}
-            style={{
-              backgroundColor: C.fill,
-              borderRadius: R.pill,
-              paddingHorizontal: 11,
-              paddingVertical: 7,
-            }}
+            accessibilityRole="link"
+            accessibilityLabel="Itinéraire vers le salon"
+            onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
           >
-            <Tx size={12} weight={600} lh={15.5} color={s.ratingCount > 0 ? C.text : C.muted}>
-              {s.ratingCount > 0
-                ? `★ ${formatRating(s.ratingAvg)} · ${s.ratingCount} avis`
-                : '★ Avis'}
+            <I icon={MapPin} size={14} color={C.muted} />
+            <Tx size={12} lh={16} numberOfLines={1} style={{ flex: 1, textDecorationLine: 'underline' }}>
+              {s.address ? `${s.address}, ${place}` : place}
             </Tx>
           </Pressable>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 5,
-              borderRadius: R.pill,
-              backgroundColor: status.open ? C.okBg : C.fill,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-            }}
-          >
-            <View
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: 2,
-                backgroundColor: status.open ? C.okFg : C.muted,
-              }}
-            />
-            <Tx size={12} weight={600} lh={15.5} color={status.open ? C.okFg : C.muted}>
-              {status.label}
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                s.ratingCount > 0
+                  ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                  : 'Avis : voir les avis'
+              }
+              onPress={() => setTab('reviews')}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <I icon={Star} size={14} />
+              <Tx size={12} weight={600} lh={16} color={s.ratingCount > 0 ? C.text : C.muted}>
+                {s.ratingCount > 0
+                  ? `${formatRating(s.ratingAvg)} (${s.ratingCount} avis)`
+                  : "Pas encore d'avis"}
+              </Tx>
+            </Pressable>
+            {!!priceRange && (
+              <Tx size={12} color={C.muted} lh={16}>
+                {`· ${priceRange}`}
+              </Tx>
+            )}
+            <Tx size={12} weight={600} lh={16} color={status.open ? C.okFg : C.muted}>
+              {`· ${status.label}`}
             </Tx>
           </View>
         </View>
-        {!!s.description && (
-          <Tx size={10.5} color={C.muted} lh={17}>
-            {s.description}
-          </Tx>
-        )}
 
-        <Segmented
-          label="Sections"
-          value={tab}
-          onChange={setTab}
-          options={[
-            { value: 'services', label: 'Prestations' },
-            { value: 'works', label: 'Réalisations' },
-            { value: 'infos', label: 'Infos' },
-          ]}
-        />
+        {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
+        <Grid cols={2}>
+          {s.phone ? (
+            <Button variant="g" sm onPress={() => void Linking.openURL(`tel:${s.phone}`).catch(() => undefined)}>
+              <Tx size={12.5} weight={600} ls={-0.2}>
+                Appeler
+              </Tx>
+            </Button>
+          ) : (
+            <Button variant="g" sm onPress={() => void shareUrl(s.name, publicUrl(s.slug))}>
+              <Tx size={12.5} weight={600} ls={-0.2}>
+                Partager
+              </Tx>
+            </Button>
+          )}
+          <Button variant="g" sm onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
+            <Tx size={12.5} weight={600} ls={-0.2}>
+              Itinéraire
+            </Tx>
+          </Button>
+        </Grid>
 
-        {tab === 'services' && (
-          <View style={{ gap: 10 }}>
-            {groupServices(s.services).map((g) => (
-              <View key={g.name} style={{ gap: 6 }}>
-                <SectionLabel>{g.name}</SectionLabel>
-                <ListCard>
+        {tab === 'book' && (
+          <View style={{ gap: 9 }}>
+            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+              Choix de la prestation
+            </Tx>
+            {groups.map((g) => (
+              <Accordion
+                key={g.name}
+                title={g.name}
+                hint={`${g.services.length} prestation${g.services.length > 1 ? 's' : ''}`}
+                open={openGroup === g.name}
+                onToggle={() => setOpenGroup((cur) => (cur === g.name ? null : g.name))}
+              >
+                <View>
                   {g.services.map((sv) => {
                     const on = selected.includes(sv.id);
                     return (
@@ -392,8 +418,8 @@ export default function Salon() {
                       </Row>
                     );
                   })}
-                </ListCard>
-              </View>
+                </View>
+              </Accordion>
             ))}
             {s.services.length === 0 && (
               <View style={{ paddingVertical: 10 }}>
@@ -402,8 +428,60 @@ export default function Salon() {
             )}
           </View>
         )}
-        {tab === 'works' && (
+        {tab === 'reviews' && (
+          <View style={{ gap: 9 }}>
+            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+              Avis
+            </Tx>
+            {s.ratingCount > 0 ? (
+              <Card row gap={11} style={{ alignItems: 'center' }}>
+                <Tx size={28} weight={700} ls={-1} lh={30}>
+                  {formatRating(s.ratingAvg)}
+                </Tx>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Tx size={13} weight={600} lh={17}>
+                    {'★'.repeat(Math.round(s.ratingAvg))}
+                  </Tx>
+                  <Tx size={11.5} color={C.muted} lh={15}>
+                    {`${s.ratingCount} avis vérifié${s.ratingCount > 1 ? 's' : ''} · après rendez-vous`}
+                  </Tx>
+                </View>
+              </Card>
+            ) : (
+              <P>Pas encore d'avis : soyez le premier après votre rendez-vous.</P>
+            )}
+            {reviewItems.map((r) => (
+              <Card key={r.id} gap={4}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                  <Tx size={12.5} weight={600} lh={16}>
+                    {'★'.repeat(r.rating)}
+                  </Tx>
+                  <Tx size={11} color={C.muted} lh={15}>
+                    {formatDateShortDZ(r.createdAt)}
+                  </Tx>
+                </View>
+                {!!r.comment && <P>{r.comment}</P>}
+              </Card>
+            ))}
+            {reviewItems.length > 0 && (
+              <Button variant="g" onPress={() => router.push(`/s/${s.slug}/avis` as never)}>
+                Tous les avis
+              </Button>
+            )}
+          </View>
+        )}
+
+        {tab === 'about' && (
           <>
+            {!!s.description && <P>{s.description}</P>}
+            {!!cats && (
+              <Tx size={12} color={C.muted} lh={16}>
+                {cats}
+              </Tx>
+            )}
+            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+              Réalisations
+            </Tx>
             {works.length === 0 ? (
               <P>Pas encore de réalisations.</P>
             ) : (
@@ -421,8 +499,11 @@ export default function Salon() {
           </>
         )}
 
-        {tab === 'infos' && (
-          <View style={{ gap: 12 }}>
+        {tab === 'about' && (
+          <View style={{ gap: 9 }}>
+            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+              Informations
+            </Tx>
             {/* Aujourd'hui en premier et en grand, puis la semaine à partir d'aujourd'hui. */}
             <Card
               gap={6}
