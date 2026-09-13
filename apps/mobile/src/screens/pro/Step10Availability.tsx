@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { errorText } from '@/lib/errors';
 import { stepPath } from '@/lib/proDraft';
-import { Alert, Grid, H1, InfoBox, ListCard, Row, SectionLabel, Slot, Toggle, Tx } from '@/ui';
+import { Alert, Grid, H1, ListCard, Row, SectionLabel, Slot, Toggle, Tx } from '@/ui';
 import { PickerSheet, ValueRow } from '@/ui/Pickers';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
@@ -79,10 +79,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (!salon) return <Splash />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
-  const staffHint =
-    staffCount <= 1
-      ? '1 employé actif · 1 rendez-vous à la fois'
-      : `${staffCount} employés actifs · ${staffCount} rendez-vous en même temps`;
 
   const save = async () => {
     setError(null);
@@ -114,7 +110,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           right="Disponibilités"
         />
         <H1>Vos créneaux</H1>
-        <SectionLabel>Granularité</SectionLabel>
+        <SectionLabel>Créneaux proposés toutes les</SectionLabel>
         <Grid cols={3}>
           {GRANULARITY.map((g) => (
             <BigSlot key={g} on={interval === g} onPress={() => setIntervalMin(g)}>
@@ -125,14 +121,12 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <SectionLabel>Règles</SectionLabel>
         <ListCard>
           <ValueRow
-            label="Temps de battement"
-            hint="Entre deux rendez-vous"
+            label="Pause entre deux rendez-vous"
             value={`${buffer} min`}
             onPress={() => setSheet('buffer')}
           />
           <ValueRow
-            label="Délai minimum de réservation"
-            hint="Avant le début du rendez-vous"
+            label="Réserver au plus tard"
             value={`${LEAD.find((l) => l.v === lead)?.l ?? `${lead} min`} avant`}
             onPress={() => setSheet('lead')}
           />
@@ -147,10 +141,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             }
           >
             <Tx size={12} lh={16}>
-              Rendez-vous simultanés
-            </Tx>
-            <Tx size={12} color={C.muted} lh={15.5}>
-              {staffHint}
+              Rendez-vous en même temps
             </Tx>
           </Row>
           <Row
@@ -161,9 +152,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             <Tx size={12} lh={16}>
               Réservation en ligne
             </Tx>
-            <Tx size={12} color={C.muted} lh={15.5}>
-              Visible dans la marketplace
-            </Tx>
           </Row>
           <Row
             py={13}
@@ -171,22 +159,14 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             right={<Toggle on={manual} onChange={setManual} label="Validation manuelle" />}
           >
             <Tx size={12} lh={16}>
-              Validation manuelle
-            </Tx>
-            <Tx size={12} color={C.muted} lh={15.5}>
-              Vous confirmez chaque demande
+              Je valide chaque demande
             </Tx>
           </Row>
         </ListCard>
-        <InfoBox>
-          Sans validation manuelle, les créneaux sont réservés instantanément. Un rendez-vous par
-          employé actif à la fois : ajoutez un membre dans Équipe pour en accueillir plusieurs en
-          même temps.
-        </InfoBox>
         <PickerSheet
           open={sheet === 'lead'}
           onClose={() => setSheet(null)}
-          title="Délai minimum de réservation"
+          title="Réserver au plus tard"
           options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))}
           value={lead}
           onChange={setLead}
@@ -216,7 +196,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     >
       <StepBar step={10} right="Réservation" />
       <H1>Règles de réservation</H1>
-      <SectionLabel>Fenêtre de réservation</SectionLabel>
+      <SectionLabel>Réservable jusqu’à</SectionLabel>
       <Grid cols={3}>
         {HORIZON.map((h) => (
           <BigSlot key={h} on={horizon === h} onPress={() => setHorizon(h)}>
@@ -226,8 +206,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       </Grid>
       <ListCard>
         <ValueRow
-          label="Annulation client"
-          hint="Gratuite jusqu'à"
+          label="Annulation gratuite jusqu'à"
           value={`${cancel} h avant`}
           onPress={() => setSheet('cancel')}
         />
@@ -237,10 +216,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           right={<Toggle on={report} onChange={setReport} label="Report client" />}
         >
           <Tx size={12} lh={16}>
-            Report client
-          </Tx>
-          <Tx size={12} color={C.muted} lh={15.5}>
-            Sur demande, avec validation
+            Le client peut reporter
           </Tx>
         </Row>
       </ListCard>

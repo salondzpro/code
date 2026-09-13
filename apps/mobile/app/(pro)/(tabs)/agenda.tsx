@@ -38,6 +38,7 @@ import {
   cancelledLabel,
 } from '@/ui';
 import { DayCarousel, DayScroller } from '@/ui/DayCarousel';
+import { BookingPeekSheet } from '@/ui/BookingPeekSheet';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, CAT, NAV_PAD, SHADOW } from '@/theme/design';
@@ -121,7 +122,9 @@ export default function AgendaPro() {
         ? addDaysToKey(monthStart, n > 0 ? 32 : -1).slice(0, 8) + '01'
         : addDaysToKey(date, n * (view === 'week' ? 7 : 1)),
     );
-  const openBooking = (id: string) => router.push(`/pro-rdv/${id}` as never);
+  // Un rendez-vous s'ouvre en feuille : l'agenda reste derrière, à sa date et sa position.
+  const [peek, setPeek] = useState<string | null>(null);
+  const openBooking = (id: string) => setPeek(id);
   const newBooking = () => router.push({ pathname: '/pro-rdv/nouveau', params: { date } });
 
   const header =
@@ -383,6 +386,7 @@ export default function AgendaPro() {
           )}
         />
       )}
+      <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />
     </Screen>
   );
 }

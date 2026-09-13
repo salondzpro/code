@@ -59,6 +59,7 @@ import {
   StatusBadge,
   TopBar,
   Tx,
+  Pill,
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
@@ -137,6 +138,17 @@ export default function ClientDetail() {
   const client = useProClient(key);
   const history = useProClientHistoryInfinite(key, !!key);
   const historyItems = pagesItems(history.data);
+  /** Tri du fichier client : on vient y chercher une catégorie, rarement la liste entière. */
+  const [filter, setFilter] = useState<'all' | 'done' | 'cancelled' | 'noshow'>('all');
+  const shown = historyItems.filter((h) =>
+    filter === 'all'
+      ? true
+      : filter === 'done'
+        ? h.status === 'completed'
+        : filter === 'cancelled'
+          ? h.status === 'cancelled'
+          : h.status === 'no_show',
+  );
   const { block, unblock, setNotes } = useProClientMutations();
   const { setStatus } = useProBookingMutations();
   const c = client.data ?? null;
@@ -300,10 +312,20 @@ export default function ClientDetail() {
         <Stat v={formatDA(c.spentDa)} l="dépensés" />
         <Stat v={c.lastAt ? formatDateShortDZ(c.lastAt) : '—'} l="dernière visite" />
       </Grid>
-      <Tx size={12} lh={16} color={warn ? C.danger : C.muted} style={{ marginTop: -6 }}>
-        {c.bookingsCount} rendez-vous au total · {c.cancelledCount} annulé
-        {c.cancelledCount > 1 ? 's' : ''} · {c.noShowCount} absence{c.noShowCount > 1 ? 's' : ''}
-      </Tx>
+      {/* « 0 absence » en rouge inquiétait pour rien, et « X rendez-vous au total »
+          contredisait la tuile « visites », qui ne compte que les visites honorées. */}
+      {warn && (
+        <Tx size={12} lh={16} color={C.danger} style={{ marginTop: -4 }}>
+          {[
+            c.cancelledCount > 0
+              ? `${c.cancelledCount} annulation${c.cancelledCount > 1 ? 's' : ''}`
+              : null,
+            c.noShowCount > 0 ? `${c.noShowCount} absence${c.noShowCount > 1 ? 's' : ''}` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </Tx>
+      )}
 
       {/* Notes privées */}
       <Card gap={10}>
@@ -378,13 +400,27 @@ export default function ClientDetail() {
       )}
       {error && <Alert>{error}</Alert>}
 
-      {/* Historique */}
+      {/* Historique, filtrable : « qu'est-ce qu'il a annulé ? » est la question la plus posée. */}
       <SectionLabel>Historique</SectionLabel>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+        {(
+          [
+            ['all', 'Tout'],
+            ['done', 'Terminés'],
+            ['cancelled', 'Annulés'],
+            ['noshow', 'Absences'],
+          ] as const
+        ).map(([v, label]) => (
+          <Pill key={v} on={filter === v} onPress={() => setFilter(v)}>
+            {label}
+          </Pill>
+        ))}
+      </View>
       {history.isPending ? (
         <Skeleton h={130} radius={16} />
       ) : (
         <ListCard>
-          {historyItems.map((h, i, arr) => {
+          {shown.map((h, i, arr) => {
             const past = new Date(h.startsAt).getTime() < now;
             const pendingOutcome = h.status === 'confirmed' && past;
             const cancelLabel = historyStatusLabel(h);
@@ -455,9 +491,13 @@ export default function ClientDetail() {
               </View>
             );
           })}
-          {historyItems.length === 0 && (
+          {shown.length === 0 && (
             <View style={{ paddingVertical: 10 }}>
-              <P>Aucun rendez-vous pour l'instant.</P>
+              <P>
+                {filter === 'all'
+                  ? "Aucun rendez-vous pour l'instant."
+                  : 'Rien dans cette catégorie.'}
+              </P>
             </View>
           )}
         </ListCard>
