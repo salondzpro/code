@@ -20,6 +20,7 @@ import {
 import { writeDraft } from '@/lib/bookingDraft';
 import { MiniMap } from '@/components/MiniMap';
 import { PublicHeader } from '@/components/PublicHeader';
+import { SalonGallery } from '@/components/SalonGallery';
 import {
   pagesItems,
   useFavorites,
@@ -127,6 +128,12 @@ export function Salon() {
   const cats = s.categoryIds.map((c) => categoryLabel(c)).join(' · ');
   const place = `${s.zone ?? s.city}, ${wilayaName(s.wilayaCode)}`;
   const works = s.works;
+  /** Couverture, puis photos du salon, puis réalisations — sans doublon ni trou. */
+  const gallery = [
+    s.coverUrl,
+    ...(s.photos ?? []).map((x) => x.url),
+    ...works.map((x) => x.url),
+  ].filter((x, idx, arr): x is string => !!x && arr.indexOf(x) === idx);
   const groups = groupServices(s.services);
   const prices = s.services.map((x) => x.priceDa).filter((x) => x > 0);
   const priceRange = prices.length
@@ -152,10 +159,9 @@ export function Salon() {
           { value: 'about', label: 'À propos' },
         ]}
       />
-      {/* Couverture */}
-      <div className="relative h-[14rem] bg-line">
-        {s.coverUrl && <img src={s.coverUrl} alt="" className="h-full w-full object-cover" />}
-        <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
+      {/* Album : couverture, photos du salon et réalisations réunies. */}
+      <SalonGallery images={gallery} alt={`Photos de ${s.name}`}>
+        <div className="absolute left-4 right-4 top-4 z-10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <IconButton lg aria-label="Retour" onClick={back}>
               <I icon={ChevronLeft} />
@@ -189,9 +195,11 @@ export function Salon() {
             </IconButton>
           </div>
         </div>
-      </div>
+      </SalonGallery>
 
-      <div className="relative -mt-5 flex flex-col gap-3 rounded-t-[1.5rem] bg-bg px-4 pt-5">
+      {/* Contenu à plat sous la photo : le chevauchement arrondi rognait l'image et
+          n'apportait rien, la référence enchaîne les deux bord à bord. */}
+      <div className="relative flex flex-col gap-3 bg-bg px-4 pt-4">
         {/* Identité réservée à l'onglet de réservation : sur « Avis » et « À propos »
             elle répétait nom, adresse, note, prix et horaires alors que chaque onglet
             porte déjà ses propres titres. */}
@@ -511,21 +519,12 @@ export function Salon() {
               </>
             )}
 
-            {/* 5. Réalisations : la vitrine du travail, propre à Salon DZ. */}
+            {/* 5. Réalisations : elles sont désormais DANS l'album en haut de page, donc
+                pas de seconde grille ici — seulement l'accès à la planche complète. */}
             {works.length > 0 && (
-              <>
-                <h2 className="h1 !text-[1.429rem]">Réalisations</h2>
-                <div className="g2">
-                  {works.slice(0, 6).map((ph) => (
-                    <Img key={ph.id} src={ph.url} className="aspect-square w-full" />
-                  ))}
-                </div>
-                {works.length > 6 && (
-                  <LinkButton to={`/s/${s.slug}/realisations`} variant="g">
-                    Voir toutes les réalisations
-                  </LinkButton>
-                )}
-              </>
+              <LinkButton to={`/s/${s.slug}/realisations`} variant="g">
+                Voir les {works.length} réalisation{works.length > 1 ? 's' : ''}
+              </LinkButton>
             )}
           </div>
         )}

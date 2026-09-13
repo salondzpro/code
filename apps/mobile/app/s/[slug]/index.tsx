@@ -72,6 +72,7 @@ import {
   Avatar,
 } from '@/ui';
 import { Accordion, Tabs } from '@/ui/Sections';
+import { SalonGallery } from '@/ui/SalonGallery';
 import { Screen } from '@/ui/Screen';
 import { PillRow } from '@/ui/Pills';
 import { Splash } from '@/ui/Splash';
@@ -127,6 +128,12 @@ export default function Salon() {
     : null;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`;
   const works = s.works;
+  /** Couverture, puis photos du salon, puis réalisations — sans doublon ni trou. */
+  const gallery = [
+    s.coverUrl,
+    ...(s.photos ?? []).map((x) => x.url),
+    ...works.map((x) => x.url),
+  ].filter((x, idx, arr): x is string => !!x && arr.indexOf(x) === idx);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(client)/(tabs)'));
 
   return (
@@ -149,8 +156,8 @@ export default function Salon() {
         ]}
       />
       {/* Couverture */}
-      <View style={{ height: 190, backgroundColor: C.line }}>
-        <Img src={s.coverUrl} radius={0} style={{ height: 190 }} />
+      {/* Album : couverture, photos du salon et réalisations réunies. */}
+      <SalonGallery images={gallery}>
         <View
           style={{
             position: 'absolute',
@@ -188,16 +195,14 @@ export default function Salon() {
             </IconButton>
           </View>
         </View>
-      </View>
+      </SalonGallery>
 
+      {/* Contenu à plat sous la photo : le chevauchement arrondi rognait l'image. */}
       <View
         style={{
-          marginTop: -16,
           backgroundColor: C.bg,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
           paddingHorizontal: 16,
-          paddingTop: 20,
+          paddingTop: 14,
           gap: 13,
         }}
       >
@@ -507,26 +512,15 @@ export default function Salon() {
               </>
             )}
 
-            {/* 5. Réalisations. */}
+            {/* 5. Réalisations : déjà dans l'album en haut de page, donc pas de seconde
+                grille ici — seulement l'accès à la planche complète. */}
             {works.length > 0 && (
-              <>
-                <Tx size={16} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
-                  Réalisations
-                </Tx>
-                <Grid cols={2}>
-                  {works.slice(0, 6).map((ph) => (
-                    <Img key={ph.id} src={ph.url} style={{ width: '100%', aspectRatio: 1 }} />
-                  ))}
-                </Grid>
-                {works.length > 6 && (
-                  <Button
-                    variant="g"
-                    onPress={() => router.push(`/s/${s.slug}/realisations` as never)}
-                  >
-                    Voir toutes les réalisations
-                  </Button>
-                )}
-              </>
+              <Button
+                variant="g"
+                onPress={() => router.push(`/s/${s.slug}/realisations` as never)}
+              >
+                {`Voir les ${works.length} réalisation${works.length > 1 ? 's' : ''}`}
+              </Button>
             )}
 
             <Card gap={5}>
