@@ -36,6 +36,7 @@ import {
   StatusBadge,
   Tx,
 } from '@/ui';
+import { RefuseRequestSheet, type RefusedRequest } from '@/ui/RefuseRequestSheet';
 import { Screen } from '@/ui/Screen';
 import { C, NAV_PAD } from '@/theme/design';
 
@@ -60,6 +61,7 @@ export default function ProHome() {
   const today = toLocalDateKey();
   const todayList = useProBookings({ from: today, to: today, limit: 50 });
   const { setStatus } = useProBookingMutations();
+  const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
   useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = useNow();
@@ -230,6 +232,16 @@ export default function ProHome() {
                 </Tx>
               </Button>
             </Grid>
+            <Button
+              variant="d"
+              sm
+              style={{ paddingVertical: 15 }}
+              onPress={() => setRefusing({ id: b.id, clientName: b.clientName })}
+            >
+              <Tx size={11.5} weight={600} color={C.danger} ls={-0.2}>
+                Refuser la demande
+              </Tx>
+            </Button>
           </Card>
         ))}
 
@@ -446,6 +458,7 @@ export default function ProHome() {
           slug={salon.slug}
         />
       )}
+      <RefuseRequestSheet request={refusing} onClose={() => setRefusing(null)} />
     </Screen>
   );
 }

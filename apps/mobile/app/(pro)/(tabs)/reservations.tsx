@@ -26,18 +26,16 @@ import {
   Grid,
   H1,
   I,
-  Input,
   ListCard,
-  ModalSheet,
-  P,
   Row,
   SectionLabel,
   Skeleton,
   StatusBadge,
   Tx,
 } from '@/ui';
+import { RefuseRequestSheet, type RefusedRequest } from '@/ui/RefuseRequestSheet';
 import { Screen } from '@/ui/Screen';
-import { C, FONT_SCALE, NAV_PAD } from '@/theme/design';
+import { C, NAV_PAD } from '@/theme/design';
 
 /** Fenêtre de la liste « à venir » : au-delà, l'agenda mois prend le relais. */
 const HORIZON_DAYS = 30;
@@ -48,9 +46,8 @@ export default function Requests() {
   const pending = useProPendingBookings();
   const today = toLocalDateKey();
   const next = useProBookings({ from: today, to: addDaysToKey(today, HORIZON_DAYS), limit: 100 });
-  const { setStatus, cancel } = useProBookingMutations();
-  const [refusing, setRefusing] = useState<{ id: string; clientName: string } | null>(null);
-  const [reason, setReason] = useState('');
+  const { setStatus } = useProBookingMutations();
+  const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
   const items = pending.data?.items ?? [];
 
   // À venir = ce qui n'est pas terminé, hors annulés et hors demandes (déjà en tête).
@@ -152,7 +149,7 @@ export default function Requests() {
           </Button>
         </Card>
       ))}
-      <ErrorText error={setStatus.error ?? cancel.error} />
+      <ErrorText error={setStatus.error} />
 
       {next.isPending && <Skeleton h={130} radius={16} />}
       {next.isError && <ErrorText error={next.error} retry={() => void next.refetch()} />}
@@ -216,52 +213,7 @@ export default function Requests() {
         />
       )}
 
-      <ModalSheet open={!!refusing} onClose={() => setRefusing(null)}>
-        <View style={{ alignItems: 'center', gap: 6 }}>
-          <Tx size={16} weight={700} ls={-0.4} lh={20.5} center>
-            Refuser cette demande ?
-          </Tx>
-          <P center>{refusing?.clientName} sera prévenu·e et le créneau sera libéré.</P>
-        </View>
-        <Card row style={{ paddingVertical: 10, justifyContent: 'space-between' }}>
-          <Tx size={12} lh={16}>
-            Motif (optionnel)
-          </Tx>
-          <Input
-            value={reason}
-            onChangeText={setReason}
-            placeholder="Complet"
-            maxLength={200}
-            accessibilityLabel="Motif"
-            style={{
-              flex: 1,
-              backgroundColor: 'transparent',
-              borderColor: 'transparent',
-              paddingVertical: 0,
-              paddingHorizontal: 0,
-              textAlign: 'right',
-              fontSize: 12 * FONT_SCALE,
-            }}
-          />
-        </Card>
-        <Button
-          bg={C.danger}
-          textColor="#fff"
-          disabled={cancel.isPending}
-          loading={cancel.isPending}
-          onPress={async () => {
-            if (!refusing) return;
-            await cancel.mutateAsync({ id: refusing.id, reason: reason.trim() || undefined });
-            setRefusing(null);
-            setReason('');
-          }}
-        >
-          Refuser la demande
-        </Button>
-        <Button variant="g" onPress={() => setRefusing(null)}>
-          Garder
-        </Button>
-      </ModalSheet>
+      <RefuseRequestSheet request={refusing} onClose={() => setRefusing(null)} />
     </Screen>
   );
 }

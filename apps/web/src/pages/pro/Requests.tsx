@@ -17,13 +17,12 @@ import {
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
 import {
   Avatar,
-  BottomSheet,
   Button,
   EmptyState,
   I,
-  Input,
   SectionLabel,
   Skeleton,
   StatusBadge,
@@ -39,9 +38,8 @@ export function Requests() {
   const pending = useProPendingBookings();
   const today = toLocalDateKey();
   const next = useProBookings({ from: today, to: addDaysToKey(today, HORIZON_DAYS), limit: 100 });
-  const { setStatus, cancel } = useProBookingMutations();
-  const [refusing, setRefusing] = useState<{ id: string; clientName: string } | null>(null);
-  const [reason, setReason] = useState('');
+  const { setStatus } = useProBookingMutations();
+  const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
   const items = pending.data?.items ?? [];
 
   // À venir = ce qui n'est pas terminé, hors annulés et hors demandes (déjà en tête).
@@ -122,7 +120,7 @@ export function Requests() {
           </Button>
         </div>
       ))}
-      <ErrorMessage error={setStatus.error ?? cancel.error} />
+      <ErrorMessage error={setStatus.error} />
 
       {next.isPending && <Skeleton className="h-[10rem] w-full !rounded-[1.25rem]" />}
       {next.isError && <ErrorMessage error={next.error} retry={() => next.refetch()} />}
@@ -173,46 +171,7 @@ export function Requests() {
         />
       )}
 
-      {refusing && (
-        <>
-          <div className="dim" onClick={() => setRefusing(null)} />
-          <BottomSheet className="!z-50">
-            <div className="text-center">
-              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
-                Refuser cette demande ?
-              </div>
-              <p className="p mt-2">
-                {refusing.clientName} sera prévenu·e et le créneau sera libéré.
-              </p>
-            </div>
-            <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[0.9375rem]">Motif (optionnel)</span>
-              <Input
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Complet"
-                className="!w-auto !bg-transparent !p-0 text-right"
-                maxLength={200}
-                aria-label="Motif"
-              />
-            </div>
-            <Button
-              className="!bg-danger !text-white"
-              disabled={cancel.isPending}
-              onClick={async () => {
-                await cancel.mutateAsync({ id: refusing.id, reason: reason.trim() || undefined });
-                setRefusing(null);
-                setReason('');
-              }}
-            >
-              Refuser la demande
-            </Button>
-            <Button variant="g" onClick={() => setRefusing(null)}>
-              Garder
-            </Button>
-          </BottomSheet>
-        </>
-      )}
+      {refusing && <RefuseRequestSheet request={refusing} onClose={() => setRefusing(null)} />}
     </Screen>
   );
 }

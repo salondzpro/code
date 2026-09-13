@@ -16,6 +16,7 @@ import { formatDuration } from '@/lib/format';
 import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
 import { StaffFilter } from '@/components/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/components/QuickClose';
 import { useStaffFilter } from '@/lib/proPrefs';
@@ -40,6 +41,7 @@ export function ProHome() {
   const today = toLocalDateKey();
   const todayList = useProBookings({ from: today, to: today, limit: 50 });
   const { setStatus } = useProBookingMutations();
+  const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
   const [staffId, setStaffId] = useStaffFilter();
   const byStaff = <T extends { staffId: string | null }>(list: T[]) =>
     staffId ? list.filter((b) => b.staffId === staffId) : list;
@@ -168,6 +170,14 @@ export function ProHome() {
                 Reporter
               </Button>
             </div>
+            <Button
+              variant="d"
+              sm
+              className="!py-[1.125rem] !text-[0.875rem]"
+              onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
+            >
+              Refuser la demande
+            </Button>
           </div>
         ))}
 
@@ -331,6 +341,7 @@ export function ProHome() {
           onClose={() => setShare(false)}
         />
       )}
+      {refusing && <RefuseRequestSheet request={refusing} onClose={() => setRefusing(null)} />}
     </Screen>
   );
 }
