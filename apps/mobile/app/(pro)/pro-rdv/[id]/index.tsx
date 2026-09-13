@@ -207,7 +207,7 @@ export default function ProBookingDetail() {
             {initials}
           </H1>
           {!!b.clientPhone && (
-            <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+            <Tx size={12} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
               {formatDZPhone(b.clientPhone)}
             </Tx>
           )}
@@ -226,14 +226,14 @@ export default function ProBookingDetail() {
             onPress={() => void open(`tel:${b.clientPhone}`)}
           >
             <I icon={Phone} size={16} />
-            <Tx size={11.5} weight={600} ls={-0.2}>
+            <Tx size={12} weight={600} ls={-0.2}>
               Appeler
             </Tx>
           </Button>
           {!!wa && (
             <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(wa)}>
               <I icon={MessageCircle} size={16} />
-              <Tx size={11.5} weight={600} ls={-0.2}>
+              <Tx size={12} weight={600} ls={-0.2}>
                 WhatsApp
               </Tx>
             </Button>
@@ -250,11 +250,11 @@ export default function ProBookingDetail() {
           }}
         >
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13} weight={700} lh={17}>
+            <Tx size={14} weight={700} lh={17}>
               {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
             </Tx>
             {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))) && (
-              <Tx size={11} color={C.muted} lh={15}>
+              <Tx size={12} color={C.muted} lh={15}>
                 {capitalize(formatDateShortDZ(b.startsAt))}
               </Tx>
             )}
@@ -276,18 +276,18 @@ export default function ProBookingDetail() {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-            <Tx size={23} weight={700} ls={-0.8} lh={26} mono>
+            <Tx size={24} weight={700} ls={-0.8} lh={26} mono>
               {formatTimeDZ(b.startsAt)}
             </Tx>
-            <Tx size={13} color={C.muted} lh={20} mono>
+            <Tx size={14} color={C.muted} lh={20} mono>
               – {formatTimeDZ(b.endsAt)}
             </Tx>
           </View>
-          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+          <Tx size={20} weight={700} ls={-0.6} lh={23.5}>
             {formatDA(b.priceDa)}
           </Tx>
         </View>
-        <Tx size={10.5} color={C.muted} lh={14}>
+        <Tx size={12} color={C.muted} lh={14}>
           {`${formatDuration(b.durationMinutes)} au total · arrivée à ${rule.arriveAt} · retard toléré jusqu'à ${rule.lateUntil}`}
         </Tx>
       </Card>
@@ -297,7 +297,7 @@ export default function ProBookingDetail() {
             py={10}
             chevron={false}
             right={
-              <Tx size={11.5} color={C.muted} lh={15.5}>
+              <Tx size={12} color={C.muted} lh={15.5}>
                 {formatDA(b.priceDa)}
               </Tx>
             }
@@ -312,7 +312,7 @@ export default function ProBookingDetail() {
               py={10}
               chevron={false}
               right={
-                <Tx size={11.5} color={C.muted} lh={15.5}>
+                <Tx size={12} color={C.muted} lh={15.5}>
                   {'durationMinutes' in it && it.durationMinutes
                     ? `${formatDuration(it.durationMinutes)}${'priceDa' in it && it.priceDa != null ? ` · ${formatDA(it.priceDa)}` : ''}`
                     : ''}
@@ -328,7 +328,7 @@ export default function ProBookingDetail() {
       </Card>
       {!!b.notes && (
         <Soft>
-          <Tx size={10.5} color={C.muted} lh={14.5}>
+          <Tx size={12} color={C.muted} lh={14.5}>
             Note {salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}
           </Tx>
           <Tx size={12} lh={17}>
@@ -341,7 +341,7 @@ export default function ProBookingDetail() {
           Motif : {b.cancellationReason}
         </Tx>
       )}
-      <Tx size={10.5} color={C.muted} lh={14.5}>
+      <Tx size={12} color={C.muted} lh={14.5}>
         {visits.length} rendez-vous
         {lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
       </Tx>

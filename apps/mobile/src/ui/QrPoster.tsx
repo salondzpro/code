@@ -59,7 +59,7 @@ export const QrPoster = forwardRef<
         >
           {name}
         </Tx>
-        <Tx size={9.5} weight={500} lh={13} color={C.muted} center>
+        <Tx size={12} weight={500} lh={13} color={C.muted} center>
           Prenez rendez-vous en ligne, 24 h/24
         </Tx>
         <View
@@ -83,14 +83,14 @@ export const QrPoster = forwardRef<
             paddingVertical: 7,
           }}
         >
-          <Tx size={9.5} weight={600} lh={13} color="#fff">
+          <Tx size={12} weight={600} lh={13} color="#fff">
             Scannez pour réserver
           </Tx>
         </View>
         <Tx
-          size={9}
+          size={12}
           weight={500}
-          lh={12}
+          lh={15}
           color={C.muted}
           center
           numberOfLines={1}

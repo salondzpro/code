@@ -71,7 +71,7 @@ export function ServicesPicker({
                 <Tx size={12} lh={16} color={sv.isActive ? C.text : C.subtle}>
                   {sv.name}
                 </Tx>
-                <Tx size={10.5} color={C.muted} lh={14}>
+                <Tx size={12} color={C.muted} lh={14}>
                   {sv.durationMinutes} min · {formatDA(sv.priceDa)}
                   {sv.groupName ? ` · ${sv.groupName}` : ''}
                 </Tx>

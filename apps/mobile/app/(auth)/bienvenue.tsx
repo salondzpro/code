@@ -24,13 +24,13 @@ export default function Welcome() {
       </View>
       <View style={{ gap: 10 }} accessibilityRole="radiogroup" accessibilityLabel="Type de compte">
         <Card sel={role === 'client'} onPress={() => setRole('client')} accessibilityLabel="Je réserve">
-          <Tx size={13} weight={600} ls={-0.3} lh={17}>
+          <Tx size={14} weight={600} ls={-0.3} lh={17}>
             Je réserve
           </Tx>
           <P>Créer mon compte ou me connecter, puis réserver : un compte est nécessaire pour prendre rendez-vous.</P>
         </Card>
         <Card sel={role === 'pro'} onPress={() => setRole('pro')} accessibilityLabel="Je suis professionnel">
-          <Tx size={13} weight={600} ls={-0.3} lh={17}>
+          <Tx size={14} weight={600} ls={-0.3} lh={17}>
             Je suis professionnel
           </Tx>
           <P>Recevoir des réservations, gérer mon agenda et partager ma page.</P>

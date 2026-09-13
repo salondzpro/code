@@ -18,7 +18,7 @@ export function LoadMore({
   return (
     <View style={{ alignItems: 'center', paddingVertical: 6 }}>
       <Button variant="g" auto sm disabled={loading} loading={loading} onPress={onMore}>
-        <Tx size={11.5} weight={600} lh={15}>
+        <Tx size={12} weight={600} lh={15}>
           {label}
         </Tx>
       </Button>

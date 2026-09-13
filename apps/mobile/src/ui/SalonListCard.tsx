@@ -63,7 +63,7 @@ export function RatingLine({ avg, count }: { avg: number; count: number }) {
       <I icon={Star} size={14} />
       {count > 0 ? (
         <>
-          <Tx size={13} weight={700} lh={17}>
+          <Tx size={14} weight={700} lh={17}>
             {formatRating(avg)}
           </Tx>
           <Tx size={12} color={C.muted} lh={16}>
@@ -99,7 +99,7 @@ export function SlotPills({
             paddingVertical: 8,
           }}
         >
-          <Tx size={10.5} weight={500} lh={14} mono>
+          <Tx size={12} weight={500} lh={14} mono>
             {t}
           </Tx>
         </View>
@@ -162,7 +162,7 @@ export function NextSlots({
             accessibilityRole="button"
             onPress={() => router.push(`/s/${salon.slug}` as never)}
           >
-            <Tx size={10.5} weight={600} color={C.muted} lh={14}>
+            <Tx size={12} weight={600} color={C.muted} lh={14}>
               Voir le salon →
             </Tx>
           </Pressable>
@@ -181,9 +181,9 @@ export function NextSlots({
           gap: 8,
         }}
       >
-        <Tx size={9.5} weight={700} ls={0.7} color={C.muted} lh={13}>
+        <Tx size={12} weight={700} ls={0.7} color={C.muted} lh={13}>
           PROCHAINES DISPONIBILITÉS{' '}
-          <Tx size={9.5} weight={700} lh={13}>
+          <Tx size={12} weight={700} lh={13}>
             · {day}
           </Tx>
         </Tx>
@@ -191,7 +191,7 @@ export function NextSlots({
       </View>
       {rows.map((r) => (
         <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Tx size={9.5} weight={700} ls={0.5} lh={13} style={{ width: 68 }}>
+          <Tx size={12} weight={700} ls={0.5} lh={13} style={{ width: 68 }}>
             {r.label}
           </Tx>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
@@ -357,12 +357,12 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 }}>
             <I icon={MapPin} size={14} color={C.muted} />
-            <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1}>
+            <Tx size={12} color={C.muted} lh={15} numberOfLines={1}>
               {`${place}${km ? ` (${km})` : ''}`}
             </Tx>
           </View>
           {!!cats && (
-            <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1} style={{ flexShrink: 1 }}>
+            <Tx size={12} color={C.muted} lh={15} numberOfLines={1} style={{ flexShrink: 1 }}>
               {cats}
             </Tx>
           )}
@@ -372,7 +372,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             salon={s}
             more={
               <Pressable accessibilityRole="button" onPress={go}>
-                <Tx size={10.5} weight={600} lh={14} style={{ textDecorationLine: 'underline' }}>
+                <Tx size={12} weight={600} lh={14} style={{ textDecorationLine: 'underline' }}>
                   Plus d'infos
                 </Tx>
               </Pressable>

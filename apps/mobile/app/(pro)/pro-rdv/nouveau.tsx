@@ -212,11 +212,11 @@ export default function ProBookingNew() {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+            <Tx size={32} weight={700} ls={-0.9} lh={35} mono>
               {time}
             </Tx>
             {minutes > 0 && (
-              <Tx size={13} color={C.muted} lh={21} mono>
+              <Tx size={14} color={C.muted} lh={21} mono>
                 → {endTime}
               </Tx>
             )}
@@ -226,7 +226,7 @@ export default function ProBookingNew() {
               {relativeDayLabelDZ(date)}
             </Tx>
             {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(date)) && (
-              <Tx size={10.5} color={C.muted} lh={14}>
+              <Tx size={12} color={C.muted} lh={14}>
                 {capitalize(formatDateShortDZ(localDateTimeToISO(date, '12:00')))}
               </Tx>
             )}
@@ -234,7 +234,7 @@ export default function ProBookingNew() {
         </View>
         {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
         {!isDeviceOnDZTime() && (
-          <Tx size={10.5} color={C.muted} lh={14}>
+          <Tx size={12} color={C.muted} lh={14}>
             Heures en heure d'Alger · il est {nowTimeDZ()} à Alger.
           </Tx>
         )}
@@ -280,7 +280,7 @@ export default function ProBookingNew() {
                   }}
                 >
                   <Tx
-                    size={13}
+                    size={14}
                     weight={600}
                     lh={16}
                     mono
@@ -315,7 +315,7 @@ export default function ProBookingNew() {
                     backgroundColor: on ? C.ink : C.fill,
                   }}
                 >
-                  <Tx size={11.5} weight={600} lh={15} color={on ? C.onInk : C.text}>
+                  <Tx size={12} weight={600} lh={15} color={on ? C.onInk : C.text}>
                     {m.displayName}
                   </Tx>
                 </Pressable>
@@ -326,7 +326,7 @@ export default function ProBookingNew() {
       </Card>
 
       {/* 2. Prestations */}
-      <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: -8 }}>
+      <Tx size={12} color={C.muted} lh={14.5} style={{ marginBottom: -8 }}>
         Prestations
       </Tx>
       <ListCard>
@@ -344,7 +344,7 @@ export default function ProBookingNew() {
               }}
               right={<Checkbox on={on} label={s.name} />}
             >
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 {s.name}
               </Tx>
               <Tx size={12} color={C.muted} lh={16}>
@@ -357,7 +357,7 @@ export default function ProBookingNew() {
 
       {fieldErr.services && (
         <Tx
-          size={11.5}
+          size={12}
           color={C.danger}
           lh={15}
           accessibilityRole="alert"

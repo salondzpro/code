@@ -89,10 +89,10 @@ export default function BookingConfirmed() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={64} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
+            <Tx size={16} weight={700} ls={-0.4} lh={18.5}>
               {b.salon.name}
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={15.5}>
+            <Tx size={12} color={C.muted} lh={15.5}>
               {b.salon.city}
               {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
                 ? ` · ${formatDZPhone(b.salon.phone)}`
@@ -111,7 +111,7 @@ export default function BookingConfirmed() {
             gap: 10,
           }}
         >
-          <Tx size={13} weight={700} lh={17}>
+          <Tx size={14} weight={700} lh={17}>
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </Tx>
           <StatusBadge status={b.status} lg />
@@ -125,18 +125,18 @@ export default function BookingConfirmed() {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+            <Tx size={32} weight={700} ls={-0.9} lh={35} mono>
               {formatTimeDZ(b.startsAt)}
             </Tx>
-            <Tx size={13} color={C.muted} lh={21} mono>
+            <Tx size={14} color={C.muted} lh={21} mono>
               – {formatTimeDZ(b.endsAt)}
             </Tx>
           </View>
-          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+          <Tx size={20} weight={700} ls={-0.6} lh={23.5}>
             {formatDA(b.priceDa)}
           </Tx>
         </View>
-        <Tx size={10.5} color={C.muted} lh={14}>
+        <Tx size={12} color={C.muted} lh={14}>
           {`${capitalize(formatDateLongDZ(b.startsAt))} · ${formatDuration(b.durationMinutes)} au total · paiement sur place`}
         </Tx>
       </Card>
@@ -146,12 +146,12 @@ export default function BookingConfirmed() {
             py={10}
             chevron={false}
             right={
-              <Tx size={11.5} color={C.muted} lh={15.5}>
+              <Tx size={12} color={C.muted} lh={15.5}>
                 {formatDA(b.priceDa)}
               </Tx>
             }
           >
-            <Tx size={13} weight={700} lh={17}>
+            <Tx size={14} weight={700} lh={17}>
               {lines.length} prestation{lines.length > 1 ? 's' : ''}
             </Tx>
           </Row>
@@ -161,14 +161,14 @@ export default function BookingConfirmed() {
               py={10}
               chevron={false}
               right={
-                <Tx size={11} color={C.muted} lh={15}>
+                <Tx size={12} color={C.muted} lh={15}>
                   {it.durationMinutes
                     ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
                     : formatDA(it.priceDa)}
                 </Tx>
               }
             >
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 {it.serviceName}
               </Tx>
             </Row>

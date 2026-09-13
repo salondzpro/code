@@ -177,7 +177,7 @@ export default function Closures() {
         {blocks.isPending && <Skeleton h={52} style={{ marginVertical: 10 }} />}
         {blocks.data && items.length === 0 && (
           <View style={{ paddingVertical: 13 }}>
-            <Tx size={10.5} color={C.muted} lh={15.5}>
+            <Tx size={12} color={C.muted} lh={15.5}>
               Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.
             </Tx>
           </View>

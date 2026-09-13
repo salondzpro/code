@@ -55,7 +55,7 @@ export function ShareSheet({ open, onClose, name, slug }: { open: boolean; onClo
   ];
   return (
     <ModalSheet open={open} onClose={onClose}>
-      <Tx size={18} weight={700} ls={-0.7} lh={21}>
+      <Tx size={20} weight={700} ls={-0.7} lh={21}>
         Partagez votre page
       </Tx>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 13, paddingVertical: 13 }}>

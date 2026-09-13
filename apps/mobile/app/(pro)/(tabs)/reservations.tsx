@@ -83,7 +83,7 @@ export default function Requests() {
       {items.length > 0 && (
         <SectionLabel
           right={
-            <Tx size={10.5} color={C.muted} lh={14.5}>
+            <Tx size={12} color={C.muted} lh={14.5}>
               {items.length}
             </Tx>
           }
@@ -103,7 +103,7 @@ export default function Requests() {
               <Tx size={16} weight={700} ls={-0.4} lh={20.5} numberOfLines={1}>
                 {b.clientName}
               </Tx>
-              <Tx size={10.5} color={C.muted} lh={15.5}>
+              <Tx size={12} color={C.muted} lh={15.5}>
                 {b.serviceName} · {formatDateShortDZ(b.startsAt)} {formatTimeDZ(b.startsAt)} ·{' '}
                 {formatDA(b.priceDa)}
               </Tx>
@@ -122,7 +122,7 @@ export default function Requests() {
               disabled={setStatus.isPending}
               onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
             >
-              <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
+              <Tx size={12} weight={600} color="#fff" ls={-0.2}>
                 Confirmer
               </Tx>
             </Button>
@@ -132,7 +132,7 @@ export default function Requests() {
               style={{ paddingVertical: 15 }}
               onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}
             >
-              <Tx size={11.5} weight={600} ls={-0.2}>
+              <Tx size={12} weight={600} ls={-0.2}>
                 Reporter
               </Tx>
             </Button>
@@ -143,7 +143,7 @@ export default function Requests() {
             style={{ paddingVertical: 15 }}
             onPress={() => setRefusing({ id: b.id, clientName: b.clientName })}
           >
-            <Tx size={11.5} weight={600} color={C.danger} ls={-0.2}>
+            <Tx size={12} weight={600} color={C.danger} ls={-0.2}>
               Refuser la demande
             </Tx>
           </Button>
@@ -157,7 +157,7 @@ export default function Requests() {
         <View key={key} style={{ gap: 10 }}>
           <SectionLabel
             right={
-              <Tx size={10.5} color={C.muted} lh={14.5}>
+              <Tx size={12} color={C.muted} lh={14.5}>
                 {list.length}
               </Tx>
             }
@@ -173,7 +173,7 @@ export default function Requests() {
                 onPress={() => router.push(`/pro-rdv/${b.id}` as never)}
                 right={
                   <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                    <Tx size={13} weight={700} lh={17}>
+                    <Tx size={14} weight={700} lh={17}>
                       {formatDA(b.priceDa)}
                     </Tx>
                     <StatusBadge status={b.status} />
@@ -185,7 +185,7 @@ export default function Requests() {
                     {formatTimeDZ(b.startsAt)}
                   </Tx>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Tx size={14.5} weight={700} ls={-0.3} lh={18.5} numberOfLines={1}>
+                    <Tx size={16} weight={700} ls={-0.3} lh={18.5} numberOfLines={1}>
                       {b.clientName}
                     </Tx>
                     <Tx size={12} color={C.muted} lh={16}>

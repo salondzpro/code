@@ -126,7 +126,7 @@ export default function MonSalon() {
                 }}
               >
                 <I icon={Save} size={14} color={C.onInk} />
-                <Tx size={11.5} weight={600} color={C.onInk} lh={15}>
+                <Tx size={12} weight={600} color={C.onInk} lh={15}>
                   Enregistrer
                 </Tx>
               </Button>

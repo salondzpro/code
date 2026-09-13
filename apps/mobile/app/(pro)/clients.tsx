@@ -71,7 +71,7 @@ export default function Clients() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <Tx
-                      size={13}
+                      size={14}
                       weight={700}
                       ls={-0.3}
                       lh={17}

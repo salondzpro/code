@@ -71,7 +71,7 @@ export default function SearchPage() {
         <Pill soft>{MARKET_LABELS_FR[market].replace('Pour ', '')}</Pill>
         <Pill soft onPress={() => router.push('/localisation')}>
           <I icon={MapPin} size={14} color={C.text} />
-          <Tx size={10.5} weight={500} lh={14}>
+          <Tx size={12} weight={500} lh={14}>
             {prefs.label}
           </Tx>
         </Pill>
@@ -92,7 +92,7 @@ export default function SearchPage() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Icon icon={Tag} ink />
                   <View style={{ flex: 1 }}>
-                    <Tx size={10.5} weight={500} lh={14.5}>
+                    <Tx size={12} weight={500} lh={14.5}>
                       {c.labelFr}
                     </Tx>
                     <S>Catégorie</S>
@@ -105,7 +105,7 @@ export default function SearchPage() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Icon icon={Scissors} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={10.5} weight={500} lh={14.5}>
+                    <Tx size={12} weight={500} lh={14.5}>
                       {h.name}
                     </Tx>
                     <S>
@@ -122,7 +122,7 @@ export default function SearchPage() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={32.5} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={10.5} weight={500} lh={14.5}>
+                    <Tx size={12} weight={500} lh={14.5}>
                       {s.name}
                     </Tx>
                     <S>
@@ -139,7 +139,7 @@ export default function SearchPage() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Icon icon={MapPin} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={10.5} weight={500} lh={14.5}>
+                    <Tx size={12} weight={500} lh={14.5}>
                       {p.parentCity ? `${p.city}, ${p.parentCity}` : p.city}
                     </Tx>
                     <S>
@@ -155,7 +155,7 @@ export default function SearchPage() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <Icon icon={Search} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={10.5} weight={500} lh={14.5}>
+                    <Tx size={12} weight={500} lh={14.5}>
                       Rechercher « {q.trim()} »
                     </Tx>
                     <S>Aucune suggestion · lancer la recherche dans toute la marketplace</S>
@@ -184,7 +184,7 @@ export default function SearchPage() {
                 {recent.map((r) => (
                   <Pill key={r} lg onPress={() => submit(r)}>
                     <I icon={Clock} size={14} color={C.subtle} />
-                    <Tx size={10.5} weight={500} lh={14}>
+                    <Tx size={12} weight={500} lh={14}>
                       {r}
                     </Tx>
                   </Pill>

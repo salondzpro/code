@@ -40,7 +40,7 @@ export default function ProNotifications() {
                 <Tx size={12} color={C.muted} lh={16}>
                   {n.body}
                 </Tx>
-                <Tx size={10} color={C.subtle} lh={13}>
+                <Tx size={12} color={C.subtle} lh={13}>
                   {formatDateShortDZ(n.createdAt)} · {formatTimeDZ(n.createdAt)}
                 </Tx>
               </View>

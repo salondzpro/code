@@ -50,7 +50,7 @@ export default function Step2Name() {
         <Input lg f={!!name} value={name} onChangeText={setName} maxLength={80} placeholder="Salon Sarah" autoFocus accessibilityLabel="Nom public" />
       </Field>
       <View>
-        <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
+        <Tx size={12} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
           Votre lien de réservation
         </Tx>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderRadius: R.cardSm, backgroundColor: C.fill, paddingHorizontal: 13, paddingVertical: 15 }}>

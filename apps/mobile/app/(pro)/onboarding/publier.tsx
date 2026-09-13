@@ -50,7 +50,7 @@ export default function Publish() {
               {it.label}
             </Tx>
             {!it.ok && it.hint && (
-              <Tx size={10.5} color={C.muted} lh={15.5}>
+              <Tx size={12} color={C.muted} lh={15.5}>
                 {it.hint}
               </Tx>
             )}
@@ -58,7 +58,7 @@ export default function Publish() {
         ))}
       </ListCard>
       <View style={{ borderRadius: R.card, backgroundColor: C.ink, padding: 16, gap: 3 }}>
-        <Tx size={10.5} color="rgba(255,255,255,0.6)" lh={14.5}>
+        <Tx size={12} color="rgba(255,255,255,0.6)" lh={14.5}>
           Votre page publique
         </Tx>
         <Tx size={16} weight={700} color="#fff" ls={-0.4} lh={20.5}>

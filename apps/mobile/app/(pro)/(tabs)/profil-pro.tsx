@@ -73,7 +73,7 @@ export default function ProProfile() {
             <Tx size={16} weight={700} ls={-0.4} lh={20}>
               {salon.name}
             </Tx>
-            <Tx size={11.5} color={C.muted} lh={15.5} numberOfLines={1}>
+            <Tx size={12} color={C.muted} lh={15.5} numberOfLines={1}>
               {short}
             </Tx>
           </View>
@@ -86,7 +86,7 @@ export default function ProProfile() {
             {!salon.coverUrl && <I icon={Camera} size={24} color={C.subtle} />}
             <View style={{ position: 'absolute', right: 8, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
               <I icon={Camera} size={14} />
-              <Tx size={9.5} weight={600} lh={12}>
+              <Tx size={12} weight={600} lh={15}>
                 {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
               </Tx>
             </View>
@@ -95,13 +95,13 @@ export default function ProProfile() {
         <Grid cols={2}>
           <Button variant="g" sm onPress={() => router.push(`/s/${salon.slug}` as never)}>
             <I icon={Eye} size={14} />
-            <Tx size={11.5} weight={600} ls={-0.2}>
+            <Tx size={12} weight={600} ls={-0.2}>
               Aperçu
             </Tx>
           </Button>
           <Button sm onPress={() => setSheet(true)}>
             <I icon={Share2} size={14} color="#fff" />
-            <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
+            <Tx size={12} weight={600} color="#fff" ls={-0.2}>
               Partager
             </Tx>
           </Button>

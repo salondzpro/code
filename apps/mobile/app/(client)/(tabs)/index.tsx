@@ -119,10 +119,10 @@ export default function Marketplace() {
             style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
           >
             <I icon={MapPin} size={14} color={C.muted} />
-            <Tx size={10.5} lh={14.5} numberOfLines={1} style={{ flexShrink: 1 }}>
+            <Tx size={12} lh={14.5} numberOfLines={1} style={{ flexShrink: 1 }}>
               {prefs.label}
             </Tx>
-            <Tx size={10.5} lh={14.5} color={C.muted}>
+            <Tx size={12} lh={14.5} color={C.muted}>
               · {prefs.radiusKm} km
             </Tx>
             <I icon={ChevronDown} size={14} color={C.subtle} />
@@ -131,7 +131,7 @@ export default function Marketplace() {
             <H1 size={23} lh={26} ls={-0.8}>
               {market === 'women' ? 'Pour ' : MARKET_LABELS_FR[market]}
               {market === 'women' && (
-                <Tx size={23} weight={700} lh={26} ls={-0.8} color={C.women}>
+                <Tx size={24} weight={700} lh={26} ls={-0.8} color={C.women}>
                   Femmes
                 </Tx>
               )}
@@ -176,7 +176,7 @@ export default function Marketplace() {
         }}
       >
         <I icon={Search} size={18} color={C.subtle} />
-        <Tx size={10.5} lh={14} color={q ? C.text : C.subtle} style={{ flex: 1 }} numberOfLines={1}>
+        <Tx size={12} lh={14} color={q ? C.text : C.subtle} style={{ flex: 1 }} numberOfLines={1}>
           {q || PLACEHOLDER[market]}
         </Tx>
         {!!q && (
@@ -254,7 +254,7 @@ export default function Marketplace() {
             accessibilityState={{ selected: true }}
           >
             <I icon={List} size={14} />
-            <Tx size={10.5} weight={600} lh={14}>
+            <Tx size={12} weight={600} lh={14}>
               Liste
             </Tx>
           </View>
@@ -273,7 +273,7 @@ export default function Marketplace() {
             }}
           >
             <I icon={MapIcon} size={14} color={C.muted} />
-            <Tx size={10.5} weight={500} lh={14} color={C.muted}>
+            <Tx size={12} weight={500} lh={14} color={C.muted}>
               Carte
             </Tx>
           </Pressable>
@@ -295,10 +295,10 @@ export default function Marketplace() {
             paddingHorizontal: 11,
           }}
         >
-          <Tx size={10.5} color={C.muted} lh={14}>
+          <Tx size={12} color={C.muted} lh={14}>
             ⇅
           </Tx>
-          <Tx size={10.5} weight={500} lh={14} numberOfLines={1} style={{ flexShrink: 1 }}>
+          <Tx size={12} weight={500} lh={14} numberOfLines={1} style={{ flexShrink: 1 }}>
             {sortLabel}
           </Tx>
           <I icon={ChevronDown} size={14} color={C.subtle} />
@@ -373,7 +373,7 @@ export default function Marketplace() {
 
       {/* C-H 05 — Trier par */}
       <ModalSheet open={sortOpen} onClose={() => setSortOpen(false)}>
-        <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
+        <Tx size={16} weight={600} ls={-0.3} lh={18.5} center>
           Trier par
         </Tx>
         <ListCard>
@@ -385,7 +385,7 @@ export default function Marketplace() {
               right={sortDraft === o.value ? <I icon={Check} size={16} /> : undefined}
               accessibilityLabel={o.label}
             >
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 {o.label}
               </Tx>
               <P>{o.hint}</P>

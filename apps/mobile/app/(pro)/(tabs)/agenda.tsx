@@ -139,7 +139,7 @@ export default function AgendaPro() {
             {date === today ? "Aujourd'hui · " : ''}
             {DAY_LABELS_FR[dayOfWeekFromKey(date)]}
           </Tx>
-          <Tx size={23} weight={700} ls={-0.8} lh={26}>
+          <Tx size={24} weight={700} ls={-0.8} lh={26}>
             {Number(date.slice(8, 10))} {MONTHS_FR[Number(date.slice(5, 7)) - 1]}
           </Tx>
         </View>
@@ -171,7 +171,7 @@ export default function AgendaPro() {
               ? `Semaine ${isoWeek(date)} · ${MONTHS_FR[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}`
               : date.slice(0, 4)}
           </Tx>
-          <Tx size={23} weight={700} ls={-0.8} lh={26}>
+          <Tx size={24} weight={700} ls={-0.8} lh={26}>
             {view === 'week'
               ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS_FR[Number(week[6]!.slice(5, 7)) - 1]}`
               : MONTHS_FR[Number(date.slice(5, 7)) - 1]!.replace(/^\p{L}/u, (c) => c.toUpperCase())}
@@ -508,7 +508,7 @@ function DayTimeline({
           <Tx size={12} color={C.subtle} lh={16} style={{ flex: 1 }}>
             Libre · {formatDuration(g.e - g.s)}
           </Tx>
-          <Tx size={9.5} color={C.subtle} lh={13}>
+          <Tx size={12} color={C.subtle} lh={13}>
             toucher pour réserver
           </Tx>
         </Pressable>
@@ -563,7 +563,7 @@ function DayTimeline({
             }}
           >
             <Tx
-              size={10.5}
+              size={12}
               weight={600}
               lh={14.5}
               color={C.muted}
@@ -572,7 +572,7 @@ function DayTimeline({
             >
               {b.clientName} · {b.serviceName}
             </Tx>
-            <Tx size={10.5} lh={14.5} color={C.muted} numberOfLines={1}>
+            <Tx size={12} lh={14.5} color={C.muted} numberOfLines={1}>
               {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {who}
             </Tx>
           </Pressable>
@@ -603,10 +603,10 @@ function DayTimeline({
               paddingVertical: 6,
             }}
           >
-            <Tx size={10.5} weight={600} lh={14.5} color={t.fg} numberOfLines={1}>
+            <Tx size={12} weight={600} lh={14.5} color={t.fg} numberOfLines={1}>
               {b.clientName} · {b.serviceName}
             </Tx>
-            <Tx size={11.5} lh={14.5} color={t.fg} mono style={{ opacity: 0.8 }}>
+            <Tx size={12} lh={14.5} color={t.fg} mono style={{ opacity: 0.8 }}>
               {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {formatDA(b.priceDa)}
             </Tx>
             {b.status === 'pending' && (
@@ -655,7 +655,7 @@ function DayTimeline({
               paddingVertical: 1,
             }}
           >
-            <Tx size={9} weight={600} color="#fff" lh={12}>
+            <Tx size={12} weight={600} color="#fff" lh={15}>
               {hm(now)}
               {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
             </Tx>
@@ -719,14 +719,14 @@ function WeekGrid({
             paddingVertical: 6,
           }}
         >
-          <Tx size={10.5} weight={600} lh={14.5}>
+          <Tx size={12} weight={600} lh={14.5}>
             {total} rendez-vous
           </Tx>
         </View>
         <Badge tone="ok" md>
           {formatDA(revenue)}
         </Badge>
-        <Tx size={10.5} color={C.muted} lh={14.5}>
+        <Tx size={12} color={C.muted} lh={14.5}>
           {occupancy} % occupé
         </Tx>
       </View>
@@ -735,7 +735,7 @@ function WeekGrid({
           {hours.map((m) => (
             <Tx
               key={m}
-              size={10.5}
+              size={12}
               color={C.subtle}
               lh={13}
               style={{ position: 'absolute', left: 0, top: 46 + (m - startMin) * px - 8 }}
@@ -977,11 +977,11 @@ function MonthGrid({
       </View>
       <ListCard>
         <Row py={13} onPress={() => onOpenDay(selected)}>
-          <Tx size={14} weight={700} ls={-0.3} lh={18}>
+          <Tx size={16} weight={700} ls={-0.3} lh={18}>
             {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))}{' '}
             {MONTHS_FR[Number(selected.slice(5, 7)) - 1]}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {list.length} rendez-vous · {formatDA(revenue)}
           </Tx>
         </Row>
@@ -1010,10 +1010,10 @@ function MonthGrid({
                 }}
               />
               <View style={{ flex: 1 }}>
-                <Tx size={10.5} lh={14.5}>
+                <Tx size={12} lh={14.5}>
                   {b.clientName} · {b.serviceName}
                 </Tx>
-                <Tx size={11.5} color={C.muted} lh={14.5} mono>
+                <Tx size={12} color={C.muted} lh={14.5} mono>
                   {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                 </Tx>
               </View>

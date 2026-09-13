@@ -17,7 +17,7 @@ export function StaffFilter({ staff, value, onChange }: { staff: Staff[]; value:
       {members.map((m) => (
         <Pill key={m.id} lg on={current === m.id} onPress={() => onChange(current === m.id ? null : m.id)} style={{ paddingLeft: 5 }}>
           <Avatar src={m.avatarUrl} name={m.displayName} size={18} />
-          <Tx size={10.5} weight={500} lh={14} color={current === m.id ? C.onInk : C.text}>
+          <Tx size={12} weight={500} lh={14} color={current === m.id ? C.onInk : C.text}>
             {m.displayName}
           </Tx>
         </Pill>

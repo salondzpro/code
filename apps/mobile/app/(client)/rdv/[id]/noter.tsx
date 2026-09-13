@@ -59,7 +59,7 @@ export default function Rate() {
         backTo="/(client)/(tabs)/rendez-vous"
         right={
           <Pressable accessibilityRole="button" onPress={backToPast}>
-            <Tx size={10.5} color={C.muted} lh={14.5}>
+            <Tx size={12} color={C.muted} lh={14.5}>
               Passer
             </Tx>
           </Pressable>
@@ -69,10 +69,10 @@ export default function Rate() {
       <Card row gap={11}>
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={64} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
+          <Tx size={16} weight={700} ls={-0.4} lh={18.5}>
             {b.salon.name}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {dayMonth(b.startsAt)} · {b.serviceName} · {formatDA(b.priceDa)}
           </Tx>
         </View>
@@ -85,7 +85,7 @@ export default function Rate() {
             </Pressable>
           ))}
         </View>
-        <Tx size={11.5} color={C.muted} lh={15.5}>
+        <Tx size={12} color={C.muted} lh={15.5}>
           {rating ? `${rating} sur 5` : 'Touchez une étoile'}
         </Tx>
       </View>
@@ -102,7 +102,7 @@ export default function Rate() {
       </Field>
       <Card row style={{ justifyContent: 'space-between' }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={11.5} lh={15.5}>
+          <Tx size={12} lh={15.5}>
             Publier sous « {initials} »
           </Tx>
           <P>Votre numéro reste privé</P>

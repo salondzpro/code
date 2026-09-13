@@ -48,7 +48,7 @@ export function Tabs<T extends string>({
               borderBottomColor: on ? C.ink : 'transparent',
             }}
           >
-            <Tx size={13} weight={600} ls={-0.2} lh={17} color={on ? C.text : C.muted}>
+            <Tx size={14} weight={600} ls={-0.2} lh={17} color={on ? C.text : C.muted}>
               {o.label}
             </Tx>
           </Pressable>
@@ -99,11 +99,11 @@ export function Accordion({
         }}
       >
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={14} weight={700} ls={-0.3} lh={18}>
+          <Tx size={16} weight={700} ls={-0.3} lh={18}>
             {title}
           </Tx>
           {!!hint && (
-            <Tx size={11.5} color={C.muted} lh={15}>
+            <Tx size={12} color={C.muted} lh={15}>
               {hint}
             </Tx>
           )}

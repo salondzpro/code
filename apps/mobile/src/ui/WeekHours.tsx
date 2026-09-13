@@ -11,7 +11,7 @@ import { C, R } from '@/theme/design';
 function TimeBox({ label, value, onChange, ariaLabel }: { label: string; value: string; onChange: (v: string) => void; ariaLabel: string }) {
   return (
     <View style={{ backgroundColor: C.fill, borderRadius: R.input, paddingHorizontal: 12, paddingVertical: 8, gap: 1 }}>
-      <Tx size={10} color={C.muted} lh={13}>
+      <Tx size={12} color={C.muted} lh={13}>
         {label}
       </Tx>
       <TimeField size={17} color={C.text} value={value} onChange={onChange} label={ariaLabel} step={15} />
@@ -30,11 +30,11 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
         return (
           <Card key={r.dayOfWeek} gap={10} style={r.open ? undefined : { backgroundColor: C.fill }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <Tx size={13} weight={600} lh={17} color={r.open ? C.text : C.subtle}>
+              <Tx size={14} weight={600} lh={17} color={r.open ? C.text : C.subtle}>
                 {day}
               </Tx>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Tx size={10.5} color={C.muted} lh={14}>
+                <Tx size={12} color={C.muted} lh={14}>
                   {r.open ? formatDayRanges(rangesFromRows([r])) : closedLabel}
                 </Tx>
                 <Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={day} />
@@ -70,7 +70,7 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
               </>
             )}
             {err && (
-              <Tx size={10.5} color={C.danger} lh={14}>
+              <Tx size={12} color={C.danger} lh={14}>
                 {err}
               </Tx>
             )}

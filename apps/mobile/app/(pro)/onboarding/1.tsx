@@ -48,10 +48,10 @@ export default function Step1Market() {
             </View>
           )}
           <View style={{ position: 'absolute', left: 16, right: 16, bottom: 16, gap: 3 }}>
-            <Tx size={18} weight={700} color="#fff" ls={-0.6} lh={20.5}>
+            <Tx size={20} weight={700} color="#fff" ls={-0.6} lh={22}>
               {MARKET_LABELS_FR[c.id]}
             </Tx>
-            <Tx size={11.5} color={C.white85} lh={15.5}>
+            <Tx size={12} color={C.white85} lh={15.5}>
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)
                 .map((x) => x.labelFr)

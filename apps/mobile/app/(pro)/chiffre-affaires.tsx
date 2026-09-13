@@ -73,7 +73,7 @@ export default function Revenue() {
           <Card gap={16}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <Tx size={31} weight={700} ls={-1} lh={32.5}>
+                <Tx size={31} weight={700} ls={-1} lh={34}>
                   {formatDA(s!.revenueDa)}
                 </Tx>
                 <P style={{ marginTop: 6 }}>
@@ -112,15 +112,15 @@ export default function Revenue() {
           </Card>
           <ListCard>
             <Row py={16} chevron={false} right={<Tx size={16} weight={700} lh={20.5}>{formatDA(s!.collectedDa)}</Tx>}>
-              <Tx size={13} lh={17}>
+              <Tx size={14} lh={17}>
                 Encaissé
               </Tx>
             </Row>
             <Row py={16} chevron={false} right={<Tx size={16} weight={700} lh={20.5}>{formatDA(s!.remainingDa)}</Tx>}>
-              <Tx size={13} lh={17}>
+              <Tx size={14} lh={17}>
                 Reste à encaisser
               </Tx>
-              <Tx size={10.5} color={C.muted} lh={15.5}>
+              <Tx size={12} color={C.muted} lh={15.5}>
                 {s!.remainingCount} rendez-vous confirmé{s!.remainingCount > 1 ? 's' : ''}
               </Tx>
             </Row>
@@ -133,11 +133,11 @@ export default function Revenue() {
               </View>
             )}
             {s!.byService.map((x) => (
-              <Row key={x.name} py={16} chevron={false} right={<Tx size={14.5} weight={700} lh={18.5}>{formatDA(x.revenueDa)}</Tx>}>
-                <Tx size={14} weight={700} ls={-0.3} lh={18}>
+              <Row key={x.name} py={16} chevron={false} right={<Tx size={16} weight={700} lh={18.5}>{formatDA(x.revenueDa)}</Tx>}>
+                <Tx size={16} weight={700} ls={-0.3} lh={18}>
                   {x.name}
                 </Tx>
-                <Tx size={10.5} color={C.muted} lh={15.5}>
+                <Tx size={12} color={C.muted} lh={15.5}>
                   {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
                 </Tx>
               </Row>

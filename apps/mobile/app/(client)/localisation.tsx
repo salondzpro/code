@@ -159,10 +159,10 @@ export default function Localisation() {
             <I icon={Smartphone} size={16} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={10.5} weight={600} lh={14.5}>
+            <Tx size={12} weight={600} lh={14.5}>
               Réglages du téléphone
             </Tx>
-            <Tx size={11.5} color={C.muted} lh={16}>
+            <Tx size={12} color={C.muted} lh={16}>
               Salon DZ · Position · Jamais
             </Tx>
           </View>
@@ -175,10 +175,10 @@ export default function Localisation() {
             <I icon={MapPin} size={16} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={10.5} weight={600} lh={14.5}>
+            <Tx size={12} weight={600} lh={14.5}>
               Choisir un quartier
             </Tx>
-            <Tx size={11.5} color={C.muted} lh={16}>
+            <Tx size={12} color={C.muted} lh={16}>
               Sans activer la localisation
             </Tx>
           </View>
@@ -186,7 +186,7 @@ export default function Localisation() {
         <InfoBox>Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».</InfoBox>
         <Button onPress={() => void Linking.openSettings().catch(() => locate())}>
           <I icon={Settings} size={14} color="#fff" />
-          <Tx size={10.5} weight={600} color="#fff" ls={-0.2}>
+          <Tx size={12} weight={600} color="#fff" ls={-0.2}>
             Ouvrir les réglages
           </Tx>
         </Button>
@@ -205,7 +205,7 @@ export default function Localisation() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <I icon={MapPin} size={16} color={C.subtle} />
           <View style={{ flex: 1 }}>
-            <Tx size={13} weight={600} lh={17} color={on || !muted ? C.text : C.muted}>
+            <Tx size={14} weight={600} lh={17} color={on || !muted ? C.text : C.muted}>
               {lbl}
             </Tx>
             <P>
@@ -225,7 +225,7 @@ export default function Localisation() {
         <BottomSheet>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <View style={{ flex: 1 }}>
-              <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
+              <Tx size={16} weight={700} ls={-0.4} lh={18.5}>
                 {preview.isFetching ? '…' : `${count} résultat${count > 1 ? 's' : ''}`}
               </Tx>
               <P>
@@ -248,7 +248,7 @@ export default function Localisation() {
           {recent.map((r) => (
             <Pill key={r.label} lg on={choice.kind !== 'gps' && choice.label === r.label} onPress={() => pickRecent(r)}>
               <I icon={Clock} size={14} color={choice.kind !== 'gps' && choice.label === r.label ? C.onInk : C.subtle} />
-              <Tx size={10.5} weight={500} lh={14} color={choice.kind !== 'gps' && choice.label === r.label ? C.onInk : C.text}>
+              <Tx size={12} weight={500} lh={14} color={choice.kind !== 'gps' && choice.label === r.label ? C.onInk : C.text}>
                 {r.label}
               </Tx>
             </Pill>
@@ -265,7 +265,7 @@ export default function Localisation() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <I icon={Building2} size={16} color={C.subtle} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={13} weight={600} lh={17}>
+                    <Tx size={14} weight={600} lh={17}>
                       {w.name}
                     </Tx>
                     <P>Wilaya {String(w.code).padStart(2, '0')} · toute la wilaya</P>
@@ -282,7 +282,7 @@ export default function Localisation() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
                   <I icon={Navigation} size={16} color={C.subtle} />
                   <View style={{ flex: 1 }}>
-                    <Tx size={13} weight={600} lh={17}>
+                    <Tx size={14} weight={600} lh={17}>
                       {a.label}
                     </Tx>
                     <P>{a.detail || 'Adresse'} · rayon autour de ce point</P>
@@ -316,7 +316,7 @@ export default function Localisation() {
             <View style={{ height: 176, borderRadius: R.card, borderWidth: 1, borderColor: C.line, overflow: 'hidden' }}>
               <MapCanvas state={{ pins: [], area: { lat: point.lat, lng: point.lng, radiusKm: radius }, fit: false }} onSelect={() => undefined} onMoveEnd={() => undefined} initialCenter={{ lat: point.lat, lng: point.lng }} zoomToArea style={{ flex: 1 }} />
               <View style={[{ position: 'absolute', left: 13, bottom: 10, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 5 }, SHADOW.card]} pointerEvents="none">
-                <Tx size={10.5} weight={600} lh={14}>
+                <Tx size={12} weight={600} lh={14}>
                   Rayon de {radius} km
                 </Tx>
               </View>
@@ -325,7 +325,7 @@ export default function Localisation() {
             <View style={{ height: 80, borderRadius: R.card, borderWidth: 1, borderColor: C.line, backgroundColor: C.fill, overflow: 'hidden', justifyContent: 'flex-end' }}>
               <GridBg step={90} />
               <View style={[{ alignSelf: 'flex-start', marginLeft: 13, marginBottom: 10, backgroundColor: C.surface, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 5 }, SHADOW.card]}>
-                <Tx size={10.5} weight={600} lh={14}>
+                <Tx size={12} weight={600} lh={14}>
                   {label}
                 </Tx>
               </View>

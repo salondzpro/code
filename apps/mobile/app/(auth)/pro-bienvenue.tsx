@@ -29,10 +29,10 @@ export default function ProWelcome() {
         <Image source={{ uri: DESIGN_IMAGES.pro.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
         <Overlay />
         <View style={{ position: 'absolute', left: 16, right: 16, bottom: 16, gap: 6 }}>
-          <Tx size={10} weight={600} color={C.white70} ls={0.96} lh={13} upper>
+          <Tx size={12} weight={600} color={C.white70} ls={0.96} lh={13} upper>
             Espace professionnel
           </Tx>
-          <Tx size={21} weight={700} color="#fff" ls={-0.8} lh={23.5}>
+          <Tx size={24} weight={700} color="#fff" ls={-0.8} lh={26}>
             Votre agenda,{'\n'}votre page, votre lien.
           </Tx>
         </View>
@@ -42,7 +42,7 @@ export default function ProWelcome() {
         <Rows>
           {PROMISES.map((p) => (
             <Row key={p} chevron={false} right={<I icon={Check} size={16} color={C.okFg} />}>
-              <Tx size={10.5} lh={14.5}>
+              <Tx size={12} lh={14.5}>
                 {p}
               </Tx>
             </Row>

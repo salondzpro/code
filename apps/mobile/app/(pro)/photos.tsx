@@ -72,7 +72,7 @@ export default function ProPhotos() {
   return (
     <Screen gap={13}>
       <TopBar backTo="/(pro)/(tabs)/profil-pro" />
-      <Tx size={23} weight={700} ls={-0.8} lh={26}>
+      <Tx size={24} weight={700} ls={-0.8} lh={26}>
         Photos du salon
       </Tx>
       <SectionLabel>Photo de profil</SectionLabel>
@@ -82,7 +82,7 @@ export default function ProPhotos() {
           <Tx size={12} weight={600} lh={16}>
             {salon.logoUrl ? 'Votre logo' : 'Aucun logo : la couverture est utilisée'}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={14.5}>
+          <Tx size={12} color={C.muted} lh={14.5}>
             Format carré conseillé.
           </Tx>
         </View>
@@ -96,7 +96,7 @@ export default function ProPhotos() {
             onPress={() => void changeLogo()}
           >
             <I icon={Camera} size={14} />
-            <Tx size={11.5} weight={600} lh={15}>
+            <Tx size={12} weight={600} lh={15}>
               Changer
             </Tx>
           </Button>
@@ -112,7 +112,7 @@ export default function ProPhotos() {
               style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}
             >
               <I icon={Trash2} size={14} color={C.danger} />
-              <Tx size={10} weight={600} color={C.danger} lh={13}>
+              <Tx size={12} weight={600} color={C.danger} lh={13}>
                 Retirer
               </Tx>
             </Pressable>
@@ -137,7 +137,7 @@ export default function ProPhotos() {
                   paddingVertical: 3,
                 }}
               >
-                <Tx size={9} weight={600} color={C.onInk} lh={12}>
+                <Tx size={12} weight={600} color={C.onInk} lh={15}>
                   Couverture
                 </Tx>
               </View>
@@ -161,7 +161,7 @@ export default function ProPhotos() {
                 }}
               >
                 <I icon={Star} size={10} />
-                <Tx size={9} weight={600} lh={12}>
+                <Tx size={12} weight={600} lh={15}>
                   Couverture
                 </Tx>
               </Pressable>
@@ -207,7 +207,7 @@ export default function ProPhotos() {
             }}
           >
             <I icon={Plus} size={18} color={C.muted} />
-            <Tx size={10.5} weight={600} color={C.muted} lh={14}>
+            <Tx size={12} weight={600} color={C.muted} lh={14}>
               {busy === 'photos' ? 'Envoi…' : 'Ajouter'}
             </Tx>
           </Pressable>

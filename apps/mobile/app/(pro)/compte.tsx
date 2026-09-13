@@ -59,7 +59,7 @@ export default function ProAccount() {
           style={{ paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 11 }}
         >
           <Ic icon={LogOut} danger />
-          <Tx size={13} weight={600} lh={17} color={C.danger}>
+          <Tx size={14} weight={600} lh={17} color={C.danger}>
             Se déconnecter
           </Tx>
         </Pressable>

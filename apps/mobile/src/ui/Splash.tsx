@@ -22,7 +22,7 @@ export function Splash() {
             DZ
           </Tx>
         </View>
-        <Tx size={9} color="rgba(255,255,255,0.4)" ls={2.9} lh={11.5} mono style={{ marginTop: 8 }}>
+        <Tx size={12} color="rgba(255,255,255,0.4)" ls={2.9} lh={15} mono style={{ marginTop: 8 }}>
           RÉSERVATION EN LIGNE
         </Tx>
       </View>

@@ -43,7 +43,7 @@ export default function WelcomeBack() {
       <P center>Votre session reste ouverte tant que vous ne vous déconnectez pas — sur l'application comme sur le navigateur.</P>
       <ListCard>
         <Row onPress={proceed} chevron={false} right={<I icon={ChevronRight} size={14} color={C.disabled} />}>
-          <Tx size={10.5} weight={500} lh={14.5}>
+          <Tx size={12} weight={500} lh={14.5}>
             Continuer comme {firstName}
           </Tx>
         </Row>
@@ -55,7 +55,7 @@ export default function WelcomeBack() {
           chevron={false}
           right={<I icon={RefreshCw} size={14} color={C.disabled} />}
         >
-          <Tx size={10.5} lh={14.5}>
+          <Tx size={12} lh={14.5}>
             Utiliser un autre numéro
           </Tx>
         </Row>

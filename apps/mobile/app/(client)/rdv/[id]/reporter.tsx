@@ -77,7 +77,7 @@ export default function BookingReschedule() {
       <H1>Nouveau créneau</H1>
       <Soft style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <I icon={Clock} size={14} color={C.muted} />
-        <Tx size={10.5} color={C.muted} lh={15.5} style={{ flex: 1 }}>
+        <Tx size={12} color={C.muted} lh={15.5} style={{ flex: 1 }}>
           Actuel · {formatDateLongDZ(b.startsAt).replace(/^\p{L}/u, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
         </Tx>
       </Soft>
@@ -98,7 +98,7 @@ export default function BookingReschedule() {
         <Grid cols={3}>
           {grid.map((g) => (
             <Slot key={g.iso} on={slot === g.iso} off={!g.free} onPress={() => g.free && setSlot(g.iso)} style={{ paddingVertical: 12 }}>
-              <Tx size={13} weight={500} lh={16} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
+              <Tx size={14} weight={500} lh={16} mono color={slot === g.iso ? C.onInk : g.free ? C.text : C.disabled}>
                 {g.time}
               </Tx>
             </Slot>

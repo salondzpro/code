@@ -75,17 +75,17 @@ export default function BookingServices() {
     const inner = (
       <>
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-          <Tx size={14} weight={700} ls={-0.3} lh={18}>
+          <Tx size={16} weight={700} ls={-0.3} lh={18}>
             {sv.name}
           </Tx>
           {!!sv.description && (
-            <Tx size={11.5} color={C.muted} lh={15}>
+            <Tx size={12} color={C.muted} lh={15}>
               {sv.description}
             </Tx>
           )}
-          <Tx size={12.5} weight={600} lh={16}>
+          <Tx size={14} weight={600} lh={16}>
             {formatDA(sv.priceDa)}
-            <Tx size={12.5} color={C.muted} lh={16}>
+            <Tx size={14} color={C.muted} lh={16}>
               {` · ${formatDuration(sv.durationMinutes)}`}
             </Tx>
           </Tx>

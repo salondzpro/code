@@ -70,17 +70,17 @@ export default function ServiceDetail() {
             <H1 size={21} lh={24.5} ls={-0.8}>
               {sv.name}
             </H1>
-            <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+            <Tx size={12} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
               {formatDuration(sv.durationMinutes)}
               {sv.categoryId ? ` · ${categoryLabel(sv.categoryId)}` : ''}
             </Tx>
           </View>
-          <Tx size={18} weight={700} ls={-0.5} lh={22}>
+          <Tx size={20} weight={700} ls={-0.5} lh={22}>
             {formatDA(sv.priceDa)}
           </Tx>
         </View>
         {!!sv.description && (
-          <Tx size={10.5} color={C.muted} lh={17}>
+          <Tx size={12} color={C.muted} lh={17}>
             {sv.description}
           </Tx>
         )}
@@ -97,10 +97,10 @@ export default function ServiceDetail() {
         <Card row gap={11}>
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={52} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13} weight={700} ls={-0.3} lh={17}>
+            <Tx size={14} weight={700} ls={-0.3} lh={17}>
               {s.name}
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={15.5}>
+            <Tx size={12} color={C.muted} lh={15.5}>
               {s.zone ?? s.city}
               {s.ratingCount > 0 ? ` · ★ ${formatRating(s.ratingAvg)}` : ''}
             </Tx>

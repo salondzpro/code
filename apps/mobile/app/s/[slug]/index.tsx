@@ -249,19 +249,19 @@ export default function Salon() {
         <Grid cols={2}>
           {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
             <Button variant="g" sm onPress={() => void Linking.openURL(`tel:${s.phone}`).catch(() => undefined)}>
-              <Tx size={12.5} weight={600} ls={-0.2}>
+              <Tx size={14} weight={600} ls={-0.2}>
                 Appeler
               </Tx>
             </Button>
           ) : (
             <Button variant="g" sm onPress={() => void shareUrl(s.name, publicUrl(s.slug))}>
-              <Tx size={12.5} weight={600} ls={-0.2}>
+              <Tx size={14} weight={600} ls={-0.2}>
                 Partager
               </Tx>
             </Button>
           )}
           <Button variant="g" sm onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
-            <Tx size={12.5} weight={600} ls={-0.2}>
+            <Tx size={14} weight={600} ls={-0.2}>
               Itinéraire
             </Tx>
           </Button>
@@ -286,7 +286,7 @@ export default function Salon() {
               >
                 <I icon={Ban} size={18} color={C.danger} />
                 <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                  <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
+                  <Tx size={14} weight={700} lh={17} color={C.cancelFg}>
                     Réservation en ligne impossible
                   </Tx>
                   <Tx size={12} lh={16} color={C.cancelFg}>
@@ -313,7 +313,7 @@ export default function Salon() {
                 </View>
               </View>
             )}
-            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+            <Tx size={16} weight={700} ls={-0.5} lh={19}>
               Choix de la prestation
             </Tx>
             <P>
@@ -342,17 +342,17 @@ export default function Salon() {
                       }}
                     >
                       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                        <Tx size={13.5} weight={700} ls={-0.3} lh={17.5}>
+                        <Tx size={14} weight={700} ls={-0.3} lh={17.5}>
                           {sv.name}
                         </Tx>
                         {!!sv.description && (
-                          <Tx size={11.5} color={C.muted} lh={15}>
+                          <Tx size={12} color={C.muted} lh={15}>
                             {sv.description}
                           </Tx>
                         )}
-                        <Tx size={12.5} weight={600} lh={16}>
+                        <Tx size={14} weight={600} lh={16}>
                           {formatDA(sv.priceDa)}
-                          <Tx size={12.5} color={C.muted} lh={16}>
+                          <Tx size={14} color={C.muted} lh={16}>
                             {` · ${formatDuration(sv.durationMinutes)}`}
                           </Tx>
                         </Tx>
@@ -382,7 +382,7 @@ export default function Salon() {
         )}
         {tab === 'reviews' && (
           <View style={{ gap: 9 }}>
-            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+            <Tx size={16} weight={700} ls={-0.5} lh={19}>
               Avis
             </Tx>
             {s.ratingCount > 0 ? (
@@ -391,10 +391,10 @@ export default function Salon() {
                   {formatRating(s.ratingAvg)}
                 </Tx>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={13} weight={600} lh={17}>
+                  <Tx size={14} weight={600} lh={17}>
                     {'★'.repeat(Math.round(s.ratingAvg))}
                   </Tx>
-                  <Tx size={11.5} color={C.muted} lh={15}>
+                  <Tx size={12} color={C.muted} lh={15}>
                     {`${s.ratingCount} avis vérifié${s.ratingCount > 1 ? 's' : ''} · après rendez-vous`}
                   </Tx>
                 </View>
@@ -405,10 +405,10 @@ export default function Salon() {
             {reviewItems.map((r) => (
               <Card key={r.id} gap={4}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
-                  <Tx size={12.5} weight={600} lh={16}>
+                  <Tx size={14} weight={600} lh={16}>
                     {'★'.repeat(r.rating)}
                   </Tx>
-                  <Tx size={11} color={C.muted} lh={15}>
+                  <Tx size={12} color={C.muted} lh={15}>
                     {formatDateShortDZ(r.createdAt)}
                   </Tx>
                 </View>
@@ -426,7 +426,7 @@ export default function Salon() {
         {tab === 'about' && (
           <View style={{ gap: 9 }}>
             {/* 1. Où. L'adresse d'abord, la carte ensuite. */}
-            <Tx size={15} weight={700} ls={-0.5} lh={19}>
+            <Tx size={16} weight={700} ls={-0.5} lh={19}>
               Où se situe le salon ?
             </Tx>
             <Pressable
@@ -441,13 +441,13 @@ export default function Salon() {
               </Tx>
             </Pressable>
             <Button onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
-              <Tx size={13} weight={600} color="#fff" ls={-0.2}>
+              <Tx size={14} weight={600} color="#fff" ls={-0.2}>
                 Afficher la carte
               </Tx>
             </Button>
 
             {/* 2. Quand. Aujourd'hui en tête, puis la semaine. */}
-            <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+            <Tx size={16} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
               Horaires d'ouverture
             </Tx>
             <ListCard>
@@ -455,11 +455,11 @@ export default function Salon() {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
                   <Row key={d} chevron={false} right={
-                    <Tx size={12.5} weight={rows.length ? 600 : 400} lh={16} color={rows.length ? C.text : C.muted} mono>
+                    <Tx size={14} weight={rows.length ? 600 : 400} lh={16} color={rows.length ? C.text : C.muted} mono>
                       {rows.length ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ') : 'Fermé'}
                     </Tx>
                   }>
-                    <Tx size={12.5} weight={idx === 0 ? 700 : 400} lh={16}>
+                    <Tx size={14} weight={idx === 0 ? 700 : 400} lh={16}>
                       {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
                     </Tx>
                   </Row>
@@ -470,7 +470,7 @@ export default function Salon() {
             {/* 3. Qui. */}
             {s.staff.length > 0 && (
               <>
-                <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+                <Tx size={16} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
                   {s.staff.length > 1 ? 'Collaborateurs' : 'Collaborateur'}
                 </Tx>
                 <ListCard>
@@ -478,7 +478,7 @@ export default function Salon() {
                     <Row key={m.id} chevron={false}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <Avatar src={m.avatarUrl} name={m.displayName} size={40} />
-                        <Tx size={13} weight={600} lh={17}>
+                        <Tx size={14} weight={600} lh={17}>
                           {m.displayName}
                         </Tx>
                       </View>
@@ -491,7 +491,7 @@ export default function Salon() {
             {/* 4. Ce qu'il faut savoir, replié. */}
             {(!!s.description || !!cats) && (
               <>
-                <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+                <Tx size={16} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
                   Informations
                 </Tx>
                 <Accordion
@@ -514,7 +514,7 @@ export default function Salon() {
             {/* 5. Réalisations. */}
             {works.length > 0 && (
               <>
-                <Tx size={15} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
+                <Tx size={16} weight={700} ls={-0.5} lh={19} style={{ marginTop: 6 }}>
                   Réalisations
                 </Tx>
                 <Grid cols={2}>

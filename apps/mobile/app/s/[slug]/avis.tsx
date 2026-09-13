@@ -51,9 +51,9 @@ export default function SalonReviews() {
             {formatRating(avg)}
           </Tx>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={14.5} weight={600} lh={19}>
+            <Tx size={16} weight={600} lh={19}>
               {'★'.repeat(Math.round(avg))}
-              <Tx size={14.5} weight={600} lh={19} color={C.disabled}>
+              <Tx size={16} weight={600} lh={19} color={C.disabled}>
                 {'★'.repeat(5 - Math.round(avg))}
               </Tx>
             </Tx>
@@ -88,17 +88,17 @@ export default function SalonReviews() {
               gap: 10,
             }}
           >
-            <Tx size={13.5} weight={600} lh={17.5}>
+            <Tx size={14} weight={600} lh={17.5}>
               {'★'.repeat(r.rating)}
-              <Tx size={13.5} weight={600} lh={17.5} color={C.disabled}>
+              <Tx size={14} weight={600} lh={17.5} color={C.disabled}>
                 {'★'.repeat(5 - r.rating)}
               </Tx>
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={14}>
+            <Tx size={12} color={C.muted} lh={14}>
               {formatDateShortDZ(r.createdAt)}
             </Tx>
           </View>
-          <Tx size={13} weight={600} lh={17}>
+          <Tx size={14} weight={600} lh={17}>
             {r.authorName}
           </Tx>
           {!!r.comment && <P>{r.comment}</P>}

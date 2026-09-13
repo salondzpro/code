@@ -120,7 +120,7 @@ export default function Code() {
               <I icon={MessageCircle} size={16} color={C.okFg} />
             </View>
             <View>
-              <Tx size={10.5} weight={600} lh={14.5}>
+              <Tx size={12} weight={600} lh={14.5}>
                 {isEmail ? 'E-mail · Salon DZ' : flow.channel === 'sms' ? 'SMS · Salon DZ' : 'WhatsApp · Salon DZ'}
               </Tx>
               <S>maintenant</S>
@@ -135,7 +135,7 @@ export default function Code() {
       <Pressable onPress={() => input.current?.focus()} accessibilityLabel="Code à 4 chiffres" style={{ flexDirection: 'row', gap: 8 }}>
         {digits.map((d, i) => (
           <View key={i} style={{ flex: 1, height: 55, borderRadius: R.input, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', backgroundColor: d || status === 'wrong' ? C.surface : C.fill, borderColor: status === 'wrong' ? C.danger : d ? C.ink : 'transparent', opacity: expired ? 0.5 : 1 }}>
-            <Tx size={14.5} weight={500} lh={19.5} mono>
+            <Tx size={16} weight={500} lh={19.5} mono>
               {d}
             </Tx>
           </View>
@@ -157,7 +157,7 @@ export default function Code() {
         accessibilityLabel="Code de vérification"
         style={{ position: 'absolute', opacity: 0, height: 1, width: 1 }}
       />
-      {fresh && <Tx size={11.5} color={C.muted} lh={16}>Coller automatiquement depuis {isEmail ? 'votre messagerie' : 'WhatsApp'}</Tx>}
+      {fresh && <Tx size={12} color={C.muted} lh={16}>Coller automatiquement depuis {isEmail ? 'votre messagerie' : 'WhatsApp'}</Tx>}
 
       {status === 'wrong' && !expired && (
         <Alert icon={AlertCircle}>
@@ -170,10 +170,10 @@ export default function Code() {
       {!expired && status !== 'network' && (
         <Card row>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={10.5} lh={14.5}>
+            <Tx size={12} lh={14.5}>
               Rester connecté
             </Tx>
-            <Tx size={11.5} color={C.muted} lh={16}>
+            <Tx size={12} color={C.muted} lh={16}>
               Session illimitée · aucun code à la prochaine visite
             </Tx>
           </View>
@@ -189,7 +189,7 @@ export default function Code() {
             {resendLabel}
           </Button>
           {resendIn > 0 && (
-            <Tx size={11.5} color={C.muted} lh={16} center>
+            <Tx size={12} color={C.muted} lh={16} center>
               Nouveau code disponible dans {countdown}
             </Tx>
           )}

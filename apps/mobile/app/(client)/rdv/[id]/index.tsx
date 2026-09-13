@@ -132,7 +132,7 @@ export default function BookingDetail() {
               gap: 10,
             }}
           >
-            <Tx size={13} weight={700} lh={17}>
+            <Tx size={14} weight={700} lh={17}>
               {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
             </Tx>
             <StatusBadge status="cancelled" lg cancelledBy="client" />
@@ -147,21 +147,21 @@ export default function BookingDetail() {
           >
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
               <Tx
-                size={26}
+                size={32}
                 weight={700}
                 ls={-0.9}
-                lh={29}
+                lh={35}
                 mono
                 style={{ textDecorationLine: 'line-through', textDecorationColor: C.danger }}
               >
                 {formatTimeDZ(b.startsAt)}
               </Tx>
-              <Tx size={13} color={C.muted} lh={21} mono>
+              <Tx size={14} color={C.muted} lh={21} mono>
                 – {formatTimeDZ(b.endsAt)}
               </Tx>
             </View>
             <Tx
-              size={19.5}
+              size={20}
               weight={700}
               ls={-0.6}
               lh={23.5}
@@ -171,7 +171,7 @@ export default function BookingDetail() {
               {formatDA(b.priceDa)}
             </Tx>
           </View>
-          <Tx size={10.5} color={C.muted} lh={14}>
+          <Tx size={12} color={C.muted} lh={14}>
             {`${capitalize(formatDateLongDZ(b.startsAt))} · ${b.salon.name}`}
           </Tx>
         </Card>
@@ -182,13 +182,13 @@ export default function BookingDetail() {
               chevron={false}
               right={
                 <Tx
-                  size={11.5}
+                  size={12}
                   color={C.muted}
                   lh={15.5}
                 >{`annulée${lines.length > 1 ? 's' : ''}`}</Tx>
               }
             >
-              <Tx size={13} weight={700} lh={17}>
+              <Tx size={14} weight={700} lh={17}>
                 {lines.length} prestation{lines.length > 1 ? 's' : ''}
               </Tx>
             </Row>
@@ -198,14 +198,14 @@ export default function BookingDetail() {
                 py={10}
                 chevron={false}
                 right={
-                  <Tx size={11} color={C.muted} lh={15}>
+                  <Tx size={12} color={C.muted} lh={15}>
                     {it.durationMinutes
                       ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
                       : formatDA(it.priceDa)}
                   </Tx>
                 }
               >
-                <Tx size={13} weight={600} lh={17}>
+                <Tx size={14} weight={600} lh={17}>
                   {it.serviceName}
                 </Tx>
               </Row>
@@ -238,7 +238,7 @@ export default function BookingDetail() {
             {b.salon.name}
           </H1>
           {SHOW_SALON_CONTACT_TO_CLIENTS && !!b.salon.phone && (
-            <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+            <Tx size={12} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
               {formatDZPhone(b.salon.phone)}
             </Tx>
           )}
@@ -253,7 +253,7 @@ export default function BookingDetail() {
               onPress={() => void open(`tel:${b.salon.phone}`)}
             >
               <I icon={Phone} size={16} />
-              <Tx size={11.5} weight={600} ls={-0.2}>
+              <Tx size={12} weight={600} ls={-0.2}>
                 Appeler
               </Tx>
             </Button>
@@ -261,7 +261,7 @@ export default function BookingDetail() {
           {!!wa && (
             <Button variant="g" style={{ paddingVertical: 15 }} onPress={() => void open(wa)}>
               <I icon={MessageCircle} size={16} />
-              <Tx size={11.5} weight={600} ls={-0.2}>
+              <Tx size={12} weight={600} ls={-0.2}>
                 WhatsApp
               </Tx>
             </Button>
@@ -278,7 +278,7 @@ export default function BookingDetail() {
             gap: 10,
           }}
         >
-          <Tx size={13} weight={700} lh={17}>
+          <Tx size={14} weight={700} lh={17}>
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
           </Tx>
           <StatusBadge status={b.status} lg cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
@@ -292,18 +292,18 @@ export default function BookingDetail() {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+            <Tx size={32} weight={700} ls={-0.9} lh={35} mono>
               {formatTimeDZ(b.startsAt)}
             </Tx>
-            <Tx size={13} color={C.muted} lh={21} mono>
+            <Tx size={14} color={C.muted} lh={21} mono>
               – {formatTimeDZ(b.endsAt)}
             </Tx>
           </View>
-          <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+          <Tx size={20} weight={700} ls={-0.6} lh={23.5}>
             {formatDA(b.priceDa)}
           </Tx>
         </View>
-        <Tx size={10.5} color={C.muted} lh={14}>
+        <Tx size={12} color={C.muted} lh={14}>
           {`${capitalize(formatDateLongDZ(b.startsAt))} · ${formatDuration(b.durationMinutes)} au total · paiement sur place`}
         </Tx>
       </Card>
@@ -313,12 +313,12 @@ export default function BookingDetail() {
             py={10}
             chevron={false}
             right={
-              <Tx size={11.5} color={C.muted} lh={15.5}>
+              <Tx size={12} color={C.muted} lh={15.5}>
                 {formatDA(b.priceDa)}
               </Tx>
             }
           >
-            <Tx size={13} weight={700} lh={17}>
+            <Tx size={14} weight={700} lh={17}>
               {lines.length} prestation{lines.length > 1 ? 's' : ''}
             </Tx>
           </Row>
@@ -328,14 +328,14 @@ export default function BookingDetail() {
               py={10}
               chevron={false}
               right={
-                <Tx size={11} color={C.muted} lh={15}>
+                <Tx size={12} color={C.muted} lh={15}>
                   {it.durationMinutes
                     ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
                     : formatDA(it.priceDa)}
                 </Tx>
               }
             >
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 {it.serviceName}
               </Tx>
             </Row>
@@ -345,7 +345,7 @@ export default function BookingDetail() {
       {active && <LateRule startsAt={b.startsAt} />}
       {!!b.notes && (
         <Soft>
-          <Tx size={10.5} color={C.muted} lh={14.5}>
+          <Tx size={12} color={C.muted} lh={14.5}>
             Votre note
           </Tx>
           <Tx size={12} lh={17}>
@@ -392,12 +392,12 @@ export default function BookingDetail() {
           </Button>
         )}
         {active && !canModify && (
-          <Tx size={11.5} color={C.muted} lh={16} center>
+          <Tx size={12} color={C.muted} lh={16} center>
             Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
           </Tx>
         )}
         {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
-          <Tx size={11.5} color={C.muted} lh={16} center>
+          <Tx size={12} color={C.muted} lh={16} center>
             Déjà reporté une fois. Pour le déplacer encore, contactez le salon.
           </Tx>
         )}

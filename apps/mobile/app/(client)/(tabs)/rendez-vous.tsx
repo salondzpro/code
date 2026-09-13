@@ -83,13 +83,13 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
         paddingVertical: 7,
       }}
     >
-      <Tx size={9} weight={600} upper ls={0.5} lh={12} color={C.muted}>
+      <Tx size={12} weight={600} upper ls={0.5} lh={15} color={C.muted}>
         {weekday(iso)}
       </Tx>
-      <Tx size={19.5} weight={700} ls={-0.5} lh={22} color={muted ? C.muted : C.text}>
+      <Tx size={20} weight={700} ls={-0.5} lh={22} color={muted ? C.muted : C.text}>
         {dayNum(iso)}
       </Tx>
-      <Tx size={10} lh={13} color={C.muted}>
+      <Tx size={12} lh={13} color={C.muted}>
         {monthShort(iso)}
       </Tx>
     </View>
@@ -129,11 +129,11 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           }}
         >
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={14.5} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted}>
+            <Tx size={16} weight={700} ls={-0.4} lh={18.5} color={active ? C.text : C.muted}>
               {relativeDayLabelDZ(dayKey)}
             </Tx>
             {today && active && (
-              <Tx size={10.5} weight={600} lh={14} color={C.okFg}>
+              <Tx size={12} weight={600} lh={14} color={C.okFg}>
                 {started ? 'En cours' : untilLabelFR(b.startsAt, now)}
               </Tx>
             )}
@@ -149,14 +149,14 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-            <Tx size={29} weight={700} ls={-1} lh={32} mono color={active ? C.text : C.muted}>
+            <Tx size={32} weight={700} ls={-1} lh={35} mono color={active ? C.text : C.muted}>
               {formatTimeDZ(b.startsAt)}
             </Tx>
-            <Tx size={13} color={C.muted} lh={22} mono>
+            <Tx size={14} color={C.muted} lh={22} mono>
               → {formatTimeDZ(b.endsAt)}
             </Tx>
           </View>
-          <Tx size={18} weight={700} ls={-0.5} lh={22}>
+          <Tx size={20} weight={700} ls={-0.5} lh={22}>
             {formatDA(b.priceDa)}
           </Tx>
         </View>
@@ -167,7 +167,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             style={{ width: 58, height: 58, opacity: active ? 1 : 0.6 }}
           />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={13.5} weight={700} ls={-0.3} lh={17.5} numberOfLines={1}>
+            <Tx size={14} weight={700} ls={-0.3} lh={17.5} numberOfLines={1}>
               {b.salon.name}
             </Tx>
             <Tx size={12} color={C.muted} lh={16}>
@@ -177,7 +177,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             {!!place && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <I icon={MapPin} size={14} color={C.muted} />
-                <Tx size={10.5} color={C.muted} lh={14} numberOfLines={1} style={{ flex: 1 }}>
+                <Tx size={12} color={C.muted} lh={14} numberOfLines={1} style={{ flex: 1 }}>
                   {place}
                 </Tx>
               </View>
@@ -236,7 +236,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
         <DateBlock iso={b.startsAt} muted={cancelled} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Tx
-            size={13.5}
+            size={14}
             weight={700}
             ls={-0.3}
             lh={17.5}
@@ -257,7 +257,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
       {cancelled && !!b.cancellationReason && (
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
           <I icon={Info} size={14} color={C.danger} />
-          <Tx size={11.5} color={C.danger} lh={15} style={{ flex: 1 }}>
+          <Tx size={12} color={C.danger} lh={15} style={{ flex: 1 }}>
             Motif : {b.cancellationReason}
           </Tx>
         </View>
@@ -285,7 +285,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 accessibilityLabel={`Votre note : ${b.reviewRating} sur 5`}
               >
                 <I icon={Star} size={16} color={C.text} />
-                <Tx size={13} weight={700} lh={16}>
+                <Tx size={14} weight={700} lh={16}>
                   {b.reviewRating}/5
                 </Tx>
               </View>
@@ -382,13 +382,13 @@ export default function Bookings() {
           >
             <I icon={empty.icon} size={25} color={C.muted} />
           </View>
-          <Tx size={14.5} weight={700} lh={18.5} center>
+          <Tx size={16} weight={700} lh={18.5} center>
             {empty.title}
           </Tx>
           <P center>{empty.text}</P>
           <Button onPress={() => router.push('/(client)/(tabs)')} style={{ marginTop: 6 }}>
             <I icon={Search} size={16} color={C.onInk} />
-            <Tx size={13} weight={600} color={C.onInk} lh={17}>
+            <Tx size={14} weight={600} color={C.onInk} lh={17}>
               Explorer les salons
             </Tx>
           </Button>

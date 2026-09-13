@@ -78,7 +78,7 @@ export default function BookingDetails() {
             }}
           >
             <View style={{ flex: 1 }}>
-              <Tx size={18} weight={700} ls={-0.5} lh={22}>
+              <Tx size={20} weight={700} ls={-0.5} lh={22}>
                 {formatDA(price)}
               </Tx>
               <P>
@@ -124,7 +124,7 @@ export default function BookingDetails() {
               paddingHorizontal: 13,
             }}
           >
-            <Tx size={10.5} weight={500} lh={14.5}>
+            <Tx size={12} weight={500} lh={14.5}>
               +213
             </Tx>
             <I icon={ChevronDown} size={14} color={C.subtle} />
@@ -165,7 +165,7 @@ export default function BookingDetails() {
           <I icon={MessageCircle} size={18} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={10.5} lh={14.5}>
+          <Tx size={12} lh={14.5}>
             Confirmation et rappel sur WhatsApp
           </Tx>
           <P>2 h avant le rendez-vous</P>

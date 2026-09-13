@@ -197,7 +197,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             SHADOW.card,
           ]}
         >
-          <Tx size={10.5} weight={600} lh={14} numberOfLines={1}>
+          <Tx size={12} weight={600} lh={14} numberOfLines={1}>
             {address.trim()
               ? `${address.trim()}${zone ? `, ${zone}` : ''}`
               : zone || wilayaName(wilaya)}

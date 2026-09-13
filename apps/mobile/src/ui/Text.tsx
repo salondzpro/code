@@ -20,7 +20,7 @@ export interface TxProps extends TextProps {
 }
 
 export function Tx({
-  size = 12,
+  size = 14,
   weight = 400,
   color = C.text,
   lh,
@@ -53,11 +53,11 @@ export function Tx({
   );
 }
 
-export const H1 = (p: TxProps) => <Tx size={19.5} weight={700} ls={-0.7} lh={22} {...p} />;
-export const H2 = (p: TxProps) => <Tx size={10.5} weight={600} ls={-0.3} lh={14.5} {...p} />;
+export const H1 = (p: TxProps) => <Tx size={20} weight={700} ls={-0.7} lh={22} {...p} />;
+export const H2 = (p: TxProps) => <Tx size={12} weight={600} ls={-0.3} lh={14.5} {...p} />;
 export const H3 = (p: TxProps) => (
-  <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper {...p} />
+  <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={13} upper {...p} />
 );
 export const P = (p: TxProps) => <Tx size={12} color={C.muted} lh={16} {...p} />;
-export const S = (p: TxProps) => <Tx size={10.5} color={C.muted} lh={14.5} {...p} />;
-export const T3 = (p: TxProps) => <Tx size={10} color={C.subtle} lh={13} {...p} />;
+export const S = (p: TxProps) => <Tx size={12} color={C.muted} lh={14.5} {...p} />;
+export const T3 = (p: TxProps) => <Tx size={12} color={C.subtle} lh={13} {...p} />;

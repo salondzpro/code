@@ -122,4 +122,9 @@ export const MONO: TextStyle = { fontVariant: ['tabular-nums'] };
  * rapport. On était à 1,1 (un +10 % ajouté jadis « pour la lisibilité »), ce qui rendait le
  * mobile visiblement plus gros que le web et que la référence.
  */
-export const FONT_SCALE = 14 / 13;
+/**
+ * Plus de facteur d'échelle : les tailles des écrans sont désormais des PIXELS réels, sur la
+ * même échelle que le web (12 / 14 / 16 / 20 / 24 / 32). Un facteur invisible qui multipliait
+ * tout rendait les valeurs du code impossibles à rapprocher de celles du web ou de la mesure.
+ */
+export const FONT_SCALE = 1;

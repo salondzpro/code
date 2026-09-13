@@ -76,7 +76,7 @@ export default function Profile() {
           <Tx size={16} weight={700} ls={-0.4} lh={20.5}>
             {p?.fullName ?? 'Votre nom'}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {phone ? formatIntlDZ(phone) : user?.email}
           </Tx>
           <View style={{ marginTop: 6 }}>
@@ -93,11 +93,11 @@ export default function Profile() {
           { v: stats.data ? String(stats.data.reviews) : '—', l: stats.data && stats.data.reviews > 1 ? 'avis donnés' : 'avis donné' },
         ].map((x) => (
           <Card key={x.l} gap={3} pad={12} style={{ paddingVertical: 16 }}>
-            <Tx size={19.5} weight={700} ls={-0.6} lh={23.5}>
+            <Tx size={20} weight={700} ls={-0.6} lh={23.5}>
               {x.v}
             </Tx>
             <Tx
-              size={11.5}
+              size={12}
               color={C.muted}
               lh={15.5}
               numberOfLines={1}
@@ -162,10 +162,10 @@ export default function Profile() {
           <I icon={MessageCircle} size={20} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={13} weight={700} ls={-0.4} lh={17}>
+          <Tx size={14} weight={700} ls={-0.4} lh={17}>
             {salon ? `Gérer ${salon.name}` : 'Devenir professionnel'}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {salon ? 'Agenda, demandes, page publique' : 'Recevoir des réservations sur votre page'}
           </Tx>
         </View>

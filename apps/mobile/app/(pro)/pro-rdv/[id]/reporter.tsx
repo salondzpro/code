@@ -58,7 +58,7 @@ export default function ProBookingReschedule() {
       <TopBar backTo={`/pro-rdv/${b.id}`} right="Reporter" />
       <H1>Nouveau créneau</H1>
       <Soft>
-        <Tx size={10.5} color={C.muted} lh={15.5}>
+        <Tx size={12} color={C.muted} lh={15.5}>
           Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
           {b.serviceName}
         </Tx>

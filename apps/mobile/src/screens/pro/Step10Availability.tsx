@@ -39,7 +39,7 @@ function BigSlot({
 }) {
   return (
     <Slot on={on} onPress={onPress} style={{ paddingVertical: 13 }}>
-      <Tx size={13} weight={500} lh={16} color={on ? C.onInk : C.text} mono>
+      <Tx size={14} weight={500} lh={16} color={on ? C.onInk : C.text} mono>
         {children}
       </Tx>
     </Slot>
@@ -149,7 +149,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             <Tx size={12} lh={16}>
               Rendez-vous simultanés
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={15.5}>
+            <Tx size={12} color={C.muted} lh={15.5}>
               {staffHint}
             </Tx>
           </Row>
@@ -161,7 +161,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             <Tx size={12} lh={16}>
               Réservation en ligne
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={15.5}>
+            <Tx size={12} color={C.muted} lh={15.5}>
               Visible dans la marketplace
             </Tx>
           </Row>
@@ -173,7 +173,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
             <Tx size={12} lh={16}>
               Validation manuelle
             </Tx>
-            <Tx size={10.5} color={C.muted} lh={15.5}>
+            <Tx size={12} color={C.muted} lh={15.5}>
               Vous confirmez chaque demande
             </Tx>
           </Row>
@@ -239,7 +239,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           <Tx size={12} lh={16}>
             Report client
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             Sur demande, avec validation
           </Tx>
         </Row>

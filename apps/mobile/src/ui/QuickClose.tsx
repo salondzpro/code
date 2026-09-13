@@ -103,7 +103,7 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
         ]}
       >
         <I icon={active ? DoorOpen : Siren} size={15} color={active ? '#fff' : C.text} />
-        <Tx size={11.5} weight={600} lh={15} color={active ? '#fff' : C.text}>
+        <Tx size={12} weight={600} lh={15} color={active ? '#fff' : C.text}>
           {active ? 'Rouvrir' : 'Arrêt/Pause'}
         </Tx>
       </Button>
@@ -162,10 +162,10 @@ export function QuickCloseBanner() {
           <I icon={DoorClosed} size={14} color="#fff" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={13} weight={700} lh={17} color={C.cancelFg}>
+          <Tx size={14} weight={700} lh={17} color={C.cancelFg}>
             Fermé jusqu'à {formatTimeDZ(active.endsAt)}
           </Tx>
-          <Tx size={10.5} lh={14} color={C.cancelFg}>
+          <Tx size={12} lh={14} color={C.cancelFg}>
             Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.
           </Tx>
         </View>

@@ -181,7 +181,7 @@ export default function MapView() {
             ]}
           >
             <I icon={Search} size={18} color={C.subtle} />
-            <Tx size={10.5} lh={14} color={C.subtle} numberOfLines={1} style={{ flex: 1 }}>
+            <Tx size={12} lh={14} color={C.subtle} numberOfLines={1} style={{ flex: 1 }}>
               {MARKET_LABELS_FR[market]} ·{' '}
               {area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
             </Tx>
@@ -226,7 +226,7 @@ export default function MapView() {
               SHADOW.card,
             ]}
           >
-            <Tx size={10} weight={500} color={C.muted} lh={13}>
+            <Tx size={12} weight={500} color={C.muted} lh={13}>
               {tooWide
                 ? 'Zoomez pour voir les professionnels'
                 : query.isFetching
@@ -327,12 +327,12 @@ export default function MapView() {
                           gap: 6,
                         }}
                       >
-                        <Tx size={14} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
+                        <Tx size={16} weight={700} ls={-0.4} lh={17} style={{ flex: 1 }}>
                           {s.name}
                         </Tx>
                         {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
                       </View>
-                      <Tx size={10.5} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
+                      <Tx size={12} color={C.muted} lh={15.5} style={{ marginTop: 3 }}>
                         {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null]
                           .filter(Boolean)
                           .join(' · ')}

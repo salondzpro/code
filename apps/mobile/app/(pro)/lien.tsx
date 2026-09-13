@@ -52,7 +52,7 @@ export default function ProLink() {
             Réservation en ligne
           </Tx>
         </Row>
-        <Row py={13} chevron={false} onPress={() => router.push('/reglages-pro/regles')} right={<Tx size={14.5} weight={700} lh={18.5}>{lead}</Tx>}>
+        <Row py={13} chevron={false} onPress={() => router.push('/reglages-pro/regles')} right={<Tx size={16} weight={700} lh={18.5}>{lead}</Tx>}>
           <Tx size={12} color={C.muted} lh={16}>
             Délai minimum
           </Tx>

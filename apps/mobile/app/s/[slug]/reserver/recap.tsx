@@ -121,17 +121,17 @@ export default function BookingReview() {
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <I icon={Ban} size={18} color={C.cancelFg} />
-            <Tx size={14.5} weight={700} lh={19} color={C.cancelFg}>
+            <Tx size={16} weight={700} lh={19} color={C.cancelFg}>
               Réservation en ligne impossible
             </Tx>
           </View>
-          <Tx size={13} lh={18} color={C.cancelFg}>
+          <Tx size={14} lh={18} color={C.cancelFg}>
             {blockedMessage}
           </Tx>
           {!!s.phone && (
             <Button variant="g" sm onPress={() => void open(`tel:${s.phone}`)}>
               <I icon={Phone} size={14} />
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 Appeler le salon
               </Tx>
             </Button>
@@ -168,15 +168,15 @@ export default function BookingReview() {
             <Tx size={32} weight={700} ls={-1} lh={35} mono>
               {start}
             </Tx>
-            <Tx size={14.5} color={C.muted} lh={24} mono>
+            <Tx size={16} color={C.muted} lh={24} mono>
               → {end}
             </Tx>
           </View>
-          <Tx size={23} weight={700} ls={-0.7} lh={27}>
+          <Tx size={24} weight={700} ls={-0.7} lh={27}>
             {formatDA(price)}
           </Tx>
         </View>
-        <Tx size={13} color={C.muted} lh={17}>
+        <Tx size={14} color={C.muted} lh={17}>
           {`${formatDuration(minutes)} au total · ${s.depositRequired ? 'acompte demandé sur place' : 'paiement sur place, aucun acompte'}`}
         </Tx>
       </Card>
@@ -187,12 +187,12 @@ export default function BookingReview() {
             py={10}
             chevron={false}
             right={
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 {formatDA(price)}
               </Tx>
             }
           >
-            <Tx size={14} weight={700} lh={18}>
+            <Tx size={16} weight={700} lh={18}>
               {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
             </Tx>
           </Row>
@@ -209,7 +209,7 @@ export default function BookingReview() {
                 >{`${formatDuration(sv!.durationMinutes)} · ${formatDA(sv!.priceDa)}`}</Tx>
               }
             >
-              <Tx size={14} weight={600} lh={18}>
+              <Tx size={16} weight={600} lh={18}>
                 {sv!.name}
               </Tx>
             </Row>
@@ -221,7 +221,7 @@ export default function BookingReview() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={46} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Tx size={14} weight={700} ls={-0.3} lh={18}>
+            <Tx size={16} weight={700} ls={-0.3} lh={18}>
               {s.name}
             </Tx>
             <Tx size={12} color={C.muted} lh={16} numberOfLines={1}>
@@ -234,26 +234,26 @@ export default function BookingReview() {
       <Card gap={6}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <I icon={CalendarCheck} size={14} color={C.muted} />
-          <Tx size={10.5} weight={700} upper ls={0.8} lh={14} color={C.muted}>
+          <Tx size={12} weight={700} upper ls={0.8} lh={14} color={C.muted}>
             Bon à savoir
           </Tx>
         </View>
-        <Tx size={13} lh={18}>
+        <Tx size={14} lh={18}>
           • Arrivez à{' '}
-          <Tx size={13} weight={700} lh={18}>
+          <Tx size={14} weight={700} lh={18}>
             {late.arriveAt}
           </Tx>{' '}
           ({ARRIVAL_ADVANCE_MINUTES} min avant). Retard toléré jusqu'à{' '}
-          <Tx size={13} weight={700} lh={18}>
+          <Tx size={14} weight={700} lh={18}>
             {late.lateUntil}
           </Tx>{' '}
           ({LATE_TOLERANCE_MINUTES} min).
         </Tx>
-        <Tx size={13} lh={18}>
+        <Tx size={14} lh={18}>
           • Annulation ou report gratuits jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h
           avant.
         </Tx>
-        <Tx size={13} lh={18}>
+        <Tx size={14} lh={18}>
           • Confirmation par WhatsApp et rappel avant le rendez-vous.
         </Tx>
       </Card>

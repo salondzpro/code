@@ -14,10 +14,10 @@ export function DayCell({ dateKey, on, out, onPress }: { dateKey: string; on?: b
   const dow = dayOfWeekFromKey(dateKey);
   return (
     <Pressable accessibilityRole="button" accessibilityState={{ selected: !!on, disabled: !!out }} accessibilityLabel={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(dateKey)}`} disabled={out} onPress={onPress} style={{ flex: 1, alignItems: 'center', gap: 5, paddingVertical: 7, borderRadius: R.slot, backgroundColor: on ? C.ink : 'transparent' }}>
-      <Tx size={9} lh={11.5} color={on ? 'rgba(255,255,255,0.65)' : out ? C.disabled : C.subtle}>
+      <Tx size={12} lh={15} color={on ? 'rgba(255,255,255,0.65)' : out ? C.disabled : C.subtle}>
         {DAY_LABELS_SHORT_FR[dow]}
       </Tx>
-      <Tx size={10.5} weight={600} ls={-0.3} lh={14} color={on ? '#fff' : out ? C.disabled : C.text}>
+      <Tx size={12} weight={600} ls={-0.3} lh={14} color={on ? '#fff' : out ? C.disabled : C.text}>
         {dayNumber(dateKey)}
       </Tx>
     </Pressable>
@@ -47,7 +47,7 @@ export function MonthNav({ weekOf, onWeekChange, minDate, maxDate }: { weekOf: s
   const canNext = !maxDate || last < maxDate;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
+      <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
         {monthLabel(weekOf)}
       </Tx>
       <View style={{ flexDirection: 'row', gap: 6 }}>

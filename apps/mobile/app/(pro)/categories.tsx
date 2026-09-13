@@ -183,7 +183,7 @@ export default function ProCategories() {
             <Button variant="g" onPress={() => del && setDel({ ...del, mode: 'keep-services' })}>
               Supprimer la catégorie seulement
             </Button>
-            <Tx size={11} color={C.muted} lh={15} center style={{ marginTop: -4 }}>
+            <Tx size={12} color={C.muted} lh={15} center style={{ marginTop: -4 }}>
               Les prestations restent réservables, sans catégorie.
             </Tx>
             <Button variant="d" onPress={() => del && setDel({ ...del, mode: 'with-services' })}>

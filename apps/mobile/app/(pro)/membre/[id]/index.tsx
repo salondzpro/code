@@ -171,7 +171,7 @@ export default function TeamMember() {
                 )
               }
             >
-              <Tx size={10} weight={600} color={C.danger} lh={13}>
+              <Tx size={12} weight={600} color={C.danger} lh={13}>
                 Retirer la photo
               </Tx>
             </Pressable>
@@ -234,7 +234,7 @@ export default function TeamMember() {
             gap: 10,
           }}
         >
-          <Tx size={10.5} color={C.muted} lh={14} style={{ flex: 1 }}>
+          <Tx size={12} color={C.muted} lh={14} style={{ flex: 1 }}>
             {identSaved ? 'Enregistré' : 'Le téléphone reste privé (jamais montré aux clients).'}
           </Tx>
           <Button
@@ -245,7 +245,7 @@ export default function TeamMember() {
             loading={update.isPending}
           >
             <I icon={Save} size={14} color={C.onInk} />
-            <Tx size={11.5} weight={600} color={C.onInk} lh={15}>
+            <Tx size={12} weight={600} color={C.onInk} lh={15}>
               Enregistrer
             </Tx>
           </Button>
@@ -274,7 +274,7 @@ export default function TeamMember() {
               <I icon={Scissors} size={14} />
             </View>
             <View>
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 Prestations
               </Tx>
               <P>{servicesSummary}</P>
@@ -302,7 +302,7 @@ export default function TeamMember() {
               <I icon={Clock} size={14} />
             </View>
             <View>
-              <Tx size={13} weight={600} lh={17}>
+              <Tx size={14} weight={600} lh={17}>
                 Horaires
               </Tx>
               <P>{hoursSummary}</P>
@@ -320,10 +320,10 @@ export default function TeamMember() {
               .map((h) => ({ start: h.startsAt, end: h.endsAt }));
             return (
               <View key={d} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Tx size={11.5} lh={15} color={ranges.length ? C.text : C.subtle}>
+                <Tx size={12} lh={15} color={ranges.length ? C.text : C.subtle}>
                   {DAY_LABELS_SHORT_FR[d as 0]}
                 </Tx>
-                <Tx size={11.5} lh={15} color={C.muted}>
+                <Tx size={12} lh={15} color={C.muted}>
                   {formatDayRanges(ranges, 'Repos')}
                 </Tx>
               </View>
@@ -356,7 +356,7 @@ export default function TeamMember() {
             onPress={() => setConfirmRemove(true)}
             style={{ alignSelf: 'center', paddingVertical: 6 }}
           >
-            <Tx size={11.5} color={C.danger} lh={15}>
+            <Tx size={12} color={C.danger} lh={15}>
               Retirer de l'équipe
             </Tx>
           </Pressable>

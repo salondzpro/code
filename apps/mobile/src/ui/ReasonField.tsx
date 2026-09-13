@@ -34,7 +34,7 @@ export function ReasonField({
   if (picking)
     return (
       <View style={{ gap: 8 }}>
-        <Tx size={13} weight={700} ls={-0.3} lh={17} center>
+        <Tx size={14} weight={700} ls={-0.3} lh={17} center>
           {title}
         </Tx>
         <Card gap={0} style={{ paddingVertical: 2 }}>
@@ -59,7 +59,7 @@ export function ReasonField({
                   borderBottomColor: C.lineSoft,
                 }}
               >
-                <Tx size={12.5} weight={600} lh={16}>
+                <Tx size={14} weight={600} lh={16}>
                   {r}
                 </Tx>
                 {on && <I icon={Check} size={16} />}

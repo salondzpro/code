@@ -43,7 +43,7 @@ export default function Favorites() {
         <ErrorText error={favs.error} retry={() => void favs.refetch()} />
       ) : items.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 10, paddingHorizontal: 13, paddingTop: 22 }}>
-          <Tx size={14.5} weight={700} lh={18.5} center>
+          <Tx size={16} weight={700} lh={18.5} center>
             Aucun salon en favori
           </Tx>
           <P center>Touchez le cœur sur la page d'un salon pour le retrouver ici.</P>
@@ -57,13 +57,13 @@ export default function Favorites() {
             <Pressable accessibilityRole="link" accessibilityLabel={s.name} onPress={() => router.push(`/s/${s.slug}` as never)} style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 11 }}>
               <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Tx size={14.5} weight={700} ls={-0.4} lh={18.5}>
+                <Tx size={16} weight={700} ls={-0.4} lh={18.5}>
                   {s.name}
                 </Tx>
-                <Tx size={10.5} color={C.muted} lh={15.5}>
+                <Tx size={12} color={C.muted} lh={15.5}>
                   {[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}
                 </Tx>
-                <Tx size={10.5} lh={15.5} style={{ marginTop: 3 }}>
+                <Tx size={12} lh={15.5} style={{ marginTop: 3 }}>
                   {s.nextAvailable ? `Dispo ${relativeDayLabelDZ(s.nextAvailable.date).toLowerCase()} ${s.nextAvailable.slots[0]}` : 'Aucune disponibilité cette semaine'}
                 </Tx>
               </View>

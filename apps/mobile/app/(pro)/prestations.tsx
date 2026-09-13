@@ -62,7 +62,7 @@ export default function ProServices() {
         <View key={g.name} style={{ gap: 8 }}>
           <SectionLabel
             right={
-              <Tx size={10.5} color={C.muted}>
+              <Tx size={12} color={C.muted}>
                 {String(g.services.length)}
               </Tx>
             }
@@ -119,7 +119,7 @@ export default function ProServices() {
                       </Pressable>
                     )}
                     <View style={{ flex: 1, minWidth: 0 }}>
-                      <Tx size={13.5} weight={700} ls={-0.3} lh={17.5} numberOfLines={1}>
+                      <Tx size={14} weight={700} ls={-0.3} lh={17.5} numberOfLines={1}>
                         {sv.name}
                       </Tx>
                       <Tx size={12} color={C.muted} lh={16}>
@@ -138,7 +138,7 @@ export default function ProServices() {
       {/* L'ajout ferme la liste, comme sur Équipe et Catégories. */}
       <Button onPress={() => router.push('/onboarding/6' as never)}>
         <I icon={Plus} size={16} color={C.onInk} />
-        <Tx size={13} weight={600} color={C.onInk} lh={17}>
+        <Tx size={14} weight={600} color={C.onInk} lh={17}>
           Ajouter une prestation
         </Tx>
       </Button>

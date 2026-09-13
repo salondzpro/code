@@ -41,7 +41,7 @@ export default function Market() {
           <Image source={{ uri: c.img.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
           <Overlay />
           <View style={{ position: 'absolute', left: 16, right: 16, bottom: 29, gap: 5 }}>
-            <Tx size={19.5} weight={700} color="#fff" ls={-0.7} lh={22}>
+            <Tx size={20} weight={700} color="#fff" ls={-0.7} lh={22}>
               {MARKET_LABELS_FR[c.id]}
             </Tx>
             <Tx size={12} color={C.white85} lh={16}>

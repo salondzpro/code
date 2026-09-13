@@ -118,7 +118,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             }}
           >
             <I icon={Plus} size={20} color={C.subtle} />
-            <Tx size={11.5} color={C.subtle} lh={14.5}>
+            <Tx size={12} color={C.subtle} lh={14.5}>
               {busy ? 'Envoi…' : 'Ajouter'}
             </Tx>
           </Pressable>

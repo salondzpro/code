@@ -35,11 +35,11 @@ export function RowText({
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
       <Ic icon={icon} />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Tx size={13} weight={600} lh={17}>
+        <Tx size={14} weight={600} lh={17}>
           {title}
         </Tx>
         {!!sub && (
-          <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1}>
+          <Tx size={12} color={C.muted} lh={15} numberOfLines={1}>
             {sub}
           </Tx>
         )}
@@ -74,10 +74,10 @@ export function Tile({
         <I icon={icon} size={16} color={C.onInk} />
       </View>
       <View>
-        <Tx size={13.5} weight={700} ls={-0.3} lh={17.5}>
+        <Tx size={14} weight={700} ls={-0.3} lh={17.5}>
           {title}
         </Tx>
-        <Tx size={10.5} color={C.muted} lh={14}>
+        <Tx size={12} color={C.muted} lh={14}>
           {sub}
         </Tx>
       </View>

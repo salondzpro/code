@@ -109,7 +109,7 @@ export function DayScroller({
               {showMonth ? monthLabel(d).split(' ')[0]!.slice(0, 4) : DAY_LABELS_SHORT_FR[dow]}
             </Tx>
             <Tx
-              size={13}
+              size={14}
               weight={600}
               lh={16}
               color={on ? '#fff' : out ? C.disabled : C.text}

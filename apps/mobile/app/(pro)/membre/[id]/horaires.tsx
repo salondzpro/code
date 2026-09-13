@@ -86,10 +86,10 @@ export default function TeamMemberHours() {
             const ranges = salon.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed).map((h) => ({ start: h.opensAt, end: h.closesAt }));
             return (
               <View key={d} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Tx size={11.5} lh={15} color={ranges.length ? C.text : C.subtle}>
+                <Tx size={12} lh={15} color={ranges.length ? C.text : C.subtle}>
                   {DAY_LABELS_SHORT_FR[d as 0]}
                 </Tx>
-                <Tx size={11.5} lh={15} color={C.muted}>
+                <Tx size={12} lh={15} color={C.muted}>
                   {formatDayRanges(ranges)}
                 </Tx>
               </View>

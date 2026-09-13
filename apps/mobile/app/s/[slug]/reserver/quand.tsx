@@ -150,10 +150,10 @@ export default function BookingWhen() {
       <Card row gap={11}>
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={52} />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={13} weight={700} ls={-0.3} lh={17}>
+          <Tx size={14} weight={700} ls={-0.3} lh={17}>
             {s.name}
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
           </Tx>
         </View>
@@ -180,10 +180,10 @@ export default function BookingWhen() {
         <ErrorText error={availability.error} retry={() => void availability.refetch()} />
       ) : freeGrid.length === 0 ? (
         <Card gap={6}>
-          <Tx size={13} weight={700} ls={-0.3} lh={17}>
+          <Tx size={14} weight={700} ls={-0.3} lh={17}>
             {dayOver ? 'Journée terminée' : 'Complet ce jour'}
           </Tx>
-          <Tx size={11.5} color={C.muted} lh={16}>
+          <Tx size={12} color={C.muted} lh={16}>
             {lastSlot
               ? dayOver
                 ? `Le dernier créneau du jour était à ${lastSlot.time}.`
@@ -205,7 +205,7 @@ export default function BookingWhen() {
               {`Prochaine disponibilité · ${relativeDayLabelDZ(next.date)} à ${next.slots[0]}`}
             </Button>
           ) : (
-            <Tx size={10.5} color={C.muted} lh={14.5}>
+            <Tx size={12} color={C.muted} lh={14.5}>
               {`Aucune disponibilité dans les ${s.bookingHorizonDays} prochains jours pour ces prestations.`}
             </Tx>
           )}
@@ -224,7 +224,7 @@ export default function BookingWhen() {
                   style={{ paddingVertical: 12 }}
                 >
                   <Tx
-                    size={13}
+                    size={14}
                     weight={500}
                     lh={16}
                     mono

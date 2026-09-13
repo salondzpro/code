@@ -474,13 +474,13 @@ export function Field({
 }) {
   return (
     <View>
-      <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
+      <Tx size={12} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
         {label}
       </Tx>
       {children}
       {error ? (
         <Tx
-          size={10.5}
+          size={12}
           color={C.danger}
           lh={14.5}
           style={{ marginTop: 5 }}
@@ -665,7 +665,7 @@ export function Segmented<T extends string>({
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               {o.icon && <I icon={o.icon} size={13} color={on ? C.text : C.muted} />}
-              <Tx size={10.5} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={14}>
+              <Tx size={12} weight={on ? 600 : 500} color={on ? C.text : C.muted} lh={14}>
                 {o.label}
               </Tx>
             </View>
@@ -752,7 +752,7 @@ export function InfoBox({ children }: { children: ReactNode }) {
 export function SectionLabel({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Tx size={10} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
+      <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
         {children}
       </Tx>
       {right}
@@ -1094,7 +1094,7 @@ export function Toast({ children, icon: Icon }: { children: ReactNode; icon?: Lu
       ]}
     >
       {Icon && <I icon={Icon} size={14} color="#fff" />}
-      <Tx size={11.5} weight={500} color="#fff" lh={14.5} style={{ flex: 1 }}>
+      <Tx size={12} weight={500} color="#fff" lh={14.5} style={{ flex: 1 }}>
         {children}
       </Tx>
     </View>
@@ -1176,12 +1176,12 @@ export function ErrorText({ error, retry }: { error: unknown; retry?: () => void
         gap: 5,
       }}
     >
-      <Tx size={11.5} weight={500} color={C.danger} lh={15.5}>
+      <Tx size={12} weight={500} color={C.danger} lh={15.5}>
         {msg}
       </Tx>
       {retry && (
         <Pressable onPress={retry} accessibilityRole="button">
-          <Tx size={11.5} color={C.danger} lh={15.5} style={{ textDecorationLine: 'underline' }}>
+          <Tx size={12} color={C.danger} lh={15.5} style={{ textDecorationLine: 'underline' }}>
             Réessayer
           </Tx>
         </Pressable>
@@ -1195,7 +1195,7 @@ export function Alert({ icon, children }: { icon?: LucideIcon; children: ReactNo
   return (
     <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       {icon && <I icon={icon} size={14} color={C.danger} />}
-      <Tx size={11.5} color={C.danger} lh={15.5} style={{ flex: 1 }}>
+      <Tx size={12} color={C.danger} lh={15.5} style={{ flex: 1 }}>
         {children}
       </Tx>
     </View>

@@ -46,16 +46,16 @@ export default function SalonServices() {
                   style={{ width: 91, height: 91 }}
                 />
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={14} weight={700} ls={-0.3} lh={18}>
+                  <Tx size={16} weight={700} ls={-0.3} lh={18}>
                     {sv.name}
                   </Tx>
-                  <Tx size={10.5} color={C.muted} lh={15.5}>
+                  <Tx size={12} color={C.muted} lh={15.5}>
                     {formatDuration(sv.durationMinutes)}
                     {photos.length
                       ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}`
                       : ''}
                   </Tx>
-                  <Tx size={13} weight={700} lh={17} style={{ marginTop: 5 }}>
+                  <Tx size={14} weight={700} lh={17} style={{ marginTop: 5 }}>
                     {formatDA(sv.priceDa)}
                   </Tx>
                 </View>

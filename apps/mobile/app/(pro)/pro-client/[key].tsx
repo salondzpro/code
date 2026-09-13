@@ -93,10 +93,10 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
         paddingVertical: 6,
       }}
     >
-      <Tx size={18} weight={700} ls={-0.5} lh={21} color={muted ? C.muted : C.text}>
+      <Tx size={20} weight={700} ls={-0.5} lh={21} color={muted ? C.muted : C.text}>
         {dayNum(iso)}
       </Tx>
-      <Tx size={10} lh={13} color={C.muted}>
+      <Tx size={12} lh={13} color={C.muted}>
         {monthShort(iso)}
       </Tx>
     </View>
@@ -116,7 +116,7 @@ function Stat({ v, l }: { v: string; l: string }) {
       <Tx size={17} weight={700} ls={-0.5} lh={21} numberOfLines={1}>
         {v}
       </Tx>
-      <Tx size={10.5} color={C.muted} lh={14}>
+      <Tx size={12} color={C.muted} lh={14}>
         {l}
       </Tx>
     </View>
@@ -206,7 +206,7 @@ export default function ClientDetail() {
             </H1>
             {c.phone ? (
               <Pressable accessibilityRole="link" onPress={() => void open(`tel:${c.phone}`)}>
-                <Tx size={14.5} weight={600} lh={19} mono>
+                <Tx size={16} weight={600} lh={19} mono>
                   {formatDZPhone(c.phone)}
                 </Tx>
               </Pressable>
@@ -220,7 +220,7 @@ export default function ClientDetail() {
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
               >
                 <I icon={Mail} size={14} color={C.muted} />
-                <Tx size={11.5} color={C.muted} lh={15} numberOfLines={1} style={{ flex: 1 }}>
+                <Tx size={12} color={C.muted} lh={15} numberOfLines={1} style={{ flex: 1 }}>
                   {c.email}
                 </Tx>
               </Pressable>
@@ -253,7 +253,7 @@ export default function ClientDetail() {
           onPress={() => c.lastBookingId && router.push(`/pro-rdv/${c.lastBookingId}` as never)}
           accessibilityLabel="Prochain rendez-vous"
         >
-          <Tx size={10} weight={700} upper ls={0.8} lh={14} color={C.muted}>
+          <Tx size={12} weight={700} upper ls={0.8} lh={14} color={C.muted}>
             Prochain rendez-vous · {untilLabelFR(c.nextAt, now)}
           </Tx>
           <View
@@ -264,10 +264,10 @@ export default function ClientDetail() {
               gap: 10,
             }}
           >
-            <Tx size={26} weight={700} ls={-0.9} lh={29} mono>
+            <Tx size={32} weight={700} ls={-0.9} lh={35} mono>
               {formatTimeDZ(c.nextAt)}
             </Tx>
-            <Tx size={14.5} weight={700} lh={19}>
+            <Tx size={16} weight={700} lh={19}>
               {relativeDayLabelDZ(nextKey)}
             </Tx>
           </View>
@@ -309,7 +309,7 @@ export default function ClientDetail() {
       <Card gap={10}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <I icon={StickyNote} size={16} />
-          <Tx size={13} weight={700} lh={17}>
+          <Tx size={14} weight={700} lh={17}>
             Notes privées
           </Tx>
         </View>
@@ -329,7 +329,7 @@ export default function ClientDetail() {
             gap: 10,
           }}
         >
-          <Tx size={10.5} color={C.muted} lh={14} style={{ flex: 1 }}>
+          <Tx size={12} color={C.muted} lh={14} style={{ flex: 1 }}>
             {saved ? 'Enregistré' : 'Jamais visibles du client'}
           </Tx>
           <Button
@@ -408,7 +408,7 @@ export default function ClientDetail() {
                   <DateBlock iso={h.startsAt} muted={cancelled} />
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Tx
-                      size={13.5}
+                      size={14}
                       weight={700}
                       ls={-0.3}
                       lh={17.5}

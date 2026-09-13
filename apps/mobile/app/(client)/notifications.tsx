@@ -34,13 +34,13 @@ export default function Notifications() {
           {items.map((n) => (
             <Row key={n.id} py={13} chevron={false}>
               <View style={{ gap: 2 }}>
-                <Tx size={10.5} weight={n.readAt ? 400 : 600} lh={14.5}>
+                <Tx size={12} weight={n.readAt ? 400 : 600} lh={14.5}>
                   {n.title}
                 </Tx>
                 <Tx size={12} color={C.muted} lh={16}>
                   {n.body}
                 </Tx>
-                <Tx size={10} color={C.subtle} lh={13}>
+                <Tx size={12} color={C.subtle} lh={13}>
                   {formatDateShortDZ(n.createdAt)} · {formatTimeDZ(n.createdAt)}
                 </Tx>
               </View>

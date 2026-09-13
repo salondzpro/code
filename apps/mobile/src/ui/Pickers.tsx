@@ -29,7 +29,7 @@ export function ValueRow({ label, hint, value, onPress, py = 12, muted = true }:
         {label}
       </Tx>
       {hint && (
-        <Tx size={10.5} color={C.muted} lh={15.5}>
+        <Tx size={12} color={C.muted} lh={15.5}>
           {hint}
         </Tx>
       )}
@@ -41,7 +41,7 @@ export function PickerSheet<T extends string | number>({ open, onClose, title, o
   let lastGroup: string | undefined;
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
-      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
+      <Tx size={16} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
       <ListCard>
@@ -100,7 +100,7 @@ export function TimeSheet({ open, onClose, title = 'Heure', value, onChange, fro
   for (let m = timeToMinutes(from); m <= timeToMinutes(to); m += step) times.push(minutesToTime(m));
   return (
     <ModalSheet open={open} onClose={onClose} scroll>
-      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
+      <Tx size={16} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
       <Grid cols={4} gap={6}>
@@ -127,7 +127,7 @@ export function DateSheet({ open, onClose, title = 'Date', value, onChange, minD
   const [sel, setSel] = useState(value);
   return (
     <ModalSheet open={open} onClose={onClose}>
-      <Tx size={14.5} weight={600} ls={-0.3} lh={18.5} center>
+      <Tx size={16} weight={600} ls={-0.3} lh={18.5} center>
         {title}
       </Tx>
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={minDate ? addDaysToKey(weekKeys(minDate)[0]!, 0) : undefined} maxDate={maxDate} />

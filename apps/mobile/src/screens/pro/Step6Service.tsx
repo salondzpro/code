@@ -120,7 +120,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
               accessibilityLabel="Prix"
               style={{ paddingRight: 39 }}
             />
-            <Tx size={10.5} lh={14.5} style={{ position: 'absolute', right: 13, top: 15 }}>
+            <Tx size={12} lh={14.5} style={{ position: 'absolute', right: 13, top: 15 }}>
               DA
             </Tx>
           </View>
@@ -136,7 +136,7 @@ export function Step6Service({ serviceId }: { serviceId?: string }) {
               accessibilityLabel="Durée"
               style={{ paddingRight: 44 }}
             />
-            <Tx size={10.5} lh={14.5} style={{ position: 'absolute', right: 13, top: 15 }}>
+            <Tx size={12} lh={14.5} style={{ position: 'absolute', right: 13, top: 15 }}>
               min
             </Tx>
           </View>
@@ -241,7 +241,7 @@ function Pressable_({ label, onPress }: { label: string; onPress: () => void }) 
         paddingHorizontal: 13,
       }}
     >
-      <Tx size={10.5} lh={14.5}>
+      <Tx size={12} lh={14.5}>
         {label}
       </Tx>
       <I icon={ChevronDown} size={14} color={C.subtle} />

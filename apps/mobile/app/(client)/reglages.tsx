@@ -53,7 +53,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Rappels WhatsApp
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             2 h avant le rendez-vous
           </Tx>
         </Row>
@@ -61,7 +61,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Confirmations
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             Réservation, report, annulation
           </Tx>
         </Row>
@@ -69,7 +69,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Nouveautés des salons suivis
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             Maximum une fois par semaine
           </Tx>
         </Row>
@@ -81,7 +81,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Langue
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             L'interface en arabe arrive bientôt
           </Tx>
         </Row>
@@ -89,7 +89,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Catalogue affiché
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             Marketplace et recherche
           </Tx>
         </Row>
@@ -97,7 +97,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Ville
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {prefs.lat != null ? `Autour de vous · ${prefs.radiusKm} km` : prefs.city ? 'Quartier choisi' : 'Toute la wilaya'}
           </Tx>
         </Row>
@@ -131,7 +131,7 @@ export default function Settings() {
           <Tx size={12} lh={16}>
             Session
           </Tx>
-          <Tx size={10.5} color={C.muted} lh={15.5}>
+          <Tx size={12} color={C.muted} lh={15.5}>
             {p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}
           </Tx>
         </Row>

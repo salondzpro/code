@@ -128,7 +128,7 @@ export default function Step7ServicePhotos() {
               }}
             >
               <I icon={Camera} size={14} />
-              <Tx size={9.5} weight={600} lh={12}>
+              <Tx size={12} weight={600} lh={15}>
                 {busy ? 'Envoi…' : 'Changer'}
               </Tx>
             </View>
@@ -138,7 +138,7 @@ export default function Step7ServicePhotos() {
       {!!photo && (
         <Button variant="g" sm onPress={() => setUrl(null)} disabled={busy}>
           <I icon={Trash2} size={14} />
-          <Tx size={11.5} weight={600} lh={15}>
+          <Tx size={12} weight={600} lh={15}>
             Retirer la photo
           </Tx>
         </Button>

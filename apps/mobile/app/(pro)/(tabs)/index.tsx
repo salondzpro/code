@@ -135,10 +135,10 @@ export default function ProHome() {
             pad={20}
             style={{ backgroundColor: C.ink, borderColor: C.ink, paddingVertical: 14 }}
           >
-            <Tx size={26} weight={700} ls={-0.8} lh={28} color="#fff">
+            <Tx size={32} weight={700} ls={-0.8} lh={35} color="#fff">
               {stats.data.todayCount}
             </Tx>
-            <Tx size={14} weight={700} color={C.white90} lh={17}>
+            <Tx size={16} weight={700} color={C.white90} lh={17}>
               rendez-vous aujourd'hui
             </Tx>
           </Card>
@@ -150,15 +150,15 @@ export default function ProHome() {
             accessibilityLabel="Demandes à valider"
           >
             <Tx
-              size={26}
+              size={32}
               weight={700}
               ls={-0.8}
-              lh={28}
+              lh={35}
               color={stats.data.pendingCount ? C.pendingFg : C.text}
             >
               {stats.data.pendingCount}
             </Tx>
-            <Tx size={14} weight={700} lh={17}>
+            <Tx size={16} weight={700} lh={17}>
               à valider
             </Tx>
           </Card>
@@ -169,7 +169,7 @@ export default function ProHome() {
 
       <Button onPress={() => router.push('/pro-rdv/nouveau' as never)}>
         <I icon={Plus} size={16} color={C.onInk} />
-        <Tx size={13} weight={600} color={C.onInk} lh={17}>
+        <Tx size={14} weight={600} color={C.onInk} lh={17}>
           Nouveau rendez-vous
         </Tx>
       </Button>
@@ -204,7 +204,7 @@ export default function ProHome() {
                 <Tx size={16} weight={700} ls={-0.4} lh={20.5}>
                   {b.clientName}
                 </Tx>
-                <Tx size={10.5} color={C.muted} lh={15.5}>
+                <Tx size={12} color={C.muted} lh={15.5}>
                   {b.serviceName} · {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
                 </Tx>
               </View>
@@ -217,7 +217,7 @@ export default function ProHome() {
                 disabled={setStatus.isPending}
                 onPress={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
               >
-                <Tx size={11.5} weight={600} color="#fff" ls={-0.2}>
+                <Tx size={12} weight={600} color="#fff" ls={-0.2}>
                   Confirmer
                 </Tx>
               </Button>
@@ -227,7 +227,7 @@ export default function ProHome() {
                 style={{ paddingVertical: 15 }}
                 onPress={() => router.push(`/pro-rdv/${b.id}/reporter` as never)}
               >
-                <Tx size={11.5} weight={600} ls={-0.2}>
+                <Tx size={12} weight={600} ls={-0.2}>
                   Reporter
                 </Tx>
               </Button>
@@ -238,7 +238,7 @@ export default function ProHome() {
               style={{ paddingVertical: 15 }}
               onPress={() => setRefusing({ id: b.id, clientName: b.clientName })}
             >
-              <Tx size={11.5} weight={600} color={C.danger} ls={-0.2}>
+              <Tx size={12} weight={600} color={C.danger} ls={-0.2}>
                 Refuser la demande
               </Tx>
             </Button>
@@ -252,7 +252,7 @@ export default function ProHome() {
             accessibilityLabel="Tout voir"
             onPress={() => router.push('/(pro)/(tabs)/agenda')}
           >
-            <Tx size={10.5} color={C.muted} lh={14.5}>
+            <Tx size={12} color={C.muted} lh={14.5}>
               Tout voir
             </Tx>
           </Pressable>
@@ -284,7 +284,7 @@ export default function ProHome() {
               gap: 10,
             }}
           >
-            <Tx size={10} weight={700} upper ls={0.8} lh={14} color={inProgress ? C.okFg : C.muted}>
+            <Tx size={12} weight={700} upper ls={0.8} lh={14} color={inProgress ? C.okFg : C.muted}>
               {inProgress
                 ? `En cours · fin à ${formatTimeDZ(next.endsAt)}`
                 : `Prochain · ${untilLabelFR(next.startsAt, now)}`}
@@ -303,14 +303,14 @@ export default function ProHome() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-              <Tx size={29} weight={700} ls={-1} lh={32} mono>
+              <Tx size={32} weight={700} ls={-1} lh={35} mono>
                 {formatTimeDZ(next.startsAt)}
               </Tx>
-              <Tx size={13} color={C.muted} lh={22} mono>
+              <Tx size={14} color={C.muted} lh={22} mono>
                 → {formatTimeDZ(next.endsAt)}
               </Tx>
             </View>
-            <Tx size={19.5} weight={700} ls={-0.5} lh={24}>
+            <Tx size={20} weight={700} ls={-0.5} lh={24}>
               {formatDA(next.priceDa)}
             </Tx>
           </Pressable>
@@ -320,10 +320,10 @@ export default function ProHome() {
               onPress={() => router.push(`/pro-rdv/${next.id}` as never)}
               style={{ flex: 1, minWidth: 0 }}
             >
-              <Tx size={18} weight={700} ls={-0.4} lh={23} numberOfLines={1}>
+              <Tx size={20} weight={700} ls={-0.4} lh={23} numberOfLines={1}>
                 {next.clientName}
               </Tx>
-              <Tx size={13} color={C.muted} lh={18}>
+              <Tx size={14} color={C.muted} lh={18}>
                 {next.serviceName} · {formatDuration(next.durationMinutes)}
                 {next.staff?.displayName ? ` · ${next.staff.displayName}` : ''}
               </Tx>
@@ -357,7 +357,7 @@ export default function ProHome() {
               onPress={() => router.push(`/pro-rdv/${b.id}` as never)}
               right={
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                  <Tx size={13} weight={700} lh={17}>
+                  <Tx size={14} weight={700} lh={17}>
                     {formatDA(b.priceDa)}
                   </Tx>
                   <StatusBadge status={b.status} />
@@ -369,7 +369,7 @@ export default function ProHome() {
                   {formatTimeDZ(b.startsAt)}
                 </Tx>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={14.5} weight={700} ls={-0.3} lh={18.5} numberOfLines={1}>
+                  <Tx size={16} weight={700} ls={-0.3} lh={18.5} numberOfLines={1}>
                     {b.clientName}
                   </Tx>
                   <Tx size={12} color={C.muted} lh={16}>
@@ -390,7 +390,7 @@ export default function ProHome() {
         </ListCard>
       )}
       {next && passed > 0 && (
-        <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginTop: -6 }}>
+        <Tx size={12} color={C.muted} lh={14.5} style={{ marginTop: -6 }}>
           {passed} rendez-vous déjà {passed > 1 ? 'passés' : 'passé'} aujourd'hui.
         </Tx>
       )}
@@ -422,7 +422,7 @@ export default function ProHome() {
               }}
             >
               <Tx
-                size={14.5}
+                size={16}
                 weight={700}
                 ls={-0.4}
                 lh={18.5}
@@ -430,7 +430,7 @@ export default function ProHome() {
                 adjustsFontSizeToFit
               >
                 {fmt(x.v)}{' '}
-                <Tx size={11.5} weight={600} color={C.muted} lh={22}>
+                <Tx size={12} weight={600} color={C.muted} lh={22}>
                   DA
                 </Tx>
               </Tx>
@@ -445,7 +445,7 @@ export default function ProHome() {
       {salon && (
         <Button variant="g" onPress={() => setShare(true)}>
           <I icon={Share2} size={16} color={C.text} />
-          <Tx size={13} weight={600} lh={17}>
+          <Tx size={14} weight={600} lh={17}>
             Partager mon lien
           </Tx>
         </Button>

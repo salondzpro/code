@@ -59,11 +59,11 @@ export default function ProfileSetup() {
           <Input lg f={!!name} value={name} onChangeText={setName} autoComplete="name" textContentType="name" placeholder="Inès Rahmani" autoFocus returnKeyType="done" onSubmitEditing={() => void submit()} />
         </Field>
         <View>
-          <Tx size={10.5} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
+          <Tx size={12} color={C.muted} lh={14.5} style={{ marginBottom: 5 }}>
             {phone ? 'Numéro vérifié' : 'Adresse vérifiée'}
           </Tx>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: R.input, backgroundColor: C.fill, paddingHorizontal: 13, paddingVertical: 15 }}>
-            <Tx size={10.5} lh={14.5}>
+            <Tx size={12} lh={14.5}>
               {phone ? formatIntlDZ(phone) : email}
             </Tx>
             <Badge tone="ok" md>
@@ -73,7 +73,7 @@ export default function ProfileSetup() {
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           <View style={{ flex: 1 }}>
-            <Tx size={13} weight={600} lh={17}>
+            <Tx size={14} weight={600} lh={17}>
               Rappels WhatsApp
             </Tx>
             <P>2 h avant chaque rendez-vous</P>
