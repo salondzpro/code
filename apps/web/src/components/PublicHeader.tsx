@@ -17,8 +17,9 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { CalendarClock, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
-import { CATEGORIES, MARKET_LABELS_FR, MARKETS } from '@salondz/constants';
+import { CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
+import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
+import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { I } from './ui';
@@ -28,9 +29,19 @@ const PER_MARKET = 3;
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
+  /**
+   * Marché déplié : celui du compte tant qu'on n'a rien touché, puis celui qu'on ouvre.
+   * « none » existe pour pouvoir tout replier, ce qu'un simple `Market | null` ne
+   * distinguerait pas du « on n'a encore rien choisi ».
+   */
+  const [picked, setPicked] = useState<Market | 'none' | null>(null);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { session } = useAuth();
+  const me = useMe(!!session);
+  // Le marché du compte s'ouvre d'office : c'est celui que la cliente ou le client consulte.
+  const market = me.data?.profile.market ?? MARKETS[0];
+  const shown = picked === null ? market : picked === 'none' ? null : picked;
   const next = encodeURIComponent(pathname);
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
@@ -85,22 +96,46 @@ export function PublicHeader() {
           ))}
         </div>
 
-        {MARKETS.map((market) => (
-          <div key={market} className="flex flex-col">
-            <span className="h3 pb-1">{MARKET_LABELS_FR[market]}</span>
-            {CATEGORIES.filter((c) => c.market === market && !c.legacy)
-              .slice(0, PER_MARKET)
-              .map((c) => (
-                <Link
-                  key={c.id}
-                  to={`/categorie/${c.id}`}
-                  className="py-2 text-[1.143rem] text-muted"
-                >
-                  {c.labelFr}
-                </Link>
-              ))}
-          </div>
-        ))}
+        {/* Chaque marché est une section qui s'ouvre et se ferme, titre en gras : côte à
+            côte et à plat, les deux listes se lisaient comme une seule et on ne savait plus
+            si « Coiffure » était celle des hommes ou celle des femmes. */}
+        {MARKETS.map((market) => {
+          const on = shown === market;
+          return (
+            <div key={market} className="flex flex-col border-t border-line-soft">
+              <button
+                type="button"
+                aria-expanded={on}
+                onClick={() => setPicked(on ? 'none' : market)}
+                className="flex items-center justify-between gap-3 py-3 text-left"
+              >
+                <span className="text-[1.143rem] font-bold tracking-[-0.3px]">
+                  {MARKET_LABELS_FR[market]}
+                </span>
+                <I
+                  icon={ChevronDown}
+                  size={20}
+                  className={`flex-none text-muted transition-transform duration-150${on ? ' rotate-180' : ''}`}
+                />
+              </button>
+              {on && (
+                <div className="mb-2 flex flex-col border-l-2 border-line pl-3.5">
+                  {CATEGORIES.filter((c) => c.market === market && !c.legacy)
+                    .slice(0, PER_MARKET)
+                    .map((c) => (
+                      <Link
+                        key={c.id}
+                        to={`/categorie/${c.id}`}
+                        className="py-2 text-[1.143rem] text-muted"
+                      >
+                        {c.labelFr}
+                      </Link>
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         {/* Dégagement sous le dernier élément : la barre d'onglets flotte à 78 px du bas. */}
         <div className="mt-auto flex flex-col pt-2" style={{ paddingBottom: '5.5rem' }}>
