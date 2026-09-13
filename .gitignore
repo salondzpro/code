@@ -20,6 +20,10 @@ apps/mobile/android/
 *.p12
 *.key
 *.mobileprovision
+# Clé de compte de service Firebase = secret d'envoi FCM, jamais dans git.
+# apps/mobile/google-services.json, lui, est versionné : il est embarqué dans l'APK et public par conception.
+*firebase-adminsdk*.json
+fcm-service-account.json
 
 # captures du test e2e navigateur
 apps/web/test/shots/
