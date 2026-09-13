@@ -96,22 +96,22 @@ export function Step4Address({ settings }: { settings?: boolean }) {
         </div>
         <div className="crd !gap-0 !py-1">
           <label className="li">
-            <span className="text-[1rem]">Ville</span>
+            <span className="text-[1rem] font-semibold">Ville</span>
             <PickerField inline label="Ville" title="Wilaya" value={wilaya} onChange={setWilaya} options={WILAYAS.map((w) => ({ value: w.code, label: w.name, hint: `Wilaya ${String(w.code).padStart(2, '0')}` }))} />
           </label>
           <label className="li">
-            <span className="text-[1rem]">Quartier</span>
+            <span className="text-[1rem] font-semibold">Quartier</span>
             <input className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
           </label>
           {settings && (
             <label className="li">
-              <span className="text-[1rem]">Téléphone</span>
+              <span className="text-[1rem] font-semibold">Téléphone</span>
               <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
             </label>
           )}
           <div className="li">
             <span>
-              <span className="block text-[1rem]">Se déplacer à domicile</span>
+              <span className="block text-[1rem] font-semibold">Se déplacer à domicile</span>
               <span className="p block text-[1rem]">Prestations hors salon</span>
             </span>
             <Toggle on={home} onChange={setHome} label="Se déplacer à domicile" />

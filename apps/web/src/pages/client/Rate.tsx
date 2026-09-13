@@ -87,7 +87,7 @@ export function Rate() {
       </Field>
       <div className="crd !flex-row items-center justify-between">
         <span>
-          <span className="block text-[1rem]">Publier sous « {initials} »</span>
+          <span className="block text-[1rem] font-semibold">Publier sous « {initials} »</span>
           <span className="p block text-[1rem]">Votre numéro reste privé</span>
         </span>
         <Toggle on={publish} onChange={setPublish} label="Publier sous mon prénom" />

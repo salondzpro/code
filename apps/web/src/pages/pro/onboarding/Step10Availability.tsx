@@ -95,23 +95,23 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <SectionLabel>Règles</SectionLabel>
         <div className="crd !gap-0 !py-1">
           <label className="li">
-            <span className="text-[1rem]">Pause entre deux rendez-vous</span>
+            <span className="text-[1rem] font-semibold">Pause entre deux rendez-vous</span>
             <PickerField inline label="Temps de battement" value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
           </label>
           <label className="li">
-            <span className="text-[1rem]">Réserver au plus tard</span>
+            <span className="text-[1rem] font-semibold">Réserver au plus tard</span>
             <PickerField inline label="Délai minimum de réservation" value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
           </label>
           <Link to="/pro/equipe" className="li">
-            <span className="text-[1rem]">Rendez-vous en même temps</span>
+            <span className="text-[1rem] font-semibold">Rendez-vous en même temps</span>
             <span className="text-[1rem] text-muted">{staffCount}</span>
           </Link>
           <div className="li">
-            <span className="text-[1rem]">Réservation en ligne</span>
+            <span className="text-[1rem] font-semibold">Réservation en ligne</span>
             <Toggle on={online} onChange={setOnline} label="Réservation en ligne" />
           </div>
           <div className="li">
-            <span className="text-[1rem]">Je valide chaque demande</span>
+            <span className="text-[1rem] font-semibold">Je valide chaque demande</span>
             <Toggle on={manual} onChange={setManual} label="Validation manuelle" />
           </div>
         </div>
@@ -134,11 +134,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li">
-          <span className="text-[1rem]">Annulation gratuite jusqu'à</span>
+          <span className="text-[1rem] font-semibold">Annulation gratuite jusqu'à</span>
           <PickerField inline label="Annulation gratuite jusqu'à" value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
         </label>
         <div className="li">
-          <span className="text-[1rem]">Le client peut reporter</span>
+          <span className="text-[1rem] font-semibold">Le client peut reporter</span>
           <Toggle on={report} onChange={setReport} label="Report client" />
         </div>
       </div>

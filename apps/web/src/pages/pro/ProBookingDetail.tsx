@@ -321,7 +321,7 @@ export function ProBookingReschedule() {
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li">
-          <span className="text-[1rem]">Date</span>
+          <span className="text-[1rem] font-semibold">Date</span>
           <input
             type="date"
             className="bg-transparent text-right text-[1rem] outline-none"
@@ -332,7 +332,7 @@ export function ProBookingReschedule() {
           />
         </label>
         <label className="li">
-          <span className="text-[1rem]">Heure</span>
+          <span className="text-[1rem] font-semibold">Heure</span>
           <input
             type="time"
             step={300}
@@ -345,7 +345,7 @@ export function ProBookingReschedule() {
         </label>
         {staff.length > 1 && (
           <label className="li">
-            <span className="text-[1rem]">Membre</span>
+            <span className="text-[1rem] font-semibold">Membre</span>
             <PickerField
               inline
               label="Membre"

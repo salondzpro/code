@@ -45,7 +45,7 @@ export function Publish() {
         {items.map((it) => (
           <button key={it.label} type="button" className="li w-full text-left" onClick={() => navigate(it.to)}>
             <span>
-              <span className="block text-[1rem]">{it.label}</span>
+              <span className="block text-[1rem] font-semibold">{it.label}</span>
               {!it.ok && it.hint && <span className="p block text-[0.857rem]">{it.hint}</span>}
             </span>
             {it.ok ? (

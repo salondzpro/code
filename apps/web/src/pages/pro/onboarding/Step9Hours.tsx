@@ -109,7 +109,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <span className="text-[1rem]">Semaine commençant</span>
+          <span className="text-[1rem] font-semibold">Semaine commençant</span>
           <span className="text-[1rem] text-muted">Dimanche</span>
         </div>
       </div>

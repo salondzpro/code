@@ -752,7 +752,7 @@ export function InfoBox({ children }: { children: ReactNode }) {
 export function SectionLabel({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Tx size={12} weight={600} color={C.subtle} ls={0.96} lh={13} upper>
+      <Tx size={12} weight={700} color={C.muted} ls={0.96} lh={16} upper>
         {children}
       </Tx>
       {right}

@@ -78,9 +78,11 @@
     letter-spacing: -0.3px;
   }
   .h3 {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-subtle);
+    /* Étiquette de section : le gris le plus pâle la rendait presque invisible sur un
+       fond clair, alors qu'elle structure toute la page. */
+    font-size: 0.857rem;
+    font-weight: 700;
+    color: var(--color-muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }

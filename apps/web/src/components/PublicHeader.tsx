@@ -3,32 +3,28 @@
  * compte à droite. Affiché sur TOUT le parcours client, avec ou sans compte — c'est le
  * repère qui permet de revenir à l'accueil ou d'ouvrir le menu depuis n'importe où.
  *
- * Le menu est un TIROIR qui glisse depuis la gauche par-dessus la page assombrie, et non
- * plus un panneau qui repoussait le contenu vers le bas : ouvrir le menu ne doit pas
- * déplacer ce qu'on était en train de lire.
+ * Le menu est un TIROIR qui glisse depuis la gauche par-dessus la page assombrie.
  *
- * Son contenu dépend de la session : un visiteur voit d'abord comment se connecter, une
- * cliente connectée voit ses propres écrans. Les catégories sont communes : c'est le
- * raccourci le plus utile depuis une fiche salon.
+ * Il est monté par un PORTAIL sur `document.body`, et non dans l'en-tête : un en-tête
+ * `sticky z-30` crée son propre contexte d'empilement, si bien que le z-index du tiroir ne
+ * comptait plus face à la barre d'onglets, elle aussi en 30. La barre passait devant et
+ * masquait le bouton de déconnexion.
+ *
+ * Contenu volontairement court : quelques destinations, puis les catégories séparées par
+ * marché — les prestations pour hommes et pour femmes n'ont rien à voir, mélanger les deux
+ * listes obligeait la cliente à faire le tri elle-même.
  */
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router';
-import {
-  CalendarClock,
-  Heart,
-  LogIn,
-  LogOut,
-  Menu,
-  Search,
-  Settings2,
-  Store,
-  User,
-  X,
-} from 'lucide-react';
-import { CATEGORIES } from '@salondz/constants';
+import { CalendarClock, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
+import { CATEGORIES, MARKET_LABELS_FR, MARKETS } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { I } from './ui';
+
+/** Trois catégories par marché : au-delà, le tiroir devient une liste à faire défiler. */
+const PER_MARKET = 3;
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
@@ -37,7 +33,6 @@ export function PublicHeader() {
   const { session } = useAuth();
   const next = encodeURIComponent(pathname);
   useEffect(() => setOpen(false), [pathname]);
-  // Le tiroir ouvert ne doit pas laisser la page défiler derrière lui.
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => {
@@ -47,19 +42,89 @@ export function PublicHeader() {
 
   const links = session
     ? [
+        { to: '/', icon: Home, label: 'Accueil' },
         { to: '/rendez-vous', icon: CalendarClock, label: 'Mes rendez-vous' },
-        { to: '/favoris', icon: Heart, label: 'Mes favoris' },
         { to: '/profil', icon: User, label: 'Mon profil' },
-        { to: '/reglages', icon: Settings2, label: 'Réglages' },
       ]
     : [
-        { to: '/', icon: Search, label: 'Explorer les salons' },
+        { to: '/', icon: Home, label: 'Accueil' },
         {
           to: `/connexion?next=${encodeURIComponent('/rendez-vous')}`,
           icon: CalendarClock,
           label: 'Mes rendez-vous',
         },
       ];
+
+  const drawer = (
+    <>
+      <div className="dim !z-[60]" onClick={() => setOpen(false)} />
+      <nav className="drw" aria-label="Menu Salon DZ">
+        <button
+          type="button"
+          className="ib !ml-auto !border-0 !bg-transparent"
+          aria-label="Fermer le menu"
+          onClick={() => setOpen(false)}
+        >
+          <I icon={X} size={24} />
+        </button>
+
+        {!session && (
+          <Link to={`/connexion?next=${next}`} className="btn">
+            Se connecter
+          </Link>
+        )}
+
+        <div className="flex flex-col">
+          {links.map((it) => (
+            <Link key={it.to} to={it.to} className="flex items-center gap-3 py-2.5">
+              <I icon={it.icon} size={20} className="flex-none text-muted" />
+              <span className="text-[1.143rem]">{it.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        {MARKETS.map((market) => (
+          <div key={market} className="flex flex-col">
+            <span className="h3 pb-1">{MARKET_LABELS_FR[market]}</span>
+            {CATEGORIES.filter((c) => c.market === market && !c.legacy)
+              .slice(0, PER_MARKET)
+              .map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/categorie/${c.id}`}
+                  className="py-2 text-[1.143rem] text-muted"
+                >
+                  {c.labelFr}
+                </Link>
+              ))}
+          </div>
+        ))}
+
+        {/* Dégagement sous le dernier élément : la barre d'onglets flotte à 78 px du bas. */}
+        <div className="mt-auto flex flex-col pt-2" style={{ paddingBottom: '5.5rem' }}>
+          {session ? (
+            <button
+              type="button"
+              className="flex items-center gap-3 py-2.5 text-danger"
+              onClick={async () => {
+                setOpen(false);
+                await supabase.auth.signOut();
+                navigate('/intro');
+              }}
+            >
+              <I icon={LogOut} size={20} className="flex-none text-current" />
+              <span className="text-[1.143rem]">Se déconnecter</span>
+            </button>
+          ) : (
+            <Link to="/pro" className="flex items-center gap-3 py-2.5">
+              <I icon={Store} size={20} className="flex-none text-muted" />
+              <span className="text-[1.143rem]">Je suis professionnel</span>
+            </Link>
+          )}
+        </div>
+      </nav>
+    </>
+  );
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface">
@@ -81,104 +146,15 @@ export function PublicHeader() {
           <span className="font-semibold">Salon</span>
           <span className="ml-[0.16em] font-light text-muted">DZ</span>
         </Link>
-        {session ? (
-          <Link
-            to="/profil"
-            className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[0.875rem] bg-ink text-white"
-            aria-label="Mon profil"
-          >
-            <I icon={User} size={20} className="text-current" />
-          </Link>
-        ) : (
-          <Link
-            to={`/connexion?next=${next}`}
-            className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[0.875rem] bg-ink text-white"
-            aria-label="Se connecter ou créer un compte"
-          >
-            <I icon={User} size={20} className="text-current" />
-          </Link>
-        )}
+        <Link
+          to={session ? '/profil' : `/connexion?next=${next}`}
+          className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[0.875rem] bg-ink text-white"
+          aria-label={session ? 'Mon profil' : 'Se connecter ou créer un compte'}
+        >
+          <I icon={User} size={20} className="text-current" />
+        </Link>
       </div>
-
-      {open && (
-        <>
-          <div className="dim !z-40" onClick={() => setOpen(false)} />
-          <nav className="drw" aria-label="Menu Salon DZ">
-            <button
-              type="button"
-              className="ib !ml-auto !border-0 !bg-transparent"
-              aria-label="Fermer le menu"
-              onClick={() => setOpen(false)}
-            >
-              <I icon={X} size={24} />
-            </button>
-
-            {!session && (
-              <>
-                <Link to={`/connexion?next=${next}`} className="btn">
-                  Se connecter
-                </Link>
-                <Link to="/pro" className="btn g">
-                  Je suis professionnel
-                </Link>
-              </>
-            )}
-
-            <div className="flex flex-col">
-              {links.map((it) => (
-                <Link key={it.to} to={it.to} className="flex items-center gap-3 py-3">
-                  <I icon={it.icon} size={20} className="flex-none text-muted" />
-                  <span className="text-[1.143rem]">{it.label}</span>
-                </Link>
-              ))}
-            </div>
-
-            <span className="h3">Catégories</span>
-            <div className="flex flex-col">
-              {CATEGORIES.filter((c) => !c.legacy)
-                .slice(0, 8)
-                .map((c) => (
-                  <Link
-                    key={c.id}
-                    to={`/categorie/${c.id}`}
-                    className="py-2.5 text-[1.143rem] text-muted"
-                  >
-                    {c.labelFr}
-                  </Link>
-                ))}
-            </div>
-
-            {session ? (
-              <button
-                type="button"
-                className="mt-auto flex items-center gap-3 py-3 text-danger"
-                onClick={async () => {
-                  setOpen(false);
-                  await supabase.auth.signOut();
-                  navigate('/intro');
-                }}
-              >
-                <I icon={LogOut} size={20} className="flex-none text-current" />
-                <span className="text-[1.143rem]">Se déconnecter</span>
-              </button>
-            ) : (
-              <Link to="/pro" className="mt-auto flex items-center gap-3 py-3">
-                <I icon={Store} size={20} className="flex-none text-muted" />
-                <span className="text-[1.143rem]">Espace professionnel</span>
-              </Link>
-            )}
-            {!session && (
-              <Link
-                to={`/connexion?next=${next}`}
-                className="flex items-center gap-3 pb-2 text-muted"
-              >
-                <I icon={LogIn} size={18} className="flex-none text-current" />
-                <span className="text-[1rem]">Déjà cliente ? Se connecter</span>
-              </Link>
-            )}
-          </nav>
-        </>
-      )}
+      {open && createPortal(drawer, document.body)}
     </header>
   );
 }

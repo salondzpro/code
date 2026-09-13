@@ -25,7 +25,7 @@ export function ValueRow({ label, hint, value, onPress, py = 12, muted = true }:
         {onPress && <I icon={ChevronDown} size={14} color={C.subtle} />}
       </View>
     }>
-      <Tx size={12} lh={16}>
+      <Tx size={12} weight={600} lh={16}>
         {label}
       </Tx>
       {hint && (

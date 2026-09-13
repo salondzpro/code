@@ -238,7 +238,7 @@ export function Closures() {
         <div>
           {mode === 'reduced' && (
             <div className="li !py-3">
-              <span className="text-[1rem]">Fermé de</span>
+              <span className="text-[1rem] font-semibold">Fermé de</span>
               <span className="flex items-center gap-2 text-[1rem] text-muted">
                 <input
                   type="time"
@@ -262,7 +262,7 @@ export function Closures() {
           )}
           {active.length > 1 && (
             <label className="li !py-3">
-              <span className="text-[1rem]">Concerne</span>
+              <span className="text-[1rem] font-semibold">Concerne</span>
               <PickerField
                 inline
                 label="Concerne"
@@ -276,7 +276,7 @@ export function Closures() {
             </label>
           )}
           <label className="li !border-b-0 !py-3">
-            <span className="text-[1rem]">Motif</span>
+            <span className="text-[1rem] font-semibold">Motif</span>
             <input
               className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle"
               value={reason}
