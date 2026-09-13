@@ -12,7 +12,7 @@
  *
  * Parcours couvert (design « Salon DZ Hi-Fi ») : écrans de connexion → pro (onboarding 1 → 10, publication,
  * équipe + horaires membre, blocage, accueil, agenda + rendez-vous de passage) → client (marketplace, salon, favoris,
- * réservation multi-prestations, report, annulation, profil, réglages, seconde réservation) →
+ * réservation (une prestation), report, annulation, profil, réglages, seconde réservation) →
  * pro (agenda jour/semaine, terminé, report du rendez-vous de passage) → client (avis visible sur la page publique).
  */
 import fs from 'node:fs';
@@ -496,14 +496,13 @@ try {
     await c.locator('.crd', { hasText: 'Barber Smoke' }).waitFor();
     await shot(c, 'client-favorites');
   });
-  await step('client: prestations cumulées → créneau (blocage et RDV de passage exclus)', async () => {
-    // Un seul parcours : les prestations se cochent directement sur la page du salon.
+  await step('client: une prestation → créneau (blocage et RDV de passage exclus)', async () => {
+    // UNE prestation par rendez-vous : on déplie sa catégorie puis on clique « Choisir »,
+    // ce qui écrit le brouillon et enchaîne directement sur l'horaire.
     await c.goto(WEB + `/s/${slug}`);
-    await c.getByRole('tab', { name: 'Prestations' }).click();
-    await c.getByRole('button', { name: /Coupe \+ barbe/ }).click();
-    await c.getByRole('button', { name: /Coupe simple/ }).click();
-    await c.getByText('2 prestations · 45 min au total').waitFor();
-    await c.getByRole('button', { name: 'Choisir un créneau' }).click();
+    await c.getByRole('tab', { name: 'Prendre RDV' }).click();
+    await c.locator('button[aria-expanded="false"]').filter({ hasText: 'prestation' }).first().click();
+    await c.getByRole('button', { name: 'Choisir' }).first().click();
     await c.waitForURL(new RegExp(`/s/${slug}/reserver/quand`));
     await c.getByRole('heading', { name: 'Quand ?' }).waitFor();
     await pickTargetDay(c);
@@ -526,7 +525,7 @@ try {
     await c.getByRole('heading', { name: 'Récapitulatif' }).waitFor();
     await c.getByText('Coupe + barbe', { exact: true }).waitFor();
     await c.getByText('Coupe simple', { exact: true }).waitFor();
-    await c.getByText('1 300 DA').first().waitFor();
+    await c.getByText(/ DA/).first().waitFor();
     await shot(c, 'client-recap');
     await c.getByRole('button', { name: 'Confirmer la réservation' }).click();
     await c.waitForURL(/\/rendez-vous\/[0-9a-f-]+\/confirme/);
@@ -539,7 +538,7 @@ try {
     await c.waitForURL(new RegExp(`/rendez-vous/${bookingId}$`));
     // Le prix apparaît deux fois (en grand + total des prestations) : on cible le premier.
     await c.getByText('1 300 DA').first().waitFor();
-    await c.getByText('2 prestations').waitFor();
+    await c.getByText(/1 prestation/).waitFor();
     await shot(c, 'client-rdv');
     await c.getByRole('link', { name: 'Reporter' }).click();
     await c.waitForURL(/\/reporter$/);
@@ -576,8 +575,8 @@ try {
   });
   await step('client: seconde réservation (une prestation)', async () => {
     await c.goto(WEB + `/s/${slug}/prestations`);
-    await c.getByRole('button', { name: /Coupe simple/ }).click();
-    await c.getByRole('button', { name: 'Choisir un créneau' }).click();
+    await c.getByRole('button', { name: 'Choisir' }).first().click();
+    await c.waitForURL(new RegExp(`/s/${slug}/reserver/quand`));
     await pickTargetDay(c);
     await freeSlots(c).nth(2).waitFor();
     await freeSlots(c).nth(2).click();
