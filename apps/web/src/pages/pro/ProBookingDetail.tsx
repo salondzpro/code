@@ -168,7 +168,6 @@ export function ProBookingDetail() {
           <span className="text-[1rem] font-semibold">
             {lines.length} prestation{lines.length > 1 ? 's' : ''}
           </span>
-          <span className="text-[1rem] text-muted">{formatDA(b.priceDa)}</span>
         </div>
         {lines.map((it) => (
           <div key={it.id} className="li !py-3 text-[1rem]">

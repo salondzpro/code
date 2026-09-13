@@ -201,71 +201,77 @@ export default function Salon() {
           gap: 13,
         }}
       >
-        <View style={{ gap: 5 }}>
-          <H1 size={21} lh={24.5} ls={-0.8}>
-            {s.name}
-          </H1>
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Itinéraire vers le salon"
-            onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-          >
-            <I icon={MapPin} size={14} color={C.muted} />
-            <Tx size={12} lh={16} numberOfLines={1} style={{ flex: 1, textDecorationLine: 'underline' }}>
-              {s.address ? `${s.address}, ${place}` : place}
-            </Tx>
-          </Pressable>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+        {/* Identité réservée à l'onglet de réservation : sur « Avis » et « À propos »
+            elle répétait nom, adresse, note, prix et horaires pour rien. */}
+        {tab === 'book' && (
+          <>
+          <View style={{ gap: 5 }}>
+            <H1 size={21} lh={24.5} ls={-0.8}>
+              {s.name}
+            </H1>
             <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={
-                s.ratingCount > 0
-                  ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
-                  : 'Avis : voir les avis'
-              }
-              onPress={() => setTab('reviews')}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+              accessibilityRole="link"
+              accessibilityLabel="Itinéraire vers le salon"
+              onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
             >
-              <I icon={Star} size={14} />
-              <Tx size={12} weight={600} lh={16} color={s.ratingCount > 0 ? C.text : C.muted}>
-                {s.ratingCount > 0
-                  ? `${formatRating(s.ratingAvg)} (${s.ratingCount} avis)`
-                  : "Pas encore d'avis"}
+              <I icon={MapPin} size={14} color={C.muted} />
+              <Tx size={12} lh={16} numberOfLines={1} style={{ flex: 1, textDecorationLine: 'underline' }}>
+                {s.address ? `${s.address}, ${place}` : place}
               </Tx>
             </Pressable>
-            {!!priceRange && (
-              <Tx size={12} color={C.muted} lh={16}>
-                {`· ${priceRange}`}
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  s.ratingCount > 0
+                    ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                    : 'Avis : voir les avis'
+                }
+                onPress={() => setTab('reviews')}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+              >
+                <I icon={Star} size={14} />
+                <Tx size={12} weight={600} lh={16} color={s.ratingCount > 0 ? C.text : C.muted}>
+                  {s.ratingCount > 0
+                    ? `${formatRating(s.ratingAvg)} (${s.ratingCount} avis)`
+                    : "Pas encore d'avis"}
+                </Tx>
+              </Pressable>
+              {!!priceRange && (
+                <Tx size={12} color={C.muted} lh={16}>
+                  {`· ${priceRange}`}
+                </Tx>
+              )}
+              <Tx size={12} weight={600} lh={16} color={status.open ? C.okFg : C.muted}>
+                {`· ${status.label}`}
               </Tx>
-            )}
-            <Tx size={12} weight={600} lh={16} color={status.open ? C.okFg : C.muted}>
-              {`· ${status.label}`}
-            </Tx>
+            </View>
           </View>
-        </View>
 
-        {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
-        <Grid cols={2}>
-          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
-            <Button variant="g" sm onPress={() => void Linking.openURL(`tel:${s.phone}`).catch(() => undefined)}>
+          {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
+          <Grid cols={2}>
+            {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
+              <Button variant="g" sm onPress={() => void Linking.openURL(`tel:${s.phone}`).catch(() => undefined)}>
+                <Tx size={14} weight={600} ls={-0.2}>
+                  Appeler
+                </Tx>
+              </Button>
+            ) : (
+              <Button variant="g" sm onPress={() => void shareUrl(s.name, publicUrl(s.slug))}>
+                <Tx size={14} weight={600} ls={-0.2}>
+                  Partager
+                </Tx>
+              </Button>
+            )}
+            <Button variant="g" sm onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
               <Tx size={14} weight={600} ls={-0.2}>
-                Appeler
+                Itinéraire
               </Tx>
             </Button>
-          ) : (
-            <Button variant="g" sm onPress={() => void shareUrl(s.name, publicUrl(s.slug))}>
-              <Tx size={14} weight={600} ls={-0.2}>
-                Partager
-              </Tx>
-            </Button>
-          )}
-          <Button variant="g" sm onPress={() => void Linking.openURL(mapsUrl).catch(() => undefined)}>
-            <Tx size={14} weight={600} ls={-0.2}>
-              Itinéraire
-            </Tx>
-          </Button>
-        </Grid>
+          </Grid>
+          </>
+        )}
 
         {tab === 'book' && (
           <View style={{ gap: 9 }}>
@@ -387,14 +393,14 @@ export default function Salon() {
             </Tx>
             {s.ratingCount > 0 ? (
               <Card row gap={11} style={{ alignItems: 'center' }}>
-                <Tx size={28} weight={700} ls={-1} lh={30}>
+                <Tx size={32} weight={600} ls={-1} lh={35}>
                   {formatRating(s.ratingAvg)}
                 </Tx>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Tx size={14} weight={600} lh={17}>
+                  <Tx size={14} weight={600} lh={18}>
                     {'★'.repeat(Math.round(s.ratingAvg))}
                   </Tx>
-                  <Tx size={12} color={C.muted} lh={15}>
+                  <Tx size={12} color={C.muted} lh={16}>
                     {`${s.ratingCount} avis vérifié${s.ratingCount > 1 ? 's' : ''} · après rendez-vous`}
                   </Tx>
                 </View>

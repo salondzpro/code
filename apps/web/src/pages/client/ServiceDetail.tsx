@@ -1,4 +1,4 @@
-/** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver · 2 500 DA ». */
+/** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver ». */
 import { useBack } from '@/lib/useBack';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, Heart } from 'lucide-react';
@@ -81,7 +81,7 @@ export function ServiceDetail() {
         </div>
       </div>
       <BottomSheet grab={false}>
-        <Button onClick={() => navigate(`/s/${s.slug}/prestations?services=${sv.id}`)}>Réserver · {formatDA(sv.priceDa)}</Button>
+        <Button onClick={() => navigate(`/s/${s.slug}/prestations?services=${sv.id}`)}>Réserver</Button>
       </BottomSheet>
     </div>
   );

@@ -145,11 +145,6 @@ export default function BookingConfirmed() {
           <Row
             py={10}
             chevron={false}
-            right={
-              <Tx size={12} color={C.muted} lh={15.5}>
-                {formatDA(b.priceDa)}
-              </Tx>
-            }
           >
             <Tx size={14} weight={700} lh={17}>
               {lines.length} prestation{lines.length > 1 ? 's' : ''}

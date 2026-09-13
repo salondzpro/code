@@ -142,9 +142,13 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   <span className="min-w-0 truncate text-[1rem] font-semibold">
                     {it.serviceName}
                   </span>
-                  <span className="flex-none text-[0.857rem] text-muted">
-                    {formatDuration(it.durationMinutes)} · {formatDA(it.priceDa)}
-                  </span>
+                  {/* Une seule prestation par rendez-vous : son prix et sa durée sont déjà
+                      en tête de feuille. On ne les répète que s'il y en a plusieurs. */}
+                  {lines.length > 1 && (
+                    <span className="flex-none text-[0.857rem] text-muted">
+                      {formatDuration(it.durationMinutes)} · {formatDA(it.priceDa)}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

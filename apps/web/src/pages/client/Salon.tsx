@@ -192,85 +192,92 @@ export function Salon() {
       </div>
 
       <div className="relative -mt-5 flex flex-col gap-3 rounded-t-[1.5rem] bg-bg px-4 pt-5">
-        {/* Identité : le nom, où c'est, ce que ça vaut. Trois lignes, rien de plus. */}
-        <div className="flex flex-col gap-1.5">
-          <h1 className="h1 !text-[1.714rem]">{s.name}</h1>
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
-          >
-            <I icon={MapPin} size={16} className="flex-none text-muted" />
-            <span className="min-w-0 truncate">{s.address ? `${s.address}, ${place}` : place}</span>
-          </a>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[1rem]">
-            <button
-              type="button"
-              className={`flex items-center gap-1${s.ratingCount > 0 ? '' : ' text-muted'}`}
-              onClick={() => setTab('reviews')}
-              aria-label={
-                s.ratingCount > 0
-                  ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
-                  : 'Avis : voir les avis'
-              }
+        {/* Identité réservée à l'onglet de réservation : sur « Avis » et « À propos »
+            elle répétait nom, adresse, note, prix et horaires alors que chaque onglet
+            porte déjà ses propres titres. */}
+        {tab === 'book' && (
+          <>
+          {/* Identité : le nom, où c'est, ce que ça vaut. Trois lignes, rien de plus. */}
+          <div className="flex flex-col gap-1.5">
+            <h1 className="h1 !text-[1.714rem]">{s.name}</h1>
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
             >
-              <I icon={Star} size={16} className="flex-none" />
-              {s.ratingCount > 0 ? (
-                <>
-                  <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
-                  <span className="text-muted">({s.ratingCount} avis)</span>
-                </>
-              ) : (
-                <span>Pas encore d'avis</span>
-              )}
-            </button>
-            {priceRange && (
-              <>
-                <span className="text-disabled" aria-hidden>
-                  ·
-                </span>
-                <span className="text-muted">{priceRange}</span>
-              </>
-            )}
-            <span className="text-disabled" aria-hidden>
-              ·
-            </span>
-            <span className={status.open ? 'font-semibold text-ok-fg' : 'text-muted'}>
-              {status.label}
-            </span>
-          </div>
-        </div>
-
-        {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
-        <div className="g2">
-          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
-            <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[1rem]">
-              <I icon={Phone} size={18} /> Appeler
+              <I icon={MapPin} size={16} className="flex-none text-muted" />
+              <span className="min-w-0 truncate">{s.address ? `${s.address}, ${place}` : place}</span>
             </a>
-          ) : (
-            <button
-              type="button"
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[1rem]">
+              <button
+                type="button"
+                className={`flex items-center gap-1${s.ratingCount > 0 ? '' : ' text-muted'}`}
+                onClick={() => setTab('reviews')}
+                aria-label={
+                  s.ratingCount > 0
+                    ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                    : 'Avis : voir les avis'
+                }
+              >
+                <I icon={Star} size={16} className="flex-none" />
+                {s.ratingCount > 0 ? (
+                  <>
+                    <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
+                    <span className="text-muted">({s.ratingCount} avis)</span>
+                  </>
+                ) : (
+                  <span>Pas encore d'avis</span>
+                )}
+              </button>
+              {priceRange && (
+                <>
+                  <span className="text-disabled" aria-hidden>
+                    ·
+                  </span>
+                  <span className="text-muted">{priceRange}</span>
+                </>
+              )}
+              <span className="text-disabled" aria-hidden>
+                ·
+              </span>
+              <span className={status.open ? 'font-semibold text-ok-fg' : 'text-muted'}>
+                {status.label}
+              </span>
+            </div>
+          </div>
+
+          {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
+          <div className="g2">
+            {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
+              <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[1rem]">
+                <I icon={Phone} size={18} /> Appeler
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="btn g sm !py-[0.9375rem] !text-[1rem]"
+                onClick={() => {
+                  const url = window.location.href;
+                  if (navigator.share)
+                    void navigator.share({ title: s.name, url }).catch(() => undefined);
+                  else void navigator.clipboard.writeText(url);
+                }}
+              >
+                <I icon={Share2} size={18} /> Partager
+              </button>
+            )}
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noreferrer"
               className="btn g sm !py-[0.9375rem] !text-[1rem]"
-              onClick={() => {
-                const url = window.location.href;
-                if (navigator.share)
-                  void navigator.share({ title: s.name, url }).catch(() => undefined);
-                else void navigator.clipboard.writeText(url);
-              }}
             >
-              <I icon={Share2} size={18} /> Partager
-            </button>
-          )}
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="btn g sm !py-[0.9375rem] !text-[1rem]"
-          >
-            <I icon={Navigation} size={18} /> Itinéraire
-          </a>
-        </div>
+              <I icon={Navigation} size={18} /> Itinéraire
+            </a>
+          </div>
+          </>
+        )}
 
         {tab === 'book' && (
           <div className="flex flex-col gap-2.5">

@@ -142,9 +142,11 @@ export function BookingPeekSheet({ id, onClose }: { id: string | null; onClose: 
                 <Tx size={14} weight={600} lh={18} numberOfLines={1} style={{ flex: 1 }}>
                   {it.serviceName}
                 </Tx>
-                <Tx size={12} color={C.muted} lh={16}>
-                  {`${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`}
-                </Tx>
+                {lines.length > 1 && (
+                  <Tx size={12} color={C.muted} lh={16}>
+                    {`${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`}
+                  </Tx>
+                )}
               </View>
             ))}
           </Card>

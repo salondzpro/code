@@ -142,7 +142,6 @@ export function BookingReview() {
           <span className="text-[1.143rem] font-bold">
             {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
           </span>
-          <span className="text-[1rem] font-semibold">{formatDA(price)}</span>
         </div>
         {chosen.map((sv) => (
           <div key={sv!.id} className="li !py-3">

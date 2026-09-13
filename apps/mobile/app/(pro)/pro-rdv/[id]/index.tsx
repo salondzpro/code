@@ -296,11 +296,6 @@ export default function ProBookingDetail() {
           <Row
             py={10}
             chevron={false}
-            right={
-              <Tx size={12} color={C.muted} lh={15.5}>
-                {formatDA(b.priceDa)}
-              </Tx>
-            }
           >
             <Tx size={12} weight={600} lh={16}>
               {lines.length} prestation{lines.length > 1 ? 's' : ''}

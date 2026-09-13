@@ -1,4 +1,4 @@
-/** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver · 2 500 DA ». */
+/** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver ». */
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -49,7 +49,7 @@ export default function ServiceDetail() {
       edges={[]}
       footer={
         <BottomSheet grab={false}>
-          <Button onPress={() => router.push({ pathname: `/s/${s.slug}/prestations`, params: { services: sv.id } } as never)}>Réserver · {formatDA(sv.priceDa)}</Button>
+          <Button onPress={() => router.push({ pathname: `/s/${s.slug}/prestations`, params: { services: sv.id } } as never)}>Réserver</Button>
         </BottomSheet>
       }
     >

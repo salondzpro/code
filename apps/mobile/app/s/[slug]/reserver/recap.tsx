@@ -186,11 +186,6 @@ export default function BookingReview() {
           <Row
             py={10}
             chevron={false}
-            right={
-              <Tx size={14} weight={600} lh={17}>
-                {formatDA(price)}
-              </Tx>
-            }
           >
             <Tx size={16} weight={700} lh={18}>
               {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
