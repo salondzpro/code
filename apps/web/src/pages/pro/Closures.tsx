@@ -164,7 +164,7 @@ export function Closures() {
       <div className="crd !gap-0 !px-4 !py-1">
         {blocks.isPending && <Skeleton className="my-3 h-[4rem]" />}
         {blocks.data && items.length === 0 && (
-          <p className="p py-4 text-[0.8125rem]">
+          <p className="p py-4 text-[0.857rem]">
             Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.
           </p>
         )}
@@ -180,8 +180,8 @@ export function Closures() {
               onClick={() => setDel(b)}
             >
               <span className="min-w-0">
-                <span className="block truncate text-[0.9375rem]">{title}</span>
-                <span className="mono block text-[0.9375rem] text-muted">{describeBlock(b)}</span>
+                <span className="block truncate text-[1rem]">{title}</span>
+                <span className="mono block text-[1rem] text-muted">{describeBlock(b)}</span>
               </span>
               <Badge tone={allDay ? 'cn' : 'pd'} md dot={false}>
                 {allDay ? 'Fermé' : 'Modifié'}
@@ -238,8 +238,8 @@ export function Closures() {
         <div>
           {mode === 'reduced' && (
             <div className="li !py-3">
-              <span className="text-[0.9375rem]">Fermé de</span>
-              <span className="flex items-center gap-2 text-[0.9375rem] text-muted">
+              <span className="text-[1rem]">Fermé de</span>
+              <span className="flex items-center gap-2 text-[1rem] text-muted">
                 <input
                   type="time"
                   step={300}
@@ -262,7 +262,7 @@ export function Closures() {
           )}
           {active.length > 1 && (
             <label className="li !py-3">
-              <span className="text-[0.9375rem]">Concerne</span>
+              <span className="text-[1rem]">Concerne</span>
               <PickerField
                 inline
                 label="Concerne"
@@ -276,9 +276,9 @@ export function Closures() {
             </label>
           )}
           <label className="li !border-b-0 !py-3">
-            <span className="text-[0.9375rem]">Motif</span>
+            <span className="text-[1rem]">Motif</span>
             <input
-              className="max-w-[55%] bg-transparent text-right text-[0.9375rem] outline-none placeholder:text-subtle"
+              className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Congés"
@@ -287,7 +287,7 @@ export function Closures() {
             />
           </label>
         </div>
-        <p className="text-[0.9375rem] leading-[1.45] text-muted">
+        <p className="text-[1rem] leading-[1.45] text-muted">
           {mode === 'closed'
             ? `Les clients ne verront aucun créneau ${daysText}.`
             : `Les clients ne pourront pas réserver entre ${from} et ${to} ${daysText}.`}{' '}
@@ -295,7 +295,7 @@ export function Closures() {
         </p>
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -311,7 +311,7 @@ export function Closures() {
           <div className="dim" onClick={() => setDel(null)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
-              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
+              <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
                 Supprimer cette exception ?
               </div>
               <p className="p mt-2">

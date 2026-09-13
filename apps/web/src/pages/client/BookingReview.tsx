@@ -100,7 +100,7 @@ export function BookingReview() {
           className="flex flex-col gap-3 rounded-[1.25rem] border border-danger-line bg-cancel-bg p-4"
           role="alert"
         >
-          <span className="flex items-center gap-2.5 text-[1.125rem] font-bold text-cancel-fg">
+          <span className="flex items-center gap-2.5 text-[1.143rem] font-bold text-cancel-fg">
             <I icon={Ban} size={22} /> Réservation en ligne impossible
           </span>
           <p className="text-[1rem] text-cancel-fg">{blockedMessage}</p>
@@ -115,19 +115,19 @@ export function BookingReview() {
       {/* L'essentiel en grand : quand, à quelle heure, combien. */}
       <div className={`crd !gap-3 ${blockedMessage ? 'opacity-60' : '!border-ink'}`}>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[1.25rem] font-bold tracking-[-0.3px]">
+          <span className="text-[1.429rem] font-bold tracking-[-0.3px]">
             {relativeDayLabelDZ(toLocalDateKey(new Date(draft.startsAt)))}
           </span>
-          <span className="text-[0.9375rem] text-muted">
+          <span className="text-[1rem] text-muted">
             {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
           </span>
         </div>
         <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2.5rem] font-bold leading-none tracking-[-1px]">
+          <span className="mono text-[2.286rem] font-bold leading-none tracking-[-1px]">
             {start}{' '}
-            <span className="text-[1.125rem] font-medium tracking-normal text-muted">→ {end}</span>
+            <span className="text-[1.143rem] font-medium tracking-normal text-muted">→ {end}</span>
           </span>
-          <span className="text-[1.75rem] font-bold leading-none tracking-[-0.7px]">
+          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.7px]">
             {formatDA(price)}
           </span>
         </div>
@@ -139,15 +139,15 @@ export function BookingReview() {
 
       <div className="crd !gap-0">
         <div className="li !py-3">
-          <span className="text-[1.0625rem] font-bold">
+          <span className="text-[1.143rem] font-bold">
             {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
           </span>
           <span className="text-[1rem] font-semibold">{formatDA(price)}</span>
         </div>
         {chosen.map((sv) => (
           <div key={sv!.id} className="li !py-3">
-            <span className="text-[1.0625rem] font-semibold">{sv!.name}</span>
-            <span className="text-[0.9375rem] text-muted">
+            <span className="text-[1.143rem] font-semibold">{sv!.name}</span>
+            <span className="text-[1rem] text-muted">
               {formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}
             </span>
           </div>
@@ -158,8 +158,8 @@ export function BookingReview() {
         <div className="flex items-center gap-3.5">
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={56} />
           <span className="min-w-0">
-            <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{s.name}</span>
-            <span className="block truncate text-[0.9375rem] text-muted">
+            <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{s.name}</span>
+            <span className="block truncate text-[1rem] text-muted">
               {[s.address, s.zone ?? s.city, wilayaName(s.wilayaCode)].filter(Boolean).join(', ')}
             </span>
           </span>
@@ -167,7 +167,7 @@ export function BookingReview() {
       </div>
 
       <div className="crd !gap-2">
-        <span className="flex items-center gap-2 text-[0.8125rem] font-bold uppercase tracking-[0.08em] text-muted">
+        <span className="flex items-center gap-2 text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
           <I icon={CalendarCheck} size={16} /> Bon à savoir
         </span>
         <ul className="ml-1 flex list-disc flex-col gap-1.5 pl-4 text-[1rem]">

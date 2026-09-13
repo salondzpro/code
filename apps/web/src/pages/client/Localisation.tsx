@@ -151,8 +151,8 @@ export function Localisation() {
             <I icon={Smartphone} size={20} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[0.8125rem] font-semibold">Réglages du téléphone</span>
-            <span className="p block text-[0.875rem]">Salon DZ · Position · Jamais</span>
+            <span className="block text-[0.857rem] font-semibold">Réglages du téléphone</span>
+            <span className="p block text-[1rem]">Salon DZ · Position · Jamais</span>
           </span>
           <span className="badge b-cn">Refusé</span>
         </Card>
@@ -161,8 +161,8 @@ export function Localisation() {
             <I icon={MapPin} size={20} />
           </span>
           <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[0.8125rem] font-semibold">Choisir un quartier</span>
-            <span className="p block text-[0.875rem]">Sans activer la localisation</span>
+            <span className="block text-[0.857rem] font-semibold">Choisir un quartier</span>
+            <span className="p block text-[1rem]">Sans activer la localisation</span>
           </span>
         </Card>
         <InfoBox>Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».</InfoBox>
@@ -257,7 +257,7 @@ export function Localisation() {
               <I icon={MapPin} size={22} />
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="block text-[0.9375rem] font-semibold">Utiliser ma position actuelle</span>
+              <span className="block text-[1rem] font-semibold">Utiliser ma position actuelle</span>
               <span className="p block">{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${posLabel?.label ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</span>
             </span>
             {choice.kind === 'gps' && pos && <I icon={Check} size={22} />}
@@ -269,7 +269,7 @@ export function Localisation() {
           ) : (
             <div className="relative h-[6rem] overflow-hidden rounded-[1.25rem] border border-line bg-fill">
               <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '90px 70px' }} />
-              <span className="absolute bottom-3 left-4 rounded-full bg-surface px-3 py-1.5 text-[0.8125rem] font-semibold shadow-card">{label}</span>
+              <span className="absolute bottom-3 left-4 rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>
             </div>
           )}
 
@@ -278,7 +278,7 @@ export function Localisation() {
               <SectionLabel>Rayon</SectionLabel>
               <div className="g4">
                 {RADIUS_OPTIONS.map((r) => (
-                  <button key={r} type="button" className={`slot !text-[0.9375rem] ${radius === r ? 'on' : ''}`} onClick={() => setRadius(r)} aria-pressed={radius === r}>
+                  <button key={r} type="button" className={`slot !text-[1rem] ${radius === r ? 'on' : ''}`} onClick={() => setRadius(r)} aria-pressed={radius === r}>
                     {r} km
                   </button>
                 ))}
@@ -316,7 +316,7 @@ export function Localisation() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[1.125rem] font-bold tracking-[-0.4px]" aria-live="polite">
+            <div className="text-[1.143rem] font-bold tracking-[-0.4px]" aria-live="polite">
               {preview.isFetching ? '…' : `${count} résultat${count > 1 ? 's' : ''}`}
             </div>
             <div className="p">

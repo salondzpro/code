@@ -79,7 +79,7 @@ export function Clients() {
                       </Badge>
                     )}
                   </span>
-                  <span className="block text-[0.9375rem] text-muted">
+                  <span className="block text-[1rem] text-muted">
                     {c.phone ? `${formatDZPhone(c.phone)} · ` : ''}
                     {c.bookingsCount} rendez-vous
                     {c.noShowCount

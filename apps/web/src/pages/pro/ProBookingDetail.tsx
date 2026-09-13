@@ -105,16 +105,16 @@ export function ProBookingDetail() {
       <div className="flex items-center gap-4">
         <Avatar name={b.clientName} size={88} />
         <div className="min-w-0">
-          <h1 className="h1 !text-[1.625rem]">{initials}</h1>
+          <h1 className="h1 !text-[1.714rem]">{initials}</h1>
           {b.clientPhone && (
-            <p className="mt-1 text-[0.8125rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
+            <p className="mt-1 text-[0.857rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
           )}
-          {b.staff && <p className="text-[0.9375rem] text-muted">avec {b.staff.displayName}</p>}
+          {b.staff && <p className="text-[1rem] text-muted">avec {b.staff.displayName}</p>}
         </div>
       </div>
       {b.clientPhone && (
         <div className="g2">
-          <a href={`tel:${b.clientPhone}`} className="btn g !py-[1.125rem] !text-[1.125rem]">
+          <a href={`tel:${b.clientPhone}`} className="btn g !py-[1.125rem] !text-[1.143rem]">
             <I icon={Phone} size={20} /> Appeler
           </a>
           {wa && (
@@ -122,7 +122,7 @@ export function ProBookingDetail() {
               href={wa}
               target="_blank"
               rel="noreferrer"
-              className="btn g !py-[1.125rem] !text-[1.125rem]"
+              className="btn g !py-[1.125rem] !text-[1.143rem]"
             >
               <I icon={MessageCircle} size={20} /> WhatsApp
             </a>
@@ -136,7 +136,7 @@ export function ProBookingDetail() {
             {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
             {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
             {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))) && (
-              <span className="ml-2 text-[0.875rem] font-normal text-muted">
+              <span className="ml-2 text-[1rem] font-normal text-muted">
                 {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
               </span>
             )}
@@ -150,28 +150,28 @@ export function ProBookingDetail() {
           />
         </div>
         <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[1.75rem] font-bold leading-none tracking-[-0.8px]">
+          <span className="mono text-[1.714rem] font-bold leading-none tracking-[-0.8px]">
             {formatTimeDZ(b.startsAt)}{' '}
             <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
           </span>
-          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">
+          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px]">
             {formatDA(b.priceDa)}
           </span>
         </div>
-        <span className="text-[0.8125rem] text-muted">
+        <span className="text-[0.857rem] text-muted">
           {formatDuration(b.durationMinutes)} au total · arrivée à {rule.arriveAt} · retard toléré
           jusqu'à {rule.lateUntil}
         </span>
       </div>
       <div className="crd !gap-0">
         <div className="li !py-3">
-          <span className="text-[0.9375rem] font-semibold">
+          <span className="text-[1rem] font-semibold">
             {lines.length} prestation{lines.length > 1 ? 's' : ''}
           </span>
-          <span className="text-[0.875rem] text-muted">{formatDA(b.priceDa)}</span>
+          <span className="text-[1rem] text-muted">{formatDA(b.priceDa)}</span>
         </div>
         {lines.map((it) => (
-          <div key={it.id} className="li !py-3 text-[0.9375rem]">
+          <div key={it.id} className="li !py-3 text-[1rem]">
             <span>{it.serviceName}</span>
             <span className="text-muted">
               {'durationMinutes' in it && it.durationMinutes
@@ -186,13 +186,13 @@ export function ProBookingDetail() {
           <span className="s block">
             Note {salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}
           </span>
-          <span className="block text-[0.9375rem]">« {b.notes} »</span>
+          <span className="block text-[1rem]">« {b.notes} »</span>
         </div>
       )}
       {b.cancellationReason && (
-        <p className="text-[0.9375rem] text-danger">Motif : {b.cancellationReason}</p>
+        <p className="text-[1rem] text-danger">Motif : {b.cancellationReason}</p>
       )}
-      <p className="text-[0.8125rem] text-muted">
+      <p className="text-[0.857rem] text-muted">
         {visits.length} rendez-vous
         {lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
       </p>
@@ -256,7 +256,7 @@ export function ProBookingDetail() {
           <div className="dim" onClick={() => setCancelling(false)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
-              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
+              <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
                 Annuler ce rendez-vous ?
               </div>
               <p className="p mt-2">
@@ -264,7 +264,7 @@ export function ProBookingDetail() {
               </p>
             </div>
             <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[0.9375rem]">Motif (optionnel)</span>
+              <span className="text-[1rem]">Motif (optionnel)</span>
               <PickerField
                 label="Motif"
                 title="Pourquoi annuler ?"
@@ -316,16 +316,16 @@ export function ProBookingReschedule() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/pro/rendez-vous/${b.id}`} right="Reporter" />
       <h1 className="h1">Nouveau créneau</h1>
-      <div className="sf text-[0.8125rem] text-muted">
+      <div className="sf text-[0.857rem] text-muted">
         Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
         {b.serviceName}
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li">
-          <span className="text-[0.9375rem]">Date</span>
+          <span className="text-[1rem]">Date</span>
           <input
             type="date"
-            className="bg-transparent text-right text-[0.9375rem] outline-none"
+            className="bg-transparent text-right text-[1rem] outline-none"
             value={d}
             min={toLocalDateKey()}
             onChange={(e) => setDate(e.target.value)}
@@ -333,12 +333,12 @@ export function ProBookingReschedule() {
           />
         </label>
         <label className="li">
-          <span className="text-[0.9375rem]">Heure</span>
+          <span className="text-[1rem]">Heure</span>
           <input
             type="time"
             step={300}
             min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
-            className="bg-transparent text-right text-[0.9375rem] outline-none"
+            className="bg-transparent text-right text-[1rem] outline-none"
             value={t}
             onChange={(e) => setTime(e.target.value)}
             aria-label="Nouvelle heure"
@@ -346,7 +346,7 @@ export function ProBookingReschedule() {
         </label>
         {staff.length > 1 && (
           <label className="li">
-            <span className="text-[0.9375rem]">Membre</span>
+            <span className="text-[1rem]">Membre</span>
             <PickerField
               inline
               label="Membre"

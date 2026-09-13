@@ -27,8 +27,8 @@ import { RowText } from './MonSalon';
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="li !py-3">
-      <span className="text-[0.9375rem] text-muted">{label}</span>
-      <span className="text-[0.9375rem] font-semibold">{value}</span>
+      <span className="text-[1rem] text-muted">{label}</span>
+      <span className="text-[1rem] font-semibold">{value}</span>
     </div>
   );
 }
@@ -96,7 +96,7 @@ export function ProRules() {
         />
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

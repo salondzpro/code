@@ -116,7 +116,7 @@ export function Revenue() {
           <div className="crd !gap-3">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-[2.375rem] font-bold leading-none tracking-[-1px]">
+                <div className="text-[2.286rem] font-bold leading-none tracking-[-1px]">
                   {formatDA(s!.revenueDa)}
                 </div>
                 <div className="p mt-2">
@@ -148,14 +148,14 @@ export function Revenue() {
                       />
                       {period === 'week' ? (
                         <span
-                          className={`text-[0.9375rem] ${isToday ? 'font-bold' : 'text-muted'}`}
+                          className={`text-[1rem] ${isToday ? 'font-bold' : 'text-muted'}`}
                         >
                           {DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)]}
                         </span>
                       ) : (
                         (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && (
                           <span
-                            className={`text-[0.75rem] ${isToday ? 'font-bold' : 'text-muted'}`}
+                            className={`text-[0.857rem] ${isToday ? 'font-bold' : 'text-muted'}`}
                           >
                             {Number(d.date.slice(8, 10))}
                           </span>
@@ -170,16 +170,16 @@ export function Revenue() {
           <div className="crd !gap-0 !py-1">
             <div className="li">
               <span className="text-[1rem]">Encaissé</span>
-              <span className="text-[1.25rem] font-bold">{formatDA(s!.collectedDa)}</span>
+              <span className="text-[1.429rem] font-bold">{formatDA(s!.collectedDa)}</span>
             </div>
             <div className="li">
               <span>
                 <span className="block text-[1rem]">Reste à encaisser</span>
-                <span className="p block text-[0.8125rem]">
+                <span className="p block text-[0.857rem]">
                   {s!.remainingCount} rendez-vous confirmé{s!.remainingCount > 1 ? 's' : ''}
                 </span>
               </span>
-              <span className="text-[1.25rem] font-bold">{formatDA(s!.remainingDa)}</span>
+              <span className="text-[1.429rem] font-bold">{formatDA(s!.remainingDa)}</span>
             </div>
           </div>
           <SectionLabel>Par prestation</SectionLabel>
@@ -190,14 +190,14 @@ export function Revenue() {
             {s!.byService.map((x) => (
               <div key={x.name} className="li">
                 <span>
-                  <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+                  <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
                     {x.name}
                   </span>
-                  <span className="p block text-[0.8125rem]">
+                  <span className="p block text-[0.857rem]">
                     {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
                   </span>
                 </span>
-                <span className="text-[1.125rem] font-bold">{formatDA(x.revenueDa)}</span>
+                <span className="text-[1.143rem] font-bold">{formatDA(x.revenueDa)}</span>
               </div>
             ))}
           </div>

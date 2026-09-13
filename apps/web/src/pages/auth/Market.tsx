@@ -43,15 +43,15 @@ export function Market() {
           <img src={c.img.src} alt="" className="h-full w-full object-cover" />
           <div className="ovl" />
           <div className="ovl-t !bottom-9">
-            <div className="text-[1.5rem] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
-            <div className="mt-1.5 text-[0.9375rem] leading-[1.35] text-white/85">
+            <div className="text-[1.714rem] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
+            <div className="mt-1.5 text-[1rem] leading-[1.35] text-white/85">
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)
                 .map((x) => x.labelFr)
                 .join(' · ')}
             </div>
           </div>
-          <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[0.625rem] text-white/80">{c.img.credit}</span>
+          <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{c.img.credit}</span>
         </button>
       ))}
       <p className="p text-center">Modifiable à tout moment depuis le profil.</p>

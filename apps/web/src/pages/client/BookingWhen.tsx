@@ -117,7 +117,7 @@ export function BookingWhen() {
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
         <span className="min-w-0">
           <span className="block text-[1rem] font-bold tracking-[-0.3px]">{s.name}</span>
-          <span className="block text-[0.8125rem] text-muted">
+          <span className="block text-[0.857rem] text-muted">
             {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
           </span>
         </span>
@@ -147,7 +147,7 @@ export function BookingWhen() {
           <span className="text-[1rem] font-bold tracking-[-0.3px]">
             {dayOver ? 'Journée terminée' : 'Complet ce jour'}
           </span>
-          <span className="p text-[0.875rem]">
+          <span className="p text-[1rem]">
             {lastSlot
               ? dayOver
                 ? `Le dernier créneau du jour était à ${lastSlot.time}.`
@@ -159,7 +159,7 @@ export function BookingWhen() {
               Prochaine disponibilité · {relativeDayLabelDZ(next.date)} à {next.slots[0]}
             </Button>
           ) : (
-            <span className="p text-[0.8125rem]">
+            <span className="p text-[0.857rem]">
               Aucune disponibilité dans les {s.bookingHorizonDays} prochains jours pour ces
               prestations.
             </span>

@@ -55,10 +55,10 @@ export function Profile() {
           }}
         />
         <div className="min-w-0">
-          <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
+          <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
             {p?.fullName ?? 'Votre nom'}
           </div>
-          <div className="text-[0.8125rem] text-muted">
+          <div className="text-[0.857rem] text-muted">
             {phone ? formatIntlDZ(phone) : user?.email}
           </div>
           <div className="mt-2">
@@ -75,23 +75,23 @@ export function Profile() {
           { v: stats.data ? String(stats.data.reviews) : '—', l: stats.data && stats.data.reviews > 1 ? 'avis donnés' : 'avis donné' },
         ].map((x) => (
           <div key={x.l} className="crd !gap-1 !px-4 !py-5">
-            <span className="text-[1.5rem] font-bold tracking-[-0.6px]">{x.v}</span>
-            <span className="whitespace-nowrap text-[0.9375rem] text-muted">{x.l}</span>
+            <span className="text-[1.714rem] font-bold tracking-[-0.6px]">{x.v}</span>
+            <span className="whitespace-nowrap text-[1rem] text-muted">{x.l}</span>
           </div>
         ))}
       </div>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/favoris">
-          <span className="text-[0.9375rem]">Mes salons favoris</span>
+          <span className="text-[1rem]">Mes salons favoris</span>
         </ListRow>
         <ListRow to="/rendez-vous?scope=past">
-          <span className="text-[0.9375rem]">Historique</span>
+          <span className="text-[1rem]">Historique</span>
         </ListRow>
         <ListRow to="/reglages#contact">
-          <span className="text-[0.9375rem]">Moyens de contact</span>
+          <span className="text-[1rem]">Moyens de contact</span>
         </ListRow>
         <ListRow to="/reglages">
-          <span className="text-[0.9375rem]">Réglages</span>
+          <span className="text-[1rem]">Réglages</span>
         </ListRow>
       </div>
       <Link
@@ -105,7 +105,7 @@ export function Profile() {
           <span className="block text-[1rem] font-bold tracking-[-0.4px]">
             {me.data?.salon ? `Gérer ${me.data.salon.name}` : 'Devenir professionnel'}
           </span>
-          <span className="p block text-[0.8125rem]">
+          <span className="p block text-[0.857rem]">
             {me.data?.salon
               ? 'Agenda, demandes, page publique'
               : 'Recevoir des réservations sur votre page'}
@@ -114,7 +114,7 @@ export function Profile() {
         <I icon={ChevronRight} size={20} className="text-disabled" />
       </Link>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

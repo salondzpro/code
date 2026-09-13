@@ -77,15 +77,15 @@ export function Requests() {
           >
             <Avatar name={b.clientName} size={68} />
             <span className="min-w-0">
-              <span className="block truncate text-[1.25rem] font-bold tracking-[-0.4px]">
+              <span className="block truncate text-[1.429rem] font-bold tracking-[-0.4px]">
                 {b.clientName}
               </span>
-              <span className="block text-[0.8125rem] text-muted">
+              <span className="block text-[0.857rem] text-muted">
                 {b.serviceName} · {formatDateShortDZ(b.startsAt)} {formatTimeDZ(b.startsAt)} ·{' '}
                 {formatDA(b.priceDa)}
               </span>
               {b.staff && (
-                <span className="block text-[0.9375rem] text-muted">
+                <span className="block text-[1rem] text-muted">
                   avec {b.staff.displayName}
                 </span>
               )}
@@ -95,7 +95,7 @@ export function Requests() {
             <Button
               variant="ok"
               sm
-              className="!py-[1.125rem] !text-[0.875rem]"
+              className="!py-[1.125rem] !text-[1rem]"
               disabled={setStatus.isPending}
               onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
             >
@@ -104,7 +104,7 @@ export function Requests() {
             <Button
               variant="g"
               sm
-              className="!py-[1.125rem] !text-[0.875rem]"
+              className="!py-[1.125rem] !text-[1rem]"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
             >
               Reporter
@@ -113,7 +113,7 @@ export function Requests() {
           <Button
             variant="d"
             sm
-            className="!py-[1.125rem] !text-[0.875rem]"
+            className="!py-[1.125rem] !text-[1rem]"
             onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
           >
             Refuser la demande
@@ -138,14 +138,14 @@ export function Requests() {
                 onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
               >
                 <span className="flex min-w-0 items-center gap-4">
-                  <span className="mono w-[4.25rem] flex-none text-[1.25rem] font-bold tracking-[-0.5px]">
+                  <span className="mono w-[4.25rem] flex-none text-[1.429rem] font-bold tracking-[-0.5px]">
                     {formatTimeDZ(b.startsAt)}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate text-[1.125rem] font-bold tracking-[-0.3px]">
+                    <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
                       {b.clientName}
                     </span>
-                    <span className="block text-[0.9375rem] text-muted">
+                    <span className="block text-[1rem] text-muted">
                       {b.serviceName} · {formatDuration(b.durationMinutes)}
                       {b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
                     </span>

@@ -292,7 +292,7 @@ export function MapView() {
         </div>
         <div className="pointer-events-auto flex items-center justify-center gap-2">
           <span
-            className="rounded-full bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-muted shadow-card"
+            className="rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-medium text-muted shadow-card"
             aria-live="polite"
           >
             {tooWide
@@ -349,17 +349,17 @@ export function MapView() {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-[1.0625rem] font-bold leading-tight tracking-[-0.4px]">
+                        <span className="text-[1.143rem] font-bold leading-tight tracking-[-0.4px]">
                           {s.name}
                         </span>
                         {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}
                       </div>
-                      <span className="mt-1 block text-[0.8125rem] text-muted">
+                      <span className="mt-1 block text-[0.857rem] text-muted">
                         {[s.zone ?? s.city, formatKm(s.distanceKm), s.isOpenNow ? 'ouvert' : null]
                           .filter(Boolean)
                           .join(' · ')}
                       </span>
-                      <span className="mt-0.5 block text-[0.9375rem] text-subtle">
+                      <span className="mt-0.5 block text-[1rem] text-subtle">
                         {s.topServices.map((t) => `${t.name} ${formatDA(t.priceDa)}`).join(' · ')}
                       </span>
                     </div>

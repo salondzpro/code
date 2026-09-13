@@ -117,8 +117,8 @@ export function ImageCropper({
     <>
       <div className="dim !z-40" onClick={onCancel} />
       <BottomSheet className="!z-50">
-        <div className="text-center text-[1.125rem] font-bold tracking-[-0.4px]">{title}</div>
-        <p className="p text-center text-[0.8125rem]">
+        <div className="text-center text-[1.143rem] font-bold tracking-[-0.4px]">{title}</div>
+        <p className="p text-center text-[0.857rem]">
           Déplacez la photo dans le cadre et ajustez le zoom.
         </p>
         <div
@@ -162,7 +162,7 @@ export function ImageCropper({
             />
           )}
         </div>
-        <label className="flex items-center gap-3 text-[0.8125rem] text-muted">
+        <label className="flex items-center gap-3 text-[0.857rem] text-muted">
           Zoom
           <input
             type="range"

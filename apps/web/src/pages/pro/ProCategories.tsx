@@ -99,7 +99,7 @@ export function ProCategories() {
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-[1rem] font-semibold">{g.name}</span>
-                      <span className="block text-[0.875rem] text-muted">
+                      <span className="block text-[1rem] text-muted">
                         {g.services.length} prestation{g.services.length > 1 ? 's' : ''}
                       </span>
                     </span>
@@ -136,7 +136,7 @@ export function ProCategories() {
         </div>
       )}
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -148,7 +148,7 @@ export function ProCategories() {
         <>
           <div className="dim" onClick={() => setDel(null)} />
           <BottomSheet className="!z-50">
-            <div className="h2 text-center !text-[1.125rem]">Supprimer « {del.name} » ?</div>
+            <div className="h2 text-center !text-[1.143rem]">Supprimer « {del.name} » ?</div>
             {del.mode ? (
               <>
                 <p className="p text-center">

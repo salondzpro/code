@@ -54,7 +54,7 @@ export function SearchPage() {
 
   return (
     <Screen bottom={NAV_PAD} gap={14}>
-      <TopBar backTo="/" right={<span className="text-[0.9375rem] text-muted">{MARKET_LABELS_FR[market]}</span>} />
+      <TopBar backTo="/" right={<span className="text-[1rem] text-muted">{MARKET_LABELS_FR[market]}</span>} />
       <form
         className="search"
         role="search"
@@ -66,7 +66,7 @@ export function SearchPage() {
         <I icon={Search} size={22} />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={market === 'men' ? 'Barbier, coupe, barbe…' : 'Coiffure, ongles, cils…'} aria-label="Recherche" autoFocus />
         {q && (
-          <button type="button" className="text-[0.9375rem] text-muted" aria-label="Effacer" onClick={() => setQ('')}>
+          <button type="button" className="text-[1rem] text-muted" aria-label="Effacer" onClick={() => setQ('')}>
             ✕
           </button>
         )}
@@ -98,7 +98,7 @@ export function SearchPage() {
                     <I icon={Tag} size={18} />
                   </span>
                   <span>
-                    <span className="block text-[0.8125rem] font-medium">{c.labelFr}</span>
+                    <span className="block text-[0.857rem] font-medium">{c.labelFr}</span>
                     <span className="s block">Catégorie</span>
                   </span>
                 </span>
@@ -112,7 +112,7 @@ export function SearchPage() {
                     <I icon={Scissors} size={18} />
                   </span>
                   <span>
-                    <span className="block text-[0.8125rem] font-medium">{h.name}</span>
+                    <span className="block text-[0.857rem] font-medium">{h.name}</span>
                     <span className="s block">
                       Prestation · {h.salonCount} {noun}
                       {h.salonCount > 1 ? 's' : ''}
@@ -128,7 +128,7 @@ export function SearchPage() {
                 <span className="flex items-center gap-3.5">
                   <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={40} />
                   <span>
-                    <span className="block text-[0.8125rem] font-medium">{s.name}</span>
+                    <span className="block text-[0.857rem] font-medium">{s.name}</span>
                     <span className="s block">
                       {s.zone ?? s.city}
                       {s.ratingCount > 0 ? ` · ★ ${formatRating(Number(s.ratingAvg))}` : ''}
@@ -146,7 +146,7 @@ export function SearchPage() {
                     <I icon={MapPin} size={18} />
                   </span>
                   <span>
-                    <span className="block text-[0.8125rem] font-medium">{p.parentCity ? `${p.city}, ${p.parentCity}` : p.city}</span>
+                    <span className="block text-[0.857rem] font-medium">{p.parentCity ? `${p.city}, ${p.parentCity}` : p.city}</span>
                     <span className="s block">
                       Lieu · {p.salonCount} {noun}
                       {p.salonCount > 1 ? 's' : ''} · {wilayaName(p.wilayaCode)}
@@ -163,7 +163,7 @@ export function SearchPage() {
                     <I icon={Search} size={18} />
                   </span>
                   <span>
-                    <span className="block text-[0.8125rem] font-medium">Rechercher « {q.trim()} »</span>
+                    <span className="block text-[0.857rem] font-medium">Rechercher « {q.trim()} »</span>
                     <span className="s block">Aucune suggestion · lancer la recherche dans toute la marketplace</span>
                   </span>
                 </span>
@@ -180,7 +180,7 @@ export function SearchPage() {
                 <span className="h3">Recherches récentes</span>
                 <button
                   type="button"
-                  className="text-[0.9375rem] text-muted"
+                  className="text-[1rem] text-muted"
                   onClick={() => {
                     clearRecentSearches();
                     setRecent([]);

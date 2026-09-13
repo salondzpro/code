@@ -37,15 +37,15 @@ export function ServicesPicker({
         ]}
       />
       {all ? (
-        <p className="p text-[0.9375rem]">Toutes les prestations, y compris les futures.</p>
+        <p className="p text-[1rem]">Toutes les prestations, y compris les futures.</p>
       ) : services.length === 0 ? (
-        <p className="p text-[0.9375rem]">Aucune prestation au catalogue pour l'instant.</p>
+        <p className="p text-[1rem]">Aucune prestation au catalogue pour l'instant.</p>
       ) : (
         <div className="crd !gap-0 !py-1">
           {services.map((sv) => (
             <label key={sv.id} className="li cursor-pointer !py-3">
               <span className="min-w-0">
-                <span className={`block text-[0.9375rem] ${sv.isActive ? '' : 'text-subtle'}`}>
+                <span className={`block text-[1rem] ${sv.isActive ? '' : 'text-subtle'}`}>
                   {sv.name}
                 </span>
                 <span className="s block">
@@ -63,7 +63,7 @@ export function ServicesPicker({
         </div>
       )}
       {!all && selected.length === 0 && services.length > 0 && (
-        <p className="text-[0.8125rem] text-danger">
+        <p className="text-[0.857rem] text-danger">
           Choisissez au moins une prestation, sinon le membre ne sera jamais proposé.
         </p>
       )}
@@ -97,11 +97,11 @@ export function Team() {
               <span className="flex min-w-0 items-center gap-3.5">
                 <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
                 <span className="min-w-0">
-                  <span className="block truncate text-[0.9375rem]">
+                  <span className="block truncate text-[1rem]">
                     {m.displayName}
                     {m.userId === salon.ownerId && <span className="text-muted"> (vous)</span>}
                   </span>
-                  <span className="p block text-[0.9375rem]">{summary(m)}</span>
+                  <span className="p block text-[1rem]">{summary(m)}</span>
                 </span>
               </span>
               <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
@@ -119,7 +119,7 @@ export function Team() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-semibold">Absences et fermetures</span>
-          <span className="block text-[0.875rem] text-muted">
+          <span className="block text-[1rem] text-muted">
             Congés, pauses d'un membre, exceptions
           </span>
         </span>

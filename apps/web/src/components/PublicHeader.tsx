@@ -53,7 +53,7 @@ export function PublicHeader() {
         </button>
         <Link
           to="/"
-          className="text-[1.5rem] leading-none tracking-[-0.6px]"
+          className="text-[1.714rem] leading-none tracking-[-0.6px]"
           aria-label="Salon DZ · accueil"
         >
           <span className="font-semibold">Salon</span>
@@ -79,7 +79,7 @@ export function PublicHeader() {
               </span>
               <span className="min-w-0">
                 <span className="block text-[1rem] font-semibold">{it.label}</span>
-                <span className="block text-[0.8125rem] text-muted">{it.hint}</span>
+                <span className="block text-[0.857rem] text-muted">{it.hint}</span>
               </span>
             </Link>
           ))}

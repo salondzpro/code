@@ -53,8 +53,8 @@ function Tile({
         <I icon={icon} size={20} />
       </span>
       <span>
-        <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{title}</span>
-        <span className="block text-[0.8125rem] leading-snug text-muted">{sub}</span>
+        <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{title}</span>
+        <span className="block text-[0.857rem] leading-snug text-muted">{sub}</span>
       </span>
     </Link>
   );
@@ -116,8 +116,8 @@ export function ProProfile() {
             </span>
           </button>
           <span className="min-w-0 flex-1">
-            <span className="block text-[1.25rem] font-bold tracking-[-0.4px]">{salon.name}</span>
-            <span className="block truncate text-[0.875rem] text-muted">{short}</span>
+            <span className="block text-[1.429rem] font-bold tracking-[-0.4px]">{salon.name}</span>
+            <span className="block truncate text-[1rem] text-muted">{short}</span>
           </span>
           <Badge tone={salon.isPublished ? 'ok' : 'pd'} md>
             {salon.isPublished ? 'En ligne' : 'Non publiée'}
@@ -137,7 +137,7 @@ export function ProProfile() {
               <I icon={Camera} size={28} />
             </span>
           )}
-          <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.75rem] font-semibold shadow-sm">
+          <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.857rem] font-semibold shadow-sm">
             <I icon={Camera} size={16} /> {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
           </span>
         </button>
@@ -172,7 +172,7 @@ export function ProProfile() {
           </Button>
         </div>
         {error && (
-          <p className="text-[0.875rem] text-danger" role="alert">
+          <p className="text-[1rem] text-danger" role="alert">
             {error}
           </p>
         )}

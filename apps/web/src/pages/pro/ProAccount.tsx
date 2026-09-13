@@ -65,7 +65,7 @@ export function ProAccount() {
         </ListRow>
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

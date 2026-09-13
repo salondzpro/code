@@ -139,7 +139,7 @@ export function TopBar({
     <div className="flex items-center justify-between gap-3">
       {noBack ? <span /> : <BackButton to={backTo} close={close} />}
       {typeof right === 'string' ? (
-        <span className="text-[0.9375rem] text-muted">{right}</span>
+        <span className="text-[1rem] text-muted">{right}</span>
       ) : (
         (right ?? null)
       )}
@@ -299,7 +299,7 @@ export function Field({
       </label>
       {children}
       {error ? (
-        <p className="mt-1.5 text-[0.8125rem] text-danger">{error}</p>
+        <p className="mt-1.5 text-[0.857rem] text-danger">{error}</p>
       ) : hint ? (
         <p className="t3 mt-1.5">{hint}</p>
       ) : null}
@@ -461,8 +461,8 @@ export function Accordion({
         className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
       >
         <span className="min-w-0">
-          <span className="block text-[1.125rem] font-semibold tracking-[-0.3px]">{title}</span>
-          {hint && <span className="block text-[0.875rem] text-muted">{hint}</span>}
+          <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">{title}</span>
+          {hint && <span className="block text-[1rem] text-muted">{hint}</span>}
         </span>
         <I
           icon={ChevronDown}
@@ -542,7 +542,7 @@ export function Card({
 /** Encadré d'information gris avec l'icône ⓘ (design .sf). */
 export function InfoBox({ children }: { children: ReactNode }) {
   return (
-    <div className="sf flex items-start gap-3 text-[0.9375rem] leading-[1.45] text-muted">
+    <div className="sf flex items-start gap-3 text-[1rem] leading-[1.45] text-muted">
       <I icon={Info} size={18} className="mt-0.5 shrink-0" />
       <div>{children}</div>
     </div>

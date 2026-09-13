@@ -52,7 +52,7 @@ export function BookingReschedule() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/rendez-vous/${b.id}`} right="Reporter" />
       <h1 className="h1">Nouveau créneau</h1>
-      <div className="sf flex items-center gap-3 text-[0.8125rem] text-muted">
+      <div className="sf flex items-center gap-3 text-[0.857rem] text-muted">
         <I icon={Clock} size={18} />
         <span>
           Actuel · {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}

@@ -65,7 +65,8 @@
 @layer components {
   /* Typographie */
   .h1 {
-    font-size: 1.75rem;
+    /* 1,714 rem = 24 px : l'ancre haute de l'échelle (12 / 14 / 16 / 20 / 24 / 32). */
+    font-size: 1.714rem;
     font-weight: 600;
     letter-spacing: -0.7px;
     line-height: 1.15;

@@ -89,7 +89,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             aria-label="Ajouter des réalisations"
           >
             <I icon={Plus} size={26} />
-            <span className="text-[0.875rem]">{busy ? 'Envoi…' : 'Ajouter'}</span>
+            <span className="text-[1rem]">{busy ? 'Envoi…' : 'Ajouter'}</span>
           </button>
         )}
       </div>
@@ -109,7 +109,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         représentative : ici, c'est votre vitrine.
       </InfoBox>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

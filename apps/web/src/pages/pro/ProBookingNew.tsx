@@ -147,17 +147,17 @@ export function ProBookingNew() {
       <div className="crd !gap-3">
         <DayScroller selected={date} onSelect={setDate} minDate={toLocalDateKey()} />
         <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+          <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px]">
             {time}{' '}
             <span className="text-[1rem] font-medium text-muted">
               {minutes ? `→ ${endTime}` : ''}
             </span>
           </span>
-          <span className="text-right text-[0.9375rem] font-semibold">
+          <span className="text-right text-[1rem] font-semibold">
             {relativeDayLabelDZ(date)}
             {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
             {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(date)) && (
-              <span className="block text-[0.8125rem] font-normal text-muted">
+              <span className="block text-[0.857rem] font-normal text-muted">
                 {formatDateShortDZ(localDateTimeToISO(date, '12:00')).replace(/^\w/, (c) =>
                   c.toUpperCase(),
                 )}
@@ -167,12 +167,12 @@ export function ProBookingNew() {
         </div>
         {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
         {!isDeviceOnDZTime() && (
-          <p className="text-[0.8125rem] text-muted">
+          <p className="text-[0.857rem] text-muted">
             Heures en heure d'Alger · il est {nowTimeDZ()} à Alger.
           </p>
         )}
         {slots.length === 0 ? (
-          <label className="flex items-center justify-between gap-3 text-[0.9375rem]">
+          <label className="flex items-center justify-between gap-3 text-[1rem]">
             <span className="text-muted">Salon fermé ce jour — heure libre</span>
             <input
               type="time"
@@ -217,7 +217,7 @@ export function ProBookingNew() {
                 type="button"
                 role="radio"
                 aria-checked={m.id === sid}
-                className={`pill !px-3.5 !py-2 !text-[0.875rem] font-semibold ${m.id === sid ? 'on' : 'soft'}`}
+                className={`pill !px-3.5 !py-2 !text-[1rem] font-semibold ${m.id === sid ? 'on' : 'soft'}`}
                 onClick={() => setStaffId(m.id)}
               >
                 {m.displayName}
@@ -245,7 +245,7 @@ export function ProBookingNew() {
             >
               <span>
                 <span className="block text-[1rem] font-semibold">{s.name}</span>
-                <span className="p block text-[0.9375rem]">
+                <span className="p block text-[1rem]">
                   {formatDuration(s.durationMinutes)} · {formatDA(s.priceDa)}
                 </span>
               </span>
@@ -258,7 +258,7 @@ export function ProBookingNew() {
       </div>
 
       {fieldErr.services && (
-        <p className="-mt-2 text-[0.875rem] text-danger" role="alert">
+        <p className="-mt-2 text-[1rem] text-danger" role="alert">
           {fieldErr.services}
         </p>
       )}
@@ -298,7 +298,7 @@ export function ProBookingNew() {
         </Field>
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -314,7 +314,7 @@ export function ProBookingNew() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-[1.25rem] font-bold tracking-[-0.4px]">{formatDA(total)}</div>
+            <div className="text-[1.429rem] font-bold tracking-[-0.4px]">{formatDA(total)}</div>
             <div className="p truncate">
               {relativeDayLabelDZ(date)} · {time}
               {chosen.length

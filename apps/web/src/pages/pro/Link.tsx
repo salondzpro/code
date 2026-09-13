@@ -132,8 +132,8 @@ export function ShareSheet({
     <>
       <div className="dim" onClick={onClose} />
       <BottomSheet>
-        <div className="h1 !text-[1.375rem]">Partagez votre page</div>
-        <div className="flex items-center gap-3 rounded-[1rem] bg-fill px-4 py-4 text-[0.9375rem]">
+        <div className="h1 !text-[1.429rem]">Partagez votre page</div>
+        <div className="flex items-center gap-3 rounded-[1rem] bg-fill px-4 py-4 text-[1rem]">
           <I icon={Lock} size={20} className="text-muted" />
           <span className="flex-1 truncate">{short}</span>
           <button type="button" className="font-semibold" onClick={() => copy(url)}>
@@ -151,7 +151,7 @@ export function ShareSheet({
               <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1.375rem] border border-line bg-surface">
                 {it.icon}
               </span>
-              <span className="text-[0.9375rem] text-muted">{it.label}</span>
+              <span className="text-[1rem] text-muted">{it.label}</span>
             </button>
           ))}
         </div>
@@ -194,10 +194,10 @@ export function ProLink() {
           {qr ? (
             <img src={qr} alt="QR code de votre page" className="h-[13rem] w-[13rem]" />
           ) : (
-            <span className="text-[0.8125rem] text-subtle">QR code</span>
+            <span className="text-[0.857rem] text-subtle">QR code</span>
           )}
         </button>
-        <div className="flex w-full items-center justify-between gap-3 rounded-[1rem] bg-fill px-5 py-4 text-[0.9375rem]">
+        <div className="flex w-full items-center justify-between gap-3 rounded-[1rem] bg-fill px-5 py-4 text-[1rem]">
           <span className="truncate">{short}</span>
           <IconButton
             aria-label="Copier le lien"
@@ -216,7 +216,7 @@ export function ProLink() {
       </div>
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <span className="text-[0.9375rem] text-muted">Réservation en ligne</span>
+          <span className="text-[1rem] text-muted">Réservation en ligne</span>
           <Toggle
             on={salon.isPublished}
             onChange={(v) => updateSalon.mutate({ isPublished: v })}
@@ -228,11 +228,11 @@ export function ProLink() {
           className="li w-full text-left"
           onClick={() => navigate('/pro/profil/regles')}
         >
-          <span className="text-[0.9375rem] text-muted">Délai minimum</span>
-          <span className="text-[1.125rem] font-bold">{lead}</span>
+          <span className="text-[1rem] text-muted">Délai minimum</span>
+          <span className="text-[1.143rem] font-bold">{lead}</span>
         </button>
         <div className="li">
-          <span className="text-[0.9375rem] text-muted">Validation manuelle</span>
+          <span className="text-[1rem] text-muted">Validation manuelle</span>
           <Toggle
             on={!salon.autoConfirm}
             onChange={(v) => updateSalon.mutate({ autoConfirm: !v })}

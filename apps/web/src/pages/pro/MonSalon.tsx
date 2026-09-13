@@ -29,7 +29,7 @@ export function RowText({ icon, title, sub }: { icon: LucideIcon; title: string;
       </span>
       <span className="min-w-0">
         <span className="block text-[1rem] font-semibold">{title}</span>
-        {sub && <span className="block truncate text-[0.875rem] text-muted">{sub}</span>}
+        {sub && <span className="block truncate text-[1rem] text-muted">{sub}</span>}
       </span>
     </span>
   );
@@ -151,7 +151,7 @@ export function MonSalon() {
         </ListRow>
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

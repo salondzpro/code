@@ -33,7 +33,7 @@ export function ProServices() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-semibold">Catégories</span>
-          <span className="block truncate text-[0.875rem] text-muted">
+          <span className="block truncate text-[1rem] text-muted">
             {groups.length
               ? groups.map((g) => g.name).join(' · ')
               : 'Coupe, barbe, coloration, soins…'}
@@ -78,10 +78,10 @@ export function ProServices() {
                       </button>
                     )}
                     <span className="min-w-0">
-                      <span className="block truncate text-[1.0625rem] font-bold tracking-[-0.3px]">
+                      <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
                         {sv.name}
                       </span>
-                      <span className="block text-[0.9375rem] text-muted">
+                      <span className="block text-[1rem] text-muted">
                         {formatDA(sv.priceDa)} · {formatDuration(sv.durationMinutes)}
                         {sv.isActive ? '' : ' · désactivée'}
                       </span>

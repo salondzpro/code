@@ -41,15 +41,15 @@ export function SalonReviews() {
       <h1 className="h1">Avis</h1>
       {has ? (
         <div className="crd !flex-row !items-center !gap-4">
-          <span className="text-[2.5rem] font-bold leading-none tracking-[-1px]">
+          <span className="text-[2.286rem] font-bold leading-none tracking-[-1px]">
             {formatRating(avg)}
           </span>
           <span className="min-w-0">
-            <span className="block text-[1.125rem] font-semibold">
+            <span className="block text-[1.143rem] font-semibold">
               {'★'.repeat(Math.round(avg))}
               <span className="text-disabled">{'★'.repeat(5 - Math.round(avg))}</span>
             </span>
-            <span className="block text-[0.9375rem] text-muted">
+            <span className="block text-[1rem] text-muted">
               {count} avis vérifié{count > 1 ? 's' : ''} · après rendez-vous
             </span>
           </span>
@@ -73,14 +73,14 @@ export function SalonReviews() {
       {reviewItems.map((r) => (
         <div key={r.id} className="crd !gap-1.5">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[1.0625rem] font-semibold">
+            <span className="text-[1.143rem] font-semibold">
               {'★'.repeat(r.rating)}
               <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span>
             </span>
-            <span className="text-[0.8125rem] text-muted">{formatDateShortDZ(r.createdAt)}</span>
+            <span className="text-[0.857rem] text-muted">{formatDateShortDZ(r.createdAt)}</span>
           </div>
           <span className="text-[1rem] font-semibold">{r.authorName}</span>
-          {r.comment && <span className="p text-[0.9375rem]">{r.comment}</span>}
+          {r.comment && <span className="p text-[1rem]">{r.comment}</span>}
         </div>
       ))}
       <LoadMore

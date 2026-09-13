@@ -94,7 +94,7 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
           active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Arrêt/Pause'
         }
         title={active ? 'Rouvrir maintenant' : 'Arrêt/Pause'}
-        className={`!rounded-full !px-3.5 !py-2.5 !text-[0.875rem] ${active ? '!border-danger !bg-danger !text-white' : ''}`}
+        className={`!rounded-full !px-3.5 !py-2.5 !text-[1rem] ${active ? '!border-danger !bg-danger !text-white' : ''}`}
         disabled={create.isPending || remove.isPending}
         onClick={() => (active ? void reopen() : setChoosing(true))}
         data-testid="quick-close"
@@ -158,12 +158,12 @@ export function QuickCloseBanner() {
           <span className="block text-[1rem] font-bold text-cancel-fg">
             Fermé jusqu'à {formatTimeDZ(active.endsAt)}
           </span>
-          <span className="block text-[0.8125rem] text-cancel-fg/80">
+          <span className="block text-[0.857rem] text-cancel-fg/80">
             Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.
           </span>
         </span>
       </div>
-      {error && <p className="text-[0.875rem] text-danger">{error}</p>}
+      {error && <p className="text-[1rem] text-danger">{error}</p>}
       <Button variant="g" onClick={() => void reopen()} disabled={remove.isPending}>
         <I icon={DoorOpen} size={18} /> Rouvrir maintenant
       </Button>

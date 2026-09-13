@@ -68,10 +68,10 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
     <span
       className={`flex w-[3.25rem] flex-none flex-col items-center rounded-[0.75rem] bg-fill py-1.5 ${muted ? 'text-muted' : ''}`}
     >
-      <span className="text-[1.375rem] font-bold leading-none tracking-[-0.5px]">
+      <span className="text-[1.429rem] font-bold leading-none tracking-[-0.5px]">
         {dayNum(iso)}
       </span>
-      <span className="text-[0.75rem] text-muted">{monthShort(iso)}</span>
+      <span className="text-[0.857rem] text-muted">{monthShort(iso)}</span>
     </span>
   );
 }
@@ -148,9 +148,9 @@ export function ClientDetail() {
         <div className="flex items-center gap-4">
           <Avatar name={c.name} size={72} />
           <span className="min-w-0 flex-1">
-            <h1 className="h1 truncate !text-[1.5rem]">{c.name}</h1>
+            <h1 className="h1 truncate !text-[1.714rem]">{c.name}</h1>
             {c.phone ? (
-              <a href={`tel:${c.phone}`} className="mono block text-[1.125rem] font-semibold">
+              <a href={`tel:${c.phone}`} className="mono block text-[1.143rem] font-semibold">
                 {formatDZPhone(c.phone)}
               </a>
             ) : (
@@ -159,7 +159,7 @@ export function ClientDetail() {
             {c.email && (
               <a
                 href={`mailto:${c.email}`}
-                className="flex items-center gap-1.5 text-[0.875rem] text-muted"
+                className="flex items-center gap-1.5 text-[1rem] text-muted"
               >
                 <I icon={Mail} size={16} /> <span className="truncate">{c.email}</span>
               </a>
@@ -168,14 +168,14 @@ export function ClientDetail() {
         </div>
         {c.phone && (
           <div className="g2">
-            <a href={`tel:${c.phone}`} className="btn g sm !py-[1.125rem] !text-[0.9375rem]">
+            <a href={`tel:${c.phone}`} className="btn g sm !py-[1.125rem] !text-[1rem]">
               <I icon={Phone} size={16} /> Appeler
             </a>
             <a
               href={`https://wa.me/${c.phone.replace(/\D/g, '')}`}
               target="_blank"
               rel="noreferrer"
-              className="btn g sm !py-[1.125rem] !text-[0.9375rem]"
+              className="btn g sm !py-[1.125rem] !text-[1rem]"
             >
               <I icon={MessageCircle} size={16} /> WhatsApp
             </a>
@@ -190,19 +190,19 @@ export function ClientDetail() {
           className="crd !gap-1 !border-ink text-left"
           onClick={() => c.lastBookingId && navigate(`/pro/rendez-vous/${c.lastBookingId}`)}
         >
-          <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em] text-muted">
+          <span className="text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
             Prochain rendez-vous · {untilLabelFR(c.nextAt, now)}
           </span>
           <span className="flex items-end justify-between gap-3">
-            <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+            <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px]">
               {formatTimeDZ(c.nextAt)}
             </span>
-            <span className="text-[1.125rem] font-bold">{relativeDayLabelDZ(nextKey)}</span>
+            <span className="text-[1.143rem] font-bold">{relativeDayLabelDZ(nextKey)}</span>
           </span>
         </button>
       ) : (
         <div className="crd !flex-row !items-center !justify-between !gap-3">
-          <span className="flex items-center gap-2 text-[0.9375rem] text-muted">
+          <span className="flex items-center gap-2 text-[1rem] text-muted">
             <I icon={CalendarClock} size={16} /> Aucun rendez-vous prévu
           </span>
           <Button auto sm onClick={() => navigate(newBookingUrl)} disabled={c.blocked}>
@@ -219,12 +219,12 @@ export function ClientDetail() {
           { v: c.lastAt ? formatDateShortDZ(c.lastAt) : '—', l: 'dernière visite' },
         ].map((x) => (
           <span key={x.l} className="flex flex-col rounded-[0.875rem] bg-fill px-3 py-3">
-            <span className="text-[1.375rem] font-bold leading-tight tracking-[-0.5px]">{x.v}</span>
-            <span className="text-[0.8125rem] text-muted">{x.l}</span>
+            <span className="text-[1.429rem] font-bold leading-tight tracking-[-0.5px]">{x.v}</span>
+            <span className="text-[0.857rem] text-muted">{x.l}</span>
           </span>
         ))}
       </div>
-      <p className={`-mt-2 text-[0.9375rem] ${warn ? 'text-danger' : 'text-muted'}`}>
+      <p className={`-mt-2 text-[1rem] ${warn ? 'text-danger' : 'text-muted'}`}>
         {c.bookingsCount} rendez-vous au total · {c.cancelledCount} annulé
         {c.cancelledCount > 1 ? 's' : ''} · {c.noShowCount} absence{c.noShowCount > 1 ? 's' : ''}
       </p>
@@ -271,13 +271,13 @@ export function ClientDetail() {
         )}
       </div>
       {c.blocked && (
-        <p className="text-[0.875rem] text-danger">
+        <p className="text-[1rem] text-danger">
           Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre
           salon.
         </p>
       )}
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -305,11 +305,11 @@ export function ClientDetail() {
                   <DateBlock iso={h.startsAt} muted={cancelled} />
                   <span className="min-w-0 flex-1">
                     <span
-                      className={`block truncate text-[1.0625rem] font-bold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
+                      className={`block truncate text-[1.143rem] font-bold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
                     >
                       {h.serviceName}
                     </span>
-                    <span className="block text-[0.9375rem] text-muted">
+                    <span className="block text-[1rem] text-muted">
                       <span className="mono">{formatTimeDZ(h.startsAt)}</span> ·{' '}
                       {formatDA(h.priceDa)}
                       {h.staffName ? ` · ${h.staffName}` : ''}

@@ -42,7 +42,7 @@ export function PickerSheet<T extends string | number>({
     <>
       <div className="dim" onClick={onClose} />
       <BottomSheet className="max-h-[85vh] !z-50 overflow-y-auto">
-        <div className="h2 text-center !text-[1.125rem]">{title}</div>
+        <div className="h2 text-center !text-[1.143rem]">{title}</div>
         <div className="crd !gap-0 !py-1" role="radiogroup" aria-label={title}>
           {options.map((o) => {
             const header = o.group !== lastGroup ? o.group : undefined;
@@ -126,7 +126,7 @@ export function PickerField<T extends string | number>({
         onClick={() => setOpen(true)}
         className={
           inline
-            ? `flex max-w-[60%] items-center gap-1 text-right text-[0.9375rem] ${current ? '' : 'text-subtle'} ${className}`
+            ? `flex max-w-[60%] items-center gap-1 text-right text-[1rem] ${current ? '' : 'text-subtle'} ${className}`
             : `inp lg flex items-center justify-between gap-3 text-left ${current ? '' : 'text-subtle'} ${className}`
         }
       >

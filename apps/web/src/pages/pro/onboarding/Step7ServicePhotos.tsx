@@ -81,11 +81,11 @@ export function Step7ServicePhotos() {
         ) : (
           <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
             <I icon={Camera} size={32} />
-            <span className="text-[0.9375rem]">Ajouter une photo</span>
+            <span className="text-[1rem]">Ajouter une photo</span>
           </span>
         )}
         {photo && (
-          <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.75rem] font-semibold shadow-sm">
+          <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.857rem] font-semibold shadow-sm">
             <I icon={Camera} size={16} /> {busy ? 'Envoi…' : 'Changer'}
           </span>
         )}
@@ -111,7 +111,7 @@ export function Step7ServicePhotos() {
         place dans « Réalisations ».
       </InfoBox>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

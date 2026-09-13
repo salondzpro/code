@@ -28,8 +28,8 @@ export function SalonServices() {
             <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="crd !flex-row items-center gap-4">
               <Img src={photos[0]?.url ?? s.coverUrl} className="h-[7rem] w-[7rem] flex-none !rounded-[1rem]" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>
-                <span className="block text-[0.8125rem] text-muted">
+                <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{sv.name}</span>
+                <span className="block text-[0.857rem] text-muted">
                   {formatDuration(sv.durationMinutes)}
                   {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                 </span>

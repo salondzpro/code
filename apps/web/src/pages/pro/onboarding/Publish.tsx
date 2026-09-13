@@ -45,8 +45,8 @@ export function Publish() {
         {items.map((it) => (
           <button key={it.label} type="button" className="li w-full text-left" onClick={() => navigate(it.to)}>
             <span>
-              <span className="block text-[0.9375rem]">{it.label}</span>
-              {!it.ok && it.hint && <span className="p block text-[0.8125rem]">{it.hint}</span>}
+              <span className="block text-[1rem]">{it.label}</span>
+              {!it.ok && it.hint && <span className="p block text-[0.857rem]">{it.hint}</span>}
             </span>
             {it.ok ? (
               <I icon={Check} size={22} className="text-ok-fg" />
@@ -59,8 +59,8 @@ export function Publish() {
         ))}
       </div>
       <div className="rounded-[1.25rem] bg-ink p-5 text-white">
-        <div className="text-[0.8125rem] text-white/60">Votre page publique</div>
-        <div className="mt-1 text-[1.25rem] font-bold tracking-[-0.4px]">
+        <div className="text-[0.857rem] text-white/60">Votre page publique</div>
+        <div className="mt-1 text-[1.429rem] font-bold tracking-[-0.4px]">
           {host}/s/{salon.slug}
         </div>
       </div>
@@ -68,7 +68,7 @@ export function Publish() {
         Prévisualiser la page
       </Button>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

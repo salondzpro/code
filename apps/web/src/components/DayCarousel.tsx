@@ -75,7 +75,7 @@ export function DayScroller({
             aria-label={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(d)}`}
           >
             <span
-              className={`text-[0.625rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
+              className={`text-[0.857rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
             >
               {showMonth ? monthLabel(d).split(' ')[0]?.slice(0, 4) : DAY_LABELS_SHORT_FR[dow]}
             </span>

@@ -111,15 +111,15 @@ export function BookingDetail() {
             <StatusBadge status="cancelled" lg cancelledBy="client" />
           </div>
           <div className="flex items-end justify-between gap-3">
-            <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px] line-through decoration-danger/60 decoration-2">
+            <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px] line-through decoration-danger/60 decoration-2">
               {formatTimeDZ(b.startsAt)}{' '}
               <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
             </span>
-            <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px] text-muted line-through decoration-danger/60 decoration-2">
+            <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px] text-muted line-through decoration-danger/60 decoration-2">
               {formatDA(b.priceDa)}
             </span>
           </div>
-          <span className="text-[0.8125rem] text-muted">
+          <span className="text-[0.857rem] text-muted">
             {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} · {b.salon.name}
           </span>
         </div>
@@ -128,12 +128,12 @@ export function BookingDetail() {
             <span className="text-[1rem] font-bold">
               {lines.length} prestation{lines.length > 1 ? 's' : ''}
             </span>
-            <span className="text-[0.875rem] text-muted">annulée{lines.length > 1 ? 's' : ''}</span>
+            <span className="text-[1rem] text-muted">annulée{lines.length > 1 ? 's' : ''}</span>
           </div>
           {lines.map((it) => (
             <div key={it.id} className="li !py-3">
               <span className="text-[1rem] font-semibold">{it.serviceName}</span>
-              <span className="text-[0.875rem] text-muted">
+              <span className="text-[1rem] text-muted">
                 {it.durationMinutes
                   ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
                   : formatDA(it.priceDa)}
@@ -157,15 +157,15 @@ export function BookingDetail() {
       <div className="flex items-center gap-4">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
         <div className="min-w-0">
-          <h1 className="h1 !text-[1.625rem]">{b.salon.name}</h1>
+          <h1 className="h1 !text-[1.714rem]">{b.salon.name}</h1>
           {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-            <p className="mt-1 text-[0.8125rem] text-muted">{formatDZPhone(b.salon.phone)}</p>
+            <p className="mt-1 text-[0.857rem] text-muted">{formatDZPhone(b.salon.phone)}</p>
           )}
         </div>
       </div>
       <div className="g2">
         {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-          <a href={`tel:${b.salon.phone}`} className="btn g !py-[1.125rem] !text-[1.125rem]">
+          <a href={`tel:${b.salon.phone}`} className="btn g !py-[1.125rem] !text-[1.143rem]">
             <I icon={Phone} size={20} /> Appeler
           </a>
         )}
@@ -174,7 +174,7 @@ export function BookingDetail() {
             href={wa}
             target="_blank"
             rel="noreferrer"
-            className="btn g !py-[1.125rem] !text-[1.125rem]"
+            className="btn g !py-[1.125rem] !text-[1.143rem]"
           >
             <I icon={MessageCircle} size={20} /> WhatsApp
           </a>
@@ -189,15 +189,15 @@ export function BookingDetail() {
           <StatusBadge status={b.status} lg cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
         </div>
         <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+          <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px]">
             {formatTimeDZ(b.startsAt)}{' '}
             <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
           </span>
-          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">
+          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px]">
             {formatDA(b.priceDa)}
           </span>
         </div>
-        <span className="text-[0.8125rem] text-muted">
+        <span className="text-[0.857rem] text-muted">
           {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} ·{' '}
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </span>
@@ -207,12 +207,12 @@ export function BookingDetail() {
           <span className="text-[1rem] font-bold">
             {lines.length} prestation{lines.length > 1 ? 's' : ''}
           </span>
-          <span className="text-[0.875rem] text-muted">{formatDA(b.priceDa)}</span>
+          <span className="text-[1rem] text-muted">{formatDA(b.priceDa)}</span>
         </div>
         {lines.map((it) => (
           <div key={it.id} className="li !py-3">
             <span className="text-[1rem] font-semibold">{it.serviceName}</span>
-            <span className="text-[0.875rem] text-muted">
+            <span className="text-[1rem] text-muted">
               {it.durationMinutes
                 ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
                 : formatDA(it.priceDa)}
@@ -224,11 +224,11 @@ export function BookingDetail() {
       {b.notes && (
         <div className="sf">
           <span className="s block">Votre note</span>
-          <span className="block text-[0.9375rem]">« {b.notes} »</span>
+          <span className="block text-[1rem]">« {b.notes} »</span>
         </div>
       )}
       {b.cancellationReason && (
-        <p className="text-[0.9375rem] text-danger">Motif : {b.cancellationReason}</p>
+        <p className="text-[1rem] text-danger">Motif : {b.cancellationReason}</p>
       )}
       <div className="flex flex-col gap-2.5">
         {active && (
@@ -252,12 +252,12 @@ export function BookingDetail() {
           </Button>
         )}
         {active && !canModify && (
-          <p className="p text-center text-[0.875rem]">
+          <p className="p text-center text-[1rem]">
             Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
           </p>
         )}
         {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
-          <p className="p text-center text-[0.875rem]">
+          <p className="p text-center text-[1rem]">
             Déjà reporté une fois. Pour le déplacer encore, contactez le salon.
           </p>
         )}
@@ -280,7 +280,7 @@ export function BookingDetail() {
           <div className="dim" onClick={() => setCancelling(false)} />
           <BottomSheet>
             <div className="text-center">
-              <div className="text-[1.25rem] font-bold tracking-[-0.4px]">
+              <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
                 Annuler ce rendez-vous ?
               </div>
               <p className="p mt-2">
@@ -294,7 +294,7 @@ export function BookingDetail() {
                 : `Pour respecter le travail des salons, au-delà de ${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`}
             </InfoBox>
             <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[0.9375rem]">Motif (optionnel)</span>
+              <span className="text-[1rem]">Motif (optionnel)</span>
               <PickerField
                 label="Motif"
                 title="Pourquoi annuler ?"

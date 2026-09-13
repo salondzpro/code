@@ -31,11 +31,11 @@ export function RefuseRequestSheet({
       <div className="dim" onClick={onClose} />
       <BottomSheet className="!z-50">
         <div className="text-center">
-          <div className="text-[1.25rem] font-bold tracking-[-0.4px]">Refuser cette demande ?</div>
+          <div className="text-[1.429rem] font-bold tracking-[-0.4px]">Refuser cette demande ?</div>
           <p className="p mt-2">{request.clientName} sera prévenu·e et le créneau sera libéré.</p>
         </div>
         <div className="crd !flex-row items-center justify-between !py-3">
-          <span className="text-[0.9375rem]">Motif (optionnel)</span>
+          <span className="text-[1rem]">Motif (optionnel)</span>
           <PickerField
             label="Motif du refus"
             title="Pourquoi refuser ?"

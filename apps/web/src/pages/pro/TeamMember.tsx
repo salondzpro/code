@@ -139,7 +139,7 @@ export function TeamMember() {
           }}
         />
         <span className="min-w-0 flex-1">
-          <h1 className="h1 truncate !text-[1.375rem]">{member.displayName}</h1>
+          <h1 className="h1 truncate !text-[1.429rem]">{member.displayName}</h1>
           <span className="p block">
             {avatarBusy
               ? 'Envoi de la photo…'
@@ -152,7 +152,7 @@ export function TeamMember() {
           {member.phone && (
             <a
               href={`tel:${member.phone}`}
-              className="flex items-center gap-1.5 text-[0.9375rem] text-muted"
+              className="flex items-center gap-1.5 text-[1rem] text-muted"
             >
               <I icon={Phone} size={16} /> {formatDZPhone(member.phone)}
             </a>
@@ -160,7 +160,7 @@ export function TeamMember() {
           {member.avatarUrl && !avatarBusy && (
             <button
               type="button"
-              className="text-[0.75rem] font-semibold text-danger"
+              className="text-[0.857rem] font-semibold text-danger"
               onClick={() =>
                 update.mutate(
                   { id: member.id, avatarUrl: null },
@@ -278,7 +278,7 @@ export function TeamMember() {
               .filter((h) => h.dayOfWeek === d)
               .map((h) => ({ start: h.startsAt, end: h.endsAt }));
             return (
-              <span key={d} className="flex justify-between text-[0.875rem]">
+              <span key={d} className="flex justify-between text-[1rem]">
                 <span className={ranges.length ? '' : 'text-subtle'}>
                   {DAY_LABELS_SHORT_FR[d as 0]}
                 </span>
@@ -290,7 +290,7 @@ export function TeamMember() {
       )}
 
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -313,7 +313,7 @@ export function TeamMember() {
         ) : (
           <button
             type="button"
-            className="py-2 text-[0.875rem] text-danger"
+            className="py-2 text-[1rem] text-danger"
             onClick={() => setConfirmRemove(true)}
           >
             Retirer de l'équipe
@@ -390,7 +390,7 @@ export function TeamMemberServices() {
         }
       />
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
@@ -487,7 +487,7 @@ export function TeamMemberHours() {
               .filter((h) => h.dayOfWeek === d && !h.isClosed)
               .map((h) => ({ start: h.opensAt, end: h.closesAt }));
             return (
-              <span key={d} className="flex justify-between text-[0.875rem]">
+              <span key={d} className="flex justify-between text-[1rem]">
                 <span className={ranges.length ? '' : 'text-subtle'}>
                   {DAY_LABELS_SHORT_FR[d as 0]}
                 </span>
@@ -498,7 +498,7 @@ export function TeamMemberHours() {
         </div>
       )}
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

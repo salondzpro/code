@@ -52,11 +52,11 @@ export function BookingServices() {
   const Row = ({ sv, boxed }: { sv: Service; boxed?: boolean }) => (
     <div className={`flex w-full items-start gap-3 ${boxed ? 'crd !flex-row' : 'li !items-start'}`}>
       <div className="min-w-0 flex-1">
-        <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">{sv.name}</span>
+        <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{sv.name}</span>
         {sv.description && (
-          <span className="mt-0.5 block text-[0.875rem] text-muted">{sv.description}</span>
+          <span className="mt-0.5 block text-[1rem] text-muted">{sv.description}</span>
         )}
-        <span className="mt-1 block text-[0.9375rem] font-semibold">
+        <span className="mt-1 block text-[1rem] font-semibold">
           {formatDA(sv.priceDa)}
           <span className="font-normal text-muted"> · {formatDuration(sv.durationMinutes)}</span>
         </span>
@@ -69,9 +69,9 @@ export function BookingServices() {
 
   return (
     <Screen gap={12}>
-      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[0.9375rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
+      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[1rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
       <h1 className="h1">Prestations</h1>
-      <p className="p !text-[0.875rem]">
+      <p className="p !text-[1rem]">
         Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par
         prestation.
       </p>

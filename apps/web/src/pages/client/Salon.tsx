@@ -194,17 +194,17 @@ export function Salon() {
       <div className="relative -mt-5 flex flex-col gap-3 rounded-t-[1.5rem] bg-bg px-4 pt-5">
         {/* Identité : le nom, où c'est, ce que ça vaut. Trois lignes, rien de plus. */}
         <div className="flex flex-col gap-1.5">
-          <h1 className="h1 !text-[1.625rem]">{s.name}</h1>
+          <h1 className="h1 !text-[1.714rem]">{s.name}</h1>
           <a
             href={mapsUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 text-[0.9375rem] underline decoration-line-soft underline-offset-2"
+            className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
           >
             <I icon={MapPin} size={16} className="flex-none text-muted" />
             <span className="min-w-0 truncate">{s.address ? `${s.address}, ${place}` : place}</span>
           </a>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem]">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[1rem]">
             <button
               type="button"
               className={`flex items-center gap-1${s.ratingCount > 0 ? '' : ' text-muted'}`}
@@ -245,13 +245,13 @@ export function Salon() {
         {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
         <div className="g2">
           {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
-            <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[0.9375rem]">
+            <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[1rem]">
               <I icon={Phone} size={18} /> Appeler
             </a>
           ) : (
             <button
               type="button"
-              className="btn g sm !py-[0.9375rem] !text-[0.9375rem]"
+              className="btn g sm !py-[0.9375rem] !text-[1rem]"
               onClick={() => {
                 const url = window.location.href;
                 if (navigator.share)
@@ -266,7 +266,7 @@ export function Salon() {
             href={mapsUrl}
             target="_blank"
             rel="noreferrer"
-            className="btn g sm !py-[0.9375rem] !text-[0.9375rem]"
+            className="btn g sm !py-[0.9375rem] !text-[1rem]"
           >
             <I icon={Navigation} size={18} /> Itinéraire
           </a>
@@ -286,13 +286,13 @@ export function Salon() {
                   <span className="block text-[1rem] font-bold text-cancel-fg">
                     Réservation en ligne impossible
                   </span>
-                  <span className="block text-[0.9375rem] text-cancel-fg">
+                  <span className="block text-[1rem] text-cancel-fg">
                     {standing.data.message}
                   </span>
                   {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
                     <a
                       href={`tel:${s.phone}`}
-                      className="mt-1 inline-flex items-center gap-1.5 text-[0.9375rem] font-semibold text-cancel-fg underline"
+                      className="mt-1 inline-flex items-center gap-1.5 text-[1rem] font-semibold text-cancel-fg underline"
                     >
                       <I icon={Phone} size={16} /> Appeler le salon
                     </a>
@@ -300,8 +300,8 @@ export function Salon() {
                 </span>
               </div>
             )}
-            <h2 className="h1 !text-[1.375rem]">Choix de la prestation</h2>
-            <p className="p !text-[0.875rem]">
+            <h2 className="h1 !text-[1.429rem]">Choix de la prestation</h2>
+            <p className="p !text-[1rem]">
               Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un
               rendez-vous par prestation.
             </p>
@@ -323,15 +323,15 @@ export function Salon() {
                         />
                       )}
                       <div className="min-w-0">
-                        <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+                        <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
                           {sv.name}
                         </span>
                         {sv.description && (
-                          <span className="mt-0.5 block text-[0.875rem] text-muted">
+                          <span className="mt-0.5 block text-[1rem] text-muted">
                             {sv.description}
                           </span>
                         )}
-                        <span className="mt-1 block text-[0.9375rem] font-semibold">
+                        <span className="mt-1 block text-[1rem] font-semibold">
                           {formatDA(sv.priceDa)}
                           <span className="font-normal text-muted">
                             {' '}
@@ -359,20 +359,20 @@ export function Salon() {
 
         {tab === 'reviews' && (
           <div className="flex flex-col gap-2.5">
-            <h2 className="h1 !text-[1.375rem]">Avis</h2>
+            <h2 className="h1 !text-[1.429rem]">Avis</h2>
             {s.ratingCount > 0 ? (
               <div className="crd !flex-row !items-center !gap-3.5">
-                <span className="text-[2.25rem] font-semibold leading-none tracking-[-1px]">
+                <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]">
                   {formatRating(s.ratingAvg)}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[1.0625rem] font-semibold">
+                  <span className="block text-[1.143rem] font-semibold">
                     {'★'.repeat(Math.round(s.ratingAvg))}
                     <span className="text-disabled">
                       {'★'.repeat(5 - Math.round(s.ratingAvg))}
                     </span>
                   </span>
-                  <span className="block text-[0.875rem] text-muted">
+                  <span className="block text-[1rem] text-muted">
                     {s.ratingCount} avis vérifié{s.ratingCount > 1 ? 's' : ''} · après rendez-vous
                   </span>
                 </span>
@@ -400,7 +400,7 @@ export function Salon() {
                     {'★'.repeat(r.rating)}
                     <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span>
                   </span>
-                  <span className="text-[0.8125rem] text-muted">
+                  <span className="text-[0.857rem] text-muted">
                     {formatDateShortDZ(r.createdAt)}
                   </span>
                 </div>
@@ -418,12 +418,12 @@ export function Salon() {
         {tab === 'about' && (
           <div className="flex flex-col gap-2.5">
             {/* 1. Où. L'adresse d'abord, la carte ensuite : on situe avant d'illustrer. */}
-            <h2 className="h1 !text-[1.375rem]">Où se situe le salon&nbsp;?</h2>
+            <h2 className="h1 !text-[1.429rem]">Où se situe le salon&nbsp;?</h2>
             <a
               href={mapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 text-[0.9375rem] underline decoration-line-soft underline-offset-2"
+              className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
             >
               <I icon={MapPin} size={16} className="flex-none text-muted" />
               <span className="min-w-0">{s.address ? `${s.address}, ${place}` : place}</span>
@@ -440,14 +440,14 @@ export function Salon() {
                 href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="btn auto absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-1/2 !rounded-full !px-5 !py-3 !text-[0.9375rem]"
+                className="btn auto absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-1/2 !rounded-full !px-5 !py-3 !text-[1rem]"
               >
                 <I icon={MapIcon} size={18} /> Afficher la carte
               </a>
             </div>
 
             {/* 2. Quand. Aujourd'hui en tête, puis la semaine à partir d'aujourd'hui. */}
-            <h2 className="h1 !text-[1.375rem]">Horaires d'ouverture</h2>
+            <h2 className="h1 !text-[1.429rem]">Horaires d'ouverture</h2>
             <div className="crd !gap-0 !py-1">
               {weekFromToday.map((d, idx) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
@@ -456,7 +456,7 @@ export function Salon() {
                     <span className={`text-[1rem] ${idx === 0 ? 'font-bold' : ''}`}>
                       {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
                       {idx <= 1 && (
-                        <span className="ml-1.5 text-[0.875rem] font-normal text-muted">
+                        <span className="ml-1.5 text-[1rem] font-normal text-muted">
                           {DAY_LABELS_FR[d]}
                         </span>
                       )}
@@ -476,7 +476,7 @@ export function Salon() {
             {/* 3. Qui. Un prénom et un visage : on choisit aussi une personne. */}
             {s.staff.length > 0 && (
               <>
-                <h2 className="h1 !text-[1.375rem]">
+                <h2 className="h1 !text-[1.429rem]">
                   {s.staff.length > 1 ? 'Collaborateurs' : 'Collaborateur'}
                 </h2>
                 <div className="crd !gap-0 !py-1">
@@ -484,7 +484,7 @@ export function Salon() {
                     <div key={m.id} className="li">
                       <span className="flex min-w-0 items-center gap-3">
                         <Avatar src={m.avatarUrl} name={m.displayName} size={44} />
-                        <span className="truncate text-[1.0625rem] font-semibold">
+                        <span className="truncate text-[1.143rem] font-semibold">
                           {m.displayName}
                         </span>
                       </span>
@@ -497,7 +497,7 @@ export function Salon() {
             {/* 4. Ce qu'il faut savoir : replié, on ne le lit que si on le cherche. */}
             {(s.description || cats) && (
               <>
-                <h2 className="h1 !text-[1.375rem]">Informations</h2>
+                <h2 className="h1 !text-[1.429rem]">Informations</h2>
                 <Accordion
                   title="À propos du salon"
                   open={aboutOpen}
@@ -505,7 +505,7 @@ export function Salon() {
                 >
                   <div className="flex flex-col gap-1.5 py-3">
                     {s.description && <p className="p">{s.description}</p>}
-                    {cats && <p className="text-[0.9375rem] text-muted">{cats}</p>}
+                    {cats && <p className="text-[1rem] text-muted">{cats}</p>}
                   </div>
                 </Accordion>
               </>
@@ -514,7 +514,7 @@ export function Salon() {
             {/* 5. Réalisations : la vitrine du travail, propre à Salon DZ. */}
             {works.length > 0 && (
               <>
-                <h2 className="h1 !text-[1.375rem]">Réalisations</h2>
+                <h2 className="h1 !text-[1.429rem]">Réalisations</h2>
                 <div className="g2">
                   {works.slice(0, 6).map((ph) => (
                     <Img key={ph.id} src={ph.url} className="aspect-square w-full" />

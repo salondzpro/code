@@ -38,7 +38,7 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
             <div className="flex items-center justify-between gap-3">
               <span className={`text-[1rem] font-semibold ${r.open ? '' : 'text-subtle'}`}>{day}</span>
               <span className="flex items-center gap-3">
-                <span className="text-[0.8125rem] text-muted">{r.open ? formatDayRanges(rangesFromRows([r])) : closedLabel}</span>
+                <span className="text-[0.857rem] text-muted">{r.open ? formatDayRanges(rangesFromRows([r])) : closedLabel}</span>
                 <Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={day} />
               </span>
             </div>
@@ -60,13 +60,13 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
                   </div>
                 ))}
                 {r.breaks.length < MAX_BREAKS_PER_DAY && (
-                  <button type="button" className="flex items-center gap-1.5 self-start text-[0.9375rem] font-semibold" onClick={() => patch(r.dayOfWeek, { breaks: [...r.breaks, nextBreakSuggestion(r)] })} aria-label={`Ajouter une pause ${day}`}>
+                  <button type="button" className="flex items-center gap-1.5 self-start text-[1rem] font-semibold" onClick={() => patch(r.dayOfWeek, { breaks: [...r.breaks, nextBreakSuggestion(r)] })} aria-label={`Ajouter une pause ${day}`}>
                     <I icon={Plus} size={16} /> {r.breaks.length ? 'Ajouter une autre pause' : 'Ajouter une pause'}
                   </button>
                 )}
               </>
             )}
-            {err && <p className="text-[0.8125rem] text-danger">{err}</p>}
+            {err && <p className="text-[0.857rem] text-danger">{err}</p>}
           </div>
         );
       })}
@@ -109,12 +109,12 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <span className="text-[0.9375rem]">Semaine commençant</span>
-          <span className="text-[0.9375rem] text-muted">Dimanche</span>
+          <span className="text-[1rem]">Semaine commençant</span>
+          <span className="text-[1rem] text-muted">Dimanche</span>
         </div>
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

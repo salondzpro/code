@@ -80,10 +80,10 @@ export function ProPhotos() {
       <div className="crd !flex-row items-center gap-4">
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={80} />
         <span className="min-w-0 flex-1">
-          <span className="block text-[0.9375rem] font-semibold">
+          <span className="block text-[1rem] font-semibold">
             {salon.logoUrl ? 'Votre logo' : 'Aucun logo : la couverture est utilisée'}
           </span>
-          <span className="p block text-[0.8125rem]">Format carré conseillé.</span>
+          <span className="p block text-[0.857rem]">Format carré conseillé.</span>
         </span>
         <div className="flex flex-col items-end gap-1.5">
           <Button
@@ -98,7 +98,7 @@ export function ProPhotos() {
           {salon.logoUrl && (
             <button
               type="button"
-              className="flex items-center gap-1 text-[0.75rem] font-semibold text-danger"
+              className="flex items-center gap-1 text-[0.857rem] font-semibold text-danger"
               disabled={updateSalon.isPending}
               onClick={() =>
                 void updateSalon
@@ -133,13 +133,13 @@ export function ProPhotos() {
           >
             <img src={p.url} alt="" className="h-full w-full object-cover" />
             {i === 0 ? (
-              <span className="absolute left-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[0.6875rem] font-semibold text-white">
+              <span className="absolute left-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[0.857rem] font-semibold text-white">
                 Couverture
               </span>
             ) : (
               <button
                 type="button"
-                className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-[0.6875rem] font-semibold"
+                className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-[0.857rem] font-semibold"
                 onClick={() => makeCover(p.url)}
                 disabled={setPhotos.isPending}
               >
@@ -166,7 +166,7 @@ export function ProPhotos() {
             disabled={busy !== null}
           >
             <I icon={Plus} size={22} />
-            <span className="text-[0.8125rem] font-semibold">
+            <span className="text-[0.857rem] font-semibold">
               {busy === 'photos' ? 'Envoi…' : 'Ajouter'}
             </span>
           </button>
@@ -190,7 +190,7 @@ export function ProPhotos() {
         prestation.
       </InfoBox>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

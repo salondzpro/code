@@ -97,36 +97,36 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         <div className="crd !gap-0 !py-1">
           <label className="li">
             <span>
-              <span className="block text-[0.9375rem]">Temps de battement</span>
-              <span className="p block text-[0.8125rem]">Entre deux rendez-vous</span>
+              <span className="block text-[1rem]">Temps de battement</span>
+              <span className="p block text-[0.857rem]">Entre deux rendez-vous</span>
             </span>
             <PickerField inline label="Temps de battement" value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
           </label>
           <label className="li">
             <span>
-              <span className="block text-[0.9375rem]">Délai minimum de réservation</span>
-              <span className="p block text-[0.8125rem]">Avant le début du rendez-vous</span>
+              <span className="block text-[1rem]">Délai minimum de réservation</span>
+              <span className="p block text-[0.857rem]">Avant le début du rendez-vous</span>
             </span>
             <PickerField inline label="Délai minimum de réservation" value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
           </label>
           <Link to="/pro/equipe" className="li">
             <span>
-              <span className="block text-[0.9375rem]">Rendez-vous simultanés</span>
-              <span className="p block text-[0.8125rem]">{staffHint}</span>
+              <span className="block text-[1rem]">Rendez-vous simultanés</span>
+              <span className="p block text-[0.857rem]">{staffHint}</span>
             </span>
-            <span className="text-[0.9375rem] text-muted">{staffCount}</span>
+            <span className="text-[1rem] text-muted">{staffCount}</span>
           </Link>
           <div className="li">
             <span>
-              <span className="block text-[0.9375rem]">Réservation en ligne</span>
-              <span className="p block text-[0.8125rem]">Visible dans la marketplace</span>
+              <span className="block text-[1rem]">Réservation en ligne</span>
+              <span className="p block text-[0.857rem]">Visible dans la marketplace</span>
             </span>
             <Toggle on={online} onChange={setOnline} label="Réservation en ligne" />
           </div>
           <div className="li">
             <span>
-              <span className="block text-[0.9375rem]">Validation manuelle</span>
-              <span className="p block text-[0.8125rem]">Vous confirmez chaque demande</span>
+              <span className="block text-[1rem]">Validation manuelle</span>
+              <span className="p block text-[0.857rem]">Vous confirmez chaque demande</span>
             </span>
             <Toggle on={manual} onChange={setManual} label="Validation manuelle" />
           </div>
@@ -152,21 +152,21 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <div className="crd !gap-0 !py-1">
         <label className="li">
           <span>
-            <span className="block text-[0.9375rem]">Annulation client</span>
-            <span className="p block text-[0.8125rem]">Gratuite jusqu'à</span>
+            <span className="block text-[1rem]">Annulation client</span>
+            <span className="p block text-[0.857rem]">Gratuite jusqu'à</span>
           </span>
           <PickerField inline label="Annulation gratuite jusqu'à" value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
         </label>
         <div className="li">
           <span>
-            <span className="block text-[0.9375rem]">Report client</span>
-            <span className="p block text-[0.8125rem]">Sur demande, avec validation</span>
+            <span className="block text-[1rem]">Report client</span>
+            <span className="p block text-[0.857rem]">Sur demande, avec validation</span>
           </span>
           <Toggle on={report} onChange={setReport} label="Report client" />
         </div>
       </div>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

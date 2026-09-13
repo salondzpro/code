@@ -38,7 +38,7 @@ export function CategoryResults() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/" right={<span className="pill soft !text-[0.9375rem] !font-semibold">{market === 'men' ? 'Homme' : 'Femme'}</span>} />
+      <TopBar backTo="/" right={<span className="pill soft !text-[1rem] !font-semibold">{market === 'men' ? 'Homme' : 'Femme'}</span>} />
       <h1 className="h1">{categoryLabel(category)}</h1>
       <div className="pills -mx-5 px-5">
         <Pill lg on={today} onClick={() => setToday((v) => !v)}>
@@ -64,7 +64,7 @@ export function CategoryResults() {
         <ErrorMessage error={query.error} retry={() => query.refetch()} />
       ) : (
         <>
-          <p className="text-[0.8125rem] text-muted">
+          <p className="text-[0.857rem] text-muted">
             {total} {noun} autour {/^[aeiouyhé]/i.test(prefs.label) ? "d'" : 'de '}
             {prefs.label}
           </p>

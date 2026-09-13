@@ -92,7 +92,7 @@ export function Marketplace() {
       {/* En-tête : localisation, titre + bascule, avatar */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <Link to="/localisation" className="flex items-center gap-1.5 text-[0.8125rem]">
+          <Link to="/localisation" className="flex items-center gap-1.5 text-[0.857rem]">
             <I icon={MapPin} size={18} className="text-muted" />
             <span className="truncate">{prefs.label}</span>
             <span className="text-muted">· {prefs.radiusKm} km</span>
@@ -137,7 +137,7 @@ export function Marketplace() {
         {q && (
           <button
             type="button"
-            className="text-[0.9375rem] text-muted"
+            className="text-[1rem] text-muted"
             aria-label="Effacer la recherche"
             onClick={(e) => {
               e.preventDefault();
@@ -190,14 +190,14 @@ export function Marketplace() {
         <div className="seg !p-1">
           <button
             type="button"
-            className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]"
+            className="on !flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.857rem]"
             aria-pressed
           >
             <I icon={List} size={18} /> Liste
           </button>
           <button
             type="button"
-            className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.8125rem]"
+            className="!flex !items-center !gap-1.5 !px-3.5 !py-2.5 !text-[0.857rem]"
             onClick={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}
           >
             <I icon={MapIcon} size={18} /> Carte
@@ -228,7 +228,7 @@ export function Marketplace() {
           <div className="flex h-[5rem] w-[5rem] items-center justify-center rounded-full bg-fill text-subtle">
             <I icon={Search} size={44} />
           </div>
-          <div className="mt-2 text-[1.25rem] font-bold leading-tight tracking-[-0.4px]">
+          <div className="mt-2 text-[1.429rem] font-bold leading-tight tracking-[-0.4px]">
             Aucun professionnel{category ? ` « ${categoryLabel(category)} »` : ''} à {prefs.label}
           </div>
           <p className="p">Essayez d'élargir le rayon ou de retirer un filtre.</p>
@@ -258,7 +258,7 @@ export function Marketplace() {
         </div>
       ) : (
         <>
-          <p className="text-[0.9375rem] font-semibold text-text">{countLabel}</p>
+          <p className="text-[1rem] font-semibold text-text">{countLabel}</p>
           <div className="flex flex-col gap-3.5">
             {items.map((s) => (
               <SalonListCard key={s.id} salon={s} />
@@ -273,7 +273,7 @@ export function Marketplace() {
         <>
           <div className="dim" onClick={() => setSortOpen(false)} />
           <BottomSheet>
-            <div className="h2 text-center !text-[1.125rem]">Trier par</div>
+            <div className="h2 text-center !text-[1.143rem]">Trier par</div>
             <div className="crd !gap-0 !py-1" role="radiogroup" aria-label="Trier par">
               {SORT_OPTIONS.map((o) => (
                 <button

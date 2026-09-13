@@ -64,13 +64,13 @@ export function Step6Service() {
           <Field label="Prix" htmlFor="svc-price">
             <div className="relative">
               <Input id="svc-price" lg inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} placeholder="2 500" className="!pr-12" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.8125rem]">DA</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">DA</span>
             </div>
           </Field>
           <Field label="Durée (minutes)" htmlFor="svc-duration" hint={formatDuration(duration)}>
             <div className="relative">
               <Input id="svc-duration" lg inputMode="numeric" value={String(duration || '')} onChange={(e) => setDuration(Math.min(480, Number(e.target.value.replace(/\D/g, '')) || 0))} placeholder="45" className="!pr-14" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.8125rem]">min</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">min</span>
             </div>
           </Field>
         </div>
@@ -122,7 +122,7 @@ export function Step6Service() {
           <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder="Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines." />
         </Field>
         {error && (
-          <p className="text-[0.875rem] text-danger" role="alert">
+          <p className="text-[1rem] text-danger" role="alert">
             {error}
           </p>
         )}

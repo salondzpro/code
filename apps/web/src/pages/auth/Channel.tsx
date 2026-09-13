@@ -93,7 +93,7 @@ export function Channel() {
         Le code arrive sur <b className="text-text">{isEmail || channel === 'email' ? flow.identifier : formatIntlDZ(flow.identifier)}</b>. Vous pouvez modifier le numéro.
       </InfoBox>
       {error && (
-        <p className="text-[0.875rem] text-danger" role="alert">
+        <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}

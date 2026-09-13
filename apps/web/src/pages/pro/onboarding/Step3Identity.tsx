@@ -45,7 +45,7 @@ export function Step3Identity() {
         ) : (
           <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
             <I icon={Camera} size={32} />
-            <span className="text-[0.9375rem]">Ajouter une photo</span>
+            <span className="text-[1rem]">Ajouter une photo</span>
           </span>
         )}
       </button>
@@ -71,7 +71,7 @@ export function Step3Identity() {
           {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={Camera} size={28} />}
         </button>
         <div>
-          <div className="text-[0.8125rem]">Format carré, visage ou logo centré</div>
+          <div className="text-[0.857rem]">Format carré, visage ou logo centré</div>
           <div className="p">JPG ou PNG · 2 Mo max</div>
         </div>
       </div>

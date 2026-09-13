@@ -67,7 +67,7 @@ export function ProHome() {
     <Screen bottom={NAV_PAD} gap={16}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[0.9375rem] text-muted">Bonjour, {firstName}</div>
+          <div className="text-[1rem] text-muted">Bonjour, {firstName}</div>
           <h1 className="h1">Votre journée</h1>
         </div>
         {/* « Arrêt / Pause » en icône, entre le titre et le logo. */}
@@ -93,10 +93,10 @@ export function ProHome() {
         /* Deux chiffres, pas trois : le prévisionnel du jour est déjà dans « Chiffre d'affaires ». */
         <div className="g2">
           <div className="crd !gap-1 !bg-ink !px-4 !py-4 !text-white">
-            <span className="text-[2rem] font-bold leading-none tracking-[-0.8px]">
+            <span className="text-[2.286rem] font-bold leading-none tracking-[-0.8px]">
               {stats.data.todayCount}
             </span>
-            <span className="text-[1.0625rem] font-bold leading-[1.2] text-white/90">
+            <span className="text-[1.143rem] font-bold leading-[1.2] text-white/90">
               rendez-vous aujourd'hui
             </span>
           </div>
@@ -106,11 +106,11 @@ export function ProHome() {
             aria-label="Demandes à valider"
           >
             <span
-              className={`text-[2rem] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}
+              className={`text-[2.286rem] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}
             >
               {stats.data.pendingCount}
             </span>
-            <span className="text-[1.0625rem] font-bold leading-[1.2]">à valider</span>
+            <span className="text-[1.143rem] font-bold leading-[1.2]">à valider</span>
           </Link>
         </div>
       )}
@@ -126,7 +126,7 @@ export function ProHome() {
           <span className="h3">À valider</span>
           <Link
             to="/pro/reservations"
-            className="text-[0.9375rem] font-bold"
+            className="text-[1rem] font-bold"
             aria-label="Voir toutes les demandes"
           >
             {pendingItems.length}
@@ -143,10 +143,10 @@ export function ProHome() {
             >
               <Avatar name={b.clientName} size={68} />
               <span className="min-w-0">
-                <span className="block text-[1.25rem] font-bold tracking-[-0.4px]">
+                <span className="block text-[1.429rem] font-bold tracking-[-0.4px]">
                   {b.clientName}
                 </span>
-                <span className="block text-[0.8125rem] text-muted">
+                <span className="block text-[0.857rem] text-muted">
                   {b.serviceName} · {formatTimeDZ(b.startsAt)} · {formatDA(b.priceDa)}
                 </span>
               </span>
@@ -155,7 +155,7 @@ export function ProHome() {
               <Button
                 variant="ok"
                 sm
-                className="!py-[1.125rem] !text-[0.875rem]"
+                className="!py-[1.125rem] !text-[1rem]"
                 disabled={setStatus.isPending}
                 onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
               >
@@ -164,7 +164,7 @@ export function ProHome() {
               <Button
                 variant="g"
                 sm
-                className="!py-[1.125rem] !text-[0.875rem]"
+                className="!py-[1.125rem] !text-[1rem]"
                 onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
               >
                 Reporter
@@ -173,7 +173,7 @@ export function ProHome() {
             <Button
               variant="d"
               sm
-              className="!py-[1.125rem] !text-[0.875rem]"
+              className="!py-[1.125rem] !text-[1rem]"
               onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
             >
               Refuser la demande
@@ -183,7 +183,7 @@ export function ProHome() {
 
       <div className="flex items-center justify-between">
         <span className="h3">Prochains</span>
-        <Link to="/pro/agenda" className="text-[0.8125rem] text-muted">
+        <Link to="/pro/agenda" className="text-[0.857rem] text-muted">
           Tout voir
         </Link>
       </div>
@@ -202,7 +202,7 @@ export function ProHome() {
         <div className={`crd !gap-3 ${inProgress ? '!border-ok-fg !bg-ok-bg' : ''}`}>
           <div className="flex items-center justify-between gap-3">
             <span
-              className={`text-[0.75rem] font-bold uppercase tracking-[0.08em] ${inProgress ? 'text-ok-fg' : 'text-muted'}`}
+              className={`text-[0.857rem] font-bold uppercase tracking-[0.08em] ${inProgress ? 'text-ok-fg' : 'text-muted'}`}
             >
               {inProgress
                 ? `En cours · fin à ${formatTimeDZ(next.endsAt)}`
@@ -216,13 +216,13 @@ export function ProHome() {
             onClick={() => navigate(`/pro/rendez-vous/${next.id}`)}
             aria-label={`Ouvrir le rendez-vous de ${next.clientName}`}
           >
-            <span className="mono text-[2.25rem] font-bold leading-none tracking-[-1px]">
+            <span className="mono text-[2.286rem] font-bold leading-none tracking-[-1px]">
               {formatTimeDZ(next.startsAt)}
               <span className="ml-1 text-[1rem] font-medium tracking-normal text-muted">
                 → {formatTimeDZ(next.endsAt)}
               </span>
             </span>
-            <span className="text-[1.5rem] font-bold leading-none tracking-[-0.5px]">
+            <span className="text-[1.714rem] font-bold leading-none tracking-[-0.5px]">
               {formatDA(next.priceDa)}
             </span>
           </button>
@@ -232,7 +232,7 @@ export function ProHome() {
               className="min-w-0 flex-1 text-left"
               onClick={() => navigate(`/pro/rendez-vous/${next.id}`)}
             >
-              <span className="block truncate text-[1.375rem] font-bold tracking-[-0.4px]">
+              <span className="block truncate text-[1.429rem] font-bold tracking-[-0.4px]">
                 {next.clientName}
               </span>
               <span className="block text-[1rem] text-muted">
@@ -273,14 +273,14 @@ export function ProHome() {
               onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
             >
               <span className="flex min-w-0 items-center gap-4">
-                <span className="mono w-[4.25rem] flex-none text-[1.25rem] font-bold tracking-[-0.5px]">
+                <span className="mono w-[4.25rem] flex-none text-[1.429rem] font-bold tracking-[-0.5px]">
                   {formatTimeDZ(b.startsAt)}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-[1.125rem] font-bold tracking-[-0.3px]">
+                  <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
                     {b.clientName}
                   </span>
-                  <span className="block text-[0.9375rem] text-muted">
+                  <span className="block text-[1rem] text-muted">
                     {b.serviceName} · {formatDuration(b.durationMinutes)}
                     {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
                   </span>
@@ -293,7 +293,7 @@ export function ProHome() {
             </button>
           ))}
           {upcoming.length > 6 && (
-            <Link to="/pro/agenda" className="li w-full !py-3 text-[0.9375rem] text-muted">
+            <Link to="/pro/agenda" className="li w-full !py-3 text-[1rem] text-muted">
               + {upcoming.length - 6} autres aujourd'hui
             </Link>
           )}
@@ -317,11 +317,11 @@ export function ProHome() {
             { v: stats.data?.monthRevenueDa ?? 0, l: 'ce mois' },
           ].map((x, i) => (
             <span key={x.l} className={`flex flex-col ${i ? 'pl-4' : ''}`}>
-              <span className="whitespace-nowrap text-[1.125rem] font-bold tracking-[-0.4px]">
+              <span className="whitespace-nowrap text-[1.143rem] font-bold tracking-[-0.4px]">
                 {x.v.toLocaleString('fr-DZ').replace(/ /g, ' ')}{' '}
-                <span className="text-[0.875rem] font-semibold text-muted">DA</span>
+                <span className="text-[1rem] font-semibold text-muted">DA</span>
               </span>
-              <span className="text-[0.9375rem] text-muted">{x.l}</span>
+              <span className="text-[1rem] text-muted">{x.l}</span>
             </span>
           ))}
         </span>

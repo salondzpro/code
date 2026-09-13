@@ -62,11 +62,11 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
     <span
       className={`flex w-[3.75rem] flex-none flex-col items-center rounded-[0.875rem] bg-fill py-2 ${muted ? 'text-muted' : ''}`}
     >
-      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted">
+      <span className="text-[0.857rem] font-semibold uppercase tracking-[0.06em] text-muted">
         {weekday(iso).replace('.', '')}
       </span>
-      <span className="text-[1.5rem] font-bold leading-none tracking-[-0.5px]">{dayNum(iso)}</span>
-      <span className="text-[0.75rem] text-muted">{monthShort(iso).replace('.', '')}</span>
+      <span className="text-[1.714rem] font-bold leading-none tracking-[-0.5px]">{dayNum(iso)}</span>
+      <span className="text-[0.857rem] text-muted">{monthShort(iso).replace('.', '')}</span>
     </span>
   );
 }
@@ -90,12 +90,12 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
       <div className="flex items-center justify-between gap-3">
         <span className="min-w-0">
           <span
-            className={`block text-[1.125rem] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}
+            className={`block text-[1.143rem] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}
           >
             {relativeDayLabelDZ(dayKey)}
           </span>
           {today && active && (
-            <span className="block text-[0.8125rem] font-semibold text-ok-fg">
+            <span className="block text-[0.857rem] font-semibold text-ok-fg">
               {started ? 'En cours' : untilLabelFR(b.startsAt, now)}
             </span>
           )}
@@ -104,14 +104,14 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
       </div>
       <div className="flex items-end justify-between gap-3">
         <span
-          className={`mono text-[2.25rem] font-bold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
+          className={`mono text-[2.286rem] font-bold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
         >
           {formatTimeDZ(b.startsAt)}
           <span className="ml-1 text-[1rem] font-medium tracking-normal text-muted">
             → {formatTimeDZ(b.endsAt)}
           </span>
         </span>
-        <span className="text-[1.375rem] font-bold leading-none tracking-[-0.5px]">
+        <span className="text-[1.429rem] font-bold leading-none tracking-[-0.5px]">
           {formatDA(b.priceDa)}
         </span>
       </div>
@@ -121,15 +121,15 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           className={`h-[4.5rem] w-[4.5rem] flex-none !rounded-[0.875rem] ${active ? '' : 'opacity-60'}`}
         />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[1.0625rem] font-bold tracking-[-0.3px]">
+          <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
             {b.salon.name}
           </span>
-          <span className="block text-[0.9375rem] text-muted">
+          <span className="block text-[1rem] text-muted">
             {b.serviceName}
             {b.staff?.displayName ? ` · avec ${b.staff.displayName}` : ''}
           </span>
           {(b.salon.address || b.salon.city) && (
-            <span className="mt-0.5 flex items-center gap-1 text-[0.8125rem] text-muted">
+            <span className="mt-0.5 flex items-center gap-1 text-[0.857rem] text-muted">
               <I icon={MapPin} size={13} />
               <span className="truncate">
                 {[b.salon.address, b.salon.city].filter(Boolean).join(', ')}
@@ -144,7 +144,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             href={directionsUrl(b)}
             target="_blank"
             rel="noreferrer"
-            className="btn g sm flex-1 !py-[1.125rem] !text-[0.9375rem]"
+            className="btn g sm flex-1 !py-[1.125rem] !text-[1rem]"
           >
             <I icon={Navigation} size={16} /> Itinéraire
           </a>
@@ -153,7 +153,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               to={`/rendez-vous/${b.id}/reporter`}
               variant="g"
               sm
-              className="flex-1 !py-[1.125rem] !text-[0.9375rem]"
+              className="flex-1 !py-[1.125rem] !text-[1rem]"
             >
               <I icon={CalendarClock} size={16} /> Reporter
             </LinkButton>
@@ -190,19 +190,19 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
         <DateBlock iso={b.startsAt} muted={cancelled} />
         <span className="min-w-0 flex-1">
           <span
-            className={`block truncate text-[1.0625rem] font-bold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
+            className={`block truncate text-[1.143rem] font-bold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
           >
             {b.salon.name}
           </span>
-          <span className="block text-[0.9375rem] text-muted">
+          <span className="block text-[1rem] text-muted">
             <span className="mono">{formatTimeDZ(b.startsAt)}</span> · {b.serviceName}
           </span>
-          <span className="block text-[0.9375rem] font-semibold">{formatDA(b.priceDa)}</span>
+          <span className="block text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
         </span>
         <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
       </div>
       {cancelled && b.cancellationReason && (
-        <p className="flex items-start gap-1.5 text-[0.875rem] text-danger">
+        <p className="flex items-start gap-1.5 text-[1rem] text-danger">
           <I icon={Info} size={16} className="mt-0.5 flex-none" /> Motif : {b.cancellationReason}
         </p>
       )}
@@ -212,7 +212,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
             to={`/s/${b.salon.slug}/prestations`}
             variant="g"
             sm
-            className="flex-1 !py-[1.125rem] !text-[0.9375rem]"
+            className="flex-1 !py-[1.125rem] !text-[1rem]"
           >
             <I icon={RotateCcw} size={16} /> Réserver à nouveau
           </LinkButton>
@@ -230,7 +230,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 variant="g"
                 sm
                 auto
-                className="!px-5 !py-[1.125rem] !text-[0.9375rem]"
+                className="!px-5 !py-[1.125rem] !text-[1rem]"
               >
                 <I icon={Star} size={16} /> Noter
               </LinkButton>
@@ -298,7 +298,7 @@ export function Bookings() {
           <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
             <I icon={empty.icon} size={30} />
           </span>
-          <div className="text-[1.125rem] font-bold">{empty.title}</div>
+          <div className="text-[1.143rem] font-bold">{empty.title}</div>
           <p className="p">{empty.text}</p>
           <LinkButton to="/" className="mt-2">
             <I icon={Search} size={18} /> Explorer les salons

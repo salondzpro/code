@@ -132,7 +132,7 @@ export function AgendaPro() {
     view === 'day' ? (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[0.9375rem] text-muted">
+          <div className="text-[1rem] text-muted">
             {date === today ? "Aujourd'hui · " : ''}
             {DAY_LABELS_FR[dayOfWeekFromKey(date)]}
           </div>
@@ -156,7 +156,7 @@ export function AgendaPro() {
     ) : (
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[0.9375rem] text-muted">
+          <div className="text-[1rem] text-muted">
             {view === 'week'
               ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}`
               : date.slice(0, 4)}
@@ -188,7 +188,7 @@ export function AgendaPro() {
           role="checkbox"
           aria-checked={showCancelled}
           onClick={() => setShowCancelled(!showCancelled)}
-          className="flex items-center gap-3 text-left text-[0.9375rem]"
+          className="flex items-center gap-3 text-left text-[1rem]"
         >
           <span className={`chk${showCancelled ? ' on' : ''}`} aria-hidden>
             {showCancelled && <I icon={Check} size={16} />}
@@ -225,7 +225,7 @@ export function AgendaPro() {
               return (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[0.9375rem]">
+                    <span className="text-[1rem]">
                       <b>{items.length} rendez-vous</b>{' '}
                       <span className="text-muted">· {formatDA(revenue)}</span>
                     </span>
@@ -416,7 +416,7 @@ function DayTimeline({
     <div className="relative" style={{ height }}>
       {hourMarks.map((m) => (
         <div key={m} className="absolute left-0 right-0" style={{ top: top(m) }}>
-          <span className="absolute -top-2.5 left-0 text-[0.9375rem] text-subtle">
+          <span className="absolute -top-2.5 left-0 text-[1rem] text-subtle">
             {String(Math.floor(m / 60)).padStart(2, '0')}:00
           </span>
           <div className="ml-[3.5rem] border-t border-line-soft" />
@@ -426,7 +426,7 @@ function DayTimeline({
         <button
           key={`gap-${g.s}`}
           type="button"
-          className="absolute left-[3.625rem] right-0 flex items-center justify-between rounded-[0.75rem] px-4 text-left text-[0.9375rem] text-subtle hover:text-text"
+          className="absolute left-[3.625rem] right-0 flex items-center justify-between rounded-[0.75rem] px-4 text-left text-[1rem] text-subtle hover:text-text"
           style={{
             top: top(g.s) + 2,
             height: (g.e - g.s) * PX - 4,
@@ -436,13 +436,13 @@ function DayTimeline({
           aria-label={`Ajouter un rendez-vous à ${minutesToTime(g.s)}`}
         >
           <span>Libre · {formatDuration(g.e - g.s)}</span>
-          <span className="text-[0.75rem] text-subtle">toucher pour réserver</span>
+          <span className="text-[0.857rem] text-subtle">toucher pour réserver</span>
         </button>
       ))}
       {closedRanges.map((c) => (
         <div
           key={`c-${c.s}-${c.label}`}
-          className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[0.9375rem] text-subtle"
+          className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.75rem] px-4 text-[1rem] text-subtle"
           style={{
             top: top(c.s) + 2,
             height: Math.max(20, (c.e - c.s) * PX - 4),
@@ -467,10 +467,10 @@ function DayTimeline({
             style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
             aria-label={`${b.clientName} · ${cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}`}
           >
-            <span className="block truncate text-[0.8125rem] font-semibold line-through">
+            <span className="block truncate text-[0.857rem] font-semibold line-through">
               {b.clientName} · {b.serviceName}
             </span>
-            <span className="block truncate text-[0.8125rem]">
+            <span className="block truncate text-[0.857rem]">
               <span className="mono">
                 {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
               </span>{' '}
@@ -490,10 +490,10 @@ function DayTimeline({
             className={`absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.75rem] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`}
             style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
           >
-            <span className="block truncate text-[0.8125rem] font-semibold">
+            <span className="block truncate text-[0.857rem] font-semibold">
               {b.clientName} · {b.serviceName}
             </span>
-            <span className="mono block text-[0.875rem] opacity-80">
+            <span className="mono block text-[1rem] opacity-80">
               {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {formatDA(b.priceDa)}
             </span>
             {b.status === 'pending' && (
@@ -515,7 +515,7 @@ function DayTimeline({
           style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}
         >
           <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
-          <span className="absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.6875rem] font-semibold text-white">
+          <span className="absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
             {minutesToTime(now)}
             {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
           </span>
@@ -569,7 +569,7 @@ function WeekGrid({
   for (let m = startMin; m <= endMin; m += 120) hours.push(m);
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 text-[0.8125rem]">
+      <div className="flex flex-wrap items-center gap-2 text-[0.857rem]">
         <span className="pill soft !py-2 !font-semibold">{total} rendez-vous</span>
         <Badge tone="ok" md>
           {formatDA(revenue)}
@@ -581,7 +581,7 @@ function WeekGrid({
           {hours.map((m) => (
             <span
               key={m}
-              className="absolute left-0 text-[0.8125rem] text-subtle"
+              className="absolute left-0 text-[0.857rem] text-subtle"
               style={{ top: 56 + (m - startMin) * px - 8 }}
             >
               {String(Math.floor(m / 60)).padStart(2, '0')}
@@ -600,11 +600,11 @@ function WeekGrid({
               onClick={() => onSelect(d)}
               className="flex min-w-0 flex-1 flex-col items-center gap-2 text-left"
             >
-              <span className={`text-[0.9375rem] ${closed ? 'text-disabled' : 'text-muted'}`}>
+              <span className={`text-[1rem] ${closed ? 'text-disabled' : 'text-muted'}`}>
                 {DAY_LABELS_SHORT_FR[dow]}
               </span>
               <span
-                className={`flex h-9 w-full items-center justify-center rounded-[0.75rem] text-[0.9375rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
+                className={`flex h-9 w-full items-center justify-center rounded-[0.75rem] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
               >
                 {Number(d.slice(8, 10))}
               </span>
@@ -644,7 +644,7 @@ function WeekGrid({
           );
         })}
       </div>
-      <div className="flex gap-4 text-[0.9375rem] text-muted">
+      <div className="flex gap-4 text-[1rem] text-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-5 rounded bg-cat-nail-bg" /> Réservé
         </span>
@@ -701,7 +701,7 @@ function MonthGrid({
         {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((l, i) => (
           <span
             key={i}
-            className={`py-1 text-center text-[0.9375rem] ${closedDays.includes(i) ? 'text-disabled' : 'text-subtle'}`}
+            className={`py-1 text-center text-[1rem] ${closedDays.includes(i) ? 'text-disabled' : 'text-subtle'}`}
           >
             {l}
           </span>
@@ -728,7 +728,7 @@ function MonthGrid({
               aria-label={d}
             >
               <span
-                className={`text-[0.9375rem] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}
+                className={`text-[1rem] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}
               >
                 {Number(d.slice(8, 10))}
               </span>
@@ -745,7 +745,7 @@ function MonthGrid({
           );
         })}
       </div>
-      <div className="flex gap-4 text-[0.9375rem] text-muted">
+      <div className="flex gap-4 text-[1rem] text-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-cat-nail-line" /> 1 point = 1 rendez-vous
         </span>
@@ -766,11 +766,11 @@ function MonthGrid({
           onClick={() => onOpenDay(selected)}
         >
           <span>
-            <span className="block text-[1.0625rem] font-bold tracking-[-0.3px]">
+            <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
               {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))}{' '}
               {MONTHS[Number(selected.slice(5, 7)) - 1]}
             </span>
-            <span className="p block text-[0.8125rem]">
+            <span className="p block text-[0.857rem]">
               {list.length} rendez-vous · {formatDA(revenue)}
             </span>
           </span>
@@ -789,10 +789,10 @@ function MonthGrid({
                 style={{ background: DOT[toneOf(b)] }}
               />
               <span>
-                <span className="block text-[0.8125rem]">
+                <span className="block text-[0.857rem]">
                   {b.clientName} · {b.serviceName}
                 </span>
-                <span className="mono block text-[0.875rem] text-muted">
+                <span className="mono block text-[1rem] text-muted">
                   {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                 </span>
               </span>

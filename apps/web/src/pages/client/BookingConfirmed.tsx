@@ -79,10 +79,10 @@ export function BookingConfirmed() {
         <div className="flex items-center gap-3.5">
           <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={88} />
           <span className="min-w-0">
-            <span className="block text-[1.125rem] font-bold tracking-[-0.4px]">
+            <span className="block text-[1.143rem] font-bold tracking-[-0.4px]">
               {b.salon.name}
             </span>
-            <span className="block text-[0.8125rem] text-muted">
+            <span className="block text-[0.857rem] text-muted">
               {b.salon.city}
               {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
                 ? ` · ${formatDZPhone(b.salon.phone)}`
@@ -100,15 +100,15 @@ export function BookingConfirmed() {
           <StatusBadge status={b.status} lg />
         </div>
         <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2rem] font-bold leading-none tracking-[-0.9px]">
+          <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px]">
             {formatTimeDZ(b.startsAt)}{' '}
             <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
           </span>
-          <span className="text-[1.5rem] font-bold leading-none tracking-[-0.6px]">
+          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px]">
             {formatDA(b.priceDa)}
           </span>
         </div>
-        <span className="text-[0.8125rem] text-muted">
+        <span className="text-[0.857rem] text-muted">
           {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} ·{' '}
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </span>
@@ -118,12 +118,12 @@ export function BookingConfirmed() {
           <span className="text-[1rem] font-bold">
             {lines.length} prestation{lines.length > 1 ? 's' : ''}
           </span>
-          <span className="text-[0.875rem] text-muted">{formatDA(b.priceDa)}</span>
+          <span className="text-[1rem] text-muted">{formatDA(b.priceDa)}</span>
         </div>
         {lines.map((it) => (
           <div key={it.id} className="li !py-3">
             <span className="text-[1rem] font-semibold">{it.serviceName}</span>
-            <span className="text-[0.875rem] text-muted">
+            <span className="text-[1rem] text-muted">
               {it.durationMinutes
                 ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
                 : formatDA(it.priceDa)}

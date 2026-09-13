@@ -28,7 +28,7 @@ export function RatingPill({
 }) {
   return (
     <span
-      className={`inline-flex flex-none items-center gap-1 rounded-full bg-fill px-3 py-1.5 text-[0.9375rem] font-semibold ${className}`}
+      className={`inline-flex flex-none items-center gap-1 rounded-full bg-fill px-3 py-1.5 text-[1rem] font-semibold ${className}`}
     >
       ★ {formatRating(avg)}
       {count != null && <span className="font-normal text-muted">({count})</span>}
@@ -39,7 +39,7 @@ export function RatingPill({
 /** Ligne d'avis des cartes (Planity : « ☆ 4,9 (383 avis) ») ; sans avis : « Nouveau sur Salon DZ ». */
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
-    <span className="flex items-center gap-1.5 text-[0.9375rem]">
+    <span className="flex items-center gap-1.5 text-[1rem]">
       <I icon={Star} size={18} className="flex-none" />
       {count > 0 ? (
         <>
@@ -64,7 +64,7 @@ export function SlotPills({
   return (
     <div className="flex flex-wrap gap-2">
       {slots.map((t) => (
-        <span key={t} className="pill soft mono !px-4 !py-2.5 !text-[0.8125rem]">
+        <span key={t} className="pill soft mono !px-4 !py-2.5 !text-[0.857rem]">
           {t}
         </span>
       ))}
@@ -124,7 +124,7 @@ export function NextSlots({
         {more ?? (
           <button
             type="button"
-            className="text-[0.8125rem] font-semibold text-muted"
+            className="text-[0.857rem] font-semibold text-muted"
             onClick={(e) => go(e, `/s/${salon.slug}`)}
           >
             Voir le salon →
@@ -138,7 +138,7 @@ export function NextSlots({
     <div className="flex flex-col gap-1.5" aria-label={`Prochaines disponibilités ${day}`}>
       {/* Le jour est indiqué une seule fois, dans l'en-tête : les lignes MATIN / APRÈS-MIDI restent sur une ligne. */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[0.75rem] font-bold uppercase tracking-[0.08em] text-muted">
+        <span className="text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
           Prochaines disponibilités{' '}
           <span className="normal-case tracking-normal text-text">· {day}</span>
         </span>
@@ -146,7 +146,7 @@ export function NextSlots({
       </div>
       {rows.map((r) => (
         <div key={r.key} className="flex items-center gap-2">
-          <span className="w-[5.75rem] flex-none text-[0.75rem] font-bold uppercase tracking-[0.06em]">
+          <span className="w-[5.75rem] flex-none text-[0.857rem] font-bold uppercase tracking-[0.06em]">
             {r.label}
           </span>
           <div className="flex flex-1 flex-wrap gap-1.5">
@@ -154,7 +154,7 @@ export function NextSlots({
               <button
                 key={t}
                 type="button"
-                className="pill mono !border-ink !px-3 !py-2 !text-[0.9375rem] font-bold hover:!bg-fill"
+                className="pill mono !border-ink !px-3 !py-2 !text-[1rem] font-bold hover:!bg-fill"
                 aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
                 onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
               >
@@ -244,7 +244,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
       <div className="flex flex-col gap-1.5 px-4 pb-3.5 pt-3">
         {/* Gauche : nom · Droite : note — une seule ligne */}
         <div className="flex items-center justify-between gap-3">
-          <span className="min-w-0 truncate text-[1.1875rem] font-bold leading-tight tracking-[-0.5px]">
+          <span className="min-w-0 truncate text-[1.143rem] font-bold leading-tight tracking-[-0.5px]">
             {s.name}
           </span>
           <span className="flex-none">
@@ -252,7 +252,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
           </span>
         </div>
         {/* Gauche : lieu (distance) · Droite : catégories — une seule ligne */}
-        <div className="flex items-center justify-between gap-3 text-[0.875rem] text-muted">
+        <div className="flex items-center justify-between gap-3 text-[1rem] text-muted">
           <span className="flex min-w-0 items-center gap-1">
             <I icon={MapPin} size={16} className="flex-none" />
             <span className="truncate">
@@ -268,7 +268,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             more={
               <button
                 type="button"
-                className="flex-none text-[0.8125rem] font-semibold underline underline-offset-4"
+                className="flex-none text-[0.857rem] font-semibold underline underline-offset-4"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
