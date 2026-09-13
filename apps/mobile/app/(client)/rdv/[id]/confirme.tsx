@@ -179,7 +179,7 @@ export default function BookingConfirmed() {
       <P center>
         {confirmed
           ? 'Un rappel vous sera envoyé la veille.'
-          : 'Le salon confirme votre demande sur WhatsApp.'}
+          : 'Le salon répond à votre demande. Vous recevrez une notification.'}
       </P>
       <Button onPress={() => router.replace(`/rdv/${b.id}` as never)}>
         <I icon={CalendarCheck} size={16} color={C.onInk} />

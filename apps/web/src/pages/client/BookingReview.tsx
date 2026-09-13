@@ -179,7 +179,7 @@ export function BookingReview() {
             Annulation ou report gratuits jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h
             avant.
           </li>
-          <li>Confirmation par WhatsApp et rappel avant le rendez-vous.</li>
+          <li>Confirmation et rappel avant le rendez-vous.</li>
         </ul>
       </div>
 

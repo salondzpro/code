@@ -80,7 +80,7 @@ export function BookingReschedule() {
           ))}
         </div>
       )}
-      <InfoBox>Le professionnel reçoit la demande sur WhatsApp et confirme le nouveau créneau.</InfoBox>
+      <InfoBox>Le professionnel reçoit la demande et confirme le nouveau créneau.</InfoBox>
       <ErrorMessage error={reschedule.error} />
       <BottomSheet>
         <Button

@@ -1,4 +1,4 @@
-/** C-F 10 — Vos coordonnées : nom, téléphone (+213), note pour le salon, rappel WhatsApp, feuille « Vérifier ». */
+/** C-F 10 — Vos coordonnées : nom, téléphone (+213), note pour le salon, rappels, feuille « Vérifier ». */
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -166,11 +166,11 @@ export default function BookingDetails() {
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Tx size={12} lh={14.5}>
-            Confirmation et rappel sur WhatsApp
+            Confirmation et rappel du rendez-vous
           </Tx>
           <P>2 h avant le rendez-vous</P>
         </View>
-        <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappel WhatsApp" />
+        <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappels de rendez-vous" />
       </Card>
     </Screen>
   );

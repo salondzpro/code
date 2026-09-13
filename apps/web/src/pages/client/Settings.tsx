@@ -35,7 +35,7 @@ export function Settings() {
       <div className="crd !gap-0 !py-1">
         <div className="li">
           <span>
-            <span className="block text-[1rem]">Rappels WhatsApp</span>
+            <span className="block text-[1rem]">Rappels de rendez-vous</span>
             <span className="p block text-[0.857rem]">2 h avant le rendez-vous</span>
           </span>
           <Toggle
@@ -44,7 +44,7 @@ export function Settings() {
               setReminders(v);
               update.mutate({ whatsappReminders: v });
             }}
-            label="Rappels WhatsApp"
+            label="Rappels de rendez-vous"
           />
         </div>
         <div className="li">

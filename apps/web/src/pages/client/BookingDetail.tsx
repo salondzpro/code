@@ -100,7 +100,7 @@ export function BookingDetail() {
           </span>
           <h1 className="h1">Rendez-vous annulé</h1>
           <p className="p">
-            {b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.
+            {b.salon.name} a été prévenu. Aucun frais ne vous est appliqué.
           </p>
         </div>
         <div className="crd !gap-3 !border-danger-line">

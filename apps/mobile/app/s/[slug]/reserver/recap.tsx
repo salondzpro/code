@@ -254,7 +254,7 @@ export default function BookingReview() {
           avant.
         </Tx>
         <Tx size={14} lh={18}>
-          • Confirmation par WhatsApp et rappel avant le rendez-vous.
+          • Confirmation et rappel avant le rendez-vous.
         </Tx>
       </Card>
 

@@ -121,7 +121,7 @@ export default function BookingDetail() {
           <H1 size={23} lh={26} ls={-0.8} center>
             Rendez-vous annulé
           </H1>
-          <P center>{b.salon.name} a été prévenu sur WhatsApp. Aucun frais ne vous est appliqué.</P>
+          <P center>{b.salon.name} a été prévenu. Aucun frais ne vous est appliqué.</P>
         </View>
         <Card gap={10} style={{ borderColor: C.dangerLine }}>
           <View

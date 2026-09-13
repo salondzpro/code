@@ -135,7 +135,7 @@ export function BookingConfirmed() {
       <p className="p text-center">
         {confirmed
           ? 'Un rappel vous sera envoyé la veille.'
-          : 'Le salon confirme votre demande sur WhatsApp.'}
+          : 'Le salon répond à votre demande. Vous recevrez une notification.'}
       </p>
       <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
         <I icon={CalendarCheck} size={18} /> Voir le rendez-vous

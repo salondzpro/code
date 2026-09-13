@@ -105,7 +105,7 @@ export default function BookingReschedule() {
           ))}
         </Grid>
       )}
-      <InfoBox>Le professionnel reçoit la demande sur WhatsApp et confirme le nouveau créneau.</InfoBox>
+      <InfoBox>Le professionnel reçoit la demande et confirme le nouveau créneau.</InfoBox>
       <ErrorText error={reschedule.error} />
       <View />
     </Screen>

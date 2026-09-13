@@ -46,12 +46,12 @@ export default function Settings() {
                 setReminders(v);
                 update.mutate({ whatsappReminders: v });
               }}
-              label="Rappels WhatsApp"
+              label="Rappels de rendez-vous"
             />
           }
         >
           <Tx size={12} lh={16}>
-            Rappels WhatsApp
+            Rappels de rendez-vous
           </Tx>
           <Tx size={12} color={C.muted} lh={15.5}>
             2 h avant le rendez-vous

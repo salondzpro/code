@@ -1,4 +1,4 @@
-/** C-F 10 — Vos coordonnées : nom, téléphone (+213), note pour le salon, rappel WhatsApp, feuille « Vérifier ». */
+/** C-F 10 — Vos coordonnées : nom, téléphone (+213), note pour le salon, rappels, feuille « Vérifier ». */
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { ChevronDown, MessageCircle } from 'lucide-react';
@@ -119,10 +119,10 @@ export function BookingDetails() {
             <I icon={MessageCircle} size={22} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[0.857rem]">Confirmation et rappel sur WhatsApp</span>
+            <span className="block text-[0.857rem]">Confirmation et rappel du rendez-vous</span>
             <span className="p block text-[1rem]">2 h avant le rendez-vous</span>
           </span>
-          <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappel WhatsApp" />
+          <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappels de rendez-vous" />
         </div>
       </form>
       <BottomSheet>
