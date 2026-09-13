@@ -7,6 +7,7 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - `pnpm --filter @salondz/web test:e2e` : parcours complet pro + client dans Chromium headless (playwright-core) ; exige `pnpm dev:api` (8090) + `pnpm dev:web` (9000) lancés, `PLAYWRIGHT_CHROME` si Chrome n'est pas installé. Captures dans `apps/web/test/shots/`.
 - `pnpm test:e2e:mobile` : parcours client + pro sur l'app mobile rendue par Expo web (`apps/mobile/test/smoke.e2e.mjs`) ; exige `pnpm dev:api` et, depuis `apps/mobile`, `CI=1 EXPO_PUBLIC_API_URL=http://localhost:8090 npx expo start --web --port 8082`. Captures dans `apps/mobile/test/shots/`.
 - `pnpm demo:seed` / `pnpm demo:cleanup` : deux salons de démonstration (Sarah Beauty Studio, Amine Barber) + une cliente avec rendez-vous, pour captures et tests manuels ; sessions dans `scripts/.demo.json` (gitignoré). Exige `pnpm dev:api`.
+- `pnpm check:realtime` : rejoue contre la **prod** le scénario « le pro est sur son accueil, la cliente réserve » et dit si l'événement Realtime arrive sans actualiser (`scripts/check-realtime.mjs`, comptes de démonstration, rendez-vous de test annulé à la fin). À lancer après toute modification du temps réel ou de la publication Postgres.
 - `pnpm db:migrate` (lit `DATABASE_URL` dans `.env`, suit `public.schema_migrations`). Les migrations déjà appliquées sont immuables : toute correction = nouveau fichier `000N_*.sql`.
 - API locale : `pnpm dev:api` sur le port `PORT` du `.env` (8090 en local, 8080 sur Render) ; web toujours sur http://localhost:9000 (Vite `strictPort`).
 
