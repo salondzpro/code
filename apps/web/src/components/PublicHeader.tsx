@@ -57,7 +57,9 @@ export function PublicHeader() {
 
   const drawer = (
     <>
-      <div className="dim !z-[60]" onClick={() => setOpen(false)} />
+      {/* Le voile passe SOUS le tiroir : en 60 contre 50, il le grisait entièrement et
+          rendait la déconnexion incliquable. */}
+      <div className="dim !z-[45]" onClick={() => setOpen(false)} />
       <nav className="drw" aria-label="Menu Salon DZ">
         <button
           type="button"
