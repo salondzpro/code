@@ -15,6 +15,11 @@ export function WelcomeBack() {
   const me = useMe(!!session);
   // Page d'atterrissage des liens e-mail : la session arrive dans l'URL et met un instant à
   // être lue. Rediriger avant la fin du chargement renvoyait sur la connexion à chaque lien.
+  // Lien expiré ou déjà utilisé : Supabase le dit dans le fragment de l'URL. On le traduit
+  // sur l'écran de connexion plutôt que d'y arriver sans explication.
+  const hashErr = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  if (!session && (hashErr.get('error') || hashErr.get('error_code')))
+    return <Navigate to={`/connexion?erreur=${encodeURIComponent(hashErr.get('error_code') ?? hashErr.get('error') ?? 'lien')}`} replace />;
   if (loading) return <Splash />;
   if (!session) return <Navigate to="/connexion" replace />;
 

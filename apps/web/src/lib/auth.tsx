@@ -159,16 +159,59 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+export type AuthErrorKind =
+  | 'no_account'
+  | 'unconfirmed'
+  | 'credentials'
+  | 'exists'
+  | 'rate'
+  | 'expired'
+  | 'password'
+  | 'email'
+  | 'network'
+  | 'other';
+
+/**
+ * Toute erreur d'authentification est traduite ici, en français, à partir du CODE renvoyé
+ * par Supabase quand il existe et sinon du message. Jamais de texte anglais brut à l'écran :
+ * le dernier recours est un message générique.
+ */
+export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: string } {
+  const e = err as { code?: string; message?: string; status?: number } | null;
+  const code = (e?.code ?? '').toLowerCase();
+  const msg = (e?.message ?? (typeof err === 'string' ? err : '')).toLowerCase();
+  const has = (...needles: string[]) => needles.some((n) => code === n || msg.includes(n));
+
+  if (has('signups not allowed for otp', 'signup_disabled', 'otp_disabled', 'user_not_found', 'user not found'))
+    return { kind: 'no_account', text: 'Aucun compte n’est associé à cette adresse.' };
+  if (has('email_not_confirmed', 'email not confirmed'))
+    return { kind: 'unconfirmed', text: 'Votre adresse n’est pas encore confirmée : ouvrez le lien reçu par e-mail.' };
+  if (has('invalid_credentials', 'invalid login credentials'))
+    return { kind: 'credentials', text: 'E-mail ou mot de passe incorrect.' };
+  if (has('user_already_exists', 'email_exists', 'already registered', 'already exists', 'un compte existe déjà'))
+    return { kind: 'exists', text: 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.' };
+  if (has('over_email_send_rate_limit', 'over_request_rate_limit', 'rate limit', 'too many requests', 'security purposes')) {
+    const m = msg.match(/after (\d+) seconds/);
+    return {
+      kind: 'rate',
+      text: m ? `Patientez ${m[1]} secondes avant de redemander un e-mail.` : 'Trop de tentatives. Réessayez dans quelques minutes.',
+    };
+  }
+  if (has('otp_expired', 'token has expired', 'link is invalid', 'expired', 'invalid or has expired', 'access_denied'))
+    return { kind: 'expired', text: 'Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.' };
+  if (has('weak_password', 'password should be at least', 'password is too weak'))
+    return { kind: 'password', text: 'Mot de passe trop court : 8 caractères au minimum.' };
+  if (has('same_password', 'should be different from the old password'))
+    return { kind: 'password', text: 'Choisissez un mot de passe différent de l’ancien.' };
+  if (has('email_address_invalid', 'invalid email', 'unable to validate email', 'is invalid', 'validation_failed'))
+    return { kind: 'email', text: 'Adresse e-mail invalide.' };
+  if (has('failed to fetch', 'network', 'networkerror', 'load failed', 'fetch'))
+    return { kind: 'network', text: 'Connexion perdue. Vérifiez votre réseau et réessayez.' };
+  if (e?.status && e.status >= 500) return { kind: 'other', text: 'Le service est momentanément indisponible. Réessayez dans un instant.' };
+  return { kind: 'other', text: 'Une erreur est survenue. Réessayez.' };
+}
+
 /** Message lisible pour les erreurs de connexion les plus courantes de Supabase. */
 export function authErrorText(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  const m = msg.toLowerCase();
-  if (/invalid login credentials/.test(m)) return 'E-mail ou mot de passe incorrect.';
-  if (/email not confirmed/.test(m)) return 'Adresse non confirmée : cliquez le lien reçu par e-mail.';
-  if (/rate limit|too many requests|security purposes/.test(m)) return 'Trop de tentatives. Réessayez dans quelques minutes.';
-  if (/already registered|already exists/.test(m)) return 'Un compte existe déjà avec cette adresse.';
-  if (/password should be at least|weak password/.test(m)) return 'Mot de passe trop court : 8 caractères au minimum.';
-  if (/invalid email|is invalid/.test(m)) return 'Adresse e-mail invalide.';
-  if (/fetch|network/.test(m)) return 'Connexion perdue. Vérifiez votre réseau et réessayez.';
-  return msg;
+  return describeAuthError(err).text;
 }

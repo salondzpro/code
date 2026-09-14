@@ -5,7 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { authErrorText, useAuth } from '@/lib/auth';
+import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
@@ -23,15 +23,15 @@ export function SignUp() {
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ kind: AuthErrorKind | 'form'; text: string } | null>(null);
 
   if (session) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const id = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(id)) return setError('Adresse e-mail invalide.');
-    if (password.length < PASSWORD_MIN) return setError(`Mot de passe trop court : ${PASSWORD_MIN} caractères au minimum.`);
+    if (!EMAIL_RE.test(id)) return setError({ kind: 'email', text: 'Adresse e-mail invalide.' });
+    if (password.length < PASSWORD_MIN) return setError({ kind: 'password', text: `Mot de passe trop court : ${PASSWORD_MIN} caractères au minimum.` });
     setError(null);
     setBusy(true);
     try {
@@ -41,7 +41,7 @@ export function SignUp() {
       if (open) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate('/connexion/envoye?mode=confirm', { replace: true });
     } catch (err) {
-      setError(authErrorText(err));
+      setError(describeAuthError(err));
     } finally {
       setBusy(false);
     }
@@ -53,10 +53,9 @@ export function SignUp() {
       <div>
         <h1 className="h1">{role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}</h1>
         <p className="p mt-2">
-          Déjà inscrit ?{' '}
-          <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="font-semibold text-text underline">
-            Se connecter
-          </Link>
+          {role === 'pro'
+            ? 'Votre agenda, vos réservations et votre page en ligne, en quelques minutes.'
+            : 'Réservez en ligne dans les salons de votre choix, sans appel.'}
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
@@ -73,6 +72,7 @@ export function SignUp() {
               setEmail(e.target.value);
               setError(null);
             }}
+            err={error?.kind === 'email' || error?.kind === 'exists'}
             autoFocus
           />
         </Field>
@@ -89,6 +89,7 @@ export function SignUp() {
                 setPassword(e.target.value);
                 setError(null);
               }}
+              err={error?.kind === 'password'}
               className="!pr-12"
             />
             <button
@@ -102,9 +103,21 @@ export function SignUp() {
           </div>
         </Field>
         {error && (
-          <p className="flex items-center gap-2 text-[1rem] text-danger" role="alert">
-            <I icon={AlertCircle} size={16} /> {error}
-          </p>
+          <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg p-3" role="alert">
+            <p className="flex items-start gap-2 text-[1rem] text-cancel-fg">
+              <I icon={AlertCircle} size={18} className="mt-0.5 flex-none" /> {error.text}
+            </p>
+            {error.kind === 'exists' && (
+              <div className="g2">
+                <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
+                  Se connecter
+                </Link>
+                <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
+                  Mot de passe oublié
+                </Link>
+              </div>
+            )}
+          </div>
         )}
         <Button type="submit" disabled={busy}>
           {busy ? 'Création…' : 'Créer mon compte'}
@@ -113,6 +126,12 @@ export function SignUp() {
           En créant un compte vous acceptez que Salon DZ vous envoie les confirmations et rappels de vos rendez-vous.
         </p>
       </form>
+      <div className="mt-auto flex flex-col gap-3 pt-4">
+        <p className="p text-center">Déjà inscrit ?</p>
+        <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn g">
+          Se connecter
+        </Link>
+      </div>
     </Screen>
   );
 }
