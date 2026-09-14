@@ -6,15 +6,19 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import {
+  ArrowLeft,
+  Banknote,
   CalendarClock,
+  CalendarDays,
   MessageCircle,
   Navigation,
   Phone,
   RotateCcw,
+  Scissors,
   Star,
-  XCircle,
-  ArrowLeft,
+  StickyNote,
   UserRound,
+  XCircle,
 } from 'lucide-react';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
@@ -49,6 +53,7 @@ import { Screen } from '@/components/AppFrame';
 import { PickerField } from '@/components/Picker';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { LateRule } from '@/components/LateRule';
+import { FactRow } from '@/components/BookingFacts';
 import { Splash } from '@/pages/auth/Splash';
 import { GoogleCalendarButton } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
@@ -154,97 +159,83 @@ export function BookingDetail() {
     );
   }
 
+  const dayKey = toLocalDateKey(new Date(b.startsAt));
+  const dayLabel = relativeDayLabelDZ(dayKey);
+  const dateLong = formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase());
+  const address = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
+
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="min-h-dvh" gap={12}>
       <TopBar backTo="/rendez-vous" />
-      <div className="flex items-center gap-4">
-        <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
-        <div className="min-w-0">
-          <h1 className="h1 !text-[1.714rem]">{b.salon.name}</h1>
-          {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-            <p className="mt-1 text-[0.857rem] text-muted">{formatDZPhone(b.salon.phone)}</p>
-          )}
-        </div>
-      </div>
-      <div className="g2">
-        {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-          <a href={`tel:${b.salon.phone}`} className="btn g !text-[1.143rem]">
-            <I icon={Phone} size={20} /> Appeler
-          </a>
-        )}
-        {wa && (
-          <a
-            href={wa}
-            target="_blank"
-            rel="noreferrer"
-            className="btn g !text-[1.143rem]"
-          >
-            <I icon={MessageCircle} size={20} /> WhatsApp
-          </a>
-        )}
-      </div>
-      {/* L'essentiel en grand : quand, à quelle heure, combien — rassurant et lisible d'un coup d'œil. */}
+      {/* Où : le salon et son adresse, l'état de la réservation, de quoi le joindre. */}
       <div className="crd !gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[1rem] font-bold">
-            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+        <div className="flex items-center gap-3.5">
+          <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={56} />
+          <span className="min-w-0 flex-1">
+            <h1 className="h1 truncate !text-[1.429rem]">{b.salon.name}</h1>
+            <span className="block truncate text-[0.857rem] text-muted">
+              {address || b.salon.city}
+            </span>
           </span>
-          <StatusBadge status={b.status} lg cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
+          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
         </div>
-        <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px]">
-            {formatTimeDZ(b.startsAt)}{' '}
-            <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
-          </span>
-          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px]">
-            {formatDA(b.priceDa)}
-          </span>
-        </div>
-        <span className="text-[0.857rem] text-muted">
-          {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} ·{' '}
-          {formatDuration(b.durationMinutes)} au total · paiement sur place
-        </span>
+        {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
+          <div className="g2">
+            <a href={`tel:${b.salon.phone}`} className="btn g sm">
+              <I icon={Phone} size={18} /> Appeler
+            </a>
+            {wa && (
+              <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
+                <I icon={MessageCircle} size={18} /> WhatsApp
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Quoi, quand, avec qui, combien : une ligne par fait — même lecture que la fiche pro. */}
+      <div className="crd !gap-0 !py-1">
+        <FactRow
+          icon={CalendarDays}
+          title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : `${dayLabel} · ${dateLong}`}
+          sub={`${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)} · ${formatDuration(b.durationMinutes)}`}
+          right={
+            <span
+              className={`mono text-[1.429rem] font-semibold tracking-[-0.5px] ${active ? '' : 'text-muted'}`}
+            >
+              {formatTimeDZ(b.startsAt)}
+            </span>
+          }
+        />
+        {lines.map((it) => (
+          <FactRow
+            key={it.id}
+            icon={Scissors}
+            title={it.serviceName}
+            sub={it.durationMinutes ? formatDuration(it.durationMinutes) : undefined}
+            right={
+              lines.length > 1 ? (
+                <span className="text-[1rem] font-semibold">{formatDA(it.priceDa)}</span>
+              ) : undefined
+            }
+          />
+        ))}
+        {b.staff?.displayName && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
+        <FactRow icon={Banknote} title={formatDA(b.priceDa)} sub="Paiement sur place" />
         {/* Pris pour quelqu'un d'autre, ou par quelqu'un d'autre : sans cette ligne, on ne
             sait pas de quel rendez-vous il s'agit ni pourquoi il est là. */}
         {forSomeoneElse && (
-          <span className="flex items-center gap-2 text-[1rem] font-semibold">
-            <I icon={UserRound} size={18} className="flex-none text-muted" /> Pour {b.clientName}
-          </span>
+          <FactRow icon={UserRound} title={`Pour ${b.clientName}`} sub="À son nom, avec ses règles" />
         )}
         {!forSomeoneElse && !!b.bookedByName && (
-          <span className="flex items-center gap-2 text-[1rem] font-semibold">
-            <I icon={UserRound} size={18} className="flex-none text-muted" /> Réservé par{' '}
-            {b.bookedByName}
-          </span>
+          <FactRow icon={UserRound} title={`Réservé par ${b.bookedByName}`} />
+        )}
+        {b.notes && <FactRow icon={StickyNote} title="Votre note" sub={`« ${b.notes} »`} />}
+        {b.cancellationReason && (
+          <FactRow icon={XCircle} tone="danger" title="Motif" sub={b.cancellationReason} />
         )}
       </div>
-      <div className="crd !gap-0">
-        <div className="li !py-3">
-          <span className="text-[1rem] font-bold">
-            {lines.length} prestation{lines.length > 1 ? 's' : ''}
-          </span>
-        </div>
-        {lines.map((it) => (
-          <div key={it.id} className="li !py-3">
-            <span className="text-[1rem] font-semibold">{it.serviceName}</span>
-            <span className="text-[1rem] text-muted">
-              {it.durationMinutes
-                ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
-                : formatDA(it.priceDa)}
-            </span>
-          </div>
-        ))}
-      </div>
       {active && <LateRule startsAt={b.startsAt} />}
-      {b.notes && (
-        <div className="sf">
-          <span className="s block">Votre note</span>
-          <span className="block text-[1rem]">« {b.notes} »</span>
-        </div>
-      )}
-      {b.cancellationReason && (
-        <p className="text-[1rem] text-danger">Motif : {b.cancellationReason}</p>
-      )}
       <div className="flex flex-col gap-2.5">
         {active && (
           <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">

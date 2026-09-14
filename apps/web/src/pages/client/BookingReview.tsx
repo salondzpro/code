@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { Ban, CalendarCheck, Phone, UserRound } from 'lucide-react';
+import { Ban, Banknote, CalendarCheck, CalendarDays, Phone, Scissors, UserRound } from 'lucide-react';
 import {
   ApiError,
   useBookingStanding,
@@ -34,6 +34,7 @@ import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, I, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { FactRow } from '@/components/BookingFacts';
 import { Splash } from '@/pages/auth/Splash';
 
 export function BookingReview() {
@@ -59,6 +60,8 @@ export function BookingReview() {
   const start = formatTimeDZ(draft.startsAt);
   const end = minutesToTime(timeToMinutes(start) + minutes);
   const late = lateRule(draft.startsAt);
+  const dayLabel = relativeDayLabelDZ(toLocalDateKey(new Date(draft.startsAt)));
+  const dateLong = formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toUpperCase());
   // La suspension du compte connecté ne concerne QUE ses propres rendez-vous : pour
   // quelqu'un d'autre, ce sont les règles de cette personne qui comptent, et le serveur
   // les applique sur son compte ou son numéro.
@@ -120,70 +123,54 @@ export function BookingReview() {
         </div>
       )}
 
-      {/* L'essentiel en grand : quand, à quelle heure, combien. */}
-      <div className={`crd !gap-3 ${blockedMessage ? 'opacity-60' : '!border-ink'}`}>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[1.429rem] font-bold tracking-[-0.3px]">
-            {relativeDayLabelDZ(toLocalDateKey(new Date(draft.startsAt)))}
+      {/* Où : le salon et son adresse. */}
+      <div className={`crd !flex-row items-center gap-3.5 ${blockedMessage ? 'opacity-60' : ''}`}>
+        <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={56} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
+            {s.name}
           </span>
-          <span className="text-[1rem] text-muted">
-            {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
+          <span className="block truncate text-[0.857rem] text-muted">
+            {[s.address, s.zone ?? s.city, wilayaName(s.wilayaCode)].filter(Boolean).join(', ')}
           </span>
-        </div>
-        <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2.286rem] font-bold leading-none tracking-[-1px]">
-            {start}{' '}
-            <span className="text-[1.143rem] font-medium tracking-normal text-muted">→ {end}</span>
-          </span>
-          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.7px]">
-            {formatDA(price)}
-          </span>
-        </div>
-        <span className="text-[1rem] text-muted">
-          {formatDuration(minutes)} au total ·{' '}
-          {s.depositRequired ? 'acompte demandé sur place' : 'paiement sur place, aucun acompte'}
         </span>
       </div>
 
-      <div className="crd !gap-0">
-        <div className="li !py-3">
-          <span className="text-[1.143rem] font-bold">
-            {chosen.length} prestation{chosen.length > 1 ? 's' : ''}
-          </span>
-        </div>
+      {/* Quoi, quand, pour qui, combien : une ligne par fait, lue en trois secondes. */}
+      <div className={`crd !gap-0 !py-1 ${blockedMessage ? 'opacity-60' : '!border-ink'}`}>
+        <FactRow
+          icon={CalendarDays}
+          title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : `${dayLabel} · ${dateLong}`}
+          sub={`${start} – ${end} · ${formatDuration(minutes)}`}
+          right={
+            <span className="mono text-[1.429rem] font-semibold tracking-[-0.5px]">{start}</span>
+          }
+        />
         {chosen.map((sv) => (
-          <div key={sv!.id} className="li !py-3">
-            <span className="text-[1.143rem] font-semibold">{sv!.name}</span>
-            <span className="text-[1rem] text-muted">
-              {formatDuration(sv!.durationMinutes)} · {formatDA(sv!.priceDa)}
-            </span>
-          </div>
+          <FactRow
+            key={sv!.id}
+            icon={Scissors}
+            title={sv!.name}
+            sub={formatDuration(sv!.durationMinutes)}
+            right={
+              chosen.length > 1 ? (
+                <span className="text-[1rem] font-semibold">{formatDA(sv!.priceDa)}</span>
+              ) : undefined
+            }
+          />
         ))}
-      </div>
-
-      {draft.forOther && !!draft.otherName && (
-        <div className="crd !gap-1">
-          <span className="flex items-center gap-2 text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
-            <I icon={UserRound} size={16} /> Rendez-vous pour
-          </span>
-          <span className="text-[1.143rem] font-bold tracking-[-0.3px]">{draft.otherName}</span>
-          <span className="text-[1rem] text-muted">
-            {draft.otherPhone ? formatDZPhone(draft.otherPhone) : ''} · à son nom, avec ses règles
-            d&apos;annulation
-          </span>
-        </div>
-      )}
-
-      <div className="crd">
-        <div className="flex items-center gap-3.5">
-          <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={56} />
-          <span className="min-w-0">
-            <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{s.name}</span>
-            <span className="block truncate text-[1rem] text-muted">
-              {[s.address, s.zone ?? s.city, wilayaName(s.wilayaCode)].filter(Boolean).join(', ')}
-            </span>
-          </span>
-        </div>
+        {draft.forOther && !!draft.otherName && (
+          <FactRow
+            icon={UserRound}
+            title={`Pour ${draft.otherName}`}
+            sub={`${draft.otherPhone ? `${formatDZPhone(draft.otherPhone)} · ` : ''}à son nom, avec ses règles d'annulation`}
+          />
+        )}
+        <FactRow
+          icon={Banknote}
+          title={formatDA(price)}
+          sub={s.depositRequired ? 'Acompte demandé sur place' : 'Paiement sur place, aucun acompte'}
+        />
       </div>
 
       <div className="crd !gap-2">
