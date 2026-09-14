@@ -6,12 +6,16 @@ import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES, formatIntlDZ, readAuthFlow } from '@/lib/authFlow';
 import { Avatar, Badge, Button, I, ListRow } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { Splash } from './Splash';
 
 export function WelcomeBack() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { session, user, signOut } = useAuth();
+  const { session, user, loading, signOut } = useAuth();
   const me = useMe(!!session);
+  // Page d'atterrissage des liens e-mail : la session arrive dans l'URL et met un instant à
+  // être lue. Rediriger avant la fin du chargement renvoyait sur la connexion à chaque lien.
+  if (loading) return <Splash />;
   if (!session) return <Navigate to="/connexion" replace />;
 
   const profile = me.data?.profile;
