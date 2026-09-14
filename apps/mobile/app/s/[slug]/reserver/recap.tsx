@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Ban, CalendarCheck, Phone } from 'lucide-react-native';
+import { Ban, CalendarCheck, Phone, UserRound } from 'lucide-react-native';
 import {
   ApiError,
   useBookingStanding,
@@ -19,6 +19,7 @@ import {
   CLIENT_CANCEL_MIN_HOURS,
   LATE_TOLERANCE_MINUTES,
   formatDA,
+  formatDZPhone,
   formatDateLongDZ,
   formatTimeDZ,
   lateRule,
@@ -58,7 +59,10 @@ export default function BookingReview() {
   const start = formatTimeDZ(draft.startsAt);
   const end = minutesToTime(timeToMinutes(start) + minutes);
   const late = lateRule(draft.startsAt);
-  const cannotBook = !!standing.data && !standing.data.canBook;
+  // La suspension du compte connecté ne concerne QUE ses propres rendez-vous : pour
+  // quelqu'un d'autre, ce sont les règles de cette personne qui comptent, et le serveur
+  // les applique sur son compte ou son numéro.
+  const cannotBook = !draft.forOther && !!standing.data && !standing.data.canBook;
   const blockedMessage = cannotBook ? standing.data?.message : null;
 
   const confirm = async () => {
@@ -72,6 +76,10 @@ export default function BookingReview() {
         notes: draft.notes || undefined,
         clientName: draft.name,
         clientPhone: draft.phone,
+        beneficiary:
+          draft.forOther && draft.otherName && draft.otherPhone
+            ? { fullName: draft.otherName, phone: draft.otherPhone }
+            : undefined,
       });
       if (draft.whatsapp !== undefined) updateProfile.mutate({ whatsappReminders: draft.whatsapp });
       router.replace(`/rdv/${b.id}/confirme` as never);
@@ -180,6 +188,23 @@ export default function BookingReview() {
           {`${formatDuration(minutes)} au total · ${s.depositRequired ? 'acompte demandé sur place' : 'paiement sur place, aucun acompte'}`}
         </Tx>
       </Card>
+
+      {!!draft.forOther && !!draft.otherName && (
+        <Card gap={3}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+            <I icon={UserRound} size={14} color={C.muted} />
+            <Tx size={12} weight={700} ls={0.7} color={C.muted} lh={16} upper>
+              Rendez-vous pour
+            </Tx>
+          </View>
+          <Tx size={16} weight={700} ls={-0.3} lh={20}>
+            {draft.otherName}
+          </Tx>
+          <Tx size={14} color={C.muted} lh={18}>
+            {`${draft.otherPhone ? formatDZPhone(draft.otherPhone) : ''} · à son nom, avec ses règles d’annulation`}
+          </Tx>
+        </Card>
+      )}
 
       <Card gap={0}>
         <Rows>

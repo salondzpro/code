@@ -14,6 +14,7 @@ import {
   Star,
   XCircle,
   ArrowLeft,
+  UserRound,
 } from 'lucide-react';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
@@ -65,6 +66,8 @@ export function BookingDetail() {
   if (booking.isError)
     return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;
+  // Rendez-vous que J'AI pris pour quelqu'un d'autre : il est à cette personne, pas à moi.
+  const forSomeoneElse = !!b.bookedBy && b.bookedBy === me.data?.profile.id && b.clientId !== me.data?.profile.id;
   const active = b.status === 'pending' || b.status === 'confirmed';
   const hoursLeft = Math.floor((new Date(b.startsAt).getTime() - Date.now()) / 3_600_000);
   // Règles du salon (même source que l'API) : délai d'annulation, report client autorisé.
@@ -201,6 +204,19 @@ export function BookingDetail() {
           {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} ·{' '}
           {formatDuration(b.durationMinutes)} au total · paiement sur place
         </span>
+        {/* Pris pour quelqu'un d'autre, ou par quelqu'un d'autre : sans cette ligne, on ne
+            sait pas de quel rendez-vous il s'agit ni pourquoi il est là. */}
+        {forSomeoneElse && (
+          <span className="flex items-center gap-2 text-[1rem] font-semibold">
+            <I icon={UserRound} size={18} className="flex-none text-muted" /> Pour {b.clientName}
+          </span>
+        )}
+        {!forSomeoneElse && !!b.bookedByName && (
+          <span className="flex items-center gap-2 text-[1rem] font-semibold">
+            <I icon={UserRound} size={18} className="flex-none text-muted" /> Réservé par{' '}
+            {b.bookedByName}
+          </span>
+        )}
       </div>
       <div className="crd !gap-0">
         <div className="li !py-3">

@@ -16,12 +16,41 @@ import { db } from './supabase';
 
 const DAY = 86_400_000;
 
-export async function clientStanding(clientId: string, now = Date.now()): Promise<ClientStanding> {
+/**
+ * Qui est concerné : un compte, un numéro, ou les deux. Un rendez-vous pris POUR
+ * QUELQU'UN D'AUTRE qui n'a pas encore de compte n'a pas de `client_id` : son historique
+ * ne se lit alors que par le numéro, sinon ses annulations ne compteraient pour personne.
+ */
+export type ClientRef = { id?: string | null; phone?: string | null };
+
+/** Filtre « ce compte OU ce numéro » pour PostgREST (à passer à `.or()`). */
+export function clientFilter(ref: ClientRef): string {
+  return [ref.id ? `client_id.eq.${ref.id}` : null, ref.phone ? `client_phone.eq.${ref.phone}` : null]
+    .filter(Boolean)
+    .join(',');
+}
+
+/**
+ * La même identité, mais comme TERME imbriquable dans un `and(...)`. Deux appels `.or()`
+ * sur une même requête ne se combinent pas de façon fiable : quand il faut croiser
+ * l'identité avec une autre alternative (absence OU annulation tardive), il faut une
+ * seule expression, d'où l'imbrication.
+ */
+function identTerm(ref: ClientRef): string {
+  const f = clientFilter(ref);
+  return f.includes(',') ? `or(${f})` : f;
+}
+
+export async function clientStanding(ref: ClientRef | string, now = Date.now()): Promise<ClientStanding> {
+  const who: ClientRef = typeof ref === 'string' ? { id: ref } : ref;
+  const mine = clientFilter(who);
+  // Ni compte ni numéro : rien à reprocher à personne.
+  if (!mine) return { cancellations: 0, noShows: 0, suspendedUntil: null };
   const [cancels, noShows] = await Promise.all([
     db
       .from('bookings')
       .select('cancelled_at')
-      .eq('client_id', clientId)
+      .or(mine)
       .eq('status', 'cancelled')
       .eq('cancelled_by', 'client')
       .gte('cancelled_at', new Date(now - CANCEL_ABUSE_WINDOW_DAYS * DAY).toISOString())
@@ -29,8 +58,9 @@ export async function clientStanding(clientId: string, now = Date.now()): Promis
     db
       .from('bookings')
       .select('starts_at')
-      .eq('client_id', clientId)
-      .or('status.eq.no_show,and(status.eq.cancelled,cancellation_kind.eq.late)')
+      .or(
+        `and(${identTerm(who)},status.eq.no_show),and(${identTerm(who)},status.eq.cancelled,cancellation_kind.eq.late)`,
+      )
       .gte('starts_at', new Date(now - NO_SHOW_ABUSE_WINDOW_DAYS * DAY).toISOString())
       .order('starts_at', { ascending: false }),
   ]);

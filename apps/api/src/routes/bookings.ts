@@ -15,7 +15,7 @@ import { badRequest, conflict, forbidden, notFound, unwrap } from '../lib/errors
 import { camelize } from '../lib/mappers';
 import { BOOKING_WITH_SALON_SELECT, getBookingWithSalon, mapBookingWithSalon } from '../lib/queries';
 import { pushAfterBooking } from '../lib/push';
-import { clientStanding } from '../lib/standing';
+import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
 
 const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
@@ -24,25 +24,56 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/bookings', { schema: { body: createBookingSchema } }, async (req, reply) => {
     const profile = req.profile!;
     const body = req.body;
-    const clientName = body.clientName ?? profile.fullName;
-    const clientPhone = body.clientPhone ?? profile.phone ?? null;
+    const forOther = !!body.beneficiary && body.beneficiary.phone !== profile.phone;
+
+    /**
+     * POUR QUELQU'UN D'AUTRE : le rendez-vous appartient à la personne concernée. Son
+     * numéro l'identifie ; s'il correspond à un compte, le rendez-vous s'y rattache et
+     * apparaît dans son application comme si elle l'avait pris elle-même. Sinon
+     * `client_id` reste nul et le numéro seul l'identifie, comme un client de passage.
+     *
+     * Un numéro identique à celui du compte connecté n'est PAS une autre personne : on
+     * réserve pour soi, sans créer une seconde identité fantôme.
+     */
+    let clientId: string | null = profile.id;
+    let clientName = body.clientName ?? profile.fullName;
+    let clientPhone = body.clientPhone ?? profile.phone ?? null;
+    if (forOther) {
+      const who = body.beneficiary!;
+      const found = await db.from('profiles').select('id, full_name').eq('phone', who.phone).limit(1);
+      if (found.error) throw found.error;
+      const account = found.data?.[0] as { id: string; full_name: string | null } | undefined;
+      clientId = account?.id ?? null;
+      clientName = account?.full_name || who.fullName;
+      clientPhone = who.phone;
+    }
     if (!clientName) throw badRequest('NAME_REQUIRED', 'Indiquez votre nom pour réserver.');
 
-    // Complète le profil au passage (première réservation)
-    const patch: Record<string, string> = {};
-    if (!profile.fullName && body.clientName) patch.full_name = body.clientName;
-    if (!profile.phone && body.clientPhone) patch.phone = body.clientPhone;
-    if (Object.keys(patch).length) await db.from('profiles').update(patch).eq('id', profile.id);
+    // Complète le profil au passage (première réservation) — jamais avec les coordonnées
+    // de quelqu'un d'autre.
+    if (!forOther) {
+      const patch: Record<string, string> = {};
+      if (!profile.fullName && body.clientName) patch.full_name = body.clientName;
+      if (!profile.phone && body.clientPhone) patch.phone = body.clientPhone;
+      if (Object.keys(patch).length) await db.from('profiles').update(patch).eq('id', profile.id);
+    }
 
     const serviceIds = body.serviceIds?.length ? body.serviceIds : [body.serviceId!];
-    await assertClientCanBook(profile.id, body.salonId, serviceIds, body.startsAt);
+    // Les règles se lisent sur la PERSONNE CONCERNÉE, par compte et par numéro.
+    await assertClientCanBook(
+      { id: clientId, phone: clientPhone },
+      body.salonId,
+      serviceIds,
+      body.startsAt,
+      forOther,
+    );
 
     const res = await db.rpc('create_booking_multi', {
       p_salon_id: body.salonId,
       p_service_ids: serviceIds,
       p_staff_id: body.staffId ?? null,
       p_starts_at: body.startsAt,
-      p_client_id: profile.id,
+      p_client_id: clientId,
       p_client_name: clientName,
       p_client_phone: clientPhone,
       p_notes: body.notes ?? null,
@@ -50,6 +81,14 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
       p_enforce_rules: true,
     });
     const created = unwrap(res) as { id: string };
+    // Qui a réservé : écrit juste après, la fonction SQL étant partagée avec la saisie du
+    // pro. Ces deux colonnes ne déclenchent aucune notification (le déclencheur ne regarde
+    // que le statut et l'horaire).
+    if (forOther)
+      await db
+        .from('bookings')
+        .update({ booked_by: profile.id, booked_by_name: profile.fullName ?? null })
+        .eq('id', created.id);
     pushAfterBooking(req.log, created.id);
     reply.status(201);
     return getBookingWithSalon(created.id);
@@ -59,7 +98,12 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     const { scope, cursor, limit } = req.query;
     const offset = Number(cursor ?? 0) || 0;
     const nowIso = new Date().toISOString();
-    let q = db.from('bookings').select(BOOKING_WITH_SALON_SELECT).eq('client_id', req.user!.id);
+    // Les miens ET ceux que j'ai pris pour quelqu'un d'autre : sinon un rendez-vous pris
+    // pour sa mère disparaît de son application dès l'écran de confirmation.
+    let q = db
+      .from('bookings')
+      .select(BOOKING_WITH_SALON_SELECT)
+      .or(`client_id.eq.${req.user!.id},booked_by.eq.${req.user!.id}`);
     q =
       scope === 'upcoming'
         ? q.gte('ends_at', nowIso).in('status', ['pending', 'confirmed']).order('starts_at', { ascending: true })
@@ -74,14 +118,14 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get('/bookings/:id', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
     const b = await getBookingWithSalon(req.params.id);
-    if (b.clientId !== req.user!.id) throw notFound('Réservation');
+    if (!mine(b, req.user!.id)) throw notFound('Réservation');
     reply.header('Cache-Control', 'private, no-store');
     return b;
   });
 
   app.post('/bookings/:id/cancel', { schema: { params: z.object({ id: uuid }), body: cancelBookingSchema } }, async (req) => {
     const b = await getBookingWithSalon(req.params.id);
-    if (b.clientId !== req.user!.id) throw notFound('Réservation');
+    if (!mine(b, req.user!.id)) throw notFound('Réservation');
     if (b.status !== 'pending' && b.status !== 'confirmed') {
       throw conflict('BOOKING_NOT_CANCELLABLE', 'Cette réservation ne peut plus être annulée.');
     }
@@ -109,7 +153,7 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.post('/bookings/:id/reschedule', { schema: { params: z.object({ id: uuid }), body: rescheduleBookingSchema } }, async (req) => {
     const b = await getBookingWithSalon(req.params.id);
-    if (b.clientId !== req.user!.id) throw notFound('Réservation');
+    if (!mine(b, req.user!.id)) throw notFound('Réservation');
     // Les règles (report autorisé, délai, délai minimum, horizon, créneau libre) sont appliquées en SQL.
     const res = await db.rpc('reschedule_booking', {
       p_booking_id: b.id,
@@ -155,21 +199,28 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
  * plafond de rendez-vous à venir par client, et pas de doublon du même client sur un horaire
  * qui chevauche un rendez-vous déjà pris dans ce salon (double clic, réessai réseau).
  */
-async function assertClientCanBook(clientId: string, salonId: string, serviceIds: string[], startsAt: string): Promise<void> {
+async function assertClientCanBook(who: ClientRef, salonId: string, serviceIds: string[], startsAt: string, forOther = false): Promise<void> {
   const nowIso = new Date().toISOString();
+  const mine = clientFilter(who);
+  if (!mine) throw badRequest('NAME_REQUIRED', 'Indiquez le numéro de la personne concernée.');
   const [upcoming, total, standing] = await Promise.all([
-    db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', clientId).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso),
+    db.from('bookings').select('id', { count: 'exact', head: true }).or(mine).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso),
     db.rpc('services_total', { p_salon_id: salonId, p_service_ids: serviceIds }).single(),
-    clientStanding(clientId),
+    clientStanding(who),
   ]);
   if (upcoming.error) throw upcoming.error;
   // Anti-abus : trop d'annulations ou d'absences récentes → réservation en ligne suspendue quelques jours.
   if (standing.suspendedUntil) {
     const why = standing.noShows >= NO_SHOW_ABUSE_MAX ? `${standing.noShows} absences signalées en ${NO_SHOW_ABUSE_WINDOW_DAYS} jours` : `${standing.cancellations} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours`;
-    throw conflict('BOOKING_SUSPENDED', `Réservation en ligne suspendue jusqu'au ${fmtWhen(standing.suspendedUntil)} (${why}).${SHOW_SALON_CONTACT_TO_CLIENTS ? ' Vous pouvez appeler le salon.' : ''}`);
+    throw conflict('BOOKING_SUSPENDED', `${forOther ? 'Réservation en ligne suspendue pour cette personne' : 'Réservation en ligne suspendue'} jusqu'au ${fmtWhen(standing.suspendedUntil)} (${why}).${!forOther && SHOW_SALON_CONTACT_TO_CLIENTS ? ' Vous pouvez appeler le salon.' : ''}`);
   }
   if ((upcoming.count ?? 0) >= MAX_UPCOMING_BOOKINGS_PER_CLIENT) {
-    throw conflict('TOO_MANY_BOOKINGS', `Vous avez déjà ${MAX_UPCOMING_BOOKINGS_PER_CLIENT} rendez-vous à venir. Annulez-en un pour réserver.`);
+    throw conflict(
+      'TOO_MANY_BOOKINGS',
+      forOther
+        ? `Cette personne a déjà ${MAX_UPCOMING_BOOKINGS_PER_CLIENT} rendez-vous à venir.`
+        : `Vous avez déjà ${MAX_UPCOMING_BOOKINGS_PER_CLIENT} rendez-vous à venir. Annulez-en un pour réserver.`,
+    );
   }
   const t = unwrap(total) as { duration_minutes: number; n: number };
   if (t.n !== serviceIds.length) return; // la fonction SQL renverra SERVICE_INACTIVE
@@ -178,16 +229,32 @@ async function assertClientCanBook(clientId: string, salonId: string, serviceIds
   const dup = await db
     .from('bookings')
     .select('id', { count: 'exact', head: true })
-    .eq('client_id', clientId)
+    .or(mine)
     .eq('salon_id', salonId)
     .in('status', ACTIVE_STATUSES)
     .lt('starts_at', endIso)
     .gt('ends_at', startIso);
   if (dup.error) throw dup.error;
-  if (dup.count) throw conflict('ALREADY_BOOKED', 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.');
+  if (dup.count)
+    throw conflict(
+      'ALREADY_BOOKED',
+      forOther
+        ? 'Cette personne a déjà un rendez-vous dans ce salon à cet horaire.'
+        : 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.',
+    );
 }
 
 const ACTIVE_STATUSES = ['pending', 'confirmed'];
+
+/**
+ * Un rendez-vous m'appartient si j'en suis la personne concernée, OU si c'est moi qui l'ai
+ * pris pour quelqu'un d'autre : consulter, annuler et reporter restent alors possibles.
+ * L'AVIS, lui, reste réservé à la personne concernée : on ne note pas une visite qu'on n'a
+ * pas faite.
+ */
+function mine(b: { clientId: string | null; bookedBy: string | null }, uid: string): boolean {
+  return b.clientId === uid || b.bookedBy === uid;
+}
 
 function fmtWhen(iso: string): string {
   return new Intl.DateTimeFormat('fr-DZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Algiers' }).format(new Date(iso));

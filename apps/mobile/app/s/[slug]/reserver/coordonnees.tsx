@@ -1,4 +1,14 @@
-/** C-F 10 — Vos coordonnées : nom, téléphone (+213), note pour le salon, rappels, feuille « Vérifier ». */
+/**
+ * C-F 10 — Pour qui ? : rendez-vous pour soi (coordonnées du compte, préremplies) ou POUR
+ * QUELQU'UN D'AUTRE (son nom et son numéro) — jumeau de l'écran web
+ * (apps/web/src/pages/client/BookingDetails.tsx).
+ *
+ * Réserver pour quelqu'un d'autre est la norme ici : on prend rendez-vous pour sa mère, sa
+ * sœur, un ami sans l'application. Le rendez-vous appartient alors à cette personne — son
+ * numéro l'identifie, et s'il correspond à un compte il s'y rattache — donc les mêmes règles
+ * la concernent : plafond de rendez-vous à venir, doublon d'horaire, suspension pour
+ * annulations.
+ */
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,10 +20,26 @@ import { useAuth } from '@/lib/auth';
 import { groupLocalDigits } from '@/lib/authFlow';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
 import { formatDuration } from '@/lib/format';
-import { BottomSheet, Button, Card, Field, H1, I, Input, P, Toggle, TopBar, Tx } from '@/ui';
+import {
+  BottomSheet,
+  Button,
+  Card,
+  Field,
+  H1,
+  I,
+  Input,
+  P,
+  Segmented,
+  Toggle,
+  TopBar,
+  Tx,
+} from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C, R } from '@/theme/design';
+
+type Who = 'me' | 'other';
+type FieldName = 'name' | 'phone' | 'otherName' | 'otherPhone';
 
 export default function BookingDetails() {
   const { slug = '' } = useLocalSearchParams<{ slug: string }>();
@@ -22,11 +48,16 @@ export default function BookingDetails() {
   const salon = useSalon(slug);
   const me = useMe(!!session);
   const draft = readDraft(slug);
+  const [who, setWho] = useState<Who>(draft.forOther ? 'other' : 'me');
   const [name, setName] = useState(draft.name ?? '');
   const [digits, setDigits] = useState(() => (draft.phone ?? '').replace(/^\+213/, ''));
+  const [otherName, setOtherName] = useState(draft.otherName ?? '');
+  const [otherDigits, setOtherDigits] = useState(() =>
+    (draft.otherPhone ?? '').replace(/^\+213/, ''),
+  );
   const [notes, setNotes] = useState(draft.notes ?? '');
   const [whatsapp, setWhatsapp] = useState(draft.whatsapp ?? true);
-  const [error, setError] = useState<string | null>(null);
+  const [err, setErr] = useState<{ field: FieldName; msg: string } | null>(null);
 
   useEffect(() => {
     const p = me.data?.profile;
@@ -52,21 +83,89 @@ export default function BookingDetails() {
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);
   const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);
-  const nameError = !!error && name.trim().length < 2;
-  const phoneError = !!error && name.trim().length >= 2;
+  const forOther = who === 'other';
+  const msg = (f: FieldName) => (err?.field === f ? err.msg : null);
 
   const submit = () => {
-    if (name.trim().length < 2) return setError('Indiquez votre nom.');
-    const parsed = phoneDZ.safeParse(`0${digits.replace(/\D/g, '')}`);
-    if (!parsed.success) return setError('Numéro algérien invalide (9 chiffres après +213).');
-    setError(null);
-    writeDraft(slug, { name: name.trim(), phone: parsed.data, notes: notes.trim(), whatsapp });
+    const parse = (d: string) => phoneDZ.safeParse(`0${d.replace(/\D/g, '')}`);
+    const bad = 'Numéro algérien invalide (9 chiffres après +213).';
+
+    if (forOther) {
+      if (otherName.trim().length < 2)
+        return setErr({ field: 'otherName', msg: 'Indiquez le nom de la personne.' });
+      const p = parse(otherDigits);
+      if (!p.success) return setErr({ field: 'otherPhone', msg: bad });
+      setErr(null);
+      const own = parse(digits);
+      writeDraft(slug, {
+        forOther: true,
+        otherName: otherName.trim(),
+        otherPhone: p.data,
+        name: name.trim() || me.data?.profile.fullName || '',
+        phone: own.success ? own.data : (me.data?.profile.phone ?? undefined),
+        notes: notes.trim(),
+        whatsapp,
+      });
+      router.push(`/s/${slug}/reserver/recap` as never);
+      return;
+    }
+
+    if (name.trim().length < 2) return setErr({ field: 'name', msg: 'Indiquez votre nom.' });
+    const p = parse(digits);
+    if (!p.success) return setErr({ field: 'phone', msg: bad });
+    setErr(null);
+    writeDraft(slug, {
+      forOther: false,
+      otherName: '',
+      otherPhone: '',
+      name: name.trim(),
+      phone: p.data,
+      notes: notes.trim(),
+      whatsapp,
+    });
     router.push(`/s/${slug}/reserver/recap` as never);
   };
 
+  /** Champ téléphone algérien : indicatif figé + 9 chiffres groupés. */
+  const phoneField = (
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    error: string | null,
+  ) => (
+    <Field label={label} error={error}>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            backgroundColor: C.fill,
+            borderRadius: R.input,
+            paddingHorizontal: 13,
+          }}
+        >
+          <Tx size={12} weight={500} lh={14.5}>
+            +213
+          </Tx>
+          <I icon={ChevronDown} size={14} color={C.subtle} />
+        </View>
+        <Input
+          lg
+          style={{ flex: 1 }}
+          keyboardType="number-pad"
+          value={groupLocalDigits(value)}
+          onChangeText={(v) => onChange(v.replace(/\D/g, '').slice(0, 9))}
+          accessibilityLabel={label}
+          err={!!error}
+        />
+      </View>
+    </Field>
+  );
+
   return (
     <Screen
-      gap={13}
+      gap={11}
       footer={
         <BottomSheet>
           <View
@@ -95,51 +194,55 @@ export default function BookingDetails() {
       }
     >
       <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 2 sur 3" />
-      <View style={{ gap: 10 }}>
-        <H1>Vos coordonnées</H1>
-        <P>
-          Vous êtes connecté{me.data?.profile.gender === 'female' ? 'e' : ''} : vos coordonnées sont
-          préremplies depuis votre compte.
-        </P>
-      </View>
-      <Field label="Nom et prénom" error={nameError ? error : null}>
-        <Input
-          lg
-          f={!!name}
-          value={name}
-          onChangeText={setName}
-          autoComplete="name"
-          textContentType="name"
-        />
-      </Field>
-      <Field label="Téléphone" error={phoneError ? error : null}>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              backgroundColor: C.fill,
-              borderRadius: R.input,
-              paddingHorizontal: 13,
-            }}
-          >
-            <Tx size={12} weight={500} lh={14.5}>
-              +213
-            </Tx>
-            <I icon={ChevronDown} size={14} color={C.subtle} />
-          </View>
-          <Input
-            lg
-            style={{ flex: 1 }}
-            keyboardType="number-pad"
-            value={groupLocalDigits(digits)}
-            onChangeText={(v) => setDigits(v.replace(/\D/g, '').slice(0, 9))}
-            accessibilityLabel="Téléphone"
-            err={phoneError}
-          />
-        </View>
-      </Field>
+      <H1>Pour qui ?</H1>
+
+      <Segmented
+        label="Pour qui est ce rendez-vous"
+        value={who}
+        onChange={(v) => {
+          setWho(v);
+          setErr(null);
+        }}
+        options={[
+          { value: 'me', label: 'Pour moi' },
+          { value: 'other', label: 'Pour quelqu’un d’autre' },
+        ]}
+      />
+
+      {forOther ? (
+        <>
+          {/* Ce que ça engage, en une ligne : le rendez-vous est à elle, règles comprises. */}
+          <P>
+            Le rendez-vous sera au nom de cette personne, sur son compte si elle en a un, avec les
+            mêmes règles d’annulation.
+          </P>
+          <Field label="Nom et prénom de la personne" error={msg('otherName')}>
+            <Input
+              lg
+              f={!!otherName}
+              value={otherName}
+              onChangeText={setOtherName}
+              placeholder="Amina Bensalem"
+            />
+          </Field>
+          {phoneField('Son téléphone', otherDigits, setOtherDigits, msg('otherPhone'))}
+        </>
+      ) : (
+        <>
+          <Field label="Nom et prénom" error={msg('name')}>
+            <Input
+              lg
+              f={!!name}
+              value={name}
+              onChangeText={setName}
+              autoComplete="name"
+              textContentType="name"
+            />
+          </Field>
+          {phoneField('Téléphone', digits, setDigits, msg('phone'))}
+        </>
+      )}
+
       <Field label="Note pour le salon (optionnel)">
         <Input
           multiline
@@ -149,12 +252,13 @@ export default function BookingDetails() {
           placeholder="Base fine, gel rose pâle si possible"
         />
       </Field>
-      <Card row gap={13}>
+
+      <Card row gap={11} pad={11}>
         <View
           style={{
-            width: 42,
-            height: 42,
-            borderRadius: 12,
+            width: 38,
+            height: 38,
+            borderRadius: 8,
             borderWidth: 1,
             borderColor: C.line,
             backgroundColor: C.surface,
@@ -162,13 +266,15 @@ export default function BookingDetails() {
             justifyContent: 'center',
           }}
         >
-          <I icon={MessageCircle} size={18} />
+          <I icon={MessageCircle} size={17} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Tx size={12} lh={14.5}>
-            Confirmation et rappel du rendez-vous
+          <Tx size={14} weight={600} lh={18}>
+            Confirmation et rappel
           </Tx>
-          <P>2 h avant le rendez-vous</P>
+          <Tx size={12} color={C.muted} lh={16}>
+            2 h avant le rendez-vous
+          </Tx>
         </View>
         <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappels de rendez-vous" />
       </Card>

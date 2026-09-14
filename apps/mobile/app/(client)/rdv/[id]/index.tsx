@@ -15,6 +15,7 @@ import {
   Star,
   XCircle,
   ArrowLeft,
+  UserRound,
 } from 'lucide-react-native';
 import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
 import {
@@ -78,6 +79,9 @@ export default function BookingDetail() {
       </Screen>
     );
   const b = booking.data;
+  // Rendez-vous que J'AI pris pour quelqu'un d'autre : il est à cette personne, pas à moi.
+  const forSomeoneElse =
+    !!b.bookedBy && b.bookedBy === me.data?.profile.id && b.clientId !== me.data?.profile.id;
   const active = b.status === 'pending' || b.status === 'confirmed';
   const hoursLeft = Math.floor((new Date(b.startsAt).getTime() - Date.now()) / 3_600_000);
   // Règles du salon (même source que l'API) : délai d'annulation, report client autorisé.
@@ -306,6 +310,16 @@ export default function BookingDetail() {
         <Tx size={12} color={C.muted} lh={14}>
           {`${capitalize(formatDateLongDZ(b.startsAt))} · ${formatDuration(b.durationMinutes)} au total · paiement sur place`}
         </Tx>
+        {/* Pris pour quelqu'un d'autre, ou par quelqu'un d'autre : sans cette ligne, on ne
+            sait pas de quel rendez-vous il s'agit ni pourquoi il est là. */}
+        {(forSomeoneElse || !!b.bookedByName) && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+            <I icon={UserRound} size={16} color={C.muted} />
+            <Tx size={14} weight={600} lh={18} numberOfLines={1}>
+              {forSomeoneElse ? `Pour ${b.clientName}` : `Réservé par ${b.bookedByName}`}
+            </Tx>
+          </View>
+        )}
       </Card>
       <Card gap={0}>
         <Rows>

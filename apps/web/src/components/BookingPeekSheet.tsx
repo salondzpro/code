@@ -120,6 +120,12 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                       {formatDZPhone(b.clientPhone)}
                     </span>
                   )}
+                  {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
+                  {!!b.bookedByName && (
+                    <span className="block truncate text-[0.857rem] text-muted">
+                      Réservé par {b.bookedByName}
+                    </span>
+                  )}
                 </span>
               </div>
               {b.clientPhone && (

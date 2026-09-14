@@ -11,6 +11,10 @@ export interface BookingDraft {
   phone?: string;
   notes?: string;
   whatsapp?: boolean;
+  /** Rendez-vous pris pour quelqu'un d'autre : son nom et son numéro identifient la personne. */
+  forOther?: boolean;
+  otherName?: string;
+  otherPhone?: string;
 }
 
 const key = (slug: string) => `salondz:booking:${slug}`;

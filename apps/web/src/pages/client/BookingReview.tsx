@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { Ban, CalendarCheck, Phone } from 'lucide-react';
+import { Ban, CalendarCheck, Phone, UserRound } from 'lucide-react';
 import {
   ApiError,
   useBookingStanding,
@@ -18,6 +18,7 @@ import {
   CLIENT_CANCEL_MIN_HOURS,
   LATE_TOLERANCE_MINUTES,
   formatDA,
+  formatDZPhone,
   formatDateLongDZ,
   formatTimeDZ,
   lateRule,
@@ -58,7 +59,10 @@ export function BookingReview() {
   const start = formatTimeDZ(draft.startsAt);
   const end = minutesToTime(timeToMinutes(start) + minutes);
   const late = lateRule(draft.startsAt);
-  const cannotBook = !!standing.data && !standing.data.canBook;
+  // La suspension du compte connecté ne concerne QUE ses propres rendez-vous : pour
+  // quelqu'un d'autre, ce sont les règles de cette personne qui comptent, et le serveur
+  // les applique sur son compte ou son numéro.
+  const cannotBook = !draft.forOther && !!standing.data && !standing.data.canBook;
   const blockedMessage = cannotBook ? standing.data?.message : null;
 
   const confirm = async () => {
@@ -72,6 +76,10 @@ export function BookingReview() {
         notes: draft.notes || undefined,
         clientName: draft.name,
         clientPhone: draft.phone,
+        beneficiary:
+          draft.forOther && draft.otherName && draft.otherPhone
+            ? { fullName: draft.otherName, phone: draft.otherPhone }
+            : undefined,
       });
       if (draft.whatsapp !== undefined) updateProfile.mutate({ whatsappReminders: draft.whatsapp });
       navigate(`/rendez-vous/${b.id}/confirme`, { replace: true });
@@ -152,6 +160,19 @@ export function BookingReview() {
           </div>
         ))}
       </div>
+
+      {draft.forOther && !!draft.otherName && (
+        <div className="crd !gap-1">
+          <span className="flex items-center gap-2 text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
+            <I icon={UserRound} size={16} /> Rendez-vous pour
+          </span>
+          <span className="text-[1.143rem] font-bold tracking-[-0.3px]">{draft.otherName}</span>
+          <span className="text-[1rem] text-muted">
+            {draft.otherPhone ? formatDZPhone(draft.otherPhone) : ''} · à son nom, avec ses règles
+            d&apos;annulation
+          </span>
+        </div>
+      )}
 
       <div className="crd">
         <div className="flex items-center gap-3.5">

@@ -101,6 +101,12 @@ export function BookingPeekSheet({ id, onClose }: { id: string | null; onClose: 
                     {formatDZPhone(b.clientPhone)}
                   </Tx>
                 )}
+                {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
+                {!!b.bookedByName && (
+                  <Tx size={12} color={C.muted} lh={16} numberOfLines={1}>
+                    {`Réservé par ${b.bookedByName}`}
+                  </Tx>
+                )}
               </View>
             </View>
             {!!b.clientPhone && (

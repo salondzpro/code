@@ -208,6 +208,15 @@ export const createBookingSchema = z
     /** Requis si le client n'a pas de nom sur son profil. */
     clientName: p.shortText(80).optional(),
     clientPhone: p.phoneDZ.optional(),
+    /**
+     * Rendez-vous pris POUR QUELQU'UN D'AUTRE : absent = pour soi. Le rendez-vous
+     * appartient alors à cette personne (son compte s'il existe, retrouvé par son numéro)
+     * et les règles métier se lisent sur elle. Le numéro est donc obligatoire : c'est lui
+     * qui l'identifie.
+     */
+    beneficiary: z
+      .object({ fullName: p.shortText(80), phone: p.phoneDZ })
+      .optional(),
   })
   .refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, {
     message: 'Choisissez au moins une prestation',

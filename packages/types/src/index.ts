@@ -173,6 +173,10 @@ export interface Booking {
   cancellationKind: CancellationKind | null;
   /** Reports en ligne déjà effectués par le client (limite MAX_CLIENT_RESCHEDULES). */
   clientReschedules: number;
+  /** Compte qui a pris le rendez-vous pour quelqu'un d'autre (nul quand on réserve pour soi). */
+  bookedBy: UUID | null;
+  /** Nom de cette personne, en instantané. */
+  bookedByName: string | null;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
   /** Prestations cumulées (absent = une seule prestation, cf. serviceName). */
