@@ -7,13 +7,28 @@ import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useProPendingBookings } from '@salondz/api-client';
 import { C, R } from '@/theme/design';
+import { Tx } from './Text';
 
 const BAR_HEIGHT = 52;
 const ITEM_HEIGHT = 42;
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  /**
+   * Demandes à confirmer à la main : compteur rouge sur l'onglet Réservations, visible
+   * depuis n'importe quel écran de l'espace pro. Un rendez-vous qui attend une
+   * confirmation est de l'argent et un client en suspens ; le professionnel ne doit pas
+   * avoir à ouvrir un écran pour l'apprendre.
+   *
+   * La barre sert aussi la cliente : la requête pro n'est activée que si l'onglet
+   * Réservations existe. Même clé que l'accueil pro, donc cache partagé (aucune requête de
+   * plus) et mise à jour par l'invalidation du temps réel.
+   */
+  const isPro = state.routes.some((r) => r.name === 'reservations');
+  const pending = useProPendingBookings(isPro);
+  const badge = isPro ? (pending.data?.items.length ?? 0) : 0;
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { bottom: 11 + insets.bottom }]}>
       <View style={styles.pill}>
@@ -36,7 +51,11 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 key={route.key}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: focused }}
-                accessibilityLabel={label}
+                accessibilityLabel={
+                  route.name === 'reservations' && badge > 0
+                    ? `${label} · ${badge} à confirmer`
+                    : label
+                }
                 onPress={() => {
                   const e = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
                   if (!focused && !e.defaultPrevented) navigation.navigate(route.name);
@@ -44,6 +63,13 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 style={({ pressed }) => [styles.item, focused && styles.itemOn, pressed && { transform: [{ scale: 0.94 }] }]}
               >
                 {options.tabBarIcon?.({ focused, color, size: 24 })}
+                {route.name === 'reservations' && badge > 0 && (
+                  <View style={[styles.dot, focused && { borderColor: C.ink }]}>
+                    <Tx size={12} weight={700} color="#fff" lh={13}>
+                      {badge > 9 ? '9+' : String(badge)}
+                    </Tx>
+                  </View>
+                )}
               </Pressable>
             );
           })}
@@ -72,6 +98,21 @@ const styles = StyleSheet.create({
   },
   row: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 5, gap: 2 },
   item: { flex: 1, minWidth: 0, height: ITEM_HEIGHT, alignItems: 'center', justifyContent: 'center', borderRadius: R.pill },
+  /* Rouge : la seule chose de la barre qui réclame une action, et tout de suite. */
+  dot: {
+    position: 'absolute',
+    top: 3,
+    right: 18,
+    minWidth: 17,
+    height: 17,
+    paddingHorizontal: 4,
+    borderRadius: R.pill,
+    backgroundColor: C.danger,
+    borderWidth: 1.5,
+    borderColor: C.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   itemOn: {
     backgroundColor: C.ink,
     shadowColor: '#000',

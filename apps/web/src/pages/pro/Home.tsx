@@ -11,7 +11,6 @@ import {
   useProStats,
 } from '@salondz/api-client';
 import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR } from '@salondz/constants';
-import { useRealtimeBookings } from '@/lib/realtime';
 import { formatDuration } from '@/lib/format';
 import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -45,7 +44,6 @@ export function ProHome() {
   const [staffId, setStaffId] = useStaffFilter();
   const byStaff = <T extends { staffId: string | null }>(list: T[]) =>
     staffId ? list.filter((b) => b.staffId === staffId) : list;
-  useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = useNow();
   const [share, setShare] = useState(false);

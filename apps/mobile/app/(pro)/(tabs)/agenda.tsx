@@ -20,7 +20,6 @@ import {
   weekKeys,
 } from '@salondz/constants';
 import type { BookingWithStaff } from '@salondz/types';
-import { useRealtimeBookings } from '@/lib/realtime';
 import { useShowCancelled, useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
 import { MONTHS_FR, formatDuration } from '@/lib/format';
@@ -77,7 +76,6 @@ export default function AgendaPro() {
   };
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
-  useRealtimeBookings(salon?.id);
 
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);

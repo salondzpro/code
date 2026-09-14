@@ -21,7 +21,12 @@ export default function ProLayout() {
   const pro = useProSalon(!!session);
   const pushRegistered = useRef(false);
   const salon = pro.data?.salon ?? null;
-  // Agenda, demandes, chiffres et notifications se rafraîchissent quand une réservation change.
+  /**
+   * UN SEUL canal pour toute la session pro : agenda, demandes, chiffres et notifications
+   * se rafraîchissent quand une réservation change, et le compteur rouge de la barre
+   * d'onglets suit sur tous les écrans. L'accueil et l'agenda s'y abonnaient aussi, ce qui
+   * ouvrait deux canaux de même nom — pas fiable, et inutile puisque ce calque les couvre.
+   */
   useRealtimeBookings(salon?.id);
 
   useEffect(() => {

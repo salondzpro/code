@@ -4,6 +4,7 @@
  */
 import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router';
+import { useProPendingBookings } from '@salondz/api-client';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 
@@ -81,6 +82,18 @@ const PRO_NAV: NavItem[] = [
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
   const items = kind === 'client' ? CLIENT_NAV : PRO_NAV;
   /**
+   * Demandes à confirmer à la main : le compte est posé en rouge sur l'onglet Réservations,
+   * visible depuis n'importe quel écran de l'espace pro. Un rendez-vous qui attend une
+   * confirmation est de l'argent et un client en suspens ; le professionnel ne doit pas
+   * avoir à ouvrir un écran pour l'apprendre.
+   *
+   * Même requête que l'accueil (`['pro','bookings','pending']`) : le cache est partagé,
+   * donc aucune requête de plus, et l'invalidation du temps réel met la pastille à jour
+   * sans rien actualiser.
+   */
+  const pending = useProPendingBookings(kind === 'pro');
+  const badge = kind === 'pro' ? (pending.data?.items.length ?? 0) : 0;
+  /**
    * La barre se réduit aux icônes pendant le défilement, et se rouvre avec ses libellés dès
    * qu'on s'arrête : elle rend de la hauteur au contenu quand on parcourt, et redevient
    * explicite quand on cherche où aller.
@@ -115,15 +128,27 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
             end={it.end}
             className={({ isActive }) => `nvi${isActive ? ' on' : ''}`}
             title={it.label}
+            aria-label={
+              it.to === '/pro/reservations' && badge > 0
+                ? `${it.label} · ${badge} à confirmer`
+                : undefined
+            }
           >
             {({ isActive }) => (
               <>
-                <I
-                  icon={it.icon}
-                  size={22}
-                  strokeWidth={isActive ? 2 : 1.6}
-                  className="text-current"
-                />
+                <span className="relative flex items-center justify-center">
+                  <I
+                    icon={it.icon}
+                    size={22}
+                    strokeWidth={isActive ? 2 : 1.6}
+                    className="text-current"
+                  />
+                  {it.to === '/pro/reservations' && badge > 0 && (
+                    <span className="nvd" aria-hidden>
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  )}
+                </span>
                 <span className="nvl">{it.label}</span>
               </>
             )}

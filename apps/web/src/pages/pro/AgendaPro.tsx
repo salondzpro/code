@@ -19,7 +19,6 @@ import {
   weekKeys,
   minutesToTime,
 } from '@salondz/constants';
-import { useRealtimeBookings } from '@/lib/realtime';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
@@ -86,7 +85,6 @@ export function AgendaPro() {
   };
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
-  useRealtimeBookings(salon?.id);
   // Un rendez-vous s'ouvre en fenêtre : l'agenda reste derrière, à sa date et sa position.
   const [peek, setPeek] = useState<string | null>(null);
 

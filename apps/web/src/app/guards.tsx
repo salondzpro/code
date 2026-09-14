@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { PublicHeader } from '@/components/PublicHeader';
-import { useRealtimeMyBookings } from '@/lib/realtime';
+import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
 import { Splash } from '@/pages/auth/Splash';
@@ -38,6 +38,15 @@ export function ClientPlainLayout() {
 
 /** Colonne app + barre d'onglets pro (Accueil · Agenda · Clients · Équipe · Prestations · Profil). */
 export function ProLayout() {
+  /**
+   * L'écoute temps réel des réservations vit ICI, et non plus dans l'accueil et l'agenda :
+   * la pastille des demandes à confirmer est dans la barre d'onglets, donc présente sur
+   * tous les écrans pro. Abonnée seulement depuis deux écrans, elle restait figée dès que
+   * le professionnel était ailleurs. Un seul canal pour toute la session pro (deux
+   * abonnements au même nom ne sont pas fiables).
+   */
+  const salonId = useProSalon().data?.salon?.id;
+  useRealtimeBookings(salonId);
   return (
     <AppFrame>
       <Outlet />

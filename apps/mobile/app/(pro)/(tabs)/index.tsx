@@ -12,7 +12,6 @@ import {
   useProStats,
 } from '@salondz/api-client';
 import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR } from '@salondz/constants';
-import { useRealtimeBookings } from '@/lib/realtime';
 import { useStaffFilter } from '@/lib/prefs';
 import { StaffFilter } from '@/ui/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/ui/QuickClose';
@@ -62,7 +61,6 @@ export default function ProHome() {
   const todayList = useProBookings({ from: today, to: today, limit: 50 });
   const { setStatus } = useProBookingMutations();
   const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
-  useRealtimeBookings(salon?.id);
   const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = useNow();
   const [share, setShare] = useState(false);

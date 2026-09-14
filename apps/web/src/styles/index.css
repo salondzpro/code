@@ -820,6 +820,31 @@
     background: var(--color-ink);
     box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.5);
   }
+  /* Compteur des demandes à confirmer, posé sur l'icône. Rouge : c'est la seule chose de la
+     barre qui réclame une action, et elle en réclame une tout de suite. Il reste visible
+     quand la barre se réduit — c'est justement là qu'on défile sans regarder. */
+  .nvd {
+    position: absolute;
+    top: -0.3125rem;
+    left: 0.625rem;
+    min-width: 1.0625rem;
+    height: 1.0625rem;
+    padding: 0 0.25rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-danger);
+    color: #ffffff;
+    border: 1.5px solid var(--color-surface);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nvi.on .nvd {
+    border-color: var(--color-ink);
+  }
+
   /* Libellé sous l'icône : c'est lui qui rend la barre compréhensible sans deviner les
      pictogrammes. Il s'efface pendant le défilement. */
   .nvl {
