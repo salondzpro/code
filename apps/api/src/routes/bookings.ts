@@ -100,6 +100,8 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     const nowIso = new Date().toISOString();
     // Les miens ET ceux que j'ai pris pour quelqu'un d'autre : sinon un rendez-vous pris
     // pour sa mère disparaît de son application dès l'écran de confirmation.
+    // L'onglet « passés » ajoute son propre `.or()` : PostgREST combine deux `or=` par ET,
+    // donc l'identité reste appliquée (vérifié en production, aucune fuite entre comptes).
     let q = db
       .from('bookings')
       .select(BOOKING_WITH_SALON_SELECT)
