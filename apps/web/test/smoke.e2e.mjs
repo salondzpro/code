@@ -413,23 +413,27 @@ try {
     await p.goto(WEB + '/pro/agenda');
     await agendaPickTarget(p);
     await shot(p, 'pro-agenda-jour');
-    await p.getByRole('button', { name: 'Nouveau rendez-vous' }).first().click();
-    await p.waitForURL(/\/pro\/rendez-vous\/nouveau\?date=/);
+    // Le « + » de l'en-tête pro ouvre le formulaire depuis n'importe quel écran.
+    await p.getByRole('link', { name: 'Nouveau rendez-vous' }).click();
+    await p.waitForURL(/\/pro\/rendez-vous\/nouveau/);
     await p.getByRole('heading', { name: 'Ajouter un rendez-vous' }).waitFor();
-    // Nom obligatoire : l'erreur s'affiche directement sur le champ (et sur les prestations).
-    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
-    await p.getByText('Indiquez le nom du client.').waitFor();
-    await p.locator('#nb-name[aria-invalid="true"]').waitFor();
-    await p.getByText('Choisissez au moins une prestation.').waitFor();
+    // Client obligatoire : la ligne passe en rouge et sa feuille s'ouvre d'elle-même.
+    await p.getByRole('button', { name: 'Enregistrer' }).click();
+    await p.getByText('Indiquez le client.').waitFor();
     await shot(p, 'pro-rdv-nouveau-erreurs');
-    await p.getByLabel('Client').fill('Walid Passage');
-    await p.locator('#nb-name[aria-invalid="true"]').waitFor({ state: 'detached' });
-    await p.getByLabel('Téléphone (facultatif)').fill('06 61 11 22 33');
+    await p.getByLabel('Nom *').fill('Walid Passage');
+    await p.getByLabel('Téléphone').fill('06 61 11 22 33');
+    await p.getByRole('button', { name: 'Valider', exact: true }).click();
+    await p.getByText('Walid Passage').waitFor();
+    // Prestation obligatoire : même mécanique, la feuille des prestations s'ouvre.
+    await p.getByRole('button', { name: 'Enregistrer' }).click();
+    await p.getByText('Choisissez au moins une prestation.').waitFor();
     await p.getByRole('button', { name: /Coupe \+ barbe/ }).click();
+    await p.getByRole('button', { name: /^Valider · / }).click();
     await p.locator(`button[role=option][data-day="${target}"]`).first().click();
     await p.getByRole('option', { name: '15:00', exact: true }).click();
     await shot(p, 'pro-rdv-nouveau');
-    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await p.getByRole('button', { name: 'Enregistrer' }).click();
     // Validation animée « Rendez-vous ajouté », puis fiche du rendez-vous.
     await p.getByTestId('success-splash').getByText('Rendez-vous ajouté').waitFor();
     await shot(p, 'pro-rdv-ajoute');
@@ -442,10 +446,14 @@ try {
     // La page propose d'elle-même le premier créneau libre d'aujourd'hui (jamais le passé).
     await p.goto(WEB + '/pro/rendez-vous/nouveau');
     await p.getByRole('heading', { name: 'Ajouter un rendez-vous' }).waitFor();
-    await p.getByLabel('Client').fill('Nadir Dujour');
-    await p.getByLabel('Téléphone (facultatif)').fill('06 62 33 44 55');
+    await p.getByRole('button', { name: /^Client/ }).click();
+    await p.getByLabel('Nom *').fill('Nadir Dujour');
+    await p.getByLabel('Téléphone').fill('06 62 33 44 55');
+    await p.getByRole('button', { name: 'Valider', exact: true }).click();
+    await p.getByRole('button', { name: /^Prestations/ }).click();
     await p.getByRole('button', { name: /Coupe simple/ }).click();
-    await p.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await p.getByRole('button', { name: /^Valider · / }).click();
+    await p.getByRole('button', { name: 'Enregistrer' }).click();
     await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
     await p.goto(WEB + '/pro');
     await p.getByText(/^(Prochain|En cours) · /).waitFor();
@@ -615,7 +623,9 @@ try {
   await step('pro: reporter le rendez-vous de passage à 16:00', async () => {
     await p.goto(WEB + '/pro/agenda');
     await agendaPickTarget(p);
+    // Un rendez-vous s'ouvre en fenêtre ; la fiche complète est un lien de plus.
     await p.getByRole('button', { name: /Walid Passage · Coupe \+ barbe/ }).click();
+    await p.getByRole('button', { name: /Fiche complète/ }).click();
     await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
     await p.getByRole('button', { name: 'Reporter' }).click();
     await p.waitForURL(/\/reporter$/);
