@@ -23,7 +23,7 @@ import { ErrorText, H1, I, IconButton, P, Pill, Skeleton, Tx } from '@/ui';
 import { SearchField, SearchTools } from '@/ui/SearchTools';
 import { Screen } from '@/ui/Screen';
 import { SalonListCard } from '@/ui/SalonListCard';
-import { C, NAV_PAD } from '@/theme/design';
+import { C, NAV_PAD, R } from '@/theme/design';
 
 const NOUN: Record<Market, [string, string]> = {
   men: ['barbier', 'barbiers'],
@@ -116,7 +116,7 @@ export default function Marketplace() {
           accessibilityLabel="Changer de marché"
           onPress={swapMarket}
           disabled={update.isPending}
-          style={{ width: 29, height: 29, borderRadius: 8 }}
+          style={{ width: 29, height: 29, borderRadius: R.cardSm }}
         >
           <I icon={ArrowLeftRight} size={14} />
         </IconButton>

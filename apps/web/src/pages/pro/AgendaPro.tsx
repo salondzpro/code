@@ -733,12 +733,12 @@ function WeekGrid({
                 {DAY_LABELS_SHORT_FR[dow]}
               </span>
               <span
-                className={`flex h-9 w-full items-center justify-center rounded-[0.571rem] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
+                className={`flex h-9 w-full items-center justify-center rounded-[var(--radius-card-sm)] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
               >
                 {Number(d.slice(8, 10))}
               </span>
               <span
-                className={`relative block w-full overflow-hidden rounded-[0.571rem] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`}
+                className={`relative block w-full overflow-hidden rounded-[var(--radius-card-sm)] ${on ? 'border-[1.5px] border-ink bg-surface' : 'border border-line-soft bg-surface'}`}
                 style={{
                   height: H,
                   background: closed
@@ -755,8 +755,8 @@ function WeekGrid({
                         key={b.id}
                         className={
                           b.status === 'cancelled'
-                            ? 'absolute left-0.5 right-0.5 rounded-[0.571rem] border border-dashed border-line'
-                            : `absolute left-0.5 right-0.5 rounded-[0.571rem] border-l-[3px] ${TONE[toneOf(b)]}`
+                            ? 'absolute left-0.5 right-0.5 rounded-[var(--radius-card-sm)] border border-dashed border-line'
+                            : `absolute left-0.5 right-0.5 rounded-[var(--radius-card-sm)] border-l-[3px] ${TONE[toneOf(b)]}`
                         }
                         style={{ top: (s - startMin) * px, height: Math.max(10, (e - s) * px) }}
                       />
@@ -845,7 +845,7 @@ function MonthGrid({
               key={d}
               type="button"
               onClick={() => (on ? onOpenDay(d) : onSelect(d))}
-              className={`flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[0.571rem] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`}
+              className={`flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[var(--radius-card-sm)] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`}
               style={
                 closed && !on
                   ? {

@@ -128,7 +128,7 @@ export function ProPhotos() {
         {photos.map((p, i) => (
           <div
             key={p.id}
-            className="relative overflow-hidden rounded-[0.571rem] bg-line"
+            className="relative overflow-hidden rounded-[var(--radius-card-sm)] bg-line"
             style={{ aspectRatio: '4 / 3' }}
           >
             <img src={p.url} alt="" className="h-full w-full object-cover" />
@@ -160,7 +160,7 @@ export function ProPhotos() {
         {room > 0 && (
           <button
             type="button"
-            className="flex flex-col items-center justify-center gap-1 rounded-[0.571rem] border border-dashed border-line bg-surface text-muted"
+            className="flex flex-col items-center justify-center gap-1 rounded-[var(--radius-card-sm)] border border-dashed border-line bg-surface text-muted"
             style={{ aspectRatio: '4 / 3' }}
             onClick={() => photosInput.current?.click()}
             disabled={busy !== null}

@@ -185,7 +185,7 @@ export function PublicHeader() {
         </Link>
         <Link
           to={session ? '/profil' : `/connexion?next=${next}`}
-          className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[0.571rem] bg-ink text-white"
+          className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] bg-ink text-white"
           aria-label={session ? 'Mon profil' : 'Se connecter ou créer un compte'}
         >
           <I icon={User} size={20} className="text-current" />

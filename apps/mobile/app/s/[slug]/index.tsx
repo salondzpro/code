@@ -287,7 +287,7 @@ export default function Salon() {
                   flexDirection: 'row',
                   alignItems: 'flex-start',
                   gap: 10,
-                  borderRadius: 8,
+                  borderRadius: R.cardSm,
                   borderWidth: 1,
                   borderColor: C.dangerLine,
                   backgroundColor: C.cancelBg,

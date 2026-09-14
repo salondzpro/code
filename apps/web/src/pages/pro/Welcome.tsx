@@ -27,7 +27,7 @@ export function ProWelcome() {
             votre page, votre lien.
           </div>
         </div>
-        <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.pro.credit}</span>
+        <span className="absolute bottom-2 left-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.pro.credit}</span>
       </div>
       <div className="flex flex-col gap-4 px-5 pb-10 pt-4">
         <ul className="flex flex-col">

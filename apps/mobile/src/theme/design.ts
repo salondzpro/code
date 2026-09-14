@@ -45,20 +45,21 @@ export const CAT: Record<string, { bg: string; line: string; fg: string }> = {
 };
 
 /**
- * Rayons relevés sur la référence en conditions téléphone : 12 px pour les cartes, 8 px
- * pour tout le petit mobilier (boutons, champs, créneaux, vignettes), pilules inchangées.
- * On était à 20 / 16 / 14 px : des coins de jouet là où il faut un outil de travail.
- * Mêmes valeurs que les jetons web (apps/web/src/styles/tokens.css).
+ * Arrondis RÉDUITS (consigne du 15 sept. 2026) : 8 px pour les cartes, 6 px pour tout le
+ * petit mobilier (boutons, champs, créneaux, vignettes), 12 px pour les feuilles. Un outil de
+ * travail a des angles nets ; on ne remonte jamais ces valeurs. Pilules et cercles inchangés.
+ * Mêmes valeurs que les jetons web (apps/web/src/styles/tokens.css). Aucune valeur en dur :
+ * tout passe par R.
  */
 export const R = {
-  card: 12,
-  cardSm: 8,
-  btn: 8,
-  input: 8,
-  slot: 8,
-  img: 8,
+  card: 8,
+  cardSm: 6,
+  btn: 6,
+  input: 6,
+  slot: 6,
+  img: 6,
   pill: 999,
-  sheet: 16,
+  sheet: 12,
 } as const;
 
 export const FONT = {

@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES, resolveNext } from '@/lib/authFlow';
 import { Credit, H1, H3, Overlay, P, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 const CARDS: { id: MarketId; img: { src: string; credit: string } }[] = [
   { id: 'men', img: DESIGN_IMAGES.marketMen },
@@ -37,7 +37,7 @@ export default function Market() {
         <H1>Que recherchez-vous ?</H1>
       </View>
       {CARDS.map((c) => (
-        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} onPress={() => void choose(c.id)} disabled={update.isPending} style={({ pressed }) => ({ height: 168, borderRadius: 12, overflow: 'hidden', backgroundColor: C.line, opacity: pressed ? 0.9 : 1 })}>
+        <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={MARKET_LABELS_FR[c.id]} onPress={() => void choose(c.id)} disabled={update.isPending} style={({ pressed }) => ({ height: 168, borderRadius: R.card, overflow: 'hidden', backgroundColor: C.line, opacity: pressed ? 0.9 : 1 })}>
           <Image source={{ uri: c.img.src }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
           <Overlay />
           <View style={{ position: 'absolute', left: 16, right: 16, bottom: 29, gap: 5 }}>

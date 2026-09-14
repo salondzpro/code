@@ -123,7 +123,7 @@ export function ImageCropper({
         </p>
         <div
           ref={frameRef}
-          className={`relative mx-auto w-full max-w-[22rem] select-none overflow-hidden bg-line ${round ? 'rounded-full' : 'rounded-[0.571rem]'}`}
+          className={`relative mx-auto w-full max-w-[22rem] select-none overflow-hidden bg-line ${round ? 'rounded-full' : 'rounded-[var(--radius-card-sm)]'}`}
           style={{
             height: frame.h || undefined,
             aspectRatio: `${aspect}`,

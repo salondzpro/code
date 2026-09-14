@@ -40,7 +40,7 @@ import { DayCarousel, DayScroller } from '@/ui/DayCarousel';
 import { BookingPeekSheet } from '@/ui/BookingPeekSheet';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C, CAT, NAV_PAD, SHADOW } from '@/theme/design';
+import { C, CAT, NAV_PAD, SHADOW, R } from '@/theme/design';
 
 type View3 = 'day' | 'week' | 'month';
 const HATCH: ViewStyle = {
@@ -207,7 +207,7 @@ export default function AgendaPro() {
                 bottom: NAV_PAD - 8,
                 width: 46,
                 height: 46,
-                borderRadius: 12,
+                borderRadius: R.card,
                 backgroundColor: C.ink,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -498,7 +498,7 @@ function DayTimeline({
               right: 0,
               top: top(g.s) + 2,
               height: (g.e - g.s) * PX - 4,
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               justifyContent: 'center',
               paddingHorizontal: 13,
               flexDirection: 'row',
@@ -525,7 +525,7 @@ function DayTimeline({
               right: 0,
               top: top(c.s) + 2,
               height: Math.max(20, (c.e - c.s) * PX - 4),
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               justifyContent: 'center',
               paddingHorizontal: 13,
             },
@@ -555,7 +555,7 @@ function DayTimeline({
               top: top(s) + 2,
               height: Math.max(44, (e - s) * PX - 4),
               overflow: 'hidden',
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               borderWidth: 1,
               borderStyle: 'dashed',
               borderColor: C.line,
@@ -597,7 +597,7 @@ function DayTimeline({
               top: top(s) + 2,
               height: Math.max(44, (e - s) * PX - 4),
               overflow: 'hidden',
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               borderLeftWidth: 3,
               borderLeftColor: t.line,
               backgroundColor: t.bg,
@@ -768,7 +768,7 @@ function WeekGrid({
                   width: '100%',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderRadius: 8,
+                  borderRadius: R.cardSm,
                   backgroundColor: on ? C.ink : 'transparent',
                 }}
               >
@@ -786,7 +786,7 @@ function WeekGrid({
                   {
                     width: '100%',
                     height: H,
-                    borderRadius: 8,
+                    borderRadius: R.cardSm,
                     overflow: 'hidden',
                     backgroundColor: C.surface,
                     borderWidth: on ? 1.5 : 1,
@@ -933,7 +933,7 @@ function MonthGrid({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 5,
-                      borderRadius: 8,
+                      borderRadius: R.cardSm,
                       borderWidth: 1,
                       borderColor: on ? C.ink : inMonth ? C.lineSoft : 'transparent',
                       backgroundColor: on ? C.ink : inMonth ? C.surface : 'transparent',

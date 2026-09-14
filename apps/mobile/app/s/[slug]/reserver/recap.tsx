@@ -35,7 +35,7 @@ import { capitalize, open } from '@/lib/salon';
 import { Avatar, BottomSheet, Button, Card, ErrorText, H1, I, Row, Rows, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export default function BookingReview() {
   const { slug = '' } = useLocalSearchParams<{ slug: string }>();
@@ -120,7 +120,7 @@ export default function BookingReview() {
           accessibilityRole="alert"
           style={{
             gap: 8,
-            borderRadius: 12,
+            borderRadius: R.card,
             borderWidth: 1,
             borderColor: C.dangerLine,
             backgroundColor: C.cancelBg,

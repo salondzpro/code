@@ -43,7 +43,7 @@ export function ServiceDetail() {
           </IconButton>
         </div>
       </div>
-      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[1.5rem] bg-bg px-5 pt-6">
+      <div className="relative -mt-5 flex flex-col gap-4 rounded-t-[var(--radius-sheet)] bg-bg px-5 pt-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="h1 !text-[1.714rem]">{sv.name}</h1>

@@ -18,7 +18,7 @@ import { BrandFooter } from '@/ui/BrandFooter';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { ShareSheet } from '@/ui/ShareSheet';
-import { C, NAV_PAD } from '@/theme/design';
+import { C, NAV_PAD, R } from '@/theme/design';
 
 export default function ProProfile() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function ProProfile() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Changer la photo de profil" disabled={busy !== null} onPress={() => void upload('logo')}>
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={58.5} />
-            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 8, backgroundColor: C.ink, borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: R.cardSm, backgroundColor: C.ink, borderWidth: 2, borderColor: C.surface, alignItems: 'center', justifyContent: 'center' }}>
               <I icon={Camera} size={14} color={C.onInk} />
             </View>
           </Pressable>

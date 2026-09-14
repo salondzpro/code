@@ -8,13 +8,13 @@ import { EMAIL_FALLBACK, formatIntlDZ, useAuthFlow, writeAuthFlow } from '@/lib/
 import { errorText } from '@/lib/errors';
 import { Alert, Badge, Button, Card, H1, H2, I, InfoBox, P, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 const LABEL: Record<OtpChannel, string> = { whatsapp: 'WhatsApp', sms: 'SMS', email: 'e-mail' };
 
 function ChannelIcon({ icon, ok }: { icon: typeof Mail; ok?: boolean }) {
   return (
-    <View style={{ width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? C.okBg : C.surface, borderWidth: ok ? 0 : 1, borderColor: C.line }}>
+    <View style={{ width: 34, height: 34, borderRadius: R.card, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? C.okBg : C.surface, borderWidth: ok ? 0 : 1, borderColor: C.line }}>
       <I icon={icon} size={16} color={ok ? C.okFg : C.text} />
     </View>
   );

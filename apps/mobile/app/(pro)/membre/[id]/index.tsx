@@ -27,7 +27,7 @@ import {
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 import { pickImages, uploadSalonImage } from '@/lib/images';
 
 export default function TeamMember() {
@@ -124,7 +124,7 @@ export default function TeamMember() {
               bottom: -2,
               width: 20,
               height: 20,
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               backgroundColor: C.ink,
               borderWidth: 2,
               borderColor: C.surface,
@@ -265,7 +265,7 @@ export default function TeamMember() {
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 12,
+                borderRadius: R.card,
                 backgroundColor: C.fill,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -293,7 +293,7 @@ export default function TeamMember() {
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 12,
+                borderRadius: R.card,
                 backgroundColor: C.fill,
                 alignItems: 'center',
                 justifyContent: 'center',

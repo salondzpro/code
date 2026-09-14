@@ -135,7 +135,7 @@ function ClientSheet({
         <div className="h2 text-center !text-[1.143rem]">Client</div>
         <SearchBox value={q} onChange={setQ} placeholder="Rechercher dans ma clientèle" autoFocus />
         {clients.isPending ? (
-          <Skeleton className="h-[6rem] w-full !rounded-[0.857rem]" />
+          <Skeleton className="h-[6rem] w-full !rounded-[var(--radius-card)]" />
         ) : rows.length > 0 ? (
           <div className="crd !gap-0 !py-1">
             {rows.map((c) => (

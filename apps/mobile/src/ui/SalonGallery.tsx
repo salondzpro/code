@@ -10,7 +10,7 @@ import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 import { I, Img, Tx } from './index';
 
 export function SalonGallery({
@@ -31,7 +31,7 @@ export function SalonGallery({
     top: height / 2 - 18,
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: R.card,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     backgroundColor: 'rgba(0,0,0,0.35)',

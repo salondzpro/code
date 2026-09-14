@@ -38,7 +38,7 @@ export function Step2Name() {
       </Field>
       <div>
         <span className="lbl">Votre lien de réservation</span>
-        <div className="flex items-center justify-between gap-3 rounded-[0.571rem] bg-fill px-4 py-[1.125rem] text-[1rem]">
+        <div className="flex items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-fill px-4 py-[1.125rem] text-[1rem]">
           <span className="truncate">
             {host}/s/{check?.slug || (name.trim() ? '…' : 'votre-salon')}
           </span>

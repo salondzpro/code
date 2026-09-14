@@ -367,7 +367,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             top: 8,
             width: 34,
             height: 34,
-            borderRadius: 12,
+            borderRadius: R.card,
             backgroundColor: 'rgba(255,255,255,0.95)',
             alignItems: 'center',
             justifyContent: 'center',

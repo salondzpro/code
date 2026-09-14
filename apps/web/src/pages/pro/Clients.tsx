@@ -8,7 +8,7 @@ import { ChevronRight, Search } from 'lucide-react';
 import { pagesItems, useProClientsInfinite, useProSalon } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import { formatDZPhone, formatDateShortDZ } from '@salondz/constants';
-import { Avatar, Badge, I, Skeleton, Pill, TopBar } from '@/components/ui';
+import { Avatar, Badge, I, Skeleton, Pill } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 
@@ -31,9 +31,11 @@ export function Clients() {
   if (!salon) return <Splash />;
 
   return (
-    <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">Clients</h1>
+    <Screen bottom={NAV_PAD} gap={12}>
+      <div className="flex items-end justify-between gap-3">
+        <h1 className="h1">Clients</h1>
+        <span className="text-[1rem] text-muted">{total}</span>
+      </div>
       <label className="search">
         <I icon={Search} size={22} />
         <input
@@ -43,23 +45,29 @@ export function Clients() {
           aria-label="Rechercher un client"
         />
       </label>
-      <div className="pills -mx-5 px-5" role="group" aria-label="Filtrer les clients">
-        <Pill lg on={!onlyBlocked} onClick={() => setOnlyBlocked(false)}>
-          Tous · {total}
-        </Pill>
-        <Pill lg on={onlyBlocked} onClick={() => setOnlyBlocked(true)}>
-          Bloqués · {blockedCount}
-        </Pill>
-      </div>
+      {blockedCount > 0 && (
+        <div className="pills -mx-4 px-4" role="group" aria-label="Filtrer les clients">
+          <Pill on={!onlyBlocked} onClick={() => setOnlyBlocked(false)}>
+            Tous · {total}
+          </Pill>
+          <Pill on={onlyBlocked} onClick={() => setOnlyBlocked(true)}>
+            Bloqués · {blockedCount}
+          </Pill>
+        </div>
+      )}
       {clients.isPending ? (
-        <Skeleton className="h-[12.5rem] w-full !rounded-[0.857rem]" />
+        <Skeleton className="h-[12.5rem] w-full !rounded-[var(--radius-card)]" />
       ) : rows.length === 0 ? (
         <p className="p">
           {onlyBlocked
             ? 'Aucun client bloqué.'
-            : 'Vos clients apparaîtront ici après leur premier rendez-vous.'}
+            : needle
+              ? `Aucun client pour « ${needle} ».`
+              : 'Vos clients apparaîtront ici après leur premier rendez-vous.'}
         </p>
       ) : (
+        /* Une ligne par client, comme un répertoire : le nom, le numéro, et à droite ce qui
+           compte pour décider d'appeler — combien de rendez-vous, et le prochain ou le dernier. */
         <div className="crd !gap-0 !py-1">
           {rows.map((c) => (
             <button
@@ -68,10 +76,10 @@ export function Clients() {
               className="li w-full text-left"
               onClick={() => navigate(`/pro/clients/${encodeURIComponent(c.clientKey)}`)}
             >
-              <span className="flex min-w-0 items-center gap-3.5">
-                <Avatar name={c.name} size={52} />
+              <span className="flex min-w-0 flex-1 items-center gap-3">
+                <Avatar name={c.name} size={40} />
                 <span className="min-w-0">
-                  <span className="flex items-center gap-2 text-[1rem] font-bold tracking-[-0.3px]">
+                  <span className="flex items-center gap-2 text-[1rem] font-semibold">
                     <span className="truncate">{c.name}</span>
                     {c.blocked && (
                       <Badge tone="cn" dot={false}>
@@ -79,18 +87,21 @@ export function Clients() {
                       </Badge>
                     )}
                   </span>
-                  <span className="block text-[1rem] text-muted">
-                    {c.phone ? `${formatDZPhone(c.phone)} · ` : ''}
-                    {c.bookingsCount} rendez-vous
-                    {c.noShowCount
-                      ? ` · ${c.noShowCount} absence${c.noShowCount > 1 ? 's' : ''}`
-                      : ''}
-                    {c.nextAt
-                      ? ` · prochain ${formatDateShortDZ(c.nextAt)}`
-                      : c.lastAt
-                        ? ` · dernier ${formatDateShortDZ(c.lastAt)}`
-                        : ''}
+                  <span className="mono block truncate text-[0.857rem] text-muted">
+                    {c.phone ? formatDZPhone(c.phone) : 'Sans numéro'}
                   </span>
+                </span>
+              </span>
+              <span className="flex flex-none flex-col items-end">
+                <span className="text-[1rem] font-semibold">
+                  {c.bookingsCount} RDV
+                </span>
+                <span className={`text-[0.857rem] ${c.nextAt ? 'text-ok-fg' : 'text-muted'}`}>
+                  {c.nextAt
+                    ? formatDateShortDZ(c.nextAt)
+                    : c.lastAt
+                      ? formatDateShortDZ(c.lastAt)
+                      : ''}
                 </span>
               </span>
               <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />

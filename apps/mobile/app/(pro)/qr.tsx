@@ -14,7 +14,7 @@ import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { shareSalon } from '@/ui/ShareSheet';
 import { POSTER_H, POSTER_W, QrPoster } from '@/ui/QrPoster';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export default function ProQr() {
   const salon = useProSalon().data?.salon ?? null;
@@ -87,7 +87,7 @@ export default function ProQr() {
             height: POSTER_H,
             transform: [{ scale }],
             transformOrigin: 'top center',
-            borderRadius: 12,
+            borderRadius: R.card,
             overflow: 'hidden',
             borderWidth: 1,
             borderColor: C.line,

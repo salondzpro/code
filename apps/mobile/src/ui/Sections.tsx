@@ -6,7 +6,7 @@
 import { Pressable, View } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 import type { ReactNode } from 'react';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 import { I, Tx } from './index';
 
 /** Onglets soulignés : ils commandent toute la page, pas un simple filtre. */
@@ -81,7 +81,7 @@ export function Accordion({
         backgroundColor: C.surface,
         borderWidth: 1,
         borderColor: C.line,
-        borderRadius: 12,
+        borderRadius: R.card,
         overflow: 'hidden',
       }}
     >

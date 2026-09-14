@@ -69,7 +69,7 @@ export function SalonReviews() {
           </Pill>
         </div>
       )}
-      {reviews.isPending && has && <Skeleton className="h-[6rem] w-full !rounded-[0.857rem]" />}
+      {reviews.isPending && has && <Skeleton className="h-[6rem] w-full !rounded-[var(--radius-card)]" />}
       {reviewItems.map((r) => (
         <div key={r.id} className="crd !gap-1.5">
           <div className="flex items-center justify-between gap-3">

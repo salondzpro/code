@@ -16,7 +16,7 @@ import { Alert, Grid, H1, I, Img, InfoBox, P, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { StepBar, StepSheet } from '@/ui/Steps';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export function Step8Works({ settings }: { settings?: boolean }) {
   const router = useRouter();
@@ -89,7 +89,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
                 top: 5,
                 width: 23,
                 height: 23,
-                borderRadius: 8,
+                borderRadius: R.cardSm,
                 backgroundColor: 'rgba(0,0,0,0.6)',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -107,7 +107,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             disabled={busy}
             style={{
               aspectRatio: 1,
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               borderWidth: 1,
               borderStyle: 'dashed',
               borderColor: C.line,

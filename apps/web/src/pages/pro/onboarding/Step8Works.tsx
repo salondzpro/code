@@ -67,7 +67,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
       </div>
       <div className="g3">
         {works.map((w) => (
-          <div key={w.id} className="relative aspect-square overflow-hidden rounded-[0.571rem] bg-line">
+          <div key={w.id} className="relative aspect-square overflow-hidden rounded-[var(--radius-card-sm)] bg-line">
             <img src={w.url} alt="" className="h-full w-full object-cover" />
             <button
               type="button"
@@ -83,7 +83,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         {room > 0 && (
           <button
             type="button"
-            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[0.571rem] border border-dashed border-line bg-fill text-subtle"
+            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[var(--radius-card-sm)] border border-dashed border-line bg-fill text-subtle"
             onClick={() => input.current?.click()}
             disabled={busy}
             aria-label="Ajouter des réalisations"

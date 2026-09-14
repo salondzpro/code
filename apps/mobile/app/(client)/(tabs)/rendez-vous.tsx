@@ -46,7 +46,7 @@ import {
   Tx,
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
-import { C, NAV_PAD } from '@/theme/design';
+import { C, NAV_PAD, R } from '@/theme/design';
 
 type Scope = 'upcoming' | 'past' | 'cancelled';
 const DZ = 'Africa/Algiers';
@@ -78,7 +78,7 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
       style={{
         width: 49,
         alignItems: 'center',
-        borderRadius: 8,
+        borderRadius: R.cardSm,
         backgroundColor: C.fill,
         paddingVertical: 7,
       }}

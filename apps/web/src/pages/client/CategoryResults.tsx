@@ -57,8 +57,8 @@ export function CategoryResults() {
       {query.isPending ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-5 w-56" />
-          <Skeleton className="h-[12.5rem] w-full !rounded-[0.857rem]" />
-          <Skeleton className="h-[12.5rem] w-full !rounded-[0.857rem]" />
+          <Skeleton className="h-[12.5rem] w-full !rounded-[var(--radius-card)]" />
+          <Skeleton className="h-[12.5rem] w-full !rounded-[var(--radius-card)]" />
         </div>
       ) : query.isError ? (
         <ErrorMessage error={query.error} retry={() => query.refetch()} />

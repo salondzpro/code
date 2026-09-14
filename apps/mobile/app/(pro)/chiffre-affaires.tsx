@@ -7,7 +7,7 @@ import { DAY_LABELS_SHORT_FR, addDaysToKey, dayOfWeekFromKey, formatDA, toLocalD
 import { MONTHS_FR } from '@/lib/format';
 import { Badge, Card, ErrorText, H1, I, IconButton, ListCard, P, Row, SectionLabel, Segmented, Skeleton, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 type Period = 'day' | 'week' | 'month';
 
@@ -96,7 +96,7 @@ export default function Revenue() {
                   const showLabel = period === 'week' || dayNum % 5 === 1 || isToday;
                   return (
                     <View key={d.date} style={{ flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
-                      <View style={{ width: '100%', height: h, borderRadius: 8, backgroundColor: isToday ? C.ink : C.line }} accessibilityLabel={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
+                      <View style={{ width: '100%', height: h, borderRadius: R.cardSm, backgroundColor: isToday ? C.ink : C.line }} accessibilityLabel={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`} />
                       {showLabel ? (
                         <Tx size={period === 'week' ? 15 : 12} weight={isToday ? 700 : 400} color={isToday ? C.text : C.muted} lh={period === 'week' ? 20 : 16}>
                           {period === 'week' ? DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)] : String(dayNum)}

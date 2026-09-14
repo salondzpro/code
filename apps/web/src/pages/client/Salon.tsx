@@ -291,7 +291,7 @@ export function Salon() {
                 feuille en bas d'écran que l'on découvre après avoir tout parcouru. */}
             {cannotBook && standing.data?.message && (
               <div
-                className="flex items-start gap-3 rounded-[0.571rem] border border-danger-line bg-cancel-bg px-4 py-3"
+                className="flex items-start gap-3 rounded-[var(--radius-card-sm)] border border-danger-line bg-cancel-bg px-4 py-3"
                 role="alert"
               >
                 <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
@@ -332,7 +332,7 @@ export function Salon() {
                       {sv.photos?.[0]?.url && (
                         <Img
                           src={sv.photos[0].url}
-                          className="h-[3rem] w-[3rem] flex-none !rounded-[0.571rem]"
+                          className="h-[3rem] w-[3rem] flex-none !rounded-[var(--radius-card-sm)]"
                         />
                       )}
                       <div className="min-w-0">
@@ -404,7 +404,7 @@ export function Salon() {
               </div>
             )}
             {reviews.isPending && s.ratingCount > 0 && (
-              <Skeleton className="h-[5rem] w-full !rounded-[0.857rem]" />
+              <Skeleton className="h-[5rem] w-full !rounded-[var(--radius-card)]" />
             )}
             {reviewItems.map((r) => (
               <div key={r.id} className="crd !gap-1">
@@ -438,7 +438,7 @@ export function Salon() {
               {s.lat != null && s.lng != null ? (
                 <MiniMap lat={s.lat} lng={s.lng} radiusKm={0.4} className="h-[11rem]" />
               ) : (
-                <div className="flex h-[11rem] items-center justify-center rounded-[0.857rem] border border-line bg-fill">
+                <div className="flex h-[11rem] items-center justify-center rounded-[var(--radius-card)] border border-line bg-fill">
                   <span className="p">Position non renseignée</span>
                 </div>
               )}

@@ -79,7 +79,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
     <>
       <div className="dim" onClick={onClose} />
       <BottomSheet className="max-h-[88vh] overflow-y-auto">
-        {booking.isPending && <Skeleton className="h-[12rem] w-full !rounded-[0.857rem]" />}
+        {booking.isPending && <Skeleton className="h-[12rem] w-full !rounded-[var(--radius-card)]" />}
         {booking.isError && (
           <ErrorMessage error={booking.error} retry={() => booking.refetch()} />
         )}

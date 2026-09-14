@@ -4,6 +4,7 @@
  * indication, coche). Même modèle que « Trier par » et les sélecteurs d'heure.
  */
 import { Fragment, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, ChevronDown, Plus } from 'lucide-react';
 import { BottomSheet, Button, I } from './ui';
 
@@ -38,9 +39,15 @@ export function PickerSheet<T extends string | number>({
 }) {
   if (!open) return null;
   let lastGroup: string | undefined;
-  return (
-    <>
-      <div className="dim" onClick={onClose} />
+  /**
+   * Rendue par un PORTAIL sur `document.body`, et non à l'endroit du champ : plusieurs
+   * champs vivent dans un `<label>` (lignes « Concerne », « Membre »), et un tap sur le voile
+   * remontait au label, qui réactivait son champ et rouvrait la feuille dans la foulée —
+   * impossible de fermer en touchant dans le vide. Hors du label, le voile ferme, point.
+   */
+  return createPortal(
+    <div onClick={(e) => e.stopPropagation()}>
+      <div className="dim !z-[45]" onClick={onClose} />
       <BottomSheet className="max-h-[85vh] !z-50 overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{title}</div>
         <div className="crd !gap-0 !py-1" role="radiogroup" aria-label={title}>
@@ -87,7 +94,8 @@ export function PickerSheet<T extends string | number>({
           </Button>
         )}
       </BottomSheet>
-    </>
+    </div>,
+    document.body,
   );
 }
 
@@ -123,7 +131,10 @@ export function PickerField<T extends string | number>({
         type="button"
         aria-label={label}
         aria-haspopup="dialog"
-        onClick={() => setOpen(true)}
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
         className={
           inline
             ? `flex max-w-[60%] items-center gap-1 text-right text-[1rem] ${current ? '' : 'text-subtle'} ${className}`

@@ -108,7 +108,7 @@ export function BookingReview() {
       {/* Impossible de réserver : dit d'abord, en grand, avec la solution (appeler). */}
       {blockedMessage && (
         <div
-          className="flex flex-col gap-3 rounded-[0.857rem] border border-danger-line bg-cancel-bg p-4"
+          className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg p-4"
           role="alert"
         >
           <span className="flex items-center gap-2.5 text-[1.143rem] font-bold text-cancel-fg">

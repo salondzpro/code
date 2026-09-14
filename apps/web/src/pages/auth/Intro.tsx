@@ -16,7 +16,7 @@ export function Intro() {
             rendez-vous.
           </div>
         </div>
-        <span className="absolute bottom-2 left-3 rounded-md bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
+        <span className="absolute bottom-2 left-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
       </div>
       <div className="flex flex-col gap-3.5 px-5 pb-10 pt-5">
         <p className="p">Barbiers, coiffure, ongles, cils, soins et laser — près de vous, avec les disponibilités en temps réel.</p>

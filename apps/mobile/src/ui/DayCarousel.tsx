@@ -17,7 +17,7 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import { dayNumber, monthLabel } from '@/lib/format';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 import { Tx } from './Text';
 
 const CELL = 46;
@@ -101,7 +101,7 @@ export function DayScroller({
               alignItems: 'center',
               gap: 3,
               paddingVertical: 7,
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               backgroundColor: on ? C.ink : 'transparent',
             }}
           >

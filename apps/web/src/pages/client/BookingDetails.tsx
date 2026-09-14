@@ -51,7 +51,7 @@ function PhoneField({
     <div>
       <span className="lbl">{label}</span>
       <div className="flex gap-2.5">
-        <div className="flex flex-none items-center gap-2 rounded-[0.571rem] bg-fill px-4 text-[0.857rem] font-medium">
+        <div className="flex flex-none items-center gap-2 rounded-[var(--radius-card-sm)] bg-fill px-4 text-[0.857rem] font-medium">
           +213 <I icon={ChevronDown} size={16} className="text-subtle" />
         </div>
         <Input

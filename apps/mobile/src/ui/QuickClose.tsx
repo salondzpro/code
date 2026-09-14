@@ -20,7 +20,7 @@ import type { OpeningHour } from '@salondz/types';
 import { errorText } from '@/lib/errors';
 import { Alert, Button, Card, I, Toast, Tx } from './index';
 import { PickerSheet } from './Pickers';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 const DURATIONS = [1, 2, 3] as const;
 
@@ -153,7 +153,7 @@ export function QuickCloseBanner() {
           style={{
             width: 32,
             height: 32,
-            borderRadius: 12,
+            borderRadius: R.card,
             backgroundColor: C.danger,
             alignItems: 'center',
             justifyContent: 'center',

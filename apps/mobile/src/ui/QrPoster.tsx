@@ -7,7 +7,7 @@ import React, { forwardRef } from 'react';
 import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Avatar, Tx } from './index';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export const POSTER_W = 340;
 export const POSTER_H = Math.round((POSTER_W * 4) / 3);
@@ -26,7 +26,7 @@ export const QrPoster = forwardRef<
         style={{
           flex: 1,
           backgroundColor: '#fff',
-          borderRadius: 12,
+          borderRadius: R.card,
           borderWidth: 1,
           borderColor: C.line,
           alignItems: 'center',
@@ -66,7 +66,7 @@ export const QrPoster = forwardRef<
           style={{
             marginTop: 14,
             padding: 9,
-            borderRadius: 8,
+            borderRadius: R.cardSm,
             borderWidth: 1,
             borderColor: C.line,
             backgroundColor: '#fff',

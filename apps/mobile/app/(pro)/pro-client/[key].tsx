@@ -63,7 +63,7 @@ import {
 } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 function historyStatusLabel(
   h: Pick<ProClientHistoryItem, 'status' | 'cancelledBy'>,
@@ -89,7 +89,7 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
       style={{
         width: 42,
         alignItems: 'center',
-        borderRadius: 8,
+        borderRadius: R.cardSm,
         backgroundColor: C.fill,
         paddingVertical: 6,
       }}
@@ -109,7 +109,7 @@ function Stat({ v, l }: { v: string; l: string }) {
     <View
       style={{
         backgroundColor: C.fill,
-        borderRadius: 8,
+        borderRadius: R.cardSm,
         paddingHorizontal: 10,
         paddingVertical: 10,
       }}

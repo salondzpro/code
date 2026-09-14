@@ -146,7 +146,7 @@ export function Code() {
       <h1 className="h1">{status === 'idle' && attempts === 0 ? 'Code envoyé' : 'Saisir le code'}</h1>
 
       {status === 'idle' && attempts === 0 && (
-        <div className="rounded-[0.857rem] bg-ok-bg p-4 text-[1rem] leading-[1.45]">
+        <div className="rounded-[var(--radius-card)] bg-ok-bg p-4 text-[1rem] leading-[1.45]">
           <div className="mb-3 flex items-center gap-3">
             <span className="flex h-[2.75rem] w-[2.75rem] items-center justify-center rounded-full bg-surface text-ok-fg">
               <I icon={MessageCircle} size={20} />

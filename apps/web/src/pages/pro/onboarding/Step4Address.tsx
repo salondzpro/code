@@ -87,7 +87,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           <I icon={Search} size={20} className="text-subtle" />
           <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue des Frères Bouadou, Hydra" aria-label="Adresse" maxLength={200} />
         </label>
-        <div className="relative h-[13.75rem] overflow-hidden rounded-[0.857rem] border border-line bg-fill">
+        <div className="relative h-[13.75rem] overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill">
           <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '110px 80px' }} />
           <span className="absolute left-1/2 top-1/2 flex h-[4.25rem] w-[4.25rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-white shadow-fab">
             <I icon={MapPin} size={26} />

@@ -133,7 +133,7 @@ export function ShareSheet({
       <div className="dim" onClick={onClose} />
       <BottomSheet>
         <div className="h1 !text-[1.429rem]">Partagez votre page</div>
-        <div className="flex items-center gap-3 rounded-[0.571rem] bg-fill px-4 py-4 text-[1rem]">
+        <div className="flex items-center gap-3 rounded-[var(--radius-card-sm)] bg-fill px-4 py-4 text-[1rem]">
           <I icon={Lock} size={20} className="text-muted" />
           <span className="flex-1 truncate">{short}</span>
           <button type="button" className="font-semibold" onClick={() => copy(url)}>
@@ -148,7 +148,7 @@ export function ShareSheet({
               className="flex flex-col items-center gap-2"
               onClick={it.onClick}
             >
-              <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[0.857rem] border border-line bg-surface">
+              <span className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[var(--radius-card)] border border-line bg-surface">
                 {it.icon}
               </span>
               <span className="text-[1rem] text-muted">{it.label}</span>
@@ -187,7 +187,7 @@ export function ProLink() {
       <div className="crd items-center !gap-3 !py-4">
         <button
           type="button"
-          className="flex h-[15rem] w-[15rem] items-center justify-center overflow-hidden rounded-[0.857rem] bg-fill"
+          className="flex h-[15rem] w-[15rem] items-center justify-center overflow-hidden rounded-[var(--radius-card)] bg-fill"
           onClick={() => navigate('/pro/qr')}
           aria-label="Agrandir le QR code"
         >
@@ -197,7 +197,7 @@ export function ProLink() {
             <span className="text-[0.857rem] text-subtle">QR code</span>
           )}
         </button>
-        <div className="flex w-full items-center justify-between gap-3 rounded-[0.571rem] bg-fill px-5 py-4 text-[1rem]">
+        <div className="flex w-full items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-fill px-5 py-4 text-[1rem]">
           <span className="truncate">{short}</span>
           <IconButton
             aria-label="Copier le lien"
@@ -284,10 +284,10 @@ export function ProQr() {
         <img
           src={poster}
           alt={`Affiche QR de ${salon.name}`}
-          className="w-full rounded-[0.857rem] border border-line"
+          className="w-full rounded-[var(--radius-card)] border border-line"
         />
       ) : (
-        <div className="sk aspect-[3/4] w-full !rounded-[0.857rem]" />
+        <div className="sk aspect-[3/4] w-full !rounded-[var(--radius-card)]" />
       )}
       <p className="p text-center">
         À imprimer en vitrine : le scan ouvre votre page de réservation.

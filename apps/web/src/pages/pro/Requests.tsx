@@ -120,7 +120,7 @@ export function Requests() {
       ))}
       <ErrorMessage error={setStatus.error} />
 
-      {next.isPending && <Skeleton className="h-[10rem] w-full !rounded-[0.857rem]" />}
+      {next.isPending && <Skeleton className="h-[10rem] w-full !rounded-[var(--radius-card)]" />}
       {next.isError && <ErrorMessage error={next.error} retry={() => next.refetch()} />}
       {days.map(([key, list]) => (
         <div key={key} className="flex flex-col gap-3">

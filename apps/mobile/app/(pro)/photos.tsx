@@ -12,7 +12,7 @@ import { errorText } from '@/lib/errors';
 import { Alert, Avatar, Button, Card, I, Img, InfoBox, P, SectionLabel, TopBar, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export default function ProPhotos() {
   const salon = useProSalon().data?.salon ?? null;
@@ -177,7 +177,7 @@ export default function ProPhotos() {
                 top: 6,
                 width: 24,
                 height: 24,
-                borderRadius: 8,
+                borderRadius: R.cardSm,
                 backgroundColor: 'rgba(255,255,255,0.95)',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -196,7 +196,7 @@ export default function ProPhotos() {
             style={{
               width: '48%',
               aspectRatio: 4 / 3,
-              borderRadius: 8,
+              borderRadius: R.cardSm,
               borderWidth: 1,
               borderStyle: 'dashed',
               borderColor: C.line,

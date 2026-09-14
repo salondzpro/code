@@ -27,7 +27,7 @@ import {
 import { RowText } from '@/ui/ProRows';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export default function ProServices() {
   const router = useRouter();
@@ -106,7 +106,7 @@ export default function ProServices() {
                         style={{
                           width: 52,
                           height: 52,
-                          borderRadius: 8,
+                          borderRadius: R.cardSm,
                           borderWidth: 1,
                           borderStyle: 'dashed',
                           borderColor: C.line,

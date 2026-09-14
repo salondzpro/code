@@ -3,7 +3,7 @@ import React, { type ReactNode } from 'react';
 import { View } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { Card, I, Tx } from './index';
-import { C } from '@/theme/design';
+import { C, R } from '@/theme/design';
 
 export function Ic({ icon, ink, danger }: { icon: LucideIcon; ink?: boolean; danger?: boolean }) {
   return (
@@ -11,7 +11,7 @@ export function Ic({ icon, ink, danger }: { icon: LucideIcon; ink?: boolean; dan
       style={{
         width: 32,
         height: 32,
-        borderRadius: 12,
+        borderRadius: R.card,
         backgroundColor: ink ? C.ink : danger ? C.cancelBg : C.fill,
         alignItems: 'center',
         justifyContent: 'center',
@@ -65,7 +65,7 @@ export function Tile({
         style={{
           width: 36,
           height: 36,
-          borderRadius: 12,
+          borderRadius: R.card,
           backgroundColor: C.ink,
           alignItems: 'center',
           justifyContent: 'center',

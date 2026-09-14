@@ -384,7 +384,7 @@ export function MapView() {
                   <div className="flex items-center gap-3">
                     <Img
                       src={s.logoUrl ?? s.coverUrl}
-                      className="h-[3.25rem] w-[3.25rem] flex-none !rounded-[0.571rem]"
+                      className="h-[3.25rem] w-[3.25rem] flex-none !rounded-[var(--radius-card-sm)]"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">

@@ -1,9 +1,11 @@
 /**
- * Espace pro — Fiche client, pensée pour le quotidien : le nom et le téléphone en grand avec Appeler / WhatsApp,
- * le prochain rendez-vous en avant (« dans 2 h », heure, prestation), trois chiffres qui comptent (visites,
- * dépensé, dernière visite) et les signaux d'alerte (annulations, absences), les notes privées, puis l'historique
- * (pavé date, prestation, heure · prix · membre, statut). Un rendez-vous passé encore « Confirmé » se règle sur
- * place : Terminé ou Client absent. Une icône sur chaque action.
+ * Espace pro — Fiche client, sur le modèle des outils du métier (Planity Pro) : l'identité
+ * en tête avec trois gestes (appeler, WhatsApp, prendre rendez-vous), quatre chiffres qui
+ * comptent (visites, dépensé, annulations, absences — en rouge dès qu'il y en a), puis les
+ * faits en lignes (prochain rendez-vous, dernière visite, e-mail), les notes privées, et
+ * l'historique sous des onglets. Bloquer est un geste rare : il vit tout en bas, seul.
+ *
+ * Un rendez-vous passé encore « Confirmé » se règle sur place : Terminé ou Client absent.
  */
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -13,12 +15,11 @@ import {
   CalendarPlus,
   Check,
   ChevronRight,
+  History,
   Mail,
   MessageCircle,
   Phone,
-  Save,
   ShieldCheck,
-  StickyNote,
   UserX,
 } from 'lucide-react';
 import {
@@ -27,6 +28,7 @@ import {
   useProClient,
   useProClientHistoryInfinite,
   useProClientMutations,
+  useProSalon,
 } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
@@ -40,14 +42,15 @@ import {
 } from '@salondz/constants';
 import type { ProClientHistoryItem } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
+import { FactRow } from '@/components/BookingFacts';
 import {
   Avatar,
   Badge,
   Button,
   I,
-  Pill,
   Skeleton,
   StatusBadge,
+  Tabs,
   Textarea,
   TopBar,
 } from '@/components/ui';
@@ -71,29 +74,54 @@ const monthShort = (iso: string) =>
   new Intl.DateTimeFormat('fr-DZ', { month: 'short', timeZone: DZ })
     .format(new Date(iso))
     .replace('.', '');
+const yearOf = (iso: string) =>
+  new Intl.DateTimeFormat('fr-DZ', { year: 'numeric', timeZone: DZ }).format(new Date(iso));
 
-/** Pavé date de l'historique : jour en grand, mois. */
+/** Pavé date de l'historique : jour en grand, mois — et l'année quand ce n'est pas celle-ci. */
 function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
+  const thisYear = yearOf(new Date().toISOString());
   return (
     <span
-      className={`flex w-[3.25rem] flex-none flex-col items-center rounded-[0.571rem] bg-fill py-1.5 ${muted ? 'text-muted' : ''}`}
+      className={`flex w-[3.25rem] flex-none flex-col items-center rounded-[var(--radius-card-sm)] bg-fill py-1.5 ${muted ? 'text-muted' : ''}`}
     >
-      <span className="text-[1.429rem] font-bold leading-none tracking-[-0.5px]">
+      <span className="text-[1.429rem] font-semibold leading-none tracking-[-0.5px]">
         {dayNum(iso)}
       </span>
-      <span className="text-[0.857rem] text-muted">{monthShort(iso)}</span>
+      <span className="text-[0.857rem] text-muted">
+        {monthShort(iso)}
+        {yearOf(iso) !== thisYear ? ` ${yearOf(iso).slice(2)}` : ''}
+      </span>
     </span>
   );
 }
+
+/** Chiffre clé : la valeur en grand, le libellé dessous ; rouge quand c'est un signal. */
+function Stat({ value, label, alert }: { value: string; label: string; alert?: boolean }) {
+  return (
+    <span
+      className={`flex min-w-0 flex-col rounded-[var(--radius-card-sm)] px-2.5 py-2.5 ${alert ? 'bg-cancel-bg text-cancel-fg' : 'bg-fill'}`}
+    >
+      <span className="truncate text-[1.429rem] font-semibold leading-tight tracking-[-0.5px]">
+        {value}
+      </span>
+      <span className={`truncate text-[0.857rem] ${alert ? 'text-cancel-fg/80' : 'text-muted'}`}>
+        {label}
+      </span>
+    </span>
+  );
+}
+
+type Filter = 'all' | 'done' | 'cancelled' | 'noshow';
 
 export function ClientDetail() {
   const { key = '' } = useParams();
   const navigate = useNavigate();
   const client = useProClient(key);
+  const salon = useProSalon().data?.salon ?? null;
   const history = useProClientHistoryInfinite(key, !!key);
   const historyItems = pagesItems(history.data);
   /** Tri du fichier client : on vient y chercher une catégorie, rarement la liste entière. */
-  const [filter, setFilter] = useState<'all' | 'done' | 'cancelled' | 'noshow'>('all');
+  const [filter, setFilter] = useState<Filter>('all');
   const shown = historyItems.filter((h) =>
     filter === 'all'
       ? true
@@ -124,6 +152,8 @@ export function ClientDetail() {
   const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
   const canBlock = !!(c.clientId || c.phone);
   const now = Date.now();
+  // Le membre n'est nommé dans l'historique que si le salon a une équipe : seul, c'est du bruit.
+  const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
   const toggleBlock = async () => {
     setError(null);
     try {
@@ -133,7 +163,9 @@ export function ClientDetail() {
       setError(errorText(err));
     }
   };
+  /** Les notes s'enregistrent en quittant le champ : pas de bouton à chercher. */
   const saveNotes = async () => {
+    if (notes.trim() === (c.notes ?? '')) return;
     setError(null);
     try {
       await setNotes.mutateAsync({ key, notes: notes.trim() });
@@ -145,189 +177,145 @@ export function ClientDetail() {
   };
   const newBookingUrl = `/pro/rendez-vous/nouveau?name=${encodeURIComponent(c.name)}${c.phone ? `&phone=${encodeURIComponent(c.phone)}` : ''}`;
   const nextKey = c.nextAt ? toLocalDateKey(new Date(c.nextAt)) : null;
-  const warn = c.cancelledCount + c.noShowCount > 0;
+  const wa = c.phone ? `https://wa.me/${c.phone.replace(/\D/g, '')}` : null;
 
   return (
-    <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar
-        backTo="/pro/clients"
-        right={
-          c.blocked ? (
-            <Badge tone="cn" md>
-              Client bloqué
-            </Badge>
-          ) : (
-            <Badge tone="ok" md>
-              Client actif
-            </Badge>
-          )
-        }
-      />
+    <Screen bottom={NAV_PAD} gap={12}>
+      <TopBar backTo="/pro/clients" right="Fiche client" />
 
-      {/* Identité en grand + contact direct */}
-      <div className="crd !gap-4">
-        <div className="flex items-center gap-4">
-          <Avatar name={c.name} size={72} />
+      {/* Qui, et les trois gestes du quotidien : appeler, écrire, prendre rendez-vous. */}
+      <div className="crd !gap-3">
+        <div className="flex items-center gap-3.5">
+          <Avatar name={c.name} size={56} />
           <span className="min-w-0 flex-1">
-            <h1 className="h1 truncate !text-[1.714rem]">{c.name}</h1>
+            <h1 className="h1 truncate !text-[1.429rem]">{c.name}</h1>
             {c.phone ? (
-              <a href={`tel:${c.phone}`} className="mono block text-[1.143rem] font-semibold">
+              <a href={`tel:${c.phone}`} className="mono block text-[1rem] text-muted">
                 {formatDZPhone(c.phone)}
               </a>
             ) : (
-              <span className="p block">Sans numéro de téléphone</span>
-            )}
-            {c.email && (
-              <a
-                href={`mailto:${c.email}`}
-                className="flex items-center gap-1.5 text-[1rem] text-muted"
-              >
-                <I icon={Mail} size={16} /> <span className="truncate">{c.email}</span>
-              </a>
+              <span className="block text-[0.857rem] text-muted">Sans numéro de téléphone</span>
             )}
           </span>
+          {c.blocked && (
+            <Badge tone="cn" md>
+              Bloqué
+            </Badge>
+          )}
         </div>
-        {c.phone && (
-          <div className="g2">
-            <a href={`tel:${c.phone}`} className="btn g sm !text-[1rem]">
-              <I icon={Phone} size={16} /> Appeler
+        <div className="flex gap-2">
+          {c.phone && (
+            <a href={`tel:${c.phone}`} className="ib lg" aria-label={`Appeler ${c.name}`} title="Appeler">
+              <I icon={Phone} size={20} />
             </a>
+          )}
+          {wa && (
             <a
-              href={`https://wa.me/${c.phone.replace(/\D/g, '')}`}
+              href={wa}
               target="_blank"
               rel="noreferrer"
-              className="btn g sm !text-[1rem]"
+              className="ib lg"
+              aria-label={`WhatsApp ${c.name}`}
+              title="WhatsApp"
             >
-              <I icon={MessageCircle} size={16} /> WhatsApp
+              <I icon={MessageCircle} size={20} />
             </a>
-          </div>
+          )}
+          <Button
+            className="!h-[2.75rem] !py-0"
+            onClick={() => navigate(newBookingUrl)}
+            disabled={c.blocked}
+          >
+            <I icon={CalendarPlus} size={18} /> Prendre rendez-vous
+          </Button>
+        </div>
+      </div>
+
+      {/* Quatre chiffres qui comptent ; annulations et absences en rouge dès qu'il y en a. */}
+      <div className="grid grid-cols-4 gap-1.5">
+        <Stat value={String(c.completedCount)} label={c.completedCount > 1 ? 'visites' : 'visite'} />
+        <Stat value={formatDA(c.spentDa).replace(/\s?DA$/, '')} label="DA dépensés" />
+        <Stat
+          value={String(c.cancelledCount)}
+          label={c.cancelledCount > 1 ? 'annulations' : 'annulation'}
+          alert={c.cancelledCount > 0}
+        />
+        <Stat
+          value={String(c.noShowCount)}
+          label={c.noShowCount > 1 ? 'absences' : 'absence'}
+          alert={c.noShowCount > 0}
+        />
+      </div>
+
+      {/* Les faits : prochain rendez-vous, dernière visite, e-mail. */}
+      <div className="crd !gap-0 !py-1">
+        {c.nextAt && nextKey ? (
+          <button
+            type="button"
+            className="w-full text-left"
+            onClick={() => c.lastBookingId && navigate(`/pro/rendez-vous/${c.lastBookingId}`)}
+          >
+            <FactRow
+              icon={CalendarClock}
+              title={`Prochain rendez-vous · ${relativeDayLabelDZ(nextKey)}`}
+              sub={`${formatTimeDZ(c.nextAt)} · ${untilLabelFR(c.nextAt, now)}`}
+              right={<I icon={ChevronRight} size={18} className="text-disabled" />}
+            />
+          </button>
+        ) : (
+          <FactRow icon={CalendarClock} title="Aucun rendez-vous prévu" />
+        )}
+        <FactRow
+          icon={History}
+          title={c.lastAt ? `Dernière visite le ${formatDateShortDZ(c.lastAt)}` : 'Aucune visite pour l’instant'}
+          sub={c.bookingsCount ? `${c.bookingsCount} rendez-vous au total` : undefined}
+        />
+        {c.email && (
+          <a href={`mailto:${c.email}`} className="block">
+            <FactRow icon={Mail} title={c.email} />
+          </a>
         )}
       </div>
 
-      {/* Prochain rendez-vous en avant */}
-      {c.nextAt && nextKey ? (
-        <button
-          type="button"
-          className="crd !gap-1 !border-ink text-left"
-          onClick={() => c.lastBookingId && navigate(`/pro/rendez-vous/${c.lastBookingId}`)}
-        >
-          <span className="text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
-            Prochain rendez-vous · {untilLabelFR(c.nextAt, now)}
+      {/* Notes privées : enregistrées en quittant le champ. */}
+      <div className="crd !gap-2">
+        <div className="flex items-center justify-between">
+          <span className="h3">Notes privées</span>
+          <span className="text-[0.857rem] text-muted">
+            {saved ? 'Enregistré' : setNotes.isPending ? 'Enregistrement…' : 'Jamais visibles du client'}
           </span>
-          <span className="flex items-end justify-between gap-3">
-            <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px]">
-              {formatTimeDZ(c.nextAt)}
-            </span>
-            <span className="text-[1.143rem] font-bold">{relativeDayLabelDZ(nextKey)}</span>
-          </span>
-        </button>
-      ) : (
-        <div className="crd !flex-row !items-center !justify-between !gap-3">
-          <span className="flex items-center gap-2 text-[1rem] text-muted">
-            <I icon={CalendarClock} size={16} /> Aucun rendez-vous prévu
-          </span>
-          <Button auto sm onClick={() => navigate(newBookingUrl)} disabled={c.blocked}>
-            <I icon={CalendarPlus} size={16} /> Ajouter
-          </Button>
         </div>
-      )}
-
-      {/* Trois chiffres qui comptent, puis les signaux d'alerte */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { v: String(c.completedCount), l: c.completedCount > 1 ? 'visites' : 'visite' },
-          { v: formatDA(c.spentDa), l: 'dépensés' },
-          { v: c.lastAt ? formatDateShortDZ(c.lastAt) : '—', l: 'dernière visite' },
-        ].map((x) => (
-          <span key={x.l} className="flex flex-col rounded-[0.571rem] bg-fill px-3 py-3">
-            <span className="text-[1.429rem] font-bold leading-tight tracking-[-0.5px]">{x.v}</span>
-            <span className="text-[0.857rem] text-muted">{x.l}</span>
-          </span>
-        ))}
-      </div>
-      {/* La ligne d'alerte ne s'affiche que s'il y a quelque chose à signaler : « 0 absence »
-          en rouge inquiétait pour rien, et « X rendez-vous au total » contredisait la tuile
-          « visites » juste au-dessus, qui ne compte que les visites honorées. */}
-      {warn && (
-        <p className="-mt-1 text-[1rem] text-danger">
-          {c.cancelledCount > 0 &&
-            `${c.cancelledCount} annulation${c.cancelledCount > 1 ? 's' : ''}`}
-          {c.cancelledCount > 0 && c.noShowCount > 0 && ' · '}
-          {c.noShowCount > 0 && `${c.noShowCount} absence${c.noShowCount > 1 ? 's' : ''}`}
-        </p>
-      )}
-
-      {/* Notes privées */}
-      <div className="crd !gap-3">
-        <span className="flex items-center gap-2 text-[1rem] font-bold">
-          <I icon={StickyNote} size={18} /> Notes privées
-        </span>
         <Textarea
           value={notes}
           onChange={(e) => setNotesDraft(e.target.value)}
+          onBlur={() => void saveNotes()}
           maxLength={2000}
-          placeholder="Préférences, allergies, remarques… visibles uniquement par vous."
+          placeholder="Préférences, allergies, remarques…"
           aria-label="Notes privées"
         />
-        <div className="flex items-center justify-between gap-3">
-          <span className="s">{saved ? 'Enregistré' : 'Jamais visibles du client'}</span>
-          <Button
-            auto
-            sm
-            onClick={() => void saveNotes()}
-            disabled={setNotes.isPending || notes.trim() === (c.notes ?? '')}
-          >
-            <I icon={Save} size={16} /> Enregistrer
-          </Button>
-        </div>
       </div>
-
-      {/* Actions */}
-      <div className="g2">
-        <Button onClick={() => navigate(newBookingUrl)} disabled={c.blocked}>
-          <I icon={CalendarPlus} size={18} /> Rendez-vous
-        </Button>
-        {canBlock && (
-          <Button
-            variant={c.blocked ? 'g' : 'd'}
-            onClick={() => void toggleBlock()}
-            disabled={block.isPending || unblock.isPending}
-          >
-            <I icon={c.blocked ? ShieldCheck : Ban} size={18} />{' '}
-            {c.blocked ? 'Débloquer' : 'Bloquer'}
-          </Button>
-        )}
-      </div>
-      {c.blocked && (
-        <p className="text-[1rem] text-danger">
-          Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre
-          salon.
-        </p>
-      )}
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
 
-      {/* Historique, filtrable : « qu'est-ce qu'il a annulé ? » est la question la plus posée. */}
+      {/* Historique sous onglets : « qu'est-ce qu'il a annulé ? » est la question la plus posée. */}
       <span className="h3">Historique</span>
-      <div className="pills -mx-4 px-4" role="group" aria-label="Filtrer l'historique">
-        {(
-          [
-            ['all', 'Tout'],
-            ['done', 'Terminés'],
-            ['cancelled', 'Annulés'],
-            ['noshow', 'Absences'],
-          ] as const
-        ).map(([v, label]) => (
-          <Pill key={v} lg on={filter === v} onClick={() => setFilter(v)}>
-            {label}
-          </Pill>
-        ))}
-      </div>
+      <Tabs
+        label="Filtrer l'historique"
+        value={filter}
+        onChange={setFilter}
+        className="-mx-4 !px-2"
+        options={[
+          { value: 'all', label: 'Tout' },
+          { value: 'done', label: 'Terminés' },
+          { value: 'cancelled', label: 'Annulés' },
+          { value: 'noshow', label: 'Absences' },
+        ]}
+      />
       {history.isPending ? (
-        <Skeleton className="h-[10rem] w-full !rounded-[0.857rem]" />
+        <Skeleton className="h-[10rem] w-full !rounded-[var(--radius-card)]" />
       ) : (
         <div className="crd !gap-0 !py-1">
           {shown.map((h) => {
@@ -337,7 +325,7 @@ export function ClientDetail() {
             return (
               <div
                 key={h.id}
-                className="flex flex-col gap-2.5 border-b border-line-soft py-3 last:border-b-0"
+                className="flex flex-col gap-2.5 border-b border-line-soft py-2.5 last:border-b-0"
               >
                 <button
                   type="button"
@@ -354,7 +342,7 @@ export function ClientDetail() {
                     <span className="block truncate text-[0.857rem] text-muted">
                       <span className="mono">{formatTimeDZ(h.startsAt)}</span> ·{' '}
                       {formatDA(h.priceDa)}
-                      {h.staffName ? ` · ${h.staffName}` : ''}
+                      {team && h.staffName ? ` · ${h.staffName}` : ''}
                     </span>
                   </span>
                   <span className="flex flex-none items-center gap-1.5">
@@ -399,6 +387,25 @@ export function ClientDetail() {
             onMore={() => void history.fetchNextPage()}
             label="Voir plus de rendez-vous"
           />
+        </div>
+      )}
+
+      {/* Bloquer : un geste rare et lourd, à l'écart des gestes du quotidien. */}
+      {canBlock && (
+        <div className="flex flex-col gap-2 pt-2">
+          <Button
+            variant={c.blocked ? 'g' : 'd'}
+            onClick={() => void toggleBlock()}
+            disabled={block.isPending || unblock.isPending}
+          >
+            <I icon={c.blocked ? ShieldCheck : Ban} size={18} />{' '}
+            {c.blocked ? 'Débloquer ce client' : 'Bloquer ce client'}
+          </Button>
+          <p className="t3 text-center">
+            {c.blocked
+              ? 'Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.'
+              : 'Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.'}
+          </p>
         </div>
       )}
     </Screen>
