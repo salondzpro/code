@@ -1,7 +1,7 @@
 /** Espace pro — Clients : fiche agrégée (SQL) et blocage/déblocage propre au salon. */
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { blockClientSchema, clientNotesSchema, proClientsQuerySchema, pageQuerySchema } from '@salondz/validation';
+import { blockClientSchema, clientHistoryQuerySchema, clientNotesSchema, proClientsQuerySchema } from '@salondz/validation';
 import type { ProClient, ProClientHistoryItem } from '@salondz/types';
 import { db } from '../../lib/supabase';
 import { badRequest, unwrap, notFound } from '../../lib/errors';
@@ -40,15 +40,18 @@ const proClientRoutes: FastifyPluginAsyncZod = async (app) => {
     return mapProClient(rows[0]);
   });
 
-  /** Historique du client chez ce salon (plus récent en premier), 50 par page. */
-  app.get('/clients/:key/history', { schema: { params: keyParam, querystring: pageQuerySchema } }, async (req, reply) => {
-    const { cursor, limit } = req.query;
+  /** Historique du client chez ce salon (plus récent en premier), paginé par décalage, filtrable par statut. */
+  app.get('/clients/:key/history', { schema: { params: keyParam, querystring: clientHistoryQuerySchema } }, async (req, reply) => {
+    const { cursor, limit, status } = req.query;
     const offset = Number(cursor ?? 0) || 0;
-    const res = await db.rpc('salon_client_history', { p_salon_id: req.salon!.id, p_client_key: req.params.key, p_limit: limit, p_offset: offset });
-    const rows = unwrap(res) as Record<string, unknown>[];
+    const res = await db.rpc('salon_client_history', { p_salon_id: req.salon!.id, p_client_key: req.params.key, p_limit: limit, p_offset: offset, p_status: status ?? null });
+    const rows = unwrap(res) as (Record<string, unknown> & { total?: number | string })[];
     reply.header('Cache-Control', 'private, no-store');
-    const items = rows.map((r) => camelize<ProClientHistoryItem>(r));
-    return { items, nextCursor: items.length === limit ? String(offset + limit) : null };
+    // `total` = nombre de lignes pour ce filtre (fenêtre SQL), porté par chaque ligne : on le
+    // sort des items. Page vide (décalage au-delà) → 0, la fiche retombe sur la première page.
+    const total = Number(rows[0]?.total ?? 0);
+    const items = rows.map(({ total: _t, ...r }) => camelize<ProClientHistoryItem>(r));
+    return { items, total, nextCursor: offset + items.length < total ? String(offset + limit) : null };
   });
 
   /** Notes privées du salon sur ce client. */

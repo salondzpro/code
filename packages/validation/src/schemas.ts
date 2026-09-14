@@ -265,6 +265,12 @@ export const pageQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
+/** Historique d'un client : page + filtre de statut (Terminés / Annulés / Absences). */
+export const clientHistoryQuerySchema = pageQuerySchema.extend({
+  status: z.enum(['completed', 'cancelled', 'no_show']).optional(),
+});
+export type ClientHistoryStatus = NonNullable<z.infer<typeof clientHistoryQuerySchema>['status']>;
+
 export const listBookingsQuerySchema = z.object({
   from: p.dateKey.optional(),
   to: p.dateKey.optional(),

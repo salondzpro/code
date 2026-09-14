@@ -7,13 +7,14 @@
  *
  * Un rendez-vous passé encore « Confirmé » se règle sur place : Terminé ou Client absent.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   Ban,
   CalendarClock,
   CalendarPlus,
   Check,
+  ChevronLeft,
   ChevronRight,
   History,
   Mail,
@@ -23,14 +24,12 @@ import {
   UserX,
 } from 'lucide-react';
 import {
-  pagesItems,
   useProBookingMutations,
   useProClient,
-  useProClientHistoryInfinite,
+  useProClientHistoryPage,
   useProClientMutations,
   useProSalon,
 } from '@salondz/api-client';
-import { LoadMore } from '@/components/LoadMore';
 import {
   formatDA,
   formatDZPhone,
@@ -41,6 +40,7 @@ import {
   untilLabelFR,
 } from '@salondz/constants';
 import type { ProClientHistoryItem } from '@salondz/types';
+import type { ClientHistoryStatus } from '@salondz/validation';
 import { errorText } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import {
@@ -112,31 +112,66 @@ function Stat({ value, label, alert }: { value: string; label: string; alert?: b
 }
 
 type Filter = 'all' | 'done' | 'cancelled' | 'noshow';
+const FILTER_STATUS: Record<Filter, ClientHistoryStatus | undefined> = {
+  all: undefined,
+  done: 'completed',
+  cancelled: 'cancelled',
+  noshow: 'no_show',
+};
+/** Dix rendez-vous par page : une page tient à l'écran, on feuillette le reste. */
+const HISTORY_PAGE_SIZE = 10;
+
+/** Pied de liste : « Page 2 sur 5 », précédent / suivant. Ne s'affiche que s'il y a plusieurs pages. */
+function Pager({
+  page,
+  pages,
+  onPage,
+  loading,
+}: {
+  page: number;
+  pages: number;
+  onPage: (p: number) => void;
+  loading?: boolean;
+}) {
+  if (pages <= 1) return null;
+  return (
+    <nav className="flex items-center justify-between gap-3 py-2" aria-label="Pages de l'historique">
+      <Button variant="g" sm auto disabled={page === 0 || loading} onClick={() => onPage(page - 1)}>
+        <I icon={ChevronLeft} size={16} /> Précédent
+      </Button>
+      <span className="text-[0.857rem] text-muted" aria-live="polite">
+        Page {page + 1} sur {pages}
+      </span>
+      <Button variant="g" sm auto disabled={page >= pages - 1 || loading} onClick={() => onPage(page + 1)}>
+        Suivant <I icon={ChevronRight} size={16} />
+      </Button>
+    </nav>
+  );
+}
 
 export function ClientDetail() {
   const { key = '' } = useParams();
   const navigate = useNavigate();
   const client = useProClient(key);
   const salon = useProSalon().data?.salon ?? null;
-  const history = useProClientHistoryInfinite(key, !!key);
-  const historyItems = pagesItems(history.data);
   /** Tri du fichier client : on vient y chercher une catégorie, rarement la liste entière. */
   const [filter, setFilter] = useState<Filter>('all');
-  const shown = historyItems.filter((h) =>
-    filter === 'all'
-      ? true
-      : filter === 'done'
-        ? h.status === 'completed'
-        : filter === 'cancelled'
-          ? h.status === 'cancelled'
-          : h.status === 'no_show',
-  );
+  /**
+   * Historique PAGINÉ (dix par page) plutôt que déroulé sans fin : un habitué a des dizaines
+   * de rendez-vous, et un fichier client se feuillette — « page 3 sur 8 » dit où l'on en est,
+   * un « voir plus » infini ne le dit jamais. Le filtre est appliqué par le serveur.
+   */
+  const [page, setPage] = useState(0);
+  const status = FILTER_STATUS[filter];
+  const history = useProClientHistoryPage(key, page, HISTORY_PAGE_SIZE, status, !!key);
+  const shown = history.data?.items ?? [];
   const { block, unblock, setNotes } = useProClientMutations();
   const { setStatus } = useProBookingMutations();
   const c = client.data ?? null;
   const [notes, setNotesDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const historyTop = useRef<HTMLSpanElement | null>(null);
   useEffect(() => {
     if (c) setNotesDraft(c.notes ?? '');
   }, [c?.notes, c]);
@@ -175,6 +210,8 @@ export function ClientDetail() {
       setError(errorText(err));
     }
   };
+  // Le total pour ce filtre vient avec la page (fenêtre SQL) : exact, sans requête de plus.
+  const total = history.data?.total ?? 0;
   const newBookingUrl = `/pro/rendez-vous/nouveau?name=${encodeURIComponent(c.name)}${c.phone ? `&phone=${encodeURIComponent(c.phone)}` : ''}`;
   const nextKey = c.nextAt ? toLocalDateKey(new Date(c.nextAt)) : null;
   const wa = c.phone ? `https://wa.me/${c.phone.replace(/\D/g, '')}` : null;
@@ -301,11 +338,17 @@ export function ClientDetail() {
       )}
 
       {/* Historique sous onglets : « qu'est-ce qu'il a annulé ? » est la question la plus posée. */}
-      <span className="h3">Historique</span>
+      <span className="h3 scroll-mt-[9rem]" ref={historyTop}>
+        Historique
+        {total > HISTORY_PAGE_SIZE ? ` · ${total}` : ''}
+      </span>
       <Tabs
         label="Filtrer l'historique"
         value={filter}
-        onChange={setFilter}
+        onChange={(f) => {
+          setFilter(f);
+          setPage(0);
+        }}
         className="-mx-4 !px-2"
         options={[
           { value: 'all', label: 'Tout' },
@@ -381,14 +424,17 @@ export function ClientDetail() {
               {filter === 'all' ? "Aucun rendez-vous pour l'instant." : 'Rien dans cette catégorie.'}
             </p>
           )}
-          <LoadMore
-            hasMore={history.hasNextPage}
-            loading={history.isFetchingNextPage}
-            onMore={() => void history.fetchNextPage()}
-            label="Voir plus de rendez-vous"
-          />
         </div>
       )}
+      <Pager
+        page={page}
+        pages={Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE))}
+        onPage={(p) => {
+          setPage(p);
+          historyTop.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }}
+        loading={history.isFetching}
+      />
 
       {/* Bloquer : un geste rare et lourd, à l'écart des gestes du quotidien. */}
       {canBlock && (

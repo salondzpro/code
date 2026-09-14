@@ -5,6 +5,7 @@ import {
   useQuery,
   useQueryClient,
   type QueryClient,
+  keepPreviousData,
 } from '@tanstack/react-query';
 import type {
   AvailabilityQuery,
@@ -12,6 +13,7 @@ import type {
   ListBookingsQuery,
   MyBookingsQuery,
   SearchSalonsQuery,
+  ClientHistoryStatus,
 } from '@salondz/validation';
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
@@ -354,6 +356,27 @@ export const useProClientHistoryInfinite = (key: string, enabled = true) => {
       api.pro.clients.history(key, pageParam ? String(pageParam) : undefined, 50),
     initialPageParam: 0,
     getNextPageParam: nextOffset,
+    staleTime: 60_000,
+    enabled: enabled && !!key,
+  });
+};
+/**
+ * Historique d'un client PAR PAGE (fiche client) : page de taille fixe, décalage = page × taille,
+ * filtre de statut côté serveur. `placeholderData` garde la page précédente affichée le temps
+ * que la suivante arrive, pour que le pied de liste ne saute pas.
+ */
+export const useProClientHistoryPage = (
+  key: string,
+  page: number,
+  size: number,
+  status?: ClientHistoryStatus,
+  enabled = true,
+) => {
+  const { api } = useApi();
+  return useQuery({
+    queryKey: [...queryKeys.pro.clientHistory(key), 'page', { page, size, status: status ?? null }] as const,
+    queryFn: () => api.pro.clients.history(key, page ? String(page * size) : undefined, size, status),
+    placeholderData: keepPreviousData,
     staleTime: 60_000,
     enabled: enabled && !!key,
   });

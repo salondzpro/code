@@ -42,6 +42,7 @@ import type {
   UpdateSalonInput,
   UpdateServiceInput,
   BlockClientInput,
+  ClientHistoryStatus,
 } from '@salondz/validation';
 
 export class ApiError extends Error {
@@ -287,10 +288,11 @@ export function createApiClient(opts: ApiClientOptions) {
         one: (key: string) => get<ProClient>(`/pro/clients/${encodeURIComponent(key)}`),
         block: (body: BlockClientInput) => post<void>('/pro/clients/block', body),
         unblock: (body: BlockClientInput) => post<void>('/pro/clients/unblock', body),
-        history: (key: string, cursor?: string, limit = 50) =>
+        history: (key: string, cursor?: string, limit = 50, status?: ClientHistoryStatus) =>
           get<Paginated<ProClientHistoryItem>>(`/pro/clients/${encodeURIComponent(key)}/history`, {
             cursor,
             limit,
+            status,
           }),
         setNotes: (key: string, notes: string) =>
           put<void>(`/pro/clients/${encodeURIComponent(key)}/notes`, { notes }),
