@@ -15,6 +15,10 @@ export function WelcomeBack() {
   if (!session) return <Navigate to="/connexion" replace />;
 
   const profile = me.data?.profile;
+  const next0 = params.get('next') ?? readAuthFlow()?.next ?? '/';
+  // Compte tout neuf (après le lien de confirmation) : rien à « retrouver », on complète le profil.
+  if (me.data && (!profile?.fullName || !profile?.phone))
+    return <Navigate to={`/profil/creer?next=${encodeURIComponent(next0)}`} replace />;
   const firstName = (profile?.fullName ?? '').split(' ')[0] || 'vous';
   const contact = user?.email ?? (profile?.phone ? formatIntlDZ(profile.phone) : '');
   const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : '/');
