@@ -26,7 +26,8 @@
     "check:realtime": "node --env-file=.env scripts/check-realtime.mjs",
     "check:contact": "node --env-file=.env scripts/check-contact-hidden.mjs",
     "check:webpush": "node --env-file=.env scripts/check-webpush.mjs",
-    "check:for-other": "node --env-file=.env scripts/check-booking-for-other.mjs"
+    "check:for-other": "node --env-file=.env scripts/check-booking-for-other.mjs",
+    "check:badge": "node --env-file=.env scripts/check-pending-badge.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
