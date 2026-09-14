@@ -19,6 +19,9 @@ import {
   CheckCircle2,
   MessageCircle,
   Phone,
+  Scissors,
+  StickyNote,
+  UserRound,
   UserX,
   XCircle,
 } from 'lucide-react';
@@ -37,6 +40,7 @@ import {
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { ErrorMessage } from './ErrorMessage';
+import { FactRow } from './BookingFacts';
 import { PickerField } from './Picker';
 import { Avatar, BottomSheet, Button, I, Skeleton, StatusBadge } from './ui';
 
@@ -144,29 +148,24 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
 
             <div className="crd !gap-0 !py-1">
               {lines.map((it) => (
-                <div key={it.id} className="li">
-                  <span className="min-w-0 truncate text-[1rem] font-semibold">
-                    {it.serviceName}
-                  </span>
-                  {/* Une seule prestation par rendez-vous : son prix et sa durée sont déjà
-                      en tête de feuille. On ne les répète que s'il y en a plusieurs. */}
-                  {lines.length > 1 && (
-                    <span className="flex-none text-[0.857rem] text-muted">
-                      {formatDuration(it.durationMinutes)} · {formatDA(it.priceDa)}
-                    </span>
-                  )}
-                </div>
+                <FactRow
+                  key={it.id}
+                  icon={Scissors}
+                  title={it.serviceName}
+                  sub={lines.length > 1 ? formatDuration(it.durationMinutes) : undefined}
+                  right={
+                    lines.length > 1 ? (
+                      <span className="text-[1rem] font-semibold">{formatDA(it.priceDa)}</span>
+                    ) : undefined
+                  }
+                />
               ))}
+              {b.staff && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
+              {b.notes && <FactRow icon={StickyNote} title="Note du client" sub={`« ${b.notes} »`} />}
+              {b.cancellationReason && (
+                <FactRow icon={XCircle} tone="danger" title="Motif" sub={b.cancellationReason} />
+              )}
             </div>
-
-            {b.notes && (
-              <div className="sf">
-                <span className="block text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
-                  Note du client
-                </span>
-                <span className="block text-[1rem]">« {b.notes} »</span>
-              </div>
-            )}
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 

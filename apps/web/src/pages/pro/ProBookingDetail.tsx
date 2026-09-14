@@ -13,6 +13,7 @@ import {
 import {
   addDaysToKey,
   formatDA,
+  formatDateLongDZ,
   formatDateShortDZ,
   formatDZPhone,
   formatTimeDZ,
@@ -30,19 +31,26 @@ import {
 import { formatDuration } from '@/lib/format';
 import {
   AlarmClock,
+  ArrowLeft,
+  Banknote,
   CalendarClock,
+  CalendarDays,
   Check,
   CheckCircle2,
+  History,
   MessageCircle,
   Phone,
+  Scissors,
+  StickyNote,
+  UserRound,
   UserX,
   XCircle,
-  ArrowLeft,
 } from 'lucide-react';
 import { Avatar, BottomSheet, Button, I, Input, StatusBadge, TopBar } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { FactRow } from '@/components/BookingFacts';
 import { Splash } from '@/pages/auth/Splash';
 
 export function ProBookingDetail() {
@@ -99,102 +107,101 @@ export function ProBookingDetail() {
     .map((p, i) => (i === 0 ? p : `${p.charAt(0)}.`))
     .join(' ');
 
+  const dayKey = toLocalDateKey(new Date(b.startsAt));
+  const dayLabel = relativeDayLabelDZ(dayKey);
+  const dateLong = formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase());
+
   return (
-    <Screen bottom={SHEET_PAD} gap={16}>
+    <Screen bottom={SHEET_PAD} gap={12}>
       <TopBar backTo="/pro/agenda" />
-      <div className="flex items-center gap-4">
-        <Avatar name={b.clientName} size={88} />
-        <div className="min-w-0">
-          <h1 className="h1 !text-[1.714rem]">{initials}</h1>
-          {b.clientPhone && (
-            <p className="mt-1 text-[0.857rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
-          )}
-          {b.staff && <p className="text-[1rem] text-muted">avec {b.staff.displayName}</p>}
-        </div>
-      </div>
-      {b.clientPhone && (
-        <div className="g2">
-          <a href={`tel:${b.clientPhone}`} className="btn g !text-[1.143rem]">
-            <I icon={Phone} size={20} /> Appeler
-          </a>
-          {wa && (
-            <a
-              href={wa}
-              target="_blank"
-              rel="noreferrer"
-              className="btn g !text-[1.143rem]"
-            >
-              <I icon={MessageCircle} size={20} /> WhatsApp
-            </a>
-          )}
-        </div>
-      )}
-      {/* L'essentiel en grand : quand, à quelle heure, combien — ce que le pro regarde dix fois par jour. */}
+      {/* Qui : le client d'abord, avec de quoi le joindre — c'est ce que le salon cherche
+          en ouvrant la fiche (un retard, une question, une confirmation). */}
       <div className="crd !gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[1rem] font-bold">
-            {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
-            {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
-            {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))) && (
-              <span className="ml-2 text-[1rem] font-normal text-muted">
-                {formatDateShortDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())}
-              </span>
+        <div className="flex items-center gap-3.5">
+          <Avatar name={b.clientName} size={56} />
+          <div className="min-w-0 flex-1">
+            <h1 className="h1 !text-[1.429rem]">{initials}</h1>
+            {b.clientPhone && (
+              <p className="mono text-[0.857rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
             )}
-          </span>
+            {!!b.bookedByName && (
+              <p className="text-[0.857rem] text-muted">Réservé par {b.bookedByName}</p>
+            )}
+          </div>
           <StatusBadge
             status={b.status}
-            lg
+            md
             cancelledBy={b.cancelledBy}
             kind={b.cancellationKind}
             viewer="pro"
           />
         </div>
-        <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[1.714rem] font-bold leading-none tracking-[-0.8px]">
-            {formatTimeDZ(b.startsAt)}{' '}
-            <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
-          </span>
-          <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px]">
-            {formatDA(b.priceDa)}
-          </span>
-        </div>
-        <span className="text-[0.857rem] text-muted">
-          {formatDuration(b.durationMinutes)} au total · arrivée à {rule.arriveAt} · retard toléré
-          jusqu'à {rule.lateUntil}
-        </span>
-      </div>
-      <div className="crd !gap-0">
-        <div className="li !py-3">
-          <span className="text-[1rem] font-semibold">
-            {lines.length} prestation{lines.length > 1 ? 's' : ''}
-          </span>
-        </div>
-        {lines.map((it) => (
-          <div key={it.id} className="li !py-3 text-[1rem]">
-            <span>{it.serviceName}</span>
-            <span className="text-muted">
-              {'durationMinutes' in it && it.durationMinutes
-                ? `${formatDuration(it.durationMinutes)}${'priceDa' in it && it.priceDa != null ? ` · ${formatDA(it.priceDa)}` : ''}`
-                : ''}
-            </span>
+        {b.clientPhone && (
+          <div className="g2">
+            <a href={`tel:${b.clientPhone}`} className="btn g sm">
+              <I icon={Phone} size={18} /> Appeler
+            </a>
+            {wa && (
+              <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
+                <I icon={MessageCircle} size={18} /> WhatsApp
+              </a>
+            )}
           </div>
-        ))}
+        )}
       </div>
-      {b.notes && (
-        <div className="sf">
-          <span className="s block">
-            Note {salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}
-          </span>
-          <span className="block text-[1rem]">« {b.notes} »</span>
-        </div>
-      )}
-      {b.cancellationReason && (
-        <p className="text-[1rem] text-danger">Motif : {b.cancellationReason}</p>
-      )}
-      <p className="text-[0.857rem] text-muted">
-        {visits.length} rendez-vous
-        {lastVisit ? ` · dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : ''}
-      </p>
+
+      {/* Quoi, quand, avec qui, combien : une ligne par fait, comme une fiche de caisse. */}
+      <div className="crd !gap-0 !py-1">
+        <FactRow
+          icon={CalendarDays}
+          title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : `${dayLabel} · ${dateLong}`}
+          sub={`${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)} · ${formatDuration(b.durationMinutes)}`}
+          right={
+            <span className="mono text-[1.429rem] font-semibold tracking-[-0.5px]">
+              {formatTimeDZ(b.startsAt)}
+            </span>
+          }
+        />
+        {lines.map((it) => (
+          <FactRow
+            key={it.id}
+            icon={Scissors}
+            title={it.serviceName}
+            sub={
+              'durationMinutes' in it && it.durationMinutes
+                ? formatDuration(it.durationMinutes)
+                : undefined
+            }
+            // Une seule prestation : son prix est le total, dit une ligne plus bas.
+            right={
+              lines.length > 1 && 'priceDa' in it && it.priceDa != null ? (
+                <span className="text-[1rem] font-semibold">{formatDA(it.priceDa)}</span>
+              ) : undefined
+            }
+          />
+        ))}
+        {b.staff && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
+        <FactRow
+          icon={Banknote}
+          title={formatDA(b.priceDa)}
+          sub={`Paiement sur place · arrivée à ${rule.arriveAt}, retard toléré jusqu'à ${rule.lateUntil}`}
+        />
+        {b.notes && (
+          <FactRow
+            icon={StickyNote}
+            title={`Note ${salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}`}
+            sub={`« ${b.notes} »`}
+          />
+        )}
+        {b.cancellationReason && (
+          <FactRow icon={XCircle} tone="danger" title="Motif" sub={b.cancellationReason} />
+        )}
+        <FactRow
+          icon={History}
+          title={`${visits.length} rendez-vous chez vous`}
+          sub={lastVisit ? `Dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : 'Première visite'}
+        />
+      </div>
       <ErrorMessage error={setStatus.error ?? cancel.error} />
 
       <BottomSheet grab={false}>
