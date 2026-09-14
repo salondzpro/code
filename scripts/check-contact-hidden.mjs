@@ -79,7 +79,9 @@ for (const path of ['/me/bookings?limit=5', '/bookings?limit=5']) {
   if (id) break;
 }
 if (!id && slotIso) {
-  const booking = await call('POST', '/bookings', client, { salonId: salon.id, serviceId, startsAt: slotIso, notes: 'Contrôle masquage' });
+  // Pour quelqu'un d'autre, sur un numéro dédié aux contrôles : les règles se lisent sur
+  // cette personne, donc la suspension du compte de démonstration ne bloque plus rien.
+  const booking = await call('POST', '/bookings', client, { salonId: salon.id, serviceId, startsAt: slotIso, notes: 'Contrôle masquage', beneficiary: { fullName: 'Contrôle Automatique', phone: '0770000002' } });
   if (booking.status === 201) {
     id = booking.json.id;
     created = true;
@@ -129,7 +131,9 @@ for (const [label, path] of pages) {
 }
 await browser.close();
 
-if (created) await call('POST', `/bookings/${id}/cancel`, client, { reason: 'Contrôle automatique' });
+// C'est LE SALON qui annule : une annulation cliente compterait dans son historique
+// anti-abus, et c'est ainsi que ces contrôles ont fini par suspendre le compte de démo.
+if (created) await call('POST', `/pro/bookings/${id}/cancel`, pro, { reason: 'Contrôle automatique' });
 
 if (leaks.length) {
   console.log('\nFUITE : des coordonnées du salon sont visibles côté client.');

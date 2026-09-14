@@ -109,11 +109,24 @@ for (let day = 1; day <= 7 && !slotIso; day++) {
 }
 if (!slotIso) throw new Error('aucun créneau libre dans les sept prochains jours');
 
+/**
+ * Rendez-vous de test : pris POUR QUELQU'UN D'AUTRE, sur un numéro dédié aux contrôles, et
+ * annulé PAR LE SALON. Deux raisons, apprises à nos frais :
+ *
+ * - les règles se lisent sur la personne concernée, donc ce numéro sans historique met le
+ *   contrôle à l'abri de la suspension du compte de démonstration ;
+ * - une annulation par la cliente compte dans son historique anti-abus. En annulant à
+ *   chaque passage, ce script a lui-même suspendu le compte de démonstration et s'est
+ *   rendu inutilisable. Le salon, lui, peut annuler sans rien reprocher à personne.
+ */
+const CHECK_BENEFICIARY = { fullName: 'Contrôle Automatique', phone: '0770000001' };
+
 const booking = await call('POST', '/bookings', client, {
   salonId: salon.id,
   serviceId,
   startsAt: slotIso,
   notes: 'Vérification temps réel (script)',
+  beneficiary: CHECK_BENEFICIARY,
 });
 if (booking.status !== 201) throw new Error(`réservation refusée : ${booking.status} ${booking.text.slice(0, 300)}`);
 console.log('réservation créée :', booking.json.id);
@@ -123,8 +136,9 @@ const ok = !!evt && evt.id === booking.json.id;
 console.log(ok ? '\nÉVÉNEMENT REÇU SANS ACTUALISER : le temps réel fonctionne.' : `\nAUCUN ÉVÉNEMENT en ${WAIT_MS / 1000} s : le temps réel ne parvient pas au pro.`);
 if (evt && !ok) console.log('événement reçu pour une autre réservation :', received?.id);
 
-// Nettoyage : on ne laisse pas de rendez-vous de test dans le salon de démonstration.
-const undo = await call('POST', `/bookings/${booking.json.id}/cancel`, client, { reason: 'Vérification automatique' });
+// Nettoyage : on ne laisse pas de rendez-vous de test dans le salon, et c'est LE SALON qui
+// annule (une annulation cliente compterait dans l'anti-abus, cf. CHECK_BENEFICIARY).
+const undo = await call('POST', `/pro/bookings/${booking.json.id}/cancel`, pro, { reason: 'Vérification automatique' });
 console.log('annulation du rendez-vous de test :', undo.status === 200 ? 'ok' : `échec (${undo.status}) ${undo.text.slice(0, 150)}`);
 
 await asPro.removeAllChannels();
