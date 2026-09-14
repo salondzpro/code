@@ -252,24 +252,28 @@ export function MapView() {
     }, 90);
   };
 
+  /** Recentre sur soi et cherche autour : le point bleu dit déjà où l'on est. */
   const locate = () => {
     if (!('geolocation' in navigator)) return;
+    const goTo = (lat: number, lng: number) => {
+      const a = { lat: Number(lat.toFixed(4)), lng: Number(lng.toFixed(4)), radiusKm: prefs.radiusKm };
+      setArea(a);
+      setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
+      void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
+      setSelected(null);
+      setLocating(false);
+      programmatic.current = true;
+      mapRef.current?.setView([a.lat, a.lng], 14, { animate: true });
+    };
+    // Le suivi continu tient déjà une mesure fraîche : s'en resservir évite d'attendre
+    // plusieurs secondes un relevé que l'on a sous les yeux.
+    if (mePos) {
+      goTo(mePos.lat, mePos.lng);
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (p) => {
-        const a = {
-          lat: Number(p.coords.latitude.toFixed(4)),
-          lng: Number(p.coords.longitude.toFixed(4)),
-          radiusKm: prefs.radiusKm,
-        };
-        setArea(a);
-        setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
-        void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
-        setSelected(null);
-        setLocating(false);
-        programmatic.current = true;
-        mapRef.current?.setView([a.lat, a.lng], 14, { animate: true });
-      },
+      (p) => goTo(p.coords.latitude, p.coords.longitude),
       () => {
         setLocating(false);
         programmatic.current = true;

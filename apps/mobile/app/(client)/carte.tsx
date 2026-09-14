@@ -153,15 +153,12 @@ export default function MapView() {
     }, 500);
   };
 
+  /** Recentre sur soi et cherche autour : le point bleu dit déjà où l'on est. */
   const locate = async () => {
-    setLocating(true);
-    try {
-      const perm = await Location.requestForegroundPermissionsAsync();
-      if (!perm.granted) return;
-      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+    const goTo = (lat: number, lng: number) => {
       const a = {
-        lat: Number(p.coords.latitude.toFixed(4)),
-        lng: Number(p.coords.longitude.toFixed(4)),
+        lat: Number(lat.toFixed(4)),
+        lng: Number(lng.toFixed(4)),
         radiusKm: prefs.radiusKm,
       };
       setArea(a);
@@ -169,6 +166,19 @@ export default function MapView() {
       setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
       void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
       mapRef.current?.flyTo(a.lat, a.lng, 14);
+    };
+    // Le suivi continu tient déjà une mesure fraîche : s'en resservir évite d'attendre
+    // plusieurs secondes un relevé que l'on a sous les yeux.
+    if (mePos) {
+      goTo(mePos.lat, mePos.lng);
+      return;
+    }
+    setLocating(true);
+    try {
+      const perm = await Location.requestForegroundPermissionsAsync();
+      if (!perm.granted) return;
+      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      goTo(p.coords.latitude, p.coords.longitude);
     } catch {
       mapRef.current?.flyTo(area?.lat ?? ALGIERS.lat, area?.lng ?? ALGIERS.lng, 13);
     } finally {
