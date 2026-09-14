@@ -1,10 +1,15 @@
 /**
- * PRO-F 24 / 25 / 26 — Agenda : vue jour (ligne de temps, créneaux libres hachurés, pauses),
- * vue semaine (colonnes, blocs colorés par catégorie), vue mois (points = rendez-vous, jours fermés hachurés).
+ * PRO-F 24 / 25 / 26 — Agenda, sur le modèle des outils du métier (Planity Pro) :
+ * vue jour en COLONNES, une par membre de l'équipe, heures à gauche, blocs colorés par
+ * catégorie, ligne « maintenant » ; un tap sur un vide crée un rendez-vous à cette heure
+ * pour ce membre. Vue semaine (colonnes de jours) et vue mois (points) inchangées.
+ *
+ * Un rendez-vous s'ouvre en FENÊTRE (`BookingPeekSheet`) : l'agenda reste derrière, à sa
+ * date et sa position.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { Calendar, Check, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
@@ -23,7 +28,16 @@ import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
-import { Badge, I, IconButton, Segmented, StatusBadge, cancelledLabel, Pill} from '@/components/ui';
+import {
+  Avatar,
+  Badge,
+  I,
+  IconButton,
+  Segmented,
+  StatusBadge,
+  cancelledLabel,
+  Pill,
+} from '@/components/ui';
 import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -61,9 +75,23 @@ const DOT: Record<string, string> = {
   lasr: '#d88c52',
 };
 
+/** Hauteur d'une heure : 72 px, pour qu'un rendez-vous de 15 min reste un bloc lisible (18 px). */
+const PX = 72 / 60;
+/** Largeur de la gouttière des heures. */
+const GUTTER = '2.75rem';
+
 const localKey = (iso: string) => toLocalDateKey(new Date(iso));
 const localMinutes = (iso: string) => timeToMinutes(formatTimeDZ(iso));
 const nowMinutes = () => timeToMinutes(formatTimeDZ(new Date().toISOString()));
+const hm = (m: number) =>
+  `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+/** Une colonne du planning : un membre, ou toute l'équipe (`id` nul). */
+interface Column {
+  id: string | null;
+  name: string;
+  avatarUrl: string | null;
+}
 
 export function AgendaPro() {
   const navigate = useNavigate();
@@ -100,14 +128,13 @@ export function AgendaPro() {
       ),
     [bookings.data, staffId, showCancelled],
   );
-  // La case n'a de sens que si la période en contient : sinon elle occupe une ligne pour rien.
-  const cancelledCount = useMemo(
-    () =>
-      (bookings.data?.items ?? []).filter(
-        (b) => b.status === 'cancelled' && (!staffId || b.staffId === staffId),
-      ).length,
-    [bookings.data, staffId],
-  );
+  // La pastille « N annulés » ne parle que du jour affiché : le compte de toute la fenêtre
+  // chargée (trois semaines) n'aurait aucun sens sous une date.
+  const cancelledOn = (d: string) =>
+    (bookings.data?.items ?? []).filter(
+      (b) =>
+        b.status === 'cancelled' && localKey(b.startsAt) === d && (!staffId || b.staffId === staffId),
+    ).length;
   const byDay = useMemo(() => {
     const m = new Map<string, BookingWithStaff[]>();
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
@@ -121,6 +148,21 @@ export function AgendaPro() {
   const dayHours = (key: string) =>
     salon.openingHours.filter((h) => h.dayOfWeek === dayOfWeekFromKey(key) && !h.isClosed);
 
+  /**
+   * Colonnes de la vue jour : une par membre actif (comme les outils du métier), ou un seul
+   * membre quand on a touché son nom ; un salon sans équipe n'a qu'une colonne.
+   */
+  const team = [...salon.staff.filter((m) => m.isActive)].sort((a, b) => a.sortOrder - b.sortOrder);
+  const picked = team.find((m) => m.id === staffId) ?? null;
+  const columns: Column[] =
+    team.length < 2
+      ? [{ id: null, name: salon.name, avatarUrl: null }]
+      : (picked ? [picked] : team).map((m) => ({
+          id: m.id,
+          name: m.displayName,
+          avatarUrl: m.avatarUrl,
+        }));
+
   const shift = (n: number) =>
     setDate(
       view === 'month'
@@ -128,62 +170,44 @@ export function AgendaPro() {
         : addDaysToKey(date, n * (view === 'week' ? 7 : 1)),
     );
 
-  // ---- en-tête ----
-  const header =
-    view === 'day' ? (
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[1rem] text-muted">
-            {date === today ? "Aujourd'hui · " : ''}
-            {DAY_LABELS_FR[dayOfWeekFromKey(date)]}
-          </div>
-          <h1 className="h1 whitespace-nowrap">
-            {Number(date.slice(8, 10))} {MONTHS[Number(date.slice(5, 7)) - 1]}
-          </h1>
-        </div>
-        <div className="flex gap-2.5">
-          <IconButton
-            lg
-            aria-label="Rechercher un rendez-vous"
-            onClick={() => navigate('/pro/clients')}
-          >
-            <I icon={Search} size={20} />
-          </IconButton>
-          <IconButton lg aria-label="Aujourd'hui" onClick={() => setDate(today)}>
-            <I icon={Calendar} size={20} />
-          </IconButton>
-        </div>
-      </div>
-    ) : (
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[1rem] text-muted">
-            {view === 'week'
-              ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}`
-              : date.slice(0, 4)}
-          </div>
-          <h1 className="h1">
-            {view === 'week'
-              ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS[Number(week[6]!.slice(5, 7)) - 1]}`
-              : MONTHS[Number(date.slice(5, 7)) - 1]!.replace(/^\w/, (c) => c.toUpperCase())}
-          </h1>
-        </div>
-        <div className="flex gap-2.5">
-          <IconButton lg aria-label="Précédent" onClick={() => shift(-1)}>
-            <I icon={ChevronLeft} size={20} />
-          </IconButton>
-          <IconButton lg aria-label="Suivant" onClick={() => shift(1)}>
-            <I icon={ChevronRight} size={20} />
-          </IconButton>
-        </div>
-      </div>
-    );
+  // ---- en-tête : la période, ses flèches, le retour à aujourd'hui ----
+  const sub =
+    view === 'day'
+      ? `${date === today ? "Aujourd'hui · " : date === addDaysToKey(today, 1) ? 'Demain · ' : ''}${DAY_LABELS_FR[dayOfWeekFromKey(date)]}`
+      : view === 'week'
+        ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}`
+        : date.slice(0, 4);
+  const title =
+    view === 'day'
+      ? `${Number(date.slice(8, 10))} ${MONTHS[Number(date.slice(5, 7)) - 1]}`
+      : view === 'week'
+        ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS[Number(week[6]!.slice(5, 7)) - 1]}`
+        : MONTHS[Number(date.slice(5, 7)) - 1]!.replace(/^\w/, (c) => c.toUpperCase());
 
   return (
-    <Screen bottom={NAV_PAD} gap={16}>
-      {header}
-      <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
+    <Screen bottom={NAV_PAD} gap={12}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-[0.857rem] text-muted">{sub}</div>
+          <h1 className="h1 whitespace-nowrap">{title}</h1>
+        </div>
+        <div className="flex flex-none gap-2">
+          <IconButton aria-label="Précédent" onClick={() => shift(-1)}>
+            <I icon={ChevronLeft} size={20} />
+          </IconButton>
+          <IconButton aria-label="Suivant" onClick={() => shift(1)}>
+            <I icon={ChevronRight} size={20} />
+          </IconButton>
+          {/* Retour à aujourd'hui : n'apparaît que lorsqu'on s'en est éloigné. */}
+          {date !== today && (
+            <IconButton ink aria-label="Aujourd'hui" title="Aujourd'hui" onClick={() => setDate(today)}>
+              <I icon={CalendarCheck} size={20} />
+            </IconButton>
+          )}
+        </div>
+      </div>
       <Segmented
+        sm
         label="Vue"
         value={view}
         onChange={setView}
@@ -197,23 +221,31 @@ export function AgendaPro() {
       {view === 'day' && (
         <>
           <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} />
+          {team.length >= 2 && (
+            <StaffColumnsHead
+              columns={columns}
+              picked={picked?.id ?? null}
+              onPick={(id) => setStaffId(staffId === id ? null : id)}
+              onAll={() => setStaffId(null)}
+            />
+          )}
           <DayCarousel
             date={date}
             onChange={setDate}
             render={(d) => {
               const all = (byDay.get(d) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-              const items = all.filter((b) => b.status !== 'cancelled');
+              const live = all.filter((b) => b.status !== 'cancelled');
               const cancelled = all.filter((b) => b.status === 'cancelled');
-              const revenue = items
+              const revenue = live
                 .filter((b) => b.status !== 'no_show')
                 .reduce((a, b) => a + b.priceDa, 0);
-              const pending = items.filter((b) => b.status === 'pending').length;
+              const pending = live.filter((b) => b.status === 'pending').length;
               const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
               return (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[1rem]">
-                      <b>{items.length} rendez-vous</b>{' '}
+                      <b>{live.length} rendez-vous</b>{' '}
                       <span className="text-muted">· {formatDA(revenue)}</span>
                     </span>
                     <span className="flex items-center gap-2">
@@ -222,27 +254,27 @@ export function AgendaPro() {
                           {pending} en attente
                         </Badge>
                       )}
-                      {cancelledCount > 0 && (
-                        <Pill
-                          on={showCancelled}
-                          onClick={() => setShowCancelled(!showCancelled)}
-                        >
-                          {cancelledCount} annulé{cancelledCount > 1 ? 's' : ''}
+                      {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
+                        <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
+                          {showCancelled ? cancelled.length : cancelledOn(d)} annulé
+                          {(showCancelled ? cancelled.length : cancelledOn(d)) > 1 ? 's' : ''}
                         </Pill>
                       )}
                     </span>
                   </div>
-                  <DayTimeline
+                  <DayColumns
                     date={d}
-                    items={items}
+                    columns={columns}
+                    items={live}
                     cancelled={cancelled}
                     blocks={dayBlk}
                     hours={dayHours(d)}
+                    step={salon.slotIntervalMinutes || 15}
                     toneOf={toneOf}
                     onOpen={setPeek}
-                    onFree={(t) =>
+                    onFree={(t, sid) =>
                       navigate(
-                        `/pro/rendez-vous/nouveau?date=${d}&time=${t}${staffId ? `&staff=${staffId}` : ''}`,
+                        `/pro/rendez-vous/nouveau?date=${d}&time=${t}${sid ? `&staff=${sid}` : ''}`,
                       )
                     }
                   />
@@ -250,19 +282,11 @@ export function AgendaPro() {
               );
             }}
           />
-          <button
-            type="button"
-            className="fab right-5"
-            aria-label="Nouveau rendez-vous"
-            onClick={() => navigate(`/pro/rendez-vous/nouveau?date=${date}`)}
-            style={{
-              left: 'auto',
-              right: 'max(20px, calc(50% - var(--app-max-width) / 2 + 20px))',
-            }}
-          >
-            <I icon={Plus} size={28} />
-          </button>
         </>
+      )}
+
+      {view !== 'day' && (
+        <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
       )}
 
       {view === 'week' && (
@@ -329,42 +353,82 @@ function isoWeek(key: string): number {
   );
 }
 
-/** Vue jour : ligne de temps de l'ouverture à la fermeture (pas d'une heure). */
-function DayTimeline({
+/**
+ * En-tête des colonnes : un membre par colonne (avatar, prénom). Il reste COLLÉ sous
+ * l'en-tête de l'application pendant le défilement : à 11 h on doit encore savoir quelle
+ * colonne est celle de qui. Il vit hors du carrousel, car un ancêtre défilant casse le
+ * `sticky` — et il est identique pour les trois panneaux.
+ */
+function StaffColumnsHead({
+  columns,
+  picked,
+  onPick,
+  onAll,
+}: {
+  columns: Column[];
+  picked: string | null;
+  onPick: (id: string) => void;
+  onAll: () => void;
+}) {
+  return (
+    <div className="sticky z-20 -mx-4 bg-bg px-4" style={{ top: '3.5rem' }}>
+      <div className="flex items-stretch border-b border-line">
+        <div className="flex-none" style={{ width: GUTTER }} />
+        {columns.map((c) => (
+          <button
+            key={c.id ?? 'all'}
+            type="button"
+            aria-pressed={picked === c.id}
+            onClick={() => c.id && onPick(c.id)}
+            className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 py-1.5 ${picked ? '' : 'flex-col gap-1'}`}
+            title={c.name}
+          >
+            <Avatar src={c.avatarUrl} name={c.name} size={picked ? 24 : 28} />
+            <span className="max-w-full truncate text-[0.857rem] font-semibold">
+              {picked ? c.name : c.name.split(' ')[0]}
+            </span>
+          </button>
+        ))}
+        {picked && (
+          <button type="button" className="pill !my-1 !py-1.5" onClick={onAll}>
+            Toute l'équipe
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Vue jour en colonnes : la gouttière des heures à gauche, une colonne par membre.
+ * Le vide se touche pour créer un rendez-vous à cette heure, pour ce membre ; les plages
+ * fermées (pause, blocage) sont hachurées et ne répondent pas.
+ */
+function DayColumns({
   date,
+  columns,
   items,
   cancelled = [],
   blocks,
   hours,
+  step,
   toneOf,
   onOpen,
   onFree,
 }: {
   date: string;
+  columns: Column[];
   items: BookingWithStaff[];
-  /** Rendez-vous annulés du jour (affichés en pointillés, sous les vivants, sans bloquer les trous « Libre »). */
+  /** Rendez-vous annulés du jour (pointillés, avec qui a annulé). */
   cancelled?: BookingWithStaff[];
-  blocks: { startsAt: string; endsAt: string; reason: string | null }[];
+  blocks: { startsAt: string; endsAt: string; reason: string | null; staffId?: string | null }[];
   hours: { opensAt: string; closesAt: string }[];
+  /** Pas des créneaux du salon : le tap sur un vide s'y aligne. */
+  step: number;
   toneOf: (b: BookingWithStaff) => string;
   onOpen: (id: string) => void;
-  onFree: (timeHM: string) => void;
+  onFree: (timeHM: string, staffId: string | null) => void;
 }) {
-  if (hours.length === 0 && items.length === 0)
-    return <p className="p py-6 text-center">Fermé ce jour.</p>;
-  const startMin = Math.min(
-    ...(hours.length ? hours.map((h) => timeToMinutes(h.opensAt)) : [8 * 60]),
-    ...items.map((b) => localMinutes(b.startsAt)),
-  );
-  const endMin = Math.max(
-    ...(hours.length ? hours.map((h) => timeToMinutes(h.closesAt)) : [19 * 60]),
-    ...items.map((b) => localMinutes(b.endsAt)),
-  );
-  const PX = 64 / 60; // 64 px par heure : une journée entière tient à l'écran
-  const top = (m: number) => (m - startMin) * PX;
-  const height = (endMin - startMin) * PX + 24;
-  const hourMarks: number[] = [];
-  for (let m = Math.floor(startMin / 60) * 60; m <= endMin; m += 60) hourMarks.push(m);
   const isToday = date === toLocalDateKey();
   const now = nowMinutes();
   // Aujourd'hui : on amène l'heure actuelle au centre de l'écran à l'ouverture (suivi de la journée en direct).
@@ -377,148 +441,215 @@ function DayTimeline({
     );
     return () => window.clearTimeout(t);
   }, [isToday, date]);
-  // Trous « Libre » entre deux rendez-vous
-  const sorted = [...items].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const gaps: { s: number; e: number }[] = [];
-  let cursor = startMin;
-  for (const b of sorted) {
-    const s = localMinutes(b.startsAt);
-    if (s - cursor >= 30) gaps.push({ s: cursor, e: s });
-    cursor = Math.max(cursor, localMinutes(b.endsAt));
-  }
-  // Fin de journée libre (et journée entière libre sans rendez-vous) : cliquable pour ajouter un rendez-vous.
-  if (endMin - cursor >= 30) gaps.push({ s: cursor, e: endMin });
-  // Aujourd'hui : le passé n'est pas « libre » — les trous commencent au prochain quart d'heure après maintenant.
-  if (isToday) {
-    const from = Math.ceil(now / 15) * 15;
-    for (const g of gaps) g.s = Math.max(g.s, from);
-    for (let i = gaps.length - 1; i >= 0; i--) if (gaps[i]!.e - gaps[i]!.s < 15) gaps.splice(i, 1);
-  }
-  // pauses (fermeture entre deux plages) + blocages
-  const closedRanges: { s: number; e: number; label: string }[] = [];
+
+  if (hours.length === 0 && items.length === 0)
+    return <p className="p py-6 text-center">Fermé ce jour.</p>;
+  const startMin = Math.min(
+    ...(hours.length ? hours.map((h) => timeToMinutes(h.opensAt)) : [8 * 60]),
+    ...items.map((b) => localMinutes(b.startsAt)),
+  );
+  const endMin = Math.max(
+    ...(hours.length ? hours.map((h) => timeToMinutes(h.closesAt)) : [19 * 60]),
+    ...items.map((b) => localMinutes(b.endsAt)),
+  );
+  const top = (m: number) => (m - startMin) * PX;
+  const height = (endMin - startMin) * PX + 16;
+  const hourMarks: number[] = [];
+  for (let m = Math.ceil(startMin / 60) * 60; m <= endMin; m += 60) hourMarks.push(m);
+  const halfMarks: number[] = [];
+  for (let m = Math.ceil(startMin / 30) * 30; m <= endMin; m += 30)
+    if (m % 60 !== 0) halfMarks.push(m);
+
+  // Plages fermées : pauses (toutes colonnes) et blocages (tout le salon, ou un seul membre).
+  const closed: { s: number; e: number; label: string; staffId: string | null }[] = [];
   const sortedHours = [...hours].sort((a, b) => a.opensAt.localeCompare(b.opensAt));
   for (let i = 1; i < sortedHours.length; i++)
-    closedRanges.push({
+    closed.push({
       s: timeToMinutes(sortedHours[i - 1]!.closesAt),
       e: timeToMinutes(sortedHours[i]!.opensAt),
       label: 'Pause',
+      staffId: null,
     });
   for (const t of blocks)
-    closedRanges.push({
-      s: localMinutes(t.startsAt),
+    closed.push({
+      s: Math.max(startMin, localMinutes(t.startsAt)),
       e: Math.min(endMin, localMinutes(t.endsAt)),
       label: t.reason ?? 'Blocage',
+      staffId: t.staffId ?? null,
     });
+  const narrow = columns.length > 1;
+  const inCol = (col: Column, staffId: string | null) => col.id === null || col.id === staffId;
+
+  /** Tap sur un vide : l'heure sous le doigt, alignée au pas du salon, si elle est libre. */
+  const tapFree = (e: MouseEvent<HTMLDivElement>, col: Column) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const m = startMin + Math.floor(y / PX / step) * step;
+    if (m < startMin || m + step > endMin) return;
+    if (hours.length && !hours.some((h) => timeToMinutes(h.opensAt) <= m && m < timeToMinutes(h.closesAt)))
+      return;
+    if (isToday && m < now) return;
+    const busy = items.some(
+      (b) =>
+        inCol(col, b.staffId) && localMinutes(b.startsAt) < m + step && localMinutes(b.endsAt) > m,
+    );
+    if (busy) return;
+    if (closed.some((c) => (c.staffId === null || c.staffId === col.id) && c.s < m + step && c.e > m))
+      return;
+    onFree(minutesToTime(m), col.id);
+  };
 
   return (
-    <div className="relative" style={{ height }}>
-      {hourMarks.map((m) => (
-        <div key={m} className="absolute left-0 right-0" style={{ top: top(m) }}>
-          <span className="absolute -top-2.5 left-0 text-[1rem] text-subtle">
-            {String(Math.floor(m / 60)).padStart(2, '0')}:00
-          </span>
-          <div className="ml-[3.5rem] border-t border-line-soft" />
-        </div>
-      ))}
-      {gaps.map((g) => (
-        <button
-          key={`gap-${g.s}`}
-          type="button"
-          className="absolute left-[3.625rem] right-0 flex items-center justify-between rounded-[0.571rem] px-4 text-left text-[1rem] text-subtle hover:text-text"
-          style={{
-            top: top(g.s) + 2,
-            height: (g.e - g.s) * PX - 4,
-            background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)',
-          }}
-          onClick={() => onFree(minutesToTime(g.s))}
-          aria-label={`Ajouter un rendez-vous à ${minutesToTime(g.s)}`}
-        >
-          <span>Libre · {formatDuration(g.e - g.s)}</span>
-          <span className="text-[0.857rem] text-subtle">toucher pour réserver</span>
-        </button>
-      ))}
-      {closedRanges.map((c) => (
-        <div
-          key={`c-${c.s}-${c.label}`}
-          className="absolute left-[3.625rem] right-0 flex items-center rounded-[0.571rem] px-4 text-[1rem] text-subtle"
-          style={{
-            top: top(c.s) + 2,
-            height: Math.max(20, (c.e - c.s) * PX - 4),
-            background: 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)',
-          }}
-        >
-          {c.label} · {String(Math.floor(c.s / 60)).padStart(2, '0')}:
-          {String(c.s % 60).padStart(2, '0')} – {String(Math.floor(c.e / 60)).padStart(2, '0')}:
-          {String(c.e % 60).padStart(2, '0')}
-        </div>
-      ))}
-      {cancelled.map((b) => {
-        const s = localMinutes(b.startsAt);
-        const e = localMinutes(b.endsAt);
-        if (e <= startMin || s >= endMin) return null;
-        return (
-          <button
-            key={b.id}
-            type="button"
-            onClick={() => onOpen(b.id)}
-            className="absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.571rem] border border-dashed border-line bg-surface px-3 py-2 text-left text-muted"
-            style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
-            aria-label={`${b.clientName} · ${cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}`}
+    <div className="relative flex" style={{ height }}>
+      <div className="relative flex-none" style={{ width: GUTTER }}>
+        {hourMarks.map((m) => (
+          <span
+            key={m}
+            className="mono absolute right-2 -translate-y-1/2 text-[0.857rem] text-subtle"
+            style={{ top: top(m) }}
           >
-            <span className="block truncate text-[0.857rem] font-semibold line-through">
-              {b.clientName} · {b.serviceName}
-            </span>
-            <span className="block truncate text-[0.857rem]">
-              <span className="mono">
-                {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
-              </span>{' '}
-              · {cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}
-            </span>
-          </button>
-        );
-      })}
-      {sorted.map((b) => {
-        const s = localMinutes(b.startsAt);
-        const e = localMinutes(b.endsAt);
-        return (
-          <button
-            key={b.id}
-            type="button"
-            onClick={() => onOpen(b.id)}
-            className={`absolute left-[3.625rem] right-0 overflow-hidden rounded-[0.571rem] border-l-[3px] px-3 py-2 text-left ${TONE[toneOf(b)]}`}
-            style={{ top: top(s) + 2, height: Math.max(44, (e - s) * PX - 4) }}
-          >
-            <span className="block truncate text-[0.857rem] font-semibold">
-              {b.clientName} · {b.serviceName}
-            </span>
-            <span className="mono block text-[1rem] opacity-80">
-              {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)} · {formatDA(b.priceDa)}
-            </span>
-            {b.status === 'pending' && (
-              <span className="mt-1 inline-block">
-                <Badge tone="pd" dot={false}>
-                  En attente
-                </Badge>
-              </span>
-            )}
-          </button>
-        );
-      })}
-      {isToday && (
-        // Ligne « maintenant » : dans la journée à sa place ; avant l'ouverture en haut, après la fermeture en bas,
-        // toujours avec l'heure réelle pour se repérer d'un coup d'œil.
-        <div
-          ref={nowRef}
-          className="pointer-events-none absolute left-[2.875rem] right-0 z-10 border-t-[1.5px] border-danger"
-          style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}
-        >
-          <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
-          <span className="absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
-            {minutesToTime(now)}
-            {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
+            {hm(m)}
           </span>
+        ))}
+      </div>
+      <div className="relative flex flex-1">
+        <div className="pointer-events-none absolute inset-0">
+          {hourMarks.map((m) => (
+            <div key={m} className="absolute left-0 right-0 border-t border-line" style={{ top: top(m) }} />
+          ))}
+          {halfMarks.map((m) => (
+            <div
+              key={m}
+              className="absolute left-0 right-0 border-t border-dashed border-line-soft"
+              style={{ top: top(m) }}
+            />
+          ))}
         </div>
-      )}
+        {columns.map((col) => (
+          <div
+            key={col.id ?? 'all'}
+            className="agcol"
+            onClick={(e) => tapFree(e, col)}
+            role="presentation"
+          >
+            {closed
+              .filter((c) => c.staffId === null || c.staffId === col.id)
+              .map((c) => (
+                <div
+                  key={`c-${c.s}-${c.label}`}
+                  className="agoff"
+                  style={{ top: top(c.s) + 1, height: Math.max(18, (c.e - c.s) * PX - 2) }}
+                  title={`${c.label} · ${hm(c.s)} – ${hm(c.e)}`}
+                >
+                  {c.label}
+                  {!narrow && ` · ${hm(c.s)} – ${hm(c.e)}`}
+                </div>
+              ))}
+            {cancelled
+              .filter((b) => inCol(col, b.staffId))
+              .map((b) => {
+                const s = localMinutes(b.startsAt);
+                const e = localMinutes(b.endsAt);
+                if (e <= startMin || s >= endMin) return null;
+                const h = Math.max(22, (e - s) * PX - 2);
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      onOpen(b.id);
+                    }}
+                    className="agb cn"
+                    style={{ top: top(s) + 1, height: h }}
+                    aria-label={`${b.clientName} · ${cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}`}
+                  >
+                    <span className="block truncate text-[0.857rem] font-semibold line-through">
+                      {b.clientName}
+                      {!narrow && ` · ${b.serviceName}`}
+                    </span>
+                    {h >= 32 && (
+                      <span className="block truncate text-[0.857rem]">
+                        {cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            {items
+              .filter((b) => inCol(col, b.staffId))
+              .map((b) => {
+                const s = localMinutes(b.startsAt);
+                const e = localMinutes(b.endsAt);
+                const h = Math.max(22, (e - s) * PX - 2);
+                const pending = b.status === 'pending';
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      onOpen(b.id);
+                    }}
+                    className={`agb ${TONE[toneOf(b)]}`}
+                    style={{
+                      top: top(s) + 1,
+                      height: h,
+                      // Demande non confirmée : rayures claires par-dessus la teinte, lisibles de loin.
+                      backgroundImage: pending
+                        ? 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.5) 5px 10px)'
+                        : undefined,
+                    }}
+                    aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ' · en attente' : ''}`}
+                  >
+                    {h < 32 ? (
+                      <span className="block truncate text-[0.857rem] font-semibold">
+                        {b.clientName}
+                        {!narrow && ` · ${b.serviceName}`}
+                      </span>
+                    ) : (
+                      <>
+                        <span className={`block truncate font-semibold ${narrow ? 'text-[0.857rem]' : 'text-[1rem]'}`}>
+                          {b.clientName}
+                        </span>
+                        <span className="block truncate text-[0.857rem] opacity-90">
+                          {b.serviceName}
+                        </span>
+                        {h >= 50 && (
+                          <span className="mono block truncate text-[0.857rem] opacity-80">
+                            {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
+                            {!narrow && ` · ${formatDA(b.priceDa)}`}
+                          </span>
+                        )}
+                        {pending && h >= 72 && (
+                          <span className="mt-1 inline-block">
+                            <Badge tone="pd" dot={false}>
+                              En attente
+                            </Badge>
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+          </div>
+        ))}
+        {isToday && (
+          // Ligne « maintenant » : dans la journée à sa place ; avant l'ouverture en haut, après la fermeture en bas.
+          <div
+            ref={nowRef}
+            className="pointer-events-none absolute -left-1.5 right-0 z-10 border-t-[1.5px] border-danger"
+            style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}
+          >
+            <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
+            <span className="mono absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
+              {minutesToTime(now)}
+              {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

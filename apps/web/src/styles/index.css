@@ -641,6 +641,61 @@
     font-weight: 600;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
   }
+  /* Segmenté compact (agenda) : la vue se change d'un geste, elle ne mérite pas une rangée
+     de 44 px au-dessus du planning. */
+  .seg.sm {
+    padding: 0.1875rem;
+  }
+  .seg.sm > button {
+    padding: 0.4375rem 0.5rem;
+    font-size: 0.857rem;
+  }
+
+  /* Agenda en colonnes (une par membre, comme les outils du métier) : la colonne accueille
+     les blocs ; le fond ligné donne l'heure sans encombrer. Un fin liseré sépare deux
+     membres. */
+  .agcol {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    border-left: 1px solid var(--color-line-soft);
+  }
+  .agcol:first-child {
+    border-left: 0;
+  }
+  /* Bloc de rendez-vous : teinte de la catégorie, liseré à gauche, coins du petit mobilier. */
+  .agb {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    overflow: hidden;
+    border-left: 3px solid;
+    border-radius: var(--radius-card-sm);
+    padding: 0.125rem 0.375rem;
+    text-align: left;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+  .agb.cn {
+    border: 1px dashed var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-muted);
+  }
+  /* Plage fermée (pause, blocage) : hachures grises, non cliquable. */
+  .agoff {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    border-radius: var(--radius-card-sm);
+    font-size: 0.857rem;
+    color: var(--color-subtle);
+    background: repeating-linear-gradient(135deg, #f4f5f6 0 6px, #eff0f1 6px 12px);
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
   /* Interrupteur */
   .sw {

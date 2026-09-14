@@ -68,17 +68,8 @@ export function ProHome() {
           <div className="text-[1rem] text-muted">Bonjour, {firstName}</div>
           <h1 className="h1">Votre journée</h1>
         </div>
-        {/* « Arrêt / Pause » en icône, entre le titre et le logo. */}
-        <div className="flex items-center gap-3">
-          {salon && <QuickCloseButton openingHours={salon.openingHours} />}
-          <Link to="/pro/profil" aria-label="Profil">
-            <Avatar
-              src={salon?.logoUrl ?? me.data?.profile.avatarUrl}
-              name={firstName || 'Pro'}
-              size={56}
-            />
-          </Link>
-        </div>
+        {/* « Arrêt / Pause » à droite du titre ; l'identité du salon est dans l'en-tête. */}
+        {salon && <QuickCloseButton openingHours={salon.openingHours} />}
       </div>
 
       {salon && <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />}

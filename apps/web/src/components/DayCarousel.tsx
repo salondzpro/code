@@ -47,7 +47,7 @@ export function DayScroller({
   return (
     <div
       ref={ref}
-      className="pills -mx-5 !gap-1 px-5"
+      className="pills -mx-4 !gap-1 px-4"
       role="listbox"
       aria-label="Choisir un jour"
       style={{ scrollSnapType: 'x proximity' }}
@@ -134,7 +134,7 @@ export function DayCarousel({
     <div
       ref={ref}
       onScroll={onScroll}
-      className="-mx-5 flex overflow-x-auto"
+      className="-mx-4 flex overflow-x-auto"
       style={{
         scrollSnapType: 'x mandatory',
         scrollbarWidth: 'none',
@@ -145,7 +145,7 @@ export function DayCarousel({
       {days.map((d) => (
         <div
           key={d}
-          className="w-full flex-none px-5"
+          className="w-full flex-none px-4"
           style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
           aria-hidden={d !== date}
         >

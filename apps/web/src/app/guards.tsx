@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { PublicHeader } from '@/components/PublicHeader';
+import { ProHeader } from '@/components/ProHeader';
 import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
@@ -49,6 +50,7 @@ export function ProLayout() {
   useRealtimeBookings(salonId);
   return (
     <AppFrame>
+      <ProHeader />
       <Outlet />
       <BottomNav kind="pro" />
     </AppFrame>

@@ -7,7 +7,7 @@ export function StaffFilter({ staff, value, onChange }: { staff: Staff[]; value:
   if (members.length < 2) return null;
   const current = members.find((m) => m.id === value) ? value : null;
   return (
-    <div className="pills -mx-5 px-5" role="group" aria-label="Filtrer par membre">
+    <div className="pills -mx-4 px-4" role="group" aria-label="Filtrer par membre">
       <Pill lg on={current === null} onClick={() => onChange(null)}>
         Toute l'équipe
       </Pill>

@@ -480,14 +480,23 @@ export function Segmented<T extends string>({
   value,
   onChange,
   label,
+  sm,
+  className = '',
 }: {
   options: { value: T; label: string; icon?: LucideIcon }[];
   value: T;
   onChange: (v: T) => void;
   label: string;
+  /** Compact (agenda) : la vue se change d'un geste, pas besoin d'une rangée de 44 px. */
+  sm?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="seg" role="tablist" aria-label={label}>
+    <div
+      className={['seg', sm ? 'sm' : '', className].filter(Boolean).join(' ')}
+      role="tablist"
+      aria-label={label}
+    >
       {options.map((o) => (
         <button
           key={o.value}
