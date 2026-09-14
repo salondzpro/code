@@ -47,6 +47,9 @@ let clientA: TestUser;
 let clientB: TestUser;
 let clientC: TestUser;
 let clientD: TestUser;
+/** Personne concernée et réservatrice d'un rendez-vous pris pour autrui (créées dans leur test). */
+let beneficiaire: TestUser;
+let reservante: TestUser;
 let salonId = '';
 let salonSlug = '';
 let serviceId = '';
@@ -78,7 +81,7 @@ before(async () => {
 
 after(async () => {
   await app?.close();
-  for (const u of [pro, clientA, clientB, clientC, clientD]) {
+  for (const u of [pro, clientA, clientB, clientC, clientD, beneficiaire, reservante]) {
     if (u?.id) await db.auth.admin.deleteUser(u.id);
   }
 });
@@ -223,6 +226,71 @@ test('créneau pris disparaît des disponibilités', async () => {
   const starts = (r.json().slots as { startsAt: string }[]).map((s) => s.startsAt);
   assert.ok(!starts.includes(new Date(slotIso).toISOString()));
   assert.equal(starts.length, 19);
+});
+
+test('client : rendez-vous POUR QUELQU’UN D’AUTRE → à elle, règles comprises', async () => {
+  // Un numéro identifie la personne concernée. On en donne un à clientC pour que son
+  // compte soit trouvable par ce numéro, comme dans la vraie vie après vérification OTP.
+  const phone = `+21377${String(Date.now()).slice(-7)}`;
+  beneficiaire = await createUser('beneficiaire', 'client', 'Personne Concernée');
+  reservante = await createUser('reservante', 'client', 'Celle Qui Réserve');
+  const up = await db.from('profiles').update({ phone }).eq('id', beneficiaire.id);
+  assert.equal(up.error, null);
+
+  const autreJour = addDaysToKey(toLocalDateKey(), 7);
+  const startsAt = localDateTimeToISO(autreJour, '14:00');
+  const r = await call('POST', '/v1/bookings', reservante.token, {
+    salonId,
+    serviceId,
+    startsAt,
+    beneficiary: { fullName: 'Personne Concernée', phone },
+  });
+  assert.equal(r.statusCode, 201, r.body);
+  const b = r.json();
+  // Le rendez-vous appartient à la personne concernée, pas à celle qui réserve.
+  assert.equal(b.clientId, beneficiaire.id);
+  assert.equal(b.clientPhone, phone);
+  assert.ok(b.bookedByName, 'qui a réservé doit être conservé');
+
+  // La personne concernée le voit dans ses rendez-vous…
+  const sien = await call('GET', '/v1/me/bookings?scope=upcoming&limit=20', beneficiaire.token);
+  assert.ok((sien.json().items as { id: string }[]).some((x) => x.id === b.id), sien.body);
+  // …et celle qui a réservé aussi : sans cela, une erreur de sa part serait irréparable.
+  assert.ok(
+    ((await call('GET', '/v1/me/bookings?scope=upcoming&limit=20', reservante.token)).json()
+      .items as { id: string }[]).some((x) => x.id === b.id),
+  );
+
+  // Sans compte, le numéro seul identifie la personne : pas de compte créé dans son dos.
+  const sansCompte = await call('POST', '/v1/bookings', reservante.token, {
+    salonId,
+    serviceId,
+    startsAt: localDateTimeToISO(autreJour, '14:30'),
+    beneficiary: { fullName: 'Amina Bensalem', phone: '+213770999888' },
+  });
+  assert.equal(sansCompte.statusCode, 201, sansCompte.body);
+  assert.equal(sansCompte.json().clientId, null);
+  assert.equal(sansCompte.json().clientName, 'Amina Bensalem');
+
+  // La règle du doublon porte sur la PERSONNE CONCERNÉE : une autre cliente qui réserve
+  // pour elle au même horaire est refusée pour cette raison, pas pour le créneau.
+  const dup = await call('POST', '/v1/bookings', clientB.token, {
+    salonId,
+    serviceId,
+    startsAt,
+    beneficiary: { fullName: 'Personne Concernée', phone },
+  });
+  assert.equal(dup.statusCode, 409, dup.body);
+  assert.equal(dup.json().error.code, 'ALREADY_BOOKED');
+
+  // L'avis reste à la personne concernée : on ne note pas une visite qu'on n'a pas faite.
+  const avis = await call('POST', `/v1/bookings/${b.id}/review`, reservante.token, { rating: 5 });
+  assert.ok([403, 404, 409].includes(avis.statusCode), avis.body);
+
+  for (const id of [b.id, sansCompte.json().id as string]) {
+    const undo = await call('POST', `/v1/pro/bookings/${id}/cancel`, pro.token, { reason: 'Test' });
+    assert.equal(undo.statusCode, 200, undo.body);
+  }
 });
 
 test('pro : walk-in chevauchant (10:15) refusé, 10:30 accepté', async () => {
