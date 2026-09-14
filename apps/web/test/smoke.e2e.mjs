@@ -211,19 +211,18 @@ try {
     await a.getByRole('link', { name: 'Commencer' }).waitFor();
     await shot(a, 'anon-intro');
   });
-  await step('anon: bienvenue → numéro → canal', async () => {
+  await step('anon: bienvenue → connexion par e-mail → inscription', async () => {
     await a.getByRole('link', { name: 'Commencer' }).click();
     await a.getByRole('heading', { name: /Bienvenue/ }).waitFor();
     await a.getByRole('button', { name: 'Continuer' }).click();
     await a.waitForURL(/\/connexion\?role=client/);
-    await a.getByRole('heading', { name: 'Votre numéro' }).waitFor();
-    await a.getByRole('button', { name: 'Recevoir le code', exact: true }).click();
-    await a.locator('[role=alert]').waitFor(); // numéro incomplet (AUTH 05)
-    await a.getByLabel('Numéro de téléphone').fill('661248790');
-    await a.getByRole('button', { name: 'Recevoir le code', exact: true }).click();
-    await a.waitForURL(/\/connexion\/canal/);
-    await a.getByRole('heading', { name: 'Comment recevoir le code ?' }).waitFor();
-    await shot(a, 'anon-canal');
+    await a.getByRole('heading', { name: 'Connexion' }).waitFor();
+    await a.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await a.locator('[role=alert]').waitFor(); // e-mail invalide
+    await a.getByRole('link', { name: 'Créer un compte' }).click();
+    await a.waitForURL(/\/inscription/);
+    await a.getByRole('heading', { name: 'Créer un compte' }).waitFor();
+    await shot(a, 'anon-inscription');
   });
   await step('anon: page salon publique lisible sans compte', async () => {
     await a.goto(WEB + '/rendez-vous');

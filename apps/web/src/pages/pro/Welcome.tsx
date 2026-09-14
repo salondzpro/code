@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES, writeAuthFlow } from '@/lib/authFlow';
 import { Button, I } from '@/components/ui';
 
-const PROMISES = ['Réservations en ligne 24 h/24', 'Page publique partageable', 'Rappels WhatsApp automatiques'];
+const PROMISES = ['Réservations en ligne 24 h/24', 'Page publique partageable', 'Rappels automatiques à vos clients'];
 
 export function ProWelcome() {
   const navigate = useNavigate();

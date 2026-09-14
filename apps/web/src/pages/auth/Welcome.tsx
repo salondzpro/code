@@ -40,7 +40,7 @@ export function Welcome() {
         </Card>
       </div>
       <Button onClick={go}>Continuer</Button>
-      <p className="p text-center">Une seule vérification WhatsApp · session conservée ensuite</p>
+      <p className="p text-center">Compte par e-mail et mot de passe · session conservée ensuite</p>
     </Screen>
   );
 }

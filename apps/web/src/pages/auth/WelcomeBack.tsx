@@ -16,11 +16,11 @@ export function WelcomeBack() {
 
   const profile = me.data?.profile;
   const firstName = (profile?.fullName ?? '').split(' ')[0] || 'vous';
-  const contact = user?.phone ? formatIntlDZ(`+${user.phone.replace(/^\+/, '')}`) : (profile?.phone ? formatIntlDZ(profile.phone) : user?.email);
+  const contact = user?.email ?? (profile?.phone ? formatIntlDZ(profile.phone) : '');
   const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : '/');
 
   const proceed = () => {
-    if (!profile?.fullName) return navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
+    if (!profile?.fullName || !profile.phone) return navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
     if (profile.role !== 'pro' && !profile.market) return navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
     navigate(next, { replace: true });
   };
@@ -34,7 +34,7 @@ export function WelcomeBack() {
           <p className="p mt-2">{contact}</p>
         </div>
         <Badge tone="ok" md>
-          Session active · aucun code requis
+          Session active
         </Badge>
       </div>
       <p className="p text-center">Votre session reste ouverte tant que vous ne vous déconnectez pas — sur l'application comme sur le navigateur.</p>
@@ -50,7 +50,7 @@ export function WelcomeBack() {
           right={<I icon={RefreshCw} size={18} className="text-disabled" />}
           chevron={false}
         >
-          <span className="text-[0.857rem]">Utiliser un autre numéro</span>
+          <span className="text-[0.857rem]">Changer de compte</span>
         </ListRow>
       </div>
       <Button onClick={proceed}>Continuer</Button>

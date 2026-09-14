@@ -14,8 +14,10 @@ import { NotFound } from '@/pages/NotFound';
 // Parcours de connexion (design AUTH 01 → 16)
 import { Intro } from '@/pages/auth/Intro';
 import { Welcome } from '@/pages/auth/Welcome';
-import { Phone } from '@/pages/auth/Phone';
-import { Channel } from '@/pages/auth/Channel';
+import { Login } from '@/pages/auth/Login';
+import { SignUp } from '@/pages/auth/SignUp';
+import { EmailSent } from '@/pages/auth/EmailSent';
+import { ForgotPassword, NewPassword } from '@/pages/auth/Password';
 import { Code } from '@/pages/auth/Code';
 import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
@@ -88,8 +90,11 @@ export const router = createBrowserRouter([
         children: [
           { path: '/intro', element: <Intro /> },
           { path: '/bienvenue', element: <Welcome /> },
-          { path: '/connexion', element: <Phone /> },
-          { path: '/connexion/canal', element: <Channel /> },
+          { path: '/connexion', element: <Login /> },
+          { path: '/inscription', element: <SignUp /> },
+          { path: '/connexion/envoye', element: <EmailSent /> },
+          { path: '/connexion/oubli', element: <ForgotPassword /> },
+          { path: '/connexion/mot-de-passe', element: <NewPassword /> },
           { path: '/connexion/code', element: <Code /> },
           { path: '/connexion/retour', element: <WelcomeBack /> },
           { path: '/pro/bienvenue', element: <ProWelcome /> },

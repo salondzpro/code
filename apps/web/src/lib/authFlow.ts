@@ -3,13 +3,15 @@
  * repris du design (photos Unsplash référencées dans le fichier Claude Design).
  */
 import type { UserRole } from '@salondz/constants';
-import type { OtpChannel } from './auth';
 
 const KEY = 'salondz:authFlow';
 
+/** Comptes de démonstration : `sms` ; vrais comptes : `email`. */
+export type OtpChannel = 'sms' | 'email' | 'whatsapp';
+
 export interface AuthFlowState {
   role: UserRole;
-  /** Numéro E.164 (+213…) ou e-mail si canal e-mail. */
+  /** E-mail du compte, ou numéro de démonstration. */
   identifier: string;
   channel: OtpChannel;
   /** Où aller après la connexion. */
@@ -58,9 +60,6 @@ export function groupLocalDigits(digits: string): string {
   const parts = [d.slice(0, 1), d.slice(1, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean);
   return parts.join(' ');
 }
-
-/** Le secours e-mail n'est proposé que si le projet Supabase n'a pas de fournisseur SMS (VITE_AUTH_EMAIL_FALLBACK=1). */
-export const EMAIL_FALLBACK = import.meta.env.VITE_AUTH_EMAIL_FALLBACK === '1' || import.meta.env.DEV;
 
 export const DESIGN_IMAGES = {
   intro: { src: 'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=900&q=75&auto=format&fit=crop', credit: 'Benyamin Bohlouli · Unsplash' },

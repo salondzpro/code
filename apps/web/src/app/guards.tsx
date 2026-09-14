@@ -115,7 +115,8 @@ export function RequireClient() {
   if (me.isError) return <ErrorMessage error={me.error} retry={() => me.refetch()} />;
   const p = me.data.profile;
   const next = encodeURIComponent(location.pathname + location.search);
-  if (!p.fullName) return <Navigate to={`/profil/creer?next=${next}`} replace />;
+  // Nom ET numéro obligatoires : le salon doit pouvoir joindre la personne.
+  if (!p.fullName || !p.phone) return <Navigate to={`/profil/creer?next=${next}`} replace />;
   if (!p.market && p.role !== 'pro') return <Navigate to={`/marche?next=${next}`} replace />;
   return <Outlet />;
 }
@@ -133,13 +134,17 @@ export function RequirePro() {
   const step = stepMatch ? Number(stepMatch[1]) : null;
   const onboarding = path.startsWith('/pro/onboarding');
   const salonQuery = useProSalon(!!session);
+  const me = useMe(!!session);
 
   if (loading) return <Splash />;
   if (!session) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/connexion?role=pro&next=${next}`} replace />;
   }
-  if (salonQuery.isPending) return <Splash />;
+  if (salonQuery.isPending || me.isPending) return <Splash />;
+  // Le professionnel aussi complète nom et numéro avant d'entrer : ses clients l'appellent.
+  if (me.data && (!me.data.profile.fullName || !me.data.profile.phone) && !onboarding)
+    return <Navigate to={`/profil/creer?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (salonQuery.isError)
     return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;
 
