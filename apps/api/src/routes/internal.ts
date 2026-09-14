@@ -4,6 +4,7 @@ import { config } from '../config';
 import { db } from '../lib/supabase';
 import { unauthorized, unwrap } from '../lib/errors';
 import { dispatchPendingPush } from '../lib/push';
+import { NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS } from '@salondz/constants';
 
 /**
  * Tâches périodiques, appelées par pg_cron → pg_net (toutes les 15 min) ou manuellement :
@@ -75,7 +76,23 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     // 4) Push en attente (rattrape aussi les notifs créées hors API)
     const pushed = await dispatchPendingPush(req.log);
 
-    return { reminders: toRemind.length, autoCompleted: completed.length, expired: expired.length, pushed };
+    // 5) Purge des notifications : une notification est une information du moment, pas une
+    //    archive. Lue depuis plus de NOTIFICATION_READ_TTL_DAYS jours → supprimée ; non lue
+    //    mais vieille de plus de NOTIFICATION_MAX_AGE_DAYS jours → supprimée quand même. La
+    //    table ne grossit jamais sans fin, et la liste reste celle des derniers jours.
+    const purgedRead = await db
+      .from('notifications')
+      .delete({ count: 'exact' })
+      .lt('read_at', new Date(now - NOTIFICATION_READ_TTL_DAYS * 86_400_000).toISOString());
+    if (purgedRead.error) throw purgedRead.error;
+    const purgedOld = await db
+      .from('notifications')
+      .delete({ count: 'exact' })
+      .lt('created_at', new Date(now - NOTIFICATION_MAX_AGE_DAYS * 86_400_000).toISOString());
+    if (purgedOld.error) throw purgedOld.error;
+    const purged = (purgedRead.count ?? 0) + (purgedOld.count ?? 0);
+
+    return { reminders: toRemind.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
   });
 };
 

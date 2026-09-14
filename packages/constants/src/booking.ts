@@ -81,3 +81,13 @@ export const MAX_CLIENT_RESCHEDULES = 1;
 
 /** Durée maximale d'un blocage (congés) : un an. */
 export const MAX_TIME_BLOCK_DAYS = 366;
+
+/**
+ * Durée de vie des notifications (comme les outils du métier : une notification est une
+ * information du moment, pas une archive — l'historique, ce sont les rendez-vous).
+ * Lue : supprimée NOTIFICATION_READ_TTL_DAYS jours après sa lecture. Non lue : supprimée
+ * quand même NOTIFICATION_MAX_AGE_DAYS jours après sa création. Le cron (`/internal/cron/tick`)
+ * fait la purge ; la table ne grossit jamais sans fin.
+ */
+export const NOTIFICATION_READ_TTL_DAYS = 7;
+export const NOTIFICATION_MAX_AGE_DAYS = 30;
