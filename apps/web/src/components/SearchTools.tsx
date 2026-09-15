@@ -51,6 +51,7 @@ import {
   useLocationPrefs,
   type LocationPrefs,
   type SortKey,
+  RADIUS_OPTIONS,
 } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
 import { Accordion, Avatar, Button, I, Pill } from './ui';
@@ -332,7 +333,9 @@ function Panel({
   );
 }
 
-type Draft = Pick<LocationPrefs, 'availableToday' | 'openNow' | 'ratingMin' | 'sort'>;
+type Draft = Pick<LocationPrefs, 'availableToday' | 'openNow' | 'ratingMin' | 'sort' | 'radiusKm'>;
+/** Rayon par défaut : au-delà, le filtre compte comme actif. */
+const DEFAULT_RADIUS = 5;
 
 export function SearchTools({
   market,
@@ -363,6 +366,7 @@ export function SearchTools({
     (prefs.availableToday ? 1 : 0) +
     (prefs.openNow ? 1 : 0) +
     (prefs.ratingMin != null ? 1 : 0) +
+    (prefs.lat != null && prefs.radiusKm !== DEFAULT_RADIUS ? 1 : 0) +
     (withSort && prefs.sort !== 'relevance' ? 1 : 0);
 
   const openCategories = () => {
@@ -436,7 +440,13 @@ export function SearchTools({
           title="Filtres"
           onClose={() => setOpen(null)}
           onReset={() =>
-            setDraft({ availableToday: false, openNow: false, ratingMin: null, sort: 'relevance' })
+            setDraft({
+              availableToday: false,
+              openNow: false,
+              ratingMin: null,
+              sort: 'relevance',
+              radiusKm: DEFAULT_RADIUS,
+            })
           }
           onSave={() => {
             setPrefs(draft);
@@ -465,6 +475,38 @@ export function SearchTools({
               >
                 Ouvert maintenant
               </Pill>
+            </div>
+          </Accordion>
+
+          {/* Le rayon est le troisième paramètre d'une recherche, avec le quoi et le où : il
+              vit ici, à côté des autres filtres, et se lit dans la carte de recherche. */}
+          <Accordion
+            title="Distance"
+            hint={prefs.lat != null ? `Autour de ${prefs.label}` : 'Autour de votre position'}
+            open={section === 'dist'}
+            onToggle={() => toggleSection('dist')}
+          >
+            <div className="flex flex-col gap-3 py-3">
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Rayon">
+                {RADIUS_OPTIONS.map((km) => (
+                  <Pill
+                    key={km}
+                    lg
+                    on={draft.radiusKm === km}
+                    role="radio"
+                    aria-checked={draft.radiusKm === km}
+                    onClick={() => setDraft({ ...draft, radiusKm: km })}
+                  >
+                    {km} km
+                  </Pill>
+                ))}
+              </div>
+              {prefs.lat == null && (
+                <p className="p text-[0.857rem]">
+                  Le rayon s'applique autour d'une position : touchez « Ma position » ou une adresse
+                  précise dans la recherche.
+                </p>
+              )}
             </div>
           </Accordion>
 

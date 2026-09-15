@@ -10,6 +10,7 @@
  * L'avatar a disparu d'ici : l'en-tête client porte déjà le bouton de compte à droite, et la
  * même destination deux fois sur un écran ne sert personne. C-H 08 — aucun résultat.
  */
+import { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ArrowLeftRight, Search } from 'lucide-react';
 import { pagesItems, useMe, useSalonSearchInfinite, useUpdateProfile } from '@salondz/api-client';
@@ -41,6 +42,20 @@ export function Marketplace() {
   const market: Market = me.data?.profile.market ?? 'women';
   const category = params.get('category') ?? '';
   const q = params.get('q') ?? '';
+  /**
+   * `?market=men|women` (tiroir, lien de catégorie) : on bascule le marché du compte, puis on
+   * retire le paramètre. Une catégorie « femmes » ouverte depuis un compte réglé sur les
+   * hommes donnait zéro résultat sans explication ; ici le marché suit ce qu'on a touché.
+   */
+  const wantedMarket = params.get('market');
+  useEffect(() => {
+    if (!me.data || (wantedMarket !== 'men' && wantedMarket !== 'women')) return;
+    if (me.data.profile.market !== wantedMarket) update.mutate({ market: wantedMarket });
+    const next = new URLSearchParams(params);
+    next.delete('market');
+    setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantedMarket, me.data?.profile.market]);
 
   const query = useSalonSearchInfinite({
     q: q || undefined,

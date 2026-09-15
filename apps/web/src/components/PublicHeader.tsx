@@ -35,7 +35,9 @@ export function PublicHeader() {
    * distinguerait pas du « on n'a encore rien choisi ».
    */
   const [picked, setPicked] = useState<Market | 'none' | null>(null);
-  const { pathname } = useLocation();
+  // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
+  // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
+  const { pathname, key: navKey } = useLocation();
   const navigate = useNavigate();
   const { session } = useAuth();
   const me = useMe(!!session);
@@ -43,7 +45,7 @@ export function PublicHeader() {
   const market = me.data?.profile.market ?? MARKETS[0];
   const shown = picked === null ? market : picked === 'none' ? null : picked;
   const next = encodeURIComponent(pathname);
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => setOpen(false), [pathname, navKey]);
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => {
@@ -125,7 +127,7 @@ export function PublicHeader() {
                     .map((c) => (
                       <Link
                         key={c.id}
-                        to={`/categorie/${c.id}`}
+                        to={`/?category=${c.id}&market=${market}`}
                         className="py-2 text-[1.143rem] text-muted"
                       >
                         {c.labelFr}

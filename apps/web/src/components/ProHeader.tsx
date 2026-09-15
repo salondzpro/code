@@ -87,12 +87,14 @@ function Group({ title, items }: { title: string; items: Item[] }) {
 
 export function ProHeader() {
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
+  // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
+  // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
+  const { pathname, key: navKey } = useLocation();
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
   const { short } = usePublicUrl(salon?.slug ?? '');
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => setOpen(false), [pathname, navKey]);
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => {
