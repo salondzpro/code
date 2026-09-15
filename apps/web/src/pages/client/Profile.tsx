@@ -1,11 +1,29 @@
-/** C-F 22 — Profil client : identité vérifiée, compteurs, raccourcis, « Devenir professionnel ». */
+/**
+ * C-F 22 — Mon compte, sur le modèle des outils du métier : l'identité en tête (photo, nom,
+ * e-mail, numéro, un bouton pour modifier), trois chiffres, puis les rubriques en lignes avec
+ * icône — mes rendez-vous, mes favoris, mes informations, notifications, réglages —, l'accès
+ * pro, et la déconnexion tout en bas, seule.
+ */
 import { useRef, useState } from 'react';
-import { Link } from 'react-router';
-import { Camera, ChevronRight, MessageCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router';
+import {
+  Bell,
+  Camera,
+  CalendarClock,
+  ChevronRight,
+  Heart,
+  History,
+  LogOut,
+  Pencil,
+  Settings,
+  Store,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
+import { formatDZPhone } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
-import { formatIntlDZ } from '@/lib/authFlow';
-import { Avatar, Badge, I, ListRow } from '@/components/ui';
+import { Avatar, Badge, Button, I } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -13,8 +31,37 @@ import { ImageCropper } from '@/components/ImageCropper';
 import { uploadAvatar } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 
+/** Ligne de rubrique : icône ronde, libellé, détail éventuel, chevron. */
+function Row({ to, icon, label, sub, right }: { to: string; icon: LucideIcon; label: string; sub?: string; right?: string }) {
+  return (
+    <Link to={to} className="li">
+      <span className="flex min-w-0 flex-1 items-center gap-3">
+        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-fill text-muted">
+          <I icon={icon} size={18} />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[1rem] font-semibold">{label}</span>
+          {sub && <span className="block truncate text-[0.857rem] text-muted">{sub}</span>}
+        </span>
+      </span>
+      {right && <span className="flex-none text-[1rem] text-muted">{right}</span>}
+      <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
+    </Link>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <span className="flex min-w-0 flex-col rounded-[var(--radius-card-sm)] bg-fill px-3 py-2.5">
+      <span className="truncate text-[1.429rem] font-semibold leading-tight tracking-[-0.5px]">{value}</span>
+      <span className="truncate text-[0.857rem] text-muted">{label}</span>
+    </span>
+  );
+}
+
 export function Profile() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const me = useMe();
   const stats = useMeStats();
   const updateProfile = useUpdateProfile();
@@ -24,100 +71,115 @@ export function Profile() {
   const [error, setError] = useState<string | null>(null);
   if (me.isPending) return <Splash />;
   const p = me.data?.profile;
-  const phone = p?.phone ?? (user?.phone ? `+${user.phone.replace(/^\+/, '')}` : null);
+  const phone = p?.phone ?? null;
+  const email = user?.email ?? null;
   const bookings = stats.data?.bookings ?? 0;
+  const reviews = stats.data?.reviews ?? 0;
 
   return (
-    <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1">Profil</h1>
-      <div className="crd !flex-row items-center gap-4">
-        <button
-          type="button"
-          className="relative flex-none"
-          onClick={() => avatarInput.current?.click()}
-          aria-label="Changer la photo de profil"
-          disabled={avatarBusy || !user}
-        >
-          <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={88} />
-          <span className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
-            <I icon={Camera} size={16} />
+    <Screen bottom={NAV_PAD} gap={12}>
+      <h1 className="h1">Mon compte</h1>
+
+      {/* Qui : photo, nom, e-mail vérifié, numéro — et le bouton pour corriger. */}
+      <div className="crd !gap-3">
+        <div className="flex items-center gap-3.5">
+          <button
+            type="button"
+            className="relative flex-none"
+            onClick={() => avatarInput.current?.click()}
+            aria-label="Changer la photo de profil"
+            disabled={avatarBusy || !user}
+          >
+            <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={64} />
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+              <I icon={Camera} size={14} />
+            </span>
+          </button>
+          <input
+            ref={avatarInput}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) setCropAvatar(f);
+              e.target.value = '';
+            }}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[1.429rem] font-semibold tracking-[-0.4px]">
+              {p?.fullName ?? 'Votre nom'}
+            </span>
+            {email && <span className="block truncate text-[0.857rem] text-muted">{email}</span>}
+            {phone && <span className="mono block text-[0.857rem] text-muted">{formatDZPhone(phone)}</span>}
           </span>
-        </button>
-        <input
-          ref={avatarInput}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) setCropAvatar(f);
-            e.target.value = '';
-          }}
-        />
-        <div className="min-w-0">
-          <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
-            {p?.fullName ?? 'Votre nom'}
-          </div>
-          <div className="text-[0.857rem] text-muted">
-            {phone ? formatIntlDZ(phone) : user?.email}
-          </div>
-          <div className="mt-2">
-            <Badge tone="ok" md>
-              {phone ? 'Numéro vérifié' : 'Adresse vérifiée'}
+          {email && (
+            <Badge tone="ok" dot>
+              Vérifié
             </Badge>
-          </div>
+          )}
         </div>
+        <Link to="/reglages#contact" className="btn g sm">
+          <I icon={Pencil} size={16} /> Modifier mes informations
+        </Link>
       </div>
-      <div className="g3">
-        {[
-          { v: String(bookings), l: 'réservations' },
-          { v: String(stats.data?.favorites ?? 0), l: 'favoris' },
-          { v: stats.data ? String(stats.data.reviews) : '—', l: stats.data && stats.data.reviews > 1 ? 'avis donnés' : 'avis donné' },
-        ].map((x) => (
-          <div key={x.l} className="crd !gap-1 !px-4 !py-5">
-            <span className="text-[1.714rem] font-bold tracking-[-0.6px]">{x.v}</span>
-            <span className="whitespace-nowrap text-[1rem] text-muted">{x.l}</span>
-          </div>
-        ))}
+
+      <div className="grid grid-cols-3 gap-1.5">
+        <Stat value={String(bookings)} label={bookings > 1 ? 'réservations' : 'réservation'} />
+        <Stat value={String(stats.data?.favorites ?? 0)} label="favoris" />
+        <Stat value={stats.data ? String(reviews) : '—'} label={reviews > 1 ? 'avis donnés' : 'avis donné'} />
       </div>
+
+      <span className="h3">Mes rendez-vous</span>
       <div className="crd !gap-0 !py-1">
-        <ListRow to="/favoris">
-          <span className="text-[1rem]">Mes salons favoris</span>
-        </ListRow>
-        <ListRow to="/rendez-vous?scope=past">
-          <span className="text-[1rem]">Historique</span>
-        </ListRow>
-        <ListRow to="/reglages#contact">
-          <span className="text-[1rem]">Moyens de contact</span>
-        </ListRow>
-        <ListRow to="/reglages">
-          <span className="text-[1rem]">Réglages</span>
-        </ListRow>
+        <Row to="/rendez-vous" icon={CalendarClock} label="À venir" sub="Vos prochains rendez-vous" />
+        <Row to="/rendez-vous?scope=past" icon={History} label="Historique" sub="Rendez-vous passés et annulés" />
+        <Row to="/favoris" icon={Heart} label="Mes salons favoris" right={stats.data ? String(stats.data.favorites) : undefined} />
       </div>
+
+      <span className="h3">Mon compte</span>
+      <div className="crd !gap-0 !py-1">
+        <Row to="/reglages#contact" icon={UserRound} label="Mes informations" sub="Nom, numéro de téléphone" />
+        <Row to="/reglages" icon={Bell} label="Notifications" sub="Rappels, confirmations, nouveautés" />
+        <Row to="/reglages" icon={Settings} label="Réglages" sub="Marché affiché, préférences, données" />
+      </div>
+
+      {/* Passerelle vers l'espace pro : une carte, pas une rubrique parmi d'autres. */}
       <Link
         to={me.data?.salon ? '/pro' : '/pro/bienvenue'}
-        className="sf flex items-center gap-4 !p-4"
+        className="crd !flex-row items-center gap-3.5 !border-ink"
       >
-        <span className="flex h-[4.25rem] w-[4.25rem] flex-none items-center justify-center rounded-full border border-line bg-surface">
-          <I icon={MessageCircle} size={26} />
+        <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-ink text-white">
+          <I icon={Store} size={20} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[1rem] font-bold tracking-[-0.4px]">
-            {me.data?.salon ? `Gérer ${me.data.salon.name}` : 'Devenir professionnel'}
+          <span className="block text-[1rem] font-semibold tracking-[-0.2px]">
+            {me.data?.salon ? `Gérer ${me.data.salon.name}` : 'Vous êtes professionnel ?'}
           </span>
-          <span className="p block text-[0.857rem]">
-            {me.data?.salon
-              ? 'Agenda, demandes, page publique'
-              : 'Recevoir des réservations sur votre page'}
+          <span className="block text-[0.857rem] text-muted">
+            {me.data?.salon ? 'Agenda, demandes, page publique' : 'Ouvrez votre espace et recevez des réservations'}
           </span>
         </span>
         <I icon={ChevronRight} size={20} className="text-disabled" />
       </Link>
+
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
+
+      <Button
+        variant="g"
+        className="mt-2 !text-danger"
+        onClick={async () => {
+          await signOut();
+          navigate('/intro', { replace: true });
+        }}
+      >
+        <I icon={LogOut} size={18} /> Se déconnecter
+      </Button>
+
       {cropAvatar && user && (
         <ImageCropper
           file={cropAvatar}
