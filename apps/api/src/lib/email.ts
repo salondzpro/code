@@ -27,7 +27,8 @@ export async function sendMail(log: FastifyBaseLogger, mail: Mail): Promise<void
   const res = await fetch(RESEND, {
     method: 'POST',
     headers: { authorization: `Bearer ${config.RESEND_API_KEY}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ from: config.EMAIL_FROM, to: [mail.to], subject: mail.subject, html: mail.html, text: mail.text }),
+    // Les réponses arrivent au support : `noreply@` n'est lu par personne.
+    body: JSON.stringify({ from: config.EMAIL_FROM, to: [mail.to], reply_to: config.EMAIL_REPLY_TO, subject: mail.subject, html: mail.html, text: mail.text }),
   });
   if (res.ok) return;
   const body = await res.text();

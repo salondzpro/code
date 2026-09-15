@@ -156,7 +156,7 @@ export function Settings() {
         <ListRow to="/confidentialite">
           <span className="text-[1rem]">Confidentialité</span>
         </ListRow>
-        <ListRow onClick={() => window.open(`mailto:contact@salondz.dz?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`)}>
+        <ListRow onClick={() => window.open(`mailto:support@salondz.com?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`)}>
           <span className="text-[1rem]">Supprimer mes données</span>
         </ListRow>
         <button

@@ -33,7 +33,7 @@ const DEMO_CLIENT_PHONE = '0603044618';
 const pub = process.env.VAPID_PUBLIC_KEY;
 const priv = process.env.VAPID_PRIVATE_KEY;
 if (!pub || !priv) throw new Error('VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY absents de .env');
-webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? 'mailto:contact@salondz.dz', pub, priv);
+webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? 'mailto:contact@salondz.com', pub, priv);
 
 const call = async (method, path, token, body) => {
   const res = await fetch(`${API}/v1${path}`, {

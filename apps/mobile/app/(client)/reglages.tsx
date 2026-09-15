@@ -140,7 +140,7 @@ export default function Settings() {
             Confidentialité
           </Tx>
         </Row>
-        <Row py={13} onPress={() => void Linking.openURL(`mailto:contact@salondz.dz?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`).catch(() => undefined)}>
+        <Row py={13} onPress={() => void Linking.openURL(`mailto:support@salondz.com?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`).catch(() => undefined)}>
           <Tx size={12} lh={16}>
             Supprimer mes données
           </Tx>

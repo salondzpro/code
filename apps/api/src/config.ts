@@ -24,10 +24,12 @@ const schema = z.object({
    */
   VAPID_PUBLIC_KEY: z.string().optional(),
   VAPID_PRIVATE_KEY: z.string().optional(),
-  VAPID_SUBJECT: z.string().default('mailto:contact@salondz.dz'),
+  VAPID_SUBJECT: z.string().default('mailto:contact@salondz.com'),
   /** E-mails transactionnels via Resend (confirmation, lien de connexion, mot de passe). Absente : envoi refusé proprement. */
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default('Salon DZ <onboarding@resend.dev>'),
+  EMAIL_FROM: z.string().default('Salon DZ <noreply@salondz.com>'),
+  /** Adresse de réponse des e-mails transactionnels (boîte lue par l'équipe). */
+  EMAIL_REPLY_TO: z.string().default('support@salondz.com'),
   /** Origine du site web (liens envoyés par e-mail). Absente : première origine CORS en https. */
   WEB_URL: z.string().url().optional(),
   /** Comptes de démonstration à accès direct (POST /v1/auth/dev-login). Mettre `0` pour désactiver. */

@@ -63,3 +63,4 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 
 ## Domaine
 - **salondz.com** (registrar IONOS, DNS ui-dns) depuis le 15 sept. 2026 : site `https://salondz.com` (`www` redirige), API `https://api.salondz.com`. Les adresses `salondz.onrender.com` / `salondz-api.onrender.com` restent servies. Domaines déclarés et vérifiés sur Render par l'API (`custom-domains`), DNS : A `@` → 216.24.57.1, CNAME `www` → salondz.onrender.com, CNAME `api` → salondz-api.onrender.com. Resend : domaine `salondz.com` (DKIM `resend._domainkey`, MX/TXT `send`), expéditeur `Salon DZ <noreply@salondz.com>`.
+- **Boîtes @salondz.com** (redirections IONOS, 15 sept. 2026) : `contact@` (adresse publique, sujet VAPID des notifications navigateur), `support@` (réponse aux e-mails transactionnels `EMAIL_REPLY_TO`, demandes de suppression de données), `pro@` (prospects professionnels), `hello@`, `admin@`. L'expéditeur `noreply@salondz.com` n'est pas une boîte.
