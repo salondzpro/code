@@ -45,7 +45,7 @@ export function RatingLine({ avg, count }: { avg: number; count: number }) {
       {count > 0 ? (
         <>
           <b className="text-[1rem]">{formatRating(avg)}</b>
-          <span className="text-muted">({count} {t("avis)")}</span>
+          <span className="text-muted">({t('{n} avis', { n: count })})</span>
         </>
       ) : (
         <span className="font-medium text-muted">{t("Nouveau sur Salon DZ")}</span>
@@ -223,7 +223,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
           style={{ aspectRatio: '2 / 1', scrollbarWidth: 'none' }}
           onScroll={(e) => {
             const el = e.currentTarget;
-            setIdx(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
+            setIdx(Math.round(Math.abs(el.scrollLeft) / Math.max(1, el.clientWidth)));
           }}
         >
           {photos.length === 0 && <div className="h-full w-full flex-none" />}

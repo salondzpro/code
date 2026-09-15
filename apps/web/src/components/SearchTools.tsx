@@ -128,7 +128,7 @@ export function SearchField({
           <span
             className={`block truncate text-[1.143rem] font-semibold tracking-[-0.3px] ${q ? '' : 'text-subtle'}`}
           >
-            {q || PLACEHOLDER[market]}
+            {q || t(PLACEHOLDER[market])}
           </span>
           <span className="block truncate text-[1rem] text-muted">
             {place} · {radiusKm} {t("km")}
@@ -163,7 +163,7 @@ export function SearchField({
           value={qDraft}
           onChange={(e) => setQDraft(e.target.value)}
           onFocus={() => setFocus('q')}
-          placeholder={PLACEHOLDER[market]}
+          placeholder={t(PLACEHOLDER[market])}
           className="min-w-0 flex-1 bg-transparent text-[1.143rem] outline-none placeholder:text-subtle"
         />
         {!!qDraft && (
@@ -429,7 +429,7 @@ export function SearchTools({
                 aria-pressed={catDraft === c.id}
                 onClick={() => setCatDraft(catDraft === c.id ? '' : c.id)}
               >
-                {c.labelFr}
+                {t(c.labelFr)}
               </Pill>
             ))}
           </div>

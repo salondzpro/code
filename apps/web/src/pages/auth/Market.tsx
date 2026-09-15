@@ -39,16 +39,16 @@ export function Market() {
           onClick={() => void choose(c.id)}
           disabled={update.isPending}
           className="relative h-[12rem] w-full overflow-hidden rounded-[var(--radius-card)] text-left"
-          aria-label={MARKET_LABELS_FR[c.id]}
+          aria-label={t(MARKET_LABELS_FR[c.id])}
         >
           <img src={c.img.src} alt="" className="h-full w-full object-cover" />
           <div className="ovl" />
           <div className="ovl-t !bottom-9">
-            <div className="text-[1.714rem] font-bold leading-[1.1] tracking-[-0.7px]">{MARKET_LABELS_FR[c.id]}</div>
+            <div className="text-[1.714rem] font-bold leading-[1.1] tracking-[-0.7px]">{t(MARKET_LABELS_FR[c.id])}</div>
             <div className="mt-1.5 text-[1rem] leading-[1.35] text-white/85">
               {categoriesForMarket(c.id)
                 .slice(0, c.id === 'men' ? 5 : 4)
-                .map((x) => x.labelFr)
+                .map((x) => t(x.labelFr))
                 .join(' · ')}
             </div>
           </div>

@@ -33,7 +33,7 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
     <div className="flex flex-col gap-3">
       {rows.map((r) => {
         const err = rowError(r);
-        const day = DAY_LABELS_FR[r.dayOfWeek];
+        const day = t(DAY_LABELS_FR[r.dayOfWeek]);
         return (
           <div key={r.dayOfWeek} className={`crd !gap-3 ${r.open ? '' : '!bg-fill'}`}>
             <div className="flex items-center justify-between gap-3">

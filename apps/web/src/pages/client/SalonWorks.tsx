@@ -19,7 +19,7 @@ export function SalonWorks() {
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
       <h1 className="h1">{t("Réalisations")}</h1>
       <p className="p -mt-2">
-        {photos.length} {t("photo")}{photos.length > 1 ? 's' : ''} {t("du travail de")}{' '}{s.name}.
+        {t('{n} photo(s)', { n: photos.length })} {t("du travail de")}{' '}{s.name}.
       </p>
       {photos.length === 0 ? (
         <p className="p">{t("Pas encore de réalisations.")}</p>

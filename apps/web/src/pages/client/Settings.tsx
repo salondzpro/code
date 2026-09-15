@@ -14,7 +14,7 @@ import {
   webPushPermission,
 } from '@/lib/webpush';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { t } from '@/i18n';
+import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 function since(iso: string): string {
   return new Intl.DateTimeFormat(formatLocale(), { day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
@@ -31,6 +31,7 @@ export function Settings() {
   const [prefs, setPrefs] = useLocationPrefs();
   const [reminders, setReminders] = useState(true);
   const p = me.data?.profile;
+  const [locale] = useLocale();
 
   useEffect(() => {
     if (p) setReminders(p.whatsappReminders ?? true);
@@ -104,17 +105,19 @@ export function Settings() {
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Langue")}</span>
-            <span className="p block text-[0.857rem]">{t("L'interface en arabe arrive bientôt")}</span>
+            <span className="p block text-[0.857rem]">{t("Français, arabe ou anglais")}</span>
           </span>
           <PickerField
             inline
             label={t("Langue")}
-            value={p?.locale ?? 'fr'}
-            onChange={(v) => update.mutate({ locale: v })}
-            options={[
-              { value: 'fr', label: t("Français") },
-              { value: 'ar', label: 'العربية', hint: t("Bientôt disponible · votre choix est mémorisé") },
-            ]}
+            value={locale}
+            onChange={(v) => {
+              // Mémorisée dans le profil quand on est connecté, puis rechargement : les
+              // libellés calculés au chargement des modules se relisent dans la langue.
+              update.mutate({ locale: v });
+              switchLocale(v);
+            }}
+            options={LOCALES.map((l) => ({ value: l.value, label: l.label }))}
           />
         </div>
         <div className="li">
@@ -129,15 +132,15 @@ export function Settings() {
             placeholder="—"
             onChange={(v) => v && update.mutate({ market: v as 'men' | 'women' })}
             options={[
-              { value: 'men', label: MARKET_LABELS_FR.men.replace('Pour ', ''), hint: t("Barbiers, coiffure homme") },
-              { value: 'women', label: MARKET_LABELS_FR.women.replace('Pour ', ''), hint: t("Coiffure, ongles, cils, soins") },
+              { value: 'men', label: t(MARKET_LABELS_FR.men).replace('Pour ', ''), hint: t("Barbiers, coiffure homme") },
+              { value: 'women', label: t(MARKET_LABELS_FR.women).replace('Pour ', ''), hint: t("Coiffure, ongles, cils, soins") },
             ]}
           />
         </div>
         <Link to="/localisation" className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Ville")}</span>
-            <span className="p block text-[0.857rem]">{prefs.lat != null ? `Autour de vous · ${prefs.radiusKm} km` : prefs.city ? 'Quartier choisi' : 'Toute la wilaya'}</span>
+            <span className="p block text-[0.857rem]">{prefs.lat != null ? t('Autour de vous · {n} km', { n: prefs.radiusKm }) : prefs.city ? t('Quartier choisi') : t('Toute la wilaya')}</span>
           </span>
           <span className="text-[1rem] text-muted">{prefs.label}</span>
         </Link>
@@ -148,28 +151,15 @@ export function Settings() {
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Session")}</span>
-            <span className="p block text-[0.857rem]">{p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}</span>
+            <span className="p block text-[0.857rem]">{p ? t('Ouverte depuis le {date} · illimitée', { date: since(p.createdAt) }) : t('Session ouverte')}</span>
           </span>
           <Badge tone="ok" md>
             {t("Active")}
           </Badge>
         </div>
-        <ListRow to="/compte/informations">
-          <span className="text-[1rem]">{t("Mes informations")}</span>
-        </ListRow>
         <ListRow onClick={() => window.open(`mailto:support@salondz.com?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`)}>
           <span className="text-[1rem]">{t("Supprimer mes données")}</span>
         </ListRow>
-        <button
-          type="button"
-          className="li w-full text-left text-[1rem] text-danger"
-          onClick={async () => {
-            await signOut();
-            navigate('/intro', { replace: true });
-          }}
-        >
-          {t("Se déconnecter")}
-        </button>
       </div>
     </Screen>
   );

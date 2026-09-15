@@ -62,7 +62,7 @@ export function BookingReschedule() {
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} />
       <DayStrip weekOf={weekOf} selected={date} onSelect={setDate} minDate={today} maxDate={maxDate} disabledDays={closedDays} />
       <span className="h3">
-        {t("Créneaux ·")}{' '}{DAY_LABELS_FR[dow].toLowerCase()} {dayNumber(date)}
+        {t("Créneaux ·")}{' '}{t(DAY_LABELS_FR[dow]).toLowerCase()} {dayNumber(date)}
       </span>
       {closedDays.includes(dow) ? (
         <p className="p">{t("Le salon est fermé ce jour-là.")}</p>

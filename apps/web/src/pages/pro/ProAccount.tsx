@@ -4,8 +4,9 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeftRight, Bell, Globe, LogOut, User } from 'lucide-react';
-import { useMe, useProSalon, useProSalonMutations } from '@salondz/api-client';
+import { ArrowLeftRight, Bell, Globe, Languages, LogOut, User } from 'lucide-react';
+import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
+import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { errorText } from '@/components/ErrorMessage';
@@ -14,7 +15,7 @@ import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { RowText } from './MonSalon';
-import { t } from '@/i18n';
+import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 export function ProAccount() {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ export function ProAccount() {
   const me = useMe();
   const salon = useProSalon().data?.salon ?? null;
   const { updateSalon } = useProSalonMutations();
+  const updateProfile = useUpdateProfile();
+  const [locale] = useLocale();
   const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;
 
@@ -32,25 +35,33 @@ export function ProAccount() {
 
       <SectionLabel>{t("Profil professionnel")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li">
+        <ListRow to="/pro/compte/informations">
           <RowText
             icon={User}
-            title={me.data?.profile.fullName ?? 'Vous'}
-            sub={
-              me.data?.profile.phone ? formatDZPhone(me.data.profile.phone) : 'Numéro non renseigné'
-            }
+            title={me.data?.profile.fullName ?? t('Vous')}
+            sub={me.data?.profile.phone ? formatDZPhone(me.data.profile.phone) : t('Numéro non renseigné')}
           />
-          <Badge tone="ok" md>
-            {t("Actif")}
-          </Badge>
-        </div>
+        </ListRow>
         <ListRow to="/pro/notifications">
-          <RowText icon={Bell} title={t("Notifications")} sub="Demandes, confirmations, annulations" />
+          <RowText icon={Bell} title={t("Notifications")} sub={t("Demandes, confirmations, annulations")} />
         </ListRow>
       </div>
 
       <SectionLabel>{t("Paramètres")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
+        <div className="li">
+          <RowText icon={Languages} title={t("Langue")} sub={t("Français, arabe ou anglais")} />
+          <PickerField
+            inline
+            label={t("Langue")}
+            value={locale}
+            onChange={(v) => {
+              updateProfile.mutate({ locale: v });
+              switchLocale(v);
+            }}
+            options={LOCALES.map((l) => ({ value: l.value, label: l.label }))}
+          />
+        </div>
         <div className="li">
           <RowText icon={Globe} title={t("Page publiée")} sub="Visible dans la marketplace" />
           <Toggle

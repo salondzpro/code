@@ -138,7 +138,7 @@ export function Localisation() {
     // C-H 03 — Position non reconnue
     return (
       <Screen className="min-h-dvh" gap={16}>
-        <TopBar close right={MARKET_LABELS_FR[market]} />
+        <TopBar close right={t(MARKET_LABELS_FR[market])} />
         <div className="flex flex-col items-center gap-3 pt-5 text-center">
           <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
             <I icon={MapPin} size={36} />
@@ -182,7 +182,7 @@ export function Localisation() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar close right={MARKET_LABELS_FR[market]} />
+      <TopBar close right={t(MARKET_LABELS_FR[market])} />
       <h1 className="h1">{t("Localisation")}</h1>
       <SearchBox value={q} onChange={setQ} placeholder={t("Quartier, ville, wilaya ou adresse")} />
 

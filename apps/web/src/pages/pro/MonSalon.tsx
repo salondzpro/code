@@ -81,10 +81,10 @@ export function MonSalon() {
               updateSalon.mutate({ genderTarget: v }, { onError: (e) => setError(errorText(e)) })
             }
             options={[
-              { value: 'men', label: MARKET_LABELS_FR.men, hint: t("Barbier, coiffure homme") },
+              { value: 'men', label: t(MARKET_LABELS_FR.men), hint: t("Barbier, coiffure homme") },
               {
                 value: 'women',
-                label: MARKET_LABELS_FR.women,
+                label: t(MARKET_LABELS_FR.women),
                 hint: t("Coiffure, ongles, cils, soins"),
               },
               { value: 'unisex', label: t("Mixte"), hint: t("Hommes et femmes · les deux catalogues") },

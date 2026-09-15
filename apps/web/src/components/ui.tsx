@@ -190,11 +190,11 @@ export function Badge({
 }
 
 const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boolean }> = {
-  confirmed: { tone: 'cf', label: t("Confirmé"), dot: true },
-  pending: { tone: 'pd', label: t("En attente"), dot: true },
-  cancelled: { tone: 'cn', label: t("Annulé"), dot: true },
-  completed: { tone: 'ok', label: t("Terminé"), dot: true },
-  no_show: { tone: 'dk', label: t("Client absent"), dot: true },
+  confirmed: { tone: 'cf', label: 'Confirmé', dot: true },
+  pending: { tone: 'pd', label: 'En attente', dot: true },
+  cancelled: { tone: 'cn', label: 'Annulé', dot: true },
+  completed: { tone: 'ok', label: 'Terminé', dot: true },
+  no_show: { tone: 'dk', label: 'Client absent', dot: true },
 };
 /** Libellé d'une annulation selon qui l'a faite et qui regarde (client ou salon). */
 export function cancelledLabel(
@@ -202,13 +202,13 @@ export function cancelledLabel(
   viewer: 'client' | 'pro' = 'client',
   kind?: CancellationKind | null,
 ): string {
-  if (kind === 'late') return 'Annulé pour retard';
+  if (kind === 'late') return t('Annulé pour retard');
   if (cancelledBy === 'client')
-    return viewer === 'client' ? 'Annulé par vous' : 'Annulé par le client';
+    return viewer === 'client' ? t('Annulé par vous') : t('Annulé par le client');
   if (cancelledBy === 'salon')
-    return viewer === 'client' ? 'Annulé par le salon' : 'Annulé par vous';
-  if (cancelledBy === 'system') return 'Demande expirée';
-  return 'Annulé';
+    return viewer === 'client' ? t('Annulé par le salon') : t('Annulé par vous');
+  if (cancelledBy === 'system') return t('Demande expirée');
+  return t('Annulé');
 }
 
 export function StatusBadge({
@@ -231,7 +231,7 @@ export function StatusBadge({
     <Badge tone={s.tone} dot={s.dot} md={md} lg={lg}>
       {status === 'cancelled' && cancelledBy !== undefined
         ? cancelledLabel(cancelledBy, viewer, kind)
-        : s.label}
+        : t(s.label)}
     </Badge>
   );
 }

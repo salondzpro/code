@@ -174,16 +174,16 @@ export function AgendaPro() {
   // ---- en-tête : la période, ses flèches, le retour à aujourd'hui ----
   const sub =
     view === 'day'
-      ? `${date === today ? "Aujourd'hui · " : date === addDaysToKey(today, 1) ? 'Demain · ' : ''}${DAY_LABELS_FR[dayOfWeekFromKey(date)]}`
+      ? `${date === today ? `${t("Aujourd'hui")} · ` : date === addDaysToKey(today, 1) ? `${t('Demain')} · ` : ''}${t(DAY_LABELS_FR[dayOfWeekFromKey(date)])}`
       : view === 'week'
-        ? `Semaine ${isoWeek(date)} · ${MONTHS[Number(week[0]!.slice(5, 7)) - 1]} ${week[0]!.slice(0, 4)}`
+        ? `${t('Semaine')} ${isoWeek(date)} · ${t(MONTHS[Number(week[0]!.slice(5, 7)) - 1]!)} ${week[0]!.slice(0, 4)}`
         : date.slice(0, 4);
   const title =
     view === 'day'
-      ? `${Number(date.slice(8, 10))} ${MONTHS[Number(date.slice(5, 7)) - 1]}`
+      ? `${Number(date.slice(8, 10))} ${t(MONTHS[Number(date.slice(5, 7)) - 1]!)}`
       : view === 'week'
-        ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${MONTHS[Number(week[6]!.slice(5, 7)) - 1]}`
-        : MONTHS[Number(date.slice(5, 7)) - 1]!.replace(/^\w/, (c) => c.toUpperCase());
+        ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${t(MONTHS[Number(week[6]!.slice(5, 7)) - 1]!)}`
+        : t(MONTHS[Number(date.slice(5, 7)) - 1]!).replace(/^\w/, (c) => c.toUpperCase());
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
@@ -246,7 +246,7 @@ export function AgendaPro() {
                 <div className="flex flex-col gap-2.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[1rem]">
-                      <b>{live.length} {t("rendez-vous")}</b>{' '}
+                      <b>{t('{n} rendez-vous', { n: live.length })}</b>{' '}
                       <span className="text-muted">· {formatDA(revenue)}</span>
                     </span>
                     <span className="flex items-center gap-2">
@@ -257,8 +257,7 @@ export function AgendaPro() {
                       )}
                       {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
                         <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
-                          {showCancelled ? cancelled.length : cancelledOn(d)} {t("annulé")}
-                          {(showCancelled ? cancelled.length : cancelledOn(d)) > 1 ? 's' : ''}
+                          {t('{n} annulé(s)', { n: showCancelled ? cancelled.length : cancelledOn(d) })}
                         </Pill>
                       )}
                     </span>
@@ -646,7 +645,7 @@ function DayColumns({
             <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
             <span className="mono absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
               {minutesToTime(now)}
-              {now > endMin ? ' · journée terminée' : now < startMin ? " · avant l'ouverture" : ''}
+              {now > endMin ? ` · ${t('journée terminée')}` : now < startMin ? ` · ${t("avant l'ouverture")}` : ''}
             </span>
           </div>
         )}
@@ -700,7 +699,7 @@ function WeekGrid({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 text-[0.857rem]">
-        <span className="pill soft !py-2 !font-semibold">{total} {t("rendez-vous")}</span>
+        <span className="pill soft !py-2 !font-semibold">{t('{n} rendez-vous', { n: total })}</span>
         <Badge tone="ok" md>
           {formatDA(revenue)}
         </Badge>
@@ -731,7 +730,7 @@ function WeekGrid({
               className="flex min-w-0 flex-1 flex-col items-center gap-2 text-left"
             >
               <span className={`text-[1rem] ${closed ? 'text-disabled' : 'text-muted'}`}>
-                {DAY_LABELS_SHORT_FR[dow]}
+                {t(DAY_LABELS_SHORT_FR[dow])}
               </span>
               <span
                 className={`flex h-9 w-full items-center justify-center rounded-[var(--radius-card-sm)] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
@@ -897,8 +896,8 @@ function MonthGrid({
         >
           <span>
             <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
-              {DAY_LABELS_FR[dayOfWeekFromKey(selected)]} {Number(selected.slice(8, 10))}{' '}
-              {MONTHS[Number(selected.slice(5, 7)) - 1]}
+              {t(DAY_LABELS_FR[dayOfWeekFromKey(selected)])} {Number(selected.slice(8, 10))}{' '}
+              {t(MONTHS[Number(selected.slice(5, 7)) - 1]!)}
             </span>
             <span className="p block text-[0.857rem]">
               {list.length} {t("rendez-vous ·")}{' '}{formatDA(revenue)}

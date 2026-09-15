@@ -36,7 +36,7 @@ function range(period: Period, today: string): { from: string; to: string; label
     return {
       from: today,
       to: today,
-      label: `${Number(today.slice(8, 10))} ${MONTHS[Number(today.slice(5, 7)) - 1]}`,
+      label: `${Number(today.slice(8, 10))} ${t(MONTHS[Number(today.slice(5, 7)) - 1]!)}`,
     };
   if (period === 'week') {
     const days = weekKeys(today);
@@ -46,7 +46,7 @@ function range(period: Period, today: string): { from: string; to: string; label
     return {
       from,
       to,
-      label: `${Number(from.slice(8, 10))}${sameMonth ? '' : ` ${MONTHS[Number(from.slice(5, 7)) - 1]}`} – ${Number(to.slice(8, 10))} ${MONTHS[Number(to.slice(5, 7)) - 1]}`,
+      label: `${Number(from.slice(8, 10))}${sameMonth ? '' : ` ${t(MONTHS[Number(from.slice(5, 7)) - 1]!)}`} – ${Number(to.slice(8, 10))} ${t(MONTHS[Number(to.slice(5, 7)) - 1]!)}`,
     };
   }
   const from = `${today.slice(0, 7)}-01`;
@@ -57,7 +57,7 @@ function range(period: Period, today: string): { from: string; to: string; label
   return {
     from,
     to: addDaysToKey(next, -1),
-    label: `${MONTHS[Number(today.slice(5, 7)) - 1]} ${today.slice(0, 4)}`,
+    label: `${t(MONTHS[Number(today.slice(5, 7)) - 1]!)} ${today.slice(0, 4)}`,
   };
 }
 
@@ -151,7 +151,7 @@ export function Revenue() {
                         <span
                           className={`text-[1rem] ${isToday ? 'font-bold' : 'text-muted'}`}
                         >
-                          {DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)]}
+                          {t(DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)])}
                         </span>
                       ) : (
                         (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && (

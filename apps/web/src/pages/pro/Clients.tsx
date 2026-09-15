@@ -49,10 +49,10 @@ export function Clients() {
       {blockedCount > 0 && (
         <div className="pills -mx-4 px-4" role="group" aria-label={t("Filtrer les clients")}>
           <Pill on={!onlyBlocked} onClick={() => setOnlyBlocked(false)}>
-            {t("Tous ·")}{' '}{total}
+            {t('Tous · {n}', { n: total })}
           </Pill>
           <Pill on={onlyBlocked} onClick={() => setOnlyBlocked(true)}>
-            {t("Bloqués ·")}{' '}{blockedCount}
+            {t('Bloqués · {n}', { n: blockedCount })}
           </Pill>
         </div>
       )}

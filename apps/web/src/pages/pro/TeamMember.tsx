@@ -281,7 +281,7 @@ export function TeamMember() {
             return (
               <span key={d} className="flex justify-between text-[1rem]">
                 <span className={ranges.length ? '' : 'text-subtle'}>
-                  {DAY_LABELS_SHORT_FR[d as 0]}
+                  {t(DAY_LABELS_SHORT_FR[d as 0])}
                 </span>
                 <span className="text-muted">{formatDayRanges(ranges, 'Repos')}</span>
               </span>
@@ -490,7 +490,7 @@ export function TeamMemberHours() {
             return (
               <span key={d} className="flex justify-between text-[1rem]">
                 <span className={ranges.length ? '' : 'text-subtle'}>
-                  {DAY_LABELS_SHORT_FR[d as 0]}
+                  {t(DAY_LABELS_SHORT_FR[d as 0])}
                 </span>
                 <span className="text-muted">{formatDayRanges(ranges)}</span>
               </span>

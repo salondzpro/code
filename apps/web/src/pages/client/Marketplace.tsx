@@ -94,13 +94,13 @@ export function Marketplace() {
   const items = prefs.openNow ? all.filter((s) => s.isOpenNow) : all;
   const total = prefs.openNow ? items.length : (query.data?.pages[0]?.total ?? items.length);
 
-  const noun = NOUN[market][total > 1 ? 1 : 0];
+  const noun = t(NOUN[market][total > 1 ? 1 : 0]);
   // Compteur honnête : « disponibles aujourd'hui » seulement si des créneaux du jour existent dans la page.
   const todayCount = items.filter((x) => x.nextSlots.length > 0).length;
   const countLabel =
     todayCount > 0
-      ? `${todayCount} ${NOUN[market][todayCount > 1 ? 1 : 0]} disponible${todayCount > 1 ? 's' : ''} aujourd'hui`
-      : `${total} ${noun} · prochaines disponibilités ci-dessous`;
+      ? t('{n} {noun} disponible(s) aujourd’hui', { n: todayCount, noun: t(NOUN[market][todayCount > 1 ? 1 : 0]) })
+      : t('{n} {noun} · prochaines disponibilités ci-dessous', { n: total, noun });
 
   return (
     <Screen bottom={NAV_PAD} gap={10}>
@@ -129,7 +129,7 @@ export function Marketplace() {
               {t("Pour")}{' '}<span className="text-women">{t("Femmes")}</span>
             </>
           ) : (
-            MARKET_LABELS_FR[market]
+            t(MARKET_LABELS_FR[market])
           )}
         </h1>
         <IconButton

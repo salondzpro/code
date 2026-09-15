@@ -43,7 +43,7 @@ export function DayStrip({
         const on = d === selected;
         return (
           <button key={d} type="button" role="option" aria-selected={on} disabled={out} onClick={() => onSelect(d)} className={`dcel${on ? ' on' : ''}${out ? ' mut' : ''}`}>
-            <span>{DAY_LABELS_SHORT_FR[dow]}</span>
+            <span>{t(DAY_LABELS_SHORT_FR[dow])}</span>
             <b>{dayNumber(d)}</b>
           </button>
         );

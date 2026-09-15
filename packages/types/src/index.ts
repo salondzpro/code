@@ -27,7 +27,7 @@ export interface Profile {
   phone: string | null;
   avatarUrl: string | null;
   gender: 'male' | 'female' | null;
-  locale: 'fr' | 'ar';
+  locale: 'fr' | 'ar' | 'en';
   market: 'men' | 'women' | null;
   whatsappReminders: boolean;
   createdAt: ISODateTime;

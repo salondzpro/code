@@ -11,7 +11,7 @@
  * racine) et tout se relit dans la nouvelle langue. L'arabe passe la page en `dir="rtl"`.
  */
 import { useCallback, useSyncExternalStore } from 'react';
-import { setFormatLocale, setTranslator } from '@salondz/constants';
+import { CATEGORIES, setFormatLocale, setTranslator } from '@salondz/constants';
 import { ar } from './ar';
 import { en } from './en';
 
@@ -23,6 +23,8 @@ export const LOCALES: { value: Locale; label: string; dir: 'ltr' | 'rtl'; intl: 
 ];
 const KEY = 'salondz:locale';
 const DICTS: Record<Locale, Record<string, string>> = { fr: {}, ar, en };
+// Les catégories ont déjà leur arabe dans le référentiel partagé : on ne le recopie pas.
+for (const c of CATEGORIES) if (!ar[c.labelFr]) ar[c.labelFr] = c.labelAr;
 
 function detect(): Locale {
   try {
@@ -65,6 +67,17 @@ export function setLocale(l: Locale): void {
   }
   apply(l);
   listeners.forEach((fn) => fn());
+}
+
+/**
+ * Changement de langue demandé par l'utilisateur : mémorisé, puis la page est rechargée.
+ * Les libellés calculés au chargement des modules (statuts, options) se relisent ainsi
+ * dans la nouvelle langue ; c'est un geste rare, le rechargement ne gêne pas.
+ */
+export function switchLocale(l: Locale): void {
+  if (l === current) return;
+  setLocale(l);
+  if (typeof window !== 'undefined') window.location.reload();
 }
 
 export function isRtl(): boolean {

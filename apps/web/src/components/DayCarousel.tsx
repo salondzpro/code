@@ -73,12 +73,12 @@ export function DayScroller({
             onClick={() => onSelect(d)}
             className={`flex w-[3.25rem] flex-none flex-col items-center gap-1 rounded-[var(--radius-card-sm)] py-2 ${on ? 'bg-ink text-white' : out ? 'text-disabled' : 'text-text'}`}
             style={{ scrollSnapAlign: 'center' }}
-            aria-label={`${DAY_LABELS_SHORT_FR[dow]} ${dayNumber(d)}`}
+            aria-label={`${t(DAY_LABELS_SHORT_FR[dow])} ${dayNumber(d)}`}
           >
             <span
               className={`text-[0.857rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
             >
-              {showMonth ? monthLabel(d).split(' ')[0]?.slice(0, 4) : DAY_LABELS_SHORT_FR[dow]}
+              {showMonth ? monthLabel(d).split(' ')[0]?.slice(0, 4) : t(DAY_LABELS_SHORT_FR[dow])}
             </span>
             <span
               className={`text-[1rem] font-semibold ${d === today && !on ? 'underline decoration-2 underline-offset-4' : ''}`}
@@ -135,6 +135,10 @@ export function DayCarousel({
     <div
       ref={ref}
       onScroll={onScroll}
+      // Toujours de gauche à droite : en RTL, `scrollLeft` devient négatif et le panneau
+      // central ne se recale plus (la date passait à `undefined` et l'agenda plantait).
+      // Les panneaux gardent le sens d'écriture de la page.
+      dir="ltr"
       className="-mx-4 flex overflow-x-auto"
       style={{
         scrollSnapType: 'x mandatory',
@@ -146,6 +150,7 @@ export function DayCarousel({
       {days.map((d) => (
         <div
           key={d}
+          dir={typeof document !== 'undefined' ? document.documentElement.dir || 'ltr' : 'ltr'}
           className="w-full flex-none px-4"
           style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
           aria-hidden={d !== date}

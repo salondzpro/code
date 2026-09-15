@@ -183,7 +183,7 @@ export function ProHome() {
         <div className="crd">
           <p className="p">
             {passed
-              ? `Journée terminée · ${passed} rendez-vous ${passed > 1 ? 'passés' : 'passé'} aujourd'hui.`
+              ? t('Journée terminée · {n} rendez-vous passé(s) aujourd’hui.', { n: passed })
               : 'Aucun rendez-vous aujourd’hui.'}
           </p>
         </div>
@@ -196,8 +196,8 @@ export function ProHome() {
               className={`text-[0.857rem] font-bold uppercase tracking-[0.08em] ${inProgress ? 'text-ok-fg' : 'text-muted'}`}
             >
               {inProgress
-                ? `En cours · fin à ${formatTimeDZ(next.endsAt)}`
-                : `Prochain · ${untilLabelFR(next.startsAt, now)}`}
+                ? t('En cours · fin à {time}', { time: formatTimeDZ(next.endsAt) })
+                : `${t('Prochain')} · ${untilLabelFR(next.startsAt, now)}`}
             </span>
             <StatusBadge status={next.status} md />
           </div>
@@ -285,14 +285,14 @@ export function ProHome() {
           ))}
           {upcoming.length > 6 && (
             <Link to="/pro/agenda" className="li w-full !py-3 text-[1rem] text-muted">
-              + {upcoming.length - 6} {t("autres aujourd'hui")}
+              {t('+ {n} autres aujourd’hui', { n: upcoming.length - 6 })}
             </Link>
           )}
         </div>
       )}
       {next && passed > 0 && (
         <p className="s -mt-2">
-          {passed} {t("rendez-vous déjà")}{' '}{passed > 1 ? 'passés' : 'passé'} {t("aujourd'hui.")}
+          {t('{n} rendez-vous déjà passé(s) aujourd’hui.', { n: passed })}
         </p>
       )}
 
@@ -303,9 +303,9 @@ export function ProHome() {
         </span>
         <span className="grid grid-cols-3 divide-x divide-line">
           {[
-            { v: stats.data?.todayRevenueDa ?? 0, l: "aujourd'hui" },
-            { v: stats.data?.weekRevenueDa ?? 0, l: 'cette semaine' },
-            { v: stats.data?.monthRevenueDa ?? 0, l: 'ce mois' },
+            { v: stats.data?.todayRevenueDa ?? 0, l: t("aujourd'hui") },
+            { v: stats.data?.weekRevenueDa ?? 0, l: t('cette semaine') },
+            { v: stats.data?.monthRevenueDa ?? 0, l: t('ce mois') },
           ].map((x, i) => (
             <span key={x.l} className={`flex flex-col ${i ? 'pl-4' : ''}`}>
               <span className="whitespace-nowrap text-[1.143rem] font-bold tracking-[-0.4px]">

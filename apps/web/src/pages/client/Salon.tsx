@@ -84,7 +84,7 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
     if (h)
       return {
         open: false,
-        label: `Fermé · ouvre ${i === 1 ? 'demain' : DAY_LABELS_FR[d as 0].toLowerCase()} ${h.opensAt}`,
+        label: `Fermé · ouvre ${i === 1 ? 'demain' : t(DAY_LABELS_FR[d as 0]).toLowerCase()} ${h.opensAt}`,
       };
   }
   return { open: false, label: t("Fermé") };
@@ -231,7 +231,7 @@ export function Salon() {
                 {s.ratingCount > 0 ? (
                   <>
                     <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
-                    <span className="text-muted">({s.ratingCount} {t("avis)")}</span>
+                    <span className="text-muted">({t('{n} avis', { n: s.ratingCount })})</span>
                   </>
                 ) : (
                   <span>{t("Pas encore d'avis")}</span>
@@ -460,10 +460,10 @@ export function Salon() {
                 return (
                   <div key={d} className="li">
                     <span className={`text-[1rem] ${idx === 0 ? 'font-bold' : ''}`}>
-                      {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : DAY_LABELS_FR[d]}
+                      {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : t(DAY_LABELS_FR[d])}
                       {idx <= 1 && (
                         <span className="ml-1.5 text-[1rem] font-normal text-muted">
-                          {DAY_LABELS_FR[d]}
+                          {t(DAY_LABELS_FR[d])}
                         </span>
                       )}
                     </span>

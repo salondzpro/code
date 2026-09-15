@@ -49,7 +49,7 @@ const keyFmt = new Intl.DateTimeFormat('en-CA', {
 });
 const localKey = (iso: string) => keyFmt.format(new Date(iso));
 const dayNum = (k: string) => Number(k.slice(8, 10));
-const monthOf = (k: string) => MONTHS[Number(k.slice(5, 7)) - 1]!;
+const monthOf = (k: string) => t(MONTHS[Number(k.slice(5, 7)) - 1]!);
 
 /** Un blocage « journée(s) entière(s) » commence et finit à minuit (heure d'Alger). */
 function isAllDay(b: TimeBlock): boolean {
@@ -59,7 +59,7 @@ function isAllDay(b: TimeBlock): boolean {
 /** « Jeudi 27 août », « 14 – 21 septembre » ou « 28 septembre – 3 octobre ». */
 export function rangeLabel(from: string, to: string): string {
   if (from === to)
-    return `${DAY_LABELS_FR[dayOfWeekFromKey(from)]} ${dayNum(from)} ${monthOf(from)}`;
+    return `${t(DAY_LABELS_FR[dayOfWeekFromKey(from)])} ${dayNum(from)} ${monthOf(from)}`;
   if (from.slice(0, 7) === to.slice(0, 7))
     return `${dayNum(from)} – ${dayNum(to)} ${monthOf(from)}`;
   return `${dayNum(from)} ${monthOf(from)} – ${dayNum(to)} ${monthOf(to)}`;
@@ -214,7 +214,7 @@ export function Closures() {
                 onClick={() => pick(d)}
                 className={`dcel${on ? ' on' : ''}${out ? ' mut' : ''}`}
               >
-                <span>{DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d)]}</span>
+                <span>{t(DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d)])}</span>
                 <b>{dayNumber(d)}</b>
               </button>
             );

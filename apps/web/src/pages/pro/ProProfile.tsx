@@ -231,7 +231,7 @@ export function ProProfile() {
                 ? todayHours.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
                 : 'Fermé aujourd’hui'
             }
-            sub={`Aujourd’hui · ${DAY_LABELS_FR[todayDow]}`}
+            sub={`Aujourd’hui · ${t(DAY_LABELS_FR[todayDow])}`}
           />
         </ListRow>
       </div>

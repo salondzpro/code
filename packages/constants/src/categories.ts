@@ -1,3 +1,4 @@
+import { tr } from './i18n';
 /**
  * Catégories de salons — clés stables (seedées dans la table `categories`, migration 0004).
  * Le design sépare strictement deux marchés : « Pour Hommes » et « Pour Femmes » ;
@@ -91,7 +92,9 @@ export function categoriesForMarket(market: Market): CategoryDef[] {
 export function categoryLabel(id: string, locale: 'fr' | 'ar' = 'fr'): string {
   const c = CATEGORY_BY_ID.get(id);
   if (!c) return id;
-  return locale === 'ar' ? c.labelAr : c.labelFr;
+  // Le libellé suit la langue de l'application (traducteur posé par l'app) ; l'arabe du
+  // référentiel reste disponible quand on le demande explicitement.
+  return locale === 'ar' ? c.labelAr : tr(c.labelFr);
 }
 
 /** Couleur d'agenda d'une prestation d'après sa catégorie (défaut : barb). */

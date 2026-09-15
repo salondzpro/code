@@ -17,7 +17,6 @@ import {
   Pencil,
   Settings,
   Store,
-  UserRound,
   type LucideIcon,
 } from 'lucide-react';
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
@@ -140,7 +139,6 @@ export function Profile() {
 
       <span className="h3">{t("Mon compte")}</span>
       <div className="crd !gap-0 !py-1">
-        <Row to="/compte/informations" icon={UserRound} label={t("Mes informations")} sub={t("Nom, numéro de téléphone")} />
         <Row to="/reglages#notifications" icon={Bell} label={t("Notifications")} sub={t("Rappels, confirmations, nouveautés")} />
         <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
       </div>

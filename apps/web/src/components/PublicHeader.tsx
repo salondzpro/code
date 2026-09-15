@@ -113,7 +113,7 @@ export function PublicHeader() {
                 className="flex items-center justify-between gap-3 py-3 text-left"
               >
                 <span className="text-[1.143rem] font-bold tracking-[-0.3px]">
-                  {MARKET_LABELS_FR[market]}
+                  {t(MARKET_LABELS_FR[market])}
                 </span>
                 <I
                   icon={ChevronDown}
@@ -131,7 +131,7 @@ export function PublicHeader() {
                         to={`/?category=${c.id}&market=${market}`}
                         className="py-2 text-[1.143rem] text-muted"
                       >
-                        {c.labelFr}
+                        {t(c.labelFr)}
                       </Link>
                     ))}
                 </div>
@@ -183,8 +183,8 @@ export function PublicHeader() {
           className="text-[1.429rem] leading-none tracking-[-0.6px]"
           aria-label={t("Salon DZ · accueil")}
         >
-          <span className="font-semibold">{t("Salon")}</span>
-          <span className="ml-[0.16em] font-light text-muted">{t("DZ")}</span>
+          <span className="font-semibold">Salon</span>
+          <span className="ml-[0.16em] font-light text-muted">DZ</span>
         </Link>
         <Link
           to={session ? '/profil' : `/connexion?next=${next}`}

@@ -109,8 +109,8 @@ export function ProHeader() {
       <nav className="drw !gap-1" aria-label={t("Menu professionnel")}>
         <div className="flex items-center justify-between">
           <span className="text-[1.143rem] leading-none tracking-[-0.4px]">
-            <span className="font-semibold">{t("Salon")}</span>
-            <span className="ml-[0.16em] font-light text-muted">{t("DZ")}</span>
+            <span className="font-semibold">Salon</span>
+            <span className="ml-[0.16em] font-light text-muted">DZ</span>
             <span className="ml-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
               {t("Pro")}
             </span>

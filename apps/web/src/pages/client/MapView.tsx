@@ -238,7 +238,7 @@ export function MapView() {
     }
     const el = cardsRef.current;
     const idx = items.findIndex((s) => s.id === current.id);
-    if (el && idx >= 0 && Math.round(el.scrollLeft / el.clientWidth) !== idx)
+    if (el && idx >= 0 && Math.round(Math.abs(el.scrollLeft) / el.clientWidth) !== idx)
       el.scrollTo({ left: idx * el.clientWidth, behavior: 'smooth' });
   }, [selected, current, items]);
 
@@ -248,7 +248,7 @@ export function MapView() {
     cardSettle.current = window.setTimeout(() => {
       const el = cardsRef.current;
       if (!el || !el.clientWidth) return;
-      const s = items[Math.round(el.scrollLeft / el.clientWidth)];
+      const s = items[Math.round(Math.abs(el.scrollLeft) / el.clientWidth)];
       if (s && s.id !== current?.id) setSelected(s.id);
     }, 90);
   };

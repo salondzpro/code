@@ -372,7 +372,7 @@ export function ProBookingNew() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/agenda" close right="Nouveau rendez-vous" />
+      <TopBar backTo="/pro/agenda" close right={t('Nouveau rendez-vous')} />
       <h1 className="h1">{t("Ajouter un rendez-vous")}</h1>
 
       {/* 1. QUAND — jours à faire défiler, heure en grand, créneaux du jour en un tap */}
@@ -548,8 +548,8 @@ export function ProBookingNew() {
             <div className="p truncate">
               {relativeDayLabelDZ(date)} · {time}
               {chosen.length
-                ? ` · ${chosen.length} prestation${chosen.length > 1 ? 's' : ''} · ${formatDuration(minutes)}`
-                : ' · choisissez une prestation'}
+                ? ` · ${t('{n} prestation(s)', { n: chosen.length })} · ${formatDuration(minutes)}`
+                : ` · ${t('choisissez une prestation')}`}
             </div>
           </div>
           <Button
@@ -558,7 +558,7 @@ export function ProBookingNew() {
             onClick={() => void submit()}
             disabled={createWalkIn.isPending}
           >
-            {createWalkIn.isPending ? 'Enregistrement…' : 'Enregistrer'}
+            {createWalkIn.isPending ? t('Enregistrement…') : t('Enregistrer')}
           </Button>
         </div>
       </BottomSheet>

@@ -15,7 +15,7 @@ export const updateProfileSchema = z.object({
   fullName: p.shortText(80).optional(),
   phone: p.phoneDZ.nullable().optional(),
   gender: z.enum(['male', 'female']).nullable().optional(),
-  locale: z.enum(['fr', 'ar']).optional(),
+  locale: z.enum(['fr', 'ar', 'en']).optional(),
   avatarUrl: p.httpUrl.nullable().optional(),
   /** Marché affiché par défaut (« Pour Hommes » / « Pour Femmes »), modifiable depuis le profil. */
   market: z.enum(['men', 'women']).nullable().optional(),

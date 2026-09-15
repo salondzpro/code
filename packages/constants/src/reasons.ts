@@ -1,3 +1,4 @@
+import { tr } from './i18n';
 /**
  * Motifs proposés en liste, plutôt qu'un champ libre.
  *
@@ -44,5 +45,5 @@ export type ClientCancelReason = (typeof CLIENT_CANCEL_REASONS_FR)[number];
 
 /** Options prêtes pour un sélecteur : la valeur envoyée est le libellé lui-même. */
 export function reasonOptions(reasons: readonly string[]): { value: string; label: string }[] {
-  return reasons.map((r) => ({ value: r, label: r }));
+  return reasons.map((r) => ({ value: r, label: tr(r) }));
 }

@@ -91,8 +91,8 @@ export function Step6Service() {
             options={[
               { value: '', label: t("Sans catégorie") },
               ...groups.map((g) => ({ value: `g:${g}`, label: g, group: 'Mes catégories' })),
-              ...suggested.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Suggérées pour votre salon' })),
-              ...others.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Autres catégories Salon DZ' })),
+              ...suggested.map((c) => ({ value: `c:${c.id}`, label: t(c.labelFr), group: 'Suggérées pour votre salon' })),
+              ...others.map((c) => ({ value: `c:${c.id}`, label: t(c.labelFr), group: 'Autres catégories Salon DZ' })),
               ...(categoryId && !cats.some((c) => c.id === categoryId) ? [{ value: `c:${categoryId}`, label: CATEGORY_BY_ID.get(categoryId)?.labelFr ?? categoryId, group: 'Autres catégories Salon DZ' }] : []),
             ]}
             onChange={(v) => {
