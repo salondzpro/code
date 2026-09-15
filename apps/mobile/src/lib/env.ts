@@ -21,5 +21,5 @@ export const env = {
   apiUrl: required('EXPO_PUBLIC_API_URL', process.env.EXPO_PUBLIC_API_URL),
   sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? '',
   /** URL du site web (liens partageables des salons). */
-  webUrl: process.env.EXPO_PUBLIC_WEB_URL ?? 'https://salondz.pages.dev',
+  webUrl: process.env.EXPO_PUBLIC_WEB_URL ?? 'https://salondz.com',
 } as const;

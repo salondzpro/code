@@ -121,7 +121,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, { state: MapState; onSelect
     return (
       <WebView
         ref={webRef}
-        source={{ html: HTML, baseUrl: 'https://salondz.onrender.com' }}
+        source={{ html: HTML, baseUrl: 'https://salondz.com' }}
         originWhitelist={['*']}
         onMessage={(e) => handle(e.nativeEvent.data)}
         javaScriptEnabled

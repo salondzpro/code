@@ -13,8 +13,8 @@
  */
 import pw from 'playwright-core';
 
-const API = 'https://salondz-api.onrender.com';
-const WEB = 'https://salondz.onrender.com';
+const API = 'https://api.salondz.com';
+const WEB = 'https://salondz.com';
 const OUT = process.argv[2] ?? null;
 
 const call = async (method, path, token, body) => {

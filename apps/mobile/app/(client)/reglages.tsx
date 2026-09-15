@@ -135,7 +135,7 @@ export default function Settings() {
             {p ? `Ouverte depuis le ${since(p.createdAt)} · illimitée` : 'Session ouverte'}
           </Tx>
         </Row>
-        <Row py={13} onPress={() => void Linking.openURL('https://salondz.pages.dev/confidentialite').catch(() => undefined)}>
+        <Row py={13} onPress={() => void Linking.openURL('https://salondz.com/confidentialite').catch(() => undefined)}>
           <Tx size={12} lh={16}>
             Confidentialité
           </Tx>

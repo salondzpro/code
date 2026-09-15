@@ -26,8 +26,8 @@
 import pw from 'playwright-core';
 import webpush from 'web-push';
 
-const API = process.env.CHECK_API_URL ?? 'https://salondz-api.onrender.com';
-const WEB = process.env.CHECK_WEB_URL ?? 'https://salondz.onrender.com';
+const API = process.env.CHECK_API_URL ?? 'https://api.salondz.com';
+const WEB = process.env.CHECK_WEB_URL ?? 'https://salondz.com';
 const DEMO_CLIENT_PHONE = '0603044618';
 
 const pub = process.env.VAPID_PUBLIC_KEY;

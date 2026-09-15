@@ -27,7 +27,7 @@ const dateKeyDZ = (offsetDays = 0) => {
   return d.toISOString().slice(0, 10);
 };
 
-const API = process.env.CHECK_API_URL ?? 'https://salondz-api.onrender.com';
+const API = process.env.CHECK_API_URL ?? 'https://api.salondz.com';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const PUBLISHABLE = process.env.SUPABASE_PUBLISHABLE_KEY;
 if (!SUPABASE_URL || !PUBLISHABLE) throw new Error('SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY manquants');

@@ -48,7 +48,7 @@ services:
         sync: false
       # Origines web autorisées (CSV) : site statique Render + domaine custom plus tard.
       - key: CORS_ORIGINS
-        value: https://salondz.onrender.com
+        value: https://salondz.com,https://www.salondz.com,https://salondz.onrender.com
       # Comptes de démonstration (0603044618 / 0603044619, code 1111). Mettre 0 au lancement réel.
       - key: TEST_LOGIN_ENABLED
         value: "1"
@@ -96,7 +96,7 @@ services:
       - key: VITE_SUPABASE_PUBLISHABLE_KEY
         sync: false
       - key: VITE_API_URL
-        value: https://salondz-api.onrender.com
+        value: https://api.salondz.com
       # Pas de fournisseur SMS sur Supabase pour l'instant → secours OTP par e-mail. Mettre 0 quand Twilio est branché.
       - key: VITE_AUTH_EMAIL_FALLBACK
         value: "1"

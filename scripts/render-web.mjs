@@ -9,9 +9,9 @@
 const API = 'https://api.render.com/v1';
 const OWNER_ID = 'tea-dag6rklbedkc73fmbv2g'; // workspace Render « My Workspace »
 const REPO = 'https://github.com/salondzpro/code';
-const SITE_NAME = 'salondz'; // → https://salondz.onrender.com
+const SITE_NAME = 'salondz'; // → https://salondz.com (alias https://salondz.onrender.com)
 const API_SERVICE_NAME = 'salondz-api';
-const API_URL = 'https://salondz-api.onrender.com';
+const API_URL = 'https://api.salondz.com'; // domaine propre ; https://salondz-api.onrender.com reste servi
 
 const key = process.env.RENDER_API_KEY;
 if (!key) fail('RENDER_API_KEY manquante dans .env');

@@ -18,7 +18,7 @@
  * Nettoyage : les rendez-vous de test sont annulés PAR LE SALON, jamais par la cliente —
  * une annulation cliente compterait dans son historique anti-abus.
  */
-const API = process.env.CHECK_API_URL ?? 'https://salondz-api.onrender.com';
+const API = process.env.CHECK_API_URL ?? 'https://api.salondz.com';
 const DEMO_CLIENT = '0603044618';
 const DEMO_PRO = '0603044619';
 /** Numéro sans compte : la personne concernée n'est alors identifiée que par son numéro. */
