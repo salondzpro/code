@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { TEST_ACCOUNTS, TEST_LOGIN_CODE } from '@salondz/constants';
-import { devLoginSchema, emailLinkSchema, emailSignupSchema } from '@salondz/validation';
+import { authGoQuerySchema, devLoginSchema, emailLinkSchema, emailSignupSchema } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
 import { ensureDemoProSalon } from '../lib/demo';
@@ -106,6 +106,44 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   };
   const limit = { config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } };
   const linkFailed = () => new AppError(500, 'LINK_FAILED', 'Lien impossible à générer. Réessayez dans un instant.');
+  /**
+   * Le lien envoyé par e-mail est SUR NOTRE DOMAINE (`api.salondz.com/v1/auth/go`), pas sur
+   * `…supabase.co` : une adresse sans voyelles de vingt lettres est un signal de spam
+   * (règle SpamAssassin URI_NOVOWEL), et un lien vers un domaine inconnu inquiète le lecteur.
+   * Cette route redirige vers la vérification Supabase avec le même jeton.
+   */
+  const apiOrigin = (req: { protocol: string; headers: { host?: string } }) =>
+    config.API_PUBLIC_URL ?? `${req.protocol}://${req.headers.host ?? 'localhost'}`;
+  const mailLink = (
+    req: { protocol: string; headers: { host?: string } },
+    gen: { hashed_token: string; verification_type: string } | null | undefined,
+    redirectTo: string,
+  ) => {
+    if (!gen?.hashed_token) throw linkFailed();
+    const url = new URL('/v1/auth/go', apiOrigin(req));
+    url.searchParams.set('t', gen.hashed_token);
+    url.searchParams.set('type', gen.verification_type);
+    url.searchParams.set('r', redirectTo);
+    return url.toString();
+  };
+
+  /** Relais d'un lien e-mail vers la vérification Supabase (jeton et type inchangés). */
+  app.get(
+    '/auth/go',
+    { config: { rateLimit: { max: 60, timeWindow: '10 minutes' } }, schema: { querystring: authGoQuerySchema } },
+    async (req, reply) => {
+      const { t, type, r } = req.query;
+      // Le retour ne peut être que sur notre site : jamais une URL fournie ailleurs.
+      const redirect = new URL(r, config.webUrl);
+      if (redirect.origin !== new URL(config.webUrl).origin) throw badRequest('BAD_REDIRECT', 'Retour invalide.');
+      const verify = new URL('/auth/v1/verify', config.SUPABASE_URL);
+      verify.searchParams.set('token', t);
+      verify.searchParams.set('type', type);
+      verify.searchParams.set('redirect_to', redirect.toString());
+      reply.header('Cache-Control', 'no-store');
+      return reply.redirect(verify.toString(), 302);
+    },
+  );
 
   /** Inscription : crée le compte (non confirmé) et envoie le lien de confirmation. */
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
@@ -119,23 +157,25 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       // qui confirme l'adresse et connecte (le mot de passe saisi ici remplace l'ancien).
       const upd = await db.auth.admin.updateUserById(existing.id, { password, user_metadata: { ...existing.user_metadata, role } });
       if (upd.error) throw upd.error;
-      const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: redirect('/connexion/retour', next) } });
-      if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
-      link = gen.data.properties.action_link;
+      const to = redirect('/connexion/retour', next);
+      const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
+      if (gen.error) throw gen.error;
+      link = mailLink(req, gen.data.properties, to);
     } else {
+      const to = redirect('/connexion/retour', next);
       const gen = await db.auth.admin.generateLink({
         type: 'signup',
         email,
         password,
-        options: { data: { role }, redirectTo: redirect('/connexion/retour', next) },
+        options: { data: { role }, redirectTo: to },
       });
-      if (gen.error || !gen.data.properties?.action_link) {
-        if (gen.error && /already|registered|exists/i.test(gen.error.message))
+      if (gen.error) {
+        if (/already|registered|exists/i.test(gen.error.message))
           throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
-        if (gen.error && /invalid|valid email/i.test(gen.error.message)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
-        throw gen.error ?? linkFailed();
+        if (/invalid|valid email/i.test(gen.error.message)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
+        throw gen.error;
       }
-      link = gen.data.properties.action_link;
+      link = mailLink(req, gen.data.properties, to);
     }
     await sendMail(req.log, { to: email, ...confirmationMail(link) });
     reply.status(204);
@@ -148,9 +188,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const user = await findUser(email);
     if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
     if (user.email_confirmed_at) throw conflict('ALREADY_CONFIRMED', 'Cette adresse est déjà confirmée : connectez-vous.');
-    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: redirect('/connexion/retour', next) } });
-    if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
-    await sendMail(req.log, { to: email, ...confirmationMail(gen.data.properties.action_link) });
+    const to = redirect('/connexion/retour', next);
+    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
+    if (gen.error) throw gen.error;
+    await sendMail(req.log, { to: email, ...confirmationMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);
     return null;
   });
@@ -160,9 +201,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const { email, next } = req.body;
     const user = await findUser(email);
     if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
-    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: redirect('/connexion/retour', next) } });
-    if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
-    await sendMail(req.log, { to: email, ...magicLinkMail(gen.data.properties.action_link) });
+    const to = redirect('/connexion/retour', next);
+    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
+    if (gen.error) throw gen.error;
+    await sendMail(req.log, { to: email, ...magicLinkMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);
     return null;
   });
@@ -172,13 +214,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const { email } = req.body;
     const user = await findUser(email);
     if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
-    const gen = await db.auth.admin.generateLink({
-      type: 'recovery',
-      email,
-      options: { redirectTo: new URL('/connexion/mot-de-passe', config.webUrl).toString() },
-    });
-    if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
-    await sendMail(req.log, { to: email, ...recoveryMail(gen.data.properties.action_link) });
+    const to = new URL('/connexion/mot-de-passe', config.webUrl).toString();
+    const gen = await db.auth.admin.generateLink({ type: 'recovery', email, options: { redirectTo: to } });
+    if (gen.error) throw gen.error;
+    await sendMail(req.log, { to: email, ...recoveryMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);
     return null;
   });

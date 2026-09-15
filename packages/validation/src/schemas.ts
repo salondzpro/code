@@ -397,6 +397,13 @@ export const emailLinkSchema = z.object({
 });
 export type EmailLinkInput = z.infer<typeof emailLinkSchema>;
 
+/** Relais d'un lien e-mail : jeton haché Supabase, type de vérification, retour sur le site. */
+export const authGoQuerySchema = z.object({
+  t: z.string().min(10).max(200),
+  type: z.enum(['signup', 'magiclink', 'recovery', 'invite', 'email_change']),
+  r: z.string().max(500),
+});
+
 export const devLoginSchema = z.object({
   phone: p.phoneDZ,
   code: z.string().trim().min(1).max(8),
