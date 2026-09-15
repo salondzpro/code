@@ -190,7 +190,14 @@ export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: st
     return { kind: 'credentials', text: 'E-mail ou mot de passe incorrect.' };
   if (has('user_already_exists', 'email_exists', 'already registered', 'already exists', 'un compte existe déjà'))
     return { kind: 'exists', text: 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.' };
-  if (has('over_email_send_rate_limit', 'over_request_rate_limit', 'rate limit', 'too many requests', 'security purposes')) {
+  if (has('over_email_send_rate_limit', 'email rate limit')) {
+    // Quota d'envoi d'e-mails du service (et non une faute de l'utilisateur) : on le dit.
+    return {
+      kind: 'rate',
+      text: 'Le service ne peut plus envoyer d’e-mail pour le moment. Réessayez dans une heure, ou connectez-vous si votre compte existe déjà.',
+    };
+  }
+  if (has('over_request_rate_limit', 'rate limit', 'too many requests', 'security purposes')) {
     const m = msg.match(/after (\d+) seconds/);
     return {
       kind: 'rate',
