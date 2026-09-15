@@ -380,6 +380,23 @@ export const emailOtpVerifySchema = z.object({
 });
 
 /** Connexion de démonstration (comptes à accès direct, sans SMS). */
+/** Chemin de retour dans l'application après un lien e-mail (relatif, jamais une URL externe). */
+const nextPath = z.string().trim().max(300).regex(/^\/(?!\/)/, 'Chemin invalide').default('/');
+/** Inscription par e-mail : compte créé côté API, lien de confirmation envoyé par nos soins. */
+export const emailSignupSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(8).max(200),
+  role: z.enum(USER_ROLES).default('client'),
+  next: nextPath,
+});
+export type EmailSignupInput = z.infer<typeof emailSignupSchema>;
+/** Lien de connexion, renvoi de confirmation, mot de passe oublié : une adresse (+ retour). */
+export const emailLinkSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  next: nextPath,
+});
+export type EmailLinkInput = z.infer<typeof emailLinkSchema>;
+
 export const devLoginSchema = z.object({
   phone: p.phoneDZ,
   code: z.string().trim().min(1).max(8),

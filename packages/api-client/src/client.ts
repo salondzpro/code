@@ -43,6 +43,8 @@ import type {
   UpdateServiceInput,
   BlockClientInput,
   ClientHistoryStatus,
+  EmailSignupInput,
+  EmailLinkInput,
 } from '@salondz/validation';
 
 export class ApiError extends Error {
@@ -169,6 +171,14 @@ export function createApiClient(opts: ApiClientOptions) {
   return {
     request,
     auth: {
+      /** Inscription par e-mail : le compte est créé, le lien de confirmation part par nos e-mails. */
+      signup: (body: EmailSignupInput) => post<void>('/auth/signup', body),
+      /** Lien de connexion par e-mail (compte existant). */
+      magicLink: (body: EmailLinkInput) => post<void>('/auth/magic-link', body),
+      /** Renvoi du lien de confirmation (compte non confirmé). */
+      resendConfirmation: (body: EmailLinkInput) => post<void>('/auth/resend-confirmation', body),
+      /** E-mail de réinitialisation du mot de passe. */
+      passwordReset: (body: EmailLinkInput) => post<void>('/auth/password-reset', body),
       /** Comptes de démonstration à accès direct : renvoie une vraie session Supabase (sans SMS). */
       devLogin: (body: { phone: string; code: string }) =>
         request<{

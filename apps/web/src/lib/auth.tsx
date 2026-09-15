@@ -10,7 +10,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@salondz/api-client';
+import { ApiError, queryKeys } from '@salondz/api-client';
 import { isTestPhone, type UserRole } from '@salondz/constants';
 import { api } from './api';
 import { supabase } from './supabase';
@@ -81,40 +81,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUpWithPassword = useCallback(async (email: string, password: string, role: UserRole, next: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { role }, emailRedirectTo: authRedirectUrl('/connexion/retour', next) },
-    });
-    if (error) throw error;
-    // Adresse déjà inscrite : Supabase répond sans erreur mais sans identité (anti-énumération).
-    if (data.user && data.user.identities && data.user.identities.length === 0)
-      throw new Error('Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
-    return !!data.session;
+    // Compte créé par l'API, qui envoie elle-même le lien de confirmation (nos e-mails, pas
+    // le SMTP de Supabase). Jamais de session tout de suite : il faut cliquer le lien.
+    await api.auth.signup({ email, password, role, next });
+    return false;
   }, []);
 
   const sendMagicLink = useCallback(async (email: string, next: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false, emailRedirectTo: authRedirectUrl('/connexion/retour', next) },
-    });
-    if (error) throw error;
+    await api.auth.magicLink({ email, next });
   }, []);
 
   const resendConfirmation = useCallback(async (email: string, next: string) => {
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: { emailRedirectTo: authRedirectUrl('/connexion/retour', next) },
-    });
-    if (error) throw error;
+    await api.auth.resendConfirmation({ email, next });
   }, []);
 
   const sendPasswordReset = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: authRedirectUrl('/connexion/mot-de-passe'),
-    });
-    if (error) throw error;
+    await api.auth.passwordReset({ email, next: '/' });
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {
@@ -176,7 +158,22 @@ export type AuthErrorKind =
  * par Supabase quand il existe et sinon du message. Jamais de texte anglais brut à l'écran :
  * le dernier recours est un message générique.
  */
+const API_KINDS: Record<string, AuthErrorKind> = {
+  NO_ACCOUNT: 'no_account',
+  EMAIL_EXISTS: 'exists',
+  ALREADY_CONFIRMED: 'exists',
+  EMAIL_INVALID: 'email',
+  EMAIL_QUOTA: 'rate',
+  RATE_LIMITED: 'rate',
+};
+
 export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: string } {
+  // Erreurs de NOTRE API : déjà en français, avec un code métier.
+  if (err instanceof ApiError) {
+    if (err.isNetwork) return { kind: 'network', text: 'Connexion perdue. Vérifiez votre réseau et réessayez.' };
+    if (err.status === 429) return { kind: 'rate', text: 'Trop de tentatives. Réessayez dans quelques minutes.' };
+    return { kind: API_KINDS[err.code] ?? 'other', text: err.message || 'Une erreur est survenue. Réessayez.' };
+  }
   const e = err as { code?: string; message?: string; status?: number } | null;
   const code = (e?.code ?? '').toLowerCase();
   const msg = (e?.message ?? (typeof err === 'string' ? err : '')).toLowerCase();

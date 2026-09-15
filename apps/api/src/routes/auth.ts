@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { TEST_ACCOUNTS, TEST_LOGIN_CODE } from '@salondz/constants';
-import { devLoginSchema } from '@salondz/validation';
+import { devLoginSchema, emailLinkSchema, emailSignupSchema } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
 import { ensureDemoProSalon } from '../lib/demo';
-import { AppError, notFound, unauthorized } from '../lib/errors';
+import { AppError, badRequest, conflict, notFound, unauthorized } from '../lib/errors';
+import { confirmationMail, magicLinkMail, recoveryMail, sendMail } from '../lib/email';
 
 /**
  * Client anonyme (clé publique) : sert uniquement à échanger un code à usage unique (généré par
@@ -86,6 +87,101 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       return { accessToken: s.access_token, refreshToken: s.refresh_token, expiresAt: s.expires_at ?? null, role: acct.role, phone };
     },
   );
+
+  // ---------------------------------------------------------------------------------------
+  // Connexion par e-mail : les liens sont générés ici (administration Supabase) et envoyés
+  // par NOS e-mails (Resend). Le SMTP de Supabase et son quota ne sont plus dans la boucle.
+  // Les retours pointent sur le site (`config.webUrl`), jamais sur une URL fournie en clair.
+  // ---------------------------------------------------------------------------------------
+  const redirect = (path: string, next: string) => {
+    const url = new URL(path, config.webUrl);
+    url.searchParams.set('next', next);
+    return url.toString();
+  };
+  const findUser = async (email: string) => {
+    // Pas de recherche par e-mail dans l'API admin : on liste (petit projet) et on filtre.
+    const res = await db.auth.admin.listUsers({ perPage: 1000 });
+    if (res.error) throw res.error;
+    return res.data.users.find((u) => (u.email ?? '').toLowerCase() === email) ?? null;
+  };
+  const limit = { config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } };
+  const linkFailed = () => new AppError(500, 'LINK_FAILED', 'Lien impossible à générer. Réessayez dans un instant.');
+
+  /** Inscription : crée le compte (non confirmé) et envoie le lien de confirmation. */
+  app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
+    const { email, password, role, next } = req.body;
+    const existing = await findUser(email);
+    if (existing?.email_confirmed_at)
+      throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
+    let link: string;
+    if (existing) {
+      // Inscription commencée mais jamais confirmée : on garde le compte, on renvoie un lien
+      // qui confirme l'adresse et connecte (le mot de passe saisi ici remplace l'ancien).
+      const upd = await db.auth.admin.updateUserById(existing.id, { password, user_metadata: { ...existing.user_metadata, role } });
+      if (upd.error) throw upd.error;
+      const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: redirect('/connexion/retour', next) } });
+      if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
+      link = gen.data.properties.action_link;
+    } else {
+      const gen = await db.auth.admin.generateLink({
+        type: 'signup',
+        email,
+        password,
+        options: { data: { role }, redirectTo: redirect('/connexion/retour', next) },
+      });
+      if (gen.error || !gen.data.properties?.action_link) {
+        if (gen.error && /already|registered|exists/i.test(gen.error.message))
+          throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
+        if (gen.error && /invalid|valid email/i.test(gen.error.message)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
+        throw gen.error ?? linkFailed();
+      }
+      link = gen.data.properties.action_link;
+    }
+    await sendMail(req.log, { to: email, ...confirmationMail(link) });
+    reply.status(204);
+    return null;
+  });
+
+  /** Renvoi du lien de confirmation à un compte non confirmé. */
+  app.post('/auth/resend-confirmation', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
+    const { email, next } = req.body;
+    const user = await findUser(email);
+    if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
+    if (user.email_confirmed_at) throw conflict('ALREADY_CONFIRMED', 'Cette adresse est déjà confirmée : connectez-vous.');
+    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: redirect('/connexion/retour', next) } });
+    if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
+    await sendMail(req.log, { to: email, ...confirmationMail(gen.data.properties.action_link) });
+    reply.status(204);
+    return null;
+  });
+
+  /** Lien de connexion sans mot de passe (compte existant seulement). */
+  app.post('/auth/magic-link', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
+    const { email, next } = req.body;
+    const user = await findUser(email);
+    if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
+    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: redirect('/connexion/retour', next) } });
+    if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
+    await sendMail(req.log, { to: email, ...magicLinkMail(gen.data.properties.action_link) });
+    reply.status(204);
+    return null;
+  });
+
+  /** Mot de passe oublié : lien vers le choix d'un nouveau mot de passe. */
+  app.post('/auth/password-reset', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
+    const { email } = req.body;
+    const user = await findUser(email);
+    if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
+    const gen = await db.auth.admin.generateLink({
+      type: 'recovery',
+      email,
+      options: { redirectTo: new URL('/connexion/mot-de-passe', config.webUrl).toString() },
+    });
+    if (gen.error || !gen.data.properties?.action_link) throw gen.error ?? linkFailed();
+    await sendMail(req.log, { to: email, ...recoveryMail(gen.data.properties.action_link) });
+    reply.status(204);
+    return null;
+  });
 };
 
 export default authRoutes;

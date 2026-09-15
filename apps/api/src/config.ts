@@ -25,6 +25,11 @@ const schema = z.object({
   VAPID_PUBLIC_KEY: z.string().optional(),
   VAPID_PRIVATE_KEY: z.string().optional(),
   VAPID_SUBJECT: z.string().default('mailto:contact@salondz.dz'),
+  /** E-mails transactionnels via Resend (confirmation, lien de connexion, mot de passe). Absente : envoi refusé proprement. */
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default('Salon DZ <onboarding@resend.dev>'),
+  /** Origine du site web (liens envoyés par e-mail). Absente : première origine CORS en https. */
+  WEB_URL: z.string().url().optional(),
   /** Comptes de démonstration à accès direct (POST /v1/auth/dev-login). Mettre `0` pour désactiver. */
   TEST_LOGIN_ENABLED: z
     .string()
@@ -45,5 +50,12 @@ export const config = {
   corsOrigins: parsed.data.CORS_ORIGINS.split(',')
     .map((s) => s.trim())
     .filter(Boolean),
+  webUrl:
+    parsed.data.WEB_URL ??
+    parsed.data.CORS_ORIGINS.split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.startsWith('https://'))[0] ??
+    parsed.data.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)[0] ??
+    'http://localhost:9000',
 };
 export type Config = typeof config;
