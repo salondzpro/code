@@ -24,6 +24,7 @@ import { MonthNav, dayNumber } from '@/components/DaySelector';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 const HORIZON_DAYS = 90;
 const MONTHS = [
@@ -124,10 +125,10 @@ export function Closures() {
 
   const submit = async () => {
     setError(null);
-    if (!range) return setError('Choisissez un ou plusieurs jours.');
-    if (mode === 'reduced' && from >= to) return setError("L'heure de début doit précéder la fin.");
+    if (!range) return setError(t("Choisissez un ou plusieurs jours."));
+    if (mode === 'reduced' && from >= to) return setError(t("L'heure de début doit précéder la fin."));
     if (mode === 'reduced' && range.from === toLocalDateKey() && isPastSlot(range.from, to))
-      return setError('Cette plage est déjà passée.');
+      return setError(t("Cette plage est déjà passée."));
     const base = { staffId: staffId || null, reason: reason.trim() || undefined };
     const inputs =
       mode === 'closed'
@@ -159,13 +160,13 @@ export function Closures() {
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
       <TopBar backTo="/pro/equipe" right="Équipe" />
-      <h1 className="h1">Fermetures</h1>
+      <h1 className="h1">{t("Fermetures")}</h1>
 
       <div className="crd !gap-0 !px-4 !py-1">
         {blocks.isPending && <Skeleton className="my-3 h-[4rem]" />}
         {blocks.data && items.length === 0 && (
           <p className="p py-4 text-[0.857rem]">
-            Aucune fermeture prévue sur les {HORIZON_DAYS} prochains jours.
+            {t("Aucune fermeture prévue sur les")}{' '}{HORIZON_DAYS} {t("prochains jours.")}
           </p>
         )}
         {items.map((b) => {
@@ -191,7 +192,7 @@ export function Closures() {
         })}
       </div>
 
-      <SectionLabel>Ajouter une exception</SectionLabel>
+      <SectionLabel>{t("Ajouter une exception")}</SectionLabel>
       <div className="crd !gap-3">
         <MonthNav
           weekOf={weekOf}
@@ -199,7 +200,7 @@ export function Closures() {
           minDate={today}
           maxDate={addDaysToKey(today, HORIZON_DAYS)}
         />
-        <div className="dsel" role="listbox" aria-label="Choisir les jours" aria-multiselectable>
+        <div className="dsel" role="listbox" aria-label={t("Choisir les jours")} aria-multiselectable>
           {weekKeys(weekOf).map((d) => {
             const out = d < today;
             const on = !!range && d >= range.from && d <= range.to;
@@ -225,20 +226,20 @@ export function Closures() {
             className="flex-1 justify-center"
             onClick={() => setMode('closed')}
           >
-            Fermé
+            {t("Fermé")}
           </Pill>
           <Pill
             on={mode === 'reduced'}
             className="flex-1 justify-center"
             onClick={() => setMode('reduced')}
           >
-            Horaires réduits
+            {t("Horaires réduits")}
           </Pill>
         </div>
         <div>
           {mode === 'reduced' && (
             <div className="li !py-3">
-              <span className="text-[1rem] font-semibold">Fermé de</span>
+              <span className="text-[1rem] font-semibold">{t("Fermé de")}</span>
               <span className="flex items-center gap-2 text-[1rem] text-muted">
                 <input
                   type="time"
@@ -246,9 +247,9 @@ export function Closures() {
                   className="tm"
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
-                  aria-label="De"
+                  aria-label={t("De")}
                 />
-                <span>à</span>
+                <span>{t("à")}</span>
                 <input
                   type="time"
                   step={300}
@@ -262,28 +263,28 @@ export function Closures() {
           )}
           {active.length > 1 && (
             <label className="li !py-3">
-              <span className="text-[1rem] font-semibold">Concerne</span>
+              <span className="text-[1rem] font-semibold">{t("Concerne")}</span>
               <PickerField
                 inline
-                label="Concerne"
+                label={t("Concerne")}
                 value={staffId}
                 onChange={setStaffId}
                 options={[
-                  { value: '', label: 'Tout le salon' },
+                  { value: '', label: t("Tout le salon") },
                   ...active.map((m) => ({ value: m.id, label: m.displayName })),
                 ]}
               />
             </label>
           )}
           <label className="li !border-b-0 !py-3">
-            <span className="text-[1rem] font-semibold">Motif</span>
+            <span className="text-[1rem] font-semibold">{t("Motif")}</span>
             <input
               className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Congés"
+              placeholder={t("Congés")}
               maxLength={120}
-              aria-label="Motif (facultatif)"
+              aria-label={t("Motif (facultatif)")}
             />
           </label>
         </div>
@@ -291,7 +292,7 @@ export function Closures() {
           {mode === 'closed'
             ? `Les clients ne verront aucun créneau ${daysText}.`
             : `Les clients ne pourront pas réserver entre ${from} et ${to} ${daysText}.`}{' '}
-          Les rendez-vous déjà confirmés ne sont pas annulés automatiquement.
+          {t("Les rendez-vous déjà confirmés ne sont pas annulés automatiquement.")}
         </p>
       </div>
       {error && (
@@ -312,10 +313,10 @@ export function Closures() {
           <BottomSheet className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
-                Supprimer cette exception ?
+                {t("Supprimer cette exception ?")}
               </div>
               <p className="p mt-2">
-                {describeBlock(del)} — les créneaux redeviennent réservables.
+                {describeBlock(del)} {t("— les créneaux redeviennent réservables.")}
               </p>
             </div>
             <Button
@@ -331,10 +332,10 @@ export function Closures() {
                 }
               }}
             >
-              Supprimer
+              {t("Supprimer")}
             </Button>
             <Button variant="g" onClick={() => setDel(null)}>
-              Garder
+              {t("Garder")}
             </Button>
           </BottomSheet>
         </>

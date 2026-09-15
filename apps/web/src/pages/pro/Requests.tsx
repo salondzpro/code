@@ -28,6 +28,7 @@ import {
   StatusBadge,
 } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 /** Fenêtre de la liste « à venir » : au-delà, l'agenda mois prend le relais. */
 const HORIZON_DAYS = 30;
@@ -62,11 +63,11 @@ export function Requests() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1">Réservations</h1>
+      <h1 className="h1">{t("Réservations")}</h1>
       {pending.isError && <ErrorMessage error={pending.error} retry={() => pending.refetch()} />}
 
       {items.length > 0 && (
-        <SectionLabel right={<span className="s">{items.length}</span>}>À valider</SectionLabel>
+        <SectionLabel right={<span className="s">{items.length}</span>}>{t("À valider")}</SectionLabel>
       )}
       {items.map((b) => (
         /* Même carte compacte que l'accueil : le pro doit pouvoir traiter quatre demandes
@@ -99,21 +100,21 @@ export function Requests() {
               disabled={setStatus.isPending}
               onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
             >
-              Confirmer
+              {t("Confirmer")}
             </Button>
             <Button
               variant="g"
               sm
               onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
             >
-              Reporter
+              {t("Reporter")}
             </Button>
             <Button
               variant="d"
               sm
               onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
             >
-              Refuser
+              {t("Refuser")}
             </Button>
           </div>
         </div>
@@ -160,10 +161,10 @@ export function Requests() {
       ))}
       {next.data && !items.length && !days.length && (
         <EmptyState
-          title="Aucun rendez-vous à venir"
+          title={t("Aucun rendez-vous à venir")}
           action={
             <Button onClick={() => navigate('/pro/rendez-vous/nouveau')}>
-              <I icon={Plus} size={18} /> Nouveau rendez-vous
+              <I icon={Plus} size={18} /> {t("Nouveau rendez-vous")}
             </Button>
           }
         />

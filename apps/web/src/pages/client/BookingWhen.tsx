@@ -24,6 +24,7 @@ import { DayStrip, MonthNav } from '@/components/DaySelector';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 type Period = 'Matin' | 'Après-midi' | 'Soir';
 const periodOf = (hm: string): Period =>
@@ -112,7 +113,7 @@ export function BookingWhen() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/s/${s.slug}`} right="Étape 1 sur 3" />
-      <h1 className="h1">Quand ?</h1>
+      <h1 className="h1">{t("Quand ?")}</h1>
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
         <span className="min-w-0">
@@ -133,7 +134,7 @@ export function BookingWhen() {
       />
 
       {closedDays.includes(dayOfWeekFromKey(date)) ? (
-        <p className="p">Le salon est fermé ce jour-là.</p>
+        <p className="p">{t("Le salon est fermé ce jour-là.")}</p>
       ) : availability.isPending || availability.isFetching ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-4 w-20" />
@@ -156,12 +157,11 @@ export function BookingWhen() {
           </span>
           {next ? (
             <Button auto sm onClick={goNext} className="mt-1">
-              Prochaine disponibilité · {relativeDayLabelDZ(next.date)} à {next.slots[0]}
+              {t("Prochaine disponibilité ·")}{' '}{relativeDayLabelDZ(next.date)} {t("à")}{' '}{next.slots[0]}
             </Button>
           ) : (
             <span className="p text-[0.857rem]">
-              Aucune disponibilité dans les {s.bookingHorizonDays} prochains jours pour ces
-              prestations.
+              {t("Aucune disponibilité dans les")}{' '}{s.bookingHorizonDays} {t("prochains jours pour ces prestations.")}
             </span>
           )}
         </div>

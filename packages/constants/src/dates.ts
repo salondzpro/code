@@ -1,3 +1,4 @@
+import { formatLocale, tr } from './i18n';
 /** Fuseau horaire unique : Algérie (UTC+1, sans heure d'été). */
 export const TIMEZONE = 'Africa/Algiers' as const;
 export const UTC_OFFSET_MINUTES = 60 as const;
@@ -59,7 +60,7 @@ export const DEFAULT_OPENING_HOURS: ReadonlyArray<{
 /** Formatage "HH:mm" en heure locale algérienne à partir d'une date ISO. */
 export function formatTimeDZ(iso: string | Date): string {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
-  return new Intl.DateTimeFormat('fr-DZ', {
+  return new Intl.DateTimeFormat(formatLocale(), {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -70,7 +71,7 @@ export function formatTimeDZ(iso: string | Date): string {
 /** "dim. 7 sept." en heure locale algérienne. */
 export function formatDateShortDZ(iso: string | Date): string {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
-  return new Intl.DateTimeFormat('fr-DZ', {
+  return new Intl.DateTimeFormat(formatLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -81,7 +82,7 @@ export function formatDateShortDZ(iso: string | Date): string {
 /** "dimanche 7 septembre 2026" */
 export function formatDateLongDZ(iso: string | Date): string {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
-  return new Intl.DateTimeFormat('fr-DZ', {
+  return new Intl.DateTimeFormat(formatLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -119,8 +120,8 @@ export function dayOfWeekFromKey(dateKey: string): DayOfWeek {
 
 /** « Aujourd'hui », « Demain », sinon « Jeu. 12 sept. » pour une clé "YYYY-MM-DD" (cartes marketplace). */
 export function relativeDayLabelDZ(dateKey: string, today: string = toLocalDateKey()): string {
-  if (dateKey === today) return "Aujourd'hui";
-  if (dateKey === addDaysToKey(today, 1)) return 'Demain';
+  if (dateKey === today) return tr("Aujourd'hui");
+  if (dateKey === addDaysToKey(today, 1)) return tr('Demain');
   const [y, m, d] = dateKey.split('-').map(Number);
   const label = formatDateShortDZ(new Date(Date.UTC(y!, m! - 1, d!, 12)));
   return label.charAt(0).toUpperCase() + label.slice(1);
@@ -129,7 +130,7 @@ export function relativeDayLabelDZ(dateKey: string, today: string = toLocalDateK
 /** Puce de jour des cartes marketplace (style Planity) : « Mer. 9 » — toujours le jour de semaine, plus lisible qu'« Aujourd'hui / Demain ». */
 export function dayChipLabelDZ(dateKey: string): string {
   const [y, m, d] = dateKey.split('-').map(Number);
-  const wd = new Intl.DateTimeFormat('fr-DZ', { weekday: 'short', timeZone: TIMEZONE }).format(
+  const wd = new Intl.DateTimeFormat(formatLocale(), { weekday: 'short', timeZone: TIMEZONE }).format(
     new Date(Date.UTC(y!, m! - 1, d!, 12)),
   );
   return `${wd.charAt(0).toUpperCase()}${wd.slice(1).replace(/\.$/, '')}. ${d}`;
@@ -165,11 +166,11 @@ export function isDeviceOnDZTime(now: Date = new Date()): boolean {
 /** « dans 25 min », « dans 2 h 05 », « maintenant » : délai jusqu'à un instant (accueil pro : prochain rendez-vous). */
 export function untilLabelFR(target: string | Date, now = Date.now()): string {
   const min = Math.round((new Date(target).getTime() - now) / 60_000);
-  if (min < 1) return 'maintenant';
-  if (min < 60) return `dans ${min} min`;
+  if (min < 1) return tr('maintenant');
+  if (min < 60) return tr('dans {n} min', { n: min });
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return m ? `dans ${h} h ${String(m).padStart(2, '0')}` : `dans ${h} h`;
+  return m ? tr('dans {h} h {m}', { h, m: String(m).padStart(2, '0') }) : tr('dans {h} h', { h });
 }
 
 /** Ajoute n jours à une clé "YYYY-MM-DD". */

@@ -14,6 +14,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import type { Service } from '@salondz/types';
+import { t } from '@/i18n';
 
 const isFormula = (sv: Service) => /^formule\b/i.test(sv.name);
 
@@ -62,7 +63,7 @@ export function BookingServices() {
         </span>
       </div>
       <Button sm auto className="mt-0.5 flex-none !rounded-full !px-5" onClick={() => chooseService(sv.id)}>
-        Choisir
+        {t("Choisir")}
       </Button>
     </div>
   );
@@ -70,15 +71,14 @@ export function BookingServices() {
   return (
     <Screen gap={12}>
       <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[1rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
-      <h1 className="h1">Prestations</h1>
+      <h1 className="h1">{t("Prestations")}</h1>
       <p className="p !text-[1rem]">
-        Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par
-        prestation.
+        {t("Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.")}
       </p>
       {groups.map((g) =>
         g.name === 'Formule' ? (
           <div key={g.name} className="flex flex-col gap-3">
-            <SectionLabel>Formule</SectionLabel>
+            <SectionLabel>{t("Formule")}</SectionLabel>
             {g.services.map((sv) => (
               <Row key={sv.id} sv={sv} boxed />
             ))}
@@ -94,7 +94,7 @@ export function BookingServices() {
           </div>
         ),
       )}
-      {groups.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
+      {groups.length === 0 && <p className="p py-3">{t("Aucune prestation pour le moment.")}</p>}
 
     </Screen>
   );

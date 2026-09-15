@@ -13,6 +13,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { BottomSheet, Button, I, Input, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 type Mode = 'with-services' | 'keep-services';
 
@@ -29,7 +30,7 @@ export function ProCategories() {
 
   const save = async (from: string) => {
     const name = draft.trim();
-    if (name.length < 2) return setError('Indiquez un nom de catégorie (2 caractères minimum).');
+    if (name.length < 2) return setError(t("Indiquez un nom de catégorie (2 caractères minimum)."));
     setError(null);
     try {
       if (name !== from) await renameCategory.mutateAsync({ from, name });
@@ -53,9 +54,9 @@ export function ProCategories() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/catalogue" right="Catalogue" />
-      <h1 className="h1">Catégories</h1>
+      <h1 className="h1">{t("Catégories")}</h1>
       {groups.length === 0 ? (
-        <p className="p">Une catégorie apparaît dès que vous ajoutez une prestation.</p>
+        <p className="p">{t("Une catégorie apparaît dès que vous ajoutez une prestation.")}</p>
       ) : (
         <div className="crd !gap-0 !py-1">
           {groups.map((g) => (
@@ -76,7 +77,7 @@ export function ProCategories() {
                   <button
                     type="button"
                     className="ib flex-none !bg-ink !text-white"
-                    aria-label="Enregistrer"
+                    aria-label={t("Enregistrer")}
                     onClick={() => void save(g.name)}
                     disabled={renameCategory.isPending}
                   >
@@ -85,7 +86,7 @@ export function ProCategories() {
                   <button
                     type="button"
                     className="ib flex-none"
-                    aria-label="Annuler"
+                    aria-label={t("Annuler")}
                     onClick={() => setEditing(null)}
                   >
                     <I icon={X} size={16} />
@@ -100,7 +101,7 @@ export function ProCategories() {
                     <span className="min-w-0">
                       <span className="block truncate text-[1rem] font-semibold">{g.name}</span>
                       <span className="block text-[1rem] text-muted">
-                        {g.services.length} prestation{g.services.length > 1 ? 's' : ''}
+                        {g.services.length} {t("prestation")}{g.services.length > 1 ? 's' : ''}
                       </span>
                     </span>
                   </span>
@@ -141,14 +142,14 @@ export function ProCategories() {
         </p>
       )}
       <Button variant="g" onClick={() => navigate('/pro/onboarding/6')}>
-        <I icon={Plus} size={18} /> Nouvelle catégorie avec une prestation
+        <I icon={Plus} size={18} /> {t("Nouvelle catégorie avec une prestation")}
       </Button>
 
       {del && (
         <>
           <div className="dim" onClick={() => setDel(null)} />
           <BottomSheet className="!z-50">
-            <div className="h2 text-center !text-[1.143rem]">Supprimer « {del.name} » ?</div>
+            <div className="h2 text-center !text-[1.143rem]">{t("Supprimer «")}{' '}{del.name} » ?</div>
             {del.mode ? (
               <>
                 <p className="p text-center">
@@ -158,7 +159,7 @@ export function ProCategories() {
                 </p>
                 <div className="g2">
                   <Button variant="g" onClick={() => setDel({ ...del, mode: undefined })}>
-                    Retour
+                    {t("Retour")}
                   </Button>
                   <Button
                     variant="d"
@@ -173,16 +174,16 @@ export function ProCategories() {
             ) : (
               <>
                 <Button variant="g" onClick={() => setDel({ ...del, mode: 'keep-services' })}>
-                  Supprimer la catégorie seulement
+                  {t("Supprimer la catégorie seulement")}
                 </Button>
                 <p className="s -mt-2 text-center">
-                  Les prestations restent réservables, sans catégorie.
+                  {t("Les prestations restent réservables, sans catégorie.")}
                 </p>
                 <Button variant="d" onClick={() => setDel({ ...del, mode: 'with-services' })}>
-                  Supprimer avec les {del.count} prestation{del.count > 1 ? 's' : ''}
+                  {t("Supprimer avec les")}{' '}{del.count} {t("prestation")}{del.count > 1 ? 's' : ''}
                 </Button>
                 <button type="button" className="py-2 text-[1rem]" onClick={() => setDel(null)}>
-                  Annuler
+                  {t("Annuler")}
                 </button>
               </>
             )}

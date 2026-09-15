@@ -52,6 +52,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function ProBookingDetail() {
   const { id = '' } = useParams();
@@ -125,7 +126,7 @@ export function ProBookingDetail() {
               <p className="mono text-[0.857rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
             )}
             {!!b.bookedByName && (
-              <p className="text-[0.857rem] text-muted">Réservé par {b.bookedByName}</p>
+              <p className="text-[0.857rem] text-muted">{t("Réservé par")}{' '}{b.bookedByName}</p>
             )}
           </div>
           <StatusBadge
@@ -139,11 +140,11 @@ export function ProBookingDetail() {
         {b.clientPhone && (
           <div className="g2">
             <a href={`tel:${b.clientPhone}`} className="btn g sm">
-              <I icon={Phone} size={18} /> Appeler
+              <I icon={Phone} size={18} /> {t("Appeler")}
             </a>
             {wa && (
               <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-                <I icon={MessageCircle} size={18} /> WhatsApp
+                <I icon={MessageCircle} size={18} /> {t("WhatsApp")}
               </a>
             )}
           </div>
@@ -194,7 +195,7 @@ export function ProBookingDetail() {
           />
         )}
         {b.cancellationReason && (
-          <FactRow icon={XCircle} tone="danger" title="Motif" sub={b.cancellationReason} />
+          <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
         )}
         <FactRow
           icon={History}
@@ -210,7 +211,7 @@ export function ProBookingDetail() {
             disabled={setStatus.isPending}
             onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
           >
-            <I icon={Check} size={18} /> Confirmer le rendez-vous
+            <I icon={Check} size={18} /> {t("Confirmer le rendez-vous")}
           </Button>
         )}
         {b.status === 'confirmed' && past && (
@@ -219,14 +220,14 @@ export function ProBookingDetail() {
               disabled={setStatus.isPending}
               onClick={() => setStatus.mutate({ id: b.id, status: 'completed' })}
             >
-              <I icon={CheckCircle2} size={18} /> Terminé
+              <I icon={CheckCircle2} size={18} /> {t("Terminé")}
             </Button>
             <Button
               variant="g"
               disabled={setStatus.isPending}
               onClick={() => setStatus.mutate({ id: b.id, status: 'no_show' })}
             >
-              <I icon={UserX} size={18} /> Client absent
+              <I icon={UserX} size={18} /> {t("Client absent")}
             </Button>
           </div>
         )}
@@ -236,23 +237,23 @@ export function ProBookingDetail() {
             disabled={cancel.isPending}
             onClick={() => cancel.mutate({ id: b.id, late: true })}
           >
-            <I icon={AlarmClock} size={18} /> Annuler pour retard (plus de {LATE_TOLERANCE_MINUTES}{' '}
-            min)
+            <I icon={AlarmClock} size={18} /> {t("Annuler pour retard (plus de")}{' '}{LATE_TOLERANCE_MINUTES}{' '}
+            {t("min)")}
           </Button>
         )}
         {active && !past && (
           <div className="g2">
             <Button variant="g" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-              <I icon={CalendarClock} size={18} /> Reporter
+              <I icon={CalendarClock} size={18} /> {t("Reporter")}
             </Button>
             <Button variant="d" onClick={() => setCancelling(true)}>
-              <I icon={XCircle} size={18} /> Annuler
+              <I icon={XCircle} size={18} /> {t("Annuler")}
             </Button>
           </div>
         )}
         {(!active || (past && b.status === 'pending')) && (
           <Button variant="g" onClick={() => navigate('/pro/agenda')}>
-            <I icon={ArrowLeft} size={18} /> Retour à l'agenda
+            <I icon={ArrowLeft} size={18} /> {t("Retour à l'agenda")}
           </Button>
         )}
       </BottomSheet>
@@ -263,21 +264,21 @@ export function ProBookingDetail() {
           <BottomSheet className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
-                Annuler ce rendez-vous ?
+                {t("Annuler ce rendez-vous ?")}
               </div>
               <p className="p mt-2">
-                Le client sera prévenu sur WhatsApp et le créneau sera libéré.
+                {t("Le client sera prévenu sur WhatsApp et le créneau sera libéré.")}
               </p>
             </div>
             <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[1rem]">Motif (optionnel)</span>
+              <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
               <PickerField
-                label="Motif"
-                title="Pourquoi annuler ?"
+                label={t("Motif")}
+                title={t("Pourquoi annuler ?")}
                 options={reasonOptions(SALON_CANCEL_REASONS_FR)}
                 value={reason || null}
                 onChange={setReason}
-                placeholder="Choisir"
+                placeholder={t("Choisir")}
                 inline
               />
             </div>
@@ -289,10 +290,10 @@ export function ProBookingDetail() {
                 setCancelling(false);
               }}
             >
-              Annuler le rendez-vous
+              {t("Annuler le rendez-vous")}
             </Button>
             <Button variant="g" onClick={() => setCancelling(false)}>
-              Garder le rendez-vous
+              {t("Garder le rendez-vous")}
             </Button>
           </BottomSheet>
         </>
@@ -314,48 +315,48 @@ export function ProBookingReschedule() {
   const [staffId, setStaffId] = useState<string | null>(null);
   if (!b || !salon) return <Splash />;
   const d = date ?? toLocalDateKey(new Date(b.startsAt));
-  const t = time ?? formatTimeDZ(b.startsAt);
+  const tm = time ?? formatTimeDZ(b.startsAt);
   const staff = salon.staff.filter((s) => s.isActive);
   const sid = staffId ?? b.staffId;
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/pro/rendez-vous/${b.id}`} right="Reporter" />
-      <h1 className="h1">Nouveau créneau</h1>
+      <h1 className="h1">{t("Nouveau créneau")}</h1>
       <div className="sf text-[0.857rem] text-muted">
-        Actuel · {formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
+        {t("Actuel ·")}{' '}{formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
         {b.serviceName}
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li">
-          <span className="text-[1rem] font-semibold">Date</span>
+          <span className="text-[1rem] font-semibold">{t("Date")}</span>
           <input
             type="date"
             className="bg-transparent text-right text-[1rem] outline-none"
             value={d}
             min={toLocalDateKey()}
             onChange={(e) => setDate(e.target.value)}
-            aria-label="Nouvelle date"
+            aria-label={t("Nouvelle date")}
           />
         </label>
         <label className="li">
-          <span className="text-[1rem] font-semibold">Heure</span>
+          <span className="text-[1rem] font-semibold">{t("Heure")}</span>
           <input
             type="time"
             step={300}
             min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
             className="bg-transparent text-right text-[1rem] outline-none"
-            value={t}
+            value={tm}
             onChange={(e) => setTime(e.target.value)}
-            aria-label="Nouvelle heure"
+            aria-label={t("Nouvelle heure")}
           />
         </label>
         {staff.length > 1 && (
           <label className="li">
-            <span className="text-[1rem] font-semibold">Membre</span>
+            <span className="text-[1rem] font-semibold">{t("Membre")}</span>
             <PickerField
               inline
-              label="Membre"
+              label={t("Membre")}
               value={sid}
               onChange={setStaffId}
               options={staff.map((m) => ({ value: m.id, label: m.displayName }))}
@@ -370,13 +371,13 @@ export function ProBookingReschedule() {
           onClick={async () => {
             await reschedule.mutateAsync({
               id: b.id,
-              startsAt: localDateTimeToISO(d, t),
+              startsAt: localDateTimeToISO(d, tm),
               staffId: sid,
             });
             navigate(`/pro/rendez-vous/${b.id}`, { replace: true });
           }}
         >
-          Valider le report
+          {t("Valider le report")}
         </Button>
       </BottomSheet>
     </Screen>

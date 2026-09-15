@@ -12,6 +12,7 @@ import { clearAuthFlow, formatIntlDZ, readAuthFlow } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, I, InfoBox, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 export function Code() {
   const navigate = useNavigate();
@@ -67,11 +68,11 @@ export function Code() {
   return (
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo="/connexion" right="Démonstration" />
-      <h1 className="h1">Code de démonstration</h1>
+      <h1 className="h1">{t("Code de démonstration")}</h1>
       <InfoBox>
-        Compte de démonstration <b className="text-text">{formatIntlDZ(flow.identifier)}</b> : saisissez le code fixe à 4 chiffres.
+        {t("Compte de démonstration")}{' '}<b className="text-text">{formatIntlDZ(flow.identifier)}</b> {t(": saisissez le code fixe à 4 chiffres.")}
       </InfoBox>
-      <div className="flex gap-2.5" aria-label="Code à 4 chiffres">
+      <div className="flex gap-2.5" aria-label={t("Code à 4 chiffres")}>
         {digits.map((d, i) => (
           <input
             key={i}

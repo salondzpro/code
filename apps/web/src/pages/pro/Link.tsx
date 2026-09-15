@@ -39,6 +39,7 @@ import {
 } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function usePublicUrl(slug: string): { url: string; short: string } {
   const origin = window.location.origin;
@@ -97,17 +98,17 @@ export function ShareSheet({
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: React.ReactNode; onClick: () => void }[] = [
     {
-      label: 'WhatsApp',
+      label: t("WhatsApp"),
       icon: <WhatsAppLogo />,
       onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank'),
     },
     {
-      label: 'Instagram',
+      label: t("Instagram"),
       icon: <InstagramLogo />,
       onClick: () => copy(url),
     },
     {
-      label: 'Facebook',
+      label: t("Facebook"),
       icon: <FacebookLogo />,
       onClick: () =>
         window.open(
@@ -116,23 +117,23 @@ export function ShareSheet({
         ),
     },
     {
-      label: 'TikTok',
+      label: t("TikTok"),
       icon: <TikTokLogo />,
       onClick: () => copy(url),
     },
     {
-      label: 'Messages',
+      label: t("Messages"),
       icon: <I icon={MessageSquareText} size={34} />,
       onClick: () => window.open(`sms:?body=${text}`),
     },
-    { label: 'QR Code', icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },
-    { label: 'Plus', icon: <I icon={Share2} size={34} />, onClick: () => void share(name, url) },
+    { label: t("QR Code"), icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },
+    { label: t("Plus"), icon: <I icon={Share2} size={34} />, onClick: () => void share(name, url) },
   ];
   return (
     <>
       <div className="dim" onClick={onClose} />
       <BottomSheet>
-        <div className="h1 !text-[1.429rem]">Partagez votre page</div>
+        <div className="h1 !text-[1.429rem]">{t("Partagez votre page")}</div>
         <div className="flex items-center gap-3 rounded-[var(--radius-card-sm)] bg-fill px-4 py-4 text-[1rem]">
           <I icon={Lock} size={20} className="text-muted" />
           <span className="flex-1 truncate">{short}</span>
@@ -180,27 +181,27 @@ export function ProLink() {
     <Screen bottom={24} gap={16}>
       <TopBar backTo="/pro" />
       <h1 className="h1">
-        Votre page de
+        {t("Votre page de")}
         <br />
-        réservation
+        {t("réservation")}
       </h1>
       <div className="crd items-center !gap-3 !py-4">
         <button
           type="button"
           className="flex h-[15rem] w-[15rem] items-center justify-center overflow-hidden rounded-[var(--radius-card)] bg-fill"
           onClick={() => navigate('/pro/qr')}
-          aria-label="Agrandir le QR code"
+          aria-label={t("Agrandir le QR code")}
         >
           {qr ? (
-            <img src={qr} alt="QR code de votre page" className="h-[13rem] w-[13rem]" />
+            <img src={qr} alt={t("QR code de votre page")} className="h-[13rem] w-[13rem]" />
           ) : (
-            <span className="text-[0.857rem] text-subtle">QR code</span>
+            <span className="text-[0.857rem] text-subtle">{t("QR code")}</span>
           )}
         </button>
         <div className="flex w-full items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-fill px-5 py-4 text-[1rem]">
           <span className="truncate">{short}</span>
           <IconButton
-            aria-label="Copier le lien"
+            aria-label={t("Copier le lien")}
             onClick={() => copy(url)}
             className="!h-8 !w-8 !border-0 !bg-transparent"
           >
@@ -209,18 +210,18 @@ export function ProLink() {
         </div>
       </div>
       <div className="g2">
-        <Button onClick={() => setSheet(true)}>Partager</Button>
+        <Button onClick={() => setSheet(true)}>{t("Partager")}</Button>
         <Button variant="g" onClick={() => copy(url)}>
-          Copier
+          {t("Copier")}
         </Button>
       </div>
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <span className="text-[1rem] text-muted">Réservation en ligne</span>
+          <span className="text-[1rem] text-muted">{t("Réservation en ligne")}</span>
           <Toggle
             on={salon.isPublished}
             onChange={(v) => updateSalon.mutate({ isPublished: v })}
-            label="Réservation en ligne"
+            label={t("Réservation en ligne")}
           />
         </div>
         <button
@@ -228,24 +229,24 @@ export function ProLink() {
           className="li w-full text-left"
           onClick={() => navigate('/pro/profil/regles')}
         >
-          <span className="text-[1rem] text-muted">Délai minimum</span>
+          <span className="text-[1rem] text-muted">{t("Délai minimum")}</span>
           <span className="text-[1.143rem] font-bold">{lead}</span>
         </button>
         <div className="li">
-          <span className="text-[1rem] text-muted">Validation manuelle</span>
+          <span className="text-[1rem] text-muted">{t("Validation manuelle")}</span>
           <Toggle
             on={!salon.autoConfirm}
             onChange={(v) => updateSalon.mutate({ autoConfirm: !v })}
-            label="Validation manuelle"
+            label={t("Validation manuelle")}
           />
         </div>
       </div>
       {!salon.isPublished && (
         <Badge tone="pd" md>
-          Page non publiée · activez la réservation en ligne
+          {t("Page non publiée · activez la réservation en ligne")}
         </Badge>
       )}
-      {copied && <Toast icon={Check}>Lien copié</Toast>}
+      {copied && <Toast icon={Check}>{t("Lien copié")}</Toast>}
       {sheet && (
         <ShareSheet
           name={salon.name}
@@ -290,7 +291,7 @@ export function ProQr() {
         <div className="sk aspect-[3/4] w-full !rounded-[var(--radius-card)]" />
       )}
       <p className="p text-center">
-        À imprimer en vitrine : le scan ouvre votre page de réservation.
+        {t("À imprimer en vitrine : le scan ouvre votre page de réservation.")}
       </p>
       <div className="g2">
         <a
@@ -299,10 +300,10 @@ export function ProQr() {
           className={`btn g${poster ? '' : ' opacity-50 pointer-events-none'}`}
           aria-disabled={!poster}
         >
-          <I icon={Download} size={18} /> Enregistrer
+          <I icon={Download} size={18} /> {t("Enregistrer")}
         </a>
         <Button onClick={() => void share(salon.name, url)}>
-          <I icon={MoreHorizontal} size={18} /> Partager
+          <I icon={MoreHorizontal} size={18} /> {t("Partager")}
         </Button>
       </div>
     </Screen>

@@ -7,6 +7,7 @@ import { Button, I, SectionLabel } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, stepPath } from './Shared';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
+import { t } from '@/i18n';
 
 function usePreview(file: File | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null);
@@ -32,20 +33,20 @@ export function Step3Identity() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={3} backTo={stepPath(2)} />
-      <h1 className="h1">Votre identité visuelle</h1>
-      <SectionLabel>Photo de couverture</SectionLabel>
+      <h1 className="h1">{t("Votre identité visuelle")}</h1>
+      <SectionLabel>{t("Photo de couverture")}</SectionLabel>
       <button
         type="button"
         className="relative h-[13.75rem] w-full overflow-hidden rounded-[var(--radius-card)] bg-line"
         onClick={() => coverInput.current?.click()}
-        aria-label="Choisir la photo de couverture"
+        aria-label={t("Choisir la photo de couverture")}
       >
         {coverUrl ? (
           <img src={coverUrl} alt="" className="h-full w-full object-cover" />
         ) : (
           <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
             <I icon={Camera} size={32} />
-            <span className="text-[1rem]">Ajouter une photo</span>
+            <span className="text-[1rem]">{t("Ajouter une photo")}</span>
           </span>
         )}
       </button>
@@ -60,19 +61,19 @@ export function Step3Identity() {
           e.target.value = '';
         }}
       />
-      <SectionLabel>Logo ou portrait</SectionLabel>
+      <SectionLabel>{t("Logo ou portrait")}</SectionLabel>
       <div className="flex items-center gap-5">
         <button
           type="button"
           className="av h-[8rem] w-[8rem] flex-none"
           onClick={() => logoInput.current?.click()}
-          aria-label="Choisir le logo"
+          aria-label={t("Choisir le logo")}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={Camera} size={28} />}
         </button>
         <div>
-          <div className="text-[0.857rem]">Format carré, visage ou logo centré</div>
-          <div className="p">JPG ou PNG · 2 Mo max</div>
+          <div className="text-[0.857rem]">{t("Format carré, visage ou logo centré")}</div>
+          <div className="p">{t("JPG ou PNG · 2 Mo max")}</div>
         </div>
       </div>
       <input

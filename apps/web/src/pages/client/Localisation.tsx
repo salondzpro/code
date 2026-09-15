@@ -16,6 +16,7 @@ import { useDebounced } from '@/lib/useDebounced';
 import { BottomSheet, Button, Card, I, InfoBox, Pill, SearchBox, SectionLabel, TopBar } from '@/components/ui';
 import { MiniMap } from '@/components/MiniMap';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 type GeoState = 'idle' | 'asking' | 'granted' | 'denied';
 /** Lieu sélectionné dans l'écran : quartier/ville (filtre `city`), wilaya entière, ou point géocodé (rayon). */
@@ -142,35 +143,35 @@ export function Localisation() {
           <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
             <I icon={MapPin} size={36} />
           </div>
-          <span className="badge b-cn md">Position indisponible</span>
-          <h1 className="h1">Localisation désactivée</h1>
-          <p className="p">Nous ne pouvons pas trouver les professionnels proches de vous. Autorisez la localisation dans les réglages de votre téléphone, ou choisissez un quartier manuellement.</p>
+          <span className="badge b-cn md">{t("Position indisponible")}</span>
+          <h1 className="h1">{t("Localisation désactivée")}</h1>
+          <p className="p">{t("Nous ne pouvons pas trouver les professionnels proches de vous. Autorisez la localisation dans les réglages de votre téléphone, ou choisissez un quartier manuellement.")}</p>
         </div>
         <Card className="!flex-row items-center gap-4">
           <span className="flex h-[2.625rem] w-[2.625rem] flex-none items-center justify-center rounded-full bg-fill">
             <I icon={Smartphone} size={20} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[0.857rem] font-semibold">Réglages du téléphone</span>
-            <span className="p block text-[1rem]">Salon DZ · Position · Jamais</span>
+            <span className="block text-[0.857rem] font-semibold">{t("Réglages du téléphone")}</span>
+            <span className="p block text-[1rem]">{t("Salon DZ · Position · Jamais")}</span>
           </span>
-          <span className="badge b-cn">Refusé</span>
+          <span className="badge b-cn">{t("Refusé")}</span>
         </Card>
         <Card as="button" className="!flex-row items-center gap-4" onClick={() => setChoice({ kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) })}>
           <span className="flex h-[2.625rem] w-[2.625rem] flex-none items-center justify-center rounded-full bg-fill">
             <I icon={MapPin} size={20} />
           </span>
           <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[0.857rem] font-semibold">Choisir un quartier</span>
-            <span className="p block text-[1rem]">Sans activer la localisation</span>
+            <span className="block text-[0.857rem] font-semibold">{t("Choisir un quartier")}</span>
+            <span className="p block text-[1rem]">{t("Sans activer la localisation")}</span>
           </span>
         </Card>
-        <InfoBox>Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».</InfoBox>
+        <InfoBox>{t("Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».")}</InfoBox>
         <Button onClick={locate}>
-          <I icon={Settings} size={18} /> Ouvrir les réglages
+          <I icon={Settings} size={18} /> {t("Ouvrir les réglages")}
         </Button>
         <Button variant="g" onClick={() => setChoice({ kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) })}>
-          Choisir un quartier
+          {t("Choisir un quartier")}
         </Button>
       </Screen>
     );
@@ -182,8 +183,8 @@ export function Localisation() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar close right={MARKET_LABELS_FR[market]} />
-      <h1 className="h1">Localisation</h1>
-      <SearchBox value={q} onChange={setQ} placeholder="Quartier, ville, wilaya ou adresse" />
+      <h1 className="h1">{t("Localisation")}</h1>
+      <SearchBox value={q} onChange={setQ} placeholder={t("Quartier, ville, wilaya ou adresse")} />
 
       {/* Lieux récents */}
       {!searching && recent.length > 0 && (
@@ -207,7 +208,7 @@ export function Localisation() {
                   <I icon={Building2} size={20} className="text-subtle" />
                   <span>
                     <span className="block text-[1rem] font-semibold">{w.name}</span>
-                    <span className="p block">Wilaya {String(w.code).padStart(2, '0')} · toute la wilaya</span>
+                    <span className="p block">{t("Wilaya")}{' '}{String(w.code).padStart(2, '0')} {t("· toute la wilaya")}</span>
                   </span>
                 </span>
                 {on && <I icon={Check} size={20} />}
@@ -224,7 +225,7 @@ export function Localisation() {
                   <span>
                     <span className="block text-[1rem] font-semibold">{label}</span>
                     <span className="p block">
-                      {c.salonCount} professionnel{c.salonCount > 1 ? 's' : ''} · {wilayaName(c.wilayaCode)}
+                      {c.salonCount} {t("professionnel")}{c.salonCount > 1 ? 's' : ''} · {wilayaName(c.wilayaCode)}
                       {formatKm(c.distanceKm) ? ` · ${formatKm(c.distanceKm)}` : ''}
                     </span>
                   </span>
@@ -241,7 +242,7 @@ export function Localisation() {
                   <I icon={Navigation} size={20} className="text-subtle" />
                   <span>
                     <span className="block text-[1rem] font-semibold">{a.label}</span>
-                    <span className="p block">{a.detail || 'Adresse'} · rayon autour de ce point</span>
+                    <span className="p block">{a.detail || 'Adresse'} {t("· rayon autour de ce point")}</span>
                   </span>
                 </span>
                 {on && <I icon={Check} size={20} />}
@@ -257,7 +258,7 @@ export function Localisation() {
               <I icon={MapPin} size={22} />
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="block text-[1rem] font-semibold">Utiliser ma position actuelle</span>
+              <span className="block text-[1rem] font-semibold">{t("Utiliser ma position actuelle")}</span>
               <span className="p block">{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${posLabel?.label ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</span>
             </span>
             {choice.kind === 'gps' && pos && <I icon={Check} size={22} />}
@@ -275,18 +276,18 @@ export function Localisation() {
 
           {withRadius && (
             <>
-              <SectionLabel>Rayon</SectionLabel>
+              <SectionLabel>{t("Rayon")}</SectionLabel>
               <div className="g4">
                 {RADIUS_OPTIONS.map((r) => (
                   <button key={r} type="button" className={`slot !text-[1rem] ${radius === r ? 'on' : ''}`} onClick={() => setRadius(r)} aria-pressed={radius === r}>
-                    {r} km
+                    {r} {t("km")}
                   </button>
                 ))}
               </div>
             </>
           )}
 
-          {farAway && <p className="p">Vous êtes hors d'Algérie : les professionnels les plus proches sont à {formatKm(nearest?.distanceKm) ?? 'plus de 100 km'}. Choisissez un quartier ci-dessous pour préparer une réservation.</p>}
+          {farAway && <p className="p">{t("Vous êtes hors d'Algérie : les professionnels les plus proches sont à")}{' '}{formatKm(nearest?.distanceKm) ?? 'plus de 100 km'}{t(". Choisissez un quartier ci-dessous pour préparer une réservation.")}</p>}
           <SectionLabel>{pos ? 'Quartiers les plus proches' : `Quartiers · ${wilayaName(prefs.wilaya)}`}</SectionLabel>
           <Card className="!gap-0 !py-1">
             {places.length === 0 && <p className="p py-3">{cities.isPending ? 'Chargement…' : 'Aucun quartier ici pour l’instant. Cherchez une autre ville ci-dessus.'}</p>}
@@ -300,7 +301,7 @@ export function Localisation() {
                     <span>
                       <span className={`block text-[1rem] font-semibold ${on ? '' : 'text-muted'}`}>{label}</span>
                       <span className="p block">
-                        {c.salonCount} professionnel{c.salonCount > 1 ? 's' : ''}
+                        {c.salonCount} {t("professionnel")}{c.salonCount > 1 ? 's' : ''}
                         {formatKm(c.distanceKm) ? ` · ${formatKm(c.distanceKm)}` : ''}
                       </span>
                     </span>
@@ -324,7 +325,7 @@ export function Localisation() {
             </div>
           </div>
           <Button auto className="!rounded-full !px-7 !py-3.5" onClick={apply}>
-            Appliquer
+            {t("Appliquer")}
           </Button>
         </div>
       </BottomSheet>

@@ -1,5 +1,6 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router';
 import { errorText } from '@/components/ErrorMessage';
+import { t } from '@/i18n';
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -10,10 +11,10 @@ export function ErrorBoundary() {
       {!is404 && <p className="text-sm text-muted">{errorText(error)}</p>}
       <div className="flex gap-2">
         <button type="button" className="btn-ghost" onClick={() => window.location.reload()}>
-          Recharger
+          {t("Recharger")}
         </button>
         <Link to="/" className="btn-primary">
-          Accueil
+          {t("Accueil")}
         </Link>
       </div>
     </div>

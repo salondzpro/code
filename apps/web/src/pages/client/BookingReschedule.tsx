@@ -9,6 +9,7 @@ import { DayStrip, MonthNav, dayNumber } from '@/components/DaySelector';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function BookingReschedule() {
   const { id = '' } = useParams();
@@ -51,26 +52,26 @@ export function BookingReschedule() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/rendez-vous/${b.id}`} right="Reporter" />
-      <h1 className="h1">Nouveau créneau</h1>
+      <h1 className="h1">{t("Nouveau créneau")}</h1>
       <div className="sf flex items-center gap-3 text-[0.857rem] text-muted">
         <I icon={Clock} size={18} />
         <span>
-          Actuel · {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
+          {t("Actuel ·")}{' '}{formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toLowerCase())}, {formatTimeDZ(b.startsAt)}
         </span>
       </div>
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} />
       <DayStrip weekOf={weekOf} selected={date} onSelect={setDate} minDate={today} maxDate={maxDate} disabledDays={closedDays} />
       <span className="h3">
-        Créneaux · {DAY_LABELS_FR[dow].toLowerCase()} {dayNumber(date)}
+        {t("Créneaux ·")}{' '}{DAY_LABELS_FR[dow].toLowerCase()} {dayNumber(date)}
       </span>
       {closedDays.includes(dow) ? (
-        <p className="p">Le salon est fermé ce jour-là.</p>
+        <p className="p">{t("Le salon est fermé ce jour-là.")}</p>
       ) : availability.isPending || availability.isFetching ? (
         <Skeleton className="h-[8.75rem] w-full" />
       ) : availability.isError ? (
         <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
       ) : grid.length === 0 ? (
-        <p className="p">Plus de créneau disponible ce jour.</p>
+        <p className="p">{t("Plus de créneau disponible ce jour.")}</p>
       ) : (
         <div className="g3">
           {grid.map((g) => (
@@ -80,7 +81,7 @@ export function BookingReschedule() {
           ))}
         </div>
       )}
-      <InfoBox>Le professionnel reçoit la demande et confirme le nouveau créneau.</InfoBox>
+      <InfoBox>{t("Le professionnel reçoit la demande et confirme le nouveau créneau.")}</InfoBox>
       <ErrorMessage error={reschedule.error} />
       <BottomSheet>
         <Button

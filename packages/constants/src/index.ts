@@ -1,3 +1,4 @@
+export * from './i18n';
 export * from './wilayas';
 export * from './geocode';
 export * from './hours';

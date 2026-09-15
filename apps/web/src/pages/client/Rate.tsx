@@ -3,16 +3,17 @@ import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Star } from 'lucide-react';
 import { useBooking, useCreateReview, useMe } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, formatLocale } from '@salondz/constants';
 import { Avatar, BottomSheet, Button, Field, Pill, SectionLabel, Textarea, Toggle, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 const TAGS = ['Ponctualité', 'Hygiène', 'Accueil', 'Résultat', 'Rapport qualité-prix'];
 
 function dayMonth(iso: string): string {
-  return new Intl.DateTimeFormat('fr-DZ', { day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
+  return new Intl.DateTimeFormat(formatLocale(), { day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
 }
 
 export function Rate() {
@@ -46,14 +47,14 @@ export function Rate() {
         backTo="/rendez-vous?scope=past"
         right={
           <button type="button" className="text-[0.857rem] text-muted" onClick={() => navigate('/rendez-vous?scope=past')}>
-            Passer
+            {t("Passer")}
           </button>
         }
       />
       <h1 className="h1">
-        Comment s'est passée
+        {t("Comment s'est passée")}
         <br />
-        votre visite ?
+        {t("votre visite ?")}
       </h1>
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
@@ -65,7 +66,7 @@ export function Rate() {
         </span>
       </div>
       <div className="flex flex-col items-center gap-3 py-2">
-        <div className="flex gap-4" role="radiogroup" aria-label="Note">
+        <div className="flex gap-4" role="radiogroup" aria-label={t("Note")}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={`${n} sur 5`} onClick={() => setRating(n)}>
               <Star size={44} strokeWidth={1.6} className={n <= rating ? 'text-ink' : 'text-disabled'} fill={n <= rating ? 'currentColor' : 'none'} />
@@ -74,7 +75,7 @@ export function Rate() {
         </div>
         <span className="text-[1rem] text-muted">{rating ? `${rating} sur 5` : 'Touchez une étoile'}</span>
       </div>
-      <SectionLabel>Ce qui vous a plu</SectionLabel>
+      <SectionLabel>{t("Ce qui vous a plu")}</SectionLabel>
       <div className="flex flex-wrap gap-2.5">
         {TAGS.map((t) => (
           <Pill key={t} lg on={tags.includes(t)} onClick={() => setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))}>
@@ -82,15 +83,15 @@ export function Rate() {
           </Pill>
         ))}
       </div>
-      <Field label="Commentaire (optionnel)" htmlFor="rv-comment">
-        <Textarea id="rv-comment" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={600} placeholder="Très bon travail, salon impeccable. Un peu d'attente à l'arrivée." />
+      <Field label={t("Commentaire (optionnel)")} htmlFor="rv-comment">
+        <Textarea id="rv-comment" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={600} placeholder={t("Très bon travail, salon impeccable. Un peu d'attente à l'arrivée.")} />
       </Field>
       <div className="crd !flex-row items-center justify-between">
         <span>
-          <span className="block text-[1rem] font-semibold">Publier sous « {initials} »</span>
-          <span className="p block text-[1rem]">Votre numéro reste privé</span>
+          <span className="block text-[1rem] font-semibold">{t("Publier sous «")}{' '}{initials} »</span>
+          <span className="p block text-[1rem]">{t("Votre numéro reste privé")}</span>
         </span>
-        <Toggle on={publish} onChange={setPublish} label="Publier sous mon prénom" />
+        <Toggle on={publish} onChange={setPublish} label={t("Publier sous mon prénom")} />
       </div>
       <ErrorMessage error={review.error} />
       <BottomSheet>

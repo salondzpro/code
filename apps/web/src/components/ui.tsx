@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { BookingStatus, CancellationKind, CancelledBy } from '@salondz/constants';
+import { t } from '@/i18n';
 
 /** Icône aux réglages du design : 22 px, trait 1.6. */
 export function I({
@@ -189,11 +190,11 @@ export function Badge({
 }
 
 const STATUS: Record<BookingStatus, { tone: BadgeTone; label: string; dot: boolean }> = {
-  confirmed: { tone: 'cf', label: 'Confirmé', dot: true },
-  pending: { tone: 'pd', label: 'En attente', dot: true },
-  cancelled: { tone: 'cn', label: 'Annulé', dot: true },
-  completed: { tone: 'ok', label: 'Terminé', dot: true },
-  no_show: { tone: 'dk', label: 'Client absent', dot: true },
+  confirmed: { tone: 'cf', label: t("Confirmé"), dot: true },
+  pending: { tone: 'pd', label: t("En attente"), dot: true },
+  cancelled: { tone: 'cn', label: t("Annulé"), dot: true },
+  completed: { tone: 'ok', label: t("Terminé"), dot: true },
+  no_show: { tone: 'dk', label: t("Client absent"), dot: true },
 };
 /** Libellé d'une annulation selon qui l'a faite et qui regarde (client ou salon). */
 export function cancelledLabel(

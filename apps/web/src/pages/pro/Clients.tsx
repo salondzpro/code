@@ -11,6 +11,7 @@ import { formatDZPhone, formatDateShortDZ } from '@salondz/constants';
 import { Avatar, Badge, I, Skeleton, Pill } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function Clients() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function Clients() {
   return (
     <Screen bottom={NAV_PAD} gap={12}>
       <div className="flex items-end justify-between gap-3">
-        <h1 className="h1">Clients</h1>
+        <h1 className="h1">{t("Clients")}</h1>
         <span className="text-[1rem] text-muted">{total}</span>
       </div>
       <label className="search">
@@ -41,17 +42,17 @@ export function Clients() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Nom ou téléphone"
-          aria-label="Rechercher un client"
+          placeholder={t("Nom ou téléphone")}
+          aria-label={t("Rechercher un client")}
         />
       </label>
       {blockedCount > 0 && (
-        <div className="pills -mx-4 px-4" role="group" aria-label="Filtrer les clients">
+        <div className="pills -mx-4 px-4" role="group" aria-label={t("Filtrer les clients")}>
           <Pill on={!onlyBlocked} onClick={() => setOnlyBlocked(false)}>
-            Tous · {total}
+            {t("Tous ·")}{' '}{total}
           </Pill>
           <Pill on={onlyBlocked} onClick={() => setOnlyBlocked(true)}>
-            Bloqués · {blockedCount}
+            {t("Bloqués ·")}{' '}{blockedCount}
           </Pill>
         </div>
       )}
@@ -83,7 +84,7 @@ export function Clients() {
                     <span className="truncate">{c.name}</span>
                     {c.blocked && (
                       <Badge tone="cn" dot={false}>
-                        Bloqué
+                        {t("Bloqué")}
                       </Badge>
                     )}
                   </span>
@@ -94,7 +95,7 @@ export function Clients() {
               </span>
               <span className="flex flex-none flex-col items-end">
                 <span className="text-[1rem] font-semibold">
-                  {c.bookingsCount} RDV
+                  {c.bookingsCount} {t("RDV")}
                 </span>
                 <span className={`text-[0.857rem] ${c.nextAt ? 'text-ok-fg' : 'text-muted'}`}>
                   {c.nextAt
@@ -113,7 +114,7 @@ export function Clients() {
         hasMore={clients.hasNextPage}
         loading={clients.isFetchingNextPage}
         onMore={() => void clients.fetchNextPage()}
-        label="Voir plus de clients"
+        label={t("Voir plus de clients")}
       />
     </Screen>
   );

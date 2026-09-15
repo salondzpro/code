@@ -20,6 +20,7 @@ import {
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from './ErrorMessage';
 import { Button, I, Toast } from './ui';
+import { t } from '@/i18n';
 
 const DURATIONS = [1, 2, 3] as const;
 
@@ -105,7 +106,7 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
       <PickerSheet
         open={choosing}
         onClose={() => setChoosing(false)}
-        title="Fermer jusqu'à quand ?"
+        title={t("Fermer jusqu'à quand ?")}
         value={null}
         onChange={(v) => {
           setChoosing(false);
@@ -119,7 +120,7 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
                 {
                   value: 'day',
                   label: `Jusqu'à la fermeture (${closesAt})`,
-                  hint: "Plus aucune réservation aujourd'hui",
+                  hint: t("Plus aucune réservation aujourd'hui"),
                 },
               ]
             : []),
@@ -156,16 +157,16 @@ export function QuickCloseBanner() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-bold text-cancel-fg">
-            Fermé jusqu'à {formatTimeDZ(active.endsAt)}
+            {t("Fermé jusqu'à")}{' '}{formatTimeDZ(active.endsAt)}
           </span>
           <span className="block text-[0.857rem] text-cancel-fg/80">
-            Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.
+            {t("Aucune réservation en ligne d'ici là. Vos rendez-vous déjà pris restent en place.")}
           </span>
         </span>
       </div>
       {error && <p className="text-[1rem] text-danger">{error}</p>}
       <Button variant="g" onClick={() => void reopen()} disabled={remove.isPending}>
-        <I icon={DoorOpen} size={18} /> Rouvrir maintenant
+        <I icon={DoorOpen} size={18} /> {t("Rouvrir maintenant")}
       </Button>
     </div>
   );

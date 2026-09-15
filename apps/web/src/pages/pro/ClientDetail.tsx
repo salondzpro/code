@@ -37,8 +37,7 @@ import {
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
-  untilLabelFR,
-} from '@salondz/constants';
+  untilLabelFR, formatLocale } from '@salondz/constants';
 import type { ProClientHistoryItem } from '@salondz/types';
 import type { ClientHistoryStatus } from '@salondz/validation';
 import { errorText } from '@/components/ErrorMessage';
@@ -56,6 +55,7 @@ import {
 } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 /** « Annulé par le client », « Annulé par le salon », « Expiré » (demande jamais validée). */
 export function historyStatusLabel(
@@ -69,13 +69,13 @@ export function historyStatusLabel(
 
 const DZ = 'Africa/Algiers';
 const dayNum = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', { day: 'numeric', timeZone: DZ }).format(new Date(iso));
+  new Intl.DateTimeFormat(formatLocale(), { day: 'numeric', timeZone: DZ }).format(new Date(iso));
 const monthShort = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', { month: 'short', timeZone: DZ })
+  new Intl.DateTimeFormat(formatLocale(), { month: 'short', timeZone: DZ })
     .format(new Date(iso))
     .replace('.', '');
 const yearOf = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', { year: 'numeric', timeZone: DZ }).format(new Date(iso));
+  new Intl.DateTimeFormat(formatLocale(), { year: 'numeric', timeZone: DZ }).format(new Date(iso));
 
 /** Pavé date de l'historique : jour en grand, mois — et l'année quand ce n'est pas celle-ci. */
 function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
@@ -135,15 +135,15 @@ function Pager({
 }) {
   if (pages <= 1) return null;
   return (
-    <nav className="flex items-center justify-between gap-3 py-2" aria-label="Pages de l'historique">
+    <nav className="flex items-center justify-between gap-3 py-2" aria-label={t("Pages de l'historique")}>
       <Button variant="g" sm auto disabled={page === 0 || loading} onClick={() => onPage(page - 1)}>
-        <I icon={ChevronLeft} size={16} /> Précédent
+        <I icon={ChevronLeft} size={16} /> {t("Précédent")}
       </Button>
       <span className="text-[0.857rem] text-muted" aria-live="polite">
-        Page {page + 1} sur {pages}
+        {t("Page")}{' '}{page + 1} {t("sur")}{' '}{pages}
       </span>
       <Button variant="g" sm auto disabled={page >= pages - 1 || loading} onClick={() => onPage(page + 1)}>
-        Suivant <I icon={ChevronRight} size={16} />
+        {t("Suivant")}{' '}<I icon={ChevronRight} size={16} />
       </Button>
     </nav>
   );
@@ -181,7 +181,7 @@ export function ClientDetail() {
     return (
       <Screen bottom={NAV_PAD} gap={16}>
         <TopBar backTo="/pro/clients" />
-        <p className="p">Client introuvable.</p>
+        <p className="p">{t("Client introuvable.")}</p>
       </Screen>
     );
   const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
@@ -231,18 +231,18 @@ export function ClientDetail() {
                 {formatDZPhone(c.phone)}
               </a>
             ) : (
-              <span className="block text-[0.857rem] text-muted">Sans numéro de téléphone</span>
+              <span className="block text-[0.857rem] text-muted">{t("Sans numéro de téléphone")}</span>
             )}
           </span>
           {c.blocked && (
             <Badge tone="cn" md>
-              Bloqué
+              {t("Bloqué")}
             </Badge>
           )}
         </div>
         <div className="flex gap-2">
           {c.phone && (
-            <a href={`tel:${c.phone}`} className="ib lg" aria-label={`Appeler ${c.name}`} title="Appeler">
+            <a href={`tel:${c.phone}`} className="ib lg" aria-label={`Appeler ${c.name}`} title={t("Appeler")}>
               <I icon={Phone} size={20} />
             </a>
           )}
@@ -253,7 +253,7 @@ export function ClientDetail() {
               rel="noreferrer"
               className="ib lg"
               aria-label={`WhatsApp ${c.name}`}
-              title="WhatsApp"
+              title={t("WhatsApp")}
             >
               <I icon={MessageCircle} size={20} />
             </a>
@@ -263,7 +263,7 @@ export function ClientDetail() {
             onClick={() => navigate(newBookingUrl)}
             disabled={c.blocked}
           >
-            <I icon={CalendarPlus} size={18} /> Prendre rendez-vous
+            <I icon={CalendarPlus} size={18} /> {t("Prendre rendez-vous")}
           </Button>
         </div>
       </div>
@@ -271,7 +271,7 @@ export function ClientDetail() {
       {/* Quatre chiffres qui comptent ; annulations et absences en rouge dès qu'il y en a. */}
       <div className="grid grid-cols-4 gap-1.5">
         <Stat value={String(c.completedCount)} label={c.completedCount > 1 ? 'visites' : 'visite'} />
-        <Stat value={formatDA(c.spentDa).replace(/\s?DA$/, '')} label="DA dépensés" />
+        <Stat value={formatDA(c.spentDa).replace(/\s?DA$/, '')} label={t("DA dépensés")} />
         <Stat
           value={String(c.cancelledCount)}
           label={c.cancelledCount > 1 ? 'annulations' : 'annulation'}
@@ -300,7 +300,7 @@ export function ClientDetail() {
             />
           </button>
         ) : (
-          <FactRow icon={CalendarClock} title="Aucun rendez-vous prévu" />
+          <FactRow icon={CalendarClock} title={t("Aucun rendez-vous prévu")} />
         )}
         <FactRow
           icon={History}
@@ -317,7 +317,7 @@ export function ClientDetail() {
       {/* Notes privées : enregistrées en quittant le champ. */}
       <div className="crd !gap-2">
         <div className="flex items-center justify-between">
-          <span className="h3">Notes privées</span>
+          <span className="h3">{t("Notes privées")}</span>
           <span className="text-[0.857rem] text-muted">
             {saved ? 'Enregistré' : setNotes.isPending ? 'Enregistrement…' : 'Jamais visibles du client'}
           </span>
@@ -327,8 +327,8 @@ export function ClientDetail() {
           onChange={(e) => setNotesDraft(e.target.value)}
           onBlur={() => void saveNotes()}
           maxLength={2000}
-          placeholder="Préférences, allergies, remarques…"
-          aria-label="Notes privées"
+          placeholder={t("Préférences, allergies, remarques…")}
+          aria-label={t("Notes privées")}
         />
       </div>
       {error && (
@@ -339,11 +339,11 @@ export function ClientDetail() {
 
       {/* Historique sous onglets : « qu'est-ce qu'il a annulé ? » est la question la plus posée. */}
       <span className="h3 scroll-mt-[9rem]" ref={historyTop}>
-        Historique
+        {t("Historique")}
         {total > HISTORY_PAGE_SIZE ? ` · ${total}` : ''}
       </span>
       <Tabs
-        label="Filtrer l'historique"
+        label={t("Filtrer l'historique")}
         value={filter}
         onChange={(f) => {
           setFilter(f);
@@ -351,10 +351,10 @@ export function ClientDetail() {
         }}
         className="-mx-4 !px-2"
         options={[
-          { value: 'all', label: 'Tout' },
-          { value: 'done', label: 'Terminés' },
-          { value: 'cancelled', label: 'Annulés' },
-          { value: 'noshow', label: 'Absences' },
+          { value: 'all', label: t("Tout") },
+          { value: 'done', label: t("Terminés") },
+          { value: 'cancelled', label: t("Annulés") },
+          { value: 'noshow', label: t("Absences") },
         ]}
       />
       {history.isPending ? (
@@ -404,7 +404,7 @@ export function ClientDetail() {
                       disabled={setStatus.isPending}
                       onClick={() => setStatus.mutate({ id: h.id, status: 'completed' })}
                     >
-                      <I icon={Check} size={16} /> Terminé
+                      <I icon={Check} size={16} /> {t("Terminé")}
                     </Button>
                     <Button
                       sm
@@ -412,7 +412,7 @@ export function ClientDetail() {
                       disabled={setStatus.isPending}
                       onClick={() => setStatus.mutate({ id: h.id, status: 'no_show' })}
                     >
-                      <I icon={UserX} size={16} /> Client absent
+                      <I icon={UserX} size={16} /> {t("Client absent")}
                     </Button>
                   </div>
                 )}

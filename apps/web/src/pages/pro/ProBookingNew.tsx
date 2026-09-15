@@ -52,6 +52,7 @@ import { Splash } from '@/pages/auth/Splash';
 import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
 import type { LucideIcon } from 'lucide-react';
+import { t } from '@/i18n';
 
 /** Ligne du formulaire : icône, libellé, valeur choisie (ou invitation), chevron. */
 function FormRow({
@@ -119,11 +120,11 @@ function ClientSheet({
   const clients = useProClientsInfinite(needle);
   const rows = pagesItems(clients.data).slice(0, 8);
   const validate = () => {
-    if (newName.trim().length < 2) return setErr('Indiquez le nom du client.');
+    if (newName.trim().length < 2) return setErr(t("Indiquez le nom du client."));
     let p: string | undefined;
     if (newPhone.trim()) {
       const parsed = phoneDZ.safeParse(newPhone);
-      if (!parsed.success) return setErr('Numéro invalide (ex : 05 51 23 45 67).');
+      if (!parsed.success) return setErr(t("Numéro invalide (ex : 05 51 23 45 67)."));
       p = parsed.data;
     }
     onPick(newName.trim(), p ?? '');
@@ -132,8 +133,8 @@ function ClientSheet({
     <>
       <div className="dim !z-[45]" onClick={onClose} />
       <BottomSheet className="!z-50 max-h-[90vh] overflow-y-auto">
-        <div className="h2 text-center !text-[1.143rem]">Client</div>
-        <SearchBox value={q} onChange={setQ} placeholder="Rechercher dans ma clientèle" autoFocus />
+        <div className="h2 text-center !text-[1.143rem]">{t("Client")}</div>
+        <SearchBox value={q} onChange={setQ} placeholder={t("Rechercher dans ma clientèle")} autoFocus />
         {clients.isPending ? (
           <Skeleton className="h-[6rem] w-full !rounded-[var(--radius-card)]" />
         ) : rows.length > 0 ? (
@@ -151,7 +152,7 @@ function ClientSheet({
                     <span className="block truncate text-[1rem] font-semibold">{c.name}</span>
                     <span className="block text-[0.857rem] text-muted">
                       {c.phone ? formatDZPhone(c.phone) : 'Sans numéro'} · {c.bookingsCount}{' '}
-                      rendez-vous
+                      {t("rendez-vous")}
                     </span>
                   </span>
                 </span>
@@ -164,9 +165,9 @@ function ClientSheet({
             {needle ? `Aucun client pour « ${needle} ».` : 'Votre clientèle apparaîtra ici.'}
           </p>
         )}
-        <span className="h3">Client de passage</span>
+        <span className="h3">{t("Client de passage")}</span>
         <div className="g2">
-          <Field label="Nom *" htmlFor="nc-name">
+          <Field label={t("Nom *")} htmlFor="nc-name">
             <Input
               id="nc-name"
               value={newName}
@@ -174,11 +175,11 @@ function ClientSheet({
                 setNewName(e.target.value);
                 setErr(null);
               }}
-              placeholder="Mohamed B."
+              placeholder={t("Mohamed B.")}
               aria-required
             />
           </Field>
-          <Field label="Téléphone" htmlFor="nc-phone">
+          <Field label={t("Téléphone")} htmlFor="nc-phone">
             <Input
               id="nc-phone"
               type="tel"
@@ -197,7 +198,7 @@ function ClientSheet({
             {err}
           </p>
         )}
-        <Button onClick={validate}>Valider</Button>
+        <Button onClick={validate}>{t("Valider")}</Button>
       </BottomSheet>
     </>
   );
@@ -223,7 +224,7 @@ function ServicesSheet({
     <>
       <div className="dim !z-[45]" onClick={onClose} />
       <BottomSheet className="!z-50 max-h-[90vh] overflow-y-auto">
-        <div className="h2 text-center !text-[1.143rem]">Prestations</div>
+        <div className="h2 text-center !text-[1.143rem]">{t("Prestations")}</div>
         <div className="crd !gap-0 !py-1">
           {services.map((s) => {
             const on = ids.includes(s.id);
@@ -372,7 +373,7 @@ export function ProBookingNew() {
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
       <TopBar backTo="/pro/agenda" close right="Nouveau rendez-vous" />
-      <h1 className="h1">Ajouter un rendez-vous</h1>
+      <h1 className="h1">{t("Ajouter un rendez-vous")}</h1>
 
       {/* 1. QUAND — jours à faire défiler, heure en grand, créneaux du jour en un tap */}
       <div className="crd !gap-3">
@@ -399,12 +400,12 @@ export function ProBookingNew() {
         {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
         {!isDeviceOnDZTime() && (
           <p className="text-[0.857rem] text-muted">
-            Heures en heure d'Alger · il est {nowTimeDZ()} à Alger.
+            {t("Heures en heure d'Alger · il est")}{' '}{nowTimeDZ()} {t("à Alger.")}
           </p>
         )}
         {slots.length === 0 ? (
           <label className="flex items-center justify-between gap-3 text-[1rem]">
-            <span className="text-muted">Salon fermé ce jour — heure libre</span>
+            <span className="text-muted">{t("Salon fermé ce jour — heure libre")}</span>
             <input
               type="time"
               step={300}
@@ -412,7 +413,7 @@ export function ProBookingNew() {
               className="bg-transparent text-right outline-none"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              aria-label="Heure"
+              aria-label={t("Heure")}
             />
           </label>
         ) : (
@@ -421,7 +422,7 @@ export function ProBookingNew() {
             className="-mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5"
             style={{ scrollbarWidth: 'none' }}
             role="listbox"
-            aria-label="Heure"
+            aria-label={t("Heure")}
           >
             {slots.map((sl) => (
               <button
@@ -441,7 +442,7 @@ export function ProBookingNew() {
           </div>
         )}
         {staff.length > 1 && (
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Membre">
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("Membre")}>
             {staff.map((m) => (
               <button
                 key={m.id}
@@ -462,21 +463,21 @@ export function ProBookingNew() {
       <div className="crd !gap-0 !py-1">
         <FormRow
           icon={ContactRound}
-          label="Client"
+          label={t("Client")}
           value={name ? `${name}${phone ? ` · ${formatDZPhone(phone)}` : ''}` : null}
-          placeholder="Choisir ou saisir un client"
+          placeholder={t("Choisir ou saisir un client")}
           error={fieldErr.name}
           onClick={() => setSheet('client')}
         />
         <FormRow
           icon={Scissors}
-          label="Prestations"
+          label={t("Prestations")}
           value={
             chosen.length
               ? `${chosen.map((s) => s!.name).join(', ')} · ${formatDuration(minutes)} · ${formatDA(total)}`
               : null
           }
-          placeholder="Choisir une ou plusieurs prestations"
+          placeholder={t("Choisir une ou plusieurs prestations")}
           error={fieldErr.services}
           onClick={() => setSheet('services')}
         />
@@ -486,16 +487,16 @@ export function ProBookingNew() {
               <I icon={StickyNote} size={18} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[0.857rem] text-muted">Note (facultatif)</span>
+              <span className="block text-[0.857rem] text-muted">{t("Note (facultatif)")}</span>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={300}
                 rows={2}
-                placeholder="Coloration à préparer, cliente pressée…"
+                placeholder={t("Coloration à préparer, cliente pressée…")}
                 className="inp mt-1 !p-2.5 !text-[1rem]"
                 style={{ resize: 'none' }}
-                aria-label="Note"
+                aria-label={t("Note")}
               />
             </span>
           </span>
@@ -533,7 +534,7 @@ export function ProBookingNew() {
       )}
       {done !== false && (
         <SuccessSplash
-          title="Rendez-vous ajouté"
+          title={t("Rendez-vous ajouté")}
           subtitle={`${name.trim()} · ${relativeDayLabelDZ(date)} · ${time}`}
           onDone={() =>
             navigate(done ? `/pro/rendez-vous/${done.id}` : '/pro/agenda', { replace: true })

@@ -13,6 +13,7 @@ import { ImageCropper } from '@/components/ImageCropper';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 export function Step7ServicePhotos() {
   const navigate = useNavigate();
@@ -66,8 +67,8 @@ export function Step7ServicePhotos() {
         right={fromCatalog ? 'Catalogue' : undefined}
       />
       <div>
-        <h1 className="h1">Photo · {service.name}</h1>
-        <p className="p mt-2">Une seule image, celle qui représente le mieux cette prestation.</p>
+        <h1 className="h1">{t("Photo ·")}{' '}{service.name}</h1>
+        <p className="p mt-2">{t("Une seule image, celle qui représente le mieux cette prestation.")}</p>
       </div>
       <button
         type="button"
@@ -81,7 +82,7 @@ export function Step7ServicePhotos() {
         ) : (
           <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
             <I icon={Camera} size={32} />
-            <span className="text-[1rem]">Ajouter une photo</span>
+            <span className="text-[1rem]">{t("Ajouter une photo")}</span>
           </span>
         )}
         {photo && (
@@ -103,12 +104,11 @@ export function Step7ServicePhotos() {
       />
       {photo && (
         <Button variant="g" sm onClick={() => setUrl(null)} disabled={busy}>
-          <I icon={Trash2} size={16} /> Retirer la photo
+          <I icon={Trash2} size={16} /> {t("Retirer la photo")}
         </Button>
       )}
       <InfoBox>
-        Les prestations avec photo sont réservées 3 fois plus souvent. Vos autres photos ont leur
-        place dans « Réalisations ».
+        {t("Les prestations avec photo sont réservées 3 fois plus souvent. Vos autres photos ont leur place dans « Réalisations ».")}
       </InfoBox>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
@@ -116,7 +116,7 @@ export function Step7ServicePhotos() {
         </p>
       )}
       <StepSheet
-        label="Enregistrer la prestation"
+        label={t("Enregistrer la prestation")}
         onClick={() =>
           void save().then((ok) => ok && navigate(fromCatalog ? '/pro/catalogue' : stepPath(8)))
         }
@@ -127,7 +127,7 @@ export function Step7ServicePhotos() {
             onClick={() => void save().then((ok) => ok && navigate(stepPath(6)))}
             disabled={busy}
           >
-            Enregistrer et ajouter une autre
+            {t("Enregistrer et ajouter une autre")}
           </Button>
         }
       />
@@ -135,7 +135,7 @@ export function Step7ServicePhotos() {
         <ImageCropper
           file={crop}
           aspect={1}
-          title="Recadrer la photo"
+          title={t("Recadrer la photo")}
           onCancel={() => setCrop(null)}
           onDone={(f) => {
             setCrop(null);

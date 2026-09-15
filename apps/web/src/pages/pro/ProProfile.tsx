@@ -34,6 +34,7 @@ import { Splash } from '@/pages/auth/Splash';
 import { ShareSheet, usePublicUrl } from './Link';
 import { RowText } from './MonSalon';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
+import { t } from '@/i18n';
 
 /** Tuile de rubrique (2 par ligne) : icône, titre, ce qu'on y trouve. */
 function Tile({
@@ -98,7 +99,7 @@ export function ProProfile() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1">Profil</h1>
+      <h1 className="h1">{t("Profil")}</h1>
 
       {/* Page publique */}
       <div className="crd !gap-4">
@@ -107,7 +108,7 @@ export function ProProfile() {
             type="button"
             className="relative flex-none"
             onClick={() => logoInput.current?.click()}
-            aria-label="Changer la photo de profil"
+            aria-label={t("Changer la photo de profil")}
             disabled={busy !== null}
           >
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
@@ -127,7 +128,7 @@ export function ProProfile() {
           type="button"
           className="relative h-[8.75rem] w-full overflow-hidden rounded-[var(--radius-card-sm)] bg-line"
           onClick={() => coverInput.current?.click()}
-          aria-label="Changer la photo de couverture"
+          aria-label={t("Changer la photo de couverture")}
           disabled={busy !== null}
         >
           {salon.coverUrl ? (
@@ -165,10 +166,10 @@ export function ProProfile() {
         />
         <div className="g2">
           <Button variant="g" sm onClick={() => navigate(`/s/${salon.slug}`)}>
-            <I icon={Eye} size={18} /> Aperçu
+            <I icon={Eye} size={18} /> {t("Aperçu")}
           </Button>
           <Button sm onClick={() => setSheet(true)}>
-            <I icon={Share2} size={18} /> Partager
+            <I icon={Share2} size={18} /> {t("Partager")}
           </Button>
         </div>
         {error && (
@@ -179,48 +180,48 @@ export function ProProfile() {
       </div>
 
       {/* Six rubriques métier */}
-      <SectionLabel>Gérer mon activité</SectionLabel>
+      <SectionLabel>{t("Gérer mon activité")}</SectionLabel>
       <div className="g2">
         <Tile
           to="/pro/mon-salon"
           icon={Store}
-          title="Mon salon"
+          title={t("Mon salon")}
           sub="Photos, réalisations, adresse"
         />
         <Tile
           to="/pro/catalogue"
           icon={Tag}
-          title="Catalogue"
+          title={t("Catalogue")}
           sub={`${services} prestation${services > 1 ? 's' : ''} · catégories, prix, durée`}
         />
         <Tile
           to="/pro/equipe"
           icon={Users}
-          title="Équipe"
+          title={t("Équipe")}
           sub={`${active} membre${active > 1 ? 's' : ''} actif${active > 1 ? 's' : ''} · horaires, absences`}
         />
         <Tile
           to="/pro/clients"
           icon={ContactRound}
-          title="Clients"
+          title={t("Clients")}
           sub="Fiches, historique, bloqués"
         />
         <Tile
           to="/pro/reglages/rendez-vous"
           icon={CalendarCog}
-          title="Rendez-vous"
+          title={t("Rendez-vous")}
           sub="Règles de réservation, annulation, retard"
         />
         <Tile
           to="/pro/compte"
           icon={UserCircle}
-          title="Compte"
+          title={t("Compte")}
           sub="Profil, notifications, paramètres"
         />
       </div>
 
       {/* Horaires d’ouverture : la question du quotidien, à un tap depuis Profil. */}
-      <SectionLabel>Horaires d’ouverture</SectionLabel>
+      <SectionLabel>{t("Horaires d’ouverture")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/profil/horaires">
           <RowText

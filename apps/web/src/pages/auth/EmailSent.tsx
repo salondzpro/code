@@ -9,23 +9,24 @@ import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, I, InfoBox, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 const RESEND_SECONDS = 60;
 type Mode = 'confirm' | 'link' | 'reset';
 
 const TEXT: Record<Mode, { title: string; body: string; resend: string }> = {
   confirm: {
-    title: 'Confirmez votre adresse',
+    title: t("Confirmez votre adresse"),
     body: 'Nous venons d’envoyer un lien de confirmation. Ouvrez-le depuis ce téléphone pour activer votre compte.',
     resend: 'Renvoyer le lien de confirmation',
   },
   link: {
-    title: 'Lien de connexion envoyé',
+    title: t("Lien de connexion envoyé"),
     body: 'Ouvrez le lien reçu par e-mail : il vous connecte directement, sans mot de passe.',
     resend: 'Renvoyer le lien de connexion',
   },
   reset: {
-    title: 'E-mail envoyé',
+    title: t("E-mail envoyé"),
     body: 'Ouvrez le lien reçu pour choisir un nouveau mot de passe.',
     resend: 'Renvoyer l’e-mail',
   },
@@ -54,7 +55,7 @@ export function EmailSent() {
   // Le lien a été ouvert dans cet onglet : la session existe, on continue.
   if (session && mode !== 'reset') return <Navigate to={`/connexion/retour?next=${encodeURIComponent(flow?.next ?? '/')}`} replace />;
   if (!email) return <Navigate to="/connexion" replace />;
-  const t = TEXT[mode];
+  const txt = TEXT[mode];
 
   const resend = async () => {
     setBusy(true);
@@ -80,15 +81,15 @@ export function EmailSent() {
         <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
           <I icon={MailCheck} size={34} />
         </span>
-        <h1 className="h1">{t.title}</h1>
+        <h1 className="h1">{txt.title}</h1>
         <p className="p">
-          {t.body}
+          {txt.body}
           <br />
           <b className="text-text">{email}</b>
         </p>
       </div>
       <InfoBox>
-        Rien reçu ? Regardez dans les courriers indésirables. Le lien reste valable une heure.
+        {t("Rien reçu ? Regardez dans les courriers indésirables. Le lien reste valable une heure.")}
       </InfoBox>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
@@ -96,10 +97,10 @@ export function EmailSent() {
         </p>
       )}
       <Button variant="g" onClick={() => void resend()} disabled={busy || resendIn > 0}>
-        {busy ? 'Envoi…' : resendIn > 0 ? `${t.resend} (${resendIn} s)` : sent ? 'Renvoyé' : t.resend}
+        {busy ? 'Envoi…' : resendIn > 0 ? `${txt.resend} (${resendIn} s)` : sent ? 'Renvoyé' : txt.resend}
       </Button>
       <button type="button" className="text-center text-[1rem] text-muted underline" onClick={() => navigate('/connexion')}>
-        Changer d’adresse ou se connecter autrement
+        {t("Changer d’adresse ou se connecter autrement")}
       </button>
     </Screen>
   );

@@ -5,6 +5,7 @@ import { MARKET_LABELS_FR, categoriesForMarket, type Market as MarketId } from '
 import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { Screen } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 const CARDS: { id: MarketId; img: { src: string; credit: string } }[] = [
   { id: 'men', img: DESIGN_IMAGES.marketMen },
@@ -29,7 +30,7 @@ export function Market() {
     <Screen className="min-h-dvh" gap={16}>
       <div className="pt-4">
         <div className="h3">{me.data?.profile.market ? 'Changer de marché' : 'Alger'}</div>
-        <h1 className="h1 mt-2">Que recherchez-vous ?</h1>
+        <h1 className="h1 mt-2">{t("Que recherchez-vous ?")}</h1>
       </div>
       {CARDS.map((c) => (
         <button
@@ -54,7 +55,7 @@ export function Market() {
           <span className="absolute bottom-2 left-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{c.img.credit}</span>
         </button>
       ))}
-      <p className="p text-center">Modifiable à tout moment depuis le profil.</p>
+      <p className="p text-center">{t("Modifiable à tout moment depuis le profil.")}</p>
     </Screen>
   );
 }

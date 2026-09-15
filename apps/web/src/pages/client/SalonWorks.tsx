@@ -5,6 +5,7 @@ import { Img, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function SalonWorks() {
   const { slug = '' } = useParams();
@@ -16,12 +17,12 @@ export function SalonWorks() {
   return (
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
-      <h1 className="h1">Réalisations</h1>
+      <h1 className="h1">{t("Réalisations")}</h1>
       <p className="p -mt-2">
-        {photos.length} photo{photos.length > 1 ? 's' : ''} du travail de {s.name}.
+        {photos.length} {t("photo")}{photos.length > 1 ? 's' : ''} {t("du travail de")}{' '}{s.name}.
       </p>
       {photos.length === 0 ? (
-        <p className="p">Pas encore de réalisations.</p>
+        <p className="p">{t("Pas encore de réalisations.")}</p>
       ) : (
         <div className="g2">
           {photos.map((p) => (

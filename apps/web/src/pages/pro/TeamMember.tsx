@@ -38,6 +38,7 @@ import { ServicesPicker } from './Team';
 import { WeekHoursEditor } from './onboarding/Step9Hours';
 import { ImageCropper } from '@/components/ImageCropper';
 import { uploadSalonPhoto } from '@/lib/upload';
+import { t } from '@/i18n';
 
 const salonRanges = (hours: OpeningHour[]) =>
   hours
@@ -75,7 +76,7 @@ export function TeamMember() {
     return (
       <Screen bottom={NAV_PAD} gap={16}>
         <TopBar backTo="/pro/equipe" />
-        <p className="p">Membre introuvable.</p>
+        <p className="p">{t("Membre introuvable.")}</p>
       </Screen>
     );
   const isOwner = member.userId === salon.ownerId;
@@ -119,7 +120,7 @@ export function TeamMember() {
           type="button"
           className="relative flex-none"
           onClick={() => avatarInput.current?.click()}
-          aria-label="Changer la photo du membre"
+          aria-label={t("Changer la photo du membre")}
           disabled={avatarBusy}
         >
           <Avatar src={member.avatarUrl} name={member.displayName} size={64} />
@@ -168,7 +169,7 @@ export function TeamMember() {
                 )
               }
             >
-              Retirer la photo
+              {t("Retirer la photo")}
             </button>
           )}
         </span>
@@ -181,16 +182,16 @@ export function TeamMember() {
                 { onError: (e) => setError(errorText(e)) },
               )
             }
-            label="Actif"
+            label={t("Actif")}
           />
         )}
       </div>
 
       {/* Identité : nom affiché aux clients + coordonnées (privées), modifiables sur place. */}
       <div className="crd !gap-3">
-        <span className="h3">Identité</span>
+        <span className="h3">{t("Identité")}</span>
         <div className="g2">
-          <Field label="Nom affiché *" htmlFor="tm-name" error={identErr.name}>
+          <Field label={t("Nom affiché *")} htmlFor="tm-name" error={identErr.name}>
             <Input
               id="tm-name"
               value={name}
@@ -200,12 +201,12 @@ export function TeamMember() {
                 setName(e.target.value);
                 if (identErr.name) setIdentErr((f) => ({ ...f, name: undefined }));
               }}
-              placeholder="Prénom"
+              placeholder={t("Prénom")}
               aria-required
               aria-invalid={!!identErr.name || undefined}
             />
           </Field>
-          <Field label="Téléphone (facultatif)" htmlFor="tm-phone" error={identErr.phone}>
+          <Field label={t("Téléphone (facultatif)")} htmlFor="tm-phone" error={identErr.phone}>
             <Input
               id="tm-phone"
               type="tel"
@@ -230,7 +231,7 @@ export function TeamMember() {
             onClick={() => void saveIdentity()}
             disabled={update.isPending || !identDirty}
           >
-            <I icon={Save} size={16} /> Enregistrer
+            <I icon={Save} size={16} /> {t("Enregistrer")}
           </Button>
         </div>
       </div>
@@ -246,7 +247,7 @@ export function TeamMember() {
               <I icon={Scissors} size={18} />
             </span>
             <span>
-              <span className="block text-[1rem] font-semibold">Prestations</span>
+              <span className="block text-[1rem] font-semibold">{t("Prestations")}</span>
               <span className="p block">{servicesSummary}</span>
             </span>
           </span>
@@ -262,7 +263,7 @@ export function TeamMember() {
               <I icon={Clock} size={18} />
             </span>
             <span>
-              <span className="block text-[1rem] font-semibold">Horaires</span>
+              <span className="block text-[1rem] font-semibold">{t("Horaires")}</span>
               <span className="p block">{hoursSummary}</span>
             </span>
           </span>
@@ -272,7 +273,7 @@ export function TeamMember() {
 
       {hours.data && hours.data.length > 0 && (
         <div className="crd !gap-1">
-          <span className="h3">Semaine du membre</span>
+          <span className="h3">{t("Semaine du membre")}</span>
           {[0, 1, 2, 3, 4, 5, 6].map((d) => {
             const ranges = hours.data
               .filter((h) => h.dayOfWeek === d)
@@ -308,7 +309,7 @@ export function TeamMember() {
               }
             }}
           >
-            Confirmer le retrait
+            {t("Confirmer le retrait")}
           </Button>
         ) : (
           <button
@@ -316,7 +317,7 @@ export function TeamMember() {
             className="py-2 text-[1rem] text-danger"
             onClick={() => setConfirmRemove(true)}
           >
-            Retirer de l'équipe
+            {t("Retirer de l'équipe")}
           </button>
         ))}
       {cropAvatar && (
@@ -324,7 +325,7 @@ export function TeamMember() {
           file={cropAvatar}
           aspect={1}
           round
-          title="Recadrer la photo"
+          title={t("Recadrer la photo")}
           onCancel={() => setCropAvatar(null)}
           onDone={async (f) => {
             setCropAvatar(null);
@@ -356,7 +357,7 @@ export function TeamMemberServices() {
     return (
       <Screen bottom={NAV_PAD}>
         <TopBar backTo="/pro/equipe" />
-        <p className="p">Membre introuvable.</p>
+        <p className="p">{t("Membre introuvable.")}</p>
       </Screen>
     );
   const invalid = !all && selected.length === 0 && salon.services.length > 0;
@@ -376,9 +377,9 @@ export function TeamMemberServices() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/pro/equipe/${member.id}`} right={member.displayName} />
-      <h1 className="h1">Prestations</h1>
+      <h1 className="h1">{t("Prestations")}</h1>
       <p className="p">
-        Le membre n'est proposé aux clients que pour les prestations qu'il réalise.
+        {t("Le membre n'est proposé aux clients que pour les prestations qu'il réalise.")}
       </p>
       <ServicesPicker
         services={salon.services}
@@ -437,7 +438,7 @@ export function TeamMemberHours() {
     return (
       <Screen bottom={NAV_PAD}>
         <TopBar backTo="/pro/equipe" />
-        <p className="p">Membre introuvable.</p>
+        <p className="p">{t("Membre introuvable.")}</p>
       </Screen>
     );
   const invalid = custom && rows.some((r) => rowError(r) !== null);
@@ -462,14 +463,14 @@ export function TeamMemberHours() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/pro/equipe/${member.id}`} right={member.displayName} />
-      <h1 className="h1">Horaires</h1>
+      <h1 className="h1">{t("Horaires")}</h1>
       <Segmented
-        label="Horaires"
+        label={t("Horaires")}
         value={custom ? 'custom' : 'salon'}
         onChange={(v) => setCustom(v === 'custom')}
         options={[
-          { value: 'salon', label: 'Horaires du salon' },
-          { value: 'custom', label: 'Horaires personnalisés' },
+          { value: 'salon', label: t("Horaires du salon") },
+          { value: 'custom', label: t("Horaires personnalisés") },
         ]}
       />
       {hours.isPending || rows.length === 0 ? (
@@ -477,11 +478,11 @@ export function TeamMemberHours() {
       ) : custom ? (
         <WeekHoursEditor rows={rows} onChange={setRows} closedLabel="Repos" />
       ) : (
-        <p className="p">Ce membre est réservable sur tous les horaires d'ouverture du salon.</p>
+        <p className="p">{t("Ce membre est réservable sur tous les horaires d'ouverture du salon.")}</p>
       )}
       {!custom && salon.openingHours.some((h) => !h.isClosed) && (
         <div className="crd !gap-1">
-          <span className="h3">Horaires du salon</span>
+          <span className="h3">{t("Horaires du salon")}</span>
           {[0, 1, 2, 3, 4, 5, 6].map((d) => {
             const ranges = salon.openingHours
               .filter((h) => h.dayOfWeek === d && !h.isClosed)

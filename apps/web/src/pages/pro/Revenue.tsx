@@ -13,6 +13,7 @@ import {
 import { Badge, I, IconButton, SectionLabel, Segmented, Skeleton, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { t } from '@/i18n';
 
 type Period = 'day' | 'week' | 'month';
 const MONTHS = [
@@ -92,19 +93,19 @@ export function Revenue() {
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro" right="Accueil" />
       <div className="flex items-center justify-between">
-        <h1 className="h1">Chiffre d'affaires</h1>
-        <IconButton lg aria-label="Exporter" onClick={exportCsv}>
+        <h1 className="h1">{t("Chiffre d'affaires")}</h1>
+        <IconButton lg aria-label={t("Exporter")} onClick={exportCsv}>
           <I icon={Download} size={20} />
         </IconButton>
       </div>
       <Segmented
-        label="Période"
+        label={t("Période")}
         value={period}
         onChange={setPeriod}
         options={[
-          { value: 'day', label: 'Jour' },
-          { value: 'week', label: 'Semaine' },
-          { value: 'month', label: 'Mois' },
+          { value: 'day', label: t("Jour") },
+          { value: 'week', label: t("Semaine") },
+          { value: 'month', label: t("Mois") },
         ]}
       />
       {stats.isPending ? (
@@ -120,7 +121,7 @@ export function Revenue() {
                   {formatDA(s!.revenueDa)}
                 </div>
                 <div className="p mt-2">
-                  {r.label} · {s!.bookings} rendez-vous
+                  {r.label} · {s!.bookings} {t("rendez-vous")}
                 </div>
               </div>
               {delta != null && (
@@ -169,23 +170,23 @@ export function Revenue() {
           </div>
           <div className="crd !gap-0 !py-1">
             <div className="li">
-              <span className="text-[1rem] font-semibold">Encaissé</span>
+              <span className="text-[1rem] font-semibold">{t("Encaissé")}</span>
               <span className="text-[1.429rem] font-bold">{formatDA(s!.collectedDa)}</span>
             </div>
             <div className="li">
               <span>
-                <span className="block text-[1rem] font-semibold">Reste à encaisser</span>
+                <span className="block text-[1rem] font-semibold">{t("Reste à encaisser")}</span>
                 <span className="p block text-[0.857rem]">
-                  {s!.remainingCount} rendez-vous confirmé{s!.remainingCount > 1 ? 's' : ''}
+                  {s!.remainingCount} {t("rendez-vous confirmé")}{s!.remainingCount > 1 ? 's' : ''}
                 </span>
               </span>
               <span className="text-[1.429rem] font-bold">{formatDA(s!.remainingDa)}</span>
             </div>
           </div>
-          <SectionLabel>Par prestation</SectionLabel>
+          <SectionLabel>{t("Par prestation")}</SectionLabel>
           <div className="crd !gap-0 !py-1">
             {s!.byService.length === 0 && (
-              <p className="p py-3">Aucune prestation sur la période.</p>
+              <p className="p py-3">{t("Aucune prestation sur la période.")}</p>
             )}
             {s!.byService.map((x) => (
               <div key={x.name} className="li">
@@ -194,7 +195,7 @@ export function Revenue() {
                     {x.name}
                   </span>
                   <span className="p block text-[0.857rem]">
-                    {x.bookings} réservation{x.bookings > 1 ? 's' : ''}
+                    {x.bookings} {t("réservation")}{x.bookings > 1 ? 's' : ''}
                   </span>
                 </span>
                 <span className="text-[1.143rem] font-bold">{formatDA(x.revenueDa)}</span>

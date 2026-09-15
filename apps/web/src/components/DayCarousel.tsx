@@ -10,6 +10,7 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import { dayNumber, monthLabel } from './DaySelector';
+import { t } from '@/i18n';
 
 /** Bande de jours défilable (± 3 semaines autour du jour choisi), jour sélectionné centré. */
 export function DayScroller({
@@ -49,7 +50,7 @@ export function DayScroller({
       ref={ref}
       className="pills -mx-4 !gap-1 px-4"
       role="listbox"
-      aria-label="Choisir un jour"
+      aria-label={t("Choisir un jour")}
       style={{ scrollSnapType: 'x proximity' }}
     >
       {days.map((d) => {
@@ -140,7 +141,7 @@ export function DayCarousel({
         scrollbarWidth: 'none',
         overscrollBehaviorX: 'contain',
       }}
-      aria-label="Glisser pour changer de jour"
+      aria-label={t("Glisser pour changer de jour")}
     >
       {days.map((d) => (
         <div

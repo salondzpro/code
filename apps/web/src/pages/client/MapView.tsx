@@ -19,6 +19,7 @@ import { I, Img } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
 import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
+import { t } from '@/i18n';
 
 const ALGIERS: [number, number] = [36.7538, 3.0588];
 type Area = { lat: number; lng: number; radiusKm: number };
@@ -258,7 +259,7 @@ export function MapView() {
     const goTo = (lat: number, lng: number) => {
       const a = { lat: Number(lat.toFixed(4)), lng: Number(lng.toFixed(4)), radiusKm: prefs.radiusKm };
       setArea(a);
-      setPrefs({ lat: a.lat, lng: a.lng, city: null, label: 'Ma position' });
+      setPrefs({ lat: a.lat, lng: a.lng, city: null, label: t("Ma position") });
       void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
       setSelected(null);
       setLocating(false);
@@ -302,7 +303,7 @@ export function MapView() {
 .map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #e6e7e9;transform:translateX(-50%)}
 .map-bubble.on::after{background:#111214;border-color:#111214}
 .leaflet-container{background:#eaecee;font-family:inherit}`}</style>
-      <div ref={mapEl} className="absolute inset-0" aria-label="Carte des salons" />
+      <div ref={mapEl} className="absolute inset-0" aria-label={t("Carte des salons")} />
 
       {/* Recherche et outils : les mêmes trois touches que la liste, la deuxième ramenant
           à la liste. Le tri est absent : sur une carte, il n'y a pas de premier résultat. */}
@@ -343,7 +344,7 @@ export function MapView() {
       <button
         type="button"
         className="ib lg absolute bottom-[15.5rem] right-5 z-[400] !shadow-card"
-        aria-label="Ma position"
+        aria-label={t("Ma position")}
         onClick={locate}
         disabled={locating}
       >
@@ -366,7 +367,7 @@ export function MapView() {
             onScroll={onCardsScroll}
             className="-mx-5 flex overflow-x-auto"
             style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
-            aria-label="Glisser pour voir les autres salons"
+            aria-label={t("Glisser pour voir les autres salons")}
           >
             {items.map((s) => (
               <div

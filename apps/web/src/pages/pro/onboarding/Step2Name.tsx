@@ -6,6 +6,7 @@ import { readProDraft, writeProDraft } from '@/lib/proDraft';
 import { Badge, Field, Input } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 export function Step2Name() {
   const navigate = useNavigate();
@@ -32,15 +33,15 @@ export function Step2Name() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={2} backTo={stepPath(1)} />
-      <h1 className="h1">Nom de votre salon</h1>
-      <Field label="Nom public" htmlFor="salon-name">
-        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Salon Sarah" autoFocus />
+      <h1 className="h1">{t("Nom de votre salon")}</h1>
+      <Field label={t("Nom public")} htmlFor="salon-name">
+        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t("Salon Sarah")} autoFocus />
       </Field>
       <div>
-        <span className="lbl">Votre lien de réservation</span>
+        <span className="lbl">{t("Votre lien de réservation")}</span>
         <div className="flex items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-fill px-4 py-[1.125rem] text-[1rem]">
           <span className="truncate">
-            {host}/s/{check?.slug || (name.trim() ? '…' : 'votre-salon')}
+            {host}{t("/s/")}{check?.slug || (name.trim() ? '…' : 'votre-salon')}
           </span>
           {check && (
             <Badge tone={check.available ? 'ok' : 'cn'} md>
@@ -49,7 +50,7 @@ export function Step2Name() {
           )}
         </div>
       </div>
-      <p className="p">Ce lien est unique et définitif. C'est lui que vous partagerez sur WhatsApp et Instagram.</p>
+      <p className="p">{t("Ce lien est unique et définitif. C'est lui que vous partagerez sur WhatsApp et Instagram.")}</p>
       <StepSheet
         disabled={name.trim().length < 2}
         onClick={() => {

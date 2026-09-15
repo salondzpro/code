@@ -7,6 +7,7 @@ import { NavLink } from 'react-router';
 import { useProPendingBookings } from '@salondz/api-client';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
+import { t } from '@/i18n';
 
 /**
  * Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée.
@@ -66,17 +67,17 @@ interface NavItem {
 }
 
 const CLIENT_NAV: NavItem[] = [
-  { to: '/', label: 'Marketplace', icon: LayoutGrid, end: true },
-  { to: '/rendez-vous', label: 'Rendez-vous', icon: Calendar },
-  { to: '/profil', label: 'Profil', icon: User },
+  { to: '/', label: t("Marketplace"), icon: LayoutGrid, end: true },
+  { to: '/rendez-vous', label: t("Rendez-vous"), icon: Calendar },
+  { to: '/profil', label: t("Profil"), icon: User },
 ];
 
 /** Navigation pro réduite à l'essentiel du quotidien : la gestion (salon, catalogue, équipe, clients, règles, compte) passe par Profil. */
 const PRO_NAV: NavItem[] = [
-  { to: '/pro', label: 'Accueil', icon: House, end: true },
-  { to: '/pro/agenda', label: 'Agenda', icon: CalendarDays },
-  { to: '/pro/reservations', label: 'Réservations', icon: Inbox },
-  { to: '/pro/profil', label: 'Profil', icon: Store },
+  { to: '/pro', label: t("Accueil"), icon: House, end: true },
+  { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays },
+  { to: '/pro/reservations', label: t("Réservations"), icon: Inbox },
+  { to: '/pro/profil', label: t("Profil"), icon: Store },
 ];
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {

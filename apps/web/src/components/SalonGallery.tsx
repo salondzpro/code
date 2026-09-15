@@ -11,6 +11,7 @@
 import { useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { I } from './ui';
+import { t } from '@/i18n';
 
 export function SalonGallery({
   images,
@@ -58,7 +59,7 @@ export function SalonGallery({
         <>
           <button
             type="button"
-            aria-label="Photo précédente"
+            aria-label={t("Photo précédente")}
             onClick={() => go(-1)}
             className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
           >
@@ -66,7 +67,7 @@ export function SalonGallery({
           </button>
           <button
             type="button"
-            aria-label="Photo suivante"
+            aria-label={t("Photo suivante")}
             onClick={() => go(1)}
             className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
           >

@@ -14,6 +14,7 @@ import { ApiError, queryKeys } from '@salondz/api-client';
 import { isTestPhone, type UserRole } from '@salondz/constants';
 import { api } from './api';
 import { supabase } from './supabase';
+import { t } from '@/i18n';
 
 /** Page qui reçoit les liens envoyés par e-mail (confirmation, connexion, mot de passe). */
 export function authRedirectUrl(path: string, next?: string): string {
@@ -170,8 +171,8 @@ const API_KINDS: Record<string, AuthErrorKind> = {
 export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: string } {
   // Erreurs de NOTRE API : déjà en français, avec un code métier.
   if (err instanceof ApiError) {
-    if (err.isNetwork) return { kind: 'network', text: 'Connexion perdue. Vérifiez votre réseau et réessayez.' };
-    if (err.status === 429) return { kind: 'rate', text: 'Trop de tentatives. Réessayez dans quelques minutes.' };
+    if (err.isNetwork) return { kind: 'network', text: t("Connexion perdue. Vérifiez votre réseau et réessayez.") };
+    if (err.status === 429) return { kind: 'rate', text: t("Trop de tentatives. Réessayez dans quelques minutes.") };
     return { kind: API_KINDS[err.code] ?? 'other', text: err.message || 'Une erreur est survenue. Réessayez.' };
   }
   const e = err as { code?: string; message?: string; status?: number } | null;
@@ -180,18 +181,18 @@ export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: st
   const has = (...needles: string[]) => needles.some((n) => code === n || msg.includes(n));
 
   if (has('signups not allowed for otp', 'signup_disabled', 'otp_disabled', 'user_not_found', 'user not found'))
-    return { kind: 'no_account', text: 'Aucun compte n’est associé à cette adresse.' };
+    return { kind: 'no_account', text: t("Aucun compte n’est associé à cette adresse.") };
   if (has('email_not_confirmed', 'email not confirmed'))
-    return { kind: 'unconfirmed', text: 'Votre adresse n’est pas encore confirmée : ouvrez le lien reçu par e-mail.' };
+    return { kind: 'unconfirmed', text: t("Votre adresse n’est pas encore confirmée : ouvrez le lien reçu par e-mail.") };
   if (has('invalid_credentials', 'invalid login credentials'))
-    return { kind: 'credentials', text: 'E-mail ou mot de passe incorrect.' };
+    return { kind: 'credentials', text: t("E-mail ou mot de passe incorrect.") };
   if (has('user_already_exists', 'email_exists', 'already registered', 'already exists', 'un compte existe déjà'))
-    return { kind: 'exists', text: 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.' };
+    return { kind: 'exists', text: t("Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.") };
   if (has('over_email_send_rate_limit', 'email rate limit')) {
     // Quota d'envoi d'e-mails du service (et non une faute de l'utilisateur) : on le dit.
     return {
       kind: 'rate',
-      text: 'Le service ne peut plus envoyer d’e-mail pour le moment. Réessayez dans une heure, ou connectez-vous si votre compte existe déjà.',
+      text: t("Le service ne peut plus envoyer d’e-mail pour le moment. Réessayez dans une heure, ou connectez-vous si votre compte existe déjà."),
     };
   }
   if (has('over_request_rate_limit', 'rate limit', 'too many requests', 'security purposes')) {
@@ -202,17 +203,17 @@ export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: st
     };
   }
   if (has('otp_expired', 'token has expired', 'link is invalid', 'expired', 'invalid or has expired', 'access_denied'))
-    return { kind: 'expired', text: 'Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.' };
+    return { kind: 'expired', text: t("Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.") };
   if (has('weak_password', 'password should be at least', 'password is too weak'))
-    return { kind: 'password', text: 'Mot de passe trop court : 8 caractères au minimum.' };
+    return { kind: 'password', text: t("Mot de passe trop court : 8 caractères au minimum.") };
   if (has('same_password', 'should be different from the old password'))
-    return { kind: 'password', text: 'Choisissez un mot de passe différent de l’ancien.' };
+    return { kind: 'password', text: t("Choisissez un mot de passe différent de l’ancien.") };
   if (has('email_address_invalid', 'invalid email', 'unable to validate email', 'is invalid', 'validation_failed'))
-    return { kind: 'email', text: 'Adresse e-mail invalide.' };
+    return { kind: 'email', text: t("Adresse e-mail invalide.") };
   if (has('failed to fetch', 'network', 'networkerror', 'load failed', 'fetch'))
-    return { kind: 'network', text: 'Connexion perdue. Vérifiez votre réseau et réessayez.' };
-  if (e?.status && e.status >= 500) return { kind: 'other', text: 'Le service est momentanément indisponible. Réessayez dans un instant.' };
-  return { kind: 'other', text: 'Une erreur est survenue. Réessayez.' };
+    return { kind: 'network', text: t("Connexion perdue. Vérifiez votre réseau et réessayez.") };
+  if (e?.status && e.status >= 500) return { kind: 'other', text: t("Le service est momentanément indisponible. Réessayez dans un instant.") };
+  return { kind: 'other', text: t("Une erreur est survenue. Réessayez.") };
 }
 
 /** Message lisible pour les erreurs de connexion les plus courantes de Supabase. */

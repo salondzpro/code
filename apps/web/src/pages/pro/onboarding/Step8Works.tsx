@@ -14,6 +14,7 @@ import { I, InfoBox } from '@/components/ui';
 import { Screen, SHEET_PAD, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 export function Step8Works({ settings }: { settings?: boolean }) {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
       />
       <div>
         <h1 className="h1">{settings ? 'Réalisations' : 'Vos réalisations'}</h1>
-        <p className="p mt-2">Vos photos de travail, visibles dans l'onglet « Réalisations ».</p>
+        <p className="p mt-2">{t("Vos photos de travail, visibles dans l'onglet « Réalisations ».")}</p>
       </div>
       <div className="g3">
         {works.map((w) => (
@@ -72,7 +73,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             <button
               type="button"
               className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"
-              aria-label="Retirer"
+              aria-label={t("Retirer")}
               onClick={() => void remove(w.url)}
               disabled={setWorks.isPending}
             >
@@ -86,7 +87,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[var(--radius-card-sm)] border border-dashed border-line bg-fill text-subtle"
             onClick={() => input.current?.click()}
             disabled={busy}
-            aria-label="Ajouter des réalisations"
+            aria-label={t("Ajouter des réalisations")}
           >
             <I icon={Plus} size={26} />
             <span className="text-[1rem]">{busy ? 'Envoi…' : 'Ajouter'}</span>
@@ -105,8 +106,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         }}
       />
       <InfoBox>
-        {works.length}/{SALON_MAX_WORKS} photos. Chaque prestation garde une seule image
-        représentative : ici, c'est votre vitrine.
+        {works.length}/{SALON_MAX_WORKS} {t("photos. Chaque prestation garde une seule image représentative : ici, c'est votre vitrine.")}
       </InfoBox>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">

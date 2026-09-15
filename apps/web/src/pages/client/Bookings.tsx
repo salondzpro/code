@@ -13,8 +13,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   untilLabelFR,
-  SHOW_SALON_CONTACT_TO_CLIENTS,
-} from '@salondz/constants';
+  SHOW_SALON_CONTACT_TO_CLIENTS, formatLocale } from '@salondz/constants';
 import {
   CalendarClock,
   CalendarX,
@@ -31,6 +30,7 @@ import { I, Img, LinkButton, Segmented, Skeleton, StatusBadge } from '@/componen
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import type { BookingWithSalon } from '@salondz/types';
+import { t } from '@/i18n';
 
 export function directionsUrl(b: BookingWithSalon): string {
   const q = [b.salon.name, b.salon.address, b.salon.city].filter(Boolean).join(', ');
@@ -40,11 +40,11 @@ export function directionsUrl(b: BookingWithSalon): string {
 type Scope = 'upcoming' | 'past' | 'cancelled';
 const DZ = 'Africa/Algiers';
 const dayNum = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', { day: 'numeric', timeZone: DZ }).format(new Date(iso));
+  new Intl.DateTimeFormat(formatLocale(), { day: 'numeric', timeZone: DZ }).format(new Date(iso));
 const monthShort = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', { month: 'short', timeZone: DZ }).format(new Date(iso));
+  new Intl.DateTimeFormat(formatLocale(), { month: 'short', timeZone: DZ }).format(new Date(iso));
 const weekday = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', { weekday: 'short', timeZone: DZ }).format(new Date(iso));
+  new Intl.DateTimeFormat(formatLocale(), { weekday: 'short', timeZone: DZ }).format(new Date(iso));
 
 /** Heure courante rafraîchie chaque minute (« dans 25 min »). */
 function useNow(): number {
@@ -146,7 +146,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             rel="noreferrer"
             className="btn g sm flex-1 !text-[1rem]"
           >
-            <I icon={Navigation} size={16} /> Itinéraire
+            <I icon={Navigation} size={16} /> {t("Itinéraire")}
           </a>
           {b.salon.allowClientReschedule !== false && (
             <LinkButton
@@ -155,7 +155,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               sm
               className="flex-1 !text-[1rem]"
             >
-              <I icon={CalendarClock} size={16} /> Reporter
+              <I icon={CalendarClock} size={16} /> {t("Reporter")}
             </LinkButton>
           )}
           {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
@@ -203,7 +203,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
       </div>
       {cancelled && b.cancellationReason && (
         <p className="flex items-start gap-1.5 text-[1rem] text-danger">
-          <I icon={Info} size={16} className="mt-0.5 flex-none" /> Motif : {b.cancellationReason}
+          <I icon={Info} size={16} className="mt-0.5 flex-none" /> {t("Motif :")}{' '}{b.cancellationReason}
         </p>
       )}
       {(b.status === 'completed' || cancelled) && (
@@ -214,7 +214,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
             sm
             className="flex-1 !text-[1rem]"
           >
-            <I icon={RotateCcw} size={16} /> Réserver à nouveau
+            <I icon={RotateCcw} size={16} /> {t("Réserver à nouveau")}
           </LinkButton>
           {b.status === 'completed' &&
             (b.reviewRating != null ? (
@@ -232,7 +232,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 auto
                 className="!px-5 !text-[1rem]"
               >
-                <I icon={Star} size={16} /> Noter
+                <I icon={Star} size={16} /> {t("Noter")}
               </LinkButton>
             ))}
         </div>
@@ -244,18 +244,18 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
 const EMPTY: Record<Scope, { icon: typeof CalendarClock; title: string; text: string }> = {
   upcoming: {
     icon: CalendarClock,
-    title: 'Aucun rendez-vous à venir',
-    text: 'Réservez en quelques secondes dans le salon de votre choix.',
+    title: t("Aucun rendez-vous à venir"),
+    text: t("Réservez en quelques secondes dans le salon de votre choix."),
   },
   past: {
     icon: History,
-    title: 'Aucun rendez-vous passé',
-    text: 'Vos rendez-vous terminés apparaîtront ici.',
+    title: t("Aucun rendez-vous passé"),
+    text: t("Vos rendez-vous terminés apparaîtront ici."),
   },
   cancelled: {
     icon: CalendarX,
-    title: 'Aucun rendez-vous annulé',
-    text: 'Tant mieux : rien d’annulé pour le moment.',
+    title: t("Aucun rendez-vous annulé"),
+    text: t("Tant mieux : rien d’annulé pour le moment."),
   },
 };
 
@@ -275,15 +275,15 @@ export function Bookings() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1">Rendez-vous</h1>
+      <h1 className="h1">{t("Rendez-vous")}</h1>
       <Segmented
-        label="Période"
+        label={t("Période")}
         value={scope}
         onChange={setScope}
         options={[
-          { value: 'upcoming', label: 'À venir', icon: CalendarClock },
-          { value: 'past', label: 'Passés', icon: History },
-          { value: 'cancelled', label: 'Annulés', icon: CalendarX },
+          { value: 'upcoming', label: t("À venir"), icon: CalendarClock },
+          { value: 'past', label: t("Passés"), icon: History },
+          { value: 'cancelled', label: t("Annulés"), icon: CalendarX },
         ]}
       />
       {list.isPending ? (
@@ -301,7 +301,7 @@ export function Bookings() {
           <div className="text-[1.143rem] font-bold">{empty.title}</div>
           <p className="p">{empty.text}</p>
           <LinkButton to="/" className="mt-2">
-            <I icon={Search} size={18} /> Explorer les salons
+            <I icon={Search} size={18} /> {t("Explorer les salons")}
           </LinkButton>
         </div>
       ) : scope === 'upcoming' ? (
@@ -313,7 +313,7 @@ export function Bookings() {
         hasMore={list.hasNextPage}
         loading={list.isFetchingNextPage}
         onMore={() => void list.fetchNextPage()}
-        label="Voir plus de rendez-vous"
+        label={t("Voir plus de rendez-vous")}
       />
     </Screen>
   );

@@ -8,6 +8,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { BottomSheet } from '@/components/ui';
 import { Splash } from '@/pages/auth/Splash';
 import { ServicesPicker } from './Team';
+import { t } from '@/i18n';
 
 export function TeamNew() {
   const navigate = useNavigate();
@@ -42,9 +43,9 @@ export function TeamNew() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo="/pro/equipe" right="Équipe" />
-      <h1 className="h1">Nouveau membre</h1>
-      <p className="p">Agenda propre, horaires du salon — modifiables ensuite dans sa fiche.</p>
-      <Field label="Prénom" htmlFor="staff-name">
+      <h1 className="h1">{t("Nouveau membre")}</h1>
+      <p className="p">{t("Agenda propre, horaires du salon — modifiables ensuite dans sa fiche.")}</p>
+      <Field label={t("Prénom")} htmlFor="staff-name">
         <Input
           id="staff-name"
           lg
@@ -53,8 +54,8 @@ export function TeamNew() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') void add();
           }}
-          placeholder="Prénom du membre"
-          aria-label="Nouveau membre"
+          placeholder={t("Prénom du membre")}
+          aria-label={t("Nouveau membre")}
           maxLength={60}
           autoFocus
         />

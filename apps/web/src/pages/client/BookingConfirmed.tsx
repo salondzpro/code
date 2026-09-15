@@ -31,6 +31,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import { formatDuration } from '@/lib/format';
 import type { BookingWithSalon } from '@salondz/types';
+import { t } from '@/i18n';
 
 function icsDate(iso: string): string {
   return new Date(iso)
@@ -50,7 +51,7 @@ export function googleCalendarUrl(b: BookingWithSalon): string {
 export function GoogleCalendarButton({ booking }: { booking: BookingWithSalon }) {
   return (
     <a href={googleCalendarUrl(booking)} target="_blank" rel="noreferrer" className="btn g">
-      <I icon={Calendar} size={18} /> Ajouter à votre calendrier Google
+      <I icon={Calendar} size={18} /> {t("Ajouter à votre calendrier Google")}
     </a>
   );
 }
@@ -145,14 +146,14 @@ export function BookingConfirmed() {
       </div>
       <LateRule startsAt={b.startsAt} />
       <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
-        <I icon={CalendarCheck} size={18} /> Voir le rendez-vous
+        <I icon={CalendarCheck} size={18} /> {t("Voir le rendez-vous")}
       </Button>
       <div className="g2">
         <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">
-          <I icon={Navigation} size={18} /> Itinéraire
+          <I icon={Navigation} size={18} /> {t("Itinéraire")}
         </a>
         <a href={googleCalendarUrl(b)} target="_blank" rel="noreferrer" className="btn g">
-          <I icon={Calendar} size={18} /> Calendrier
+          <I icon={Calendar} size={18} /> {t("Calendrier")}
         </a>
       </div>
       <span className="sr-only">{wilayaName(16)}</span>

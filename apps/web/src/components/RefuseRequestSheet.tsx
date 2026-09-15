@@ -11,6 +11,7 @@ import { REFUSAL_REASONS_FR, reasonOptions } from '@salondz/constants';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
 import { BottomSheet, Button } from './ui';
+import { t } from '@/i18n';
 
 export interface RefusedRequest {
   id: string;
@@ -31,18 +32,18 @@ export function RefuseRequestSheet({
       <div className="dim" onClick={onClose} />
       <BottomSheet className="!z-50">
         <div className="text-center">
-          <div className="text-[1.429rem] font-bold tracking-[-0.4px]">Refuser cette demande ?</div>
-          <p className="p mt-2">{request.clientName} sera prévenu·e et le créneau sera libéré.</p>
+          <div className="text-[1.429rem] font-bold tracking-[-0.4px]">{t("Refuser cette demande ?")}</div>
+          <p className="p mt-2">{request.clientName} {t("sera prévenu·e et le créneau sera libéré.")}</p>
         </div>
         <div className="crd !flex-row items-center justify-between !py-3">
-          <span className="text-[1rem]">Motif (optionnel)</span>
+          <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
           <PickerField
-            label="Motif du refus"
-            title="Pourquoi refuser ?"
+            label={t("Motif du refus")}
+            title={t("Pourquoi refuser ?")}
             options={reasonOptions(REFUSAL_REASONS_FR)}
             value={reason || null}
             onChange={setReason}
-            placeholder="Choisir"
+            placeholder={t("Choisir")}
             inline
           />
         </div>
@@ -55,10 +56,10 @@ export function RefuseRequestSheet({
             onClose();
           }}
         >
-          Refuser la demande
+          {t("Refuser la demande")}
         </Button>
         <Button variant="g" onClick={onClose}>
-          Garder
+          {t("Garder")}
         </Button>
       </BottomSheet>
     </>

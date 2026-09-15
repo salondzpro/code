@@ -40,6 +40,7 @@ import { useProPendingBookings, useProSalon } from '@salondz/api-client';
 import { supabase } from '@/lib/supabase';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
+import { t } from '@/i18n';
 
 interface Item {
   to: string;
@@ -105,19 +106,19 @@ export function ProHeader() {
   const drawer = (
     <>
       <div className="dim !z-[45]" onClick={() => setOpen(false)} />
-      <nav className="drw !gap-1" aria-label="Menu professionnel">
+      <nav className="drw !gap-1" aria-label={t("Menu professionnel")}>
         <div className="flex items-center justify-between">
           <span className="text-[1.143rem] leading-none tracking-[-0.4px]">
-            <span className="font-semibold">Salon</span>
-            <span className="ml-[0.16em] font-light text-muted">DZ</span>
+            <span className="font-semibold">{t("Salon")}</span>
+            <span className="ml-[0.16em] font-light text-muted">{t("DZ")}</span>
             <span className="ml-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
-              Pro
+              {t("Pro")}
             </span>
           </span>
           <button
             type="button"
             className="ib !border-0 !bg-transparent"
-            aria-label="Fermer le menu"
+            aria-label={t("Fermer le menu")}
             onClick={() => setOpen(false)}
           >
             <I icon={X} size={24} />
@@ -125,7 +126,7 @@ export function ProHeader() {
         </div>
 
         {salon && (
-          <Link to="/pro/profil" className="flex items-center gap-3 py-2" aria-label="Profil du salon">
+          <Link to="/pro/profil" className="flex items-center gap-3 py-2" aria-label={t("Profil du salon")}>
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={48} />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
@@ -140,38 +141,38 @@ export function ProHeader() {
         )}
 
         <Group
-          title="Au quotidien"
+          title={t("Au quotidien")}
           items={[
-            { to: '/pro', label: 'Accueil', icon: House, end: true },
-            { to: '/pro/agenda', label: 'Agenda', icon: CalendarDays },
-            { to: '/pro/reservations', label: 'Réservations', icon: Inbox, count: pending },
-            { to: '/pro/clients', label: 'Clients', icon: ContactRound },
-            { to: '/pro/chiffre-affaires', label: "Chiffre d'affaires", icon: ChartColumn },
+            { to: '/pro', label: t("Accueil"), icon: House, end: true },
+            { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays },
+            { to: '/pro/reservations', label: t("Réservations"), icon: Inbox, count: pending },
+            { to: '/pro/clients', label: t("Clients"), icon: ContactRound },
+            { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },
           ]}
         />
         <Group
-          title="Mon établissement"
+          title={t("Mon établissement")}
           items={[
-            { to: '/pro/mon-salon', label: 'Mon salon', icon: Store },
-            { to: '/pro/catalogue', label: 'Catalogue', icon: Tag },
-            { to: '/pro/equipe', label: 'Équipe', icon: Users },
-            { to: '/pro/profil/horaires', label: "Horaires d'ouverture", icon: Clock },
-            { to: '/pro/blocages', label: 'Fermetures et blocages', icon: CalendarOff },
-            { to: '/pro/reglages/rendez-vous', label: 'Règles de rendez-vous', icon: CalendarCog },
+            { to: '/pro/mon-salon', label: t("Mon salon"), icon: Store },
+            { to: '/pro/catalogue', label: t("Catalogue"), icon: Tag },
+            { to: '/pro/equipe', label: t("Équipe"), icon: Users },
+            { to: '/pro/profil/horaires', label: t("Horaires d'ouverture"), icon: Clock },
+            { to: '/pro/blocages', label: t("Fermetures et blocages"), icon: CalendarOff },
+            { to: '/pro/reglages/rendez-vous', label: t("Règles de rendez-vous"), icon: CalendarCog },
           ]}
         />
         <Group
-          title="Page publique"
+          title={t("Page publique")}
           items={[
-            ...(salon ? [{ to: `/s/${salon.slug}`, label: 'Voir ma page', icon: Eye }] : []),
-            { to: '/pro/lien', label: 'Lien et partage', icon: Share2 },
+            ...(salon ? [{ to: `/s/${salon.slug}`, label: t("Voir ma page"), icon: Eye }] : []),
+            { to: '/pro/lien', label: t("Lien et partage"), icon: Share2 },
           ]}
         />
         <Group
-          title="Compte"
+          title={t("Compte")}
           items={[
-            { to: '/pro/compte', label: 'Mon compte', icon: UserCircle },
-            { to: '/pro/notifications', label: 'Notifications', icon: Bell },
+            { to: '/pro/compte', label: t("Mon compte"), icon: UserCircle },
+            { to: '/pro/notifications', label: t("Notifications"), icon: Bell },
           ]}
         />
 
@@ -187,7 +188,7 @@ export function ProHeader() {
             }}
           >
             <I icon={LogOut} size={20} className="flex-none text-current" />
-            <span className="text-[1.143rem]">Se déconnecter</span>
+            <span className="text-[1.143rem]">{t("Se déconnecter")}</span>
           </button>
         </div>
       </nav>
@@ -200,7 +201,7 @@ export function ProHeader() {
         <button
           type="button"
           className="ib !border-0 !bg-transparent"
-          aria-label="Menu"
+          aria-label={t("Menu")}
           aria-expanded={open}
           onClick={() => setOpen(true)}
         >
@@ -219,8 +220,8 @@ export function ProHeader() {
         <Link
           to="/pro/rendez-vous/nouveau"
           className="mr-2 flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] bg-ink text-white"
-          aria-label="Nouveau rendez-vous"
-          title="Nouveau rendez-vous"
+          aria-label={t("Nouveau rendez-vous")}
+          title={t("Nouveau rendez-vous")}
         >
           <I icon={Plus} size={22} className="text-current" />
         </Link>

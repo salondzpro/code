@@ -11,6 +11,7 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 const GRANULARITY = [15, 30, 60];
 const BUFFERS = [0, 5, 10, 15, 30];
@@ -83,36 +84,36 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     return (
       <Screen bottom={SHEET_PAD} gap={16}>
         <StepBar step={10} backTo={settings ? '/pro/profil' : stepPath(9)} right="Disponibilités" />
-        <h1 className="h1">Vos créneaux</h1>
-        <SectionLabel>Créneaux proposés toutes les</SectionLabel>
+        <h1 className="h1">{t("Vos créneaux")}</h1>
+        <SectionLabel>{t("Créneaux proposés toutes les")}</SectionLabel>
         <div className="g3">
           {GRANULARITY.map((g) => (
             <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
-              {g} min
+              {g} {t("min")}
             </Slot>
           ))}
         </div>
-        <SectionLabel>Règles</SectionLabel>
+        <SectionLabel>{t("Règles")}</SectionLabel>
         <div className="crd !gap-0 !py-1">
           <label className="li">
-            <span className="text-[1rem] font-semibold">Pause entre deux rendez-vous</span>
-            <PickerField inline label="Temps de battement" value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
+            <span className="text-[1rem] font-semibold">{t("Pause entre deux rendez-vous")}</span>
+            <PickerField inline label={t("Temps de battement")} value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
           </label>
           <label className="li">
-            <span className="text-[1rem] font-semibold">Réserver au plus tard</span>
-            <PickerField inline label="Délai minimum de réservation" value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
+            <span className="text-[1rem] font-semibold">{t("Réserver au plus tard")}</span>
+            <PickerField inline label={t("Délai minimum de réservation")} value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
           </label>
           <Link to="/pro/equipe" className="li">
-            <span className="text-[1rem] font-semibold">Rendez-vous en même temps</span>
+            <span className="text-[1rem] font-semibold">{t("Rendez-vous en même temps")}</span>
             <span className="text-[1rem] text-muted">{staffCount}</span>
           </Link>
           <div className="li">
-            <span className="text-[1rem] font-semibold">Réservation en ligne</span>
-            <Toggle on={online} onChange={setOnline} label="Réservation en ligne" />
+            <span className="text-[1rem] font-semibold">{t("Réservation en ligne")}</span>
+            <Toggle on={online} onChange={setOnline} label={t("Réservation en ligne")} />
           </div>
           <div className="li">
-            <span className="text-[1rem] font-semibold">Je valide chaque demande</span>
-            <Toggle on={manual} onChange={setManual} label="Validation manuelle" />
+            <span className="text-[1rem] font-semibold">{t("Je valide chaque demande")}</span>
+            <Toggle on={manual} onChange={setManual} label={t("Validation manuelle")} />
           </div>
         </div>
         <StepSheet onClick={() => setPhase('rules')} />
@@ -123,23 +124,23 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={10} right="Réservation" backTo={undefined} />
-      <h1 className="h1">Règles de réservation</h1>
-      <SectionLabel>Réservable jusqu’à</SectionLabel>
+      <h1 className="h1">{t("Règles de réservation")}</h1>
+      <SectionLabel>{t("Réservable jusqu’à")}</SectionLabel>
       <div className="g3">
         {HORIZON.map((h) => (
           <Slot key={h} on={horizon === h} onClick={() => setHorizon(h)} className="!py-[1.625rem] !text-[1rem]">
-            {h} j
+            {h} {t("j")}
           </Slot>
         ))}
       </div>
       <div className="crd !gap-0 !py-1">
         <label className="li">
-          <span className="text-[1rem] font-semibold">Annulation gratuite jusqu'à</span>
-          <PickerField inline label="Annulation gratuite jusqu'à" value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
+          <span className="text-[1rem] font-semibold">{t("Annulation gratuite jusqu'à")}</span>
+          <PickerField inline label={t("Annulation gratuite jusqu'à")} value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
         </label>
         <div className="li">
-          <span className="text-[1rem] font-semibold">Le client peut reporter</span>
-          <Toggle on={report} onChange={setReport} label="Report client" />
+          <span className="text-[1rem] font-semibold">{t("Le client peut reporter")}</span>
+          <Toggle on={report} onChange={setReport} label={t("Report client")} />
         </div>
       </div>
       {error && (

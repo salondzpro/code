@@ -14,6 +14,7 @@ import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { RowText } from './MonSalon';
+import { t } from '@/i18n';
 
 export function ProAccount() {
   const navigate = useNavigate();
@@ -27,9 +28,9 @@ export function ProAccount() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">Compte</h1>
+      <h1 className="h1">{t("Compte")}</h1>
 
-      <SectionLabel>Profil professionnel</SectionLabel>
+      <SectionLabel>{t("Profil professionnel")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li">
           <RowText
@@ -40,28 +41,28 @@ export function ProAccount() {
             }
           />
           <Badge tone="ok" md>
-            Actif
+            {t("Actif")}
           </Badge>
         </div>
         <ListRow to="/pro/notifications">
-          <RowText icon={Bell} title="Notifications" sub="Demandes, confirmations, annulations" />
+          <RowText icon={Bell} title={t("Notifications")} sub="Demandes, confirmations, annulations" />
         </ListRow>
       </div>
 
-      <SectionLabel>Paramètres</SectionLabel>
+      <SectionLabel>{t("Paramètres")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <RowText icon={Globe} title="Page publiée" sub="Visible dans la marketplace" />
+          <RowText icon={Globe} title={t("Page publiée")} sub="Visible dans la marketplace" />
           <Toggle
             on={salon.isPublished}
             onChange={(v) =>
               updateSalon.mutate({ isPublished: v }, { onError: (e) => setError(errorText(e)) })
             }
-            label="Page publiée"
+            label={t("Page publiée")}
           />
         </div>
         <ListRow to="/">
-          <RowText icon={ArrowLeftRight} title="Espace client" sub="Réserver comme un client" />
+          <RowText icon={ArrowLeftRight} title={t("Espace client")} sub="Réserver comme un client" />
         </ListRow>
       </div>
       {error && (
@@ -83,7 +84,7 @@ export function ProAccount() {
             <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-cancel-bg">
               <I icon={LogOut} size={18} />
             </span>
-            <span className="text-[1rem] font-semibold">Se déconnecter</span>
+            <span className="text-[1rem] font-semibold">{t("Se déconnecter")}</span>
           </span>
         </button>
       </div>

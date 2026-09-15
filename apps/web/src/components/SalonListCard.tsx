@@ -13,6 +13,7 @@ import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@sa
 import { formatKm, formatRating } from '@/lib/clientPrefs';
 import { useAuth } from '@/lib/auth';
 import { I, IconButton, Img } from './ui';
+import { t } from '@/i18n';
 
 /** Catégories affichées sur une carte avant « … ». */
 const MAX_CARD_CATEGORIES = 3;
@@ -44,10 +45,10 @@ export function RatingLine({ avg, count }: { avg: number; count: number }) {
       {count > 0 ? (
         <>
           <b className="text-[1rem]">{formatRating(avg)}</b>
-          <span className="text-muted">({count} avis)</span>
+          <span className="text-muted">({count} {t("avis)")}</span>
         </>
       ) : (
-        <span className="font-medium text-muted">Nouveau sur Salon DZ</span>
+        <span className="font-medium text-muted">{t("Nouveau sur Salon DZ")}</span>
       )}
     </span>
   );
@@ -110,12 +111,12 @@ export function NextSlots({
     ? [
         {
           key: 'matin',
-          label: 'Matin',
+          label: t("Matin"),
           slots: next.morning ?? next.slots.filter((t) => t < '12:00').slice(0, 3),
         },
         {
           key: 'aprem',
-          label: 'Après-midi',
+          label: t("Après-midi"),
           slots: next.afternoon ?? next.slots.filter((t) => t >= '12:00').slice(0, 3),
         },
       ].filter((r) => r.slots.length > 0)
@@ -130,7 +131,7 @@ export function NextSlots({
             className="text-[0.857rem] font-semibold text-muted"
             onClick={(e) => go(e, `/s/${salon.slug}`)}
           >
-            Voir le salon →
+            {t("Voir le salon →")}
           </button>
         )}
       </div>
@@ -163,7 +164,7 @@ export function NextSlots({
       {/* Le jour est indiqué une seule fois, dans l'en-tête : les lignes MATIN / APRÈS-MIDI restent sur une ligne. */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
-          Prochaines disponibilités{' '}
+          {t("Prochaines disponibilités")}{' '}
           <span className="normal-case tracking-normal text-text">· {day}</span>
         </span>
         {more}
@@ -299,7 +300,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
                   navigate(href);
                 }}
               >
-                Plus d'infos
+                {t("Plus d'infos")}
               </button>
             }
           />

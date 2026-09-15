@@ -63,6 +63,7 @@ import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import type { SalonPublic, Service } from '@salondz/types';
+import { t } from '@/i18n';
 
 type Tab = 'book' | 'reviews' | 'about';
 
@@ -86,7 +87,7 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
         label: `Fermé · ouvre ${i === 1 ? 'demain' : DAY_LABELS_FR[d as 0].toLowerCase()} ${h.opensAt}`,
       };
   }
-  return { open: false, label: 'Fermé' };
+  return { open: false, label: t("Fermé") };
 }
 
 
@@ -146,29 +147,29 @@ export function Salon() {
       {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
           qu'on descend dans les prestations, sans avoir à remonter tout en haut. */}
       <Tabs
-        label="Sections du salon"
+        label={t("Sections du salon")}
         value={tab}
         onChange={setTab}
         // L'en-tête fait 3,5 rem et reste collé : les onglets se posent juste dessous.
         className="sticky top-[3.5rem] z-20"
         options={[
-          { value: 'book', label: 'Prendre RDV' },
-          { value: 'reviews', label: 'Avis' },
-          { value: 'about', label: 'À propos' },
+          { value: 'book', label: t("Prendre RDV") },
+          { value: 'reviews', label: t("Avis") },
+          { value: 'about', label: t("À propos") },
         ]}
       />
       {/* Album : couverture, photos du salon et réalisations réunies. */}
       <SalonGallery images={gallery} alt={`Photos de ${s.name}`}>
         <div className="absolute left-4 right-4 top-4 z-10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <IconButton lg aria-label="Retour" onClick={back}>
+            <IconButton lg aria-label={t("Retour")} onClick={back}>
               <I icon={ChevronLeft} />
             </IconButton>
           </div>
           <div className="flex gap-2.5">
             <IconButton
               lg
-              aria-label="Partager"
+              aria-label={t("Partager")}
               onClick={() => {
                 const url = window.location.href;
                 if (navigator.share)
@@ -230,10 +231,10 @@ export function Salon() {
                 {s.ratingCount > 0 ? (
                   <>
                     <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
-                    <span className="text-muted">({s.ratingCount} avis)</span>
+                    <span className="text-muted">({s.ratingCount} {t("avis)")}</span>
                   </>
                 ) : (
-                  <span>Pas encore d'avis</span>
+                  <span>{t("Pas encore d'avis")}</span>
                 )}
               </button>
               {priceRange && (
@@ -257,7 +258,7 @@ export function Salon() {
           <div className="g2">
             {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
               <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[1rem]">
-                <I icon={Phone} size={18} /> Appeler
+                <I icon={Phone} size={18} /> {t("Appeler")}
               </a>
             ) : (
               <button
@@ -270,7 +271,7 @@ export function Salon() {
                   else void navigator.clipboard.writeText(url);
                 }}
               >
-                <I icon={Share2} size={18} /> Partager
+                <I icon={Share2} size={18} /> {t("Partager")}
               </button>
             )}
             <a
@@ -279,7 +280,7 @@ export function Salon() {
               rel="noreferrer"
               className="btn g sm !py-[0.9375rem] !text-[1rem]"
             >
-              <I icon={Navigation} size={18} /> Itinéraire
+              <I icon={Navigation} size={18} /> {t("Itinéraire")}
             </a>
           </div>
           </>
@@ -297,7 +298,7 @@ export function Salon() {
                 <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
                 <span className="min-w-0">
                   <span className="block text-[1rem] font-bold text-cancel-fg">
-                    Réservation en ligne impossible
+                    {t("Réservation en ligne impossible")}
                   </span>
                   <span className="block text-[1rem] text-cancel-fg">
                     {standing.data.message}
@@ -307,16 +308,15 @@ export function Salon() {
                       href={`tel:${s.phone}`}
                       className="mt-1 inline-flex items-center gap-1.5 text-[1rem] font-semibold text-cancel-fg underline"
                     >
-                      <I icon={Phone} size={16} /> Appeler le salon
+                      <I icon={Phone} size={16} /> {t("Appeler le salon")}
                     </a>
                   )}
                 </span>
               </div>
             )}
-            <h2 className="h1 !text-[1.429rem]">Choix de la prestation</h2>
+            <h2 className="h1 !text-[1.429rem]">{t("Choix de la prestation")}</h2>
             <p className="p !text-[1rem]">
-              Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un
-              rendez-vous par prestation.
+              {t("Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.")}
             </p>
             {groups.map((g) => (
               <Accordion
@@ -360,19 +360,19 @@ export function Salon() {
                       onClick={() => chooseService(sv.id)}
                       disabled={cannotBook}
                     >
-                      Choisir
+                      {t("Choisir")}
                     </Button>
                   </div>
                 ))}
               </Accordion>
             ))}
-            {s.services.length === 0 && <p className="p py-3">Aucune prestation pour le moment.</p>}
+            {s.services.length === 0 && <p className="p py-3">{t("Aucune prestation pour le moment.")}</p>}
           </div>
         )}
 
         {tab === 'reviews' && (
           <div className="flex flex-col gap-2.5">
-            <h2 className="h1 !text-[1.429rem]">Avis</h2>
+            <h2 className="h1 !text-[1.429rem]">{t("Avis")}</h2>
             {s.ratingCount > 0 ? (
               <div className="crd !flex-row !items-center !gap-3.5">
                 <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]">
@@ -386,20 +386,20 @@ export function Salon() {
                     </span>
                   </span>
                   <span className="block text-[1rem] text-muted">
-                    {s.ratingCount} avis vérifié{s.ratingCount > 1 ? 's' : ''} · après rendez-vous
+                    {s.ratingCount} {t("avis vérifié")}{s.ratingCount > 1 ? 's' : ''} {t("· après rendez-vous")}
                   </span>
                 </span>
               </div>
             ) : (
-              <p className="p py-2">Pas encore d'avis : soyez le premier après votre rendez-vous.</p>
+              <p className="p py-2">{t("Pas encore d'avis : soyez le premier après votre rendez-vous.")}</p>
             )}
             {s.ratingCount > 0 && (
-              <div className="pills -mx-4 px-4" role="group" aria-label="Trier les avis">
+              <div className="pills -mx-4 px-4" role="group" aria-label={t("Trier les avis")}>
                 <Pill lg on={reviewSort === 'best'} onClick={() => setReviewSort('best')}>
-                  Mieux notés
+                  {t("Mieux notés")}
                 </Pill>
                 <Pill lg on={reviewSort === 'recent'} onClick={() => setReviewSort('recent')}>
-                  Plus récents
+                  {t("Plus récents")}
                 </Pill>
               </div>
             )}
@@ -422,7 +422,7 @@ export function Salon() {
             ))}
             {reviewItems.length > 0 && (
               <LinkButton to={`/s/${s.slug}/avis`} variant="g">
-                Tous les avis
+                {t("Tous les avis")}
               </LinkButton>
             )}
           </div>
@@ -433,13 +433,13 @@ export function Salon() {
             {/* 1. Où. L'adresse n'est PAS répétée ici : le bloc d'identité, juste au-dessus,
                 reste visible sur tous les onglets et la porte déjà, cliquable. Cette section
                 n'ajoute que ce qu'il n'a pas, la carte. */}
-            <h2 className="h1 !text-[1.429rem]">Où se situe le salon&nbsp;?</h2>
+            <h2 className="h1 !text-[1.429rem]">{t("Où se situe le salon ?")}</h2>
             <div className="relative">
               {s.lat != null && s.lng != null ? (
                 <MiniMap lat={s.lat} lng={s.lng} radiusKm={0.4} className="h-[11rem]" />
               ) : (
                 <div className="flex h-[11rem] items-center justify-center rounded-[var(--radius-card)] border border-line bg-fill">
-                  <span className="p">Position non renseignée</span>
+                  <span className="p">{t("Position non renseignée")}</span>
                 </div>
               )}
               <a
@@ -448,12 +448,12 @@ export function Salon() {
                 rel="noreferrer"
                 className="btn auto absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-1/2 !rounded-full !px-5 !py-3 !text-[1rem]"
               >
-                <I icon={MapIcon} size={18} /> Afficher la carte
+                <I icon={MapIcon} size={18} /> {t("Afficher la carte")}
               </a>
             </div>
 
             {/* 2. Quand. Aujourd'hui en tête, puis la semaine à partir d'aujourd'hui. */}
-            <h2 className="h1 !text-[1.429rem]">Horaires d'ouverture</h2>
+            <h2 className="h1 !text-[1.429rem]">{t("Horaires d'ouverture")}</h2>
             <div className="crd !gap-0 !py-1">
               {weekFromToday.map((d, idx) => {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
@@ -503,9 +503,9 @@ export function Salon() {
             {/* 4. Ce qu'il faut savoir : replié, on ne le lit que si on le cherche. */}
             {(s.description || cats) && (
               <>
-                <h2 className="h1 !text-[1.429rem]">Informations</h2>
+                <h2 className="h1 !text-[1.429rem]">{t("Informations")}</h2>
                 <Accordion
-                  title="À propos du salon"
+                  title={t("À propos du salon")}
                   open={aboutOpen}
                   onToggle={() => setAboutOpen((v) => !v)}
                 >
@@ -521,7 +521,7 @@ export function Salon() {
                 pas de seconde grille ici — seulement l'accès à la planche complète. */}
             {works.length > 0 && (
               <LinkButton to={`/s/${s.slug}/realisations`} variant="g">
-                Voir les {works.length} réalisation{works.length > 1 ? 's' : ''}
+                {t("Voir les")}{' '}{works.length} {t("réalisation")}{works.length > 1 ? 's' : ''}
               </LinkButton>
             )}
           </div>

@@ -12,6 +12,7 @@ import { Button, I, Img, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { t } from '@/i18n';
 
 export function ProServices() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function ProServices() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">Catalogue</h1>
+      <h1 className="h1">{t("Catalogue")}</h1>
       <button
         type="button"
         className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-left"
@@ -32,7 +33,7 @@ export function ProServices() {
           <I icon={Tags} size={18} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[1rem] font-semibold">Catégories</span>
+          <span className="block text-[1rem] font-semibold">{t("Catégories")}</span>
           <span className="block truncate text-[1rem] text-muted">
             {groups.length
               ? groups.map((g) => g.name).join(' · ')
@@ -42,7 +43,7 @@ export function ProServices() {
         <I icon={ChevronRight} size={18} className="text-disabled" />
       </button>
       <ErrorMessage error={update.error ?? remove.error} />
-      {salon.services.length === 0 && <p className="p">Ajoutez votre première prestation.</p>}
+      {salon.services.length === 0 && <p className="p">{t("Ajoutez votre première prestation.")}</p>}
       {groups.map((g) => (
         <div key={g.name} className="flex flex-col gap-3">
           <SectionLabel right={<span className="s">{g.services.length}</span>}>
@@ -100,7 +101,7 @@ export function ProServices() {
       ))}
       {/* L'ajout ferme la liste, comme sur Équipe et Catégories. */}
       <Button onClick={() => navigate('/pro/onboarding/6')}>
-        <I icon={Plus} size={18} /> Ajouter une prestation
+        <I icon={Plus} size={18} /> {t("Ajouter une prestation")}
       </Button>
     </Screen>
   );

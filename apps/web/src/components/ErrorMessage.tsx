@@ -1,4 +1,5 @@
 import { ApiError } from '@salondz/api-client';
+import { t } from '@/i18n';
 
 const FALLBACKS: Record<string, string> = {
   NETWORK: 'Pas de connexion. Vérifiez votre réseau puis réessayez.',
@@ -42,7 +43,7 @@ export function ErrorMessage({ error, retry, className = '' }: { error: unknown;
       )}
       {retry && (
         <button type="button" onClick={retry} className="mt-2 underline">
-          Réessayer
+          {t("Réessayer")}
         </button>
       )}
     </div>

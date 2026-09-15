@@ -11,6 +11,7 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
 
@@ -57,38 +58,38 @@ export function Step6Service() {
       <StepBar step={6} backTo={first ? stepPath(4) : '/pro/catalogue'} />
       <h1 className="h1">{existing ? 'Modifier la prestation' : first ? 'Première prestation' : 'Nouvelle prestation'}</h1>
       <form id="service" onSubmit={submit} className="flex flex-col gap-4">
-        <Field label="Nom" htmlFor="svc-name">
-          <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Pose gel" autoFocus />
+        <Field label={t("Nom")} htmlFor="svc-name">
+          <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t("Pose gel")} autoFocus />
         </Field>
         <div className="g2">
-          <Field label="Prix" htmlFor="svc-price">
+          <Field label={t("Prix")} htmlFor="svc-price">
             <div className="relative">
               <Input id="svc-price" lg inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} placeholder="2 500" className="!pr-12" />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">DA</span>
             </div>
           </Field>
-          <Field label="Durée (minutes)" htmlFor="svc-duration" hint={formatDuration(duration)}>
+          <Field label={t("Durée (minutes)")} htmlFor="svc-duration" hint={formatDuration(duration)}>
             <div className="relative">
               <Input id="svc-duration" lg inputMode="numeric" value={String(duration || '')} onChange={(e) => setDuration(Math.min(480, Number(e.target.value.replace(/\D/g, '')) || 0))} placeholder="45" className="!pr-14" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">min</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">{t("min")}</span>
             </div>
           </Field>
         </div>
-        <div className="pills -mx-5 px-5" aria-label="Durées courantes">
+        <div className="pills -mx-5 px-5" aria-label={t("Durées courantes")}>
           {DURATIONS.map((d) => (
             <Pill key={d} lg on={duration === d} onClick={() => setDuration(d)}>
               {formatDuration(d)}
             </Pill>
           ))}
         </div>
-        <Field label="Catégorie" htmlFor="svc-cat" hint="Choisissez une catégorie Salon DZ ou créez la vôtre : elle classe la prestation sur votre profil.">
+        <Field label={t("Catégorie")} htmlFor="svc-cat" hint={t("Choisissez une catégorie Salon DZ ou créez la vôtre : elle classe la prestation sur votre profil.")}>
           <PickerField
-            label="Catégorie"
+            label={t("Catégorie")}
             value={pick}
-            placeholder="Sans catégorie"
+            placeholder={t("Sans catégorie")}
             display={creating ? 'Nouvelle catégorie' : undefined}
             options={[
-              { value: '', label: 'Sans catégorie' },
+              { value: '', label: t("Sans catégorie") },
               ...groups.map((g) => ({ value: `g:${g}`, label: g, group: 'Mes catégories' })),
               ...suggested.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Suggérées pour votre salon' })),
               ...others.map((c) => ({ value: `c:${c.id}`, label: c.labelFr, group: 'Autres catégories Salon DZ' })),
@@ -108,7 +109,7 @@ export function Step6Service() {
               }
             }}
             action={{
-              label: 'Créer une nouvelle catégorie',
+              label: t("Créer une nouvelle catégorie"),
               onClick: () => {
                 setCreating(true);
                 setGroup('');
@@ -116,10 +117,10 @@ export function Step6Service() {
               },
             }}
           />
-          {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder="Nom de la nouvelle catégorie (ex. Soins de la barbe)" aria-label="Nouvelle catégorie" autoFocus />}
+          {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder={t("Nom de la nouvelle catégorie (ex. Soins de la barbe)")} aria-label={t("Nouvelle catégorie")} autoFocus />}
         </Field>
-        <Field label="Description" htmlFor="svc-desc">
-          <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder="Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines." />
+        <Field label={t("Description")} htmlFor="svc-desc">
+          <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder={t("Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines.")} />
         </Field>
         {error && (
           <p className="text-[1rem] text-danger" role="alert">
@@ -127,7 +128,7 @@ export function Step6Service() {
           </p>
         )}
       </form>
-      <StepSheet label="Ajouter une photo" onClick={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price || duration < 5} />
+      <StepSheet label={t("Ajouter une photo")} onClick={() => void submit()} busy={create.isPending || update.isPending} disabled={!name.trim() || !price || duration < 5} />
     </Screen>
   );
 }

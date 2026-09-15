@@ -55,6 +55,7 @@ import {
 } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
 import { Accordion, Avatar, Button, I, Pill } from './ui';
+import { t } from '@/i18n';
 
 const PLACEHOLDER: Record<Market, string> = {
   men: 'Barbier, coupe, barbe…',
@@ -119,7 +120,7 @@ export function SearchField({
       <button
         type="button"
         className={`srch${shadow ? ' sh' : ''} w-full text-left ${className}`}
-        aria-label="Modifier la recherche"
+        aria-label={t("Modifier la recherche")}
         onClick={() => setOpen(true)}
       >
         <I icon={Search} size={20} className="flex-none text-muted" />
@@ -130,7 +131,7 @@ export function SearchField({
             {q || PLACEHOLDER[market]}
           </span>
           <span className="block truncate text-[1rem] text-muted">
-            {place} · {radiusKm} km
+            {place} · {radiusKm} {t("km")}
           </span>
         </span>
       </button>
@@ -141,7 +142,7 @@ export function SearchField({
       <button
         type="button"
         className="ib -ml-2.5 !border-0 !bg-transparent"
-        aria-label="Fermer"
+        aria-label={t("Fermer")}
         onClick={close}
       >
         <I icon={X} size={24} />
@@ -157,7 +158,7 @@ export function SearchField({
       >
         <I icon={Search} size={20} className="flex-none text-muted" />
         <input
-          aria-label="Recherche"
+          aria-label={t("Recherche")}
           autoFocus
           value={qDraft}
           onChange={(e) => setQDraft(e.target.value)}
@@ -169,7 +170,7 @@ export function SearchField({
           <button
             type="button"
             className="flex-none text-[1rem] text-muted"
-            aria-label="Effacer la recherche"
+            aria-label={t("Effacer la recherche")}
             onClick={() => setQDraft('')}
           >
             ✕
@@ -180,7 +181,7 @@ export function SearchField({
       <div className={`srch${shadow ? ' sh' : ''}`}>
         <I icon={MapPin} size={20} className="flex-none text-muted" />
         <input
-          aria-label="Lieu"
+          aria-label={t("Lieu")}
           value={placeDraft}
           onChange={(e) => setPlaceDraft(e.target.value)}
           onFocus={() => setFocus('place')}
@@ -231,7 +232,7 @@ export function SearchField({
           ))}
           {data.services.length === 0 && data.salons.length === 0 && (
             <button type="button" className="li w-full text-left" onClick={() => submit(qDraft)}>
-              <span className="text-[1rem] font-semibold">Rechercher « {qDraft.trim()} »</span>
+              <span className="text-[1rem] font-semibold">{t("Rechercher «")}{' '}{qDraft.trim()} »</span>
               <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
             </button>
           )}
@@ -271,9 +272,9 @@ export function SearchField({
                 <I icon={Crosshair} size={18} />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[1rem] font-semibold">Autour de moi</span>
+                <span className="block truncate text-[1rem] font-semibold">{t("Autour de moi")}</span>
                 <span className="block truncate text-[0.857rem] text-muted">
-                  Ma position · rayon {radiusKm} km
+                  {t("Ma position · rayon")}{' '}{radiusKm} {t("km")}
                 </span>
               </span>
             </span>
@@ -312,7 +313,7 @@ function Panel({
         <button
           type="button"
           className="ib -ml-2.5 !border-0 !bg-transparent"
-          aria-label="Fermer"
+          aria-label={t("Fermer")}
           onClick={onClose}
         >
           <I icon={X} size={24} />
@@ -320,13 +321,13 @@ function Panel({
         <div className="flex items-end justify-between gap-3">
           <h2 className="h1">{title}</h2>
           <button type="button" className="text-[1rem] text-muted underline" onClick={onReset}>
-            Réinitialiser
+            {t("Réinitialiser")}
           </button>
         </div>
       </div>
       <div className="pnl-bd">{children}</div>
       <div className="pnl-ft">
-        <Button onClick={onSave}>Enregistrer</Button>
+        <Button onClick={onSave}>{t("Enregistrer")}</Button>
       </div>
     </div>,
     document.body,
@@ -382,7 +383,7 @@ export function SearchTools({
 
   return (
     <>
-      <div className={`tools ${className}`} aria-label="Prestations, vue et filtres">
+      <div className={`tools ${className}`} aria-label={t("Prestations, vue et filtres")}>
         <button
           type="button"
           className={`tool${category ? ' on' : ''}`}
@@ -390,7 +391,7 @@ export function SearchTools({
           onClick={openCategories}
         >
           <I icon={Tag} size={18} className="text-muted" />
-          Prestations
+          {t("Prestations")}
           {!!category && <span className="n">1</span>}
         </button>
         <button type="button" className="tool" onClick={onView}>
@@ -404,14 +405,14 @@ export function SearchTools({
           onClick={openFilters}
         >
           <I icon={SlidersHorizontal} size={18} className="text-muted" />
-          Filtres
+          {t("Filtres")}
           {filterCount > 0 && <span className="n">{filterCount}</span>}
         </button>
       </div>
 
       {open === 'cat' && (
         <Panel
-          title="Prestations"
+          title={t("Prestations")}
           onClose={() => setOpen(null)}
           onReset={() => setCatDraft('')}
           onSave={() => {
@@ -437,7 +438,7 @@ export function SearchTools({
 
       {open === 'filters' && (
         <Panel
-          title="Filtres"
+          title={t("Filtres")}
           onClose={() => setOpen(null)}
           onReset={() =>
             setDraft({
@@ -454,7 +455,7 @@ export function SearchTools({
           }}
         >
           <Accordion
-            title="Disponibilités"
+            title={t("Disponibilités")}
             open={section === 'dispo'}
             onToggle={() => toggleSection('dispo')}
           >
@@ -465,7 +466,7 @@ export function SearchTools({
                 aria-pressed={draft.availableToday}
                 onClick={() => setDraft({ ...draft, availableToday: !draft.availableToday })}
               >
-                Disponible aujourd&apos;hui
+                {t("Disponible aujourd'hui")}
               </Pill>
               <Pill
                 lg
@@ -473,7 +474,7 @@ export function SearchTools({
                 aria-pressed={draft.openNow}
                 onClick={() => setDraft({ ...draft, openNow: !draft.openNow })}
               >
-                Ouvert maintenant
+                {t("Ouvert maintenant")}
               </Pill>
             </div>
           </Accordion>
@@ -481,13 +482,13 @@ export function SearchTools({
           {/* Le rayon est le troisième paramètre d'une recherche, avec le quoi et le où : il
               vit ici, à côté des autres filtres, et se lit dans la carte de recherche. */}
           <Accordion
-            title="Distance"
+            title={t("Distance")}
             hint={prefs.lat != null ? `Autour de ${prefs.label}` : 'Autour de votre position'}
             open={section === 'dist'}
             onToggle={() => toggleSection('dist')}
           >
             <div className="flex flex-col gap-3 py-3">
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Rayon">
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("Rayon")}>
                 {RADIUS_OPTIONS.map((km) => (
                   <Pill
                     key={km}
@@ -497,20 +498,19 @@ export function SearchTools({
                     aria-checked={draft.radiusKm === km}
                     onClick={() => setDraft({ ...draft, radiusKm: km })}
                   >
-                    {km} km
+                    {km} {t("km")}
                   </Pill>
                 ))}
               </div>
               {prefs.lat == null && (
                 <p className="p text-[0.857rem]">
-                  Le rayon s'applique autour d'une position : touchez « Ma position » ou une adresse
-                  précise dans la recherche.
+                  {t("Le rayon s'applique autour d'une position : touchez « Ma position » ou une adresse précise dans la recherche.")}
                 </p>
               )}
             </div>
           </Accordion>
 
-          <Accordion title="Note" open={section === 'note'} onToggle={() => toggleSection('note')}>
+          <Accordion title={t("Note")} open={section === 'note'} onToggle={() => toggleSection('note')}>
             <div className="flex flex-wrap gap-2 py-3">
               {RATINGS.map((r) => (
                 <Pill
@@ -520,7 +520,7 @@ export function SearchTools({
                   aria-pressed={draft.ratingMin === r}
                   onClick={() => setDraft({ ...draft, ratingMin: draft.ratingMin === r ? null : r })}
                 >
-                  {r.toFixed(1).replace('.', ',')} et plus
+                  {r.toFixed(1).replace('.', ',')} {t("et plus")}
                 </Pill>
               ))}
             </div>
@@ -528,11 +528,11 @@ export function SearchTools({
 
           {withSort && (
             <Accordion
-              title="Trier par"
+              title={t("Trier par")}
               open={section === 'sort'}
               onToggle={() => toggleSection('sort')}
             >
-              <div role="radiogroup" aria-label="Trier par">
+              <div role="radiogroup" aria-label={t("Trier par")}>
                 {SORT_OPTIONS.map((o) => (
                   <button
                     key={o.value}

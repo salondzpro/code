@@ -17,6 +17,7 @@ import { Pill, Skeleton, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function SalonReviews() {
   const { slug = '' } = useParams();
@@ -38,7 +39,7 @@ export function SalonReviews() {
   return (
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
-      <h1 className="h1">Avis</h1>
+      <h1 className="h1">{t("Avis")}</h1>
       {has ? (
         <div className="crd !flex-row !items-center !gap-4">
           <span className="text-[2.286rem] font-bold leading-none tracking-[-1px]">
@@ -50,22 +51,22 @@ export function SalonReviews() {
               <span className="text-disabled">{'★'.repeat(5 - Math.round(avg))}</span>
             </span>
             <span className="block text-[1rem] text-muted">
-              {count} avis vérifié{count > 1 ? 's' : ''} · après rendez-vous
+              {count} {t("avis vérifié")}{count > 1 ? 's' : ''} {t("· après rendez-vous")}
             </span>
           </span>
         </div>
       ) : (
         <p className="p py-3 text-center">
-          Pas encore d'avis : soyez le premier après votre rendez-vous.
+          {t("Pas encore d'avis : soyez le premier après votre rendez-vous.")}
         </p>
       )}
       {has && (
-        <div className="pills -mx-5 px-5" role="group" aria-label="Trier les avis">
+        <div className="pills -mx-5 px-5" role="group" aria-label={t("Trier les avis")}>
           <Pill lg on={sort === 'best'} onClick={() => setSort('best')}>
-            Mieux notés
+            {t("Mieux notés")}
           </Pill>
           <Pill lg on={sort === 'recent'} onClick={() => setSort('recent')}>
-            Plus récents
+            {t("Plus récents")}
           </Pill>
         </div>
       )}
@@ -87,7 +88,7 @@ export function SalonReviews() {
         hasMore={reviews.hasNextPage}
         loading={reviews.isFetchingNextPage}
         onMore={() => void reviews.fetchNextPage()}
-        label="Voir plus d'avis"
+        label={t("Voir plus d'avis")}
         auto={false}
       />
     </Screen>

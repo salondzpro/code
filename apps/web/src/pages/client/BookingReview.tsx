@@ -36,6 +36,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function BookingReview() {
   const { slug = '' } = useParams();
@@ -103,7 +104,7 @@ export function BookingReview() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/s/${slug}/reserver/coordonnees`} right="Étape 3 sur 3" />
-      <h1 className="h1">Récapitulatif</h1>
+      <h1 className="h1">{t("Récapitulatif")}</h1>
 
       {/* Impossible de réserver : dit d'abord, en grand, avec la solution (appeler). */}
       {blockedMessage && (
@@ -112,12 +113,12 @@ export function BookingReview() {
           role="alert"
         >
           <span className="flex items-center gap-2.5 text-[1.143rem] font-bold text-cancel-fg">
-            <I icon={Ban} size={22} /> Réservation en ligne impossible
+            <I icon={Ban} size={22} /> {t("Réservation en ligne impossible")}
           </span>
           <p className="text-[1rem] text-cancel-fg">{blockedMessage}</p>
           {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
             <a href={`tel:${s.phone}`} className="btn g sm !text-[1rem]">
-              <I icon={Phone} size={18} /> Appeler le salon
+              <I icon={Phone} size={18} /> {t("Appeler le salon")}
             </a>
           )}
         </div>
@@ -175,18 +176,16 @@ export function BookingReview() {
 
       <div className="crd !gap-2">
         <span className="flex items-center gap-2 text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
-          <I icon={CalendarCheck} size={16} /> Bon à savoir
+          <I icon={CalendarCheck} size={16} /> {t("Bon à savoir")}
         </span>
         <ul className="ml-1 flex list-disc flex-col gap-1.5 pl-4 text-[1rem]">
           <li>
-            Arrivez à <b>{late.arriveAt}</b> ({ARRIVAL_ADVANCE_MINUTES} min avant). Retard toléré
-            jusqu'à <b>{late.lateUntil}</b> ({LATE_TOLERANCE_MINUTES} min).
+            {t("Arrivez à")}{' '}<b>{late.arriveAt}</b> ({ARRIVAL_ADVANCE_MINUTES} {t("min avant). Retard toléré jusqu'à")}{' '}<b>{late.lateUntil}</b> ({LATE_TOLERANCE_MINUTES} {t("min).")}
           </li>
           <li>
-            Annulation ou report gratuits jusqu'à {s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} h
-            avant.
+            {t("Annulation ou report gratuits jusqu'à")}{' '}{s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS} {t("h avant.")}
           </li>
-          <li>Confirmation et rappel avant le rendez-vous.</li>
+          <li>{t("Confirmation et rappel avant le rendez-vous.")}</li>
         </ul>
       </div>
 
@@ -194,7 +193,7 @@ export function BookingReview() {
         <div className="flex flex-col gap-3">
           <ErrorMessage error={new Error(slotError)} />
           <Button variant="g" onClick={() => navigate(`/s/${slug}/reserver/quand`)}>
-            Choisir un autre créneau
+            {t("Choisir un autre créneau")}
           </Button>
         </div>
       )}

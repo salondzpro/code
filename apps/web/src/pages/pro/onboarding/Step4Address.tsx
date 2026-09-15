@@ -17,6 +17,7 @@ import { I, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 export function Step4Address({ settings }: { settings?: boolean }) {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    if (zone.trim().length < 2) return setError('Indiquez votre quartier.');
+    if (zone.trim().length < 2) return setError(t("Indiquez votre quartier."));
     setError(null);
     setBusy(true);
     try {
@@ -46,7 +47,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
         let normalizedPhone: string | undefined;
         if (phone.trim()) {
           const parsed = phoneDZ.safeParse(phone);
-          if (!parsed.success) return setError('Numéro algérien invalide.');
+          if (!parsed.success) return setError(t("Numéro algérien invalide."));
           normalizedPhone = parsed.data;
         }
         await updateSalon.mutateAsync({ wilayaCode: wilaya, city: zone.trim(), zone: zone.trim(), address: address.trim() || undefined, homeService: home, phone: normalizedPhone });
@@ -81,11 +82,11 @@ export function Step4Address({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={4} backTo={settings ? '/pro/profil' : stepPath(3)} right={settings ? 'Adresse' : undefined} />
-      <h1 className="h1">Où vous trouver ?</h1>
+      <h1 className="h1">{t("Où vous trouver ?")}</h1>
       <form id="address" onSubmit={submit} className="flex flex-col gap-4">
         <label className="search !border-[1.5px] !border-ink !bg-surface">
           <I icon={Search} size={20} className="text-subtle" />
-          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue des Frères Bouadou, Hydra" aria-label="Adresse" maxLength={200} />
+          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t("12 rue des Frères Bouadou, Hydra")} aria-label={t("Adresse")} maxLength={200} />
         </label>
         <div className="relative h-[13.75rem] overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill">
           <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '110px 80px' }} />
@@ -96,25 +97,25 @@ export function Step4Address({ settings }: { settings?: boolean }) {
         </div>
         <div className="crd !gap-0 !py-1">
           <label className="li">
-            <span className="text-[1rem] font-semibold">Ville</span>
-            <PickerField inline label="Ville" title="Wilaya" value={wilaya} onChange={setWilaya} options={WILAYAS.map((w) => ({ value: w.code, label: w.name, hint: `Wilaya ${String(w.code).padStart(2, '0')}` }))} />
+            <span className="text-[1rem] font-semibold">{t("Ville")}</span>
+            <PickerField inline label={t("Ville")} title={t("Wilaya")} value={wilaya} onChange={setWilaya} options={WILAYAS.map((w) => ({ value: w.code, label: w.name, hint: `Wilaya ${String(w.code).padStart(2, '0')}` }))} />
           </label>
           <label className="li">
-            <span className="text-[1rem] font-semibold">Quartier</span>
-            <input className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Hydra" aria-label="Quartier" maxLength={80} />
+            <span className="text-[1rem] font-semibold">{t("Quartier")}</span>
+            <input className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder={t("Hydra")} aria-label={t("Quartier")} maxLength={80} />
           </label>
           {settings && (
             <label className="li">
-              <span className="text-[1rem] font-semibold">Téléphone</span>
-              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label="Téléphone du salon" />
+              <span className="text-[1rem] font-semibold">{t("Téléphone")}</span>
+              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label={t("Téléphone du salon")} />
             </label>
           )}
           <div className="li">
             <span>
-              <span className="block text-[1rem] font-semibold">Se déplacer à domicile</span>
-              <span className="p block text-[1rem]">Prestations hors salon</span>
+              <span className="block text-[1rem] font-semibold">{t("Se déplacer à domicile")}</span>
+              <span className="p block text-[1rem]">{t("Prestations hors salon")}</span>
             </span>
-            <Toggle on={home} onChange={setHome} label="Se déplacer à domicile" />
+            <Toggle on={home} onChange={setHome} label={t("Se déplacer à domicile")} />
           </div>
         </div>
         {error && (

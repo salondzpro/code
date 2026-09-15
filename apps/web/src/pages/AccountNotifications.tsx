@@ -5,6 +5,7 @@ import { formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import { Spinner } from '@/components/Spinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { EmptyState } from '@/components/EmptyState';
+import { t } from '@/i18n';
 
 export function AccountNotifications() {
   const notifs = useNotificationsInfinite();
@@ -23,9 +24,9 @@ export function AccountNotifications() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">Notifications</h1>
+      <h1 className="text-xl font-bold">{t("Notifications")}</h1>
       {items.length === 0 ? (
-        <EmptyState title="Rien pour le moment" description="Vos confirmations et rappels apparaîtront ici." />
+        <EmptyState title={t("Rien pour le moment")} description={t("Vos confirmations et rappels apparaîtront ici.")} />
       ) : (
         <ul className="card divide-y divide-line">
           {items.map((n) => (
@@ -39,7 +40,7 @@ export function AccountNotifications() {
           ))}
         </ul>
       )}
-      <LoadMore hasMore={notifs.hasNextPage} loading={notifs.isFetchingNextPage} onMore={() => void notifs.fetchNextPage()} label="Voir plus de notifications" />
+      <LoadMore hasMore={notifs.hasNextPage} loading={notifs.isFetchingNextPage} onMore={() => void notifs.fetchNextPage()} label={t("Voir plus de notifications")} />
     </div>
   );
 }

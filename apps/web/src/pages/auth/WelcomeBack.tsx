@@ -7,6 +7,7 @@ import { DESIGN_IMAGES, formatIntlDZ, readAuthFlow } from '@/lib/authFlow';
 import { Avatar, Badge, Button, I, ListRow } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { Splash } from './Splash';
+import { t } from '@/i18n';
 
 export function WelcomeBack() {
   const navigate = useNavigate();
@@ -43,17 +44,17 @@ export function WelcomeBack() {
       <div className="flex flex-col items-center gap-4 text-center">
         <Avatar src={profile?.avatarUrl ?? DESIGN_IMAGES.welcomeBack.src} name={firstName} size={72} />
         <div>
-          <h1 className="h1">Bon retour, {firstName}</h1>
+          <h1 className="h1">{t("Bon retour,")}{' '}{firstName}</h1>
           <p className="p mt-2">{contact}</p>
         </div>
         <Badge tone="ok" md>
-          Session active
+          {t("Session active")}
         </Badge>
       </div>
-      <p className="p text-center">Votre session reste ouverte tant que vous ne vous déconnectez pas — sur l'application comme sur le navigateur.</p>
+      <p className="p text-center">{t("Votre session reste ouverte tant que vous ne vous déconnectez pas — sur l'application comme sur le navigateur.")}</p>
       <div className="crd !gap-0 !py-1">
         <ListRow onClick={proceed} right={<I icon={ChevronRight} size={18} className="text-disabled" />} chevron={false}>
-          <span className="text-[0.857rem] font-medium">Continuer comme {firstName}</span>
+          <span className="text-[0.857rem] font-medium">{t("Continuer comme")}{' '}{firstName}</span>
         </ListRow>
         <ListRow
           onClick={async () => {
@@ -63,10 +64,10 @@ export function WelcomeBack() {
           right={<I icon={RefreshCw} size={18} className="text-disabled" />}
           chevron={false}
         >
-          <span className="text-[0.857rem]">Changer de compte</span>
+          <span className="text-[0.857rem]">{t("Changer de compte")}</span>
         </ListRow>
       </div>
-      <Button onClick={proceed}>Continuer</Button>
+      <Button onClick={proceed}>{t("Continuer")}</Button>
     </Screen>
   );
 }

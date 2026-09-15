@@ -13,6 +13,7 @@ import { Avatar, Button, I, InfoBox, SectionLabel, TopBar } from '@/components/u
 import { Screen } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
+import { t } from '@/i18n';
 
 export function ProPhotos() {
   const salon = useProSalon().data?.salon ?? null;
@@ -75,15 +76,15 @@ export function ProPhotos() {
   return (
     <Screen gap={16}>
       <TopBar backTo="/pro/profil" />
-      <h1 className="h1">Photos du salon</h1>
-      <SectionLabel>Photo de profil</SectionLabel>
+      <h1 className="h1">{t("Photos du salon")}</h1>
+      <SectionLabel>{t("Photo de profil")}</SectionLabel>
       <div className="crd !flex-row items-center gap-4">
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={80} />
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-semibold">
             {salon.logoUrl ? 'Votre logo' : 'Aucun logo : la couverture est utilisée'}
           </span>
-          <span className="p block text-[0.857rem]">Format carré conseillé.</span>
+          <span className="p block text-[0.857rem]">{t("Format carré conseillé.")}</span>
         </span>
         <div className="flex flex-col items-end gap-1.5">
           <Button
@@ -106,7 +107,7 @@ export function ProPhotos() {
                   .catch((err) => setError(errorText(err)))
               }
             >
-              <I icon={Trash2} size={12} /> Retirer
+              <I icon={Trash2} size={12} /> {t("Retirer")}
             </button>
           )}
         </div>
@@ -123,7 +124,7 @@ export function ProPhotos() {
         />
       </div>
 
-      <SectionLabel>Photos de couverture</SectionLabel>
+      <SectionLabel>{t("Photos de couverture")}</SectionLabel>
       <div className="grid grid-cols-2 gap-3">
         {photos.map((p, i) => (
           <div
@@ -134,7 +135,7 @@ export function ProPhotos() {
             <img src={p.url} alt="" className="h-full w-full object-cover" />
             {i === 0 ? (
               <span className="absolute left-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[0.857rem] font-semibold text-white">
-                Couverture
+                {t("Couverture")}
               </span>
             ) : (
               <button
@@ -143,13 +144,13 @@ export function ProPhotos() {
                 onClick={() => makeCover(p.url)}
                 disabled={setPhotos.isPending}
               >
-                <I icon={Star} size={12} /> Couverture
+                <I icon={Star} size={12} /> {t("Couverture")}
               </button>
             )}
             <button
               type="button"
               className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-surface/95"
-              aria-label="Supprimer la photo"
+              aria-label={t("Supprimer la photo")}
               onClick={() => remove(p.url)}
               disabled={setPhotos.isPending}
             >
@@ -185,9 +186,8 @@ export function ProPhotos() {
         />
       </div>
       <InfoBox>
-        La première photo est votre couverture. {photos.length}/{SALON_MAX_PHOTOS} photo
-        {photos.length > 1 ? 's' : ''}. Les photos de vos réalisations se gèrent depuis chaque
-        prestation.
+        {t("La première photo est votre couverture.")}{' '}{photos.length}/{SALON_MAX_PHOTOS} {t("photo")}
+        {photos.length > 1 ? 's' : ''}{t(". Les photos de vos réalisations se gèrent depuis chaque prestation.")}
       </InfoBox>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
@@ -199,7 +199,7 @@ export function ProPhotos() {
           file={cropLogo}
           aspect={1}
           round
-          title="Recadrer le logo"
+          title={t("Recadrer le logo")}
           onCancel={() => setCropLogo(null)}
           onDone={(f) => {
             setCropLogo(null);

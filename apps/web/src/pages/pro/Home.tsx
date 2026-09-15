@@ -10,7 +10,7 @@ import {
   useProSalon,
   useProStats,
 } from '@salondz/api-client';
-import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR } from '@salondz/constants';
+import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR, formatLocale } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -20,6 +20,7 @@ import { StaffFilter } from '@/components/StaffFilter';
 import { QuickCloseBanner, QuickCloseButton } from '@/components/QuickClose';
 import { useStaffFilter } from '@/lib/proPrefs';
 import { ShareSheet, usePublicUrl } from './Link';
+import { t } from '@/i18n';
 
 /** Heure courante rafraîchie chaque minute (« dans 25 min », « en cours »). */
 function useNow(): number {
@@ -65,8 +66,8 @@ export function ProHome() {
     <Screen bottom={NAV_PAD} gap={16}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[1rem] text-muted">Bonjour, {firstName}</div>
-          <h1 className="h1">Votre journée</h1>
+          <div className="text-[1rem] text-muted">{t("Bonjour,")}{' '}{firstName}</div>
+          <h1 className="h1">{t("Votre journée")}</h1>
         </div>
         {/* « Arrêt / Pause » à droite du titre ; l'identité du salon est dans l'en-tête. */}
         {salon && <QuickCloseButton openingHours={salon.openingHours} />}
@@ -86,20 +87,20 @@ export function ProHome() {
               {stats.data.todayCount}
             </span>
             <span className="text-[1rem] font-semibold leading-[1.25] text-white/90">
-              rendez-vous aujourd'hui
+              {t("rendez-vous aujourd'hui")}
             </span>
           </div>
           <Link
             to="/pro/reservations"
             className="crd !gap-1 !px-4 !py-4"
-            aria-label="Demandes à valider"
+            aria-label={t("Demandes à valider")}
           >
             <span
               className={`text-[2.286rem] font-bold leading-none tracking-[-0.8px] ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}
             >
               {stats.data.pendingCount}
             </span>
-            <span className="text-[1rem] font-semibold leading-[1.25]">à valider</span>
+            <span className="text-[1rem] font-semibold leading-[1.25]">{t("à valider")}</span>
           </Link>
         </div>
       )}
@@ -107,16 +108,16 @@ export function ProHome() {
       {salon && <QuickCloseBanner />}
 
       <Button onClick={() => navigate('/pro/rendez-vous/nouveau')}>
-        <I icon={Plus} size={18} /> Nouveau rendez-vous
+        <I icon={Plus} size={18} /> {t("Nouveau rendez-vous")}
       </Button>
 
       {pendingItems.length > 0 && (
         <div className="flex items-center justify-between">
-          <span className="h3">À valider</span>
+          <span className="h3">{t("À valider")}</span>
           <Link
             to="/pro/reservations"
             className="text-[1rem] font-bold"
-            aria-label="Voir toutes les demandes"
+            aria-label={t("Voir toutes les demandes")}
           >
             {pendingItems.length}
           </Link>
@@ -151,30 +152,30 @@ export function ProHome() {
                 disabled={setStatus.isPending}
                 onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
               >
-                Confirmer
+                {t("Confirmer")}
               </Button>
               <Button
                 variant="g"
                 sm
                 onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
               >
-                Reporter
+                {t("Reporter")}
               </Button>
               <Button
                 variant="d"
                 sm
                 onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}
               >
-                Refuser
+                {t("Refuser")}
               </Button>
             </div>
           </div>
         ))}
 
       <div className="flex items-center justify-between">
-        <span className="h3">Prochains</span>
+        <span className="h3">{t("Prochains")}</span>
         <Link to="/pro/agenda" className="text-[0.857rem] text-muted">
-          Tout voir
+          {t("Tout voir")}
         </Link>
       </div>
       {todayList.isPending && <Skeleton className="h-[9rem] w-full !rounded-[var(--radius-card)]" />}
@@ -284,20 +285,20 @@ export function ProHome() {
           ))}
           {upcoming.length > 6 && (
             <Link to="/pro/agenda" className="li w-full !py-3 text-[1rem] text-muted">
-              + {upcoming.length - 6} autres aujourd'hui
+              + {upcoming.length - 6} {t("autres aujourd'hui")}
             </Link>
           )}
         </div>
       )}
       {next && passed > 0 && (
         <p className="s -mt-2">
-          {passed} rendez-vous déjà {passed > 1 ? 'passés' : 'passé'} aujourd'hui.
+          {passed} {t("rendez-vous déjà")}{' '}{passed > 1 ? 'passés' : 'passé'} {t("aujourd'hui.")}
         </p>
       )}
 
       <Link to="/pro/chiffre-affaires" className="crd !gap-4">
         <span className="flex items-center justify-between">
-          <span className="h3">Chiffre d'affaires</span>
+          <span className="h3">{t("Chiffre d'affaires")}</span>
           <I icon={ChevronRight} size={20} className="text-disabled" />
         </span>
         <span className="grid grid-cols-3 divide-x divide-line">
@@ -308,7 +309,7 @@ export function ProHome() {
           ].map((x, i) => (
             <span key={x.l} className={`flex flex-col ${i ? 'pl-4' : ''}`}>
               <span className="whitespace-nowrap text-[1.143rem] font-bold tracking-[-0.4px]">
-                {x.v.toLocaleString('fr-DZ').replace(/ /g, ' ')}{' '}
+                {x.v.toLocaleString(formatLocale()).replace(/ /g, ' ')}{' '}
                 <span className="text-[1rem] font-semibold text-muted">DA</span>
               </span>
               <span className="text-[1rem] text-muted">{x.l}</span>
@@ -319,7 +320,7 @@ export function ProHome() {
       {/* Partage du lien de réservation : tout en bas, après le chiffre d'affaires. */}
       {salon && (
         <Button variant="g" onClick={() => setShare(true)}>
-          <I icon={Share2} size={18} /> Partager mon lien
+          <I icon={Share2} size={18} /> {t("Partager mon lien")}
         </Button>
       )}
       {share && salon && (

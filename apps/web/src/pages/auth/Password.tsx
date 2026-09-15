@@ -11,6 +11,7 @@ import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
+import { t } from '@/i18n';
 
 export function ForgotPassword() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function ForgotPassword() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const id = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(id)) return setError('Adresse e-mail invalide.');
+    if (!EMAIL_RE.test(id)) return setError(t("Adresse e-mail invalide."));
     setBusy(true);
     setError(null);
     try {
@@ -41,11 +42,11 @@ export function ForgotPassword() {
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo="/connexion" />
       <div>
-        <h1 className="h1">Mot de passe oublié</h1>
-        <p className="p mt-2">Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.</p>
+        <h1 className="h1">{t("Mot de passe oublié")}</h1>
+        <p className="p mt-2">{t("Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.")}</p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <Field label="E-mail" htmlFor="fp-email">
+        <Field label={t("E-mail")} htmlFor="fp-email">
           <Input
             id="fp-email"
             lg
@@ -101,14 +102,14 @@ export function NewPassword() {
     <Screen className="min-h-dvh" gap={16}>
       <TopBar noBack />
       <div>
-        <h1 className="h1">Nouveau mot de passe</h1>
+        <h1 className="h1">{t("Nouveau mot de passe")}</h1>
         <p className="p mt-2">
           {session ? 'Choisissez un nouveau mot de passe pour votre compte.' : 'Le lien a expiré ou a déjà servi. Demandez-en un nouveau.'}
         </p>
       </div>
       {session ? (
         <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-          <Field label="Mot de passe" htmlFor="np-password" hint={`${PASSWORD_MIN} caractères au minimum.`}>
+          <Field label={t("Mot de passe")} htmlFor="np-password" hint={`${PASSWORD_MIN} caractères au minimum.`}>
             <div className="relative">
               <Input
                 id="np-password"
@@ -143,7 +144,7 @@ export function NewPassword() {
           </Button>
         </form>
       ) : (
-        <Button onClick={() => navigate('/connexion/oubli')}>Demander un nouveau lien</Button>
+        <Button onClick={() => navigate('/connexion/oubli')}>{t("Demander un nouveau lien")}</Button>
       )}
     </Screen>
   );

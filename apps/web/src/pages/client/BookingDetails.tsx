@@ -31,6 +31,7 @@ import {
 } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 type Who = 'me' | 'other';
 type FieldName = 'name' | 'phone' | 'otherName' | 'otherPhone';
@@ -119,7 +120,7 @@ export function BookingDetails() {
 
     if (forOther) {
       if (otherName.trim().length < 2)
-        return setErr({ field: 'otherName', msg: 'Indiquez le nom de la personne.' });
+        return setErr({ field: 'otherName', msg: t("Indiquez le nom de la personne.") });
       const p = parse(otherDigits);
       if (!p.success) return setErr({ field: 'otherPhone', msg: bad });
       setErr(null);
@@ -135,7 +136,7 @@ export function BookingDetails() {
       return navigate(`/s/${slug}/reserver/recap`);
     }
 
-    if (name.trim().length < 2) return setErr({ field: 'name', msg: 'Indiquez votre nom.' });
+    if (name.trim().length < 2) return setErr({ field: 'name', msg: t("Indiquez votre nom.") });
     const p = parse(digits);
     if (!p.success) return setErr({ field: 'phone', msg: bad });
     setErr(null);
@@ -156,18 +157,18 @@ export function BookingDetails() {
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
       <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 2 sur 3" />
-      <h1 className="h1">Pour qui ?</h1>
+      <h1 className="h1">{t("Pour qui ?")}</h1>
 
       <Segmented
-        label="Pour qui est ce rendez-vous"
+        label={t("Pour qui est ce rendez-vous")}
         value={who}
         onChange={(v) => {
           setWho(v);
           setErr(null);
         }}
         options={[
-          { value: 'me', label: 'Pour moi' },
-          { value: 'other', label: 'Pour quelqu’un d’autre' },
+          { value: 'me', label: t("Pour moi") },
+          { value: 'other', label: t("Pour quelqu’un d’autre") },
         ]}
       />
 
@@ -176,22 +177,21 @@ export function BookingDetails() {
           <>
             {/* Ce que ça engage, en une ligne : le rendez-vous est à elle, règles comprises. */}
             <p className="p">
-              Le rendez-vous sera au nom de cette personne, sur son compte si elle en a un, avec
-              les mêmes règles d&apos;annulation.
+              {t("Le rendez-vous sera au nom de cette personne, sur son compte si elle en a un, avec les mêmes règles d'annulation.")}
             </p>
-            <Field label="Nom et prénom de la personne" htmlFor="bk-other" error={msg('otherName')}>
+            <Field label={t("Nom et prénom de la personne")} htmlFor="bk-other" error={msg('otherName')}>
               <Input
                 id="bk-other"
                 lg
                 className={otherName ? 'f' : ''}
                 value={otherName}
                 onChange={(e) => setOtherName(e.target.value)}
-                placeholder="Amina Bensalem"
+                placeholder={t("Amina Bensalem")}
                 autoComplete="off"
               />
             </Field>
             <PhoneField
-              label="Son téléphone"
+              label={t("Son téléphone")}
               digits={otherDigits}
               onDigits={setOtherDigits}
               error={msg('otherPhone')}
@@ -199,7 +199,7 @@ export function BookingDetails() {
           </>
         ) : (
           <>
-            <Field label="Nom et prénom" htmlFor="bk-name" error={msg('name')}>
+            <Field label={t("Nom et prénom")} htmlFor="bk-name" error={msg('name')}>
               <Input
                 id="bk-name"
                 lg
@@ -210,7 +210,7 @@ export function BookingDetails() {
               />
             </Field>
             <PhoneField
-              label="Téléphone"
+              label={t("Téléphone")}
               digits={digits}
               onDigits={setDigits}
               error={msg('phone')}
@@ -218,13 +218,13 @@ export function BookingDetails() {
           </>
         )}
 
-        <Field label="Note pour le salon (optionnel)" htmlFor="bk-notes">
+        <Field label={t("Note pour le salon (optionnel)")} htmlFor="bk-notes">
           <Textarea
             id="bk-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength={300}
-            placeholder="Base fine, gel rose pâle si possible"
+            placeholder={t("Base fine, gel rose pâle si possible")}
           />
         </Field>
 
@@ -233,10 +233,10 @@ export function BookingDetails() {
             <I icon={MessageCircle} size={20} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[1rem] font-semibold">Confirmation et rappel</span>
-            <span className="block text-[0.857rem] text-muted">2 h avant le rendez-vous</span>
+            <span className="block text-[1rem] font-semibold">{t("Confirmation et rappel")}</span>
+            <span className="block text-[0.857rem] text-muted">{t("2 h avant le rendez-vous")}</span>
           </span>
-          <Toggle on={whatsapp} onChange={setWhatsapp} label="Rappels de rendez-vous" />
+          <Toggle on={whatsapp} onChange={setWhatsapp} label={t("Rappels de rendez-vous")} />
         </div>
       </form>
 
@@ -251,7 +251,7 @@ export function BookingDetails() {
             </div>
           </div>
           <Button type="submit" form="details" auto className="!rounded-full !px-7 !py-3.5">
-            Vérifier
+            {t("Vérifier")}
           </Button>
         </div>
       </BottomSheet>

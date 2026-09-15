@@ -10,6 +10,7 @@ import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { EMAIL_RE } from './Login';
+import { t } from '@/i18n';
 
 export const PASSWORD_MIN = 8;
 
@@ -30,7 +31,7 @@ export function SignUp() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const id = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(id)) return setError({ kind: 'email', text: 'Adresse e-mail invalide.' });
+    if (!EMAIL_RE.test(id)) return setError({ kind: 'email', text: t("Adresse e-mail invalide.") });
     if (password.length < PASSWORD_MIN) return setError({ kind: 'password', text: `Mot de passe trop court : ${PASSWORD_MIN} caractères au minimum.` });
     setError(null);
     setBusy(true);
@@ -59,14 +60,14 @@ export function SignUp() {
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <Field label="E-mail" htmlFor="su-email" hint="Un lien de confirmation vous sera envoyé.">
+        <Field label={t("E-mail")} htmlFor="su-email" hint={t("Un lien de confirmation vous sera envoyé.")}>
           <Input
             id="su-email"
             lg
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder="vous@exemple.dz"
+            placeholder={t("vous@exemple.dz")}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -76,14 +77,14 @@ export function SignUp() {
             autoFocus
           />
         </Field>
-        <Field label="Mot de passe" htmlFor="su-password" hint={`${PASSWORD_MIN} caractères au minimum.`}>
+        <Field label={t("Mot de passe")} htmlFor="su-password" hint={`${PASSWORD_MIN} caractères au minimum.`}>
           <div className="relative">
             <Input
               id="su-password"
               lg
               type={show ? 'text' : 'password'}
               autoComplete="new-password"
-              placeholder="Choisissez un mot de passe"
+              placeholder={t("Choisissez un mot de passe")}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -110,10 +111,10 @@ export function SignUp() {
             {error.kind === 'exists' && (
               <div className="g2">
                 <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
-                  Se connecter
+                  {t("Se connecter")}
                 </Link>
                 <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
-                  Mot de passe oublié
+                  {t("Mot de passe oublié")}
                 </Link>
               </div>
             )}
@@ -123,13 +124,13 @@ export function SignUp() {
           {busy ? 'Création…' : 'Créer mon compte'}
         </Button>
         <p className="t3 text-center">
-          En créant un compte vous acceptez que Salon DZ vous envoie les confirmations et rappels de vos rendez-vous.
+          {t("En créant un compte vous acceptez que Salon DZ vous envoie les confirmations et rappels de vos rendez-vous.")}
         </p>
       </form>
       <div className="mt-auto flex flex-col gap-3 pt-4">
-        <p className="p text-center">Déjà inscrit ?</p>
+        <p className="p text-center">{t("Déjà inscrit ?")}</p>
         <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn g">
-          Se connecter
+          {t("Se connecter")}
         </Link>
       </div>
     </Screen>

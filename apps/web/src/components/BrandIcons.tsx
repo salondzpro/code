@@ -17,6 +17,7 @@ import {
   WHATSAPP_COLOR,
   WHATSAPP_PATH,
 } from '@salondz/constants';
+import { t } from '@/i18n';
 
 type LogoProps = { size?: number };
 
@@ -41,7 +42,7 @@ function Logo({
 
 export function WhatsAppLogo({ size }: LogoProps) {
   return (
-    <Logo size={size} label="WhatsApp">
+    <Logo size={size} label={t("WhatsApp")}>
       <path d={WHATSAPP_PATH} fill={WHATSAPP_COLOR} />
     </Logo>
   );
@@ -50,7 +51,7 @@ export function WhatsAppLogo({ size }: LogoProps) {
 export function InstagramLogo({ size }: LogoProps) {
   const id = useId();
   return (
-    <Logo size={size} label="Instagram">
+    <Logo size={size} label={t("Instagram")}>
       <defs>
         <linearGradient id={id} x1="0" y1="1" x2="1" y2="0">
           {INSTAGRAM_GRADIENT.map((s) => (
@@ -65,7 +66,7 @@ export function InstagramLogo({ size }: LogoProps) {
 
 export function FacebookLogo({ size }: LogoProps) {
   return (
-    <Logo size={size} label="Facebook">
+    <Logo size={size} label={t("Facebook")}>
       <path d={FACEBOOK_PATH} fill={FACEBOOK_COLOR} />
     </Logo>
   );
@@ -73,7 +74,7 @@ export function FacebookLogo({ size }: LogoProps) {
 
 export function TikTokLogo({ size }: LogoProps) {
   return (
-    <Logo size={size} label="TikTok">
+    <Logo size={size} label={t("TikTok")}>
       <path
         d={TIKTOK_PATH}
         fill={TIKTOK_CYAN}

@@ -13,6 +13,7 @@ import { I, Toggle } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 /** Case horaire : petit libellé + heure en grand, champ natif (sélecteur du téléphone) sur toute la case. */
 function TimeBox({ label, value, onChange, ariaLabel }: { label: string; value: string; onChange: (v: string) => void; ariaLabel: string }) {
@@ -45,8 +46,8 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
             {r.open && (
               <>
                 <div className="g2">
-                  <TimeBox label="Ouvre" value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} ariaLabel={`Ouverture ${day}`} />
-                  <TimeBox label="Ferme" value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} ariaLabel={`Fermeture ${day}`} />
+                  <TimeBox label={t("Ouvre")} value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} ariaLabel={`Ouverture ${day}`} />
+                  <TimeBox label={t("Ferme")} value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} ariaLabel={`Fermeture ${day}`} />
                 </div>
                 {r.breaks.map((b, idx) => (
                   <div key={idx} className="flex items-end gap-2">
@@ -104,13 +105,13 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={9} backTo={settings ? '/pro/profil' : stepPath(8)} right={settings ? 'Horaires' : undefined} />
-      <h1 className="h1">Horaires</h1>
-      <p className="p">Ajoutez une pause sur les jours concernés, par exemple 12:00 – 14:00.</p>
+      <h1 className="h1">{t("Horaires")}</h1>
+      <p className="p">{t("Ajoutez une pause sur les jours concernés, par exemple 12:00 – 14:00.")}</p>
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <span className="text-[1rem] font-semibold">Semaine commençant</span>
-          <span className="text-[1rem] text-muted">Dimanche</span>
+          <span className="text-[1rem] font-semibold">{t("Semaine commençant")}</span>
+          <span className="text-[1rem] text-muted">{t("Dimanche")}</span>
         </div>
       </div>
       {error && (

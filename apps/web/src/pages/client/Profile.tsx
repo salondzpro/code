@@ -30,6 +30,7 @@ import { Splash } from '@/pages/auth/Splash';
 import { ImageCropper } from '@/components/ImageCropper';
 import { uploadAvatar } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
+import { t } from '@/i18n';
 
 /** Ligne de rubrique : icône ronde, libellé, détail éventuel, chevron. */
 function Row({ to, icon, label, sub, right }: { to: string; icon: LucideIcon; label: string; sub?: string; right?: string }) {
@@ -78,7 +79,7 @@ export function Profile() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <h1 className="h1">Mon compte</h1>
+      <h1 className="h1">{t("Mon compte")}</h1>
 
       {/* Qui : photo, nom, e-mail vérifié, numéro — et le bouton pour corriger. */}
       <div className="crd !gap-3">
@@ -87,7 +88,7 @@ export function Profile() {
             type="button"
             className="relative flex-none"
             onClick={() => avatarInput.current?.click()}
-            aria-label="Changer la photo de profil"
+            aria-label={t("Changer la photo de profil")}
             disabled={avatarBusy || !user}
           >
             <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={64} />
@@ -115,33 +116,33 @@ export function Profile() {
           </span>
           {email && (
             <Badge tone="ok" dot>
-              Vérifié
+              {t("Vérifié")}
             </Badge>
           )}
         </div>
-        <Link to="/reglages#contact" className="btn g sm">
-          <I icon={Pencil} size={16} /> Modifier mes informations
+        <Link to="/compte/informations" className="btn g sm">
+          <I icon={Pencil} size={16} /> {t("Modifier mes informations")}
         </Link>
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
-        <Stat value={String(bookings)} label={bookings > 1 ? 'réservations' : 'réservation'} />
-        <Stat value={String(stats.data?.favorites ?? 0)} label="favoris" />
-        <Stat value={stats.data ? String(reviews) : '—'} label={reviews > 1 ? 'avis donnés' : 'avis donné'} />
+        <Stat value={String(bookings)} label={bookings > 1 ? t('réservations') : t('réservation')} />
+        <Stat value={String(stats.data?.favorites ?? 0)} label={t("favoris")} />
+        <Stat value={stats.data ? String(reviews) : '—'} label={reviews > 1 ? t('avis donnés') : t('avis donné')} />
       </div>
 
-      <span className="h3">Mes rendez-vous</span>
+      <span className="h3">{t("Mes rendez-vous")}</span>
       <div className="crd !gap-0 !py-1">
-        <Row to="/rendez-vous" icon={CalendarClock} label="À venir" sub="Vos prochains rendez-vous" />
-        <Row to="/rendez-vous?scope=past" icon={History} label="Historique" sub="Rendez-vous passés et annulés" />
-        <Row to="/favoris" icon={Heart} label="Mes salons favoris" right={stats.data ? String(stats.data.favorites) : undefined} />
+        <Row to="/rendez-vous" icon={CalendarClock} label={t("À venir")} sub={t("Vos prochains rendez-vous")} />
+        <Row to="/rendez-vous?scope=past" icon={History} label={t("Historique")} sub={t("Rendez-vous passés et annulés")} />
+        <Row to="/favoris" icon={Heart} label={t("Mes salons favoris")} right={stats.data ? String(stats.data.favorites) : undefined} />
       </div>
 
-      <span className="h3">Mon compte</span>
+      <span className="h3">{t("Mon compte")}</span>
       <div className="crd !gap-0 !py-1">
-        <Row to="/reglages#contact" icon={UserRound} label="Mes informations" sub="Nom, numéro de téléphone" />
-        <Row to="/reglages" icon={Bell} label="Notifications" sub="Rappels, confirmations, nouveautés" />
-        <Row to="/reglages" icon={Settings} label="Réglages" sub="Marché affiché, préférences, données" />
+        <Row to="/compte/informations" icon={UserRound} label={t("Mes informations")} sub={t("Nom, numéro de téléphone")} />
+        <Row to="/reglages#notifications" icon={Bell} label={t("Notifications")} sub={t("Rappels, confirmations, nouveautés")} />
+        <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
       </div>
 
       {/* Passerelle vers l'espace pro : une carte, pas une rubrique parmi d'autres. */}
@@ -154,10 +155,10 @@ export function Profile() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-semibold tracking-[-0.2px]">
-            {me.data?.salon ? `Gérer ${me.data.salon.name}` : 'Vous êtes professionnel ?'}
+            {me.data?.salon ? t('Gérer {salon}', { salon: me.data.salon.name }) : t('Vous êtes professionnel ?')}
           </span>
           <span className="block text-[0.857rem] text-muted">
-            {me.data?.salon ? 'Agenda, demandes, page publique' : 'Ouvrez votre espace et recevez des réservations'}
+            {me.data?.salon ? t('Agenda, demandes, page publique') : t('Ouvrez votre espace et recevez des réservations')}
           </span>
         </span>
         <I icon={ChevronRight} size={20} className="text-disabled" />
@@ -177,7 +178,7 @@ export function Profile() {
           navigate('/intro', { replace: true });
         }}
       >
-        <I icon={LogOut} size={18} /> Se déconnecter
+        <I icon={LogOut} size={18} /> {t("Se déconnecter")}
       </Button>
 
       {cropAvatar && user && (
@@ -185,7 +186,7 @@ export function Profile() {
           file={cropAvatar}
           aspect={1}
           round
-          title="Recadrer votre photo"
+          title={t("Recadrer votre photo")}
           onCancel={() => setCropAvatar(null)}
           onDone={async (f) => {
             setCropAvatar(null);

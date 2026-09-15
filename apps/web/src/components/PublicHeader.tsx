@@ -23,6 +23,7 @@ import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { I } from './ui';
+import { t } from '@/i18n';
 
 /** Trois catégories par marché : au-delà, le tiroir devient une liste à faire défiler. */
 const PER_MARKET = 3;
@@ -55,16 +56,16 @@ export function PublicHeader() {
 
   const links = session
     ? [
-        { to: '/', icon: Home, label: 'Accueil' },
-        { to: '/rendez-vous', icon: CalendarClock, label: 'Mes rendez-vous' },
-        { to: '/profil', icon: User, label: 'Mon profil' },
+        { to: '/', icon: Home, label: t("Accueil") },
+        { to: '/rendez-vous', icon: CalendarClock, label: t("Mes rendez-vous") },
+        { to: '/profil', icon: User, label: t("Mon profil") },
       ]
     : [
-        { to: '/', icon: Home, label: 'Accueil' },
+        { to: '/', icon: Home, label: t("Accueil") },
         {
           to: `/connexion?next=${encodeURIComponent('/rendez-vous')}`,
           icon: CalendarClock,
-          label: 'Mes rendez-vous',
+          label: t("Mes rendez-vous"),
         },
       ];
 
@@ -73,11 +74,11 @@ export function PublicHeader() {
       {/* Le voile passe SOUS le tiroir : en 60 contre 50, il le grisait entièrement et
           rendait la déconnexion incliquable. */}
       <div className="dim !z-[45]" onClick={() => setOpen(false)} />
-      <nav className="drw" aria-label="Menu Salon DZ">
+      <nav className="drw" aria-label={t("Menu Salon DZ")}>
         <button
           type="button"
           className="ib !ml-auto !border-0 !bg-transparent"
-          aria-label="Fermer le menu"
+          aria-label={t("Fermer le menu")}
           onClick={() => setOpen(false)}
         >
           <I icon={X} size={24} />
@@ -85,7 +86,7 @@ export function PublicHeader() {
 
         {!session && (
           <Link to={`/connexion?next=${next}`} className="btn">
-            Se connecter
+            {t("Se connecter")}
           </Link>
         )}
 
@@ -152,12 +153,12 @@ export function PublicHeader() {
               }}
             >
               <I icon={LogOut} size={20} className="flex-none text-current" />
-              <span className="text-[1.143rem]">Se déconnecter</span>
+              <span className="text-[1.143rem]">{t("Se déconnecter")}</span>
             </button>
           ) : (
             <Link to="/pro" className="flex items-center gap-3 py-2.5">
               <I icon={Store} size={20} className="flex-none text-muted" />
-              <span className="text-[1.143rem]">Je suis professionnel</span>
+              <span className="text-[1.143rem]">{t("Je suis professionnel")}</span>
             </Link>
           )}
         </div>
@@ -171,7 +172,7 @@ export function PublicHeader() {
         <button
           type="button"
           className="ib !border-0 !bg-transparent"
-          aria-label="Menu"
+          aria-label={t("Menu")}
           aria-expanded={open}
           onClick={() => setOpen(true)}
         >
@@ -180,10 +181,10 @@ export function PublicHeader() {
         <Link
           to="/"
           className="text-[1.429rem] leading-none tracking-[-0.6px]"
-          aria-label="Salon DZ · accueil"
+          aria-label={t("Salon DZ · accueil")}
         >
-          <span className="font-semibold">Salon</span>
-          <span className="ml-[0.16em] font-light text-muted">DZ</span>
+          <span className="font-semibold">{t("Salon")}</span>
+          <span className="ml-[0.16em] font-light text-muted">{t("DZ")}</span>
         </Link>
         <Link
           to={session ? '/profil' : `/connexion?next=${next}`}

@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { BottomSheet, Button } from './ui';
+import { t } from '@/i18n';
 
 /** Format des photos de couverture (cartes marketplace, page publique). */
 export const COVER_ASPECT = 16 / 10;
@@ -119,7 +120,7 @@ export function ImageCropper({
       <BottomSheet className="!z-50">
         <div className="text-center text-[1.143rem] font-bold tracking-[-0.4px]">{title}</div>
         <p className="p text-center text-[0.857rem]">
-          Déplacez la photo dans le cadre et ajustez le zoom.
+          {t("Déplacez la photo dans le cadre et ajustez le zoom.")}
         </p>
         <div
           ref={frameRef}
@@ -146,7 +147,7 @@ export function ImageCropper({
           onPointerUp={() => (drag.current = null)}
           onPointerCancel={() => (drag.current = null)}
           role="img"
-          aria-label="Aperçu du recadrage"
+          aria-label={t("Aperçu du recadrage")}
         >
           {url && img && (
             <img
@@ -163,7 +164,7 @@ export function ImageCropper({
           )}
         </div>
         <label className="flex items-center gap-3 text-[0.857rem] text-muted">
-          Zoom
+          {t("Zoom")}
           <input
             type="range"
             min={1}
@@ -172,12 +173,12 @@ export function ImageCropper({
             value={zoom}
             onChange={(e) => setZoom(Number(e.target.value))}
             className="flex-1 accent-ink"
-            aria-label="Zoom"
+            aria-label={t("Zoom")}
           />
         </label>
         <div className="g2">
           <Button variant="g" onClick={onCancel} disabled={busy}>
-            Annuler
+            {t("Annuler")}
           </Button>
           <Button onClick={() => void validate()} disabled={busy || !img}>
             {busy ? 'Recadrage…' : 'Valider'}

@@ -8,6 +8,7 @@ import { readProDraft, writeProDraft } from '@/lib/proDraft';
 import { I } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, stepPath } from './Shared';
+import { t } from '@/i18n';
 
 const CARDS: { id: Market; img: string }[] = [
   { id: 'men', img: DESIGN_IMAGES.marketMen.src },
@@ -21,8 +22,8 @@ export function Step1Market() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={1} backTo="/pro/bienvenue" />
       <div>
-        <h1 className="h1">Vous travaillez pour ?</h1>
-        <p className="p mt-3">Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.</p>
+        <h1 className="h1">{t("Vous travaillez pour ?")}</h1>
+        <p className="p mt-3">{t("Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.")}</p>
       </div>
       {CARDS.map((c) => (
         <button key={c.id} type="button" onClick={() => setMarket(c.id)} aria-pressed={market === c.id} className={`relative h-[10rem] w-full overflow-hidden rounded-[var(--radius-card)] text-left ${market === c.id ? 'ring-2 ring-ink' : ''}`}>

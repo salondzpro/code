@@ -20,6 +20,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Button, I, ListRow, SectionLabel, Textarea, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function RowText({ icon, title, sub }: { icon: LucideIcon; title: string; sub?: string }) {
   return (
@@ -48,9 +49,9 @@ export function MonSalon() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">Mon salon</h1>
+      <h1 className="h1">{t("Mon salon")}</h1>
 
-      <SectionLabel>Informations</SectionLabel>
+      <SectionLabel>{t("Informations")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li">
           <RowText
@@ -62,7 +63,7 @@ export function MonSalon() {
             <button
               type="button"
               className="ib flex-none"
-              aria-label="Modifier la description"
+              aria-label={t("Modifier la description")}
               onClick={() => setDesc(salon.description ?? '')}
             >
               <I icon={Pencil} size={16} />
@@ -70,23 +71,23 @@ export function MonSalon() {
           )}
         </div>
         <div className="li !py-3">
-          <RowText icon={Users} title="Clientèle" sub="Hommes, femmes ou mixte" />
+          <RowText icon={Users} title={t("Clientèle")} sub="Hommes, femmes ou mixte" />
           <PickerField
-            label="Clientèle"
-            title="Votre clientèle"
+            label={t("Clientèle")}
+            title={t("Votre clientèle")}
             inline
             value={salon.genderTarget}
             onChange={(v: GenderTarget) =>
               updateSalon.mutate({ genderTarget: v }, { onError: (e) => setError(errorText(e)) })
             }
             options={[
-              { value: 'men', label: MARKET_LABELS_FR.men, hint: 'Barbier, coiffure homme' },
+              { value: 'men', label: MARKET_LABELS_FR.men, hint: t("Barbier, coiffure homme") },
               {
                 value: 'women',
                 label: MARKET_LABELS_FR.women,
-                hint: 'Coiffure, ongles, cils, soins',
+                hint: t("Coiffure, ongles, cils, soins"),
               },
-              { value: 'unisex', label: 'Mixte', hint: 'Hommes et femmes · les deux catalogues' },
+              { value: 'unisex', label: t("Mixte"), hint: t("Hommes et femmes · les deux catalogues") },
             ]}
           />
         </div>
@@ -96,12 +97,12 @@ export function MonSalon() {
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               maxLength={1500}
-              placeholder="Salon calme, produits sans parabène…"
-              aria-label="Description du salon"
+              placeholder={t("Salon calme, produits sans parabène…")}
+              aria-label={t("Description du salon")}
             />
             <div className="g2">
               <Button variant="g" sm onClick={() => setDesc(null)}>
-                Annuler
+                {t("Annuler")}
               </Button>
               <Button
                 sm
@@ -115,26 +116,26 @@ export function MonSalon() {
                   }
                 }}
               >
-                <I icon={Save} size={16} /> Enregistrer
+                <I icon={Save} size={16} /> {t("Enregistrer")}
               </Button>
             </div>
           </div>
         )}
       </div>
 
-      <SectionLabel>Présence en ligne</SectionLabel>
+      <SectionLabel>{t("Présence en ligne")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/photos">
           <RowText
             icon={Images}
-            title="Photos du salon"
+            title={t("Photos du salon")}
             sub={`${salon.logoUrl ? 'Logo' : 'Sans logo'} · ${salon.photos.length} photo${salon.photos.length > 1 ? 's' : ''} de couverture`}
           />
         </ListRow>
         <ListRow to="/pro/realisations">
           <RowText
             icon={Sparkles}
-            title="Réalisations"
+            title={t("Réalisations")}
             sub={
               salon.works.length
                 ? `${salon.works.length} photo${salon.works.length > 1 ? 's' : ''} de votre travail`
@@ -144,10 +145,10 @@ export function MonSalon() {
         </ListRow>
       </div>
 
-      <SectionLabel>Adresse</SectionLabel>
+      <SectionLabel>{t("Adresse")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/salon">
-          <RowText icon={MapPin} title="Adresse et localisation" sub={place} />
+          <RowText icon={MapPin} title={t("Adresse et localisation")} sub={place} />
         </ListRow>
       </div>
       {error && (

@@ -45,6 +45,7 @@ import { Rate } from '@/pages/client/Rate';
 import { Favorites } from '@/pages/client/Favorites';
 import { Profile } from '@/pages/client/Profile';
 import { Settings } from '@/pages/client/Settings';
+import { AccountInfo } from '@/pages/client/AccountInfo';
 import { AccountNotifications } from '@/pages/AccountNotifications';
 // Pro (design PRO-F 01 → 26)
 import { Step1Market } from '@/pages/pro/onboarding/Step1Market';
@@ -120,6 +121,7 @@ export const router = createBrowserRouter([
               { path: '/favoris', element: <Favorites /> },
               { path: '/profil', element: <Profile /> },
               { path: '/reglages', element: <Settings /> },
+              { path: '/compte/informations', element: <AccountInfo /> },
               { path: '/notifications', element: <AccountNotifications /> },
               { path: '/compte', element: <Profile /> },
               { path: '/compte/reservations', element: <Bookings /> },
@@ -212,6 +214,7 @@ export const router = createBrowserRouter([
               { path: 'mon-salon', element: <MonSalon /> },
               { path: 'reglages/rendez-vous', element: <ProRules /> },
               { path: 'compte', element: <ProAccount /> },
+              { path: 'compte/informations', element: <AccountInfo backTo="/pro/compte" /> },
               { path: 'notifications', element: <AccountNotifications /> },
             ],
           },

@@ -14,6 +14,7 @@ import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -60,8 +61,8 @@ export function Login() {
       navigate('/connexion/code');
       return;
     }
-    if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: 'Adresse e-mail invalide.' });
-    if (!password) return setError({ kind: 'form', text: 'Saisissez votre mot de passe.' });
+    if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: t("Adresse e-mail invalide.") });
+    if (!password) return setError({ kind: 'form', text: t("Saisissez votre mot de passe.") });
     setError(null);
     setBusy('password');
     try {
@@ -76,7 +77,7 @@ export function Login() {
   };
 
   const link = async () => {
-    if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: 'Indiquez votre adresse e-mail pour recevoir le lien.' });
+    if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: t("Indiquez votre adresse e-mail pour recevoir le lien.") });
     setError(null);
     setBusy('link');
     try {
@@ -113,14 +114,14 @@ export function Login() {
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <Field label="E-mail" htmlFor="login-email">
+        <Field label={t("E-mail")} htmlFor="login-email">
           <Input
             id="login-email"
             lg
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder="vous@exemple.dz"
+            placeholder={t("vous@exemple.dz")}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -130,14 +131,14 @@ export function Login() {
             autoFocus
           />
         </Field>
-        <Field label="Mot de passe" htmlFor="login-password">
+        <Field label={t("Mot de passe")} htmlFor="login-password">
           <div className="relative">
             <Input
               id="login-password"
               lg
               type={show ? 'text' : 'password'}
               autoComplete="current-password"
-              placeholder="Votre mot de passe"
+              placeholder={t("Votre mot de passe")}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -164,7 +165,7 @@ export function Login() {
             {/* La suite logique de l'erreur, à portée de pouce. */}
             {error.kind === 'no_account' && (
               <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
-                <I icon={UserPlus} size={16} /> Créer un compte avec cette adresse
+                <I icon={UserPlus} size={16} /> {t("Créer un compte avec cette adresse")}
               </Link>
             )}
             {error.kind === 'unconfirmed' && (
@@ -174,7 +175,7 @@ export function Login() {
             )}
             {error.kind === 'credentials' && (
               <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
-                Réinitialiser mon mot de passe
+                {t("Réinitialiser mon mot de passe")}
               </Link>
             )}
           </div>
@@ -186,19 +187,19 @@ export function Login() {
           to={`/connexion/oubli${email ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
           className="py-1 text-center text-[1rem] font-semibold underline"
         >
-          Mot de passe oublié ?
+          {t("Mot de passe oublié ?")}
         </Link>
       </form>
 
       <div className="flex items-center gap-3 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
-        <span className="h-px flex-1 bg-line" /> ou <span className="h-px flex-1 bg-line" />
+        <span className="h-px flex-1 bg-line" /> {t("ou")}{' '}<span className="h-px flex-1 bg-line" />
       </div>
       <Button variant="g" onClick={() => void link()} disabled={busy !== null}>
         <I icon={MailOpen} size={18} /> {busy === 'link' ? 'Envoi…' : 'Recevoir un lien de connexion par e-mail'}
       </Button>
 
       <div className="mt-auto flex flex-col gap-3 pt-4">
-        <p className="p text-center">Pas encore de compte ?</p>
+        <p className="p text-center">{t("Pas encore de compte ?")}</p>
         <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
           <I icon={UserPlus} size={18} /> {role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
         </Link>

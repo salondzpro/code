@@ -8,6 +8,7 @@ import { I, Img, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 export function SalonServices() {
   const { slug = '' } = useParams();
@@ -18,7 +19,7 @@ export function SalonServices() {
   return (
     <Screen className="min-h-dvh" gap={16}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
-      <h1 className="h1">Prestations</h1>
+      <h1 className="h1">{t("Prestations")}</h1>
       {groupServices(s.services).map((g) => (
       <div key={g.name} className="flex flex-col gap-3.5">
         <span className="h3">{g.name}</span>
@@ -41,7 +42,7 @@ export function SalonServices() {
         })}
       </div>
       ))}
-      {s.services.length === 0 && <p className="p">Aucune prestation pour le moment.</p>}
+      {s.services.length === 0 && <p className="p">{t("Aucune prestation pour le moment.")}</p>}
     </Screen>
   );
 }

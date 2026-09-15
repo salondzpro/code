@@ -5,6 +5,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DAY_LABELS_SHORT_FR, addDaysToKey, dayOfWeekFromKey, toLocalDateKey, weekKeys } from '@salondz/constants';
 import { I, IconButton } from './ui';
+import { t } from '@/i18n';
 
 const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
@@ -35,7 +36,7 @@ export function DayStrip({
 }) {
   const days = weekKeys(weekOf);
   return (
-    <div className="dsel" role="listbox" aria-label="Choisir un jour">
+    <div className="dsel" role="listbox" aria-label={t("Choisir un jour")}>
       {days.map((d) => {
         const dow = dayOfWeekFromKey(d);
         const out = (!!minDate && d < minDate) || (!!maxDate && d > maxDate) || !!disabledDays?.includes(dow);
@@ -62,10 +63,10 @@ export function MonthNav({ weekOf, onWeekChange, minDate, maxDate }: { weekOf: s
     <div className="flex items-center justify-between">
       <span className="h3">{monthLabel(weekOf)}</span>
       <div className="flex gap-2">
-        <IconButton aria-label="Semaine précédente" disabled={!canPrev} style={{ opacity: canPrev ? 1 : 0.35 }} onClick={() => onWeekChange(addDaysToKey(first, -7))}>
+        <IconButton aria-label={t("Semaine précédente")} disabled={!canPrev} style={{ opacity: canPrev ? 1 : 0.35 }} onClick={() => onWeekChange(addDaysToKey(first, -7))}>
           <I icon={ChevronLeft} size={18} />
         </IconButton>
-        <IconButton aria-label="Semaine suivante" disabled={!canNext} style={{ opacity: canNext ? 1 : 0.35 }} onClick={() => onWeekChange(addDaysToKey(first, 7))}>
+        <IconButton aria-label={t("Semaine suivante")} disabled={!canNext} style={{ opacity: canNext ? 1 : 0.35 }} onClick={() => onWeekChange(addDaysToKey(first, 7))}>
           <I icon={ChevronRight} size={18} />
         </IconButton>
       </div>

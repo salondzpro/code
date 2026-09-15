@@ -27,6 +27,7 @@ import { SearchField, SearchTools } from '@/components/SearchTools';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { SalonListCard } from '@/components/SalonListCard';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { t } from '@/i18n';
 
 const NOUN: Record<Market, [string, string]> = {
   men: ['barbier', 'barbiers'],
@@ -125,14 +126,14 @@ export function Marketplace() {
           {/* Mode femmes : titre en rose pour lever toute ambiguïté sur le catalogue affiché. */}
           {market === 'women' ? (
             <>
-              Pour <span className="text-women">Femmes</span>
+              {t("Pour")}{' '}<span className="text-women">{t("Femmes")}</span>
             </>
           ) : (
             MARKET_LABELS_FR[market]
           )}
         </h1>
         <IconButton
-          aria-label="Changer de marché"
+          aria-label={t("Changer de marché")}
           onClick={swapMarket}
           disabled={update.isPending}
           className="!h-9 !w-9 !rounded-[var(--radius-card-sm)]"
@@ -156,13 +157,13 @@ export function Marketplace() {
             <I icon={Search} size={44} />
           </div>
           <div className="mt-2 text-[1.429rem] font-bold leading-tight tracking-[-0.4px]">
-            Aucun professionnel{category ? ` « ${categoryLabel(category)} »` : ''} à {prefs.label}
+            {t("Aucun professionnel")}{category ? ` « ${categoryLabel(category)} »` : ''} {t("à")}{' '}{prefs.label}
           </div>
-          <p className="p">Essayez d'élargir le rayon ou de retirer un filtre.</p>
+          <p className="p">{t("Essayez d'élargir le rayon ou de retirer un filtre.")}</p>
           <div className="mt-2 flex flex-wrap justify-center gap-2.5">
             {prefs.radiusKm < 10 && (
               <Pill lg onClick={() => setPrefs({ radiusKm: 10 })}>
-                Rayon 10 km
+                {t("Rayon 10 km")}
               </Pill>
             )}
             {(prefs.availableToday || prefs.openNow || prefs.ratingMin != null) && (
@@ -170,16 +171,16 @@ export function Marketplace() {
                 lg
                 onClick={() => setPrefs({ availableToday: false, openNow: false, ratingMin: null })}
               >
-                Retirer les filtres
+                {t("Retirer les filtres")}
               </Pill>
             )}
             {category && (
               <Pill lg onClick={() => setCategory('')}>
-                Retirer « {categoryLabel(category).split(' ')[0]} »
+                {t("Retirer «")}{' '}{categoryLabel(category).split(' ')[0]} »
               </Pill>
             )}
             <Link to="/localisation" className="pill lg">
-              Autres quartiers
+              {t("Autres quartiers")}
             </Link>
           </div>
         </div>
@@ -195,7 +196,7 @@ export function Marketplace() {
             hasMore={query.hasNextPage}
             loading={query.isFetchingNextPage}
             onMore={() => void query.fetchNextPage()}
-            label="Voir plus de professionnels"
+            label={t("Voir plus de professionnels")}
           />
         </>
       )}

@@ -43,6 +43,7 @@ import { ErrorMessage } from './ErrorMessage';
 import { FactRow } from './BookingFacts';
 import { PickerField } from './Picker';
 import { Avatar, BottomSheet, Button, I, Skeleton, StatusBadge } from './ui';
+import { t } from '@/i18n';
 
 export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const navigate = useNavigate();
@@ -127,7 +128,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
                   {!!b.bookedByName && (
                     <span className="block truncate text-[0.857rem] text-muted">
-                      Réservé par {b.bookedByName}
+                      {t("Réservé par")}{' '}{b.bookedByName}
                     </span>
                   )}
                 </span>
@@ -135,11 +136,11 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
               {b.clientPhone && (
                 <div className="g2">
                   <a href={`tel:${b.clientPhone}`} className="btn g sm">
-                    <I icon={Phone} size={16} /> Appeler
+                    <I icon={Phone} size={16} /> {t("Appeler")}
                   </a>
                   {wa && (
                     <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-                      <I icon={MessageCircle} size={16} /> WhatsApp
+                      <I icon={MessageCircle} size={16} /> {t("WhatsApp")}
                     </a>
                   )}
                 </div>
@@ -161,9 +162,9 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 />
               ))}
               {b.staff && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
-              {b.notes && <FactRow icon={StickyNote} title="Note du client" sub={`« ${b.notes} »`} />}
+              {b.notes && <FactRow icon={StickyNote} title={t("Note du client")} sub={`« ${b.notes} »`} />}
               {b.cancellationReason && (
-                <FactRow icon={XCircle} tone="danger" title="Motif" sub={b.cancellationReason} />
+                <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
               )}
             </div>
 
@@ -176,7 +177,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 disabled={setStatus.isPending}
                 onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}
               >
-                <I icon={Check} size={18} /> Confirmer le rendez-vous
+                <I icon={Check} size={18} /> {t("Confirmer le rendez-vous")}
               </Button>
             )}
             {active && past && (
@@ -185,14 +186,14 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   disabled={setStatus.isPending}
                   onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}
                 >
-                  <I icon={CheckCircle2} size={18} /> Terminé
+                  <I icon={CheckCircle2} size={18} /> {t("Terminé")}
                 </Button>
                 <Button
                   variant="d"
                   disabled={setStatus.isPending}
                   onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}
                 >
-                  <I icon={UserX} size={18} /> Absent
+                  <I icon={UserX} size={18} /> {t("Absent")}
                 </Button>
               </div>
             )}
@@ -204,8 +205,8 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))
                 }
               >
-                <I icon={AlarmClock} size={18} /> Annuler pour retard (plus de{' '}
-                {LATE_TOLERANCE_MINUTES} min)
+                <I icon={AlarmClock} size={18} /> {t("Annuler pour retard (plus de")}{' '}
+                {LATE_TOLERANCE_MINUTES} {t("min)")}
               </Button>
             )}
             {active && !cancelling && (
@@ -214,25 +215,25 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   variant="g"
                   onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
                 >
-                  Reporter
+                  {t("Reporter")}
                 </Button>
                 <Button variant="d" onClick={() => setCancelling(true)}>
-                  Annuler
+                  {t("Annuler")}
                 </Button>
               </div>
             )}
             {cancelling && (
               <div className="crd !gap-2.5 !border-danger-line">
-                <span className="text-[1rem] font-semibold">Annuler ce rendez-vous ?</span>
+                <span className="text-[1rem] font-semibold">{t("Annuler ce rendez-vous ?")}</span>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[1rem]">Motif (optionnel)</span>
+                  <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
                   <PickerField
-                    label="Motif"
-                    title="Pourquoi annuler ?"
+                    label={t("Motif")}
+                    title={t("Pourquoi annuler ?")}
                     options={reasonOptions(SALON_CANCEL_REASONS_FR)}
                     value={reason || null}
                     onChange={setReason}
-                    placeholder="Choisir"
+                    placeholder={t("Choisir")}
                     inline
                   />
                 </div>
@@ -244,10 +245,10 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                       void act(cancel.mutateAsync({ id: b.id, reason: reason || undefined }))
                     }
                   >
-                    Annuler le rendez-vous
+                    {t("Annuler le rendez-vous")}
                   </Button>
                   <Button variant="g" onClick={() => setCancelling(false)}>
-                    Garder
+                    {t("Garder")}
                   </Button>
                 </div>
               </div>
@@ -258,7 +259,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
               className="flex items-center justify-center gap-1.5 py-1 text-[1rem] font-semibold"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
             >
-              Fiche complète et historique <I icon={ArrowRight} size={16} />
+              {t("Fiche complète et historique")}{' '}<I icon={ArrowRight} size={16} />
             </button>
           </>
         )}

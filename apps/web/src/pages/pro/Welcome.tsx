@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES, writeAuthFlow } from '@/lib/authFlow';
 import { Button, I } from '@/components/ui';
+import { t } from '@/i18n';
 
 const PROMISES = ['Réservations en ligne 24 h/24', 'Page publique partageable', 'Rappels automatiques à vos clients'];
 
@@ -20,11 +21,11 @@ export function ProWelcome() {
         <img src={DESIGN_IMAGES.pro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />
         <div className="ovl-t">
-          <div className="h3 mb-2 !text-white/70">Espace professionnel</div>
+          <div className="h3 mb-2 !text-white/70">{t("Espace professionnel")}</div>
           <div className="text-[1.714rem] font-bold leading-[1.1] tracking-[-0.8px]">
-            Votre agenda,
+            {t("Votre agenda,")}
             <br />
-            votre page, votre lien.
+            {t("votre page, votre lien.")}
           </div>
         </div>
         <span className="absolute bottom-2 left-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.pro.credit}</span>
@@ -38,9 +39,9 @@ export function ProWelcome() {
             </li>
           ))}
         </ul>
-        <Button onClick={start}>Créer mon espace pro</Button>
+        <Button onClick={start}>{t("Créer mon espace pro")}</Button>
         <Link to="/connexion?role=pro" className="p text-center">
-          Déjà inscrit ? Se connecter
+          {t("Déjà inscrit ? Se connecter")}
         </Link>
       </div>
     </div>

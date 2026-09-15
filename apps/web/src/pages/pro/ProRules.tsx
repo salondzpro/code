@@ -22,6 +22,7 @@ import { ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { RowText } from './MonSalon';
+import { t } from '@/i18n';
 
 /** Une règle par ligne : son libellé, sa valeur. */
 function Fact({ label, value }: { label: string; value: string }) {
@@ -43,20 +44,20 @@ export function ProRules() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">Rendez-vous</h1>
+      <h1 className="h1">{t("Rendez-vous")}</h1>
 
       <div className="crd !gap-0 !py-1">
         <ListRow to="/pro/profil/regles">
           <RowText
             icon={SlidersHorizontal}
-            title="Créneaux et règles"
+            title={t("Créneaux et règles")}
             sub="Délai, horizon, annulation, report"
           />
         </ListRow>
         <div className="li">
           <RowText
             icon={ShieldCheck}
-            title="Validation manuelle"
+            title={t("Validation manuelle")}
             sub="Vous confirmez chaque demande"
           />
           <Toggle
@@ -64,27 +65,27 @@ export function ProRules() {
             onChange={(v) =>
               updateSalon.mutate({ autoConfirm: !v }, { onError: (e) => setError(errorText(e)) })
             }
-            label="Validation manuelle"
+            label={t("Validation manuelle")}
           />
         </div>
       </div>
 
-      <SectionLabel>Ce que voient vos clients</SectionLabel>
+      <SectionLabel>{t("Ce que voient vos clients")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <Fact label="Annulation" value={`Jusqu'à ${before}`} />
+        <Fact label={t("Annulation")} value={`Jusqu'à ${before}`} />
         <Fact
-          label="Report"
+          label={t("Report")}
           value={
             salon.allowClientReschedule === false
               ? 'Désactivé'
               : `${MAX_CLIENT_RESCHEDULES} fois, jusqu'à ${before}`
           }
         />
-        <Fact label="Arrivée conseillée" value={`${ARRIVAL_ADVANCE_MINUTES} min avant`} />
-        <Fact label="Retard toléré" value={`${LATE_TOLERANCE_MINUTES} min`} />
+        <Fact label={t("Arrivée conseillée")} value={`${ARRIVAL_ADVANCE_MINUTES} min avant`} />
+        <Fact label={t("Retard toléré")} value={`${LATE_TOLERANCE_MINUTES} min`} />
       </div>
 
-      <SectionLabel>Blocage automatique</SectionLabel>
+      <SectionLabel>{t("Blocage automatique")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <Fact
           label={`Plus de ${CANCEL_ABUSE_MAX} annulations / ${CANCEL_ABUSE_WINDOW_DAYS} j`}

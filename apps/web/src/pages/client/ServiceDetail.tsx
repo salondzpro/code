@@ -12,6 +12,7 @@ import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import { openingStatus } from './Salon';
+import { t } from '@/i18n';
 
 export function ServiceDetail() {
   const { slug = '', serviceId = '' } = useParams();
@@ -35,7 +36,7 @@ export function ServiceDetail() {
       <div className="relative h-[15rem] bg-line">
         {(photos[0]?.url ?? s.coverUrl) && <img src={photos[0]?.url ?? s.coverUrl ?? ''} alt="" className="h-full w-full object-cover" />}
         <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
-          <IconButton lg aria-label="Retour" onClick={back}>
+          <IconButton lg aria-label={t("Retour")} onClick={back}>
             <I icon={ChevronLeft} />
           </IconButton>
           <IconButton lg aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={isFav} onClick={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}/prestation/${sv.id}`)}`))}>
@@ -57,7 +58,7 @@ export function ServiceDetail() {
         {sv.description && <p className="p text-[0.857rem]">{sv.description}</p>}
         {photos.length > 1 && (
           <>
-            <span className="h3">Réalisations</span>
+            <span className="h3">{t("Réalisations")}</span>
             <div className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {photos.slice(1).map((p) => (
                 <Img key={p.id} src={p.url} className="h-[12.5rem] w-[13.75rem] flex-none" />
@@ -81,7 +82,7 @@ export function ServiceDetail() {
         </div>
       </div>
       <BottomSheet grab={false}>
-        <Button onClick={() => navigate(`/s/${s.slug}/prestations?services=${sv.id}`)}>Réserver</Button>
+        <Button onClick={() => navigate(`/s/${s.slug}/prestations?services=${sv.id}`)}>{t("Réserver")}</Button>
       </BottomSheet>
     </div>
   );

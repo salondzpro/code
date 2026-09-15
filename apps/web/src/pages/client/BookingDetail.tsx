@@ -57,6 +57,7 @@ import { FactRow } from '@/components/BookingFacts';
 import { Splash } from '@/pages/auth/Splash';
 import { GoogleCalendarButton } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
+import { t } from '@/i18n';
 
 export function BookingDetail() {
   const { id = '' } = useParams();
@@ -106,9 +107,9 @@ export function BookingDetail() {
           <span className="flex h-[5rem] w-[5rem] items-center justify-center rounded-full bg-cancel-bg text-cancel-fg">
             <I icon={XCircle} size={40} />
           </span>
-          <h1 className="h1">Rendez-vous annulé</h1>
+          <h1 className="h1">{t("Rendez-vous annulé")}</h1>
           <p className="p">
-            {b.salon.name} a été prévenu. Aucun frais ne vous est appliqué.
+            {b.salon.name} {t("a été prévenu. Aucun frais ne vous est appliqué.")}
           </p>
         </div>
         <div className="crd !gap-3 !border-danger-line">
@@ -134,9 +135,9 @@ export function BookingDetail() {
         <div className="crd !gap-0">
           <div className="li !py-3">
             <span className="text-[1rem] font-bold">
-              {lines.length} prestation{lines.length > 1 ? 's' : ''}
+              {lines.length} {t("prestation")}{lines.length > 1 ? 's' : ''}
             </span>
-            <span className="text-[1rem] text-muted">annulée{lines.length > 1 ? 's' : ''}</span>
+            <span className="text-[1rem] text-muted">{t("annulée")}{lines.length > 1 ? 's' : ''}</span>
           </div>
           {lines.map((it) => (
             <div key={it.id} className="li !py-3">
@@ -150,10 +151,10 @@ export function BookingDetail() {
           ))}
         </div>
         <LinkButton to={`/s/${b.salon.slug}/prestations`}>
-          <I icon={RotateCcw} size={18} /> Réserver un autre créneau
+          <I icon={RotateCcw} size={18} /> {t("Réserver un autre créneau")}
         </LinkButton>
         <LinkButton to="/rendez-vous" variant="g">
-          <I icon={ArrowLeft} size={18} /> Retour à mes rendez-vous
+          <I icon={ArrowLeft} size={18} /> {t("Retour à mes rendez-vous")}
         </LinkButton>
       </Screen>
     );
@@ -182,11 +183,11 @@ export function BookingDetail() {
         {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
           <div className="g2">
             <a href={`tel:${b.salon.phone}`} className="btn g sm">
-              <I icon={Phone} size={18} /> Appeler
+              <I icon={Phone} size={18} /> {t("Appeler")}
             </a>
             {wa && (
               <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-                <I icon={MessageCircle} size={18} /> WhatsApp
+                <I icon={MessageCircle} size={18} /> {t("WhatsApp")}
               </a>
             )}
           </div>
@@ -230,52 +231,51 @@ export function BookingDetail() {
         {!forSomeoneElse && !!b.bookedByName && (
           <FactRow icon={UserRound} title={`Réservé par ${b.bookedByName}`} />
         )}
-        {b.notes && <FactRow icon={StickyNote} title="Votre note" sub={`« ${b.notes} »`} />}
+        {b.notes && <FactRow icon={StickyNote} title={t("Votre note")} sub={`« ${b.notes} »`} />}
         {b.cancellationReason && (
-          <FactRow icon={XCircle} tone="danger" title="Motif" sub={b.cancellationReason} />
+          <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
         )}
       </div>
       {active && <LateRule startsAt={b.startsAt} />}
       <div className="flex flex-col gap-2.5">
         {active && (
           <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">
-            <I icon={Navigation} size={18} /> Itinéraire
+            <I icon={Navigation} size={18} /> {t("Itinéraire")}
           </a>
         )}
         {canReschedule && (
           <div className="g2">
             <Link to={`/rendez-vous/${b.id}/reporter`} className="btn g">
-              <I icon={CalendarClock} size={18} /> Reporter
+              <I icon={CalendarClock} size={18} /> {t("Reporter")}
             </Link>
             <Button variant="d" onClick={() => setCancelling(true)}>
-              <I icon={XCircle} size={18} /> Annuler
+              <I icon={XCircle} size={18} /> {t("Annuler")}
             </Button>
           </div>
         )}
         {canModify && !canReschedule && (
           <Button variant="d" onClick={() => setCancelling(true)}>
-            <I icon={XCircle} size={18} /> Annuler
+            <I icon={XCircle} size={18} /> {t("Annuler")}
           </Button>
         )}
         {active && !canModify && (
           <p className="p text-center text-[1rem]">
-            Report et annulation en ligne possibles jusqu'à {minHours} h avant. Contactez le salon.
+            {t("Report et annulation en ligne possibles jusqu'à")}{' '}{minHours} {t("h avant. Contactez le salon.")}
           </p>
         )}
         {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
           <p className="p text-center text-[1rem]">
-            Déjà reporté une fois. Pour le déplacer encore, contactez le salon.
+            {t("Déjà reporté une fois. Pour le déplacer encore, contactez le salon.")}
           </p>
         )}
         {b.status === 'completed' && b.reviewRating == null && (
           <LinkButton to={`/rendez-vous/${b.id}/noter`}>
-            <I icon={Star} size={18} /> Noter la prestation
+            <I icon={Star} size={18} /> {t("Noter la prestation")}
           </LinkButton>
         )}
         {b.status === 'completed' && b.reviewRating != null && (
           <InfoBox>
-            Merci ! Vous avez noté ce rendez-vous {b.reviewRating}/5. Votre avis est visible sur la
-            page du salon.
+            {t("Merci ! Vous avez noté ce rendez-vous")}{' '}{b.reviewRating}{t("/5. Votre avis est visible sur la page du salon.")}
           </InfoBox>
         )}
         {active && <GoogleCalendarButton booking={b} />}
@@ -287,11 +287,10 @@ export function BookingDetail() {
           <BottomSheet>
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
-                Annuler ce rendez-vous ?
+                {t("Annuler ce rendez-vous ?")}
               </div>
               <p className="p mt-2">
-                Annulation gratuite — il reste {hoursLeft} h avant le rendez-vous. Le créneau sera
-                libéré immédiatement.
+                {t("Annulation gratuite — il reste")}{' '}{hoursLeft} {t("h avant le rendez-vous. Le créneau sera libéré immédiatement.")}
               </p>
             </div>
             <InfoBox>
@@ -300,14 +299,14 @@ export function BookingDetail() {
                 : `Pour respecter le travail des salons, au-delà de ${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`}
             </InfoBox>
             <div className="crd !flex-row items-center justify-between !py-3">
-              <span className="text-[1rem]">Motif (optionnel)</span>
+              <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
               <PickerField
-                label="Motif"
-                title="Pourquoi annuler ?"
+                label={t("Motif")}
+                title={t("Pourquoi annuler ?")}
                 options={reasonOptions(CLIENT_CANCEL_REASONS_FR)}
                 value={reason || null}
                 onChange={setReason}
-                placeholder="Choisir"
+                placeholder={t("Choisir")}
                 inline
               />
             </div>
@@ -324,7 +323,7 @@ export function BookingDetail() {
               {cancel.isPending ? 'Annulation…' : 'Annuler le rendez-vous'}
             </Button>
             <Button variant="g" onClick={() => setCancelling(false)}>
-              Garder le rendez-vous
+              {t("Garder le rendez-vous")}
             </Button>
           </BottomSheet>
         </>

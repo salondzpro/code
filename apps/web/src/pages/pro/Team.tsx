@@ -10,6 +10,7 @@ import type { Service, Staff } from '@salondz/types';
 import { Avatar, Button, Checkbox, I, Segmented, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
+import { t } from '@/i18n';
 
 /** Choix des prestations d'un membre : toutes, ou cases à cocher. */
 export function ServicesPicker({
@@ -28,18 +29,18 @@ export function ServicesPicker({
   return (
     <div className="flex flex-col gap-3">
       <Segmented
-        label="Prestations"
+        label={t("Prestations")}
         value={all ? 'all' : 'some'}
         onChange={(v) => onAll(v === 'all')}
         options={[
-          { value: 'all', label: 'Toutes les prestations' },
-          { value: 'some', label: 'Sélection' },
+          { value: 'all', label: t("Toutes les prestations") },
+          { value: 'some', label: t("Sélection") },
         ]}
       />
       {all ? (
-        <p className="p text-[1rem]">Toutes les prestations, y compris les futures.</p>
+        <p className="p text-[1rem]">{t("Toutes les prestations, y compris les futures.")}</p>
       ) : services.length === 0 ? (
-        <p className="p text-[1rem]">Aucune prestation au catalogue pour l'instant.</p>
+        <p className="p text-[1rem]">{t("Aucune prestation au catalogue pour l'instant.")}</p>
       ) : (
         <div className="crd !gap-0 !py-1">
           {services.map((sv) => (
@@ -49,7 +50,7 @@ export function ServicesPicker({
                   {sv.name}
                 </span>
                 <span className="s block">
-                  {sv.durationMinutes} min · {formatDA(sv.priceDa)}
+                  {sv.durationMinutes} {t("min ·")}{' '}{formatDA(sv.priceDa)}
                   {sv.groupName ? ` · ${sv.groupName}` : ''}
                 </span>
               </span>
@@ -64,7 +65,7 @@ export function ServicesPicker({
       )}
       {!all && selected.length === 0 && services.length > 0 && (
         <p className="text-[0.857rem] text-danger">
-          Choisissez au moins une prestation, sinon le membre ne sera jamais proposé.
+          {t("Choisissez au moins une prestation, sinon le membre ne sera jamais proposé.")}
         </p>
       )}
     </div>
@@ -85,7 +86,7 @@ export function Team() {
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">Équipe</h1>
+      <h1 className="h1">{t("Équipe")}</h1>
       <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (
           <li key={m.id}>
@@ -99,7 +100,7 @@ export function Team() {
                 <span className="min-w-0">
                   <span className="block truncate text-[1rem]">
                     {m.displayName}
-                    {m.userId === salon.ownerId && <span className="text-muted"> (vous)</span>}
+                    {m.userId === salon.ownerId && <span className="text-muted"> {t("(vous)")}</span>}
                   </span>
                   <span className="p block text-[1rem]">{summary(m)}</span>
                 </span>
@@ -118,15 +119,15 @@ export function Team() {
           <I icon={CalendarOff} size={18} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[1rem] font-semibold">Absences et fermetures</span>
+          <span className="block text-[1rem] font-semibold">{t("Absences et fermetures")}</span>
           <span className="block text-[1rem] text-muted">
-            Congés, pauses d'un membre, exceptions
+            {t("Congés, pauses d'un membre, exceptions")}
           </span>
         </span>
         <I icon={ChevronRight} size={18} className="text-disabled" />
       </button>
       <Button onClick={() => navigate('/pro/equipe/nouveau')}>
-        <I icon={Plus} size={18} /> Ajouter un membre
+        <I icon={Plus} size={18} /> {t("Ajouter un membre")}
       </Button>
     </Screen>
   );

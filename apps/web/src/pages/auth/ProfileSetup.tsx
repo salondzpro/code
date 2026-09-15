@@ -14,6 +14,7 @@ import { groupLocalDigits } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
 import { Badge, Button, Field, I, Input, Toggle, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { t } from '@/i18n';
 
 export function ProfileSetup() {
   const navigate = useNavigate();
@@ -41,9 +42,9 @@ export function ProfileSetup() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (name.trim().length < 2) return setError({ field: 'name', msg: 'Indiquez votre prénom et votre nom.' });
+    if (name.trim().length < 2) return setError({ field: 'name', msg: t("Indiquez votre prénom et votre nom.") });
     const parsed = phoneDZ.safeParse(`0${digits.replace(/\D/g, '')}`);
-    if (!parsed.success) return setError({ field: 'phone', msg: 'Numéro algérien invalide : 9 chiffres après +213.' });
+    if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
       await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, whatsappReminders: reminders });
@@ -59,7 +60,7 @@ export function ProfileSetup() {
     <Screen className="min-h-dvh" gap={16}>
       <TopBar noBack right="Dernière étape" />
       <div>
-        <h1 className="h1">Vos coordonnées</h1>
+        <h1 className="h1">{t("Vos coordonnées")}</h1>
         <p className="p mt-3">
           {isPro
             ? 'Votre nom et le numéro où vos clients peuvent vous joindre.'
@@ -67,7 +68,7 @@ export function ProfileSetup() {
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
-        <Field label="Prénom et nom" htmlFor="full-name" error={error?.field === 'name' ? error.msg : null}>
+        <Field label={t("Prénom et nom")} htmlFor="full-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
             id="full-name"
             lg
@@ -78,16 +79,16 @@ export function ProfileSetup() {
               setError(null);
             }}
             autoComplete="name"
-            placeholder="Inès Rahmani"
+            placeholder={t("Inès Rahmani")}
             autoFocus
           />
         </Field>
         <div>
           <label className="lbl" htmlFor="profile-phone">
-            Numéro de téléphone
+            {t("Numéro de téléphone")}
           </label>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[var(--radius-input)] bg-fill px-4 text-[0.857rem] font-medium" aria-label="Indicatif +213">
+            <div className="flex flex-none items-center gap-2 rounded-[var(--radius-input)] bg-fill px-4 text-[0.857rem] font-medium" aria-label={t("Indicatif +213")}>
               +213 <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
             <Input
@@ -112,11 +113,11 @@ export function ProfileSetup() {
         </div>
         {email && (
           <div>
-            <span className="lbl">Adresse vérifiée</span>
+            <span className="lbl">{t("Adresse vérifiée")}</span>
             <div className="flex items-center justify-between rounded-[var(--radius-input)] bg-fill px-4 py-[1.125rem] text-[0.857rem]">
               <span className="truncate">{email}</span>
               <Badge tone="ok" md>
-                Vérifiée
+                {t("Vérifiée")}
               </Badge>
             </div>
           </div>
@@ -124,10 +125,10 @@ export function ProfileSetup() {
         {!isPro && (
           <div className="flex items-center justify-between">
             <span>
-              <span className="block text-[1rem] font-semibold">Rappels de rendez-vous</span>
-              <span className="p block">Notification avant chaque rendez-vous</span>
+              <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
+              <span className="p block">{t("Notification avant chaque rendez-vous")}</span>
             </span>
-            <Toggle on={reminders} onChange={setReminders} label="Rappels de rendez-vous" />
+            <Toggle on={reminders} onChange={setReminders} label={t("Rappels de rendez-vous")} />
           </div>
         )}
         {error?.field === 'form' && (

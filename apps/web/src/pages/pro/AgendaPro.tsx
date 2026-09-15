@@ -42,6 +42,7 @@ import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import type { BookingWithStaff } from '@salondz/types';
+import { t } from '@/i18n';
 
 type View = 'day' | 'week' | 'month';
 const MONTHS = [
@@ -192,15 +193,15 @@ export function AgendaPro() {
           <h1 className="h1 whitespace-nowrap">{title}</h1>
         </div>
         <div className="flex flex-none gap-2">
-          <IconButton aria-label="Précédent" onClick={() => shift(-1)}>
+          <IconButton aria-label={t("Précédent")} onClick={() => shift(-1)}>
             <I icon={ChevronLeft} size={20} />
           </IconButton>
-          <IconButton aria-label="Suivant" onClick={() => shift(1)}>
+          <IconButton aria-label={t("Suivant")} onClick={() => shift(1)}>
             <I icon={ChevronRight} size={20} />
           </IconButton>
           {/* Retour à aujourd'hui : n'apparaît que lorsqu'on s'en est éloigné. */}
           {date !== today && (
-            <IconButton ink aria-label="Aujourd'hui" title="Aujourd'hui" onClick={() => setDate(today)}>
+            <IconButton ink aria-label={t("Aujourd'hui")} title={t("Aujourd'hui")} onClick={() => setDate(today)}>
               <I icon={CalendarCheck} size={20} />
             </IconButton>
           )}
@@ -208,13 +209,13 @@ export function AgendaPro() {
       </div>
       <Segmented
         sm
-        label="Vue"
+        label={t("Vue")}
         value={view}
         onChange={setView}
         options={[
-          { value: 'day', label: 'Jour' },
-          { value: 'week', label: 'Semaine' },
-          { value: 'month', label: 'Mois' },
+          { value: 'day', label: t("Jour") },
+          { value: 'week', label: t("Semaine") },
+          { value: 'month', label: t("Mois") },
         ]}
       />
 
@@ -245,18 +246,18 @@ export function AgendaPro() {
                 <div className="flex flex-col gap-2.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[1rem]">
-                      <b>{live.length} rendez-vous</b>{' '}
+                      <b>{live.length} {t("rendez-vous")}</b>{' '}
                       <span className="text-muted">· {formatDA(revenue)}</span>
                     </span>
                     <span className="flex items-center gap-2">
                       {pending > 0 && (
                         <Badge tone="pd" md>
-                          {pending} en attente
+                          {pending} {t("en attente")}
                         </Badge>
                       )}
                       {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
                         <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
-                          {showCancelled ? cancelled.length : cancelledOn(d)} annulé
+                          {showCancelled ? cancelled.length : cancelledOn(d)} {t("annulé")}
                           {(showCancelled ? cancelled.length : cancelledOn(d)) > 1 ? 's' : ''}
                         </Pill>
                       )}
@@ -391,7 +392,7 @@ function StaffColumnsHead({
         ))}
         {picked && (
           <button type="button" className="pill !my-1 !py-1.5" onClick={onAll}>
-            Toute l'équipe
+            {t("Toute l'équipe")}
           </button>
         )}
       </div>
@@ -443,7 +444,7 @@ function DayColumns({
   }, [isToday, date]);
 
   if (hours.length === 0 && items.length === 0)
-    return <p className="p py-6 text-center">Fermé ce jour.</p>;
+    return <p className="p py-6 text-center">{t("Fermé ce jour.")}</p>;
   const startMin = Math.min(
     ...(hours.length ? hours.map((h) => timeToMinutes(h.opensAt)) : [8 * 60]),
     ...items.map((b) => localMinutes(b.startsAt)),
@@ -467,7 +468,7 @@ function DayColumns({
     closed.push({
       s: timeToMinutes(sortedHours[i - 1]!.closesAt),
       e: timeToMinutes(sortedHours[i]!.opensAt),
-      label: 'Pause',
+      label: t("Pause"),
       staffId: null,
     });
   for (const t of blocks)
@@ -624,7 +625,7 @@ function DayColumns({
                         {pending && h >= 72 && (
                           <span className="mt-1 inline-block">
                             <Badge tone="pd" dot={false}>
-                              En attente
+                              {t("En attente")}
                             </Badge>
                           </span>
                         )}
@@ -699,11 +700,11 @@ function WeekGrid({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 text-[0.857rem]">
-        <span className="pill soft !py-2 !font-semibold">{total} rendez-vous</span>
+        <span className="pill soft !py-2 !font-semibold">{total} {t("rendez-vous")}</span>
         <Badge tone="ok" md>
           {formatDA(revenue)}
         </Badge>
-        <span className="text-muted">{occupancy} % occupé</span>
+        <span className="text-muted">{occupancy} {t("% occupé")}</span>
       </div>
       <div className="flex gap-1.5">
         <div className="relative w-[1.625rem] flex-none" style={{ height: H + 56 }}>
@@ -775,10 +776,10 @@ function WeekGrid({
       </div>
       <div className="flex gap-4 text-[1rem] text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-5 rounded bg-cat-nail-bg" /> Réservé
+          <span className="h-3 w-5 rounded bg-cat-nail-bg" /> {t("Réservé")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-5 rounded border border-dashed border-line" /> Libre
+          <span className="h-3 w-5 rounded border border-dashed border-line" /> {t("Libre")}
         </span>
         <span className="flex items-center gap-1.5">
           <span
@@ -787,7 +788,7 @@ function WeekGrid({
               background: 'repeating-linear-gradient(135deg,#f4f5f6 0 3px,#e6e7e9 3px 6px)',
             }}
           />{' '}
-          Fermé
+          {t("Fermé")}
         </span>
       </div>
     </div>
@@ -876,7 +877,7 @@ function MonthGrid({
       </div>
       <div className="flex gap-4 text-[1rem] text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-cat-nail-line" /> 1 point = 1 rendez-vous
+          <span className="h-1.5 w-1.5 rounded-full bg-cat-nail-line" /> {t("1 point = 1 rendez-vous")}
         </span>
         <span className="flex items-center gap-1.5">
           <span
@@ -885,7 +886,7 @@ function MonthGrid({
               background: 'repeating-linear-gradient(135deg,#f4f5f6 0 3px,#e6e7e9 3px 6px)',
             }}
           />{' '}
-          Fermé
+          {t("Fermé")}
         </span>
       </div>
       <div className="crd !gap-0 !py-1">
@@ -900,7 +901,7 @@ function MonthGrid({
               {MONTHS[Number(selected.slice(5, 7)) - 1]}
             </span>
             <span className="p block text-[0.857rem]">
-              {list.length} rendez-vous · {formatDA(revenue)}
+              {list.length} {t("rendez-vous ·")}{' '}{formatDA(revenue)}
             </span>
           </span>
           <I icon={ChevronRight} size={18} className="text-disabled" />
