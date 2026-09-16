@@ -787,4 +787,5 @@ export const ar: Record<string, string> = {
   'Désactivée': 'معطّل',
   'Oui': 'نعم',
   'Non': 'لا',
+  'Le téléphone reste privé (jamais montré aux clients).': 'يبقى رقم الهاتف خاصًا (لا يُعرض للزبائن أبدًا).',
 };

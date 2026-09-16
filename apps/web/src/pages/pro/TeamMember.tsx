@@ -6,7 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Camera, ChevronRight, Clock, Phone, Save, Scissors } from 'lucide-react';
+import { Camera, ChevronRight, Clock, Phone, Scissors } from 'lucide-react';
 import { useProSalon, useProStaffMutations, useStaffHours } from '@salondz/api-client';
 import {
   DAY_LABELS_SHORT_FR,
@@ -187,7 +187,7 @@ export function TeamMember() {
         )}
       </div>
 
-      {/* Identité : nom affiché aux clients + coordonnées (privées), modifiables sur place. */}
+      {/* Identité : nom affiché aux clients + coordonnées (privées), enregistrées en quittant le champ. */}
       <div className="crd !gap-3">
         <span className="h3">{t("Identité")}</span>
         <div className="g2">
@@ -202,6 +202,7 @@ export function TeamMember() {
                 if (identErr.name) setIdentErr((f) => ({ ...f, name: undefined }));
               }}
               placeholder={t("Prénom")}
+              onBlur={() => identDirty && void saveIdentity()}
               aria-required
               aria-invalid={!!identErr.name || undefined}
             />
@@ -218,22 +219,13 @@ export function TeamMember() {
                 if (identErr.phone) setIdentErr((f) => ({ ...f, phone: undefined }));
               }}
               placeholder="05 51 23 45 67"
+              onBlur={() => identDirty && void saveIdentity()}
             />
           </Field>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="s">
-            {identSaved ? 'Enregistré' : 'Le téléphone reste privé (jamais montré aux clients).'}
-          </span>
-          <Button
-            auto
-            sm
-            onClick={() => void saveIdentity()}
-            disabled={update.isPending || !identDirty}
-          >
-            <I icon={Save} size={16} /> {t("Enregistrer")}
-          </Button>
-        </div>
+        <span className={`s ${identSaved ? 'text-ok' : ''}`}>
+          {identSaved ? t('Enregistré') : update.isPending && identDirty ? t('Enregistrement…') : t('Le téléphone reste privé (jamais montré aux clients).')}
+        </span>
       </div>
 
       <div className="crd !gap-0 !py-1">
@@ -492,7 +484,7 @@ export function TeamMemberHours() {
                 <span className={ranges.length ? '' : 'text-subtle'}>
                   {t(DAY_LABELS_SHORT_FR[d as 0])}
                 </span>
-                <span className="text-muted">{formatDayRanges(ranges)}</span>
+                <span className="text-muted" dir="ltr">{formatDayRanges(ranges)}</span>
               </span>
             );
           })}

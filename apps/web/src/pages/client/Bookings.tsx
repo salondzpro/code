@@ -26,7 +26,7 @@ import {
   Search,
   Star,
 } from 'lucide-react';
-import { I, Img, LinkButton, Segmented, Skeleton, StatusBadge } from '@/components/ui';
+import { EmptyState, I, Img, LinkButton, Segmented, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import type { BookingWithSalon } from '@salondz/types';
@@ -294,16 +294,18 @@ export function Bookings() {
       ) : list.isError ? (
         <ErrorMessage error={list.error} retry={() => list.refetch()} />
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 px-4 pt-6 text-center">
-          <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
-            <I icon={empty.icon} size={30} />
-          </span>
-          <div className="text-[1.143rem] font-bold">{empty.title}</div>
-          <p className="p">{empty.text}</p>
-          <LinkButton to="/" className="mt-2">
-            <I icon={Search} size={18} /> {t("Explorer les salons")}
-          </LinkButton>
-        </div>
+        <EmptyState
+          icon={empty.icon}
+          title={empty.title}
+          description={empty.text}
+          action={
+            scope === 'upcoming' ? (
+              <LinkButton to="/">
+                <I icon={Search} size={18} /> {t("Explorer les salons")}
+              </LinkButton>
+            ) : undefined
+          }
+        />
       ) : scope === 'upcoming' ? (
         items.map((b) => <UpcomingCard key={b.id} b={b} now={now} />)
       ) : (

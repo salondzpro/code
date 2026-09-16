@@ -806,4 +806,5 @@ export const en: Record<string, string> = {
   'Désactivée': 'Off',
   'Oui': 'Yes',
   'Non': 'No',
+  'Le téléphone reste privé (jamais montré aux clients).': 'The phone number stays private (never shown to clients).',
 };
