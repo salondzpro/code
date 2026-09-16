@@ -18,6 +18,8 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
+import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, InfoBox, Skeleton, Slot, TopBar } from '@/components/ui';
 import { DayStrip, MonthNav } from '@/components/DaySelector';
@@ -42,6 +44,37 @@ export function BookingWhen() {
   const serviceIds = draft.serviceIds;
   const s = salon.data;
   const availability = useAvailability(s?.id ?? '', { serviceIds: serviceIds.join(','), date });
+  // Alerte « créneau libéré » pour ce salon et ce jour (compte connecté seulement).
+  const { session } = useAuth();
+  const [alertId, setAlertId] = useState<string | null>(null);
+  const [alertBusy, setAlertBusy] = useState(false);
+  useEffect(() => {
+    if (!session || !s?.id) return setAlertId(null);
+    let alive = true;
+    api.me
+      .slotAlerts(s.id)
+      .then((r) => alive && setAlertId(r.items.find((a) => a.day === date)?.id ?? null))
+      .catch(() => alive && setAlertId(null));
+    return () => {
+      alive = false;
+    };
+  }, [session, s?.id, date]);
+  const toggleAlert = async () => {
+    if (!s) return;
+    if (!session) return navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}/reserver/quand`)}`);
+    setAlertBusy(true);
+    try {
+      if (alertId) {
+        await api.me.removeSlotAlert(alertId);
+        setAlertId(null);
+      } else {
+        const created = await api.me.addSlotAlert({ salonId: s.id, day: date, serviceId: serviceIds[0] });
+        setAlertId(created.id);
+      }
+    } finally {
+      setAlertBusy(false);
+    }
+  };
 
   useEffect(() => {
     setSlot((cur) => (cur && cur.startsWith(date) ? cur : null));
@@ -164,6 +197,20 @@ export function BookingWhen() {
               {t("Aucune disponibilité dans les")}{' '}{s.bookingHorizonDays} {t("prochains jours pour ces prestations.")}
             </span>
           )}
+          {/* Liste d'attente : premier prévenu, premier servi (comme Planity). */}
+          {!dayOver &&
+            (alertId ? (
+              <div className="mt-1 flex items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-ok/10 px-3 py-2.5 text-[0.857rem] text-ok">
+                <span>{t("Alerte activée : vous serez prévenu(e) si un créneau se libère ce jour.")}</span>
+                <button type="button" className="flex-none font-semibold underline" onClick={() => void toggleAlert()} disabled={alertBusy}>
+                  {t("Retirer")}
+                </button>
+              </div>
+            ) : (
+              <Button variant="g" auto sm onClick={() => void toggleAlert()} disabled={alertBusy} className="mt-1">
+                {t("M'alerter si un créneau se libère")}
+              </Button>
+            ))}
         </div>
       ) : (
         [...groups.entries()].map(([period, list]) => (

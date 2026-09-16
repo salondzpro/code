@@ -97,6 +97,14 @@ export interface NotificationsResponse extends Paginated<Notification> {
   unreadCount: number;
 }
 
+export interface SlotAlert {
+  id: string;
+  salonId: string;
+  serviceId: string | null;
+  day: string;
+  createdAt: string;
+}
+
 export function createApiClient(opts: ApiClientOptions) {
   const base = opts.baseUrl.replace(/\/+$/, '');
   const doFetch = opts.fetch ?? globalThis.fetch.bind(globalThis);
@@ -211,6 +219,10 @@ export function createApiClient(opts: ApiClientOptions) {
       deleteAccount: () => del<void>('/me'),
       /** Toutes les données du compte en JSON. */
       exportData: () => get<Record<string, unknown>>('/me/export'),
+      /** Alertes « prévenez-moi si un créneau se libère » (un salon, un jour). */
+      slotAlerts: (salonId?: string) => get<{ items: SlotAlert[] }>('/me/slot-alerts', salonId ? { salonId } : undefined),
+      addSlotAlert: (body: { salonId: string; day: string; serviceId?: string }) => post<SlotAlert>('/me/slot-alerts', body),
+      removeSlotAlert: (id: string) => del<void>(`/me/slot-alerts/${id}`),
       update: (body: UpdateProfileInput) => patch<Profile>('/me', body),
       setRole: (role: 'client' | 'pro') => post<Profile>('/me/role', { role }),
       registerPushToken: (body: {

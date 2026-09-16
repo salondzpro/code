@@ -8,10 +8,12 @@ import { useLocation, useNavigate } from 'react-router';
 import {
   Bell,
   BellOff,
+  BellRing,
   CalendarCheck,
   CalendarClock,
   CalendarPlus,
   CalendarX,
+  Inbox,
   Settings2,
   Star,
   UserX,
@@ -41,6 +43,8 @@ const KIND: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   booking_reminder: { icon: Bell, tone: 'bg-fill text-ink' },
   booking_completed: { icon: Star, tone: 'bg-fill text-ink' },
   booking_no_show: { icon: UserX, tone: 'bg-danger/10 text-danger' },
+  slot_freed: { icon: BellRing, tone: 'bg-ok/10 text-ok' },
+  request_pending: { icon: Inbox, tone: 'bg-danger/10 text-danger' },
 };
 
 export function AccountNotifications() {
@@ -71,6 +75,9 @@ export function AccountNotifications() {
     else days.push([key, [n]]);
   }
   const open = (n: Notification) => {
+    // Créneau libéré : vers la réservation du salon, le jour concerné.
+    const url = typeof n.data?.url === 'string' ? n.data.url : null;
+    if (n.type === 'slot_freed' && url) return navigate(url);
     if (!n.bookingId) return;
     navigate(`${isPro ? '/pro' : ''}/rendez-vous/${n.bookingId}`);
   };
@@ -122,7 +129,7 @@ export function AccountNotifications() {
                   type="button"
                   className="li w-full text-left"
                   onClick={() => open(n)}
-                  disabled={!n.bookingId}
+                  disabled={!n.bookingId && !(n.type === 'slot_freed' && typeof n.data?.url === 'string')}
                 >
                   <span className="flex min-w-0 flex-1 items-center gap-3">
                     <span className={`relative flex h-11 w-11 flex-none items-center justify-center rounded-full ${k.tone}`}>

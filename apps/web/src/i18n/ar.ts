@@ -873,4 +873,7 @@ export const ar: Record<string, string> = {
   'Télécharger mes données': 'تنزيل بياناتي',
   'Vos données, vos obligations': 'بياناتك والتزاماتك',
   'Vos rendez-vous à venir seront perdus, vos favoris et avis effacés, et vos rendez-vous passés anonymisés chez les salons. Cette action est définitive.': 'ستفقد مواعيدك القادمة، وتُحذف مفضلاتك وتقييماتك، وتُجهَّل مواعيدك السابقة لدى الصالونات. لا يمكن التراجع عن هذا الإجراء.',
+  'Alerte activée : vous serez prévenu(e) si un créneau se libère ce jour.': 'التنبيه مفعّل: سنخبرك إذا تحرّر موعد في هذا اليوم.',
+  'M\'alerter si un créneau se libère': 'نبّهني إذا تحرّر موعد',
+  'Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).': 'أمام الصالون حتى {when} للتأكيد. بدون رد، ينتهي الطلب ونخبرك بذلك.',
 };

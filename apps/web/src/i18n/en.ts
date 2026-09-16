@@ -892,4 +892,7 @@ export const en: Record<string, string> = {
   'Télécharger mes données': 'Download my data',
   'Vos données, vos obligations': 'Your data, your obligations',
   'Vos rendez-vous à venir seront perdus, vos favoris et avis effacés, et vos rendez-vous passés anonymisés chez les salons. Cette action est définitive.': 'Your upcoming appointments will be lost, your favourites and reviews deleted, and your past appointments anonymised at the salons. This cannot be undone.',
+  'Alerte activée : vous serez prévenu(e) si un créneau se libère ce jour.': 'Alert on: you will be notified if a slot frees up that day.',
+  'M\'alerter si un créneau se libère': 'Alert me if a slot frees up',
+  'Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).': 'The salon has until {when} to confirm. Without an answer, the request expires and you are notified.',
 };

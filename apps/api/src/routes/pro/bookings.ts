@@ -13,6 +13,7 @@ import { db } from '../../lib/supabase';
 import { conflict, notFound, unwrap } from '../../lib/errors';
 import { BOOKING_WITH_STAFF_SELECT, getBookingWithStaff, mapBookingWithStaff } from '../../lib/queries';
 import { pushAfterBooking } from '../../lib/push';
+import { notifySlotFreed } from '../../lib/waitlist';
 
 /** Délai pendant lequel un rendez-vous clôturé automatiquement peut encore être marqué « Client absent ». */
 const NO_SHOW_GRACE_DAYS = 7;
@@ -145,6 +146,7 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
       .maybeSingle();
     if (!unwrap(res)) throw conflict('BOOKING_NOT_CANCELLABLE', 'La réservation a changé entre-temps.');
     pushAfterBooking(req.log, b.id);
+    void notifySlotFreed(req.log, { salonId: b.salonId, staffId: b.staffId, startsAt: b.startsAt, endsAt: b.endsAt, serviceId: b.serviceId, excludeBookingId: b.id });
     return getBookingWithStaff(b.id);
   });
 
@@ -164,6 +166,7 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     });
     unwrap(res);
     pushAfterBooking(req.log, b.id);
+    void notifySlotFreed(req.log, { salonId: b.salonId, staffId: b.staffId, startsAt: b.startsAt, endsAt: b.endsAt, serviceId: b.serviceId, excludeBookingId: b.id });
     return getBookingWithStaff(b.id);
   });
 };

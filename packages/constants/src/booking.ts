@@ -51,6 +51,10 @@ export const NOTIFICATION_TYPES = [
   /** Absence signalée par le salon : la cliente doit le savoir, une absence compte double
    *  dans les règles anti-abus (voir NO_SHOW_ABUSE_MAX). Ajouté par la migration 0028. */
   'booking_no_show',
+  /** Un créneau s'est libéré (annulation, report, expiration, blocage retiré) : liste d'attente et clients ayant rendez-vous plus tard. */
+  'slot_freed',
+  /** Relance du professionnel : une demande attend sa réponse depuis PENDING_REMINDER_HOURS. */
+  'request_pending',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -58,6 +62,18 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const MAX_UPCOMING_BOOKINGS_PER_CLIENT = 10;
 /** Réservations POUR QUELQU'UN D'AUTRE par compte et par 24 h : un tiers ne doit pas pouvoir saturer ou faire suspendre autrui. */
 export const MAX_FOR_OTHER_PER_DAY = 5;
+/**
+ * Validation manuelle : une demande bloque le créneau pour les autres clients tant que le salon n'a pas
+ * répondu. Le salon est relancé après PENDING_REMINDER_HOURS ; sans réponse au bout de
+ * PENDING_REQUEST_TTL_HOURS (ou à l'heure du rendez-vous si elle arrive avant), la demande expire et le
+ * créneau est libéré — le client est prévenu et peut réserver ailleurs.
+ */
+export const PENDING_REMINDER_HOURS = 2;
+export const PENDING_REQUEST_TTL_HOURS = 24;
+/** Alertes « créneau libéré » actives au plus par client. */
+export const SLOT_ALERT_MAX_PER_CLIENT = 10;
+/** Clients ayant un rendez-vous plus tard prévenus d'un créneau plus tôt (les plus éloignés d'abord). */
+export const SLOT_FREED_MAX_LATER_CLIENTS = 10;
 export const MAX_STAFF_PER_SALON = 30;
 export const MAX_SERVICES_PER_SALON = 200;
 /**

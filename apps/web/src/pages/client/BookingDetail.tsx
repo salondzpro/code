@@ -36,6 +36,8 @@ import {
   CLIENT_CANCEL_REASONS_FR,
   reasonOptions,
   SHOW_SALON_CONTACT_TO_CLIENTS,
+  PENDING_REQUEST_TTL_HOURS,
+  formatLocale,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -58,6 +60,9 @@ import { Splash } from '@/pages/auth/Splash';
 import { GoogleCalendarButton } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
 import { t } from '@/i18n';
+
+const formatDeadline = (ms: number) =>
+  new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Africa/Algiers' }).format(new Date(ms));
 
 export function BookingDetail() {
   const { id = '' } = useParams();
@@ -180,6 +185,15 @@ export function BookingDetail() {
           </span>
           <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
         </div>
+        {/* Validation manuelle : le créneau est bloqué pour les autres tant que le salon n'a pas répondu, et
+            la demande expire d'elle-même (le client est prévenu, le créneau libéré). */}
+        {b.status === 'pending' && (
+          <InfoBox>
+            {t('Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).', {
+              when: formatDeadline(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())),
+            })}
+          </InfoBox>
+        )}
         {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
           <div className="g2">
             <a href={`tel:${b.salon.phone}`} className="btn g sm">

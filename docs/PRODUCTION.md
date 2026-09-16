@@ -59,7 +59,7 @@ Exploitation :
 ### Important (première quinzaine)
 7. Lecture directe avec la clé publique : fermer `staff.phone`, `salons.phone`, `reviews.client_id` par privilèges de colonnes ou vues.
 8. Schémas de réponse zod sur les routes publiques (aucune colonne nouvelle ne part par défaut).
-9. Expiration des demandes non traitées (24 h) et relance du pro ; réglages « Rappels / Confirmations » réellement lus par le serveur.
+9. Réglages « Rappels / Confirmations » réellement lus par le serveur (l'expiration des demandes à 24 h et la relance du pro sont livrées le 16 sept., ainsi que la liste d'attente « créneau libéré »).
 10. Fiche client sur identifiant stable (fusion compte + numéro), blocage d'un client de passage.
 11. Congés et horaires : lister et prévenir les rendez-vous touchés par un blocage.
 12. Découpage du bundle web par espace (`lazy()`), police Inter auto-hébergée, manifeste PWA et icônes PNG, balises Open Graph pré-rendues sur `/s/:slug` (partage WhatsApp).

@@ -4,6 +4,7 @@ import { addDaysToKey, localDateTimeToISO, toLocalDateKey } from '@salondz/const
 import { createTimeBlockSchema, dateKey, uuid } from '@salondz/validation';
 import type { TimeBlock } from '@salondz/types';
 import { db } from '../../lib/supabase';
+import { notifySlotFreed } from '../../lib/waitlist';
 import { notFound, unwrap } from '../../lib/errors';
 import { camelize } from '../../lib/mappers';
 
@@ -49,9 +50,10 @@ const proBlockRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   app.delete('/blocks/:id', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
-    const res = await db.from('time_blocks').delete().eq('id', req.params.id).eq('salon_id', req.salon!.id).select('id').maybeSingle();
+    const res = await db.from('time_blocks').delete().eq('id', req.params.id).eq('salon_id', req.salon!.id).select('id, staff_id, starts_at, ends_at').maybeSingle();
     if (res.error) throw res.error;
     if (!res.data) throw notFound('Blocage');
+    void notifySlotFreed(req.log, { salonId: req.salon!.id, staffId: res.data.staff_id, startsAt: res.data.starts_at, endsAt: res.data.ends_at });
     reply.status(204);
     return null;
   });

@@ -17,8 +17,7 @@ import {
   CANCEL_ABUSE_WINDOW_DAYS,
   NO_SHOW_ABUSE_MAX,
   NO_SHOW_ABUSE_WINDOW_DAYS,
-  SHOW_SALON_CONTACT_TO_CLIENTS,
-} from '@salondz/constants';
+  SHOW_SALON_CONTACT_TO_CLIENTS, SLOT_ALERT_MAX_PER_CLIENT } from '@salondz/constants';
 
 const PROFILE_COLS =
   'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
@@ -359,6 +358,44 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const gone = await db.auth.admin.deleteUser(uid);
     if (gone.error) throw gone.error;
     req.log.info({ userId: uid }, 'compte supprimé');
+    reply.status(204);
+    return null;
+  });
+
+  // ---- Alertes « prévenez-moi si un créneau se libère » ----
+
+  app.get('/me/slot-alerts', { schema: { querystring: z.object({ salonId: uuid.optional() }) } }, async (req, reply) => {
+    let q = db.from('slot_alerts').select('id, salon_id, service_id, day, created_at').eq('client_id', req.user!.id).is('notified_at', null).gte('day', new Date().toISOString().slice(0, 10)).order('day');
+    if (req.query.salonId) q = q.eq('salon_id', req.query.salonId);
+    const res = await q;
+    if (res.error) throw res.error;
+    reply.header('Cache-Control', 'private, no-store');
+    return { items: camelize(res.data ?? []) as { id: string; salonId: string; serviceId: string | null; day: string; createdAt: string }[] };
+  });
+
+  app.post(
+    '/me/slot-alerts',
+    { schema: { body: z.object({ salonId: uuid, day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), serviceId: uuid.optional() }) } },
+    async (req, reply) => {
+      const uid = req.user!.id;
+      const open = await db.from('slot_alerts').select('id', { count: 'exact', head: true }).eq('client_id', uid).is('notified_at', null).gte('day', new Date().toISOString().slice(0, 10));
+      if (open.error) throw open.error;
+      if ((open.count ?? 0) >= SLOT_ALERT_MAX_PER_CLIENT)
+        throw conflict('TOO_MANY_ALERTS', `Vous avez déjà ${SLOT_ALERT_MAX_PER_CLIENT} alertes actives : retirez-en une avant d'en ajouter.`);
+      const res = await db
+        .from('slot_alerts')
+        .upsert({ salon_id: req.body.salonId, client_id: uid, day: req.body.day, service_id: req.body.serviceId ?? null, notified_at: null }, { onConflict: 'salon_id,client_id,day' })
+        .select('id, salon_id, service_id, day, created_at')
+        .single();
+      if (res.error) throw res.error;
+      reply.status(201);
+      return camelize(res.data);
+    },
+  );
+
+  app.delete('/me/slot-alerts/:id', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    const res = await db.from('slot_alerts').delete().eq('id', req.params.id).eq('client_id', req.user!.id);
+    if (res.error) throw res.error;
     reply.status(204);
     return null;
   });

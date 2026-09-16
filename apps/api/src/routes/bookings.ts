@@ -15,6 +15,7 @@ import { badRequest, conflict, forbidden, notFound, unwrap } from '../lib/errors
 import { camelize } from '../lib/mappers';
 import { BOOKING_WITH_SALON_SELECT, getBookingWithSalon, mapBookingWithSalon } from '../lib/queries';
 import { pushAfterBooking } from '../lib/push';
+import { notifySlotFreed } from '../lib/waitlist';
 import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
 
 const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -160,6 +161,8 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
       .maybeSingle();
     if (!unwrap(res)) throw conflict('BOOKING_NOT_CANCELLABLE', 'Cette réservation ne peut plus être annulée.');
     pushAfterBooking(req.log, b.id);
+    // Le créneau se libère : liste d'attente et clients ayant rendez-vous plus tard.
+    void notifySlotFreed(req.log, { salonId: b.salonId, staffId: b.staffId, startsAt: b.startsAt, endsAt: b.endsAt, serviceId: b.serviceId, excludeBookingId: b.id });
     return getBookingWithSalon(b.id);
   });
 
@@ -174,6 +177,8 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
       p_enforce_rules: true,
     });
     const moved = unwrap(res) as { starts_at: string };
+    // L'ancien créneau se libère.
+    void notifySlotFreed(req.log, { salonId: b.salonId, staffId: b.staffId, startsAt: b.startsAt, endsAt: b.endsAt, serviceId: b.serviceId, excludeBookingId: b.id });
     // Le trigger prévient le client ; le professionnel doit aussi voir le nouveau créneau.
     const owner = await db.from('salons').select('owner_id').eq('id', b.salonId).single();
     if (!owner.error && owner.data) {
