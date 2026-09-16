@@ -13,7 +13,8 @@ import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
-const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
+/** Durées courantes : le barbier algérien tourne en 10–25 min, l'esthétique en 30–90 min. */
+const DURATIONS = [10, 15, 20, 25, 30, 45, 60, 90];
 
 export function Step6Service() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function Step6Service() {
   const existing = serviceId ? salon?.services.find((s) => s.id === serviceId) : undefined;
   const [name, setName] = useState(existing?.name ?? '');
   const [price, setPrice] = useState(existing ? String(existing.priceDa) : '');
-  const [duration, setDuration] = useState(existing?.durationMinutes ?? 45);
+  const [duration, setDuration] = useState(existing?.durationMinutes ?? (salon?.genderTarget === 'men' ? 20 : 30));
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '');
   const [group, setGroup] = useState(existing?.groupName ?? '');
   const [creating, setCreating] = useState(false);
