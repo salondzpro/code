@@ -1,12 +1,13 @@
 /**
- * PRO-F 11 — Étape 9 : horaires par jour (interrupteur + plage) et pause facultative PAR JOUR
- * (ex. vendredi 12:00–14:00 uniquement). Une journée avec pause = deux plages en base.
- * Semaine commençant dimanche. Réutilisé dans les réglages (`settings`).
+ * PRO-F 11 — Étape 9 : horaires de la semaine, façon outil du métier : une ligne par jour (jour, plage,
+ * interrupteur) dans une seule carte ; toucher un jour ouvert déplie ses heures et ses pauses (ex. vendredi
+ * 12:00–14:00). Une journée avec pause = deux plages en base. Semaine commençant dimanche.
+ * Réutilisé dans les réglages (`settings`) et pour les horaires d'un membre (Équipe).
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { Plus, X } from 'lucide-react';
+import { ChevronDown, Copy, Plus, X } from 'lucide-react';
 import { DAY_LABELS_FR, MAX_BREAKS_PER_DAY, formatDayRanges, nextBreakSuggestion, rangesFromRows, rowError, rowsFromRanges, type DayBreak, type DayHoursRow, type DayOfWeek } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
 import { I, Toggle } from '@/components/ui';
@@ -25,26 +26,52 @@ function TimeBox({ label, value, onChange, ariaLabel }: { label: string; value: 
   );
 }
 
-/** Éditeur d'une semaine d'horaires avec une ou plusieurs pauses par jour — partagé avec les horaires d'un membre (Équipe). */
+/**
+ * Éditeur d'une semaine d'horaires avec une ou plusieurs pauses par jour. Une carte, sept lignes ; le jour
+ * touché se déplie. « Appliquer à tous les jours ouverts » évite de saisir sept fois la même plage.
+ */
 export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { rows: DayHoursRow[]; onChange: (rows: DayHoursRow[]) => void; closedLabel?: string }) {
+  const [openDay, setOpenDay] = useState<DayOfWeek | null>(null);
   const patch = (d: DayOfWeek, p: Partial<DayHoursRow>) => onChange(rows.map((r) => (r.dayOfWeek === d ? { ...r, ...p } : r)));
   const patchBreak = (r: DayHoursRow, idx: number, b: Partial<DayBreak>) => patch(r.dayOfWeek, { breaks: r.breaks.map((x, k) => (k === idx ? { ...x, ...b } : x)) });
+  const applyToAll = (src: DayHoursRow) =>
+    onChange(rows.map((r) => (r.open ? { ...r, opensAt: src.opensAt, closesAt: src.closesAt, breaks: src.breaks.map((b) => ({ ...b })) } : r)));
+  const openCount = rows.filter((r) => r.open).length;
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="crd !gap-0 !py-1">
       {rows.map((r) => {
         const err = rowError(r);
         const day = t(DAY_LABELS_FR[r.dayOfWeek]);
+        const expanded = r.open && openDay === r.dayOfWeek;
         return (
-          <div key={r.dayOfWeek} className={`crd !gap-3 ${r.open ? '' : '!bg-fill'}`}>
-            <div className="flex items-center justify-between gap-3">
-              <span className={`text-[1rem] font-semibold ${r.open ? '' : 'text-subtle'}`}>{day}</span>
-              <span className="flex items-center gap-3">
-                <span className="text-[0.857rem] text-muted">{r.open ? formatDayRanges(rangesFromRows([r])) : closedLabel}</span>
-                <Toggle on={r.open} onChange={(v) => patch(r.dayOfWeek, { open: v })} label={day} />
-              </span>
+          <div key={r.dayOfWeek} className="border-b border-line last:border-b-0">
+            <div className="flex items-center gap-3 py-3">
+              <button
+                type="button"
+                className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
+                onClick={() => setOpenDay(expanded ? null : r.dayOfWeek)}
+                aria-expanded={expanded}
+                disabled={!r.open}
+              >
+                <span className={`text-[1rem] font-semibold ${r.open ? '' : 'text-subtle'}`}>{day}</span>
+                <span className={`flex items-center gap-1.5 text-[1rem] ${r.open ? (err ? 'text-danger' : 'text-ink') : 'text-subtle'}`}>
+                  {/* Plages toujours de gauche à droite, même en arabe : « 09:00–19:00 » ne s'inverse pas. */}
+                  <span dir="ltr">{r.open ? formatDayRanges(rangesFromRows([r])) : t(closedLabel)}</span>
+                  {r.open && <I icon={ChevronDown} size={16} className={`text-muted transition-transform ${expanded ? 'rotate-180' : ''}`} />}
+                </span>
+              </button>
+              <Toggle
+                on={r.open}
+                onChange={(v) => {
+                  patch(r.dayOfWeek, { open: v });
+                  setOpenDay(v ? r.dayOfWeek : null);
+                }}
+                label={day}
+              />
             </div>
-            {r.open && (
-              <>
+            {expanded && (
+              <div className="flex flex-col gap-3 pb-4">
                 <div className="g2">
                   <TimeBox label={t("Ouvre")} value={r.opensAt} onChange={(v) => patch(r.dayOfWeek, { opensAt: v })} ariaLabel={`Ouverture ${day}`} />
                   <TimeBox label={t("Ferme")} value={r.closesAt} onChange={(v) => patch(r.dayOfWeek, { closesAt: v })} ariaLabel={`Fermeture ${day}`} />
@@ -52,22 +79,29 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
                 {r.breaks.map((b, idx) => (
                   <div key={idx} className="flex items-end gap-2">
                     <div className="g2 flex-1">
-                      <TimeBox label={r.breaks.length > 1 ? `Pause ${idx + 1} · début` : 'Début de pause'} value={b.from} onChange={(v) => patchBreak(r, idx, { from: v })} ariaLabel={`Début de pause ${idx + 1} ${day}`} />
-                      <TimeBox label={r.breaks.length > 1 ? `Pause ${idx + 1} · fin` : 'Fin de pause'} value={b.to} onChange={(v) => patchBreak(r, idx, { to: v })} ariaLabel={`Fin de pause ${idx + 1} ${day}`} />
+                      <TimeBox label={r.breaks.length > 1 ? t('Pause {n} · début', { n: idx + 1 }) : t('Début de pause')} value={b.from} onChange={(v) => patchBreak(r, idx, { from: v })} ariaLabel={`Début de pause ${idx + 1} ${day}`} />
+                      <TimeBox label={r.breaks.length > 1 ? t('Pause {n} · fin', { n: idx + 1 }) : t('Fin de pause')} value={b.to} onChange={(v) => patchBreak(r, idx, { to: v })} ariaLabel={`Fin de pause ${idx + 1} ${day}`} />
                     </div>
                     <button type="button" className="ib flex-none" aria-label={`Supprimer la pause ${idx + 1} ${day}`} onClick={() => patch(r.dayOfWeek, { breaks: r.breaks.filter((_, k) => k !== idx) })}>
                       <I icon={X} size={16} />
                     </button>
                   </div>
                 ))}
-                {r.breaks.length < MAX_BREAKS_PER_DAY && (
-                  <button type="button" className="flex items-center gap-1.5 self-start text-[1rem] font-semibold" onClick={() => patch(r.dayOfWeek, { breaks: [...r.breaks, nextBreakSuggestion(r)] })} aria-label={`Ajouter une pause ${day}`}>
-                    <I icon={Plus} size={16} /> {r.breaks.length ? 'Ajouter une autre pause' : 'Ajouter une pause'}
-                  </button>
-                )}
-              </>
+                {err && <p className="text-[0.857rem] text-danger">{err}</p>}
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  {r.breaks.length < MAX_BREAKS_PER_DAY && (
+                    <button type="button" className="flex items-center gap-1.5 text-[1rem] font-semibold" onClick={() => patch(r.dayOfWeek, { breaks: [...r.breaks, nextBreakSuggestion(r)] })} aria-label={`Ajouter une pause ${day}`}>
+                      <I icon={Plus} size={16} /> {r.breaks.length ? t('Ajouter une autre pause') : t('Ajouter une pause')}
+                    </button>
+                  )}
+                  {openCount > 1 && !err && (
+                    <button type="button" className="flex items-center gap-1.5 text-[1rem] font-semibold text-muted" onClick={() => applyToAll(r)}>
+                      <I icon={Copy} size={16} /> {t('Appliquer à tous les jours ouverts')}
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
-            {err && <p className="text-[0.857rem] text-danger">{err}</p>}
           </div>
         );
       })}
@@ -104,22 +138,17 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={9} backTo={settings ? '/pro/profil' : stepPath(8)} right={settings ? 'Horaires' : undefined} />
+      <StepBar step={9} backTo={settings ? '/pro/profil' : stepPath(8)} right={settings ? t('Horaires') : undefined} />
       <h1 className="h1">{t("Horaires")}</h1>
-      <p className="p">{t("Ajoutez une pause sur les jours concernés, par exemple 12:00 – 14:00.")}</p>
+      <p className="p -mt-2">{t("Touchez un jour pour régler ses heures ou ajouter une pause, par exemple 12:00 – 14:00.")}</p>
       <WeekHoursEditor rows={rows} onChange={setRows} />
-      <div className="crd !gap-0 !py-1">
-        <div className="li">
-          <span className="text-[1rem] font-semibold">{t("Semaine commençant")}</span>
-          <span className="text-[1rem] text-muted">{t("Dimanche")}</span>
-        </div>
-      </div>
+      <p className="text-[0.857rem] text-muted">{t("Semaine commençant")} {t("Dimanche").toLowerCase()} · {t("heure d'Alger")}</p>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
-      <StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onClick={() => void save()} disabled={invalid} busy={setHours.isPending} />
+      <StepSheet label={settings ? t('Enregistrer') : t('Continuer')} onClick={() => void save()} disabled={invalid} busy={setHours.isPending} />
     </Screen>
   );
 }

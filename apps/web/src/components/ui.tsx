@@ -680,17 +680,25 @@ export function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`sk ${className}`} aria-hidden />;
 }
 
+/** État vide : une icône dans un disque neutre, un titre, une phrase, au plus une action. */
 export function EmptyState({
+  icon: Icon,
   title,
   description,
   action,
 }: {
+  icon?: LucideIcon;
   title: string;
   description?: string;
   action?: ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center gap-2 px-5 py-6 text-center">
+      {Icon && (
+        <span className="mb-1 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
+          <Icon size={30} strokeWidth={1.6} />
+        </span>
+      )}
       <div className="h2">{title}</div>
       {description && <p className="p">{description}</p>}
       {action && <div className="mt-3 w-full">{action}</div>}

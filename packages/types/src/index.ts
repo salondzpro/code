@@ -200,6 +200,8 @@ export interface Notification {
   title: string;
   body: string;
   data: Record<string, unknown>;
+  /** Rendez-vous concerné (toutes les notifications actuelles en ont un) : cible à l'ouverture. */
+  bookingId: UUID | null;
   readAt: ISODateTime | null;
   createdAt: ISODateTime;
 }

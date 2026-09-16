@@ -18,7 +18,7 @@ export function Intro() {
             {t("rendez-vous.")}
           </div>
         </div>
-        <span className="absolute bottom-2 left-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
+        <span className="absolute left-3 top-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
         <LangSwitch className="absolute right-3 top-3" />
       </div>
       <div className="flex flex-col gap-3.5 px-5 pb-10 pt-5">

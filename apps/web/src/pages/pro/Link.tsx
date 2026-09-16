@@ -25,7 +25,7 @@ import {
   TikTokLogo,
   WhatsAppLogo,
 } from '@/components/BrandIcons';
-import { useProSalon, useProSalonMutations } from '@salondz/api-client';
+import { useProSalon } from '@salondz/api-client';
 import {
   Avatar,
   Badge,
@@ -33,8 +33,9 @@ import {
   Button,
   I,
   IconButton,
+  ListRow,
+  SectionLabel,
   Toast,
-  Toggle,
   TopBar,
 } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -166,7 +167,6 @@ export function ShareSheet({
 export function ProLink() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  const { updateSalon } = useProSalonMutations();
   const [sheet, setSheet] = useState(false);
   const [copied, copy] = useCopy();
   const { url, short } = usePublicUrl(salon?.slug ?? '');
@@ -215,31 +215,26 @@ export function ProLink() {
           {t("Copier")}
         </Button>
       </div>
+      {/* Ce que le lien donne aujourd'hui : des faits, chacun menant à l'écran qui le règle
+          (publication sur Compte, délai sur Créneaux et règles, validation sur Rendez-vous). */}
+      <SectionLabel>{t("Ce que voient vos clients")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <div className="li">
-          <span className="text-[1rem] text-muted">{t("Réservation en ligne")}</span>
-          <Toggle
-            on={salon.isPublished}
-            onChange={(v) => updateSalon.mutate({ isPublished: v })}
-            label={t("Réservation en ligne")}
-          />
-        </div>
-        <button
-          type="button"
-          className="li w-full text-left"
-          onClick={() => navigate('/pro/profil/regles')}
+        <ListRow
+          to="/pro/compte"
+          right={
+            <span className={`text-[1rem] font-semibold ${salon.isPublished ? 'text-ok' : 'text-danger'}`}>
+              {salon.isPublished ? t("Activée") : t("Désactivée")}
+            </span>
+          }
         >
+          <span className="text-[1rem] text-muted">{t("Réservation en ligne")}</span>
+        </ListRow>
+        <ListRow to="/pro/profil/regles" right={<span className="text-[1rem] font-semibold">{t('{n} avant', { n: lead })}</span>}>
           <span className="text-[1rem] text-muted">{t("Délai minimum")}</span>
-          <span className="text-[1.143rem] font-bold">{lead}</span>
-        </button>
-        <div className="li">
+        </ListRow>
+        <ListRow to="/pro/reglages/rendez-vous" right={<span className="text-[1rem] font-semibold">{salon.autoConfirm ? t("Non") : t("Oui")}</span>}>
           <span className="text-[1rem] text-muted">{t("Validation manuelle")}</span>
-          <Toggle
-            on={!salon.autoConfirm}
-            onChange={(v) => updateSalon.mutate({ autoConfirm: !v })}
-            label={t("Validation manuelle")}
-          />
-        </div>
+        </ListRow>
       </div>
       {!salon.isPublished && (
         <Badge tone="pd" md>

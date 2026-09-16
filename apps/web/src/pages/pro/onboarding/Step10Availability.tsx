@@ -1,6 +1,8 @@
 /**
  * PRO-F 12 / 13 — Étape 10 : « Vos créneaux » (granularité, battement, postes, réservation en ligne,
- * validation manuelle) puis « Règles de réservation » (délai minimum, fenêtre, annulation, report, acompte).
+ * validation manuelle) puis « Règles de réservation » (délai minimum, fenêtre, annulation, report).
+ * En réglages (`settings`), les deux volets tiennent sur une seule page « Créneaux et règles » avec un seul
+ * « Enregistrer » ; la publication et la validation manuelle y sont absentes (Compte et Rendez-vous les portent).
  */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -25,7 +27,7 @@ const LEAD = [
   { v: 1440, l: '24 h' },
 ];
 const HORIZON = [7, 30, 60];
-const CANCEL = [2, 4, 12, 24];
+const CANCEL = [1, 2, 4, 12, 24];
 
 export function Step10Availability({ settings }: { settings?: boolean }) {
   const navigate = useNavigate();
@@ -59,6 +61,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (!salon) return <Splash />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
+  const backTo = settings ? '/pro/reglages/rendez-vous' : stepPath(9);
 
   const save = async () => {
     setError(null);
@@ -66,65 +69,62 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       await updateSalon.mutateAsync({
         slotIntervalMinutes: interval as 10 | 15 | 20 | 30 | 60,
         bufferMinutes: buffer,
-        autoConfirm: !manual,
         bookingLeadTimeMinutes: lead,
         bookingHorizonDays: horizon,
         cancelMinHours: cancel,
         allowClientReschedule: report,
         depositRequired: deposit,
-        ...(settings ? { isPublished: online } : {}),
+        // En réglages, publication et validation manuelle se règlent sur Compte et Rendez-vous.
+        ...(settings ? {} : { autoConfirm: !manual }),
       });
-      navigate(settings ? '/pro/profil' : '/pro/onboarding/publier');
+      navigate(settings ? '/pro/reglages/rendez-vous' : '/pro/onboarding/publier');
     } catch (err) {
       setError(errorText(err));
     }
   };
 
-  if (phase === 'slots') {
-    return (
-      <Screen bottom={SHEET_PAD} gap={16}>
-        <StepBar step={10} backTo={settings ? '/pro/profil' : stepPath(9)} right="Disponibilités" />
-        <h1 className="h1">{t("Vos créneaux")}</h1>
-        <SectionLabel>{t("Créneaux proposés toutes les")}</SectionLabel>
-        <div className="g3">
-          {GRANULARITY.map((g) => (
-            <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
-              {g} {t("min")}
-            </Slot>
-          ))}
-        </div>
-        <SectionLabel>{t("Règles")}</SectionLabel>
-        <div className="crd !gap-0 !py-1">
-          <label className="li">
-            <span className="text-[1rem] font-semibold">{t("Pause entre deux rendez-vous")}</span>
-            <PickerField inline label={t("Temps de battement")} value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
-          </label>
-          <label className="li">
-            <span className="text-[1rem] font-semibold">{t("Réserver au plus tard")}</span>
-            <PickerField inline label={t("Délai minimum de réservation")} value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: `${l.l} avant` }))} />
-          </label>
-          <Link to="/pro/equipe" className="li">
-            <span className="text-[1rem] font-semibold">{t("Rendez-vous en même temps")}</span>
-            <span className="text-[1rem] text-muted">{staffCount}</span>
-          </Link>
-          <div className="li">
-            <span className="text-[1rem] font-semibold">{t("Réservation en ligne")}</span>
-            <Toggle on={online} onChange={setOnline} label={t("Réservation en ligne")} />
-          </div>
-          <div className="li">
-            <span className="text-[1rem] font-semibold">{t("Je valide chaque demande")}</span>
-            <Toggle on={manual} onChange={setManual} label={t("Validation manuelle")} />
-          </div>
-        </div>
-        <StepSheet onClick={() => setPhase('rules')} />
-      </Screen>
-    );
-  }
+  const slots = (
+    <>
+      <SectionLabel>{t("Créneaux proposés toutes les")}</SectionLabel>
+      <div className="g3">
+        {GRANULARITY.map((g) => (
+          <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
+            {g} {t("min")}
+          </Slot>
+        ))}
+      </div>
+      <SectionLabel>{t("Règles")}</SectionLabel>
+      <div className="crd !gap-0 !py-1">
+        <label className="li">
+          <span className="text-[1rem] font-semibold">{t("Pause entre deux rendez-vous")}</span>
+          <PickerField inline label={t("Temps de battement")} value={buffer} onChange={setBuffer} options={BUFFERS.map((b) => ({ value: b, label: `${b} min` }))} />
+        </label>
+        <label className="li">
+          <span className="text-[1rem] font-semibold">{t("Réserver au plus tard")}</span>
+          <PickerField inline label={t("Délai minimum de réservation")} value={lead} onChange={setLead} options={LEAD.map((l) => ({ value: l.v, label: t('{n} avant', { n: l.l }) }))} />
+        </label>
+        <Link to="/pro/equipe" className="li">
+          <span className="text-[1rem] font-semibold">{t("Rendez-vous en même temps")}</span>
+          <span className="text-[1rem] text-muted">{staffCount}</span>
+        </Link>
+        {!settings && (
+          <>
+            <div className="li">
+              <span className="text-[1rem] font-semibold">{t("Réservation en ligne")}</span>
+              <Toggle on={online} onChange={setOnline} label={t("Réservation en ligne")} />
+            </div>
+            <div className="li">
+              <span className="text-[1rem] font-semibold">{t("Je valide chaque demande")}</span>
+              <Toggle on={manual} onChange={setManual} label={t("Validation manuelle")} />
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
 
-  return (
-    <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={10} right="Réservation" backTo={undefined} />
-      <h1 className="h1">{t("Règles de réservation")}</h1>
+  const rules = (
+    <>
       <SectionLabel>{t("Réservable jusqu’à")}</SectionLabel>
       <div className="g3">
         {HORIZON.map((h) => (
@@ -136,19 +136,53 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <div className="crd !gap-0 !py-1">
         <label className="li">
           <span className="text-[1rem] font-semibold">{t("Annulation gratuite jusqu'à")}</span>
-          <PickerField inline label={t("Annulation gratuite jusqu'à")} value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: `${c} h avant` }))} />
+          <PickerField inline label={t("Annulation gratuite jusqu'à")} value={cancel} onChange={setCancel} options={CANCEL.map((c) => ({ value: c, label: t('{n} h avant', { n: c }) }))} />
         </label>
         <div className="li">
           <span className="text-[1rem] font-semibold">{t("Le client peut reporter")}</span>
           <Toggle on={report} onChange={setReport} label={t("Report client")} />
         </div>
       </div>
-      {error && (
-        <p className="text-[1rem] text-danger" role="alert">
-          {error}
-        </p>
-      )}
-      <StepSheet label={settings ? 'Enregistrer' : 'Continuer'} onClick={() => void save()} busy={updateSalon.isPending} />
+    </>
+  );
+
+  const alert = error && (
+    <p className="text-[1rem] text-danger" role="alert">
+      {error}
+    </p>
+  );
+
+  if (settings) {
+    return (
+      <Screen bottom={SHEET_PAD} gap={16}>
+        <StepBar step={10} backTo={backTo} right={t("Rendez-vous")} />
+        <h1 className="h1">{t("Créneaux et règles")}</h1>
+        {slots}
+        {rules}
+        {alert}
+        <StepSheet label={t('Enregistrer')} onClick={() => void save()} busy={updateSalon.isPending} />
+      </Screen>
+    );
+  }
+
+  if (phase === 'slots') {
+    return (
+      <Screen bottom={SHEET_PAD} gap={16}>
+        <StepBar step={10} backTo={backTo} right={t("Disponibilités")} />
+        <h1 className="h1">{t("Vos créneaux")}</h1>
+        {slots}
+        <StepSheet onClick={() => setPhase('rules')} />
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen bottom={SHEET_PAD} gap={16}>
+      <StepBar step={10} right={t("Réservation")} backTo={undefined} />
+      <h1 className="h1">{t("Règles de réservation")}</h1>
+      {rules}
+      {alert}
+      <StepSheet label={t('Continuer')} onClick={() => void save()} busy={updateSalon.isPending} />
     </Screen>
   );
 }

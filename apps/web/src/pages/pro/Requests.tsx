@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus } from 'lucide-react';
+import { Inbox, Plus } from 'lucide-react';
 import { useProBookingMutations, useProBookings, useProPendingBookings } from '@salondz/api-client';
 import {
   addDaysToKey,
@@ -161,7 +161,9 @@ export function Requests() {
       ))}
       {next.data && !items.length && !days.length && (
         <EmptyState
+          icon={Inbox}
           title={t("Aucun rendez-vous à venir")}
+          description={t("Les demandes à valider et les rendez-vous des 30 prochains jours apparaîtront ici.")}
           action={
             <Button onClick={() => navigate('/pro/rendez-vous/nouveau')}>
               <I icon={Plus} size={18} /> {t("Nouveau rendez-vous")}
