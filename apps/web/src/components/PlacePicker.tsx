@@ -21,11 +21,14 @@ const ALGIERS: LatLng = { lat: 36.7538, lng: 3.0588 };
 export function PlacePicker({
   value,
   onChange,
+  autoLocate,
   className = '',
 }: {
   value: LatLng | null;
   /** Position choisie et, quand il est connu, son libellé (quartier, ville). */
-  onChange: (pos: LatLng, label: string | null) => void;
+  onChange: (pos: LatLng, place: { label: string; region: string | null; inDZ: boolean } | null) => void;
+  /** Au premier affichage sans position connue : demander le GPS tout de suite. */
+  autoLocate?: boolean;
   className?: string;
 }) {
   const mapEl = useRef<HTMLDivElement | null>(null);
@@ -51,7 +54,7 @@ export function PlacePicker({
       void reverseGeocode(pos.lat, pos.lng, ctrl.signal).then((r) => {
         if (!r) return;
         setLabel(r.label);
-        onChangeRef.current(pos, r.label);
+        onChangeRef.current(pos, r);
       });
     });
     mapRef.current = map;
@@ -71,6 +74,11 @@ export function PlacePicker({
     if (Math.abs(c.lat - value.lat) > 1e-4 || Math.abs(c.lng - value.lng) > 1e-4) map.setView([value.lat, value.lng], Math.max(map.getZoom(), 16), { animate: true });
   }, [value?.lat, value?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (autoLocate && !value) locate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const locate = () => {
     if (!('geolocation' in navigator)) return setGeo('denied');
     setGeo('asking');
@@ -85,7 +93,7 @@ export function PlacePicker({
   };
 
   return (
-    <div className={`relative h-[15rem] overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill ${className}`}>
+    <div className={`relative isolate z-0 h-[15rem] overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill ${className}`}>
       <style>{`.leaflet-container{background:#eaecee;font-family:inherit}`}</style>
       <div ref={mapEl} className="absolute inset-0" aria-label={t("Carte")} />
       {/* Épingle fixe au centre : la carte bouge dessous. */}

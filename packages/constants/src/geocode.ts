@@ -10,7 +10,7 @@ export interface GeoPlace {
 }
 
 /** Position → libellé lisible (« Hydra, Alger » ; hors Algérie « Roubaix, France »), ou null si inconnu. */
-export async function reverseGeocode(lat: number, lng: number, signal?: AbortSignal): Promise<{ label: string; inDZ: boolean } | null> {
+export async function reverseGeocode(lat: number, lng: number, signal?: AbortSignal): Promise<{ label: string; inDZ: boolean; /** Wilaya / région administrative, quand le service la connaît. */ region: string | null } | null> {
   try {
     const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=fr`, { signal });
     if (!res.ok) return null;
@@ -22,7 +22,8 @@ export async function reverseGeocode(lat: number, lng: number, signal?: AbortSig
     const city = p.city ?? p.county ?? p.state;
     const parts = inDZ ? [local, city] : [city ?? local, p.country];
     const label = parts.filter((x, i, a): x is string => !!x && a.indexOf(x) === i).join(', ');
-    return label ? { label, inDZ } : null;
+    const region = p.state ?? p.county ?? p.city ?? null;
+    return label ? { label, inDZ, region } : null;
   } catch {
     return null;
   }

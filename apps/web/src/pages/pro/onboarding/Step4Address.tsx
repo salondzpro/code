@@ -76,12 +76,13 @@ export function Step4Address({ settings }: { settings?: boolean }) {
     if (!zone.trim()) setZone(p.detail.split(',')[0]?.trim() ?? '');
   };
   // Position venue de la carte (glissement ou GPS) : on complète quartier et wilaya s'ils manquent.
-  const onMap = (p: LatLng, label: string | null) => {
+  // La ville suit la position : wilaya reconnue dans le libellé ou la région ; quartier complété s'il manque.
+  const onMap = (p: LatLng, place: { label: string; region: string | null; inDZ: boolean } | null) => {
     setPos(p);
-    if (!label) return;
-    const w = wilayaFromLabel(label);
+    if (!place) return;
+    const w = wilayaFromLabel(`${place.label} ${place.region ?? ''}`);
     if (w) setWilaya(w);
-    if (!zone.trim()) setZone(label.split(',')[0]?.trim() ?? '');
+    if (!zone.trim() && place.inDZ) setZone(place.label.split(',')[0]?.trim() ?? '');
   };
 
   const submit = async (e?: FormEvent) => {
@@ -168,7 +169,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             </ul>
           )}
         </div>
-        <PlacePicker value={pos} onChange={onMap} />
+        <PlacePicker value={pos} onChange={onMap} autoLocate={!settings && !pos} />
         <p className="p -mt-2 text-[0.857rem]">{t("Déplacez la carte pour placer l'épingle sur votre salon, ou touchez « Ma position ».")}</p>
         <div className="crd !gap-0 !py-1">
           <label className="li">
