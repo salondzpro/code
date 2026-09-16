@@ -32,6 +32,21 @@ if (process.env.VITE_SENTRY_DSN) envVars.push({ key: 'VITE_SENTRY_DSN', value: p
 // Clé publique Web Push : sans elle, le site ne propose plus les notifications navigateur.
 if (process.env.VITE_VAPID_PUBLIC_KEY) envVars.push({ key: 'VITE_VAPID_PUBLIC_KEY', value: process.env.VITE_VAPID_PUBLIC_KEY });
 
+// Une seule source de vérité pour les en-têtes du site (reprise dans render.yaml) : appliqués à la
+// création ET resynchronisés à chaque lancement (le site a été créé par ce script, hors Blueprint).
+const SITE_HEADERS = [
+  { path: '/assets/*', name: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+  { path: '/fonts/*', name: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+  // L'index doit être revalidé à chaque visite : sinon le téléphone garde l'ancien bundle.
+  { path: '/', name: 'Cache-Control', value: 'no-cache' },
+  { path: '/index.html', name: 'Cache-Control', value: 'no-cache' },
+  { path: '/manifest.webmanifest', name: 'Content-Type', value: 'application/manifest+json' },
+  { path: '/*', name: 'X-Content-Type-Options', value: 'nosniff' },
+  { path: '/*', name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { path: '/*', name: 'X-Frame-Options', value: 'DENY' },
+  { path: '/*', name: 'Permissions-Policy', value: 'geolocation=(self), camera=(self), microphone=()' },
+];
+
 const siteSpec = {
   type: 'static_site',
   name: SITE_NAME,
@@ -50,15 +65,7 @@ const siteSpec = {
     publishPath: 'apps/web/dist',
     pullRequestPreviewsEnabled: 'no',
     routes: [{ type: 'rewrite', source: '/*', destination: '/index.html' }],
-    headers: [
-      { path: '/assets/*', name: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-      // L'index (et toute route SPA) doit être revalidé à chaque visite : sinon le téléphone garde l'ancien bundle.
-      { path: '/', name: 'Cache-Control', value: 'no-cache' },
-      { path: '/index.html', name: 'Cache-Control', value: 'no-cache' },
-      { path: '/*', name: 'Cache-Control', value: 'no-cache' },
-      { path: '/*', name: 'X-Content-Type-Options', value: 'nosniff' },
-      { path: '/*', name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-    ],
+    headers: SITE_HEADERS,
   },
 };
 
@@ -82,6 +89,8 @@ if (!site) {
   const merged = new Map(existing.map((e) => [e.envVar.key, e.envVar.value]));
   for (const v of envVars) merged.set(v.key, v.value);
   await call('PUT', `/services/${site.id}/env-vars`, [...merged].map(([key, value]) => ({ key, value })));
+  await call('PUT', `/services/${site.id}/headers`, SITE_HEADERS);
+  console.log(`En-têtes resynchronisés (${SITE_HEADERS.length}).`);
   console.log(`Variables de build fusionnées (${merged.size}).`);
   if (forceDeploy) {
     deployId = (await call('POST', `/services/${site.id}/deploys`, { clearCache: 'do_not_clear' })).id;
