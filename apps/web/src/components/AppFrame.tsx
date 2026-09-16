@@ -16,6 +16,8 @@ import { t } from '@/i18n';
  */
 export const NAV_PAD = 96;
 export const SHEET_PAD = 132;
+/** Feuille basse à DEUX boutons (action secondaire au-dessus de la principale) : la dernière ligne du contenu reste visible. */
+export const SHEET_PAD_2 = 196;
 
 export function AppFrame({
   children,

@@ -10,7 +10,7 @@ import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, I } from '@/components/ui';
 import { ImageCropper } from '@/components/ImageCropper';
-import { Screen, SHEET_PAD } from '@/components/AppFrame';
+import { Screen, SHEET_PAD_2 } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
@@ -60,7 +60,7 @@ export function Step7ServicePhotos() {
   };
 
   return (
-    <Screen bottom={SHEET_PAD} gap={16}>
+    <Screen bottom={SHEET_PAD_2} gap={16}>
       <StepBar
         step={7}
         backTo={`${stepPath(6)}/${service.id}`}

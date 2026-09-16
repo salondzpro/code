@@ -12,7 +12,7 @@ import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { readProDraft, writeProDraft } from '@/lib/proDraft';
 import { I } from '@/components/ui';
 import { MAX_SPECIALTIES, SpecialtiesGrid } from '@/components/SpecialtiesGrid';
-import { Screen, SHEET_PAD } from '@/components/AppFrame';
+import { Screen, SHEET_PAD, SHEET_PAD_2 } from '@/components/AppFrame';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -31,7 +31,7 @@ export function Step1Market() {
   if (phase === 'specialties' && market) {
     const cats = categoriesForMarket(market);
     return (
-      <Screen bottom={SHEET_PAD} gap={16}>
+      <Screen bottom={SHEET_PAD_2} gap={16}>
         <StepBar step={1} backTo={undefined} />
         <StepTitle sub={t("Vos clients vous trouvent par spécialité. Choisissez-en une ou plusieurs : la suite de l'inscription s'adapte.")}>
           {t("Que proposez-vous ?")}
