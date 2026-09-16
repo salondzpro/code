@@ -8,11 +8,11 @@ import { Camera, Trash2 } from 'lucide-react';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
-import { Button, I, InfoBox } from '@/components/ui';
+import { Button, I } from '@/components/ui';
 import { ImageCropper } from '@/components/ImageCropper';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
 export function Step7ServicePhotos() {
@@ -66,10 +66,9 @@ export function Step7ServicePhotos() {
         backTo={`${stepPath(6)}/${service.id}`}
         right={fromCatalog ? 'Catalogue' : undefined}
       />
-      <div>
-        <h1 className="h1">{t("Photo ·")}{' '}{service.name}</h1>
-        <p className="p mt-2">{t("Une seule image, celle qui représente le mieux cette prestation.")}</p>
-      </div>
+      <StepTitle sub={t("Une seule image, celle qui représente le mieux cette prestation. Les photos avec cette prestation sont réservées 3 fois plus souvent.")}>
+        {t('Une photo pour « {service} »', { service: service.name })}
+      </StepTitle>
       <button
         type="button"
         className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-card)] bg-line"
@@ -107,16 +106,14 @@ export function Step7ServicePhotos() {
           <I icon={Trash2} size={16} /> {t("Retirer la photo")}
         </Button>
       )}
-      <InfoBox>
-        {t("Les prestations avec photo sont réservées 3 fois plus souvent. Vos autres photos ont leur place dans « Réalisations ».")}
-      </InfoBox>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
       <StepSheet
-        label={t("Enregistrer la prestation")}
+        label={photo ? t("Enregistrer la prestation") : t("Enregistrer sans photo")}
+        hint={fromCatalog ? undefined : t("Vos autres photos ont leur place dans « Réalisations », l'étape suivante.")}
         onClick={() =>
           void save().then((ok) => ok && navigate(fromCatalog ? '/pro/catalogue' : stepPath(8)))
         }

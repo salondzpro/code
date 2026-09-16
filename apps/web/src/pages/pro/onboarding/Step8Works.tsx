@@ -10,10 +10,10 @@ import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { SALON_MAX_WORKS } from '@salondz/constants';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
-import { I, InfoBox } from '@/components/ui';
+import { I } from '@/components/ui';
 import { Screen, SHEET_PAD, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
 export function Step8Works({ settings }: { settings?: boolean }) {
@@ -62,10 +62,9 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         backTo={settings ? '/pro/mon-salon' : stepPath(6)}
         right={settings ? 'Mon salon' : undefined}
       />
-      <div>
-        <h1 className="h1">{settings ? 'Réalisations' : 'Vos réalisations'}</h1>
-        <p className="p mt-2">{t("Vos photos de travail, visibles dans l'onglet « Réalisations ».")}</p>
-      </div>
+      <StepTitle sub={settings ? t("Vos photos de travail, visibles dans l'onglet « Réalisations ».") : t("Coupes, barbes, colorations, ongles… plusieurs photos à la fois. C'est votre vitrine.")}>
+        {settings ? t('Réalisations') : t('Montrez votre travail')}
+      </StepTitle>
       <div className="g3">
         {works.map((w) => (
           <div key={w.id} className="relative aspect-square overflow-hidden rounded-[var(--radius-card-sm)] bg-line">
@@ -105,15 +104,13 @@ export function Step8Works({ settings }: { settings?: boolean }) {
           e.target.value = '';
         }}
       />
-      <InfoBox>
-        {works.length}/{SALON_MAX_WORKS} {t("photos. Chaque prestation garde une seule image représentative : ici, c'est votre vitrine.")}
-      </InfoBox>
+      <p className="p text-[0.857rem]">{t('{n} sur {max} photos', { n: works.length, max: SALON_MAX_WORKS })}</p>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
           {error}
         </p>
       )}
-      {!settings && <StepSheet onClick={() => navigate(stepPath(9))} busy={busy} />}
+      {!settings && <StepSheet label={works.length ? t('Continuer') : t('Continuer sans photo')} hint={t("Modifiable ensuite depuis Mon salon.")} onClick={() => navigate(stepPath(9))} busy={busy} />}
     </Screen>
   );
 }
