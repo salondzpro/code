@@ -22,12 +22,12 @@ const TEXT: Record<Mode, { title: string; body: string; resend: string }> = {
   },
   link: {
     title: t("Lien de connexion envoyé"),
-    body: 'Ouvrez le lien reçu par e-mail : il vous connecte directement, sans mot de passe.',
+    body: 'Si un compte existe avec cette adresse, vous recevez un lien : il vous connecte directement, sans mot de passe.',
     resend: 'Renvoyer le lien de connexion',
   },
   reset: {
     title: t("E-mail envoyé"),
-    body: 'Ouvrez le lien reçu pour choisir un nouveau mot de passe.',
+    body: 'Si un compte existe avec cette adresse, vous recevez un lien pour choisir un nouveau mot de passe.',
     resend: 'Renvoyer l’e-mail',
   },
 };

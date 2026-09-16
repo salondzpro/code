@@ -1,4 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
+import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { config } from '../config';
 import { db } from '../lib/supabase';
@@ -19,7 +20,20 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     if (given.length !== expected.length || !timingSafeEqual(given, expected)) throw unauthorized('Jeton interne invalide');
   });
 
+  // Un seul tick à la fois par instance : deux ticks qui se chevauchent enverraient deux rappels.
+  let ticking = false;
   app.post('/cron/tick', { config: { rateLimit: false } }, async (req) => {
+    if (ticking) return { skipped: true };
+    ticking = true;
+    try {
+      return await tick(req.log);
+    } finally {
+      ticking = false;
+    }
+  });
+
+  async function tick(log: FastifyRequest['log']) {
+    const req = { log };
     const now = Date.now();
 
     // 1) Rappels J-1 (fenêtre 23h–25h avant le début)
@@ -93,7 +107,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     const purged = (purgedRead.count ?? 0) + (purgedOld.count ?? 0);
 
     return { reminders: toRemind.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
-  });
+  }
 };
 
 function fmtWhen(iso: string): string {

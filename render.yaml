@@ -49,7 +49,28 @@ services:
       # Origines web autorisées (CSV) : site statique Render + domaine custom plus tard.
       - key: CORS_ORIGINS
         value: https://salondz.com,https://www.salondz.com,https://salondz.onrender.com
-      # Comptes de démonstration (0603044618 / 0603044619, code 1111). Mettre 0 au lancement réel.
+      # Origine publique de l'API : OBLIGATOIRE (liens des e-mails ; jamais déduite de l'en-tête Host).
+      - key: API_PUBLIC_URL
+        value: https://api.salondz.com
+      # Origine du site (retours des liens e-mail).
+      - key: WEB_URL
+        value: https://salondz.com
+      # E-mails transactionnels (Resend, domaine salondz.com vérifié).
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: Salon DZ <noreply@salondz.com>
+      - key: EMAIL_REPLY_TO
+        value: support@salondz.com
+      # Web Push (VAPID) : la clé publique est aussi VITE_VAPID_PUBLIC_KEY côté site.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:contact@salondz.com
+      # Comptes de démonstration (0603044618 / 0603044619, code 1111) : DÉSACTIVÉS par défaut dans le code.
+      # « 1 » les active — à retirer avant l'ouverture au public (décision propriétaire, voir docs/PRODUCTION.md).
       - key: TEST_LOGIN_ENABLED
         value: "1"
 
@@ -80,12 +101,25 @@ services:
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
+      # L'index ne se met jamais en cache : un téléphone doit voir la nouvelle version au prochain chargement.
+      - path: /
+        name: Cache-Control
+        value: no-cache
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Permissions-Policy
+        value: geolocation=(self), camera=(self), microphone=()
     envVars:
       - key: NODE_VERSION
         value: "22"
@@ -97,6 +131,8 @@ services:
         sync: false
       - key: VITE_API_URL
         value: https://api.salondz.com
-      # Pas de fournisseur SMS sur Supabase pour l'instant → secours OTP par e-mail. Mettre 0 quand Twilio est branché.
-      - key: VITE_AUTH_EMAIL_FALLBACK
-        value: "1"
+      # Web Push navigateur (même valeur que VAPID_PUBLIC_KEY de l'API) et remontée d'erreurs.
+      - key: VITE_VAPID_PUBLIC_KEY
+        sync: false
+      - key: VITE_SENTRY_DSN
+        sync: false

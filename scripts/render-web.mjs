@@ -27,10 +27,10 @@ const envVars = [
   { key: 'VITE_SUPABASE_URL', value: process.env.VITE_SUPABASE_URL },
   { key: 'VITE_SUPABASE_PUBLISHABLE_KEY', value: process.env.VITE_SUPABASE_PUBLISHABLE_KEY },
   { key: 'VITE_API_URL', value: API_URL },
-  // Pas de fournisseur SMS sur Supabase → secours OTP e-mail. Mettre '0' une fois Twilio branché.
-  { key: 'VITE_AUTH_EMAIL_FALLBACK', value: process.env.VITE_AUTH_EMAIL_FALLBACK ?? '1' },
 ];
 if (process.env.VITE_SENTRY_DSN) envVars.push({ key: 'VITE_SENTRY_DSN', value: process.env.VITE_SENTRY_DSN });
+// Clé publique Web Push : sans elle, le site ne propose plus les notifications navigateur.
+if (process.env.VITE_VAPID_PUBLIC_KEY) envVars.push({ key: 'VITE_VAPID_PUBLIC_KEY', value: process.env.VITE_VAPID_PUBLIC_KEY });
 
 const siteSpec = {
   type: 'static_site',
@@ -76,8 +76,13 @@ if (!site) {
   console.log(`Site créé : ${site.name} (${site.id}) → ${site.serviceDetails?.url}`);
 } else {
   console.log(`Site existant : ${site.name} (${site.id}) → ${site.serviceDetails?.url}`);
-  await call('PUT', `/services/${site.id}/env-vars`, envVars);
-  console.log(`Variables de build réécrites (${envVars.length}).`);
+  // Fusion avec l'existant : une variable posée à la main dans le dashboard ne doit jamais disparaître
+  // parce qu'elle manque dans le .env local.
+  const existing = (await call('GET', `/services/${site.id}/env-vars`)) ?? [];
+  const merged = new Map(existing.map((e) => [e.envVar.key, e.envVar.value]));
+  for (const v of envVars) merged.set(v.key, v.value);
+  await call('PUT', `/services/${site.id}/env-vars`, [...merged].map(([key, value]) => ({ key, value })));
+  console.log(`Variables de build fusionnées (${merged.size}).`);
   if (forceDeploy) {
     deployId = (await call('POST', `/services/${site.id}/deploys`, { clearCache: 'do_not_clear' })).id;
   }

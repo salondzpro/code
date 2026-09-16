@@ -41,6 +41,8 @@ function areaOf(map: L.Map): Area {
   };
 }
 
+const escHtml = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
 export function MapView() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -214,7 +216,8 @@ export function MapView() {
       const on = s.id === (current?.id ?? null);
       const icon = L.divIcon({
         className: '',
-        html: `<button type="button" class="map-bubble${on ? ' on' : ''}" aria-label="${s.name.replace(/"/g, '&quot;')}">${s.minPriceDa != null ? formatDA(s.minPriceDa) : s.name}</button>`,
+        // Le nom vient d'un professionnel : toujours échappé avant d'entrer dans du HTML.
+        html: `<button type="button" class="map-bubble${on ? ' on' : ''}" aria-label="${escHtml(s.name)}">${s.minPriceDa != null ? formatDA(s.minPriceDa) : escHtml(s.name)}</button>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
       });

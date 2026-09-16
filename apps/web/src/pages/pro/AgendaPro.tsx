@@ -42,6 +42,7 @@ import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import type { BookingWithStaff } from '@salondz/types';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
 
 type View = 'day' | 'week' | 'month';
@@ -114,6 +115,8 @@ export function AgendaPro() {
   };
   const bookings = useProBookings({ from, to, limit: 200 }, !!salon);
   const blocks = useProBlocks(from, to);
+  // Une journée vide et une requête en échec ne se ressemblent pas : l'échec s'affiche, avec relance.
+  const loadError = bookings.isError ? bookings : blocks.isError ? blocks : null;
   // Un rendez-vous s'ouvre en fenêtre : l'agenda reste derrière, à sa date et sa position.
   const [peek, setPeek] = useState<string | null>(null);
 
@@ -187,6 +190,7 @@ export function AgendaPro() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
+      {loadError && <ErrorMessage error={loadError.error} retry={() => void loadError.refetch()} />}
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-[0.857rem] text-muted">{sub}</div>

@@ -35,13 +35,19 @@ export async function buildApp(): Promise<App> {
   }
 
   const app = Fastify({
-    logger: config.isProd
-      ? { level: config.LOG_LEVEL }
-      : {
-          level: config.LOG_LEVEL,
-          transport: { target: 'pino-pretty', options: { translateTime: 'HH:MM:ss', ignore: 'pid,hostname' } },
-        },
-    trustProxy: true,
+    logger: {
+      level: config.LOG_LEVEL,
+      ...(config.isProd ? {} : { transport: { target: 'pino-pretty', options: { translateTime: 'HH:MM:ss', ignore: 'pid,hostname' } } }),
+      // Jamais de jeton ni de donnée personnelle dans les journaux : l'autorisation est masquée et
+      // l'URL est journalisée SANS sa chaîne de requête (jetons de /auth/go, numéros de clients…).
+      redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], censor: '[masqué]' },
+      serializers: {
+        req: (req: { method: string; url: string; id: string; ip: string }) => ({ method: req.method, url: String(req.url).split('?')[0], id: req.id, ip: req.ip }),
+      },
+    },
+    // Un seul mandataire devant l'API (Render) : au-delà, X-Forwarded-For serait choisi par le client
+    // et la limitation de débit par adresse deviendrait contournable.
+    trustProxy: (_address: string, hop: number) => hop === 0,
     bodyLimit: 512 * 1024,
     ajv: undefined,
   }).withTypeProvider<ZodTypeProvider>();
@@ -49,19 +55,24 @@ export async function buildApp(): Promise<App> {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  await app.register(helmet, { global: true, contentSecurityPolicy: false });
+  // API JSON : aucune ressource à charger, la CSP la plus stricte possible.
+  await app.register(helmet, { global: true, contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } } });
   await app.register(cors, {
     origin: config.corsOrigins.length ? config.corsOrigins : !config.isProd,
-    credentials: true,
+    // Authentification par jeton Bearer : aucun cookie, donc pas de credentials.
+    credentials: false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  });
-  await app.register(rateLimit, {
-    max: 300,
-    timeWindow: '1 minute',
-    keyGenerator: (req) => req.user?.id ?? req.ip,
   });
   await app.register(etag);
   await app.register(authPlugin);
+  // Après l'authentification et au stade preHandler : la clé est le compte quand il est connu, le
+  // corps de la requête est lisible (limites par adresse e-mail sur les routes d'envoi).
+  await app.register(rateLimit, {
+    max: 300,
+    timeWindow: '1 minute',
+    hook: 'preHandler',
+    keyGenerator: (req) => req.user?.id ?? req.ip,
+  });
 
   app.setErrorHandler((err, req, reply) => {
     if (hasZodFastifySchemaValidationErrors(err)) {

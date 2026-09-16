@@ -44,6 +44,7 @@ import { BookingReschedule } from '@/pages/client/BookingReschedule';
 import { Rate } from '@/pages/client/Rate';
 import { Favorites } from '@/pages/client/Favorites';
 import { Profile } from '@/pages/client/Profile';
+import { Help, LegalNotice, Privacy, Terms } from '@/pages/Legal';
 import { Settings } from '@/pages/client/Settings';
 import { AccountInfo } from '@/pages/client/AccountInfo';
 import { AccountNotifications } from '@/pages/AccountNotifications';
@@ -149,6 +150,10 @@ export const router = createBrowserRouter([
       {
         element: <ClientPlainLayout />,
         children: [
+          { path: '/cgu', element: <Terms /> },
+          { path: '/confidentialite', element: <Privacy /> },
+          { path: '/mentions-legales', element: <LegalNotice /> },
+          { path: '/aide', element: <Help /> },
           { path: '/s/:slug', element: <Salon /> },
           { path: '/s/:slug/realisations', element: <SalonWorks /> },
           { path: '/s/:slug/avis', element: <SalonReviews /> },

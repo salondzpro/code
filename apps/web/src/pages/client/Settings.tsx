@@ -6,8 +6,9 @@ import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { MARKET_LABELS_FR, formatLocale } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
-import { Badge, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { Badge, BottomSheet, Button, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { api } from '@/lib/api';
+import { errorText } from '@/components/ErrorMessage';
 import {
   disableWebPush,
   enableWebPush,
@@ -26,6 +27,36 @@ export function Settings() {
   );
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const exportData = async () => {
+    setExporting(true);
+    try {
+      const data = await api.me.exportData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'salondz-mes-donnees.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5_000);
+    } catch (err) {
+      setDeleting(errorText(err));
+    } finally {
+      setExporting(false);
+    }
+  };
+  const deleteAccount = async () => {
+    setDeleting('…');
+    try {
+      await api.me.deleteAccount();
+      await signOut();
+      navigate('/intro', { replace: true });
+    } catch (err) {
+      setDeleting(errorText(err));
+    }
+  };
   const me = useMe();
   const update = useUpdateProfile();
   const [prefs, setPrefs] = useLocationPrefs();
@@ -157,10 +188,39 @@ export function Settings() {
             {t("Active")}
           </Badge>
         </div>
-        <ListRow onClick={() => window.open(`mailto:support@salondz.com?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`)}>
-          <span className="text-[1rem]">{t("Supprimer mes données")}</span>
+        <ListRow to="/aide">
+          <span className="text-[1rem]">{t("Aide et contact")}</span>
+        </ListRow>
+        <ListRow to="/confidentialite">
+          <span className="text-[1rem]">{t("Confidentialité et CGU")}</span>
+        </ListRow>
+        <ListRow onClick={() => void exportData()}>
+          <span className="text-[1rem]">{exporting ? t('Préparation…') : t("Télécharger mes données")}</span>
+        </ListRow>
+        <ListRow onClick={() => setConfirmDelete(true)} chevron={false}>
+          <span className="text-[1rem] text-danger">{t("Supprimer mon compte")}</span>
         </ListRow>
       </div>
+      {confirmDelete && (
+        <>
+          <div className="dim" onClick={() => deleting === '…' || setConfirmDelete(false)} />
+          <BottomSheet>
+            <div className="h1 !text-[1.429rem]">{t("Supprimer mon compte ?")}</div>
+            <p className="p">{t("Vos rendez-vous à venir seront perdus, vos favoris et avis effacés, et vos rendez-vous passés anonymisés chez les salons. Cette action est définitive.")}</p>
+            {deleting && deleting !== '…' && (
+              <p className="text-[1rem] text-danger" role="alert">
+                {deleting}
+              </p>
+            )}
+            <Button variant="d" onClick={() => void deleteAccount()} disabled={deleting === '…'}>
+              {deleting === '…' ? t('Suppression…') : t('Supprimer définitivement')}
+            </Button>
+            <Button variant="g" onClick={() => setConfirmDelete(false)} disabled={deleting === '…'}>
+              {t("Garder mon compte")}
+            </Button>
+          </BottomSheet>
+        </>
+      )}
     </Screen>
   );
 }

@@ -9,6 +9,7 @@ import { pagesItems, useProClientsInfinite, useProSalon } from '@salondz/api-cli
 import { LoadMore } from '@/components/LoadMore';
 import { formatDZPhone, formatDateShortDZ } from '@salondz/constants';
 import { Avatar, Badge, I, Skeleton, Pill } from '@/components/ui';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
@@ -56,7 +57,9 @@ export function Clients() {
           </Pill>
         </div>
       )}
-      {clients.isPending ? (
+      {clients.isError ? (
+        <ErrorMessage error={clients.error} retry={() => void clients.refetch()} />
+      ) : clients.isPending ? (
         <Skeleton className="h-[12.5rem] w-full !rounded-[var(--radius-card)]" />
       ) : rows.length === 0 ? (
         <p className="p">

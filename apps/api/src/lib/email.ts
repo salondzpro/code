@@ -32,7 +32,8 @@ export async function sendMail(log: FastifyBaseLogger, mail: Mail): Promise<void
   });
   if (res.ok) return;
   const body = await res.text();
-  log.error({ status: res.status, body: body.slice(0, 500), to: mail.to }, 'resend');
+  // Jamais l'adresse complète dans les journaux : le domaine suffit à diagnostiquer.
+  log.error({ status: res.status, body: body.slice(0, 500), toDomain: mail.to.split('@')[1] ?? '' }, 'resend');
   if (res.status === 403 && /own email address/i.test(body))
     throw new AppError(
       503,
@@ -54,7 +55,7 @@ function layout(title: string, intro: string, cta: string, url: string, footer: 
 <tr><td style="padding:28px 24px 8px;font-size:20px;font-weight:600;letter-spacing:-0.3px">Salon<span style="color:#6b6f73;font-weight:300"> DZ</span></td></tr>
 <tr><td style="padding:8px 24px 0;font-size:22px;font-weight:600;letter-spacing:-0.4px">${esc(title)}</td></tr>
 <tr><td style="padding:12px 24px 0;font-size:15px;line-height:1.5;color:#3d4043">${esc(intro)}</td></tr>
-<tr><td style="padding:24px 24px 8px"><a href="${url}" style="display:block;background:#111214;color:#ffffff;text-decoration:none;text-align:center;font-weight:600;font-size:16px;padding:14px 16px;border-radius:6px">${esc(cta)}</a></td></tr>
+<tr><td style="padding:24px 24px 8px"><a href="${esc(url)}" style="display:block;background:#111214;color:#ffffff;text-decoration:none;text-align:center;font-weight:600;font-size:16px;padding:14px 16px;border-radius:6px">${esc(cta)}</a></td></tr>
 <tr><td style="padding:8px 24px 0;font-size:13px;line-height:1.5;color:#6b6f73">${esc(footer)}</td></tr>
 <tr><td style="padding:16px 24px 28px;font-size:12px;line-height:1.5;color:#9a9ea3;word-break:break-all">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>${esc(url)}</td></tr>
 </table></td></tr></table></body></html>`;

@@ -9,7 +9,7 @@ import {
 import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { camelize, snakeize } from '../lib/mappers';
-import { unwrap } from '../lib/errors';
+import { unwrap, conflict } from '../lib/errors';
 import { loadOwnedSalon } from '../plugins/auth';
 import { attachNextSlots } from '../lib/availability';
 import { clientStanding } from '../lib/standing';
@@ -37,7 +37,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       const uid = req.user!.id;
       const phone = req.profile!.phone;
       const [standing, blocked] = await Promise.all([
-        clientStanding(uid),
+        clientStanding({ id: uid, phone }),
         db
           .from('blocked_clients')
           .select('id')
@@ -79,7 +79,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/me', async (req, reply) => {
     const [salon, standing] = await Promise.all([
       loadOwnedSalon(req.user!.id),
-      req.profile!.role === 'client' ? clientStanding(req.user!.id) : Promise.resolve(null),
+      req.profile!.role === 'client' ? clientStanding({ id: req.user!.id, phone: req.profile!.phone }) : Promise.resolve(null),
     ]);
     reply.header('Cache-Control', 'private, no-store');
     return {
@@ -302,6 +302,66 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       return null;
     },
   );
+
+  // ---- Données personnelles : export et effacement ----
+
+  /** Tout ce que Salon DZ conserve sur ce compte, en JSON (droit d'accès et de portabilité). */
+  app.get('/me/export', async (req, reply) => {
+    const uid = req.user!.id;
+    const [bookings, reviews, favorites] = await Promise.all([
+      db.from('bookings').select('id, salon_id, service_name, starts_at, ends_at, status, price_da, client_name, client_phone, notes, created_at').or(`client_id.eq.${uid},booked_by.eq.${uid}`).order('starts_at', { ascending: false }),
+      db.from('reviews').select('id, salon_id, booking_id, rating, comment, created_at').eq('client_id', uid),
+      db.from('favorites').select('salon_id, created_at').eq('client_id', uid),
+    ]);
+    if (bookings.error) throw bookings.error;
+    if (reviews.error) throw reviews.error;
+    if (favorites.error) throw favorites.error;
+    reply.header('Cache-Control', 'private, no-store');
+    reply.header('Content-Disposition', 'attachment; filename="salondz-mes-donnees.json"');
+    return {
+      exportedAt: new Date().toISOString(),
+      account: { id: uid, email: req.user!.email ?? null },
+      profile: req.profile!,
+      bookings: camelize(bookings.data ?? []),
+      reviews: camelize(reviews.data ?? []),
+      favorites: camelize(favorites.data ?? []),
+    };
+  });
+
+  /**
+   * Effacement du compte (droit à l'effacement, exigence des boutiques d'applications). Les rendez-vous
+   * passés restent dans l'historique des salons mais anonymisés ; tout le reste est supprimé, puis le
+   * compte d'authentification lui-même. Un professionnel doit d'abord fermer son salon (support).
+   */
+  app.delete('/me', async (req, reply) => {
+    const uid = req.user!.id;
+    const owned = await db.from('salons').select('id').eq('owner_id', uid).limit(1);
+    if (owned.error) throw owned.error;
+    if ((owned.data ?? []).length)
+      throw conflict('HAS_SALON', 'Votre compte porte un salon : écrivez à support@salondz.com pour le fermer avant de supprimer le compte.');
+    const anonymized = { client_id: null, client_name: 'Client supprimé', client_phone: null, notes: null };
+    const steps = [
+      db.from('bookings').update(anonymized).eq('client_id', uid),
+      db.from('bookings').update({ booked_by: null, booked_by_name: null }).eq('booked_by', uid),
+      db.from('reviews').delete().eq('client_id', uid),
+      db.from('favorites').delete().eq('client_id', uid),
+      db.from('push_tokens').delete().eq('user_id', uid),
+      db.from('notifications').delete().eq('user_id', uid),
+      db.from('client_notes').delete().eq('client_key', uid),
+      db.from('blocked_clients').delete().eq('client_id', uid),
+    ];
+    for (const step of steps) {
+      const r = await step;
+      if (r.error) throw r.error;
+    }
+    const files = await db.storage.from('avatars').list(uid);
+    if (!files.error && files.data?.length) await db.storage.from('avatars').remove(files.data.map((f) => `${uid}/${f.name}`));
+    const gone = await db.auth.admin.deleteUser(uid);
+    if (gone.error) throw gone.error;
+    req.log.info({ userId: uid }, 'compte supprimé');
+    reply.status(204);
+    return null;
+  });
 };
 
 export default meRoutes;

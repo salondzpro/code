@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { t } from '@/i18n';
 /** Logo « Salon DZ » (même wordmark que le splash, en encre sur fond clair) en pied des pages Profil client et pro. */
 export function BrandFooter() {
@@ -10,6 +11,11 @@ export function BrandFooter() {
       </div>
       <div className="mono text-[0.857rem] tracking-[0.26em] text-subtle">{t("RÉSERVATION EN LIGNE")}</div>
       <div className="text-[0.857rem] text-subtle">© {year} {t("Salon DZ · Fait en Algérie")}</div>
+      <nav className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[0.857rem] text-muted" aria-label={t("Informations légales")}>
+        <Link to="/cgu">{t("CGU")}</Link>
+        <Link to="/confidentialite">{t("Confidentialité")}</Link>
+        <Link to="/aide">{t("Aide")}</Link>
+      </nav>
     </div>
   );
 }

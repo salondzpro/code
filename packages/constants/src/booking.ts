@@ -56,6 +56,8 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
 /** Garde-fous anti-abus (API) : rendez-vous à venir par client, taille de l'équipe et du catalogue. */
 export const MAX_UPCOMING_BOOKINGS_PER_CLIENT = 10;
+/** Réservations POUR QUELQU'UN D'AUTRE par compte et par 24 h : un tiers ne doit pas pouvoir saturer ou faire suspendre autrui. */
+export const MAX_FOR_OTHER_PER_DAY = 5;
 export const MAX_STAFF_PER_SALON = 30;
 export const MAX_SERVICES_PER_SALON = 200;
 /**

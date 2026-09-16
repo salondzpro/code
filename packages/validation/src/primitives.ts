@@ -49,4 +49,16 @@ export const slug = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug invalide')
   .min(3)
   .max(60);
-export const httpUrl = z.string().url().max(500);
+/**
+ * URL d'image acceptée en base : uniquement notre stockage Supabase (objets publics) — plus les photos
+ * Unsplash des salons de démonstration. Jamais un domaine arbitraire (contenu modifiable après coup,
+ * traçage des visiteurs), jamais `javascript:` / `data:`.
+ */
+export const httpUrl = z
+  .string()
+  .url()
+  .max(500)
+  .refine(
+    (u) => /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\//.test(u) || /^https:\/\/images\.unsplash\.com\//.test(u),
+    { message: "URL d'image non autorisée : utilisez une photo envoyée depuis l'application." },
+  );

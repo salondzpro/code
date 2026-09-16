@@ -4,7 +4,7 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeftRight, Bell, Globe, Languages, LogOut, User } from 'lucide-react';
+import { ArrowLeftRight, Bell, Globe, Languages, LogOut, User, LifeBuoy, ShieldCheck } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
@@ -82,6 +82,14 @@ export function ProAccount() {
         </p>
       )}
 
+      <div className="crd !gap-0 !py-1">
+        <ListRow to="/aide">
+          <RowText icon={LifeBuoy} title={t("Aide et contact")} sub="support@salondz.com · pro@salondz.com" />
+        </ListRow>
+        <ListRow to="/confidentialite">
+          <RowText icon={ShieldCheck} title={t("Confidentialité et CGU")} sub={t("Vos données, vos obligations")} />
+        </ListRow>
+      </div>
       <div className="crd !gap-0 !py-1">
         <button
           type="button"

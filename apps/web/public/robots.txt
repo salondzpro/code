@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /s/
+Disallow: /pro/
+Disallow: /rendez-vous/
+Disallow: /compte/
+Disallow: /profil
+Disallow: /reglages
+Disallow: /favoris
+Disallow: /notifications
+Disallow: /connexion
+Disallow: /inscription
+Sitemap: https://salondz.com/sitemap.xml

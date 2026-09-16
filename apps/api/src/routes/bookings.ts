@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT, NO_SHOW_ABUSE_MAX, NO_SHOW_ABUSE_WINDOW_DAYS, SHOW_SALON_CONTACT_TO_CLIENTS} from '@salondz/constants';
+import { CANCEL_ABUSE_WINDOW_DAYS, CLIENT_CANCEL_MIN_HOURS, MAX_UPCOMING_BOOKINGS_PER_CLIENT, NO_SHOW_ABUSE_MAX, NO_SHOW_ABUSE_WINDOW_DAYS, SHOW_SALON_CONTACT_TO_CLIENTS, MAX_FOR_OTHER_PER_DAY } from '@salondz/constants';
 import {
   cancelBookingSchema,
   createBookingSchema,
@@ -44,8 +44,18 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
       if (found.error) throw found.error;
       const account = found.data?.[0] as { id: string; full_name: string | null } | undefined;
       clientId = account?.id ?? null;
-      clientName = account?.full_name || who.fullName;
+      // Toujours le nom saisi par la personne qui réserve : renvoyer le nom du titulaire du numéro
+      // ferait de cette route un annuaire inversé (numéro → identité).
+      clientName = who.fullName;
       clientPhone = who.phone;
+      const recent = await db
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('booked_by', profile.id)
+        .gte('created_at', new Date(Date.now() - 86_400_000).toISOString());
+      if (recent.error) throw recent.error;
+      if ((recent.count ?? 0) >= MAX_FOR_OTHER_PER_DAY)
+        throw badRequest('TOO_MANY_FOR_OTHER', 'Vous avez déjà réservé pour plusieurs personnes aujourd’hui. Réessayez demain.');
     }
     if (!clientName) throw badRequest('NAME_REQUIRED', 'Indiquez votre nom pour réserver.');
 

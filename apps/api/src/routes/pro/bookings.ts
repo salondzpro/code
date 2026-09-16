@@ -14,10 +14,15 @@ import { conflict, notFound, unwrap } from '../../lib/errors';
 import { BOOKING_WITH_STAFF_SELECT, getBookingWithStaff, mapBookingWithStaff } from '../../lib/queries';
 import { pushAfterBooking } from '../../lib/push';
 
+/** Délai pendant lequel un rendez-vous clôturé automatiquement peut encore être marqué « Client absent ». */
+const NO_SHOW_GRACE_DAYS = 7;
+
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   pending: ['confirmed', 'cancelled'],
   confirmed: ['completed', 'no_show', 'cancelled'],
-  completed: [],
+  // Terminé → Client absent reste possible quelques jours : la clôture automatique (cron, 3 h après
+  // la fin) ne doit pas empêcher le pro de signaler un lapin le soir ou le lendemain.
+  completed: ['no_show'],
   cancelled: [],
   no_show: ['completed'],
 };
@@ -102,6 +107,9 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     }
     if (req.body.status === 'no_show' && startsAt > Date.now()) {
       throw conflict('NOT_STARTED', "Le rendez-vous n'a pas encore commencé.");
+    }
+    if (b.status === 'completed' && req.body.status === 'no_show' && new Date(b.endsAt).getTime() < Date.now() - NO_SHOW_GRACE_DAYS * 86_400_000) {
+      throw conflict('TOO_LATE', `Une absence se signale dans les ${NO_SHOW_GRACE_DAYS} jours qui suivent le rendez-vous.`);
     }
     const res = await db.from('bookings').update({ status: req.body.status }).eq('id', b.id).eq('status', b.status).select('id').maybeSingle();
     if (!unwrap(res)) throw conflict('INVALID_TRANSITION', 'La réservation a changé entre-temps.');

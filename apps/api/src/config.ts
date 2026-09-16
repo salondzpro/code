@@ -5,6 +5,7 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   HOST: z.string().default('0.0.0.0'),
   LOG_LEVEL: z.string().default('info'),
+  /** Origine publique de l'API (liens des e-mails). OBLIGATOIRE en production : jamais déduite de l'en-tête Host. */
   API_PUBLIC_URL: z.string().url().optional(),
 
   SUPABASE_URL: z.string().url(),
@@ -32,17 +33,22 @@ const schema = z.object({
   EMAIL_REPLY_TO: z.string().default('support@salondz.com'),
   /** Origine du site web (liens envoyés par e-mail). Absente : première origine CORS en https. */
   WEB_URL: z.string().url().optional(),
-  /** Comptes de démonstration à accès direct (POST /v1/auth/dev-login). Mettre `0` pour désactiver. */
+  /** Comptes de démonstration à accès direct (POST /v1/auth/dev-login). DÉSACTIVÉS sauf `TEST_LOGIN_ENABLED=1` explicite. */
   TEST_LOGIN_ENABLED: z
     .string()
     .optional()
-    .transform((v) => v !== '0'),
+    .transform((v) => v === '1'),
 });
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error('❌ Configuration invalide :');
   for (const issue of parsed.error.issues) console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
+  process.exit(1);
+}
+
+if (parsed.data.NODE_ENV === 'production' && !parsed.data.API_PUBLIC_URL) {
+  console.error('❌ API_PUBLIC_URL est obligatoire en production (origine des liens envoyés par e-mail).');
   process.exit(1);
 }
 

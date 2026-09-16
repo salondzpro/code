@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { TEST_ACCOUNTS, TEST_LOGIN_CODE } from '@salondz/constants';
 import { authGoQuerySchema, devLoginSchema, emailLinkSchema, emailSignupSchema } from '@salondz/validation';
@@ -36,10 +37,8 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!config.TEST_LOGIN_ENABLED) throw notFound('Ressource');
       const { phone, code } = req.body;
       const acct = TEST_ACCOUNTS[phone];
-      // Code de démonstration tolérant aux fautes de frappe : le code officiel « 1111 »,
-      // ou toute suite de « 1 » (l'utilisateur en tape parfois un de trop).
       const digits = code.replace(/\D/g, '');
-      const codeOk = digits === TEST_LOGIN_CODE || /^1{3,8}$/.test(digits);
+      const codeOk = digits === TEST_LOGIN_CODE;
       if (!acct || !codeOk) throw unauthorized('Numéro ou code de démonstration invalide.');
 
       const email = testEmail(phone);
@@ -98,13 +97,24 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     url.searchParams.set('next', next);
     return url.toString();
   };
+  /** Recherche indexée dans auth.users (fonction SQL réservée à la clé secrète, migration 0037) : pas de liste de tous les comptes. */
   const findUser = async (email: string) => {
-    // Pas de recherche par e-mail dans l'API admin : on liste (petit projet) et on filtre.
-    const res = await db.auth.admin.listUsers({ perPage: 1000 });
+    const res = await db.rpc('auth_user_by_email', { p_email: email });
     if (res.error) throw res.error;
-    return res.data.users.find((u) => (u.email ?? '').toLowerCase() === email) ?? null;
+    const row = (res.data as { id: string; email: string; email_confirmed_at: string | null; raw_user_meta_data: Record<string, unknown> | null }[] | null)?.[0];
+    return row ? { id: row.id, email: row.email, email_confirmed_at: row.email_confirmed_at, user_metadata: row.raw_user_meta_data ?? {} } : null;
   };
-  const limit = { config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } };
+  // Envois d'e-mails : limite par adresse visée ET par IP réelle, pour qu'on ne puisse ni bombarder
+  // une boîte ni énumérer des comptes en changeant d'adresse à chaque appel.
+  const limit = {
+    config: {
+      rateLimit: {
+        max: 6,
+        timeWindow: '10 minutes',
+        keyGenerator: (req: FastifyRequest) => `mail:${String((req.body as { email?: string } | null)?.email ?? '').toLowerCase()}:${req.ip}`,
+      },
+    },
+  };
   const linkFailed = () => new AppError(500, 'LINK_FAILED', 'Lien impossible à générer. Réessayez dans un instant.');
   /**
    * Le lien envoyé par e-mail est SUR NOTRE DOMAINE (`api.salondz.com/v1/auth/go`), pas sur
@@ -112,8 +122,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
    * (règle SpamAssassin URI_NOVOWEL), et un lien vers un domaine inconnu inquiète le lecteur.
    * Cette route redirige vers la vérification Supabase avec le même jeton.
    */
+  // Jamais l'en-tête Host en production (un attaquant y mettrait son domaine et recevrait le jeton) :
+  // API_PUBLIC_URL est obligatoire là-bas (config.ts) ; le repli ne sert qu'en local.
   const apiOrigin = (req: { protocol: string; headers: { host?: string } }) =>
-    config.API_PUBLIC_URL ?? `${req.protocol}://${req.headers.host ?? 'localhost'}`;
+    config.API_PUBLIC_URL ?? (config.isProd ? config.webUrl : `${req.protocol}://${req.headers.host ?? 'localhost'}`);
   const mailLink = (
     req: { protocol: string; headers: { host?: string } },
     gen: { hashed_token: string; verification_type: string } | null | undefined,
@@ -186,7 +198,11 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/auth/resend-confirmation', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
     const user = await findUser(email);
-    if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
+    // Adresse inconnue : même réponse qu'un envoi réussi (pas d'oracle « ce compte existe-t-il ? »).
+    if (!user) {
+      reply.status(204);
+      return null;
+    }
     if (user.email_confirmed_at) throw conflict('ALREADY_CONFIRMED', 'Cette adresse est déjà confirmée : connectez-vous.');
     const to = redirect('/connexion/retour', next);
     const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
@@ -200,7 +216,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/auth/magic-link', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
     const user = await findUser(email);
-    if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
+    if (!user) {
+      reply.status(204);
+      return null;
+    }
     const to = redirect('/connexion/retour', next);
     const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
@@ -213,7 +232,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/auth/password-reset', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email } = req.body;
     const user = await findUser(email);
-    if (!user) throw new AppError(404, 'NO_ACCOUNT', 'Aucun compte n’est associé à cette adresse.');
+    if (!user) {
+      reply.status(204);
+      return null;
+    }
     const to = new URL('/connexion/mot-de-passe', config.webUrl).toString();
     const gen = await db.auth.admin.generateLink({ type: 'recovery', email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
