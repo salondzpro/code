@@ -4,7 +4,9 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeftRight, Bell, Globe, Languages, LogOut, User, LifeBuoy, ShieldCheck } from 'lucide-react';
+import { api } from '@/lib/api';
+import { disableWebPush, enableWebPush, webPushPermission, webPushSupported } from '@/lib/webpush';
+import { ArrowLeftRight, Bell, Globe, Languages, LogOut, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
@@ -19,6 +21,7 @@ import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 export function ProAccount() {
   const navigate = useNavigate();
+  const [webPush, setWebPush] = useState<NotificationPermission | 'unsupported'>(webPushPermission());
   const { signOut } = useAuth();
   const me = useMe();
   const salon = useProSalon().data?.salon ?? null;
@@ -45,6 +48,30 @@ export function ProAccount() {
         <ListRow to="/pro/notifications">
           <RowText icon={Bell} title={t("Notifications")} sub={t("Demandes, confirmations, annulations")} />
         </ListRow>
+        {webPushSupported() && (
+          <div className="li">
+            <RowText
+              icon={BellRing}
+              title={t("Notifications sur cet appareil")}
+              sub={webPush === 'denied' ? t("Bloquées par le navigateur") : t("Demandes et annulations, même application fermée")}
+            />
+            {webPush !== 'denied' && (
+              <Toggle
+                on={webPush === 'granted'}
+                onChange={async (v) => {
+                  if (v) {
+                    const ok = await enableWebPush(api);
+                    setWebPush(ok ? 'granted' : webPushPermission());
+                  } else {
+                    await disableWebPush(api);
+                    setWebPush('default');
+                  }
+                }}
+                label={t("Notifications sur cet appareil")}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       <SectionLabel>{t("Paramètres")}</SectionLabel>

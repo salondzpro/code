@@ -1,3 +1,5 @@
+import { Suspense, lazy, type ComponentType } from 'react';
+import { Splash } from '@/pages/auth/Splash';
 import { createBrowserRouter, Navigate } from 'react-router';
 import {
   ClientLayout,
@@ -26,7 +28,6 @@ import { ProWelcome } from '@/pages/pro/Welcome';
 // Client (design C-H / C-F)
 import { Marketplace } from '@/pages/client/Marketplace';
 import { Localisation } from '@/pages/client/Localisation';
-import { MapView } from '@/pages/client/MapView';
 import { CategoryRedirect } from '@/pages/client/CategoryRedirect';
 import { Salon } from '@/pages/client/Salon';
 import { SalonWorks } from '@/pages/client/SalonWorks';
@@ -44,42 +45,66 @@ import { BookingReschedule } from '@/pages/client/BookingReschedule';
 import { Rate } from '@/pages/client/Rate';
 import { Favorites } from '@/pages/client/Favorites';
 import { Profile } from '@/pages/client/Profile';
-import { Help, LegalNotice, Privacy, Terms } from '@/pages/Legal';
 import { Settings } from '@/pages/client/Settings';
 import { AccountInfo } from '@/pages/client/AccountInfo';
 import { AccountNotifications } from '@/pages/AccountNotifications';
 // Pro (design PRO-F 01 → 26)
-import { Step1Market } from '@/pages/pro/onboarding/Step1Market';
-import { Step2Name } from '@/pages/pro/onboarding/Step2Name';
-import { Step3Identity } from '@/pages/pro/onboarding/Step3Identity';
-import { Step4Address } from '@/pages/pro/onboarding/Step4Address';
-import { Step6Service } from '@/pages/pro/onboarding/Step6Service';
-import { Step7ServicePhotos } from '@/pages/pro/onboarding/Step7ServicePhotos';
-import { Step8Works } from '@/pages/pro/onboarding/Step8Works';
-import { Step9Hours } from '@/pages/pro/onboarding/Step9Hours';
-import { Step10Availability } from '@/pages/pro/onboarding/Step10Availability';
-import { Publish } from '@/pages/pro/onboarding/Publish';
-import { ProPhotos } from '@/pages/pro/Photos';
-import { ProLink, ProQr } from '@/pages/pro/Link';
-import { ProHome } from '@/pages/pro/Home';
-import { Revenue } from '@/pages/pro/Revenue';
-import { AgendaPro } from '@/pages/pro/AgendaPro';
-import { Clients } from '@/pages/pro/Clients';
-import { ClientDetail } from '@/pages/pro/ClientDetail';
-import { ProServices } from '@/pages/pro/ProServices';
-import { ProCategories } from '@/pages/pro/ProCategories';
-import { ProProfile } from '@/pages/pro/ProProfile';
-import { MonSalon } from '@/pages/pro/MonSalon';
-import { ProRules } from '@/pages/pro/ProRules';
-import { ProSpecialties } from '@/pages/pro/ProSpecialties';
-import { ProAccount } from '@/pages/pro/ProAccount';
-import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDetail';
-import { ProBookingNew } from '@/pages/pro/ProBookingNew';
-import { Team } from '@/pages/pro/Team';
-import { TeamNew } from '@/pages/pro/TeamNew';
-import { TeamMember, TeamMemberHours, TeamMemberServices } from '@/pages/pro/TeamMember';
-import { Closures } from '@/pages/pro/Closures';
-import { Requests } from '@/pages/pro/Requests';
+
+
+/**
+ * Page chargée à la demande : l'espace pro, l'inscription pro, la carte et les pages légales ne font
+ * pas partie du premier chargement d'une cliente (4G). Le nom exporté est résolu à l'ouverture.
+ */
+function lazyNamed(loader: () => Promise<Record<string, unknown>>, name: string) {
+  const Lazy = lazy(async () => ({ default: (await loader())[name] as ComponentType<Record<string, unknown>> }));
+  return function LazyPage(props: Record<string, unknown>) {
+    return (
+      <Suspense fallback={<Splash />}>
+        <Lazy {...props} />
+      </Suspense>
+    );
+  };
+}
+const MapView = lazyNamed(() => import('@/pages/client/MapView'), 'MapView');
+const Help = lazyNamed(() => import('@/pages/Legal'), 'Help');
+const LegalNotice = lazyNamed(() => import('@/pages/Legal'), 'LegalNotice');
+const Privacy = lazyNamed(() => import('@/pages/Legal'), 'Privacy');
+const Terms = lazyNamed(() => import('@/pages/Legal'), 'Terms');
+const Step1Market = lazyNamed(() => import('@/pages/pro/onboarding/Step1Market'), 'Step1Market');
+const Step2Name = lazyNamed(() => import('@/pages/pro/onboarding/Step2Name'), 'Step2Name');
+const Step3Identity = lazyNamed(() => import('@/pages/pro/onboarding/Step3Identity'), 'Step3Identity');
+const Step4Address = lazyNamed(() => import('@/pages/pro/onboarding/Step4Address'), 'Step4Address');
+const Step6Service = lazyNamed(() => import('@/pages/pro/onboarding/Step6Service'), 'Step6Service');
+const Step7ServicePhotos = lazyNamed(() => import('@/pages/pro/onboarding/Step7ServicePhotos'), 'Step7ServicePhotos');
+const Step8Works = lazyNamed(() => import('@/pages/pro/onboarding/Step8Works'), 'Step8Works');
+const Step9Hours = lazyNamed(() => import('@/pages/pro/onboarding/Step9Hours'), 'Step9Hours');
+const Step10Availability = lazyNamed(() => import('@/pages/pro/onboarding/Step10Availability'), 'Step10Availability');
+const Publish = lazyNamed(() => import('@/pages/pro/onboarding/Publish'), 'Publish');
+const ProPhotos = lazyNamed(() => import('@/pages/pro/Photos'), 'ProPhotos');
+const ProLink = lazyNamed(() => import('@/pages/pro/Link'), 'ProLink');
+const ProQr = lazyNamed(() => import('@/pages/pro/Link'), 'ProQr');
+const ProHome = lazyNamed(() => import('@/pages/pro/Home'), 'ProHome');
+const Revenue = lazyNamed(() => import('@/pages/pro/Revenue'), 'Revenue');
+const AgendaPro = lazyNamed(() => import('@/pages/pro/AgendaPro'), 'AgendaPro');
+const Clients = lazyNamed(() => import('@/pages/pro/Clients'), 'Clients');
+const ClientDetail = lazyNamed(() => import('@/pages/pro/ClientDetail'), 'ClientDetail');
+const ProServices = lazyNamed(() => import('@/pages/pro/ProServices'), 'ProServices');
+const ProCategories = lazyNamed(() => import('@/pages/pro/ProCategories'), 'ProCategories');
+const ProProfile = lazyNamed(() => import('@/pages/pro/ProProfile'), 'ProProfile');
+const MonSalon = lazyNamed(() => import('@/pages/pro/MonSalon'), 'MonSalon');
+const ProRules = lazyNamed(() => import('@/pages/pro/ProRules'), 'ProRules');
+const ProSpecialties = lazyNamed(() => import('@/pages/pro/ProSpecialties'), 'ProSpecialties');
+const ProAccount = lazyNamed(() => import('@/pages/pro/ProAccount'), 'ProAccount');
+const ProBookingDetail = lazyNamed(() => import('@/pages/pro/ProBookingDetail'), 'ProBookingDetail');
+const ProBookingReschedule = lazyNamed(() => import('@/pages/pro/ProBookingDetail'), 'ProBookingReschedule');
+const ProBookingNew = lazyNamed(() => import('@/pages/pro/ProBookingNew'), 'ProBookingNew');
+const Team = lazyNamed(() => import('@/pages/pro/Team'), 'Team');
+const TeamNew = lazyNamed(() => import('@/pages/pro/TeamNew'), 'TeamNew');
+const TeamMember = lazyNamed(() => import('@/pages/pro/TeamMember'), 'TeamMember');
+const TeamMemberHours = lazyNamed(() => import('@/pages/pro/TeamMember'), 'TeamMemberHours');
+const TeamMemberServices = lazyNamed(() => import('@/pages/pro/TeamMember'), 'TeamMemberServices');
+const Closures = lazyNamed(() => import('@/pages/pro/Closures'), 'Closures');
+const Requests = lazyNamed(() => import('@/pages/pro/Requests'), 'Requests');
 
 export const router = createBrowserRouter([
   {

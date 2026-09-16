@@ -876,4 +876,5 @@ export const ar: Record<string, string> = {
   'Alerte activée : vous serez prévenu(e) si un créneau se libère ce jour.': 'التنبيه مفعّل: سنخبرك إذا تحرّر موعد في هذا اليوم.',
   'M\'alerter si un créneau se libère': 'نبّهني إذا تحرّر موعد',
   'Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).': 'أمام الصالون حتى {when} للتأكيد. بدون رد، ينتهي الطلب ونخبرك بذلك.',
+  'Demandes et annulations, même application fermée': 'الطلبات والإلغاءات، حتى والتطبيق مغلق',
 };

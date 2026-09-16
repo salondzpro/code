@@ -1,15 +1,7 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider } from 'react-router';
-import { ApiProvider } from '@salondz/api-client';
 import './styles/index.css';
 import { env } from './lib/env';
-import { api } from './lib/api';
-import { queryClient } from './lib/query-client';
-import { AuthProvider } from './lib/auth';
-import { router } from './app/router';
 import { startUpdateCheck } from './lib/updateCheck';
+import { getLocale, loadDictionary } from './i18n';
 
 if (env.sentryDsn) {
   // Chargé à la demande : ne pèse pas sur le bundle initial
@@ -24,14 +16,9 @@ if (env.sentryDsn) {
 
 startUpdateCheck();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ApiProvider api={api}>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </ApiProvider>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+// Ordre voulu : dictionnaire de la langue courante (rien en français), PUIS le code de l'application,
+// dont certains modules traduisent au chargement. Le rendu vient en dernier.
+void loadDictionary(getLocale())
+  .catch(() => undefined)
+  .then(() => import('./app/boot'))
+  .then((m) => m.render());

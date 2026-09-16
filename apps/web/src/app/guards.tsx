@@ -135,6 +135,14 @@ export function RequirePro() {
   const onboarding = path.startsWith('/pro/onboarding');
   const salonQuery = useProSalon(!!session);
   const me = useMe(!!session);
+  // Même rafraîchissement de l'abonnement push que côté client : le pro est le premier à devoir
+  // recevoir une demande, même l'application fermée.
+  const pushRefreshed = useRef(false);
+  useEffect(() => {
+    if (!session || pushRefreshed.current) return;
+    pushRefreshed.current = true;
+    void refreshWebPushIfGranted(api);
+  }, [session]);
 
   if (loading) return <Splash />;
   if (!session) {

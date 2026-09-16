@@ -895,4 +895,5 @@ export const en: Record<string, string> = {
   'Alerte activée : vous serez prévenu(e) si un créneau se libère ce jour.': 'Alert on: you will be notified if a slot frees up that day.',
   'M\'alerter si un créneau se libère': 'Alert me if a slot frees up',
   'Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).': 'The salon has until {when} to confirm. Without an answer, the request expires and you are notified.',
+  'Demandes et annulations, même application fermée': 'Requests and cancellations, even with the app closed',
 };

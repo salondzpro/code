@@ -57,13 +57,13 @@ Exploitation :
 6. Réparer ou remplacer l'auto-déploiement Render (un job CI de déploiement après `check`), et écrire l'ordre « migration d'abord, API ensuite ».
 
 ### Important (première quinzaine)
-7. Lecture directe avec la clé publique : fermer `staff.phone`, `salons.phone`, `reviews.client_id` par privilèges de colonnes ou vues.
+7. ~~Lecture directe avec la clé publique~~ : fait le 16 sept. (migration 0039, privilèges de colonnes sur `salons`, `staff`, `reviews`).
 8. Schémas de réponse zod sur les routes publiques (aucune colonne nouvelle ne part par défaut).
-9. Réglages « Rappels / Confirmations » réellement lus par le serveur (l'expiration des demandes à 24 h et la relance du pro sont livrées le 16 sept., ainsi que la liste d'attente « créneau libéré »).
+9. Réglage « Rappels » lu par le cron (fait le 16 sept.) ; reste « Confirmations » et « Nouveautés » (l'expiration des demandes à 24 h et la relance du pro sont livrées le 16 sept., ainsi que la liste d'attente « créneau libéré »).
 10. Fiche client sur identifiant stable (fusion compte + numéro), blocage d'un client de passage.
 11. Congés et horaires : lister et prévenir les rendez-vous touchés par un blocage.
-12. Découpage du bundle web par espace (`lazy()`), police Inter auto-hébergée, manifeste PWA et icônes PNG, balises Open Graph pré-rendues sur `/s/:slug` (partage WhatsApp).
-13. Réglage des notifications navigateur côté pro, `refreshWebPushIfGranted` dans la garde pro.
+12. ~~Découpage du bundle, police auto-hébergée, manifeste PWA~~ (faits le 16 sept. : 40 pages en chargement paresseux, dictionnaires à la demande, Inter en woff2 local, manifeste avec icônes SVG) ; restent les icônes PNG maskable et les balises Open Graph pré-rendues sur `/s/:slug` (partage WhatsApp).
+13. ~~Réglage des notifications navigateur côté pro~~ : fait le 16 sept. (Compte pro → « Notifications sur cet appareil », abonnement rafraîchi à l'entrée).
 14. Projet Supabase de préproduction pour la CI e2e et les scripts `check:*` (aujourd'hui ils écrivent en production).
 15. Chiffre d'affaires : distinguer prévisionnel (confirmé) et réalisé (terminé).
 

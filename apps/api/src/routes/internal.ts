@@ -47,8 +47,17 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .gte('starts_at', new Date(now + 23 * 3_600_000).toISOString())
       .lt('starts_at', new Date(now + 25 * 3_600_000).toISOString())
       .limit(500);
-    const toRemind = unwrap(remRes) as unknown as { id: string; client_id: string; service_name: string; starts_at: string; salons: { name: string } | null }[];
-    if (toRemind.length) {
+    const candidates = unwrap(remRes) as unknown as { id: string; client_id: string; service_name: string; starts_at: string; salons: { name: string } | null }[];
+    // Réglage « Rappels de rendez-vous » du client (Réglages → Notifications) : respecté ici. Les
+    // rendez-vous des clients qui ont coupé les rappels sont quand même marqués traités.
+    let optedOut = new Set<string>();
+    if (candidates.length) {
+      const prefs = await db.from('profiles').select('id, whatsapp_reminders').in('id', [...new Set(candidates.map((b) => b.client_id))]).eq('whatsapp_reminders', false);
+      if (prefs.error) throw prefs.error;
+      optedOut = new Set((prefs.data ?? []).map((p) => p.id as string));
+    }
+    const toRemind = candidates.filter((b) => !optedOut.has(b.client_id));
+    if (candidates.length) {
       const ins = await db.from('notifications').insert(
         toRemind.map((b) => ({
           user_id: b.client_id,
@@ -59,8 +68,8 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
           booking_id: b.id,
         })),
       );
-      if (ins.error) throw ins.error;
-      const upd = await db.from('bookings').update({ reminder_sent_at: new Date().toISOString() }).in('id', toRemind.map((b) => b.id));
+      if (ins.error && toRemind.length) throw ins.error;
+      const upd = await db.from('bookings').update({ reminder_sent_at: new Date().toISOString() }).in('id', candidates.map((b) => b.id));
       if (upd.error) throw upd.error;
     }
 

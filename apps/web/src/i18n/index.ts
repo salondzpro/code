@@ -12,8 +12,6 @@
  */
 import { useCallback, useSyncExternalStore } from 'react';
 import { CATEGORIES, setFormatLocale, setTranslator } from '@salondz/constants';
-import { ar } from './ar';
-import { en } from './en';
 
 export type Locale = 'fr' | 'ar' | 'en';
 export const LOCALES: { value: Locale; label: string; dir: 'ltr' | 'rtl'; intl: string }[] = [
@@ -22,9 +20,21 @@ export const LOCALES: { value: Locale; label: string; dir: 'ltr' | 'rtl'; intl: 
   { value: 'en', label: 'English', dir: 'ltr', intl: 'en-GB' },
 ];
 const KEY = 'salondz:locale';
-const DICTS: Record<Locale, Record<string, string>> = { fr: {}, ar, en };
-// Les catégories ont déjà leur arabe dans le référentiel partagé : on ne le recopie pas.
-for (const c of CATEGORIES) if (!ar[c.labelFr]) ar[c.labelFr] = c.labelAr;
+const DICTS: Record<Locale, Record<string, string>> = { fr: {}, ar: {}, en: {} };
+
+/**
+ * Dictionnaire chargé À LA DEMANDE : le français n'en a pas, une cliente francophone ne télécharge
+ * ni l'arabe ni l'anglais (≈ 100 Ko de source). À appeler avant le premier rendu (main.tsx) et
+ * avant tout changement de langue.
+ */
+export async function loadDictionary(l: Locale): Promise<void> {
+  if (l === 'fr' || Object.keys(DICTS[l]).length) return;
+  const mod = l === 'ar' ? await import('./ar') : await import('./en');
+  const dict = (l === 'ar' ? (mod as { ar: Record<string, string> }).ar : (mod as { en: Record<string, string> }).en) ?? {};
+  DICTS[l] = dict;
+  // Les catégories ont déjà leur arabe dans le référentiel partagé : on ne le recopie pas.
+  if (l === 'ar') for (const c of CATEGORIES) if (!dict[c.labelFr]) dict[c.labelFr] = c.labelAr;
+}
 
 function detect(): Locale {
   try {
