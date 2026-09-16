@@ -62,7 +62,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         backTo={settings ? '/pro/mon-salon' : stepPath(6)}
         right={settings ? 'Mon salon' : undefined}
       />
-      <StepTitle sub={settings ? t("Vos photos de travail, visibles dans l'onglet « Réalisations ».") : t("Coupes, barbes, colorations, ongles… plusieurs photos à la fois. C'est votre vitrine.")}>
+      <StepTitle sub={settings ? t("Vos photos de travail, visibles dans l'onglet « Réalisations ».") : (salon.genderTarget === 'men' ? t("Coupes, dégradés, barbes, lissages… plusieurs photos à la fois. C'est votre vitrine.") : t("Ongles, cils, coiffures, sourcils… plusieurs photos à la fois. C'est votre vitrine."))}>
         {settings ? t('Réalisations') : t('Montrez votre travail')}
       </StepTitle>
       <div className="g3">

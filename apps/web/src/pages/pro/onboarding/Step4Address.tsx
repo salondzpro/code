@@ -9,7 +9,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { MapPin, Search } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { WILAYAS, categoriesForMarket, formatDZPhone, geocodeDZ, type GeoPlace } from '@salondz/constants';
+import { WILAYAS, categoriesForMarket, formatDZPhone, geocodeDZ, type CategoryId, type GeoPlace } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { clearProDraft, draftFiles, readProDraft, writeProDraft } from '@/lib/proDraft';
@@ -112,7 +112,8 @@ export function Step4Address({ settings }: { settings?: boolean }) {
         zone: zone.trim(),
         address: address.trim() || undefined,
         genderTarget: market,
-        categoryIds: [categoriesForMarket(market)[0]!.id],
+        // Spécialités choisies à l'étape 1 (au plus 6) ; à défaut la première catégorie du marché.
+        categoryIds: (draft.categoryIds?.length ? draft.categoryIds.slice(0, 6) : [categoriesForMarket(market)[0]!.id]) as CategoryId[],
         ...coords,
       });
       const files = draftFiles.get();

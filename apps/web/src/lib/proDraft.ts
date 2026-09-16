@@ -7,6 +7,8 @@ import type { Market } from '@salondz/constants';
 
 export interface ProDraft {
   market?: Market;
+  /** Spécialités choisies à l'inscription (catégories du marché), 1 à 6. */
+  categoryIds?: string[];
   name?: string;
   address?: string;
   wilayaCode?: number;

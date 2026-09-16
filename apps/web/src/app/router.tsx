@@ -70,6 +70,7 @@ import { ProCategories } from '@/pages/pro/ProCategories';
 import { ProProfile } from '@/pages/pro/ProProfile';
 import { MonSalon } from '@/pages/pro/MonSalon';
 import { ProRules } from '@/pages/pro/ProRules';
+import { ProSpecialties } from '@/pages/pro/ProSpecialties';
 import { ProAccount } from '@/pages/pro/ProAccount';
 import { ProBookingDetail, ProBookingReschedule } from '@/pages/pro/ProBookingDetail';
 import { ProBookingNew } from '@/pages/pro/ProBookingNew';
@@ -213,6 +214,7 @@ export const router = createBrowserRouter([
               { path: 'profil', element: <ProProfile /> },
               { path: 'mon-salon', element: <MonSalon /> },
               { path: 'reglages/rendez-vous', element: <ProRules /> },
+              { path: 'specialites', element: <ProSpecialties /> },
               { path: 'compte', element: <ProAccount /> },
               { path: 'compte/informations', element: <AccountInfo backTo="/pro/compte" /> },
               { path: 'notifications', element: <AccountNotifications /> },

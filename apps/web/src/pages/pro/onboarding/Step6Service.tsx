@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
-import { CATEGORY_BY_ID, categoriesForSalon, type CategoryId } from '@salondz/constants';
+import { CATEGORY_BY_ID, categoriesForSalon, serviceTemplatesFor, type CategoryId } from '@salondz/constants';
 import { createServiceSchema } from '@salondz/validation';
 import { formatDuration } from '@/lib/format';
 import { errorText } from '@/components/ErrorMessage';
@@ -39,6 +39,16 @@ export function Step6Service() {
   // Groupes déjà utilisés dans le catalogue : proposés en saisie, un nouveau nom crée un nouveau groupe.
   const groups = [...new Set(salon.services.map((s) => s.groupName?.trim()).filter((g): g is string => !!g))];
   const pick = creating ? '__new__' : group ? `g:${group}` : categoryId ? `c:${categoryId}` : '';
+  // Suggestions issues des spécialités choisies à l'inscription : un nom, une durée et un prix courants, à ajuster.
+  const templates = existing ? [] : serviceTemplatesFor(salon.categoryIds.length ? salon.categoryIds : cats.map((c) => c.id)).filter((tpl) => !salon.services.some((s) => s.name.toLowerCase() === tpl.name.toLowerCase()));
+  const applyTemplate = (tpl: (typeof templates)[number]) => {
+    setName(tpl.name);
+    setDuration(tpl.minutes);
+    setPrice(String(tpl.priceDa));
+    setCategoryId(tpl.categoryId);
+    setGroup('');
+    setCreating(false);
+  };
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -59,9 +69,21 @@ export function Step6Service() {
       <StepTitle sub={existing ? undefined : t("Nom, prix, durée. Vous pourrez en ajouter d'autres ensuite depuis le catalogue.")}>
         {existing ? t('Modifier la prestation') : first ? t('Votre première prestation') : t('Nouvelle prestation')}
       </StepTitle>
+      {templates.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="h3">{t("Suggestions pour votre salon")}</span>
+          <div className="pills -mx-5 px-5" aria-label={t("Prestations courantes")}>
+            {templates.slice(0, 12).map((tpl) => (
+              <Pill key={tpl.name} lg on={name === tpl.name} onClick={() => applyTemplate(tpl)}>
+                {tpl.name} · {formatDuration(tpl.minutes)}
+              </Pill>
+            ))}
+          </div>
+        </div>
+      )}
       <form id="service" onSubmit={submit} className="flex flex-col gap-4">
         <Field label={t("Nom")} htmlFor="svc-name">
-          <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t("Pose gel")} autoFocus />
+          <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={salon.genderTarget === 'men' ? t("Coupe + barbe") : t("Pose gel")} autoFocus={templates.length === 0} />
         </Field>
         <div className="g2">
           <Field label={t("Prix")} htmlFor="svc-price">

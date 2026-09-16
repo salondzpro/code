@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { MARKET_LABELS_FR, wilayaName, type GenderTarget } from '@salondz/constants';
+import { MARKET_LABELS_FR, categoryLabel, wilayaName, type GenderTarget } from '@salondz/constants';
 import { PickerField } from '@/components/Picker';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, I, ListRow, SectionLabel, Textarea, TopBar } from '@/components/ui';
@@ -91,6 +91,9 @@ export function MonSalon() {
             ]}
           />
         </div>
+        <ListRow to="/pro/specialites">
+          <RowText icon={Sparkles} title={t("Spécialités")} sub={salon.categoryIds.length ? salon.categoryIds.map((id) => categoryLabel(id)).join(' · ') : t("Choisissez vos spécialités")} />
+        </ListRow>
         {desc !== null && (
           <div className="flex flex-col gap-2 pb-3">
             <Textarea

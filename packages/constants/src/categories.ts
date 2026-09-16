@@ -11,6 +11,7 @@ export const MARKET_LABELS_FR: Record<Market, string> = { men: 'Pour Hommes', wo
 export const CATEGORY_IDS = [
   // Pour Hommes
   'coiffure',
+  'barbe',
   'lissage',
   'coloration-meches',
   'soins-peau',
@@ -20,6 +21,7 @@ export const CATEGORY_IDS = [
   'ongles',
   'coiffure-lissage',
   'cils',
+  'sourcils',
   'soins',
   'laser',
   // Anciennes clés (salons créés avant le design) — toujours acceptées
@@ -50,23 +52,25 @@ export interface CategoryDef {
 
 export const CATEGORIES: readonly CategoryDef[] = [
   { id: 'coiffure', labelFr: 'Coiffure', labelAr: 'حلاقة', icon: 'scissors', sortOrder: 10, market: 'men', tone: 'barb' },
-  { id: 'lissage', labelFr: 'Lissage', labelAr: 'تمليس', icon: 'wand', sortOrder: 11, market: 'men', tone: 'hair' },
+  { id: 'barbe', labelFr: 'Barbe', labelAr: 'لحية', icon: 'brush', sortOrder: 11, market: 'men', tone: 'barb' },
+  { id: 'lissage', labelFr: 'Lissage & kératine', labelAr: 'تمليس وكيراتين', icon: 'wand', sortOrder: 12, market: 'men', tone: 'hair' },
   { id: 'coloration-meches', labelFr: 'Coloration & mèches', labelAr: 'صبغة وخصل', icon: 'palette', sortOrder: 12, market: 'men', tone: 'hair' },
-  { id: 'soins-peau', labelFr: 'Soins & nettoyage de la peau', labelAr: 'العناية بالبشرة وتنظيفها', icon: 'sparkles', sortOrder: 13, market: 'men', tone: 'skin' },
+  { id: 'soins-peau', labelFr: 'Soins visage & nettoyage de peau', labelAr: 'العناية بالوجه وتنظيف البشرة', icon: 'sparkles', sortOrder: 13, market: 'men', tone: 'skin' },
   { id: 'tresses', labelFr: 'Tresses / braids', labelAr: 'ضفائر', icon: 'brush', sortOrder: 14, market: 'men', tone: 'hair' },
   { id: 'manucure', labelFr: 'Manucure, mains & pieds', labelAr: 'مانيكير، يدين وقدمين', icon: 'hand', sortOrder: 20, market: 'women', tone: 'nail' },
   { id: 'ongles', labelFr: 'Ongles', labelAr: 'أظافر', icon: 'hand', sortOrder: 21, market: 'women', tone: 'nail' },
   { id: 'coiffure-lissage', labelFr: 'Coiffure & lissage', labelAr: 'تصفيف وتمليس', icon: 'scissors', sortOrder: 22, market: 'women', tone: 'hair' },
   { id: 'cils', labelFr: 'Cils', labelAr: 'رموش', icon: 'eye', sortOrder: 23, market: 'women', tone: 'lash' },
-  { id: 'soins', labelFr: 'Soins', labelAr: 'عناية', icon: 'flower', sortOrder: 24, market: 'women', tone: 'skin' },
+  { id: 'sourcils', labelFr: 'Sourcils', labelAr: 'حواجب', icon: 'eye', sortOrder: 24, market: 'women', tone: 'lash' },
+  { id: 'soins', labelFr: 'Soins', labelAr: 'عناية', icon: 'flower', sortOrder: 25, market: 'women', tone: 'skin' },
   { id: 'laser', labelFr: 'Laser', labelAr: 'ليزر', icon: 'zap', sortOrder: 25, market: 'women', tone: 'lasr' },
   { id: 'coiffure-homme', labelFr: 'Coiffure homme', labelAr: 'حلاقة رجال', icon: 'scissors', sortOrder: 90, market: 'men', tone: 'barb', legacy: true },
   { id: 'barbier', labelFr: 'Barbier', labelAr: 'حلاق لحية', icon: 'brush', sortOrder: 91, market: 'men', tone: 'barb', legacy: true },
   { id: 'coiffure-femme', labelFr: 'Coiffure femme', labelAr: 'تصفيف شعر نساء', icon: 'sparkles', sortOrder: 92, market: 'women', tone: 'hair', legacy: true },
   { id: 'esthetique', labelFr: 'Esthétique', labelAr: 'تجميل', icon: 'flower', sortOrder: 93, market: 'women', tone: 'skin', legacy: true },
   { id: 'onglerie', labelFr: 'Onglerie', labelAr: 'أظافر', icon: 'hand', sortOrder: 94, market: 'women', tone: 'nail', legacy: true },
-  { id: 'maquillage', labelFr: 'Maquillage', labelAr: 'مكياج', icon: 'palette', sortOrder: 95, market: 'women', tone: 'skin', legacy: true },
-  { id: 'epilation', labelFr: 'Épilation', labelAr: 'إزالة الشعر', icon: 'feather', sortOrder: 96, market: 'women', tone: 'lasr', legacy: true },
+  { id: 'maquillage', labelFr: 'Maquillage', labelAr: 'مكياج', icon: 'palette', sortOrder: 26, market: 'women', tone: 'skin' },
+  { id: 'epilation', labelFr: 'Épilation', labelAr: 'إزالة الشعر', icon: 'feather', sortOrder: 27, market: 'women', tone: 'lasr' },
   { id: 'spa-hammam', labelFr: 'Spa & Hammam', labelAr: 'سبا وحمام', icon: 'droplets', sortOrder: 97, market: 'women', tone: 'skin', legacy: true },
 ];
 

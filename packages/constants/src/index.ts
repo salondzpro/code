@@ -28,3 +28,4 @@ export const SALON_MAX_WORKS = 40;
 
 /** Buckets Supabase Storage. */
 export const STORAGE_BUCKETS = { salons: 'salons', avatars: 'avatars' } as const;
+export * from './serviceTemplates';
