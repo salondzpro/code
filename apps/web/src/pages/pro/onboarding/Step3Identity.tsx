@@ -63,17 +63,20 @@ export function Step3Identity() {
         </button>
         {/* `relative` : peint au-dessus de la couverture (elle-même positionnée), sinon le nom passe dessous. */}
         <div className="relative -mt-8 flex items-end gap-3 px-4 pb-4">
-          <button
-            type="button"
-            className="av relative h-[4.5rem] w-[4.5rem] flex-none border-4 border-surface bg-fill"
-            onClick={() => logoInput.current?.click()}
-            aria-label={t("Choisir le logo")}
-          >
-            {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={UserCircle2} size={30} className="text-subtle" />}
-            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-white">
+          {/* La pastille appareil photo est hors du cercle (`.av` rogne son contenu). */}
+          <span className="relative flex-none">
+            <button
+              type="button"
+              className="av h-[4.5rem] w-[4.5rem] border-4 border-surface bg-fill"
+              onClick={() => logoInput.current?.click()}
+              aria-label={t("Choisir le logo")}
+            >
+              {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={UserCircle2} size={30} className="text-subtle" />}
+            </button>
+            <span className="pointer-events-none absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
               <I icon={Camera} size={12} />
             </span>
-          </button>
+          </span>
           <span className="min-w-0 pb-1">
             <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">{name}</span>
             <span className="p block text-[0.857rem]">{t("Aperçu de votre page")}</span>
