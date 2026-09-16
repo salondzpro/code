@@ -106,7 +106,7 @@ export function Login() {
 
   return (
     <Screen className="min-h-dvh" gap={16}>
-      <TopBar backTo="/bienvenue" />
+      <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : '/bienvenue'} />
       <div>
         <h1 className="h1">{role === 'pro' ? 'Espace professionnel' : 'Connexion'}</h1>
         <p className="p mt-2">

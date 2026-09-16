@@ -6,7 +6,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Badge, Button, I } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
-import { StepSheet } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { useState } from 'react';
 import { t } from '@/i18n';
 
@@ -29,6 +29,8 @@ export function Publish() {
     { label: t("Description du salon"), ok: !!salon.description, hint: t("Recommandé — améliore votre visibilité"), to: '/pro/profil' },
   ];
 
+  const done = items.filter((i) => i.ok).length;
+
   const publish = async () => {
     setError(null);
     try {
@@ -41,7 +43,10 @@ export function Publish() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <h1 className="h1 mt-2">{t("Tout est prêt")}</h1>
+      <StepBar step={10} backTo={stepPath(10)} />
+      <StepTitle sub={t("{done} sur {total} éléments en place. Publiez votre page, puis partagez votre lien.", { done: items.filter((i) => i.ok).length, total: items.length })}>
+        {done === items.length ? t("Tout est prêt") : t("Presque prêt")}
+      </StepTitle>
       <div className="crd !gap-0 !py-1">
         {items.map((it) => (
           <button key={it.label} type="button" className="li w-full text-left" onClick={() => navigate(it.to)}>
@@ -73,7 +78,7 @@ export function Publish() {
           {error}
         </p>
       )}
-      <StepSheet label={salon.isPublished ? 'Page publiée · voir mon lien' : 'Publier ma page'} onClick={() => (salon.isPublished ? navigate('/pro/lien') : void publish())} busy={updateSalon.isPending} />
+      <StepSheet label={salon.isPublished ? t('Page publiée · voir mon lien') : t('Publier ma page')} onClick={() => (salon.isPublished ? navigate('/pro/lien') : void publish())} busy={updateSalon.isPending} />
     </Screen>
   );
 }

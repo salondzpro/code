@@ -1,11 +1,14 @@
-/** PRO-F 05 — Étape 3 : identité visuelle (photo de couverture, logo ou portrait). */
+/**
+ * PRO-F 05 — Étape 3 : identité visuelle. L'écran EST l'aperçu de la future page (couverture, logo
+ * qui déborde, nom du salon) : le pro voit ce que verront ses clients et touche ce qu'il veut changer.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Camera } from 'lucide-react';
-import { draftFiles } from '@/lib/proDraft';
-import { Button, I, SectionLabel } from '@/components/ui';
+import { Camera, Image as ImageIcon, UserCircle2 } from 'lucide-react';
+import { draftFiles, readProDraft } from '@/lib/proDraft';
+import { I, ListRow } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
 import { t } from '@/i18n';
 
@@ -22,6 +25,7 @@ function usePreview(file: File | undefined): string | null {
 
 export function Step3Identity() {
   const navigate = useNavigate();
+  const name = readProDraft().name ?? t('Votre salon');
   const [cover, setCover] = useState<File | undefined>(draftFiles.get().cover);
   const [logo, setLogo] = useState<File | undefined>(draftFiles.get().logo);
   const coverInput = useRef<HTMLInputElement | null>(null);
@@ -33,23 +37,61 @@ export function Step3Identity() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={3} backTo={stepPath(2)} />
-      <h1 className="h1">{t("Votre identité visuelle")}</h1>
-      <SectionLabel>{t("Photo de couverture")}</SectionLabel>
-      <button
-        type="button"
-        className="relative h-[13.75rem] w-full overflow-hidden rounded-[var(--radius-card)] bg-line"
-        onClick={() => coverInput.current?.click()}
-        aria-label={t("Choisir la photo de couverture")}
-      >
-        {coverUrl ? (
-          <img src={coverUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
-            <I icon={Camera} size={32} />
-            <span className="text-[1rem]">{t("Ajouter une photo")}</span>
+      <StepTitle sub={t("Une couverture et un logo : c'est la première chose que voient vos clients.")}>
+        {t("Votre identité visuelle")}
+      </StepTitle>
+
+      {/* Aperçu de la page publique : couverture, logo, nom. */}
+      <div className="crd overflow-hidden !p-0 !gap-0">
+        <button
+          type="button"
+          className="relative h-[11rem] w-full bg-fill text-left"
+          onClick={() => coverInput.current?.click()}
+          aria-label={t("Choisir la photo de couverture")}
+        >
+          {coverUrl ? (
+            <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span className="flex h-full flex-col items-center justify-center gap-2 text-subtle">
+              <I icon={ImageIcon} size={30} />
+              <span className="text-[0.857rem]">{t("Ajouter une photo de couverture")}</span>
+            </span>
+          )}
+          <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">
+            <I icon={Camera} size={16} /> {coverUrl ? t('Changer') : t('Ajouter')}
           </span>
-        )}
-      </button>
+        </button>
+        {/* `relative` : peint au-dessus de la couverture (elle-même positionnée), sinon le nom passe dessous. */}
+        <div className="relative -mt-8 flex items-end gap-3 px-4 pb-4">
+          <button
+            type="button"
+            className="av relative h-[4.5rem] w-[4.5rem] flex-none border-4 border-surface bg-fill"
+            onClick={() => logoInput.current?.click()}
+            aria-label={t("Choisir le logo")}
+          >
+            {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={UserCircle2} size={30} className="text-subtle" />}
+            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-white">
+              <I icon={Camera} size={12} />
+            </span>
+          </button>
+          <span className="min-w-0 pb-1">
+            <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">{name}</span>
+            <span className="p block text-[0.857rem]">{t("Aperçu de votre page")}</span>
+          </span>
+        </div>
+      </div>
+
+      <div className="crd !gap-0 !py-1">
+        <ListRow onClick={() => coverInput.current?.click()}>
+          <span className="block text-[1rem] font-semibold">{t("Photo de couverture")}</span>
+          <span className="p block text-[0.857rem]">{t("Votre salon, votre vitrine · format paysage")}</span>
+        </ListRow>
+        <ListRow onClick={() => logoInput.current?.click()}>
+          <span className="block text-[1rem] font-semibold">{t("Logo ou portrait")}</span>
+          <span className="p block text-[0.857rem]">{t("Format carré, visage ou logo centré")}</span>
+        </ListRow>
+      </div>
+
       <input
         ref={coverInput}
         type="file"
@@ -61,21 +103,6 @@ export function Step3Identity() {
           e.target.value = '';
         }}
       />
-      <SectionLabel>{t("Logo ou portrait")}</SectionLabel>
-      <div className="flex items-center gap-5">
-        <button
-          type="button"
-          className="av h-[8rem] w-[8rem] flex-none"
-          onClick={() => logoInput.current?.click()}
-          aria-label={t("Choisir le logo")}
-        >
-          {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={Camera} size={28} />}
-        </button>
-        <div>
-          <div className="text-[0.857rem]">{t("Format carré, visage ou logo centré")}</div>
-          <div className="p">{t("JPG ou PNG · 2 Mo max")}</div>
-        </div>
-      </div>
       <input
         ref={logoInput}
         type="file"
@@ -87,18 +114,12 @@ export function Step3Identity() {
           e.target.value = '';
         }}
       />
-      <Button
-        variant="g"
-        onClick={() => (cover ? logoInput.current?.click() : coverInput.current?.click())}
-      >
-        {cover || logo ? 'Remplacer les images' : 'Choisir les images'}
-      </Button>
       {crop && (
         <ImageCropper
           file={crop.file}
           aspect={crop.kind === 'logo' ? 1 : COVER_ASPECT}
           round={crop.kind === 'logo'}
-          title={crop.kind === 'logo' ? 'Recadrer le logo' : 'Recadrer la couverture'}
+          title={crop.kind === 'logo' ? t('Recadrer le logo') : t('Recadrer la couverture')}
           onCancel={() => setCrop(null)}
           onDone={(f) => {
             if (crop.kind === 'cover') {
@@ -112,7 +133,11 @@ export function Step3Identity() {
           }}
         />
       )}
-      <StepSheet onClick={() => navigate(stepPath(4))} />
+      <StepSheet
+        label={cover || logo ? t('Continuer') : t('Continuer sans photo')}
+        hint={t("Modifiable ensuite depuis Mon salon.")}
+        onClick={() => navigate(stepPath(4))}
+      />
     </Screen>
   );
 }

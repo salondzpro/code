@@ -16,7 +16,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { I, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
 export function Step4Address({ settings }: { settings?: boolean }) {
@@ -82,7 +82,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={4} backTo={settings ? '/pro/profil' : stepPath(3)} right={settings ? 'Adresse' : undefined} />
-      <h1 className="h1">{t("Où vous trouver ?")}</h1>
+      <StepTitle sub={settings ? undefined : t("Vos clients vous trouvent sur la carte et par quartier.")}>{t("Où vous trouver ?")}</StepTitle>
       <form id="address" onSubmit={submit} className="flex flex-col gap-4">
         <label className="search !border-[1.5px] !border-ink !bg-surface">
           <I icon={Search} size={20} className="text-subtle" />

@@ -10,7 +10,7 @@ import { Field, Input, Pill, Textarea } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
 const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
@@ -56,7 +56,9 @@ export function Step6Service() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={6} backTo={first ? stepPath(4) : '/pro/catalogue'} />
-      <h1 className="h1">{existing ? 'Modifier la prestation' : first ? 'Première prestation' : 'Nouvelle prestation'}</h1>
+      <StepTitle sub={existing ? undefined : t("Nom, prix, durée. Vous pourrez en ajouter d'autres ensuite depuis le catalogue.")}>
+        {existing ? t('Modifier la prestation') : first ? t('Votre première prestation') : t('Nouvelle prestation')}
+      </StepTitle>
       <form id="service" onSubmit={submit} className="flex flex-col gap-4">
         <Field label={t("Nom")} htmlFor="svc-name">
           <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t("Pose gel")} autoFocus />
