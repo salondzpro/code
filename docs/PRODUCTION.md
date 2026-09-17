@@ -35,11 +35,15 @@ Exploitation :
 - Variables complètes dans `render.yaml` (`API_PUBLIC_URL`, `WEB_URL`, Resend, VAPID, `VITE_VAPID_PUBLIC_KEY`, `VITE_SENTRY_DSN`) ; `render-web.mjs` fusionne les variables au lieu de les écraser ; `.env.example` complété.
 - Session expirée : déconnexion propre et retour à la connexion ; agenda et clientèle affichent une erreur réseau au lieu d'une liste vide.
 
+Lot du 17 septembre (commits 23aa8d2 et 9a4d1a5) :
+- Numéro de téléphone verrouillé dès le premier rendez-vous (`PHONE_LOCKED`, support pour le changer) ; `sitemap.xml` servi par l'API et réécrit par le site ; job `deploy` dans la CI (attend le secret GitHub `RENDER_API_KEY`) ; erreurs API traduites dans les trois langues ; page 404 hors indexation ; cibles tactiles 38/44 px et contraste 4,5:1 ; routes `/compte/*` en double supprimées ; interrupteurs protégés contre le double appui ; langue enregistrée avant le rechargement.
+- Tests API : 31/31 contre Supabase ; le rôle des comptes de démonstration est réaffirmé par `dev-login`.
+
 ## 2. Décisions à prendre par le propriétaire
 
 | # | Décision | Recommandation |
 |---|---|---|
-| 1 | Comptes de démonstration en production (`TEST_LOGIN_ENABLED=1` dans `render.yaml`) | Les couper le jour J (`0`) et dépublier « Salon Démo ». Garder un couple de comptes de test privés sur un projet Supabase de préproduction pour les scripts `check:*`. |
+| 1 | Comptes de démonstration en production (`TEST_LOGIN_ENABLED=1` dans `render.yaml`) | Les couper le jour J (`0`) et dépublier « Salon Démo ». Garder un couple de comptes de test privés sur un projet Supabase de préproduction pour les scripts `check:*`. **À supprimer dès maintenant** : le salon « Alcatra » (`slug` `alcatra`, créé le 16 sept. par le compte client démo pendant les captures de l'inscription pro ; 0 rendez-vous) — `delete from public.salons where slug = 'alcatra';`. Depuis le 17 sept., `dev-login` réaffirme le rôle des comptes démo à chaque connexion. |
 | 2 | Sauvegardes | Passer Supabase en Pro (25 $/mois) avant le premier vrai salon : sauvegardes quotidiennes 7 jours. Sans cela, une erreur = perte totale. |
 | 3 | Mobile au lancement | Non. Le mobile Expo a encore l'ancienne connexion par téléphone et aucune refonte pro. Lancer en web seul, aligner le mobile ensuite. |
 | 4 | Textes légaux | Faire relire CGU, confidentialité et mentions légales par un conseil ; compléter dénomination, RC, NIF dans `/mentions-legales`. |
