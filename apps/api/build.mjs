@@ -1,7 +1,7 @@
 // Bundle l'API + les packages workspace (@salondz/*) en un seul fichier ESM.
 // Les dépendances npm restent externes (installées via `pnpm deploy` dans l'image Docker).
 import { build } from 'esbuild';
-import { readFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile } from 'node:fs/promises';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
 const external = Object.keys(pkg.dependencies).filter((d) => !d.startsWith('@salondz/'));
@@ -20,3 +20,7 @@ await build({
   },
   logLevel: 'info',
 });
+
+// Le plan de production est servi sur /moi : il voyage avec le bundle.
+await mkdir('dist', { recursive: true });
+await copyFile(new URL('../../docs/PRODUCTION.md', import.meta.url), 'dist/PRODUCTION.md');

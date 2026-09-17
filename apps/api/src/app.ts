@@ -16,6 +16,7 @@ import authPlugin from './plugins/auth';
 import { AppError, fromPostgrest } from './lib/errors';
 import healthRoutes from './routes/health';
 import shareRoutes from './routes/share';
+import planRoutes from './routes/plan';
 import authRoutes from './routes/auth';
 import publicRoutes from './routes/public';
 import meRoutes from './routes/me';
@@ -138,6 +139,7 @@ export async function buildApp(): Promise<App> {
 
   await app.register(healthRoutes);
   await app.register(shareRoutes);
+  await app.register(planRoutes);
   await app.register(authRoutes, { prefix: '/v1' });
   await app.register(publicRoutes, { prefix: '/v1' });
   await app.register(meRoutes, { prefix: '/v1' });

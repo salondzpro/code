@@ -11,6 +11,7 @@ COPY packages/validation/package.json packages/validation/
 RUN pnpm install --frozen-lockfile --filter @salondz/api...
 COPY packages ./packages
 COPY apps/api ./apps/api
+COPY docs/PRODUCTION.md ./docs/PRODUCTION.md
 RUN pnpm --filter @salondz/api build \
  && pnpm --filter @salondz/api deploy --prod --legacy /out \
  && cp -r apps/api/dist /out/dist

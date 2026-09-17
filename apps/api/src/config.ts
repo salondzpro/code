@@ -18,6 +18,8 @@ const schema = z.object({
   CORS_ORIGINS: z.string().default(''),
   /** Jeton partagé pour /internal/* (appelé par pg_cron via pg_net). */
   INTERNAL_CRON_TOKEN: z.string().min(8),
+  /** Code d'accès de `salondz.com/moi` (plan de production en ligne). */
+  PLAN_ACCESS_CODE: z.string().min(3).max(40).default('123'),
   SENTRY_DSN: z.string().optional(),
   /**
    * Web Push (VAPID). Absentes, l'envoi vers les navigateurs est simplement désactivé :
