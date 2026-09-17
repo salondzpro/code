@@ -929,4 +929,7 @@ export const en: Record<string, string> = {
   'Fermé · ouvre demain {time}': 'Closed · opens tomorrow {time}',
   'Fermé · ouvre {day} {time}': 'Closed · opens {day} {time}',
   'Où se situe le salon ?': 'Where is the salon?',
+  'Femme': 'Women',
+  'Homme': 'Men',
+  'Rouvrir': 'Reopen',
 };

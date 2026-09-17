@@ -910,4 +910,7 @@ export const ar: Record<string, string> = {
   'Fermé · ouvre demain {time}': 'مغلق · يفتح غدًا {time}',
   'Fermé · ouvre {day} {time}': 'مغلق · يفتح {day} {time}',
   'Où se situe le salon ?': 'أين يقع الصالون؟',
+  'Femme': 'نساء',
+  'Homme': 'رجال',
+  'Rouvrir': 'إعادة الفتح',
 };
