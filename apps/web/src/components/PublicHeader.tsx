@@ -110,7 +110,7 @@ export function PublicHeader() {
                 type="button"
                 aria-expanded={on}
                 onClick={() => setPicked(on ? 'none' : market)}
-                className="flex items-center justify-between gap-3 py-3 text-left"
+                className="flex items-center justify-between gap-3 py-3 text-start"
               >
                 <span className="text-[1.143rem] font-bold tracking-[-0.3px]">
                   {t(MARKET_LABELS_FR[market])}
@@ -122,7 +122,7 @@ export function PublicHeader() {
                 />
               </button>
               {on && (
-                <div className="mb-2 flex flex-col border-l-2 border-line pl-3.5">
+                <div className="mb-2 flex flex-col border-s-2 border-line ps-3.5">
                   {CATEGORIES.filter((c) => c.market === market && !c.legacy)
                     .slice(0, PER_MARKET)
                     .map((c) => (
@@ -184,7 +184,7 @@ export function PublicHeader() {
           aria-label={t("Salon DZ · accueil")}
         >
           <span className="font-semibold">Salon</span>
-          <span className="ml-[0.16em] font-light text-muted">DZ</span>
+          <span className="ms-[0.16em] font-light text-muted">DZ</span>
         </Link>
         <Link
           to={session ? '/profil' : `/connexion?next=${next}`}

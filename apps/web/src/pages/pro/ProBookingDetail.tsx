@@ -332,7 +332,7 @@ export function ProBookingReschedule() {
           <span className="text-[1rem] font-semibold">{t("Date")}</span>
           <input
             type="date"
-            className="bg-transparent text-right text-[1rem] outline-none"
+            className="bg-transparent text-end text-[1rem] outline-none"
             value={d}
             min={toLocalDateKey()}
             onChange={(e) => setDate(e.target.value)}
@@ -345,7 +345,7 @@ export function ProBookingReschedule() {
             type="time"
             step={300}
             min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
-            className="bg-transparent text-right text-[1rem] outline-none"
+            className="bg-transparent text-end text-[1rem] outline-none"
             value={tm}
             onChange={(e) => setTime(e.target.value)}
             aria-label={t("Nouvelle heure")}

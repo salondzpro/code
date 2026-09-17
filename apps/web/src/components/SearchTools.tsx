@@ -119,7 +119,7 @@ export function SearchField({
     return (
       <button
         type="button"
-        className={`srch${shadow ? ' sh' : ''} w-full text-left ${className}`}
+        className={`srch${shadow ? ' sh' : ''} w-full text-start ${className}`}
         aria-label={t("Modifier la recherche")}
         onClick={() => setOpen(true)}
       >
@@ -141,7 +141,7 @@ export function SearchField({
     <div className={`flex flex-col gap-2 ${className}`}>
       <button
         type="button"
-        className="ib -ml-2.5 !border-0 !bg-transparent"
+        className="ib -ms-2.5 !border-0 !bg-transparent"
         aria-label={t("Fermer")}
         onClick={close}
       >
@@ -197,7 +197,7 @@ export function SearchField({
             <button
               key={`svc-${h.name}`}
               type="button"
-              className="li w-full text-left"
+              className="li w-full text-start"
               onClick={() => submit(h.name)}
             >
               <span className="flex min-w-0 items-center gap-3">
@@ -231,7 +231,7 @@ export function SearchField({
             </Link>
           ))}
           {data.services.length === 0 && data.salons.length === 0 && (
-            <button type="button" className="li w-full text-left" onClick={() => submit(qDraft)}>
+            <button type="button" className="li w-full text-start" onClick={() => submit(qDraft)}>
               <span className="text-[1rem] font-semibold">{t("Rechercher «")}{' '}{qDraft.trim()} »</span>
               <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
             </button>
@@ -245,7 +245,7 @@ export function SearchField({
             <button
               key={`pl-${p.city}-${p.wilayaCode}`}
               type="button"
-              className="li w-full text-left"
+              className="li w-full text-start"
               onClick={() => pickPlace(p.city, p.parentCity, p.wilayaCode)}
             >
               <span className="flex min-w-0 items-center gap-3">
@@ -312,7 +312,7 @@ function Panel({
       <div className="flex flex-col gap-1 px-5 pb-2 pt-3">
         <button
           type="button"
-          className="ib -ml-2.5 !border-0 !bg-transparent"
+          className="ib -ms-2.5 !border-0 !bg-transparent"
           aria-label={t("Fermer")}
           onClick={onClose}
         >
@@ -539,7 +539,7 @@ export function SearchTools({
                     type="button"
                     role="radio"
                     aria-checked={draft.sort === o.value}
-                    className="li w-full text-left"
+                    className="li w-full text-start"
                     onClick={() => setDraft({ ...draft, sort: o.value as SortKey })}
                   >
                     <span className="text-[1rem] font-semibold">{o.label}</span>

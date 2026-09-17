@@ -58,8 +58,10 @@ export function BookingServices() {
           <span className="mt-0.5 block text-[1rem] text-muted">{sv.description}</span>
         )}
         <span className="mt-1 block text-[1rem] font-semibold">
-          {formatDA(sv.priceDa)}
-          <span className="font-normal text-muted"> · {formatDuration(sv.durationMinutes)}</span>
+          <span dir="ltr">
+            {formatDA(sv.priceDa)}
+            <span className="font-normal text-muted"> · {formatDuration(sv.durationMinutes)}</span>
+          </span>
         </span>
       </div>
       <Button sm auto className="mt-0.5 flex-none !rounded-full !px-5" onClick={() => chooseService(sv.id)}>
@@ -70,7 +72,7 @@ export function BookingServices() {
 
   return (
     <Screen gap={12}>
-      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[1rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? 'Homme' : 'Femme'}</span>} />
+      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[1rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? t('Homme') : t('Femme')}</span>} />
       <h1 className="h1">{t("Prestations")}</h1>
       <p className="p !text-[1rem]">
         {t("Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.")}

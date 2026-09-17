@@ -26,7 +26,7 @@ export function ProServices() {
       <h1 className="h1">{t("Catalogue")}</h1>
       <button
         type="button"
-        className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-left"
+        className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-start"
         onClick={() => navigate('/pro/categories')}
       >
         <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
@@ -56,7 +56,7 @@ export function ProServices() {
                 <div key={sv.id} className={`li !py-3 ${sv.isActive ? '' : 'opacity-60'}`}>
                   <button
                     type="button"
-                    className="flex min-w-0 flex-1 items-center gap-3.5 text-left"
+                    className="flex min-w-0 flex-1 items-center gap-3.5 text-start"
                     onClick={() => navigate(`/pro/onboarding/6/${sv.id}`)}
                     aria-label={`Modifier ${sv.name}`}
                   >

@@ -145,11 +145,11 @@ export function Login() {
                 setError(null);
               }}
               err={error?.kind === 'credentials'}
-              className="!pr-12"
+              className="!pe-12"
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted"
               aria-label={show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
               onClick={() => setShow((v) => !v)}
             >

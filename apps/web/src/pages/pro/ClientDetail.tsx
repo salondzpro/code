@@ -289,7 +289,7 @@ export function ClientDetail() {
         {c.nextAt && nextKey ? (
           <button
             type="button"
-            className="w-full text-left"
+            className="w-full text-start"
             onClick={() => c.lastBookingId && navigate(`/pro/rendez-vous/${c.lastBookingId}`)}
           >
             <FactRow
@@ -372,7 +372,7 @@ export function ClientDetail() {
               >
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 text-left"
+                  className="flex w-full items-center gap-3 text-start"
                   onClick={() => navigate(`/pro/rendez-vous/${h.id}`)}
                 >
                   <DateBlock iso={h.startsAt} muted={cancelled} />

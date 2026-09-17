@@ -153,10 +153,10 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             />
           </label>
           {searching && suggestions.length > 0 && (
-            <ul className="crd absolute left-0 right-0 top-full z-[500] mt-1 !gap-0 !py-1 shadow-card" role="listbox">
+            <ul className="crd absolute start-0 end-0 top-full z-[500] mt-1 !gap-0 !py-1 shadow-card" role="listbox">
               {suggestions.slice(0, 5).map((p) => (
                 <li key={`${p.lat},${p.lng}`}>
-                  <button type="button" className="li w-full text-left" onMouseDown={(e) => e.preventDefault()} onClick={() => pick(p)} role="option" aria-selected={false}>
+                  <button type="button" className="li w-full text-start" onMouseDown={(e) => e.preventDefault()} onClick={() => pick(p)} role="option" aria-selected={false}>
                     <span className="flex min-w-0 items-center gap-3">
                       <I icon={MapPin} size={18} className="flex-none text-muted" />
                       <span className="min-w-0">
@@ -179,12 +179,12 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           </label>
           <label className="li">
             <span className="text-[1rem] font-semibold">{t("Quartier")}</span>
-            <input className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder={t("Hydra")} aria-label={t("Quartier")} maxLength={80} />
+            <input className="max-w-[55%] bg-transparent text-end text-[1rem] outline-none placeholder:text-subtle" value={zone} onChange={(e) => setZone(e.target.value)} placeholder={t("Hydra")} aria-label={t("Quartier")} maxLength={80} />
           </label>
           {settings && (
             <label className="li">
               <span className="text-[1rem] font-semibold">{t("Téléphone")}</span>
-              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label={t("Téléphone du salon")} />
+              <input type="tel" inputMode="tel" className="max-w-[55%] bg-transparent text-end text-[1rem] outline-none placeholder:text-subtle" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05 51 23 45 67" aria-label={t("Téléphone du salon")} />
             </label>
           )}
           <div className="li">

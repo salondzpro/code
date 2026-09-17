@@ -125,7 +125,7 @@ export function TeamMember() {
           disabled={avatarBusy}
         >
           <Avatar src={member.avatarUrl} name={member.displayName} size={64} />
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+          <span className="absolute -bottom-0.5 -end-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
             <I icon={Camera} size={12} />
           </span>
         </button>
@@ -232,7 +232,7 @@ export function TeamMember() {
       <div className="crd !gap-0 !py-1">
         <button
           type="button"
-          className="li w-full text-left"
+          className="li w-full text-start"
           onClick={() => navigate(`/pro/equipe/${member.id}/prestations`)}
         >
           <span className="flex items-center gap-3.5">
@@ -248,7 +248,7 @@ export function TeamMember() {
         </button>
         <button
           type="button"
-          className="li w-full text-left"
+          className="li w-full text-start"
           onClick={() => navigate(`/pro/equipe/${member.id}/horaires`)}
         >
           <span className="flex items-center gap-3.5">

@@ -134,13 +134,13 @@ export function ProPhotos() {
           >
             <img src={p.url} alt="" className="h-full w-full object-cover" />
             {i === 0 ? (
-              <span className="absolute left-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[0.857rem] font-semibold text-white">
+              <span className="absolute start-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[0.857rem] font-semibold text-white">
                 {t("Couverture")}
               </span>
             ) : (
               <button
                 type="button"
-                className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-[0.857rem] font-semibold"
+                className="absolute start-2 top-2 flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-[0.857rem] font-semibold"
                 onClick={() => makeCover(p.url)}
                 disabled={setPhotos.isPending}
               >
@@ -149,7 +149,7 @@ export function ProPhotos() {
             )}
             <button
               type="button"
-              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-surface/95"
+              className="absolute end-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-surface/95"
               aria-label={t("Supprimer la photo")}
               onClick={() => remove(p.url)}
               disabled={setPhotos.isPending}

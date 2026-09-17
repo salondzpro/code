@@ -161,7 +161,7 @@ export function Localisation() {
           <span className="flex h-[2.625rem] w-[2.625rem] flex-none items-center justify-center rounded-full bg-fill">
             <I icon={MapPin} size={20} />
           </span>
-          <span className="min-w-0 flex-1 text-left">
+          <span className="min-w-0 flex-1 text-start">
             <span className="block text-[0.857rem] font-semibold">{t("Choisir un quartier")}</span>
             <span className="p block text-[1rem]">{t("Sans activer la localisation")}</span>
           </span>
@@ -203,7 +203,7 @@ export function Localisation() {
           {wilayaHits.map((w) => {
             const on = choice.kind === 'wilaya' && choice.wilaya === w.code;
             return (
-              <button key={`w-${w.code}`} type="button" className="li w-full text-left" onClick={() => setChoice({ kind: 'wilaya', wilaya: w.code, label: w.name })}>
+              <button key={`w-${w.code}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'wilaya', wilaya: w.code, label: w.name })}>
                 <span className="flex items-center gap-3.5">
                   <I icon={Building2} size={20} className="text-subtle" />
                   <span>
@@ -219,7 +219,7 @@ export function Localisation() {
             const on = choice.kind === 'city' && choice.city === c.city && choice.wilaya === c.wilayaCode;
             const label = c.parentCity ? `${c.city}, ${c.parentCity}` : c.city;
             return (
-              <button key={`c-${c.city}-${c.wilayaCode}`} type="button" className="li w-full text-left" onClick={() => setChoice({ kind: 'city', city: c.city, wilaya: c.wilayaCode, label })}>
+              <button key={`c-${c.city}-${c.wilayaCode}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'city', city: c.city, wilaya: c.wilayaCode, label })}>
                 <span className="flex items-center gap-3.5">
                   <I icon={MapPin} size={20} className="text-subtle" />
                   <span>
@@ -237,7 +237,7 @@ export function Localisation() {
           {addresses.map((a) => {
             const on = choice.kind === 'point' && choice.lat === a.lat && choice.lng === a.lng;
             return (
-              <button key={`a-${a.lat}-${a.lng}`} type="button" className="li w-full text-left" onClick={() => setChoice({ kind: 'point', lat: a.lat, lng: a.lng, label: a.label })}>
+              <button key={`a-${a.lat}-${a.lng}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'point', lat: a.lat, lng: a.lng, label: a.label })}>
                 <span className="flex items-center gap-3.5">
                   <I icon={Navigation} size={20} className="text-subtle" />
                   <span>
@@ -257,7 +257,7 @@ export function Localisation() {
             <span className="flex h-[3.25rem] w-[3.25rem] flex-none items-center justify-center rounded-full bg-ink text-white">
               <I icon={MapPin} size={22} />
             </span>
-            <span className="min-w-0 flex-1 text-left">
+            <span className="min-w-0 flex-1 text-start">
               <span className="block text-[1rem] font-semibold">{t("Utiliser ma position actuelle")}</span>
               <span className="p block">{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${posLabel?.label ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</span>
             </span>
@@ -270,7 +270,7 @@ export function Localisation() {
           ) : (
             <div className="relative h-[6rem] overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill">
               <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#e6e7e9 2px, transparent 2px), linear-gradient(90deg, #e6e7e9 2px, transparent 2px)', backgroundSize: '90px 70px' }} />
-              <span className="absolute bottom-3 left-4 rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>
+              <span className="absolute bottom-3 start-4 rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>
             </div>
           )}
 
@@ -295,7 +295,7 @@ export function Localisation() {
               const on = choice.kind === 'city' && choice.city === c.city && choice.wilaya === c.wilayaCode;
               const label = c.parentCity ? `${c.city}, ${c.parentCity}` : c.city;
               return (
-                <button key={`${c.city}-${c.wilayaCode}`} type="button" className="li w-full text-left" onClick={() => setChoice({ kind: 'city', city: c.city, wilaya: c.wilayaCode, label })}>
+                <button key={`${c.city}-${c.wilayaCode}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'city', city: c.city, wilaya: c.wilayaCode, label })}>
                   <span className="flex items-center gap-3.5">
                     <I icon={MapPin} size={20} className="text-subtle" />
                     <span>

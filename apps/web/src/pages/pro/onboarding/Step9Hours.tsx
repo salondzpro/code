@@ -51,7 +51,7 @@ export function WeekHoursEditor({ rows, onChange, closedLabel = 'Fermé' }: { ro
             <div className="flex items-center gap-3 py-3">
               <button
                 type="button"
-                className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
+                className="flex min-w-0 flex-1 items-center justify-between gap-3 text-start"
                 onClick={() => setOpenDay(expanded ? null : r.dayOfWeek)}
                 aria-expanded={expanded}
                 disabled={!r.open}

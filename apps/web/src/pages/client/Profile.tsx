@@ -91,7 +91,7 @@ export function Profile() {
             disabled={avatarBusy || !user}
           >
             <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={64} />
-            <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+            <span className="absolute -bottom-0.5 -end-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
               <I icon={Camera} size={14} />
             </span>
           </button>

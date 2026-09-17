@@ -107,7 +107,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           className={`mono text-[2.286rem] font-bold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
         >
           {formatTimeDZ(b.startsAt)}
-          <span className="ml-1 text-[1rem] font-medium tracking-normal text-muted">
+          <span className="ms-1 text-[1rem] font-medium tracking-normal text-muted">
             → {formatTimeDZ(b.endsAt)}
           </span>
         </span>

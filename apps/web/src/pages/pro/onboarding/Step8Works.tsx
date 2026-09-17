@@ -71,7 +71,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             <img src={w.url} alt="" className="h-full w-full object-cover" />
             <button
               type="button"
-              className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"
+              className="absolute end-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"
               aria-label={t("Retirer")}
               onClick={() => void remove(w.url)}
               disabled={setWorks.isPending}

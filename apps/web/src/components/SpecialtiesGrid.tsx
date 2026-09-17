@@ -29,14 +29,14 @@ export function SpecialtiesGrid({ items, chosen, onChange }: { items: CategoryDe
             type="button"
             onClick={() => toggle(c.id)}
             aria-pressed={on}
-            className={`relative flex min-h-[5.5rem] flex-col items-start gap-2 rounded-[var(--radius-card)] border p-3.5 text-left transition-colors ${on ? 'border-ink bg-ink text-white' : 'border-line bg-surface'}`}
+            className={`relative flex min-h-[5.5rem] flex-col items-start gap-2 rounded-[var(--radius-card)] border p-3.5 text-start transition-colors ${on ? 'border-ink bg-ink text-white' : 'border-line bg-surface'}`}
           >
             <span className={`flex h-9 w-9 items-center justify-center rounded-full ${on ? 'bg-white/15' : 'bg-fill'}`}>
               <I icon={Icon} size={18} />
             </span>
             <span className="text-[1rem] font-semibold leading-tight">{t(c.labelFr)}</span>
             {on && (
-              <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-ink">
+              <span className="absolute end-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-ink">
                 <I icon={Check} size={12} />
               </span>
             )}

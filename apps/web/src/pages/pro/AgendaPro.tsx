@@ -509,7 +509,7 @@ function DayColumns({
         {hourMarks.map((m) => (
           <span
             key={m}
-            className="mono absolute right-2 -translate-y-1/2 text-[0.857rem] text-subtle"
+            className="mono absolute end-2 -translate-y-1/2 text-[0.857rem] text-subtle"
             style={{ top: top(m) }}
           >
             {hm(m)}
@@ -519,12 +519,12 @@ function DayColumns({
       <div className="relative flex flex-1">
         <div className="pointer-events-none absolute inset-0">
           {hourMarks.map((m) => (
-            <div key={m} className="absolute left-0 right-0 border-t border-line" style={{ top: top(m) }} />
+            <div key={m} className="absolute start-0 end-0 border-t border-line" style={{ top: top(m) }} />
           ))}
           {halfMarks.map((m) => (
             <div
               key={m}
-              className="absolute left-0 right-0 border-t border-dashed border-line-soft"
+              className="absolute start-0 end-0 border-t border-dashed border-line-soft"
               style={{ top: top(m) }}
             />
           ))}
@@ -643,11 +643,11 @@ function DayColumns({
           // Ligne « maintenant » : dans la journée à sa place ; avant l'ouverture en haut, après la fermeture en bas.
           <div
             ref={nowRef}
-            className="pointer-events-none absolute -left-1.5 right-0 z-10 border-t-[1.5px] border-danger"
+            className="pointer-events-none absolute -start-1.5 end-0 z-10 border-t-[1.5px] border-danger"
             style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}
           >
-            <span className="absolute -left-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
-            <span className="mono absolute right-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
+            <span className="absolute -start-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
+            <span className="mono absolute end-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
               {minutesToTime(now)}
               {now > endMin ? ` · ${t('journée terminée')}` : now < startMin ? ` · ${t("avant l'ouverture")}` : ''}
             </span>
@@ -714,7 +714,7 @@ function WeekGrid({
           {hours.map((m) => (
             <span
               key={m}
-              className="absolute left-0 text-[0.857rem] text-subtle"
+              className="absolute start-0 text-[0.857rem] text-subtle"
               style={{ top: 56 + (m - startMin) * px - 8 }}
             >
               {String(Math.floor(m / 60)).padStart(2, '0')}
@@ -731,7 +731,7 @@ function WeekGrid({
               key={d}
               type="button"
               onClick={() => onSelect(d)}
-              className="flex min-w-0 flex-1 flex-col items-center gap-2 text-left"
+              className="flex min-w-0 flex-1 flex-col items-center gap-2 text-start"
             >
               <span className={`text-[1rem] ${closed ? 'text-disabled' : 'text-muted'}`}>
                 {t(DAY_LABELS_SHORT_FR[dow])}
@@ -759,8 +759,8 @@ function WeekGrid({
                         key={b.id}
                         className={
                           b.status === 'cancelled'
-                            ? 'absolute left-0.5 right-0.5 rounded-[var(--radius-card-sm)] border border-dashed border-line'
-                            : `absolute left-0.5 right-0.5 rounded-[var(--radius-card-sm)] border-l-[3px] ${TONE[toneOf(b)]}`
+                            ? 'absolute start-0.5 end-0.5 rounded-[var(--radius-card-sm)] border border-dashed border-line'
+                            : `absolute start-0.5 end-0.5 rounded-[var(--radius-card-sm)] border-s-[3px] ${TONE[toneOf(b)]}`
                         }
                         style={{ top: (s - startMin) * px, height: Math.max(10, (e - s) * px) }}
                       />
@@ -768,7 +768,7 @@ function WeekGrid({
                   })}
                 {on && d === today && nowMinutes() >= startMin && nowMinutes() <= endMin && (
                   <span
-                    className="absolute left-0 right-0 border-t border-danger"
+                    className="absolute start-0 end-0 border-t border-danger"
                     style={{ top: (nowMinutes() - startMin) * px }}
                   />
                 )}
@@ -895,7 +895,7 @@ function MonthGrid({
       <div className="crd !gap-0 !py-1">
         <button
           type="button"
-          className="li w-full text-left"
+          className="li w-full text-start"
           onClick={() => onOpenDay(selected)}
         >
           <span>
@@ -913,7 +913,7 @@ function MonthGrid({
           <button
             key={b.id}
             type="button"
-            className="li w-full !py-3 text-left"
+            className="li w-full !py-3 text-start"
             onClick={() => onOpen(b.id)}
           >
             <span className="flex items-center gap-3">

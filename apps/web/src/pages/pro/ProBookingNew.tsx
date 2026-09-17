@@ -72,7 +72,7 @@ function FormRow({
   return (
     <button
       type="button"
-      className="li w-full text-left"
+      className="li w-full text-start"
       onClick={onClick}
       aria-invalid={!!error || undefined}
     >
@@ -142,7 +142,7 @@ function ClientSheet({
               <button
                 key={c.clientKey}
                 type="button"
-                className="li w-full text-left"
+                className="li w-full text-start"
                 onClick={() => onPick(c.name, c.phone ?? '')}
               >
                 <span className="flex min-w-0 items-center gap-3">
@@ -231,7 +231,7 @@ function ServicesSheet({
               <button
                 key={s.id}
                 type="button"
-                className="li w-full text-left"
+                className="li w-full text-start"
                 aria-pressed={on}
                 onClick={() =>
                   setIds((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))
@@ -384,7 +384,7 @@ export function ProBookingNew() {
               {minutes ? `→ ${endTime}` : ''}
             </span>
           </span>
-          <span className="text-right text-[1rem] font-semibold">
+          <span className="text-end text-[1rem] font-semibold">
             {relativeDayLabelDZ(date)}
             {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
             {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(date)) && (
@@ -409,7 +409,7 @@ export function ProBookingNew() {
               type="time"
               step={300}
               min={date === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
-              className="bg-transparent text-right outline-none"
+              className="bg-transparent text-end outline-none"
               value={time}
               onChange={(e) => setTime(e.target.value)}
               aria-label={t("Heure")}
@@ -448,7 +448,7 @@ export function ProBookingNew() {
                 type="button"
                 role="radio"
                 aria-checked={m.id === sid}
-                className={`pill !gap-2 !py-1.5 !pl-1.5 !pr-3.5 !text-[1rem] font-semibold ${m.id === sid ? 'on' : 'soft'}`}
+                className={`pill !gap-2 !py-1.5 !ps-1.5 !pe-3.5 !text-[1rem] font-semibold ${m.id === sid ? 'on' : 'soft'}`}
                 onClick={() => setStaffId(m.id)}
               >
                 <Avatar src={m.avatarUrl} name={m.displayName} size={24} /> {m.displayName}

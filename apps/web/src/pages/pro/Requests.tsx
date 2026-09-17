@@ -75,7 +75,7 @@ export function Requests() {
         <div key={b.id} className="crd !gap-2.5">
           <button
             type="button"
-            className="flex items-center gap-3 text-left"
+            className="flex items-center gap-3 text-start"
             onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
           >
             <Avatar name={b.clientName} size={40} />
@@ -86,7 +86,7 @@ export function Requests() {
                 {b.staff ? ` · ${b.staff.displayName}` : ''}
               </span>
             </span>
-            <span className="flex-none text-right">
+            <span className="flex-none text-end">
               <span className="block text-[1rem] font-semibold">{formatTimeDZ(b.startsAt)}</span>
               <span className="block text-[0.857rem] text-muted">
                 {formatDateShortDZ(b.startsAt)}
@@ -133,7 +133,7 @@ export function Requests() {
               <button
                 key={b.id}
                 type="button"
-                className="li w-full text-left"
+                className="li w-full text-start"
                 onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
               >
                 <span className="flex min-w-0 items-center gap-4">

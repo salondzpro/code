@@ -310,7 +310,7 @@ export function MapView() {
 
       {/* Recherche et outils : les mêmes trois touches que la liste, la deuxième ramenant
           à la liste. Le tri est absent : sur une carte, il n'y a pas de premier résultat. */}
-      <div className="pointer-events-none absolute left-0 right-0 top-0 z-[400] flex flex-col gap-2 px-5 pt-3">
+      <div className="pointer-events-none absolute start-0 end-0 top-0 z-[400] flex flex-col gap-2 px-5 pt-3">
         <SearchField
           shadow
           className="pointer-events-auto"
@@ -346,7 +346,7 @@ export function MapView() {
 
       <button
         type="button"
-        className="ib lg absolute bottom-[15.5rem] right-5 z-[400] !shadow-card"
+        className="ib lg absolute bottom-[15.5rem] end-5 z-[400] !shadow-card"
         aria-label={t("Ma position")}
         onClick={locate}
         disabled={locating}

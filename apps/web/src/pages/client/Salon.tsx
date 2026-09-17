@@ -75,16 +75,16 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
   const hm = `${String(local.getHours()).padStart(2, '0')}:${String(local.getMinutes()).padStart(2, '0')}`;
   const today = s.openingHours.filter((h) => h.dayOfWeek === dow && !h.isClosed);
   const current = today.find((h) => h.opensAt <= hm && hm < h.closesAt);
-  if (current) return { open: true, label: `Ouvert · ferme à ${current.closesAt}` };
+  if (current) return { open: true, label: t('Ouvert · ferme à {time}', { time: current.closesAt }) };
   const later = today.find((h) => h.opensAt > hm);
-  if (later) return { open: false, label: `Fermé · ouvre à ${later.opensAt}` };
+  if (later) return { open: false, label: t('Fermé · ouvre à {time}', { time: later.opensAt }) };
   for (let i = 1; i <= 7; i++) {
     const d = (dow + i) % 7;
     const h = s.openingHours.find((x) => x.dayOfWeek === d && !x.isClosed);
     if (h)
       return {
         open: false,
-        label: `Fermé · ouvre ${i === 1 ? 'demain' : t(DAY_LABELS_FR[d as 0]).toLowerCase()} ${h.opensAt}`,
+        label: i === 1 ? t('Fermé · ouvre demain {time}', { time: h.opensAt }) : t('Fermé · ouvre {day} {time}', { day: t(DAY_LABELS_FR[d as 0]).toLowerCase(), time: h.opensAt }),
       };
   }
   return { open: false, label: t("Fermé") };
@@ -162,7 +162,7 @@ export function Salon() {
       />
       {/* Album : couverture, photos du salon et réalisations réunies. */}
       <SalonGallery images={gallery} alt={`Photos de ${s.name}`}>
-        <div className="absolute left-4 right-4 top-4 z-10 flex items-center justify-between">
+        <div className="absolute start-4 end-4 top-4 z-10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <IconButton lg aria-label={t("Retour")} onClick={back}>
               <I icon={ChevronLeft} />
@@ -216,7 +216,7 @@ export function Salon() {
               className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
             >
               <I icon={MapPin} size={16} className="flex-none text-muted" />
-              <span className="min-w-0 truncate">{s.address ? `${s.address}, ${place}` : place}</span>
+              <span className="min-w-0 truncate" dir="auto">{s.address ? `${s.address}, ${place}` : place}</span>
             </a>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[1rem]">
               <button
@@ -244,7 +244,7 @@ export function Salon() {
                   <span className="text-disabled" aria-hidden>
                     ·
                   </span>
-                  <span className="text-muted">{priceRange}</span>
+                  <span className="text-muted" dir="ltr">{priceRange}</span>
                 </>
               )}
               <span className="text-disabled" aria-hidden>
@@ -324,7 +324,7 @@ export function Salon() {
               <Accordion
                 key={g.name}
                 title={g.name}
-                hint={`${g.services.length} prestation${g.services.length > 1 ? 's' : ''}`}
+                hint={t('{n} prestation(s)', { n: g.services.length })}
                 open={!closedGroups.has(g.name)}
                 onToggle={() =>
                   setClosedGroups((cur) => {
@@ -354,10 +354,13 @@ export function Salon() {
                           </span>
                         )}
                         <span className="mt-1 block text-[1rem] font-semibold">
-                          {formatDA(sv.priceDa)}
-                          <span className="font-normal text-muted">
-                            {' '}
-                            · {formatDuration(sv.durationMinutes)}
+                          {/* Prix et durée se lisent de gauche à droite, même en arabe. */}
+                          <span dir="ltr">
+                            {formatDA(sv.priceDa)}
+                            <span className="font-normal text-muted">
+                              {' '}
+                              · {formatDuration(sv.durationMinutes)}
+                            </span>
                           </span>
                         </span>
                       </div>
@@ -471,7 +474,7 @@ export function Salon() {
                     <span className={`text-[1rem] ${idx === 0 ? 'font-bold' : ''}`}>
                       {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : t(DAY_LABELS_FR[d])}
                       {idx <= 1 && (
-                        <span className="ml-1.5 text-[1rem] font-normal text-muted">
+                        <span className="ms-1.5 text-[1rem] font-normal text-muted">
                           {t(DAY_LABELS_FR[d])}
                         </span>
                       )}

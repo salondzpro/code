@@ -240,7 +240,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
         </div>
         {photos.length > 1 && (
           <div
-            className="pointer-events-none absolute bottom-2 left-0 right-0 flex justify-center gap-1.5"
+            className="pointer-events-none absolute bottom-2 start-0 end-0 flex justify-center gap-1.5"
             aria-hidden
           >
             {photos.map((u, i) => (
@@ -252,7 +252,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
           </div>
         )}
         <IconButton
-          className="absolute right-2.5 top-2.5 !bg-surface/95 shadow-sm"
+          className="absolute end-2.5 top-2.5 !bg-surface/95 shadow-sm"
           aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           aria-pressed={isFav}
           disabled={toggle.isPending}
@@ -285,7 +285,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
               {km ? ` (${km})` : ''}
             </span>
           </span>
-          {cats && <span className="min-w-0 flex-none truncate text-right">{cats}</span>}
+          {cats && <span className="min-w-0 flex-none truncate text-end">{cats}</span>}
         </div>
         <div className="mt-1">
           <NextSlots

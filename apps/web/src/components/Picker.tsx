@@ -62,7 +62,7 @@ export function PickerSheet<T extends string | number>({
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  className="li w-full text-left !border-b !border-line-soft last:!border-b-0"
+                  className="li w-full text-start !border-b !border-line-soft last:!border-b-0"
                   onClick={() => {
                     onChange(o.value);
                     onClose();
@@ -137,8 +137,8 @@ export function PickerField<T extends string | number>({
         }}
         className={
           inline
-            ? `flex max-w-[60%] items-center gap-1 text-right text-[1rem] ${current ? '' : 'text-subtle'} ${className}`
-            : `inp lg flex items-center justify-between gap-3 text-left ${current ? '' : 'text-subtle'} ${className}`
+            ? `flex max-w-[60%] items-center gap-1 text-end text-[1rem] ${current ? '' : 'text-subtle'} ${className}`
+            : `inp lg flex items-center justify-between gap-3 text-start ${current ? '' : 'text-subtle'} ${className}`
         }
       >
         <span className="truncate">{current?.label ?? display ?? placeholder}</span>

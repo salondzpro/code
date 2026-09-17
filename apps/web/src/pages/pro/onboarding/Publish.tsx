@@ -51,7 +51,7 @@ export function Publish() {
       </StepTitle>
       <div className="crd !gap-0 !py-1">
         {items.map((it) => (
-          <button key={it.label} type="button" className="li w-full text-left" onClick={() => navigate(it.to)}>
+          <button key={it.label} type="button" className="li w-full text-start" onClick={() => navigate(it.to)}>
             <span>
               <span className="block text-[1rem] font-semibold">{it.label}</span>
               {!it.ok && it.hint && <span className="p block text-[0.857rem]">{it.hint}</span>}

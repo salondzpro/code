@@ -127,7 +127,7 @@ export function AccountNotifications() {
                 <button
                   key={n.id}
                   type="button"
-                  className="li w-full text-left"
+                  className="li w-full text-start"
                   onClick={() => open(n)}
                   disabled={!n.bookingId && !(n.type === 'slot_freed' && typeof n.data?.url === 'string')}
                 >
@@ -135,7 +135,7 @@ export function AccountNotifications() {
                     <span className={`relative flex h-11 w-11 flex-none items-center justify-center rounded-full ${k.tone}`}>
                       <I icon={k.icon} size={20} />
                       {fresh && (
-                        <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-danger" aria-label={t("Non lue")} />
+                        <span className="absolute -end-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-danger" aria-label={t("Non lue")} />
                       )}
                     </span>
                     <span className="min-w-0 flex-1">

@@ -33,12 +33,12 @@ export function ProWelcome() {
       <div className="relative h-[15rem] flex-none overflow-hidden">
         <img src={DESIGN_IMAGES.pro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />
-        <div className="absolute left-5 top-4">
+        <div className="absolute start-5 top-4">
           <IconButton lg aria-label={t("Retour")} onClick={back}>
             <I icon={ChevronLeft} />
           </IconButton>
         </div>
-        <span className="absolute right-3 top-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.pro.credit}</span>
+        <span className="absolute end-3 top-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.pro.credit}</span>
         <div className="ovl-t">
           <div className="h3 mb-2 !text-white/70">{t("Espace professionnel")}</div>
           <div className="text-[1.714rem] font-bold leading-[1.1] tracking-[-0.8px]">

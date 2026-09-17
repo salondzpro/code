@@ -36,7 +36,7 @@ export function MiniMap({ lat, lng, radiusKm, label, className = '' }: { lat: nu
     <div className={`relative overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill ${className}`}>
       <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}.leaflet-container{background:#eaecee}`}</style>
       <div ref={el} className="absolute inset-0" aria-label={t("Carte de la zone")} />
-      {label && <span className="pointer-events-none absolute bottom-3 left-4 z-[400] rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>}
+      {label && <span className="pointer-events-none absolute bottom-3 start-4 z-[400] rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>}
     </div>
   );
 }

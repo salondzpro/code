@@ -44,11 +44,11 @@ export function SalonGallery({
         <>
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-black/45 to-transparent"
+            className="pointer-events-none absolute inset-y-0 start-0 w-1/5 bg-gradient-to-r from-black/45 to-transparent"
           />
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 w-1/5 bg-gradient-to-l from-black/45 to-transparent"
+            className="pointer-events-none absolute inset-y-0 end-0 w-1/5 bg-gradient-to-l from-black/45 to-transparent"
           />
         </>
       )}
@@ -61,7 +61,7 @@ export function SalonGallery({
             type="button"
             aria-label={t("Photo précédente")}
             onClick={() => go(-1)}
-            className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+            className="absolute start-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
           >
             <I icon={ChevronLeft} size={20} className="text-current" />
           </button>
@@ -69,11 +69,11 @@ export function SalonGallery({
             type="button"
             aria-label={t("Photo suivante")}
             onClick={() => go(1)}
-            className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+            className="absolute end-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
           >
             <I icon={ChevronRight} size={20} className="text-current" />
           </button>
-          <span className="absolute bottom-2 right-3 rounded-full bg-black/45 px-2 py-0.5 text-[0.857rem] font-semibold text-white">
+          <span className="absolute bottom-2 end-3 rounded-full bg-black/45 px-2 py-0.5 text-[0.857rem] font-semibold text-white">
             {i + 1}/{count}
           </span>
         </>

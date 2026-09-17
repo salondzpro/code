@@ -119,7 +119,7 @@ export function ProAccount() {
       <div className="crd !gap-0 !py-1">
         <button
           type="button"
-          className="li w-full text-left"
+          className="li w-full text-start"
           onClick={async () => {
             await signOut();
             navigate('/intro', { replace: true });

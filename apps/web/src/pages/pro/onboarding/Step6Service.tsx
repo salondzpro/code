@@ -89,14 +89,14 @@ export function Step6Service() {
         <div className="g2">
           <Field label={t("Prix")} htmlFor="svc-price">
             <div className="relative">
-              <Input id="svc-price" lg inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} placeholder="2 500" className="!pr-12" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">DA</span>
+              <Input id="svc-price" lg inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} placeholder="2 500" className="!pe-12" />
+              <span className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-[0.857rem]">DA</span>
             </div>
           </Field>
           <Field label={t("Durée (minutes)")} htmlFor="svc-duration" hint={formatDuration(duration)}>
             <div className="relative">
-              <Input id="svc-duration" lg inputMode="numeric" value={String(duration || '')} onChange={(e) => setDuration(Math.min(480, Number(e.target.value.replace(/\D/g, '')) || 0))} placeholder="45" className="!pr-14" />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[0.857rem]">{t("min")}</span>
+              <Input id="svc-duration" lg inputMode="numeric" value={String(duration || '')} onChange={(e) => setDuration(Math.min(480, Number(e.target.value.replace(/\D/g, '')) || 0))} placeholder="45" className="!pe-14" />
+              <span className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-[0.857rem]">{t("min")}</span>
             </div>
           </Field>
         </div>

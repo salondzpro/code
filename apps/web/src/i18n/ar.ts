@@ -903,4 +903,11 @@ export const ar: Record<string, string> = {
   'Compris': 'فهمت',
   'Prévisionnel : {n} rendez-vous confirmés à venir': 'متوقع: {n} موعد مؤكد قادم',
   'Réalisé : rendez-vous terminés': 'محقق: مواعيد منتهية',
+  'Arrêt/Pause': 'توقف/استراحة',
+  'Rouvrir (fermé jusqu\'à {time})': 'إعادة الفتح (مغلق حتى {time})',
+  'Ouvert · ferme à {time}': 'مفتوح · يغلق على {time}',
+  'Fermé · ouvre à {time}': 'مغلق · يفتح على {time}',
+  'Fermé · ouvre demain {time}': 'مغلق · يفتح غدًا {time}',
+  'Fermé · ouvre {day} {time}': 'مغلق · يفتح {day} {time}',
+  'Où se situe le salon ?': 'أين يقع الصالون؟',
 };

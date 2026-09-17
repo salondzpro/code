@@ -178,7 +178,7 @@ export function BookingReview() {
         <span className="flex items-center gap-2 text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
           <I icon={CalendarCheck} size={16} /> {t("Bon à savoir")}
         </span>
-        <ul className="ml-1 flex list-disc flex-col gap-1.5 pl-4 text-[1rem]">
+        <ul className="ms-1 flex list-disc flex-col gap-1.5 ps-4 text-[1rem]">
           <li>
             {t("Arrivez à")}{' '}<b>{late.arriveAt}</b> ({ARRIVAL_ADVANCE_MINUTES} {t("min avant). Retard toléré jusqu'à")}{' '}<b>{late.lateUntil}</b> ({LATE_TOLERANCE_MINUTES} {t("min).")}
           </li>

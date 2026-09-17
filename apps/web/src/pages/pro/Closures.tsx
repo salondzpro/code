@@ -185,7 +185,7 @@ export function Closures() {
             <button
               key={b.id}
               type="button"
-              className="li w-full text-left"
+              className="li w-full text-start"
               onClick={() => setDel(b)}
             >
               <span className="min-w-0">
@@ -287,7 +287,7 @@ export function Closures() {
           <label className="li !border-b-0 !py-3">
             <span className="text-[1rem] font-semibold">{t("Motif")}</span>
             <input
-              className="max-w-[55%] bg-transparent text-right text-[1rem] outline-none placeholder:text-subtle"
+              className="max-w-[55%] bg-transparent text-end text-[1rem] outline-none placeholder:text-subtle"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={t("Congés")}

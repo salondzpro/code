@@ -50,7 +50,9 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       if (isBlocked)
         message = "Ce salon n'accepte pas vos réservations en ligne. Contactez-le directement.";
       else if (standing.suspendedUntil) {
-        const when = new Intl.DateTimeFormat('fr-DZ', {
+        // `hourCycle` explicite : selon l'ICU, fr-DZ affiche « 04:31 PM » — on veut « 16:31 ».
+        const when = new Intl.DateTimeFormat('fr-FR', {
+          hourCycle: 'h23',
           day: '2-digit',
           month: '2-digit',
           hour: '2-digit',

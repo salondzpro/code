@@ -35,7 +35,7 @@ export function ErrorMessage({ error, retry, className = '' }: { error: unknown;
     <div role="alert" className={`rounded-[var(--radius-card)] border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger ${className}`}>
       <p className="font-medium">{errorText(error)}</p>
       {details.length > 0 && (
-        <ul className="mt-1 list-disc pl-5 text-text/80">
+        <ul className="mt-1 list-disc ps-5 text-text/80">
           {details.map((d, i) => (
             <li key={i}>{d}</li>
           ))}

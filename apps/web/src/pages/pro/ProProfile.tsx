@@ -112,7 +112,7 @@ export function ProProfile() {
             disabled={busy !== null}
           >
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
-            <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+            <span className="absolute -bottom-0.5 -end-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
               <I icon={Camera} size={16} />
             </span>
           </button>
@@ -138,7 +138,7 @@ export function ProProfile() {
               <I icon={Camera} size={28} />
             </span>
           )}
-          <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.857rem] font-semibold shadow-sm">
+          <span className="absolute bottom-2.5 end-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.857rem] font-semibold shadow-sm">
             <I icon={Camera} size={16} /> {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
           </span>
         </button>

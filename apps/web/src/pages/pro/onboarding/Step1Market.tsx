@@ -71,12 +71,12 @@ export function Step1Market() {
               setMarket(c.id);
             }}
             aria-pressed={on}
-            className={`relative h-[9.5rem] w-full overflow-hidden rounded-[var(--radius-card)] text-left transition-[box-shadow,opacity] ${on ? 'ring-2 ring-ink ring-offset-2 ring-offset-bg' : market ? 'opacity-70' : ''}`}
+            className={`relative h-[9.5rem] w-full overflow-hidden rounded-[var(--radius-card)] text-start transition-[box-shadow,opacity] ${on ? 'ring-2 ring-ink ring-offset-2 ring-offset-bg' : market ? 'opacity-70' : ''}`}
           >
             <img src={c.img} alt="" className="h-full w-full object-cover" />
             <div className="ovl" />
             <span
-              className={`absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 ${on ? 'border-white bg-white text-ink' : 'border-white/70 text-transparent'}`}
+              className={`absolute end-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 ${on ? 'border-white bg-white text-ink' : 'border-white/70 text-transparent'}`}
               aria-hidden
             >
               <I icon={Check} size={18} />

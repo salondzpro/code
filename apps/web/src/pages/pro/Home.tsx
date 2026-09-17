@@ -131,7 +131,7 @@ export function ProHome() {
           <div key={b.id} className="crd !gap-2.5">
             <button
               type="button"
-              className="flex items-center gap-3 text-left"
+              className="flex items-center gap-3 text-start"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
             >
               <Avatar name={b.clientName} size={40} />
@@ -184,7 +184,7 @@ export function ProHome() {
           <p className="p">
             {passed
               ? t('Journée terminée · {n} rendez-vous passé(s) aujourd’hui.', { n: passed })
-              : 'Aucun rendez-vous aujourd’hui.'}
+              : t('Aucun rendez-vous aujourd’hui.')}
           </p>
         </div>
       )}
@@ -203,13 +203,13 @@ export function ProHome() {
           </div>
           <button
             type="button"
-            className="flex items-end justify-between gap-3 text-left"
+            className="flex items-end justify-between gap-3 text-start"
             onClick={() => navigate(`/pro/rendez-vous/${next.id}`)}
             aria-label={`Ouvrir le rendez-vous de ${next.clientName}`}
           >
             <span className="mono text-[2.286rem] font-bold leading-none tracking-[-1px]">
               {formatTimeDZ(next.startsAt)}
-              <span className="ml-1 text-[1rem] font-medium tracking-normal text-muted">
+              <span className="ms-1 text-[1rem] font-medium tracking-normal text-muted">
                 → {formatTimeDZ(next.endsAt)}
               </span>
             </span>
@@ -220,7 +220,7 @@ export function ProHome() {
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
-              className="min-w-0 flex-1 text-left"
+              className="min-w-0 flex-1 text-start"
               onClick={() => navigate(`/pro/rendez-vous/${next.id}`)}
             >
               <span className="block truncate text-[1.429rem] font-bold tracking-[-0.4px]">
@@ -260,7 +260,7 @@ export function ProHome() {
             <button
               key={b.id}
               type="button"
-              className="li w-full text-left"
+              className="li w-full text-start"
               onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
             >
               <span className="flex min-w-0 items-center gap-4">
@@ -307,7 +307,7 @@ export function ProHome() {
             { v: stats.data?.weekRevenueDa ?? 0, l: t('cette semaine') },
             { v: stats.data?.monthRevenueDa ?? 0, l: t('ce mois') },
           ].map((x, i) => (
-            <span key={x.l} className={`flex flex-col ${i ? 'pl-4' : ''}`}>
+            <span key={x.l} className={`flex flex-col ${i ? 'ps-4' : ''}`}>
               <span className="whitespace-nowrap text-[1.143rem] font-bold tracking-[-0.4px]">
                 {x.v.toLocaleString(formatLocale()).replace(/ /g, ' ')}{' '}
                 <span className="text-[1rem] font-semibold text-muted">DA</span>

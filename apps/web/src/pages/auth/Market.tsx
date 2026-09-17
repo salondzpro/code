@@ -38,7 +38,7 @@ export function Market() {
           type="button"
           onClick={() => void choose(c.id)}
           disabled={update.isPending}
-          className="relative h-[12rem] w-full overflow-hidden rounded-[var(--radius-card)] text-left"
+          className="relative h-[12rem] w-full overflow-hidden rounded-[var(--radius-card)] text-start"
           aria-label={t(MARKET_LABELS_FR[c.id])}
         >
           <img src={c.img.src} alt="" className="h-full w-full object-cover" />
@@ -52,7 +52,7 @@ export function Market() {
                 .join(' · ')}
             </div>
           </div>
-          <span className="absolute bottom-2 left-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{c.img.credit}</span>
+          <span className="absolute bottom-2 start-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{c.img.credit}</span>
         </button>
       ))}
       <p className="p text-center">{t("Modifiable à tout moment depuis le profil.")}</p>

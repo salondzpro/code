@@ -6,7 +6,7 @@ export function Splash() {
       <div className="text-center">
         <div className="text-[2.286rem] leading-none tracking-[-1.2px]">
           <span className="font-semibold">{t("Salon")}</span>
-          <span className="ml-[0.16em] font-light text-white/70">{t("DZ")}</span>
+          <span className="ms-[0.16em] font-light text-white/70">{t("DZ")}</span>
         </div>
         <div className="mono mt-2.5 text-[0.857rem] tracking-[0.26em] text-white/40">{t("RÉSERVATION EN LIGNE")}</div>
       </div>

@@ -110,8 +110,8 @@ export function ProHeader() {
         <div className="flex items-center justify-between">
           <span className="text-[1.143rem] leading-none tracking-[-0.4px]">
             <span className="font-semibold">Salon</span>
-            <span className="ml-[0.16em] font-light text-muted">DZ</span>
-            <span className="ml-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
+            <span className="ms-[0.16em] font-light text-muted">DZ</span>
+            <span className="ms-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
               {t("Pro")}
             </span>
           </span>
@@ -219,7 +219,7 @@ export function ProHeader() {
         </Link>
         <Link
           to="/pro/rendez-vous/nouveau"
-          className="mr-2 flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] bg-ink text-white"
+          className="me-2 flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] bg-ink text-white"
           aria-label={t("Nouveau rendez-vous")}
           title={t("Nouveau rendez-vous")}
         >

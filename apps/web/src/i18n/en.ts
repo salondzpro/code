@@ -922,4 +922,11 @@ export const en: Record<string, string> = {
   'Compris': 'Got it',
   'Prévisionnel : {n} rendez-vous confirmés à venir': 'Forecast: {n} confirmed upcoming appointments',
   'Réalisé : rendez-vous terminés': 'Actual: completed appointments',
+  'Arrêt/Pause': 'Close/Break',
+  'Rouvrir (fermé jusqu\'à {time})': 'Reopen (closed until {time})',
+  'Ouvert · ferme à {time}': 'Open · closes at {time}',
+  'Fermé · ouvre à {time}': 'Closed · opens at {time}',
+  'Fermé · ouvre demain {time}': 'Closed · opens tomorrow {time}',
+  'Fermé · ouvre {day} {time}': 'Closed · opens {day} {time}',
+  'Où se situe le salon ?': 'Where is the salon?',
 };

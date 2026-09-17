@@ -73,7 +73,7 @@ Lot du 17 septembre (commits 23aa8d2 et 9a4d1a5) :
 
 ### Souhaitable
 16. Multi-prestations à la saisie pro, jours fériés, horaires de nuit, grille alignée sur l'horloge, export CSV.
-17. Accessibilité : cibles 44 px et contraste des textes discrets faits le 17 sept. ; Échap ferme toute feuille modale (`Dim`, 17 sept.) ; reste le RTL en propriétés logiques.
+17. Accessibilité : cibles 44 px et contraste des textes discrets faits le 17 sept. ; Échap ferme toute feuille modale (`Dim`, 17 sept.) ; RTL en propriétés logiques (codemod du 17 sept. : `ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`, 147 remplacements ; prix, durées et adresses en `dir="ltr"`/`auto`).
 18. Vignettes d'images (transformations Supabase, plan Pro). `sitemap.xml` servi par l'API (fait le 17 sept.).
 19. Modération des avis, réponse du professionnel, rôle administrateur.
 

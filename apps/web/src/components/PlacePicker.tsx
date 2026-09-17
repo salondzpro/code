@@ -103,14 +103,14 @@ export function PlacePicker({
       <span className="pointer-events-none absolute left-1/2 top-1/2 z-[400] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-2 ring-white" />
       <button
         type="button"
-        className="absolute bottom-3 right-3 z-[400] flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-surface px-3 py-2 text-[0.857rem] font-semibold shadow-card"
+        className="absolute bottom-3 end-3 z-[400] flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-surface px-3 py-2 text-[0.857rem] font-semibold shadow-card"
         onClick={locate}
         disabled={geo === 'asking'}
       >
         <I icon={LocateFixed} size={16} /> {geo === 'asking' ? t('Recherche…') : t('Ma position')}
       </button>
       {(label || geo === 'denied') && (
-        <span className={`absolute bottom-3 left-3 z-[400] max-w-[60%] truncate rounded-full px-3 py-1.5 text-[0.857rem] font-semibold shadow-card ${geo === 'denied' ? 'bg-danger/10 text-danger' : 'bg-surface'}`}>
+        <span className={`absolute bottom-3 start-3 z-[400] max-w-[60%] truncate rounded-full px-3 py-1.5 text-[0.857rem] font-semibold shadow-card ${geo === 'denied' ? 'bg-danger/10 text-danger' : 'bg-surface'}`}>
           {geo === 'denied' ? t('Localisation refusée') : label}
         </span>
       )}

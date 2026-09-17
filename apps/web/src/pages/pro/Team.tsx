@@ -92,7 +92,7 @@ export function Team() {
           <li key={m.id}>
             <button
               type="button"
-              className="li w-full text-left"
+              className="li w-full text-start"
               onClick={() => navigate(`/pro/equipe/${m.id}`)}
             >
               <span className="flex min-w-0 items-center gap-3.5">
@@ -112,7 +112,7 @@ export function Team() {
       </ul>
       <button
         type="button"
-        className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-left"
+        className="crd !flex-row !items-center !gap-3.5 !py-3.5 text-start"
         onClick={() => navigate('/pro/blocages')}
       >
         <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">

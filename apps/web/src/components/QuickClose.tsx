@@ -92,15 +92,15 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
         sm
         variant="g"
         aria-label={
-          active ? `Rouvrir (fermé jusqu'à ${formatTimeDZ(active.endsAt)})` : 'Arrêt/Pause'
+          active ? t("Rouvrir (fermé jusqu'à {time})", { time: formatTimeDZ(active.endsAt) }) : t('Arrêt/Pause')
         }
-        title={active ? 'Rouvrir maintenant' : 'Arrêt/Pause'}
+        title={active ? t('Rouvrir maintenant') : t('Arrêt/Pause')}
         className={`!rounded-full !px-3.5 !py-2.5 !text-[1rem] ${active ? '!border-danger !bg-danger !text-white' : ''}`}
         disabled={create.isPending || remove.isPending}
         onClick={() => (active ? void reopen() : setChoosing(true))}
         data-testid="quick-close"
       >
-        <I icon={active ? DoorOpen : Siren} size={18} /> {active ? 'Rouvrir' : 'Arrêt/Pause'}
+        <I icon={active ? DoorOpen : Siren} size={18} /> {active ? t('Rouvrir') : t('Arrêt/Pause')}
       </Button>
       {error && <Toast>{error}</Toast>}
       <PickerSheet

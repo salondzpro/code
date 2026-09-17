@@ -45,7 +45,7 @@ export function Step3Identity() {
       <div className="crd overflow-hidden !p-0 !gap-0">
         <button
           type="button"
-          className="relative h-[11rem] w-full bg-fill text-left"
+          className="relative h-[11rem] w-full bg-fill text-start"
           onClick={() => coverInput.current?.click()}
           aria-label={t("Choisir la photo de couverture")}
         >
@@ -57,7 +57,7 @@ export function Step3Identity() {
               <span className="text-[0.857rem]">{t("Ajouter une photo de couverture")}</span>
             </span>
           )}
-          <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">
+          <span className="absolute bottom-3 end-3 flex items-center gap-1.5 rounded-[var(--radius-btn)] bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">
             <I icon={Camera} size={16} /> {coverUrl ? t('Changer') : t('Ajouter')}
           </span>
         </button>
@@ -73,7 +73,7 @@ export function Step3Identity() {
             >
               {logoUrl ? <img src={logoUrl} alt="" /> : <I icon={UserCircle2} size={30} className="text-subtle" />}
             </button>
-            <span className="pointer-events-none absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+            <span className="pointer-events-none absolute bottom-0 end-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
               <I icon={Camera} size={12} />
             </span>
           </span>

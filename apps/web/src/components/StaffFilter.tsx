@@ -13,7 +13,7 @@ export function StaffFilter({ staff, value, onChange }: { staff: Staff[]; value:
         {t("Toute l'équipe")}
       </Pill>
       {members.map((m) => (
-        <Pill key={m.id} lg on={current === m.id} onClick={() => onChange(current === m.id ? null : m.id)} className="!gap-2 !pl-1.5">
+        <Pill key={m.id} lg on={current === m.id} onClick={() => onChange(current === m.id ? null : m.id)} className="!gap-2 !ps-1.5">
           <Avatar src={m.avatarUrl} name={m.displayName} size={22} /> {m.displayName}
         </Pill>
       ))}

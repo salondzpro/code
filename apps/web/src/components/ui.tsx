@@ -472,7 +472,7 @@ export function Accordion({
         type="button"
         aria-expanded={open}
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
+        className="flex w-full items-center justify-between gap-3 py-3.5 text-start"
       >
         <span className="min-w-0">
           <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">{title}</span>
@@ -521,7 +521,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
         >
           {o.icon && (
-            <I icon={o.icon} size={16} className="mr-1.5 inline-block align-[-0.1875rem]" />
+            <I icon={o.icon} size={16} className="me-1.5 inline-block align-[-0.1875rem]" />
           )}
           {o.label}
         </button>
@@ -550,7 +550,7 @@ export function Card({
     'crd',
     sm ? 'sm' : '',
     sel ? 'sel' : '',
-    onClick ? 'cursor-pointer text-left' : '',
+    onClick ? 'cursor-pointer text-start' : '',
     className,
   ]
     .filter(Boolean)
@@ -610,7 +610,7 @@ export function ListRow({
     );
   if (onClick)
     return (
-      <button type="button" onClick={onClick} className="li w-full text-left">
+      <button type="button" onClick={onClick} className="li w-full text-start">
         {inner}
       </button>
     );

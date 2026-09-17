@@ -18,7 +18,7 @@ function Doc({ title, children }: { title: string; children: ReactNode }) {
       <TopBar backTo="/" />
       <h1 className="h1">{title}</h1>
       <p className="p -mt-2 text-[0.857rem]">Dernière mise à jour : {UPDATED}</p>
-      <div className="flex flex-col gap-5 text-[1rem] leading-[1.55] [&_h2]:mt-2 [&_h2]:text-[1.143rem] [&_h2]:font-semibold [&_p]:text-ink [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1">{children}</div>
+      <div className="flex flex-col gap-5 text-[1rem] leading-[1.55] [&_h2]:mt-2 [&_h2]:text-[1.143rem] [&_h2]:font-semibold [&_p]:text-ink [&_ul]:list-disc [&_ul]:ps-5 [&_li]:mb-1">{children}</div>
       <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.857rem] text-muted">
         <Link to="/cgu">CGU</Link>
         <Link to="/confidentialite">Confidentialité</Link>
