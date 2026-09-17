@@ -877,4 +877,9 @@ export const ar: Record<string, string> = {
   'M\'alerter si un créneau se libère': 'نبّهني إذا تحرّر موعد',
   'Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).': 'أمام الصالون حتى {when} للتأكيد. بدون رد، ينتهي الطلب ونخبرك بذلك.',
   'Demandes et annulations, même application fermée': 'الطلبات والإلغاءات، حتى والتطبيق مغلق',
+  '{n} j': '{n} يوم',
+  'Accéder à mon espace pro': 'الدخول إلى فضائي المهني',
+  'Voir et partager mon lien': 'عرض رابطي ومشاركته',
+  'Jusqu\'à combien de jours à l\'avance vos clients réservent, et ce qu\'ils peuvent annuler ou déplacer.': 'قبل كم يومًا يمكن لزبائنك الحجز، وما يمكنهم إلغاؤه أو تغييره.',
+  'Le temps entre deux rendez-vous et jusqu\'à quand on peut réserver avant l\'heure.': 'الفاصل بين موعدين، وإلى متى يمكن الحجز قبل الموعد.',
 };

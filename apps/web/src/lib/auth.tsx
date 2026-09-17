@@ -13,12 +13,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, queryKeys } from '@salondz/api-client';
 import { isTestPhone, type UserRole } from '@salondz/constants';
 import { api } from './api';
+import { env } from './env';
 import { supabase } from './supabase';
 import { t } from '@/i18n';
 
 /** Page qui reçoit les liens envoyés par e-mail (confirmation, connexion, mot de passe). */
 export function authRedirectUrl(path: string, next?: string): string {
-  const url = new URL(path, window.location.origin);
+  // Les liens e-mail reviennent sur le domaine officiel (en dev : l'origine locale).
+  const url = new URL(path, env.siteUrl);
   if (next) url.searchParams.set('next', next);
   return url.toString();
 }

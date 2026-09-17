@@ -19,6 +19,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { renderQrPoster } from '@/lib/qrPoster';
+import { env } from '@/lib/env';
 import {
   FacebookLogo,
   InstagramLogo,
@@ -42,11 +43,11 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
 
+/** Lien public d'un salon : TOUJOURS sur le domaine officiel (env.siteUrl), jamais sur l'adresse de navigation. */
 export function usePublicUrl(slug: string): { url: string; short: string } {
-  const origin = window.location.origin;
   return {
-    url: `${origin}/s/${slug}`,
-    short: `${window.location.host.replace(/^www\./, '')}/s/${slug}`,
+    url: `${env.siteUrl}/s/${slug}`,
+    short: `${env.siteUrl.replace(/^https?:\/\/(www\.)?/, '')}/s/${slug}`,
   };
 }
 

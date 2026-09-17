@@ -896,4 +896,9 @@ export const en: Record<string, string> = {
   'M\'alerter si un créneau se libère': 'Alert me if a slot frees up',
   'Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).': 'The salon has until {when} to confirm. Without an answer, the request expires and you are notified.',
   'Demandes et annulations, même application fermée': 'Requests and cancellations, even with the app closed',
+  '{n} j': '{n} d',
+  'Accéder à mon espace pro': 'Go to my pro space',
+  'Voir et partager mon lien': 'See and share my link',
+  'Jusqu\'à combien de jours à l\'avance vos clients réservent, et ce qu\'ils peuvent annuler ou déplacer.': 'How many days ahead clients can book, and what they can cancel or move.',
+  'Le temps entre deux rendez-vous et jusqu\'à quand on peut réserver avant l\'heure.': 'The gap between two appointments, and how late a client can still book.',
 };

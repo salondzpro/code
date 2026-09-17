@@ -8,6 +8,7 @@ import { Badge, Field, I, Input } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
+import { env } from '@/lib/env';
 
 export function Step2Name() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export function Step2Name() {
   const [name, setName] = useState(readProDraft().name ?? '');
   const [check, setCheck] = useState<{ slug: string; available: boolean } | null>(null);
   const [checking, setChecking] = useState(false);
-  const host = window.location.host.replace(/^www\./, '');
+  const host = env.siteUrl.replace(/^https?:\/\/(www\.)?/, '');
 
   useEffect(() => {
     const v = name.trim();

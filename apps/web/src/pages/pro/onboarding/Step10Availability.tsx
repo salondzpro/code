@@ -12,7 +12,7 @@ import { SectionLabel, Slot, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
 const GRANULARITY = [15, 30, 60];
@@ -26,7 +26,8 @@ const LEAD = [
   { v: 240, l: '4 h' },
   { v: 1440, l: '24 h' },
 ];
-const HORIZON = [7, 30, 60];
+/** Jusqu'à combien de jours à l'avance un client peut réserver : du barbier de quartier (2 j) au salon très demandé (60 j). */
+const HORIZON = [2, 4, 7, 14, 30, 60];
 const CANCEL = [1, 2, 4, 12, 24];
 
 export function Step10Availability({ settings }: { settings?: boolean }) {
@@ -85,14 +86,19 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   const slots = (
     <>
-      <SectionLabel>{t("Créneaux proposés toutes les")}</SectionLabel>
-      <div className="g3">
-        {GRANULARITY.map((g) => (
-          <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
-            {g} {t("min")}
-          </Slot>
-        ))}
-      </div>
+      {/* Granularité des créneaux : réglage d'expert, absent de l'inscription (Créneaux et règles seulement). */}
+      {settings && (
+        <>
+          <SectionLabel>{t("Créneaux proposés toutes les")}</SectionLabel>
+          <div className="g3">
+            {GRANULARITY.map((g) => (
+              <Slot key={g} on={interval === g} onClick={() => setIntervalMin(g)} className="!py-[1.625rem] !text-[1rem]">
+                {g} {t("min")}
+              </Slot>
+            ))}
+          </div>
+        </>
+      )}
       <SectionLabel>{t("Règles")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <label className="li">
@@ -128,8 +134,8 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
       <SectionLabel>{t("Réservable jusqu’à")}</SectionLabel>
       <div className="g3">
         {HORIZON.map((h) => (
-          <Slot key={h} on={horizon === h} onClick={() => setHorizon(h)} className="!py-[1.625rem] !text-[1rem]">
-            {h} {t("j")}
+          <Slot key={h} on={horizon === h} onClick={() => setHorizon(h)} className="!py-[1.25rem] !text-[1rem]">
+            {t('{n} j', { n: h })}
           </Slot>
         ))}
       </div>
@@ -169,7 +175,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     return (
       <Screen bottom={SHEET_PAD} gap={16}>
         <StepBar step={10} backTo={backTo} right={t("Disponibilités")} />
-        <h1 className="h1">{t("Vos créneaux")}</h1>
+        <StepTitle sub={t("Le temps entre deux rendez-vous et jusqu'à quand on peut réserver avant l'heure.")}>{t("Vos créneaux")}</StepTitle>
         {slots}
         <StepSheet onClick={() => setPhase('rules')} />
       </Screen>
@@ -179,7 +185,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={10} right={t("Réservation")} backTo={undefined} />
-      <h1 className="h1">{t("Règles de réservation")}</h1>
+      <StepTitle sub={t("Jusqu'à combien de jours à l'avance vos clients réservent, et ce qu'ils peuvent annuler ou déplacer.")}>{t("Règles de réservation")}</StepTitle>
       {rules}
       {alert}
       <StepSheet label={t('Continuer')} onClick={() => void save()} busy={updateSalon.isPending} />

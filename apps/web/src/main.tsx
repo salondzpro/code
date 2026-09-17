@@ -14,6 +14,12 @@ if (env.sentryDsn) {
   });
 }
 
+// L'ancienne adresse Render reste servie, mais tout le monde bascule sur le domaine officiel : liens
+// partagés, QR, e-mails et sessions ne vivent qu'à un seul endroit.
+if (!env.isDev && /\.onrender\.com$/.test(window.location.hostname)) {
+  window.location.replace(env.siteUrl + window.location.pathname + window.location.search + window.location.hash);
+}
+
 startUpdateCheck();
 
 // Ordre voulu : dictionnaire de la langue courante (rien en français), PUIS le code de l'application,

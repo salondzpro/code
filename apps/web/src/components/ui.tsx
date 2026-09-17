@@ -4,6 +4,8 @@
  */
 import {
   forwardRef,
+  useEffect,
+  useRef,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -659,8 +661,30 @@ export function BottomSheet({
   /** Pour mesurer la hauteur réelle de la feuille (espace inférieur du contenu). */
   sheetRef?: Ref<HTMLDivElement>;
 }) {
+  // La feuille est fixe : sa hauteur réelle (un ou deux boutons, texte d'aide) est publiée dans
+  // `--sheet-h`, et `Screen` réserve au moins cette place sous le contenu. Aucun écran ne peut
+  // plus cacher sa dernière ligne derrière la feuille.
+  const own = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = own.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const publish = () => root.style.setProperty('--sheet-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty('--sheet-h');
+    };
+  }, []);
+  const setRef = (node: HTMLDivElement | null) => {
+    own.current = node;
+    if (typeof sheetRef === 'function') sheetRef(node);
+    else if (sheetRef && 'current' in sheetRef) (sheetRef as { current: HTMLDivElement | null }).current = node;
+  };
   return (
-    <div ref={sheetRef} className={`sheet ${className}`}>
+    <div ref={setRef} className={`sheet ${className}`}>
       {grab && <div className="grab" />}
       {children}
     </div>

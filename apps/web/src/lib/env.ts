@@ -7,6 +7,8 @@ const schema = z.object({
   VITE_SENTRY_DSN: z.string().optional(),
   /** Clé publique VAPID : sans elle, les notifications navigateur sont simplement indisponibles. */
   VITE_VAPID_PUBLIC_KEY: z.string().optional(),
+  /** Origine publique du site (liens partagés, QR, retours d'e-mail). Défaut : salondz.com en production, l'origine courante en dev. */
+  VITE_PUBLIC_SITE_URL: z.string().url().optional(),
 });
 
 const parsed = schema.safeParse(import.meta.env);
@@ -23,4 +25,6 @@ export const env = {
   vapidPublicKey: parsed.data.VITE_VAPID_PUBLIC_KEY ?? null,
   sentryDsn: parsed.data.VITE_SENTRY_DSN || undefined,
   isDev: import.meta.env.DEV,
+  /** Toujours le domaine officiel : un pro qui navigue sur l'ancienne adresse onrender partage quand même salondz.com. */
+  siteUrl: (parsed.data.VITE_PUBLIC_SITE_URL ?? (import.meta.env.DEV ? window.location.origin : 'https://salondz.com')).replace(/\/$/, ''),
 };

@@ -9,6 +9,7 @@ import { Splash } from '@/pages/auth/Splash';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { useState } from 'react';
 import { t } from '@/i18n';
+import { env } from '@/lib/env';
 
 export function Publish() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export function Publish() {
   const { updateSalon } = useProSalonMutations();
   const [error, setError] = useState<string | null>(null);
   if (!salon) return <Splash />;
-  const host = window.location.host.replace(/^www\./, '');
+  const host = env.siteUrl.replace(/^https?:\/\/(www\.)?/, '');
   const withPhotos = salon.services.filter((s) => s.isActive && (s.photos?.length ?? 0) > 0).length;
   const works = salon.photos.length + salon.services.reduce((a, s) => a + (s.photos?.length ?? 0), 0);
   const openDays = salon.openingHours.filter((h) => !h.isClosed).length;
@@ -35,7 +36,8 @@ export function Publish() {
     setError(null);
     try {
       await updateSalon.mutateAsync({ isPublished: true });
-      navigate('/pro/lien', { replace: true });
+      // Page publiée : le professionnel entre dans son espace ; le lien reste à un tap (Profil → Lien).
+      navigate('/pro', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError && Array.isArray(err.details) ? (err.details as string[]).join(' · ') : errorText(err));
     }
@@ -78,7 +80,12 @@ export function Publish() {
           {error}
         </p>
       )}
-      <StepSheet label={salon.isPublished ? t('Page publiée · voir mon lien') : t('Publier ma page')} onClick={() => (salon.isPublished ? navigate('/pro/lien') : void publish())} busy={updateSalon.isPending} />
+      <StepSheet
+        label={salon.isPublished ? t('Accéder à mon espace pro') : t('Publier ma page')}
+        onClick={() => (salon.isPublished ? navigate('/pro', { replace: true }) : void publish())}
+        busy={updateSalon.isPending}
+        secondary={salon.isPublished ? <Button variant="g" onClick={() => navigate('/pro/lien')}>{t('Voir et partager mon lien')}</Button> : undefined}
+      />
     </Screen>
   );
 }

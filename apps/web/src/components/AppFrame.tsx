@@ -54,7 +54,9 @@ export function Screen({
   return (
     <div
       className={`flex flex-col px-4 pt-3 ${className}`}
-      style={{ gap: `${gap / 16}rem`, paddingBottom: `${bottom / 16}rem` }}
+      // Au moins la marge demandée, et au moins la hauteur réelle de la feuille basse (--sheet-h, publiée
+      // par BottomSheet) : le contenu n'est jamais caché derrière, quel que soit le nombre de boutons.
+      style={{ gap: `${gap / 16}rem`, paddingBottom: `max(${bottom / 16}rem, calc(var(--sheet-h, 0px) + 1rem))` }}
     >
       {children}
     </div>
