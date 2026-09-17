@@ -70,11 +70,12 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       }
 
       // Profil complété pour un accès direct : téléphone au format E.164 (GoTrue l'enregistre sans « + »),
-      // nom, et marché côté client (sinon l'app repasse par « Que recherchez-vous ? »).
+      // nom, marché côté client (sinon l'app repasse par « Que recherchez-vous ? ») et RÔLE réaffirmé :
+      // un compte de démonstration reste ce qu'il est, même si une démo l'a fait passer par l'inscription pro.
       const userId = verified.data.user?.id ?? verified.data.session.user.id;
       const upd = await db
         .from('profiles')
-        .update({ phone, full_name: acct.fullName, ...(acct.market ? { market: acct.market } : {}) })
+        .update({ phone, full_name: acct.fullName, role: acct.role, ...(acct.market ? { market: acct.market } : {}) })
         .eq('id', userId);
       if (upd.error) req.log.warn({ err: upd.error }, 'dev-login profile update');
 
