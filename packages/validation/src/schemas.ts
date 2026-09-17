@@ -178,6 +178,8 @@ export const createTimeBlockSchema = z
     startsAt: p.isoDateTime,
     endsAt: p.isoDateTime,
     reason: p.shortText(120).optional(),
+    /** Des rendez-vous tombent dans la plage : true = les annuler (clients prévenus) et fermer quand même. */
+    cancelBookings: z.boolean().optional(),
   })
   .refine((b) => new Date(b.startsAt) < new Date(b.endsAt), {
     message: 'La fin doit être après le début',

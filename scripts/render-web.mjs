@@ -47,6 +47,13 @@ const SITE_HEADERS = [
   { path: '/*', name: 'Permissions-Policy', value: 'geolocation=(self), camera=(self), microphone=()' },
 ];
 
+// Réécritures du site : les pages salon passent par l'API qui renvoie le même index.html enrichi des
+// balises de partage (aperçu WhatsApp/Instagram), tout le reste est l'application.
+const SITE_ROUTES = [
+  { type: 'rewrite', source: '/s/*', destination: `${API_URL}/share/s/*` },
+  { type: 'rewrite', source: '/*', destination: '/index.html' },
+];
+
 const siteSpec = {
   type: 'static_site',
   name: SITE_NAME,
@@ -64,7 +71,7 @@ const siteSpec = {
     buildCommand: 'pnpm install --frozen-lockfile --filter "@salondz/web..." && pnpm --filter @salondz/web build',
     publishPath: 'apps/web/dist',
     pullRequestPreviewsEnabled: 'no',
-    routes: [{ type: 'rewrite', source: '/*', destination: '/index.html' }],
+    routes: SITE_ROUTES,
     headers: SITE_HEADERS,
   },
 };
@@ -90,6 +97,8 @@ if (!site) {
   for (const v of envVars) merged.set(v.key, v.value);
   await call('PUT', `/services/${site.id}/env-vars`, [...merged].map(([key, value]) => ({ key, value })));
   await call('PUT', `/services/${site.id}/headers`, SITE_HEADERS);
+  await call('PUT', `/services/${site.id}/routes`, SITE_ROUTES);
+  console.log(`Réécritures resynchronisées (${SITE_ROUTES.length}).`);
   console.log(`En-têtes resynchronisés (${SITE_HEADERS.length}).`);
   console.log(`Variables de build fusionnées (${merged.size}).`);
   if (forceDeploy) {

@@ -5,7 +5,8 @@ import { createTimeBlockSchema, dateKey, uuid } from '@salondz/validation';
 import type { TimeBlock } from '@salondz/types';
 import { db } from '../../lib/supabase';
 import { notifySlotFreed } from '../../lib/waitlist';
-import { notFound, unwrap } from '../../lib/errors';
+import { AppError, notFound, unwrap } from '../../lib/errors';
+import { pushAfterBooking } from '../../lib/push';
 import { camelize } from '../../lib/mappers';
 
 const BLOCK_COLS = 'id, salon_id, staff_id, starts_at, ends_at, reason';
@@ -33,6 +34,41 @@ const proBlockRoutes: FastifyPluginAsyncZod = async (app) => {
       const m = await db.from('staff').select('id').eq('id', req.body.staffId).eq('salon_id', salonId).maybeSingle();
       if (m.error) throw m.error;
       if (!m.data) throw notFound('Membre');
+    }
+    // Rendez-vous déjà pris dans la plage (tout le salon, ou ce membre) : on ne ferme pas par-dessus
+    // sans le dire. Sans `cancelBookings`, la liste revient en 409 ; avec, ils sont annulés par le
+    // salon (le client est prévenu par le déclencheur) avant la fermeture.
+    let hit = db
+      .from('bookings')
+      .select('id, client_name, service_name, starts_at, staff_id')
+      .eq('salon_id', salonId)
+      .in('status', ['pending', 'confirmed'])
+      .lt('starts_at', req.body.endsAt)
+      .gt('ends_at', req.body.startsAt)
+      .order('starts_at');
+    if (req.body.staffId) hit = hit.eq('staff_id', req.body.staffId);
+    const hits = unwrap(await hit) as { id: string; client_name: string; service_name: string; starts_at: string }[];
+    if (hits.length && !req.body.cancelBookings) {
+      throw new AppError(
+        409,
+        'BLOCK_CONFLICT',
+        `${hits.length} rendez-vous ${hits.length > 1 ? 'tombent' : 'tombe'} dans cette période.`,
+        hits.map((b) => ({ id: b.id, clientName: b.client_name, serviceName: b.service_name, startsAt: b.starts_at })),
+      );
+    }
+    if (hits.length) {
+      const upd = await db
+        .from('bookings')
+        .update({
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString(),
+          cancelled_by: 'salon',
+          cancellation_reason: req.body.reason?.trim() || 'Fermeture du salon',
+        })
+        .in('id', hits.map((b) => b.id))
+        .in('status', ['pending', 'confirmed']);
+      if (upd.error) throw upd.error;
+      for (const b of hits) pushAfterBooking(req.log, b.id);
     }
     const res = await db
       .from('time_blocks')

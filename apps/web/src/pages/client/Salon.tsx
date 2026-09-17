@@ -103,7 +103,9 @@ export function Salon() {
   const toggle = useToggleFavorite();
   const [tab, setTab] = useState<Tab>('book');
   // Catégories repliées par défaut : le client voit d'abord le salon, puis ouvre la sienne.
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  // Catégories OUVERTES par défaut : la cliente voit les prestations et les prix sans avoir à chercher ;
+  // elle peut replier celles qui ne l'intéressent pas.
+  const [closedGroups, setClosedGroups] = useState<Set<string>>(new Set());
   const [reviewSort, setReviewSort] = useState<ReviewSort>('best');
   const [aboutOpen, setAboutOpen] = useState(false);
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 5, reviewSort);
@@ -323,8 +325,15 @@ export function Salon() {
                 key={g.name}
                 title={g.name}
                 hint={`${g.services.length} prestation${g.services.length > 1 ? 's' : ''}`}
-                open={openGroup === g.name}
-                onToggle={() => setOpenGroup((cur) => (cur === g.name ? null : g.name))}
+                open={!closedGroups.has(g.name)}
+                onToggle={() =>
+                  setClosedGroups((cur) => {
+                    const next = new Set(cur);
+                    if (next.has(g.name)) next.delete(g.name);
+                    else next.add(g.name);
+                    return next;
+                  })
+                }
               >
                 {g.services.map((sv) => (
                   <div key={sv.id} className="li !items-start">

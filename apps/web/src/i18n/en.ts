@@ -901,4 +901,9 @@ export const en: Record<string, string> = {
   'Voir et partager mon lien': 'See and share my link',
   'Jusqu\'à combien de jours à l\'avance vos clients réservent, et ce qu\'ils peuvent annuler ou déplacer.': 'How many days ahead clients can book, and what they can cancel or move.',
   'Le temps entre deux rendez-vous et jusqu\'à quand on peut réserver avant l\'heure.': 'The gap between two appointments, and how late a client can still book.',
+  '{n} rendez-vous dans cette période': '{n} appointments in this period',
+  'Annulation…': 'Cancelling…',
+  'Annuler ces rendez-vous et fermer': 'Cancel these appointments and close',
+  'Fermer quand même les annule : chaque client est prévenu et le créneau est libéré pour lui ailleurs.': 'Closing anyway cancels them: each client is notified and can book again elsewhere.',
+  'Garder les rendez-vous': 'Keep the appointments',
 };

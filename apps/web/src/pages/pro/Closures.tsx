@@ -4,7 +4,7 @@
  * Un blocage retire des créneaux réservables ; les rendez-vous déjà confirmés ne sont pas annulés.
  */
 import { useMemo, useState } from 'react';
-import { useProBlockMutations, useProBlocks, useProSalon } from '@salondz/api-client';
+import { ApiError, useProBlockMutations, useProBlocks, useProSalon } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
   DAY_LABELS_SHORT_FR,
@@ -15,6 +15,7 @@ import {
   toLocalDateKey,
   weekKeys,
   isPastSlot,
+  formatDateShortDZ,
 } from '@salondz/constants';
 import { createTimeBlockSchema } from '@salondz/validation';
 import type { TimeBlock } from '@salondz/types';
@@ -123,7 +124,9 @@ export function Closures() {
   const daysText =
     nDays <= 1 ? 'ce jour-là' : nDays === 2 ? 'sur ces deux jours' : `sur ces ${nDays} jours`;
 
-  const submit = async () => {
+  // Rendez-vous touchés par la fermeture : renvoyés par l'API (409), confirmés par le pro avant annulation.
+  const [conflict, setConflict] = useState<{ id: string; clientName: string; serviceName: string; startsAt: string }[] | null>(null);
+  const submit = async (cancelBookings = false) => {
     setError(null);
     if (!range) return setError(t("Choisissez un ou plusieurs jours."));
     if (mode === 'reduced' && from >= to) return setError(t("L'heure de début doit précéder la fin."));
@@ -148,11 +151,16 @@ export function Closures() {
       for (const input of inputs) {
         const parsed = createTimeBlockSchema.safeParse(input);
         if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Plage invalide.');
-        await create.mutateAsync(parsed.data);
+        await create.mutateAsync({ ...parsed.data, cancelBookings });
       }
       setRange(null);
       setReason('');
+      setConflict(null);
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'BLOCK_CONFLICT' && Array.isArray(err.details)) {
+        setConflict(err.details as { id: string; clientName: string; serviceName: string; startsAt: string }[]);
+        return;
+      }
       setError(errorText(err));
     }
   };
@@ -336,6 +344,32 @@ export function Closures() {
             </Button>
             <Button variant="g" onClick={() => setDel(null)}>
               {t("Garder")}
+            </Button>
+          </BottomSheet>
+        </>
+      )}
+      {conflict && (
+        <>
+          <div className="dim !z-[45]" onClick={() => setConflict(null)} />
+          <BottomSheet className="!z-50">
+            <div className="h1 !text-[1.429rem]">{t('{n} rendez-vous dans cette période', { n: conflict.length })}</div>
+            <p className="p">{t("Fermer quand même les annule : chaque client est prévenu et le créneau est libéré pour lui ailleurs.")}</p>
+            <div className="crd !gap-0 !py-1 max-h-[40vh] overflow-y-auto">
+              {conflict.map((b) => (
+                <div key={b.id} className="li">
+                  <span className="min-w-0">
+                    <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
+                    <span className="block truncate text-[0.857rem] text-muted">{b.serviceName}</span>
+                  </span>
+                  <span className="flex-none text-[0.857rem] text-muted">{formatDateShortDZ(b.startsAt)} · {formatTimeDZ(b.startsAt)}</span>
+                </div>
+              ))}
+            </div>
+            <Button variant="d" onClick={() => void submit(true)} disabled={create.isPending}>
+              {create.isPending ? t('Annulation…') : t('Annuler ces rendez-vous et fermer')}
+            </Button>
+            <Button variant="g" onClick={() => setConflict(null)} disabled={create.isPending}>
+              {t("Garder les rendez-vous")}
             </Button>
           </BottomSheet>
         </>

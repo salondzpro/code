@@ -94,6 +94,10 @@ services:
         - .npmrc
         - render.yaml
     routes:
+      # Pages salon : l'API renvoie l'index.html enrichi des balises de partage (aperçu WhatsApp/Instagram).
+      - type: rewrite
+        source: /s/*
+        destination: https://api.salondz.com/share/s/*
       - type: rewrite
         source: /*
         destination: /index.html

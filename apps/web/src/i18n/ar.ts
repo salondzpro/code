@@ -882,4 +882,9 @@ export const ar: Record<string, string> = {
   'Voir et partager mon lien': 'عرض رابطي ومشاركته',
   'Jusqu\'à combien de jours à l\'avance vos clients réservent, et ce qu\'ils peuvent annuler ou déplacer.': 'قبل كم يومًا يمكن لزبائنك الحجز، وما يمكنهم إلغاؤه أو تغييره.',
   'Le temps entre deux rendez-vous et jusqu\'à quand on peut réserver avant l\'heure.': 'الفاصل بين موعدين، وإلى متى يمكن الحجز قبل الموعد.',
+  '{n} rendez-vous dans cette période': '{n} موعد في هذه الفترة',
+  'Annulation…': 'جارٍ الإلغاء…',
+  'Annuler ces rendez-vous et fermer': 'إلغاء هذه المواعيد والإغلاق',
+  'Fermer quand même les annule : chaque client est prévenu et le créneau est libéré pour lui ailleurs.': 'الإغلاق رغم ذلك يلغيها: يُخبَر كل زبون ويمكنه الحجز مجددًا.',
+  'Garder les rendez-vous': 'الاحتفاظ بالمواعيد',
 };

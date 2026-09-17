@@ -61,8 +61,8 @@ Exploitation :
 8. Schémas de réponse zod sur les routes publiques (aucune colonne nouvelle ne part par défaut).
 9. Réglage « Rappels » lu par le cron (fait le 16 sept.) ; reste « Confirmations » et « Nouveautés » (l'expiration des demandes à 24 h et la relance du pro sont livrées le 16 sept., ainsi que la liste d'attente « créneau libéré »).
 10. Fiche client sur identifiant stable (fusion compte + numéro), blocage d'un client de passage.
-11. Congés et horaires : lister et prévenir les rendez-vous touchés par un blocage.
-12. ~~Découpage du bundle, police auto-hébergée, manifeste PWA~~ (faits le 16 sept. : 40 pages en chargement paresseux, dictionnaires à la demande, Inter en woff2 local, manifeste avec icônes SVG) ; restent les icônes PNG maskable et les balises Open Graph pré-rendues sur `/s/:slug` (partage WhatsApp).
+11. ~~Congés : rendez-vous touchés listés et annulés sur confirmation~~ (fait le 17 sept.) ; reste le cas des horaires modifiés.
+12. ~~Découpage du bundle, police auto-hébergée, manifeste PWA~~ (faits le 16 sept. : 40 pages en chargement paresseux, dictionnaires à la demande, Inter en woff2 local, manifeste avec icônes SVG) ; reste les icônes PNG maskable ; les balises Open Graph sont servies via `/share/s/:slug` de l'API (fait le 17 sept.).
 13. ~~Réglage des notifications navigateur côté pro~~ : fait le 16 sept. (Compte pro → « Notifications sur cet appareil », abonnement rafraîchi à l'entrée).
 14. Projet Supabase de préproduction pour la CI e2e et les scripts `check:*` (aujourd'hui ils écrivent en production).
 15. Chiffre d'affaires : distinguer prévisionnel (confirmé) et réalisé (terminé).
