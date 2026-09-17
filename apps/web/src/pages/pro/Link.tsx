@@ -102,7 +102,7 @@ export function ShareSheet({
     {
       label: t("WhatsApp"),
       icon: <WhatsAppLogo />,
-      onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank'),
+      onClick: () => window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener'),
     },
     {
       label: t("Instagram"),
@@ -116,6 +116,7 @@ export function ShareSheet({
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
           '_blank',
+          'noopener',
         ),
     },
     {

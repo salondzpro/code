@@ -95,7 +95,14 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const { phone, ...rest } = req.body;
     const body = req.user!.phone ? rest : req.body;
     if (Object.keys(body).length === 0) return req.profile!;
-    void phone;
+    // Le numéro identifie la personne dans les règles anti-abus et les fiches des salons : une fois un
+    // rendez-vous pris, il ne se change plus librement (support). Avant, il reste modifiable.
+    if (phone && phone !== req.profile!.phone && req.profile!.phone) {
+      const taken = await db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', req.user!.id);
+      if (taken.error) throw taken.error;
+      if ((taken.count ?? 0) > 0)
+        throw conflict('PHONE_LOCKED', 'Votre numéro est lié à vos rendez-vous : écrivez à support@salondz.com pour le modifier.');
+    }
     const res = await db
       .from('profiles')
       .update(snakeize(body))

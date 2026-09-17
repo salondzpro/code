@@ -83,8 +83,7 @@ export function ProAccount() {
             label={t("Langue")}
             value={locale}
             onChange={(v) => {
-              updateProfile.mutate({ locale: v });
-              switchLocale(v);
+              void updateProfile.mutateAsync({ locale: v }).catch(() => undefined).finally(() => switchLocale(v));
             }}
             options={LOCALES.map((l) => ({ value: l.value, label: l.label }))}
           />

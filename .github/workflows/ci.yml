@@ -36,6 +36,23 @@ jobs:
       - name: Build api bundle
         run: pnpm --filter @salondz/api build
 
+  # Déploiement Render après les vérifications (main seulement). Sans le secret RENDER_API_KEY, l'étape
+  # est sautée : les déploiements restent alors manuels (scripts/render-web.mjs, API Render).
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: API + site
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ]; then echo 'RENDER_API_KEY absent : déploiement manuel'; exit 0; fi
+          for svc in srv-dag7cr740ujc738dm7r0 srv-dag8d4142hec73elbuug; do
+            curl -sf -X POST "https://api.render.com/v1/services/$svc/deploys" -H "Authorization: Bearer $RENDER_API_KEY" -H 'Content-Type: application/json' -d '{"clearCache":"do_not_clear"}' >/dev/null && echo "déploiement lancé : $svc"
+          done
+
   # Tests de bout en bout contre Supabase (secrets requis) — uniquement sur main
   e2e:
     if: github.ref == 'refs/heads/main'

@@ -31,6 +31,21 @@ async function loadShell(): Promise<string | null> {
 }
 
 const shareRoutes: FastifyPluginAsyncZod = async (app) => {
+  /** Plan du site pour les moteurs : pages fixes et salons publiés (mis en cache une heure). */
+  app.get('/sitemap.xml', async (_req, reply) => {
+    const res = await db.from('salons').select('slug, updated_at').eq('is_published', true).order('updated_at', { ascending: false }).limit(5000);
+    if (res.error) throw res.error;
+    const fixed = ['/', '/aide', '/cgu', '/confidentialite', '/mentions-legales'];
+    const urls = [
+      ...fixed.map((p) => `  <url><loc>${esc(config.webUrl + p)}</loc></url>`),
+      ...(res.data ?? []).map((s) => `  <url><loc>${esc(`${config.webUrl}/s/${s.slug}`)}</loc><lastmod>${String(s.updated_at).slice(0, 10)}</lastmod></url>`),
+    ];
+    reply.removeHeader('content-security-policy');
+    reply.header('Content-Type', 'application/xml; charset=utf-8');
+    reply.header('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
+  });
+
   app.get('/share/s/:slug', { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } }, async (req, reply) => {
     const html = await loadShell();
     // Le site statique ne répond pas : on renvoie le visiteur au site lui-même (sans balises).

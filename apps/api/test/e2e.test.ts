@@ -498,9 +498,9 @@ test('connexion de démonstration : numéro + code fixe → vraie session ; mauv
   const bad = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '0000' });
   assert.equal(bad.statusCode, 401, bad.body);
 
-  // Code officiel « 1111 » et tolérance à un « 1 » de trop (« 11111 »).
+  // Seul le code officiel « 1111 » passe : la tolérance « toute suite de 1 » élargissait l'espace des codes (audit sécurité).
   const five = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '11111' });
-  assert.equal(five.statusCode, 200, five.body);
+  assert.equal(five.statusCode, 401, five.body);
   const cli = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '1111' });
   assert.equal(cli.statusCode, 200, cli.body);
   assert.equal(cli.json().role, 'client');

@@ -361,19 +361,30 @@ export function Toggle({
   on,
   onChange,
   label,
+  disabled,
 }: {
   on: boolean;
   onChange: (v: boolean) => void;
   label: string;
+  /** Pendant une écriture en cours : un second appui inverserait l'état enregistré. */
+  disabled?: boolean;
 }) {
+  const last = useRef(0);
   return (
     <button
       type="button"
       role="switch"
       aria-checked={on}
       aria-label={label}
-      className={`sw${on ? ' on' : ''}`}
-      onClick={() => onChange(!on)}
+      aria-disabled={disabled || undefined}
+      className={`sw${on ? ' on' : ''}${disabled ? ' opacity-60' : ''}`}
+      onClick={() => {
+        // Deux appuis en moins de 400 ms (réseau lent, doigt qui rebondit) = un seul.
+        const now = Date.now();
+        if (disabled || now - last.current < 400) return;
+        last.current = now;
+        onChange(!on);
+      }}
     />
   );
 }

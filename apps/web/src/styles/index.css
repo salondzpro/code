@@ -255,8 +255,9 @@
   }
   /* Bouton icône rond (retour, favori, +) */
   .ib {
-    width: 2.5rem;
-    height: 2.5rem;
+    /* 2.75rem = 38 px à la racine 14 px ; les grands (.lg) atteignent 44 px, la taille tactile recommandée. */
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 50%;
     background: var(--color-surface);
     border: 1px solid var(--color-line);
@@ -268,8 +269,8 @@
     color: var(--color-text);
   }
   .ib.lg {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 3.15rem;
+    height: 3.15rem;
   }
   .ib.ink {
     background: var(--color-ink);

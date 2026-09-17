@@ -51,6 +51,7 @@ const SITE_HEADERS = [
 // balises de partage (aperçu WhatsApp/Instagram), tout le reste est l'application.
 const SITE_ROUTES = [
   { type: 'rewrite', source: '/s/*', destination: `${API_URL}/share/s/*` },
+  { type: 'rewrite', source: '/sitemap.xml', destination: `${API_URL}/sitemap.xml` },
   { type: 'rewrite', source: '/*', destination: '/index.html' },
 ];
 

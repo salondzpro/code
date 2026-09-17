@@ -52,9 +52,9 @@ Exploitation :
 1. Sauvegardes (décision 2) puis un exercice de restauration chronométré sur un projet jetable.
 2. Comptes de démonstration (décision 1).
 3. Textes légaux validés (décision 4).
-4. Vérification du numéro de téléphone : il est la clé de l'anti-abus et des fiches clients mais reste déclaratif. Au minimum : non modifiable après la première réservation ; mieux : vérification par code (SMS ou WhatsApp) quand un canal existe (décision 5).
+4. Vérification du numéro de téléphone : non modifiable dès le premier rendez-vous (fait le 17 sept., `PHONE_LOCKED`) ; la vérification par code (SMS ou WhatsApp) attend le canal de la décision 5.
 5. Sentry (API + web) et sonde de disponibilité 5 min sur `/health` et `salondz.com`, alertes vers le propriétaire.
-6. Réparer ou remplacer l'auto-déploiement Render (un job CI de déploiement après `check`), et écrire l'ordre « migration d'abord, API ensuite ».
+6. Déploiement par la CI : job `deploy` écrit (17 sept.), actif dès que le secret GitHub `RENDER_API_KEY` est posé (propriétaire) ; ordre « migration d'abord, API ensuite » dans la section Procédures.
 
 ### Important (première quinzaine)
 7. ~~Lecture directe avec la clé publique~~ : fait le 16 sept. (migration 0039, privilèges de colonnes sur `salons`, `staff`, `reviews`).
@@ -69,8 +69,8 @@ Exploitation :
 
 ### Souhaitable
 16. Multi-prestations à la saisie pro, jours fériés, horaires de nuit, grille alignée sur l'horloge, export CSV.
-17. Accessibilité : cibles 44 px, contraste des textes discrets, feuilles avec rôle dialogue et Échap, RTL en propriétés logiques.
-18. Vignettes d'images (transformations Supabase, plan Pro), `sitemap.xml`.
+17. Accessibilité : cibles 44 px et contraste des textes discrets faits le 17 sept. ; restent feuilles avec rôle dialogue et Échap, RTL en propriétés logiques.
+18. Vignettes d'images (transformations Supabase, plan Pro). `sitemap.xml` servi par l'API (fait le 17 sept.).
 19. Modération des avis, réponse du professionnel, rôle administrateur.
 
 ## 4. Calendrier

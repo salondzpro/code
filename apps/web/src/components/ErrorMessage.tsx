@@ -14,11 +14,11 @@ const FALLBACKS: Record<string, string> = {
 
 /** Message FR lisible pour n'importe quelle erreur (ApiError, Supabase, Error). */
 export function errorText(error: unknown): string {
-  if (error instanceof ApiError) return error.message || FALLBACKS[error.code] || 'Une erreur est survenue.';
+  if (error instanceof ApiError) return (FALLBACKS[error.code] ? t(FALLBACKS[error.code]!) : '') || error.message || t('Une erreur est survenue.');
   if (error && typeof error === 'object' && 'message' in error && typeof (error as { message: unknown }).message === 'string') {
     return (error as { message: string }).message;
   }
-  return 'Une erreur est survenue.';
+  return t('Une erreur est survenue.');
 }
 
 export function errorDetails(error: unknown): string[] {

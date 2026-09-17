@@ -15,7 +15,7 @@
   /* Texte */
   --color-text: #17181a;
   --color-muted: #6b6f73;
-  --color-subtle: #9a9ea3;
+  --color-subtle: #767a7f; /* 4,5:1 sur blanc : lisible, pas seulement décoratif */
   --color-disabled: #c4c7ca;
   --color-ink: #111214;
   --color-women: #f06a9b; /* titre « Femmes » en rose clair, mode femmes */ /* boutons, états actifs */

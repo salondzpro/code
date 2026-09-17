@@ -145,8 +145,8 @@ export function Settings() {
             onChange={(v) => {
               // Mémorisée dans le profil quand on est connecté, puis rechargement : les
               // libellés calculés au chargement des modules se relisent dans la langue.
-              update.mutate({ locale: v });
-              switchLocale(v);
+              // Enregistrée d'abord : le rechargement annulerait une requête encore en vol.
+              void update.mutateAsync({ locale: v }).catch(() => undefined).finally(() => switchLocale(v));
             }}
             options={LOCALES.map((l) => ({ value: l.value, label: l.label }))}
           />
