@@ -11,7 +11,7 @@ import { DESIGN_IMAGES, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Credit, I, Overlay, Row, Rows, TextLink, Tx } from '@/ui';
 import { C } from '@/theme/design';
 
-const PROMISES = ['Réservations en ligne 24 h/24', 'Page publique partageable', 'Rappels WhatsApp automatiques'];
+const PROMISES = ['Réservations en ligne 24 h/24', 'Page publique partageable', 'Rappels automatiques aux clients'];
 
 export default function ProWelcome() {
   const router = useRouter();

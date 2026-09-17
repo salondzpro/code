@@ -64,7 +64,7 @@ export default function BookingDetails() {
     if (!p) return;
     setName((v) => v || p.fullName || '');
     setDigits((v) => v || (p.phone ?? '').replace(/^\+213/, ''));
-    setWhatsapp(p.whatsappReminders ?? true);
+    setWhatsapp(p.remindersEnabled ?? true);
   }, [me.data]);
 
   if (!draft.startsAt || draft.serviceIds.length === 0)

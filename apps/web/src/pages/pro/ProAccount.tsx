@@ -53,7 +53,7 @@ export function ProAccount() {
             <RowText
               icon={BellRing}
               title={t("Notifications sur cet appareil")}
-              sub={webPush === 'denied' ? t("Bloquées par le navigateur") : t("Demandes et annulations, même application fermée")}
+              sub={webPush === 'denied' ? t("Bloquées par le navigateur") : t("Demandes, annulations, rappels · application mobile si installée, sinon ce navigateur")}
             />
             {webPush !== 'denied' && (
               <Toggle

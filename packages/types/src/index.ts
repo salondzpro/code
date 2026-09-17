@@ -29,7 +29,8 @@ export interface Profile {
   gender: 'male' | 'female' | null;
   locale: 'fr' | 'ar' | 'en';
   market: 'men' | 'women' | null;
-  whatsappReminders: boolean;
+  /** Rappels de rendez-vous (la veille et 2 h avant) par notification. */
+  remindersEnabled: boolean;
   /** Push pour réservation, confirmation, report, annulation (les notifications restent dans l'app). */
   notifyConfirmations: boolean;
   createdAt: ISODateTime;

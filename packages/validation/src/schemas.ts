@@ -19,8 +19,8 @@ export const updateProfileSchema = z.object({
   avatarUrl: p.httpUrl.nullable().optional(),
   /** Marché affiché par défaut (« Pour Hommes » / « Pour Femmes »), modifiable depuis le profil. */
   market: z.enum(['men', 'women']).nullable().optional(),
-  /** Rappels WhatsApp 2 h avant chaque rendez-vous. */
-  whatsappReminders: z.boolean().optional(),
+  /** Rappels de rendez-vous (la veille et 2 h avant) par notification : application mobile, sinon navigateur. */
+  remindersEnabled: z.boolean().optional(),
   /** Push des confirmations (réservation, report, annulation) ; les notifications restent dans l'app. */
   notifyConfirmations: z.boolean().optional(),
 });

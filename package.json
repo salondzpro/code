@@ -20,6 +20,7 @@
     "db:reset": "node --env-file=.env scripts/db-migrate.mjs --reset",
     "clean": "turbo run clean && rm -rf node_modules",
     "db:status": "node --env-file=.env scripts/db-migrate.mjs --status",
+    "db:backup": "node --env-file=.env scripts/db-backup.mjs",
     "demo:seed": "node --env-file=.env scripts/seed-demo.mjs",
     "demo:cleanup": "node --env-file=.env scripts/seed-demo.mjs --cleanup",
     "test:e2e:mobile": "pnpm --filter @salondz/mobile test:e2e",

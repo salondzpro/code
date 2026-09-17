@@ -1,6 +1,6 @@
 # Salon DZ — plan de mise en production
 
-Version du 16 septembre 2026. Synthèse de quatre audits (sécurité API et base, règles de gestion, application web, DevOps) et des corrections livrées le jour même. Ce document est la liste de contrôle jusqu'à l'ouverture au public ; il se met à jour à chaque lot.
+Version du 16 septembre 2026, mise à jour le 18 septembre. **Le service n'est pas encore ouvert au public** (décision du propriétaire, 18 sept.) : les données actuelles sont des données de test et peuvent être modifiées librement. Synthèse de quatre audits (sécurité API et base, règles de gestion, application web, DevOps) et des corrections livrées le jour même. Ce document est la liste de contrôle jusqu'à l'ouverture au public ; il se met à jour à chaque lot.
 
 ## 1. Corrigé le 16 septembre (en production)
 
@@ -44,18 +44,18 @@ Lot du 17 septembre (commits 23aa8d2 et 9a4d1a5) :
 | # | Décision | Recommandation |
 |---|---|---|
 | 1 | Comptes de démonstration en production (`TEST_LOGIN_ENABLED=1` dans `render.yaml`) | Les couper le jour J (`0`) et dépublier « Salon Démo ». Garder un couple de comptes de test privés sur un projet Supabase de préproduction pour les scripts `check:*`. **À supprimer dès maintenant** : le salon « Alcatra » (`slug` `alcatra`, créé le 16 sept. par le compte client démo pendant les captures de l'inscription pro ; 0 rendez-vous) — `delete from public.salons where slug = 'alcatra';`. Depuis le 17 sept., `dev-login` réaffirme le rôle des comptes démo à chaque connexion. |
-| 2 | Sauvegardes | Passer Supabase en Pro (25 $/mois) avant le premier vrai salon : sauvegardes quotidiennes 7 jours. Sans cela, une erreur = perte totale. |
+| 2 | Sauvegardes | **Décision du 18 sept. : Supabase Pro reporté** (25 $/mois, pas maintenant). En attendant : `pnpm db:backup` (pg_dump gratuit, fichier dans `backups/`, hors git) à lancer avant chaque migration et au moins une fois par semaine dès qu'un vrai salon existe ; restauration : `pg_restore -d <url cible> --clean --if-exists <fichier>`. À reconsidérer avant l'ouverture au public. |
 | 3 | Mobile au lancement | Non. Le mobile Expo a encore l'ancienne connexion par téléphone et aucune refonte pro. Lancer en web seul, aligner le mobile ensuite. |
-| 4 | Textes légaux | Faire relire CGU, confidentialité et mentions légales par un conseil ; compléter dénomination, RC, NIF dans `/mentions-legales`. |
-| 5 | Rappels hors application | Aujourd'hui : notification in-app et push seulement. Choisir un canal de secours (SMS via un opérateur algérien, ou WhatsApp Business) : c'est le premier levier contre les absences. |
-| 6 | Cartes et géocodage | OpenStreetMap et Photon publics ne sont pas prévus pour un usage commercial soutenu. Prévoir MapTiler ou Stadia (25–50 $/mois) avant la montée en charge. |
+| 4 | Textes légaux | Réécrits le 18 sept. pour l'Algérie (lois 18-07, 18-05, 09-03, 04-02, ordonnance 03-05 ; prestataires décrits par catégorie, rien de technique). Reste au propriétaire : compléter dénomination, forme juridique, RC, NIF et adresse dans `apps/web/src/pages/Legal.tsx` (`EDITOR`) ; accomplir les formalités ANPDP (déclaration du traitement et autorisation de transfert hors Algérie, art. 44 de la loi 18-07, les serveurs étant dans l'UE) ; relecture par un conseil recommandée. |
+| 5 | Rappels hors application | Décision du 18 sept. : rappels par notification (application mobile si installée, sinon navigateur), la veille et 2 h avant. Aujourd'hui : notification in-app et push seulement. Choisir un canal de secours (SMS via un opérateur algérien, ou WhatsApp Business) : c'est le premier levier contre les absences. |
+| 6 | Cartes et géocodage | **Décision du 18 sept. : on garde OpenStreetMap + Photon pour l'instant.** Ils ne sont pas prévus pour un usage commercial soutenu : Prévoir MapTiler ou Stadia (25–50 $/mois) avant la montée en charge. |
 
 ## 3. Reste à faire avant l'ouverture (par ordre)
 
 ### Bloquant
-1. Sauvegardes (décision 2) puis un exercice de restauration chronométré sur un projet jetable.
+1. ~~Sauvegardes (décision 2)~~ reportées (18 sept.) ; en attendant `pnpm db:backup` avant chaque migration et chaque semaine.
 2. Comptes de démonstration (décision 1).
-3. Textes légaux validés (décision 4).
+3. Textes légaux : réécrits pour l'Algérie (18 sept.) ; reste l'identité de l'éditeur, les formalités ANPDP et une relecture (décision 4).
 4. Vérification du numéro de téléphone : non modifiable dès le premier rendez-vous (fait le 17 sept., `PHONE_LOCKED`) ; la vérification par code (SMS ou WhatsApp) attend le canal de la décision 5.
 5. Sentry (API + web) et sonde de disponibilité 5 min sur `/health` et `salondz.com`, alertes vers le propriétaire.
 6. Déploiement par la CI : job `deploy` écrit (17 sept.), actif dès que le secret GitHub `RENDER_API_KEY` est posé (propriétaire) ; ordre « migration d'abord, API ensuite » dans la section Procédures.

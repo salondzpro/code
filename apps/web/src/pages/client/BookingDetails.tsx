@@ -10,7 +10,7 @@
  */
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { ChevronDown, MessageCircle } from 'lucide-react';
+import { BellRing, ChevronDown } from 'lucide-react';
 import { useMe, useSalon } from '@salondz/api-client';
 import { formatDA, formatDateLongDZ, formatTimeDZ } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
@@ -93,7 +93,7 @@ export function BookingDetails() {
     if (!p) return;
     setName((v) => v || p.fullName || '');
     setDigits((v) => v || (p.phone ?? '').replace(/^\+213/, ''));
-    setWhatsapp(p.whatsappReminders ?? true);
+    setWhatsapp(p.remindersEnabled ?? true);
   }, [me.data]);
 
   if (!draft.startsAt || draft.serviceIds.length === 0)
@@ -230,11 +230,11 @@ export function BookingDetails() {
 
         <div className="crd !flex-row items-center gap-3.5 !p-3">
           <span className="flex h-[2.75rem] w-[2.75rem] flex-none items-center justify-center rounded-full border border-line bg-surface">
-            <I icon={MessageCircle} size={20} />
+            <I icon={BellRing} size={20} />
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[1rem] font-semibold">{t("Confirmation et rappel")}</span>
-            <span className="block text-[0.857rem] text-muted">{t("2 h avant le rendez-vous")}</span>
+            <span className="block text-[0.857rem] text-muted">{t("Notification la veille et 2 h avant")}</span>
           </span>
           <Toggle on={whatsapp} onChange={setWhatsapp} label={t("Rappels de rendez-vous")} />
         </div>

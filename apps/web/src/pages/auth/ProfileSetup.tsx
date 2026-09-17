@@ -32,7 +32,7 @@ export function ProfileSetup() {
     if (me.data) {
       setName((v) => v || me.data!.profile.fullName || '');
       setDigits((v) => v || (me.data!.profile.phone ?? '').replace(/^\+213/, ''));
-      setReminders(me.data.profile.whatsappReminders ?? true);
+      setReminders(me.data.profile.remindersEnabled ?? true);
     }
   }, [me.data]);
 
@@ -47,7 +47,7 @@ export function ProfileSetup() {
     if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
-      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, whatsappReminders: reminders });
+      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, remindersEnabled: reminders });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });
@@ -126,7 +126,7 @@ export function ProfileSetup() {
           <div className="flex items-center justify-between">
             <span>
               <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
-              <span className="p block">{t("Notification avant chaque rendez-vous")}</span>
+              <span className="p block">{t("La veille et 2 h avant · application ou navigateur")}</span>
             </span>
             <Toggle on={reminders} onChange={setReminders} label={t("Rappels de rendez-vous")} />
           </div>

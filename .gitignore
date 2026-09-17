@@ -45,3 +45,5 @@ apps/mobile/test/shots/
 
 # comptes de démonstration (sessions) — pnpm demo:seed / demo:cleanup
 scripts/.demo.json
+# Sauvegardes locales de la base (pnpm db:backup)
+backups/

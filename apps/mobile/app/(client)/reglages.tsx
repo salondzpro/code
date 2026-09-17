@@ -26,7 +26,7 @@ export default function Settings() {
   const p = me.data?.profile;
 
   useEffect(() => {
-    if (p) setReminders(p.whatsappReminders ?? true);
+    if (p) setReminders(p.remindersEnabled ?? true);
   }, [p]);
 
   return (
@@ -44,7 +44,7 @@ export default function Settings() {
               on={reminders}
               onChange={(v) => {
                 setReminders(v);
-                update.mutate({ whatsappReminders: v });
+                update.mutate({ remindersEnabled: v });
               }}
               label="Rappels de rendez-vous"
             />

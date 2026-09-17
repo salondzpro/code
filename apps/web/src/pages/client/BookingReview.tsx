@@ -85,7 +85,7 @@ export function BookingReview() {
             ? { fullName: draft.otherName, phone: draft.otherPhone }
             : undefined,
       });
-      if (draft.whatsapp !== undefined) updateProfile.mutate({ whatsappReminders: draft.whatsapp });
+      if (draft.whatsapp !== undefined) updateProfile.mutate({ remindersEnabled: draft.whatsapp });
       navigate(`/rendez-vous/${b.id}/confirme`, { replace: true });
       clearDraft(slug);
     } catch (err) {

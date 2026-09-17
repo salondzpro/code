@@ -81,7 +81,7 @@ export default function BookingReview() {
             ? { fullName: draft.otherName, phone: draft.otherPhone }
             : undefined,
       });
-      if (draft.whatsapp !== undefined) updateProfile.mutate({ whatsappReminders: draft.whatsapp });
+      if (draft.whatsapp !== undefined) updateProfile.mutate({ remindersEnabled: draft.whatsapp });
       router.replace(`/rdv/${b.id}/confirme` as never);
       clearDraft(slug);
     } catch (err) {

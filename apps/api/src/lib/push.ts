@@ -100,10 +100,12 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     }
   }
 
-  // Navigateurs : un envoi par abonnement, les abonnements morts sont supprimés.
+  // Navigateurs : un envoi par abonnement, les abonnements morts sont supprimés. Une personne qui a
+  // l'application mobile est prévenue par elle, pas en double par le navigateur ; le navigateur ne sert
+  // qu'à qui n'a pas l'application (un jeton mobile mort est retiré au tour précédent, le navigateur prend le relais).
   let webSent = 0;
   for (const n of pending as PendingNotification[]) {
-    if (!wanted(n)) continue;
+    if (!wanted(n) || tokensByUser.has(n.user_id)) continue;
     for (const token of webByUser.get(n.user_id) ?? []) {
       const r = await sendWebPush(log, token, {
         title: n.title,

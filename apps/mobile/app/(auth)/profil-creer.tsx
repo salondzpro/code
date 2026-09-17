@@ -1,4 +1,4 @@
-/** AUTH 13 — Profil client de base : prénom et nom, numéro vérifié, rappels WhatsApp. */
+/** AUTH 13 — Profil client de base : prénom et nom, numéro vérifié, rappels de rendez-vous. */
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -24,7 +24,7 @@ export default function ProfileSetup() {
   useEffect(() => {
     if (me.data) {
       setName((v) => v || me.data!.profile.fullName || '');
-      setReminders(me.data.profile.whatsappReminders ?? true);
+      setReminders(me.data.profile.remindersEnabled ?? true);
     }
   }, [me.data]);
 
@@ -37,7 +37,7 @@ export default function ProfileSetup() {
     if (name.trim().length < 2) return setError('Indiquez votre prénom.');
     setError(null);
     try {
-      await update.mutateAsync({ fullName: name.trim(), whatsappReminders: reminders, ...(phone && !me.data?.profile.phone ? { phone } : {}) });
+      await update.mutateAsync({ fullName: name.trim(), remindersEnabled: reminders, ...(phone && !me.data?.profile.phone ? { phone } : {}) });
       const isPro = me.data?.profile.role === 'pro';
       if (isPro) router.replace('/(pro)');
       else if (!me.data?.profile.market) router.replace({ pathname: '/marche', params: { next } });
@@ -74,11 +74,11 @@ export default function ProfileSetup() {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           <View style={{ flex: 1 }}>
             <Tx size={14} weight={600} lh={17}>
-              Rappels WhatsApp
+              Rappels de rendez-vous
             </Tx>
-            <P>2 h avant chaque rendez-vous</P>
+            <P>La veille et 2 h avant, par notification</P>
           </View>
-          <Toggle on={reminders} onChange={setReminders} label="Rappels WhatsApp" />
+          <Toggle on={reminders} onChange={setReminders} label="Rappels de rendez-vous" />
         </View>
         <Button onPress={() => void submit()} disabled={update.isPending} loading={update.isPending}>
           Terminer

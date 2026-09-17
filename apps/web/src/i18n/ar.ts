@@ -913,4 +913,8 @@ export const ar: Record<string, string> = {
   'Femme': 'نساء',
   'Homme': 'رجال',
   'Rouvrir': 'إعادة الفتح',
+  'Demandes, annulations, rappels · application mobile si installée, sinon ce navigateur': 'الطلبات والإلغاءات والتذكيرات · التطبيق إن كان مثبتًا، وإلا هذا المتصفح',
+  'La veille et 2 h avant · application ou navigateur': 'في اليوم السابق وقبل ساعتين · التطبيق أو المتصفح',
+  'Les rappels et confirmations arrivent sur l\'application Salon DZ si elle est installée, sinon par ce navigateur : activez « Notifications sur cet appareil » pour les recevoir même application fermée.': 'تصل التذكيرات والتأكيدات إلى تطبيق Salon DZ إن كان مثبتًا، وإلا عبر هذا المتصفح: فعّل «الإشعارات على هذا الجهاز» لتلقيها حتى والتطبيق مغلق.',
+  'Notification la veille et 2 h avant': 'إشعار في اليوم السابق وقبل ساعتين',
 };

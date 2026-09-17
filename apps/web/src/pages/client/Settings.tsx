@@ -67,7 +67,7 @@ export function Settings() {
 
   useEffect(() => {
     if (p) {
-      setReminders(p.whatsappReminders ?? true);
+      setReminders(p.remindersEnabled ?? true);
       setConfirmations(p.notifyConfirmations ?? true);
     }
   }, [p]);
@@ -108,13 +108,13 @@ export function Settings() {
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
-            <span className="p block text-[0.857rem]">{t("2 h avant le rendez-vous")}</span>
+            <span className="p block text-[0.857rem]">{t("La veille et 2 h avant · application ou navigateur")}</span>
           </span>
           <Toggle
             on={reminders}
             onChange={(v) => {
               setReminders(v);
-              update.mutate({ whatsappReminders: v });
+              update.mutate({ remindersEnabled: v });
             }}
             label={t("Rappels de rendez-vous")}
           />
@@ -136,6 +136,11 @@ export function Settings() {
         </div>
       </div>
 
+      {webPush !== 'granted' && (
+        <p className="p -mt-2 text-[0.857rem]">
+          {t("Les rappels et confirmations arrivent sur l'application Salon DZ si elle est installée, sinon par ce navigateur : activez « Notifications sur cet appareil » pour les recevoir même application fermée.")}
+        </p>
+      )}
       <SectionLabel>{t("Préférences")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li">

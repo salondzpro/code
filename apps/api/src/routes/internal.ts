@@ -52,7 +52,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     // rendez-vous des clients qui ont coupé les rappels sont quand même marqués traités.
     let optedOut = new Set<string>();
     if (candidates.length) {
-      const prefs = await db.from('profiles').select('id, whatsapp_reminders').in('id', [...new Set(candidates.map((b) => b.client_id))]).eq('whatsapp_reminders', false);
+      const prefs = await db.from('profiles').select('id, reminders_enabled').in('id', [...new Set(candidates.map((b) => b.client_id))]).eq('reminders_enabled', false);
       if (prefs.error) throw prefs.error;
       optedOut = new Set((prefs.data ?? []).map((p) => p.id as string));
     }
@@ -70,6 +70,41 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       );
       if (ins.error && toRemind.length) throw ins.error;
       const upd = await db.from('bookings').update({ reminder_sent_at: new Date().toISOString() }).in('id', candidates.map((b) => b.id));
+      if (upd.error) throw upd.error;
+    }
+
+    // 1b) Rappel 2 h avant (fenêtre 30 min – 2 h 15 avant le début, pour ne rien rater si un tick a sauté).
+    //     Même réglage client que la veille ; un rendez-vous déplacé repart de zéro (déclencheur SQL).
+    const rem2Res = await db
+      .from('bookings')
+      .select('id, client_id, service_name, starts_at, salons(name)')
+      .eq('status', 'confirmed')
+      .is('reminder_2h_sent_at', null)
+      .not('client_id', 'is', null)
+      .gte('starts_at', new Date(now + 30 * 60_000).toISOString())
+      .lt('starts_at', new Date(now + 135 * 60_000).toISOString())
+      .limit(500);
+    const soon = unwrap(rem2Res) as unknown as typeof candidates;
+    let optedOut2 = new Set<string>();
+    if (soon.length) {
+      const prefs = await db.from('profiles').select('id, reminders_enabled').in('id', [...new Set(soon.map((b) => b.client_id))]).eq('reminders_enabled', false);
+      if (prefs.error) throw prefs.error;
+      optedOut2 = new Set((prefs.data ?? []).map((p) => p.id as string));
+    }
+    const toRemind2 = soon.filter((b) => !optedOut2.has(b.client_id));
+    if (soon.length) {
+      const ins = await db.from('notifications').insert(
+        toRemind2.map((b) => ({
+          user_id: b.client_id,
+          type: 'booking_reminder',
+          title: 'Rappel : rendez-vous dans 2 h',
+          body: `${b.salons?.name ?? 'Votre salon'} · ${b.service_name} · ${fmtWhen(b.starts_at)}`,
+          data: { bookingId: b.id },
+          booking_id: b.id,
+        })),
+      );
+      if (ins.error && toRemind2.length) throw ins.error;
+      const upd = await db.from('bookings').update({ reminder_2h_sent_at: new Date().toISOString() }).in('id', soon.map((b) => b.id));
       if (upd.error) throw upd.error;
     }
 
@@ -147,7 +182,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     if (purgedOld.error) throw purgedOld.error;
     const purged = (purgedRead.count ?? 0) + (purgedOld.count ?? 0);
 
-    return { reminders: toRemind.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
+    return { reminders: toRemind.length, reminders2h: toRemind2.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
   }
 };
 
