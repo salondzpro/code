@@ -46,7 +46,7 @@ import {
   UserX,
   XCircle,
 } from 'lucide-react';
-import { Avatar, BottomSheet, Button, I, Input, StatusBadge, TopBar } from '@/components/ui';
+import { Avatar, BottomSheet, Button, I, Input, StatusBadge, TopBar, Dim } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -260,7 +260,7 @@ export function ProBookingDetail() {
 
       {cancelling && (
         <>
-          <div className="dim" onClick={() => setCancelling(false)} />
+          <Dim onClose={() => setCancelling(false)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">

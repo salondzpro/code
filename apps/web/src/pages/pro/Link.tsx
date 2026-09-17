@@ -37,8 +37,7 @@ import {
   ListRow,
   SectionLabel,
   Toast,
-  TopBar,
-} from '@/components/ui';
+  TopBar, Dim } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
@@ -134,7 +133,7 @@ export function ShareSheet({
   ];
   return (
     <>
-      <div className="dim" onClick={onClose} />
+      <Dim onClose={onClose} />
       <BottomSheet>
         <div className="h1 !text-[1.429rem]">{t("Partagez votre page")}</div>
         <div className="flex items-center gap-3 rounded-[var(--radius-card-sm)] bg-fill px-4 py-4 text-[1rem]">

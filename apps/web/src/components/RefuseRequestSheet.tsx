@@ -10,7 +10,7 @@ import { useProBookingMutations } from '@salondz/api-client';
 import { REFUSAL_REASONS_FR, reasonOptions } from '@salondz/constants';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
-import { BottomSheet, Button } from './ui';
+import { BottomSheet, Button, Dim } from './ui';
 import { t } from '@/i18n';
 
 export interface RefusedRequest {
@@ -29,7 +29,7 @@ export function RefuseRequestSheet({
   const [reason, setReason] = useState('');
   return (
     <>
-      <div className="dim" onClick={onClose} />
+      <Dim onClose={onClose} />
       <BottomSheet className="!z-50">
         <div className="text-center">
           <div className="text-[1.429rem] font-bold tracking-[-0.4px]">{t("Refuser cette demande ?")}</div>

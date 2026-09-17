@@ -10,7 +10,7 @@ import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-react';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { groupServices } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
-import { BottomSheet, Button, I, Input, TopBar } from '@/components/ui';
+import { BottomSheet, Button, I, Input, TopBar, Dim } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
@@ -147,7 +147,7 @@ export function ProCategories() {
 
       {del && (
         <>
-          <div className="dim" onClick={() => setDel(null)} />
+          <Dim onClose={() => setDel(null)} />
           <BottomSheet className="!z-50">
             <div className="h2 text-center !text-[1.143rem]">{t("Supprimer «")}{' '}{del.name} » ?</div>
             {del.mode ? (

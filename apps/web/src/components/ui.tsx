@@ -660,6 +660,21 @@ export function Img({
 }
 
 // ---------- Overlays ----------
+/**
+ * Voile d'une feuille modale : un tap dessus ferme, la touche Échap aussi (clavier, lecteurs d'écran,
+ * navigateur de bureau). Toute feuille qui se ferme doit passer par lui plutôt que par un `div.dim` nu.
+ */
+export function Dim({ onClose, className = '' }: { onClose: () => void; className?: string }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  return <div className={`dim ${className}`} onClick={onClose} aria-hidden="true" />;
+}
+
 export function BottomSheet({
   children,
   grab = true,

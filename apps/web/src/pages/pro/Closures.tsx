@@ -20,7 +20,7 @@ import {
 import { createTimeBlockSchema } from '@salondz/validation';
 import type { TimeBlock } from '@salondz/types';
 import { errorText } from '@/components/ErrorMessage';
-import { Badge, BottomSheet, Button, Pill, SectionLabel, Skeleton, TopBar } from '@/components/ui';
+import { Badge, BottomSheet, Button, Pill, SectionLabel, Skeleton, TopBar, Dim } from '@/components/ui';
 import { MonthNav, dayNumber } from '@/components/DaySelector';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -317,7 +317,7 @@ export function Closures() {
 
       {del && (
         <>
-          <div className="dim" onClick={() => setDel(null)} />
+          <Dim onClose={() => setDel(null)} />
           <BottomSheet className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
@@ -350,7 +350,7 @@ export function Closures() {
       )}
       {conflict && (
         <>
-          <div className="dim !z-[45]" onClick={() => setConflict(null)} />
+          <Dim onClose={() => setConflict(null)} className="!z-[45]" />
           <BottomSheet className="!z-50">
             <div className="h1 !text-[1.429rem]">{t('{n} rendez-vous dans cette période', { n: conflict.length })}</div>
             <p className="p">{t("Fermer quand même les annule : chaque client est prévenu et le créneau est libéré pour lui ailleurs.")}</p>

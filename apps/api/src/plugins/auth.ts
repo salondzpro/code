@@ -109,7 +109,7 @@ export default fp(async (app) => {
     if (!req.user) throw unauthorized();
     const { data, error } = await db
       .from('profiles')
-      .select('id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at')
+      .select('id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, notify_confirmations, created_at')
       .eq('id', req.user.id)
       .maybeSingle();
     if (error) throw error;
@@ -118,7 +118,7 @@ export default fp(async (app) => {
       const ins = await db
         .from('profiles')
         .insert({ id: req.user.id, phone: req.user.phone })
-        .select('id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at')
+        .select('id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, notify_confirmations, created_at')
         .single();
       if (ins.error) throw ins.error;
       req.profile = camelize<Profile>(ins.data);

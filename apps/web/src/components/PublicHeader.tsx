@@ -22,7 +22,7 @@ import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/con
 import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import { I } from './ui';
+import { I, Dim } from './ui';
 import { t } from '@/i18n';
 
 /** Trois catégories par marché : au-delà, le tiroir devient une liste à faire défiler. */
@@ -73,7 +73,7 @@ export function PublicHeader() {
     <>
       {/* Le voile passe SOUS le tiroir : en 60 contre 50, il le grisait entièrement et
           rendait la déconnexion incliquable. */}
-      <div className="dim !z-[45]" onClick={() => setOpen(false)} />
+      <Dim onClose={() => setOpen(false)} className="!z-[45]" />
       <nav className="drw" aria-label={t("Menu Salon DZ")}>
         <button
           type="button"

@@ -21,6 +21,8 @@ export const updateProfileSchema = z.object({
   market: z.enum(['men', 'women']).nullable().optional(),
   /** Rappels WhatsApp 2 h avant chaque rendez-vous. */
   whatsappReminders: z.boolean().optional(),
+  /** Push des confirmations (réservation, report, annulation) ; les notifications restent dans l'app. */
+  notifyConfirmations: z.boolean().optional(),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 

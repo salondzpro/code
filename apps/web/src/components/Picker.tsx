@@ -6,7 +6,7 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, Plus } from 'lucide-react';
-import { BottomSheet, Button, I } from './ui';
+import { BottomSheet, Button, I, Dim } from './ui';
 
 export interface PickerOption<T extends string | number> {
   value: T;
@@ -47,7 +47,7 @@ export function PickerSheet<T extends string | number>({
    */
   return createPortal(
     <div onClick={(e) => e.stopPropagation()}>
-      <div className="dim !z-[45]" onClick={onClose} />
+      <Dim onClose={onClose} className="!z-[45]" />
       <BottomSheet className="max-h-[85vh] !z-50 overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{title}</div>
         <div className="crd !gap-0 !py-1" role="radiogroup" aria-label={title}>

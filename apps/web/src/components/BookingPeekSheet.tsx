@@ -42,7 +42,7 @@ import { formatDuration } from '@/lib/format';
 import { ErrorMessage } from './ErrorMessage';
 import { FactRow } from './BookingFacts';
 import { PickerField } from './Picker';
-import { Avatar, BottomSheet, Button, I, Skeleton, StatusBadge } from './ui';
+import { Avatar, BottomSheet, Button, I, Skeleton, StatusBadge, Dim } from './ui';
 import { t } from '@/i18n';
 
 export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => void }) {
@@ -78,7 +78,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
 
   return (
     <>
-      <div className="dim" onClick={onClose} />
+      <Dim onClose={onClose} />
       <BottomSheet className="max-h-[88vh] overflow-y-auto">
         {booking.isPending && <Skeleton className="h-[12rem] w-full !rounded-[var(--radius-card)]" />}
         {booking.isError && (

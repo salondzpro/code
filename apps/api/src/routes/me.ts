@@ -20,7 +20,7 @@ import {
   SHOW_SALON_CONTACT_TO_CLIENTS, SLOT_ALERT_MAX_PER_CLIENT } from '@salondz/constants';
 
 const PROFILE_COLS =
-  'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, created_at';
+  'id, role, full_name, phone, avatar_url, gender, locale, market, whatsapp_reminders, notify_confirmations, created_at';
 
 const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);

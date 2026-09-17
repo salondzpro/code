@@ -4,7 +4,7 @@
  * recadré (WebP) qui est ensuite compressé et envoyé comme d'habitude. Sans dépendance : canvas natif.
  */
 import { useEffect, useRef, useState } from 'react';
-import { BottomSheet, Button } from './ui';
+import { BottomSheet, Button, Dim } from './ui';
 import { t } from '@/i18n';
 
 /** Format des photos de couverture (cartes marketplace, page publique). */
@@ -116,7 +116,7 @@ export function ImageCropper({
 
   return (
     <>
-      <div className="dim !z-40" onClick={onCancel} />
+      <Dim onClose={onCancel} className="!z-40" />
       <BottomSheet className="!z-50">
         <div className="text-center text-[1.143rem] font-bold tracking-[-0.4px]">{title}</div>
         <p className="p text-center text-[0.857rem]">

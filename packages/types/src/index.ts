@@ -30,6 +30,8 @@ export interface Profile {
   locale: 'fr' | 'ar' | 'en';
   market: 'men' | 'women' | null;
   whatsappReminders: boolean;
+  /** Push pour réservation, confirmation, report, annulation (les notifications restent dans l'app). */
+  notifyConfirmations: boolean;
   createdAt: ISODateTime;
 }
 

@@ -44,8 +44,7 @@ import {
   Input,
   SearchBox,
   Skeleton,
-  TopBar,
-} from '@/components/ui';
+  TopBar, Dim } from '@/components/ui';
 import { DayScroller } from '@/components/DayCarousel';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -131,7 +130,7 @@ function ClientSheet({
   };
   return (
     <>
-      <div className="dim !z-[45]" onClick={onClose} />
+      <Dim onClose={onClose} className="!z-[45]" />
       <BottomSheet className="!z-50 max-h-[90vh] overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{t("Client")}</div>
         <SearchBox value={q} onChange={setQ} placeholder={t("Rechercher dans ma clientèle")} autoFocus />
@@ -222,7 +221,7 @@ function ServicesSheet({
   const minutes = chosen.reduce((a, s) => a + (s?.durationMinutes ?? 0), 0);
   return (
     <>
-      <div className="dim !z-[45]" onClick={onClose} />
+      <Dim onClose={onClose} className="!z-[45]" />
       <BottomSheet className="!z-50 max-h-[90vh] overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{t("Prestations")}</div>
         <div className="crd !gap-0 !py-1">

@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { useProPendingBookings, useProSalon } from '@salondz/api-client';
 import { supabase } from '@/lib/supabase';
-import { Avatar, Badge, I } from './ui';
+import { Avatar, Badge, I, Dim } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
 import { t } from '@/i18n';
 
@@ -105,7 +105,7 @@ export function ProHeader() {
 
   const drawer = (
     <>
-      <div className="dim !z-[45]" onClick={() => setOpen(false)} />
+      <Dim onClose={() => setOpen(false)} className="!z-[45]" />
       <nav className="drw !gap-1" aria-label={t("Menu professionnel")}>
         <div className="flex items-center justify-between">
           <span className="text-[1.143rem] leading-none tracking-[-0.4px]">

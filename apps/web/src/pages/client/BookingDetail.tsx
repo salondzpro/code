@@ -49,8 +49,7 @@ import {
   Input,
   LinkButton,
   StatusBadge,
-  TopBar,
-} from '@/components/ui';
+  TopBar, Dim } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { PickerField } from '@/components/Picker';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -297,7 +296,7 @@ export function BookingDetail() {
 
       {cancelling && (
         <>
-          <div className="dim" onClick={() => setCancelling(false)} />
+          <Dim onClose={() => setCancelling(false)} />
           <BottomSheet>
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">

@@ -6,7 +6,7 @@ import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { MARKET_LABELS_FR, formatLocale } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
-import { Badge, BottomSheet, Button, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { Badge, BottomSheet, Button, ListRow, SectionLabel, Toggle, TopBar, Dim } from '@/components/ui';
 import { api } from '@/lib/api';
 import { errorText } from '@/components/ErrorMessage';
 import {
@@ -61,11 +61,15 @@ export function Settings() {
   const update = useUpdateProfile();
   const [prefs, setPrefs] = useLocationPrefs();
   const [reminders, setReminders] = useState(true);
+  const [confirmations, setConfirmations] = useState(true);
   const p = me.data?.profile;
   const [locale] = useLocale();
 
   useEffect(() => {
-    if (p) setReminders(p.whatsappReminders ?? true);
+    if (p) {
+      setReminders(p.whatsappReminders ?? true);
+      setConfirmations(p.notifyConfirmations ?? true);
+    }
   }, [p]);
 
   return (
@@ -120,14 +124,15 @@ export function Settings() {
             <span className="block text-[1rem] font-semibold">{t("Confirmations")}</span>
             <span className="p block text-[0.857rem]">{t("Réservation, report, annulation")}</span>
           </span>
-          <Toggle on={prefs.notifConfirmations} onChange={(v) => setPrefs({ notifConfirmations: v })} label={t("Confirmations")} />
-        </div>
-        <div className="li">
-          <span>
-            <span className="block text-[1rem] font-semibold">{t("Nouveautés des salons suivis")}</span>
-            <span className="p block text-[0.857rem]">{t("Maximum une fois par semaine")}</span>
-          </span>
-          <Toggle on={prefs.notifNews} onChange={(v) => setPrefs({ notifNews: v })} label={t("Nouveautés")} />
+          <Toggle
+            on={confirmations}
+            disabled={update.isPending}
+            onChange={(v) => {
+              setConfirmations(v);
+              update.mutate({ notifyConfirmations: v });
+            }}
+            label={t("Confirmations")}
+          />
         </div>
       </div>
 
@@ -203,7 +208,7 @@ export function Settings() {
       </div>
       {confirmDelete && (
         <>
-          <div className="dim" onClick={() => deleting === '…' || setConfirmDelete(false)} />
+          <Dim onClose={() => deleting === '…' || setConfirmDelete(false)} />
           <BottomSheet>
             <div className="h1 !text-[1.429rem]">{t("Supprimer mon compte ?")}</div>
             <p className="p">{t("Vos rendez-vous à venir seront perdus, vos favoris et avis effacés, et vos rendez-vous passés anonymisés chez les salons. Cette action est définitive.")}</p>

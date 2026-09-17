@@ -5,6 +5,9 @@ import { isWebPushToken, sendWebPush, webPushEnabled } from './webpush';
 
 const expo = new Expo({ useFcmV1: true });
 
+/** Notifications couvertes par le réglage « Confirmations » des Réglages client. */
+const CONFIRMATION_TYPES = new Set(['booking_created', 'booking_confirmed', 'booking_cancelled', 'booking_rescheduled']);
+
 interface PendingNotification {
   id: string;
   user_id: string;
@@ -32,6 +35,16 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   if (!pending || pending.length === 0) return 0;
 
   const userIds = [...new Set(pending.map((n) => n.user_id as string))];
+
+  // Réglage « Confirmations » (client) : les notifications de réservation restent dans l'application
+  // mais ne sont pas poussées quand la personne l'a coupé. Un pro reçoit toujours ses demandes.
+  const optOut = new Set<string>();
+  if (pending.some((n) => CONFIRMATION_TYPES.has(n.type as string))) {
+    const prefs = await db.from('profiles').select('id').in('id', userIds).eq('role', 'client').eq('notify_confirmations', false);
+    if (prefs.error) log.warn({ err: prefs.error }, 'push prefs');
+    for (const p of prefs.data ?? []) optOut.add(p.id as string);
+  }
+  const wanted = (n: PendingNotification) => !(optOut.has(n.user_id) && CONFIRMATION_TYPES.has(n.type));
   const { data: tokens, error: tErr } = await db
     .from('push_tokens')
     .select('user_id, token')
@@ -57,6 +70,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
 
   const messages: ExpoPushMessage[] = [];
   for (const n of pending as PendingNotification[]) {
+    if (!wanted(n)) continue;
     for (const to of tokensByUser.get(n.user_id) ?? []) {
       messages.push({
         to,
@@ -89,6 +103,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // Navigateurs : un envoi par abonnement, les abonnements morts sont supprimés.
   let webSent = 0;
   for (const n of pending as PendingNotification[]) {
+    if (!wanted(n)) continue;
     for (const token of webByUser.get(n.user_id) ?? []) {
       const r = await sendWebPush(log, token, {
         title: n.title,
