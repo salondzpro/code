@@ -20,6 +20,7 @@ import { db } from '../../lib/supabase';
 import { badRequest, conflict, unwrap } from '../../lib/errors';
 import { snakeize } from '../../lib/mappers';
 import { loadOwnerView } from '../../lib/queries';
+import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon } from '../../plugins/auth';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -184,7 +185,12 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
         })),
       );
       if (ins.error) throw ins.error;
-      return loadOwnerView(salon.id);
+      // Les rendez-vous déjà pris hors des nouvelles plages sont conservés et signalés (jamais annulés d'office).
+      const outsideBookings = await bookingsOutsideHours(
+        salon.id,
+        req.body.hours.filter((h) => !h.isClosed).map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.opensAt, end: h.closesAt })),
+      );
+      return { ...(await loadOwnerView(salon.id)), outsideBookings };
     },
   );
 

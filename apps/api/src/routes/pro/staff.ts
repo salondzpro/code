@@ -7,6 +7,7 @@ import { db } from '../../lib/supabase';
 import { conflict, notFound, unwrap } from '../../lib/errors';
 import { camelize, hm, snakeize } from '../../lib/mappers';
 import { STAFF_SELECT, mapStaff } from '../../lib/queries';
+import { bookingsOutsideHours } from '../../lib/hours';
 
 const proStaffRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireSalon);
@@ -110,8 +111,16 @@ const proStaffRoutes: FastifyPluginAsyncZod = async (app) => {
       );
       if (ins.error) throw ins.error;
     }
-    reply.status(204);
-    return null;
+    // Plages effectives du membre : les siennes, sinon celles du salon. Ses rendez-vous hors plage sont signalés.
+    let ranges = req.body.hours.map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.startsAt, end: h.endsAt }));
+    if (!ranges.length) {
+      const oh = await db.from('opening_hours').select('day_of_week, opens_at, closes_at, is_closed').eq('salon_id', req.salon!.id);
+      if (oh.error) throw oh.error;
+      ranges = (oh.data ?? []).filter((h) => !h.is_closed).map((h) => ({ dayOfWeek: h.day_of_week as number, start: h.opens_at as string, end: h.closes_at as string }));
+    }
+    const outsideBookings = await bookingsOutsideHours(req.salon!.id, ranges, req.params.id);
+    reply.status(200);
+    return { outsideBookings };
   });
 };
 

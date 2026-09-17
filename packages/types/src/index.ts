@@ -332,6 +332,19 @@ export interface SalonOwnerView extends Salon {
   openingHours: OpeningHour[];
 }
 
+/** Rendez-vous à venir qui ne tient plus dans les horaires enregistrés (conservé, à traiter par le pro). */
+export interface OutsideBooking {
+  id: UUID;
+  clientName: string;
+  serviceName: string;
+  startsAt: ISODateTime;
+}
+
+/** Réponse d'un enregistrement d'horaires : la vue du salon et les rendez-vous laissés hors plage. */
+export interface SetHoursResult extends SalonOwnerView {
+  outsideBookings: OutsideBooking[];
+}
+
 export interface AvailabilitySlot {
   /** ISO — début du créneau. */
   startsAt: ISODateTime;

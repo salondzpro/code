@@ -10,6 +10,8 @@ import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { ChevronDown, Copy, Plus, X } from 'lucide-react';
 import { DAY_LABELS_FR, MAX_BREAKS_PER_DAY, formatDayRanges, nextBreakSuggestion, rangesFromRows, rowError, rowsFromRanges, type DayBreak, type DayHoursRow, type DayOfWeek } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
+import { HoursConflictSheet } from '@/components/HoursConflictSheet';
+import type { OutsideBooking } from '@salondz/types';
 import { I, Toggle } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -115,6 +117,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
   const { setHours } = useProSalonMutations();
   const [rows, setRows] = useState<DayHoursRow[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [outside, setOutside] = useState<OutsideBooking[] | null>(null);
 
   useEffect(() => {
     if (!salon) return;
@@ -129,7 +132,12 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
     const open = rangesFromRows(rows).map((r) => ({ dayOfWeek: r.dayOfWeek, opensAt: r.start, closesAt: r.end, isClosed: false }));
     const closed = rows.filter((r) => !r.open).map((r) => ({ dayOfWeek: r.dayOfWeek, opensAt: r.opensAt, closesAt: r.closesAt, isClosed: true }));
     try {
-      await setHours.mutateAsync({ hours: [...open, ...closed] });
+      const r = await setHours.mutateAsync({ hours: [...open, ...closed] });
+      // Des rendez-vous déjà pris tombent hors des nouvelles plages : on le dit avant de quitter.
+      if (r.outsideBookings.length) {
+        setOutside(r.outsideBookings);
+        return;
+      }
       navigate(settings ? '/pro/profil' : stepPath(10));
     } catch (err) {
       setError(errorText(err));
@@ -149,6 +157,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
         </p>
       )}
       <StepSheet label={settings ? t('Enregistrer') : t('Continuer')} onClick={() => void save()} disabled={invalid} busy={setHours.isPending} />
+      {outside && <HoursConflictSheet items={outside} onClose={() => navigate(settings ? '/pro/profil' : stepPath(10))} />}
     </Screen>
   );
 }

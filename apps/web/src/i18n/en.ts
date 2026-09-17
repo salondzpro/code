@@ -916,4 +916,10 @@ export const en: Record<string, string> = {
   'Certaines informations sont invalides.': 'Some information is invalid.',
   'Trop de requêtes. Patientez un instant.': 'Too many requests. Wait a moment.',
   'Erreur du serveur. Réessayez dans un instant.': 'Server error. Try again in a moment.',
+  '{n} rendez-vous hors des nouveaux horaires': '{n} appointments outside the new hours',
+  'Les horaires sont enregistrés et ces rendez-vous sont conservés : déplacez-les ou annulez-les depuis l\'agenda, ou élargissez les horaires.': 'The hours are saved and these appointments are kept: move or cancel them from the agenda, or widen the hours.',
+  'Voir l\'agenda': 'Open the agenda',
+  'Compris': 'Got it',
+  'Prévisionnel : {n} rendez-vous confirmés à venir': 'Forecast: {n} confirmed upcoming appointments',
+  'Réalisé : rendez-vous terminés': 'Actual: completed appointments',
 };

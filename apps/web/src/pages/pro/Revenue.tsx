@@ -170,14 +170,17 @@ export function Revenue() {
           </div>
           <div className="crd !gap-0 !py-1">
             <div className="li">
-              <span className="text-[1rem] font-semibold">{t("Encaissé")}</span>
+              <span>
+                <span className="block text-[1rem] font-semibold">{t("Encaissé")}</span>
+                <span className="p block text-[0.857rem]">{t("Réalisé : rendez-vous terminés")}</span>
+              </span>
               <span className="text-[1.429rem] font-bold">{formatDA(s!.collectedDa)}</span>
             </div>
             <div className="li">
               <span>
                 <span className="block text-[1rem] font-semibold">{t("Reste à encaisser")}</span>
                 <span className="p block text-[0.857rem]">
-                  {s!.remainingCount} {t("rendez-vous confirmé")}{s!.remainingCount > 1 ? 's' : ''}
+                  {t('Prévisionnel : {n} rendez-vous confirmés à venir', { n: s!.remainingCount })}
                 </span>
               </span>
               <span className="text-[1.429rem] font-bold">{formatDA(s!.remainingDa)}</span>

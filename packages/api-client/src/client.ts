@@ -13,6 +13,8 @@ import type {
   Profile,
   Review,
   SalonOwnerView,
+  SetHoursResult,
+  OutsideBooking,
   SalonPublic,
   SalonSummary,
   ClientStanding,
@@ -258,7 +260,7 @@ export function createApiClient(opts: ApiClientOptions) {
       setPhotos: (photos: { url: string }[]) =>
         put<SalonOwnerView>('/pro/salon/photos', { photos }),
       setWorks: (photos: { url: string }[]) => put<SalonOwnerView>('/pro/salon/works', { photos }),
-      setHours: (body: SetOpeningHoursInput) => put<SalonOwnerView>('/pro/salon/hours', body),
+      setHours: (body: SetOpeningHoursInput) => put<SetHoursResult>('/pro/salon/hours', body),
       stats: () => get<ProDashboardStats>('/pro/stats'),
       statsRange: (from: string, to: string) =>
         get<ProStatsRange>('/pro/stats/range', { from, to }),
@@ -303,7 +305,7 @@ export function createApiClient(opts: ApiClientOptions) {
         remove: (id: string) => del<{ deleted: boolean; deactivated: boolean }>(`/pro/staff/${id}`),
         hours: (id: string) => get<StaffHour[]>(`/pro/staff/${id}/hours`),
         setHours: (id: string, hours: { dayOfWeek: number; startsAt: string; endsAt: string }[]) =>
-          put<void>(`/pro/staff/${id}/hours`, { hours }),
+          put<{ outsideBookings: OutsideBooking[] }>(`/pro/staff/${id}/hours`, { hours }),
       },
       clients: {
         list: (q: { q?: string; cursor?: string; limit?: number } = {}) =>

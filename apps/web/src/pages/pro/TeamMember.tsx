@@ -16,10 +16,11 @@ import {
   rowsFromRanges,
   type DayHoursRow,
 } from '@salondz/constants';
-import type { OpeningHour, SalonOwnerView, Staff } from '@salondz/types';
+import type { OpeningHour, OutsideBooking, SalonOwnerView, Staff } from '@salondz/types';
 import { phoneDZ } from '@salondz/validation';
 import { formatDZPhone } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
+import { HoursConflictSheet } from '@/components/HoursConflictSheet';
 import {
   Avatar,
   BottomSheet,
@@ -404,6 +405,7 @@ export function TeamMemberHours() {
   const [custom, setCustom] = useState(false);
   const [rows, setRows] = useState<DayHoursRow[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [outside, setOutside] = useState<OutsideBooking[] | null>(null);
   const seeded = useRef(false);
   useEffect(() => {
     if (!salon || !hours.data || seeded.current) return;
@@ -437,7 +439,7 @@ export function TeamMemberHours() {
   const save = async () => {
     setError(null);
     try {
-      await setHours.mutateAsync({
+      const r = await setHours.mutateAsync({
         id: member.id,
         hours: custom
           ? rangesFromRows(rows).map((r) => ({
@@ -447,6 +449,10 @@ export function TeamMemberHours() {
             }))
           : [],
       });
+      if (r.outsideBookings.length) {
+        setOutside(r.outsideBookings);
+        return;
+      }
       navigate(`/pro/equipe/${member.id}`, { replace: true });
     } catch (err) {
       setError(errorText(err));
@@ -500,9 +506,10 @@ export function TeamMemberHours() {
           onClick={() => void save()}
           disabled={setHours.isPending || invalid || hours.isPending}
         >
-          {setHours.isPending ? 'Enregistrement…' : 'Enregistrer'}
+          {setHours.isPending ? t('Enregistrement…') : t('Enregistrer')}
         </Button>
       </BottomSheet>
+      {outside && <HoursConflictSheet items={outside} onClose={() => navigate(`/pro/equipe/${member.id}`, { replace: true })} />}
     </Screen>
   );
 }

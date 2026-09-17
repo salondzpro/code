@@ -897,4 +897,10 @@ export const ar: Record<string, string> = {
   'Certaines informations sont invalides.': 'بعض المعلومات غير صالحة.',
   'Trop de requêtes. Patientez un instant.': 'طلبات كثيرة. انتظر لحظة.',
   'Erreur du serveur. Réessayez dans un instant.': 'خطأ في الخادم. أعد المحاولة بعد قليل.',
+  '{n} rendez-vous hors des nouveaux horaires': '{n} موعد خارج الأوقات الجديدة',
+  'Les horaires sont enregistrés et ces rendez-vous sont conservés : déplacez-les ou annulez-les depuis l\'agenda, ou élargissez les horaires.': 'تم حفظ الأوقات وهذه المواعيد محفوظة: انقلها أو ألغِها من الأجندة، أو وسّع الأوقات.',
+  'Voir l\'agenda': 'فتح الأجندة',
+  'Compris': 'فهمت',
+  'Prévisionnel : {n} rendez-vous confirmés à venir': 'متوقع: {n} موعد مؤكد قادم',
+  'Réalisé : rendez-vous terminés': 'محقق: مواعيد منتهية',
 };

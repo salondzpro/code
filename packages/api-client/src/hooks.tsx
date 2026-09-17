@@ -300,7 +300,7 @@ export function useProSalonMutations() {
     updateSalon: useMutation({ mutationFn: api.pro.updateSalon, onSuccess: onSalon }),
     setPhotos: useMutation({ mutationFn: api.pro.setPhotos, onSuccess: onSalon }),
     setWorks: useMutation({ mutationFn: api.pro.setWorks, onSuccess: onSalon }),
-    setHours: useMutation({ mutationFn: api.pro.setHours, onSuccess: onSalon }),
+    setHours: useMutation({ mutationFn: api.pro.setHours, onSuccess: ({ outsideBookings: _o, ...salon }) => onSalon(salon) }),
   };
 }
 

@@ -65,11 +65,11 @@ Lot du 17 septembre (commits 23aa8d2 et 9a4d1a5) :
 8. Schémas de réponse zod sur les routes publiques (aucune colonne nouvelle ne part par défaut).
 9. Réglage « Rappels » lu par le cron (fait le 16 sept.) ; « Confirmations » porté par le profil et respecté à l'envoi des push (17 sept., migration 0040) ; « Nouveautés » retiré, aucune fonctionnalité derrière (l'expiration des demandes à 24 h et la relance du pro sont livrées le 16 sept., ainsi que la liste d'attente « créneau libéré »).
 10. Fiche client sur identifiant stable (fusion compte + numéro), blocage d'un client de passage.
-11. ~~Congés : rendez-vous touchés listés et annulés sur confirmation~~ (fait le 17 sept.) ; reste le cas des horaires modifiés.
+11. ~~Congés : rendez-vous touchés listés et annulés sur confirmation~~ (fait le 17 sept.) ; horaires modifiés (salon ou membre) : les rendez-vous laissés hors plage sont listés et conservés, feuille « Voir l'agenda » (17 sept.).
 12. ~~Découpage du bundle, police auto-hébergée, manifeste PWA~~ (faits le 16 sept. : 40 pages en chargement paresseux, dictionnaires à la demande, Inter en woff2 local, manifeste avec icônes SVG) ; icônes PNG 192/512 + apple-touch-icon (17 sept.) ; les balises Open Graph sont servies via `/share/s/:slug` de l'API (fait le 17 sept.).
 13. ~~Réglage des notifications navigateur côté pro~~ : fait le 16 sept. (Compte pro → « Notifications sur cet appareil », abonnement rafraîchi à l'entrée).
 14. Projet Supabase de préproduction pour la CI e2e et les scripts `check:*` (aujourd'hui ils écrivent en production).
-15. Chiffre d'affaires : distinguer prévisionnel (confirmé) et réalisé (terminé).
+15. ~~Chiffre d'affaires : distinguer prévisionnel (confirmé) et réalisé (terminé)~~ (libellés explicites le 17 sept. ; le cron termine les rendez-vous passés, donc « Encaissé » = réalisé).
 
 ### Souhaitable
 16. Multi-prestations à la saisie pro, jours fériés, horaires de nuit, grille alignée sur l'horloge, export CSV.
