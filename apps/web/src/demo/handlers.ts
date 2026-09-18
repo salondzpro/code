@@ -756,7 +756,7 @@ on('GET', '/pro/clients/:key/history', (c, p) => {
   const limit = num(c.query.get('limit'), 50);
   const offset = num(c.query.get('cursor'), 0);
   const rows = c.w.bookings
-    .filter((b) => b.salonId === s.id && clientKeyOf(b) === key && (!status || b.status === status))
+    .filter((b) => b.salonId === s.id && clientKeyOf(c.w, b) === key && (!status || b.status === status))
     .sort((a, b) => b.startsAt.localeCompare(a.startsAt))
     .map((b) => ({ id: b.id, startsAt: b.startsAt, endsAt: b.endsAt, serviceName: b.serviceName, priceDa: b.priceDa, status: b.status, cancelledBy: b.cancelledBy, staffName: s.staff.find((x) => x.id === b.staffId)?.displayName ?? null }));
   return ok({ ...page(rows, offset, limit), total: rows.length });
@@ -767,19 +767,34 @@ on('PUT', '/pro/clients/:key/notes', (c, p) => {
   saveWorld();
   return none();
 });
+/** Retire tout blocage de cette personne : par identité, par compte, par numéro (comme l'API). */
+function clearBlocks(c: Ctx, salonId: string, key: string): { clientId: string | null; phone: string | null } {
+  const client = proClients(c.w, salonId, c.now).find((x) => x.clientKey === key);
+  if (!client) throw notFound('Client');
+  c.w.blocked = c.w.blocked.filter(
+    (x) =>
+      !(
+        x.salonId === salonId &&
+        (x.clientKey === key ||
+          (client.clientId && x.clientId === client.clientId) ||
+          (client.phone && x.phone === client.phone))
+      ),
+  );
+  return { clientId: client.clientId, phone: client.phone };
+}
+
 on('POST', '/pro/clients/block', (c) => {
   const s = ownedSalon(c);
-  const { clientId, phone, reason } = c.body as { clientId?: string; phone?: string; reason?: string };
-  if (clientId && clientId === c.user!.id) throw bad('SELF_BLOCK', 'Vous ne pouvez pas vous bloquer vous-même.');
-  c.w.blocked = c.w.blocked.filter((x) => !(x.salonId === s.id && ((clientId && x.clientId === clientId) || (phone && x.phone === phone))));
-  c.w.blocked.push({ id: uid(), salonId: s.id, clientId: clientId ?? null, phone: phone ?? null, reason: reason ?? null });
+  const { clientKey, reason } = c.body as { clientKey: string; reason?: string };
+  const who = clearBlocks(c, s.id, clientKey);
+  if (who.clientId && who.clientId === c.user!.id) throw bad('SELF_BLOCK', 'Vous ne pouvez pas vous bloquer vous-même.');
+  c.w.blocked.push({ id: uid(), salonId: s.id, clientKey, clientId: who.clientId, phone: who.phone, reason: reason ?? null });
   saveWorld();
   return none();
 });
 on('POST', '/pro/clients/unblock', (c) => {
   const s = ownedSalon(c);
-  const { clientId, phone } = c.body as { clientId?: string; phone?: string };
-  c.w.blocked = c.w.blocked.filter((x) => !(x.salonId === s.id && ((clientId && x.clientId === clientId) || (phone && x.phone === phone))));
+  clearBlocks(c, s.id, (c.body as { clientKey: string }).clientKey);
   saveWorld();
   return none();
 });

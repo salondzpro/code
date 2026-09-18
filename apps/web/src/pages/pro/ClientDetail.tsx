@@ -184,16 +184,17 @@ export function ClientDetail() {
         <p className="p">{t("Client introuvable.")}</p>
       </Screen>
     );
-  const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
-  const canBlock = !!(c.clientId || c.phone);
+  // Un blocage n'empêche vraiment quelque chose que si la personne peut réserver en ligne,
+  // c'est-à-dire si elle a un compte ou un numéro. Sinon c'est un repère dans la clientèle.
+  const blocageOpposable = !!(c.clientId || c.phone);
   const now = Date.now();
   // Le membre n'est nommé dans l'historique que si le salon a une équipe : seul, c'est du bruit.
   const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
   const toggleBlock = async () => {
     setError(null);
     try {
-      if (c.blocked) await unblock.mutateAsync(ident);
-      else await block.mutateAsync(ident);
+      if (c.blocked) await unblock.mutateAsync({ clientKey: key });
+      else await block.mutateAsync({ clientKey: key });
     } catch (err) {
       setError(errorText(err));
     }
@@ -437,23 +438,23 @@ export function ClientDetail() {
       />
 
       {/* Bloquer : un geste rare et lourd, à l'écart des gestes du quotidien. */}
-      {canBlock && (
-        <div className="flex flex-col gap-2 pt-2">
-          <Button
-            variant={c.blocked ? 'g' : 'd'}
-            onClick={() => void toggleBlock()}
-            disabled={block.isPending || unblock.isPending}
-          >
-            <I icon={c.blocked ? ShieldCheck : Ban} size={18} />{' '}
-            {c.blocked ? 'Débloquer ce client' : 'Bloquer ce client'}
-          </Button>
-          <p className="t3 text-center">
-            {c.blocked
-              ? 'Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.'
-              : 'Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.'}
-          </p>
-        </div>
-      )}
+      <div className="flex flex-col gap-2 pt-2">
+        <Button
+          variant={c.blocked ? 'g' : 'd'}
+          onClick={() => void toggleBlock()}
+          disabled={block.isPending || unblock.isPending}
+        >
+          <I icon={c.blocked ? ShieldCheck : Ban} size={18} />{' '}
+          {c.blocked ? t('Débloquer ce client') : t('Bloquer ce client')}
+        </Button>
+        <p className="t3 text-center">
+          {blocageOpposable
+            ? c.blocked
+              ? t('Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.')
+              : t('Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.')
+            : t("Ce client de passage n'a ni compte ni numéro : le blocage le signale dans votre clientèle, il n'y a rien à empêcher en ligne.")}
+        </p>
+      </div>
     </Screen>
   );
 }

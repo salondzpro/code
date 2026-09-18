@@ -167,14 +167,14 @@ export default function ClientDetail() {
         <P>Client introuvable.</P>
       </Screen>
     );
-  const ident = { clientId: c.clientId ?? undefined, phone: c.phone ?? undefined };
-  const canBlock = !!(c.clientId || c.phone);
+  // Un blocage n'empêche vraiment quelque chose que si la personne peut réserver en ligne.
+  const blocageOpposable = !!(c.clientId || c.phone);
   const now = Date.now();
   const toggleBlock = async () => {
     setError(null);
     try {
-      if (c.blocked) await unblock.mutateAsync(ident);
-      else await block.mutateAsync(ident);
+      if (c.blocked) await unblock.mutateAsync({ clientKey: key });
+      else await block.mutateAsync({ clientKey: key });
     } catch (err) {
       setError(errorText(err));
     }
@@ -373,29 +373,22 @@ export default function ClientDetail() {
           <I icon={CalendarPlus} size={14} color="#fff" />
           <Label color="#fff">Rendez-vous</Label>
         </Button>
-        {canBlock ? (
-          <Button
-            variant={c.blocked ? 'g' : 'd'}
-            onPress={() => void toggleBlock()}
-            disabled={block.isPending || unblock.isPending}
-          >
-            <I
-              icon={c.blocked ? ShieldCheck : Ban}
-              size={14}
-              color={c.blocked ? C.text : C.danger}
-            />
-            <Label color={c.blocked ? C.text : C.danger}>
-              {c.blocked ? 'Débloquer' : 'Bloquer'}
-            </Label>
-          </Button>
-        ) : (
-          <View />
-        )}
+        <Button
+          variant={c.blocked ? 'g' : 'd'}
+          onPress={() => void toggleBlock()}
+          disabled={block.isPending || unblock.isPending}
+        >
+          <I icon={c.blocked ? ShieldCheck : Ban} size={14} color={c.blocked ? C.text : C.danger} />
+          <Label color={c.blocked ? C.text : C.danger}>
+            {c.blocked ? 'Débloquer' : 'Bloquer'}
+          </Label>
+        </Button>
       </Grid>
       {c.blocked && (
         <Alert>
-          Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre
-          salon.
+          {blocageOpposable
+            ? 'Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.'
+            : "Ce client de passage n'a ni compte ni numéro : le blocage le signale dans votre clientèle, il n'y a rien à empêcher en ligne."}
         </Alert>
       )}
       {error && <Alert>{error}</Alert>}

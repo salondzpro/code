@@ -36,6 +36,8 @@ export interface DemoReview extends Review {
 export interface BlockedClient {
   id: string;
   salonId: string;
+  /** Identité bloquée (voir `clientKeyOf`) : permet de bloquer un client de passage sans compte ni numéro. */
+  clientKey: string | null;
   clientId: string | null;
   phone: string | null;
   reason: string | null;
@@ -67,7 +69,7 @@ export interface World {
   lastEventAt: Record<string, string>;
 }
 
-const WORLD_VERSION = 4;
+const WORLD_VERSION = 5;
 const STORAGE = 'salondz:demo:world';
 
 export const uid = (): string =>

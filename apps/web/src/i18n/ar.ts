@@ -927,4 +927,9 @@ export const ar: Record<string, string> = {
   'Rendez-vous, historique, avis': 'مواعيد، سجل، تقييمات',
   'Repartir d\'une démonstration neuve': 'ابدأ تجربة جديدة',
   'Tout se passe dans ce navigateur : rien n\'est envoyé, chaque appareil a sa propre démonstration.': 'كل شيء يجري في هذا المتصفح: لا يُرسَل شيء، ولكل جهاز تجربته الخاصة.',
+  'Bloquer ce client': 'حظر هذا الزبون',
+  'Débloquer ce client': 'رفع الحظر عن هذا الزبون',
+  'Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.': 'لم يعد بإمكان هذا الزبون أخذ موعد عندك. الحظر يخص صالونك وحده.',
+  'Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.': 'الزبون المحظور لا يمكنه الحجز عندك عبر الإنترنت. هذا يخص صالونك وحده.',
+  'Ce client de passage n\'a ni compte ni numéro : le blocage le signale dans votre clientèle, il n\'y a rien à empêcher en ligne.': 'هذا الزبون العابر بلا حساب ولا رقم هاتف: الحظر يضع عليه علامة في قائمة زبائنك، ولا شيء يُمنع عبر الإنترنت.',
 };

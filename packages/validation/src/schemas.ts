@@ -159,16 +159,15 @@ export const setStaffHoursSchema = z.object({
 });
 
 // ---------- Clients bloqués ----------
-export const blockClientSchema = z
-  .object({
-    clientId: p.uuid.optional(),
-    phone: p.phoneDZ.optional(),
-    reason: p.shortText(200).optional(),
-  })
-  .refine((v) => !!v.clientId || !!v.phone, {
-    message: 'Compte ou numéro requis',
-    path: ['phone'],
-  });
+/**
+ * On bloque une IDENTITÉ, la même que celle de la fiche client (`clientKey`) : le compte et le
+ * numéro sont retrouvés côté serveur, jamais déclarés par l'appelant. Un client de passage connu
+ * du seul salon, sans compte ni numéro, est donc blocable lui aussi.
+ */
+export const blockClientSchema = z.object({
+  clientKey: z.string().min(1).max(200),
+  reason: p.shortText(200).optional(),
+});
 export type BlockClientInput = z.infer<typeof blockClientSchema>;
 export const clientNotesSchema = z.object({ notes: z.string().trim().max(2000) });
 export type ClientNotesInput = z.infer<typeof clientNotesSchema>;

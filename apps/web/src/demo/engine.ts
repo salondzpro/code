@@ -167,13 +167,23 @@ export function dashboardStats(w: World, salonId: string, now = Date.now()): Pro
   };
 }
 
-export const clientKeyOf = (b: Booking) => b.clientId ?? b.clientPhone ?? b.clientName.toLowerCase();
+/**
+ * Identité d'un client chez un salon — port de la fonction SQL `client_key` (migration 0042). Le
+ * NUMÉRO fait foi : il traverse le passage d'un client reçu de passage à un client qui se crée un
+ * compte, donc une seule fiche au lieu de deux. Le compte ne sert qu'à lire le numéro À JOUR (un
+ * numéro changé regroupe l'historique au lieu de le couper), puis de repli, puis le nom.
+ */
+export const clientKeyOf = (w: World, b: Booking): string =>
+  (b.clientId ? (w.profiles[b.clientId]?.phone ?? null) : null) ??
+  b.clientPhone ??
+  b.clientId ??
+  b.clientName.trim().toLowerCase();
 
 export function proClients(w: World, salonId: string, now = Date.now()): ProClient[] {
   const rows = w.bookings.filter((b) => b.salonId === salonId);
   const groups = new Map<string, Booking[]>();
   for (const b of rows) {
-    const k = clientKeyOf(b);
+    const k = clientKeyOf(w, b);
     groups.set(k, [...(groups.get(k) ?? []), b]);
   }
   const nowI = new Date(now).toISOString();
@@ -181,11 +191,15 @@ export function proClients(w: World, salonId: string, now = Date.now()): ProClie
   for (const [key, list] of groups) {
     const byCreated = [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     const clientId = list.find((b) => b.clientId)?.clientId ?? null;
-    const phone = list.find((b) => b.clientPhone)?.clientPhone ?? null;
+    // Numéro affiché : celui du compte s'il existe (il est à jour), sinon le dernier saisi.
+    const phone =
+      (clientId ? (w.profiles[clientId]?.phone ?? null) : null) ??
+      byCreated.find((b) => b.clientPhone)?.clientPhone ??
+      null;
     const past = list.filter((b) => b.startsAt <= nowI && b.status !== 'cancelled').map((b) => b.startsAt).sort();
     const next = list.filter((b) => b.startsAt > nowI && (b.status === 'pending' || b.status === 'confirmed')).map((b) => b.startsAt).sort();
     const lastBooking = [...list].sort((a, b) => Number(b.startsAt <= nowI) - Number(a.startsAt <= nowI) || b.startsAt.localeCompare(a.startsAt))[0];
-    const block = w.blocked.find((x) => x.salonId === salonId && ((clientId && x.clientId === clientId) || (phone && x.phone === phone)));
+    const block = w.blocked.find((x) => x.salonId === salonId && (x.clientKey === key || (clientId && x.clientId === clientId) || (phone && x.phone === phone)));
     out.push({
       clientKey: key,
       clientId,

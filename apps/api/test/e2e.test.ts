@@ -47,6 +47,7 @@ let pro: TestUser;
 let clientA: TestUser;
 let clientB: TestUser;
 let clientC: TestUser;
+let fusion: TestUser;
 let clientD: TestUser;
 /** Personne concernée et réservatrice d'un rendez-vous pris pour autrui (créées dans leur test). */
 let beneficiaire: TestUser;
@@ -82,7 +83,7 @@ before(async () => {
 
 after(async () => {
   await app?.close();
-  for (const u of [pro, clientA, clientB, clientC, clientD, beneficiaire, reservante]) {
+  for (const u of [pro, clientA, clientB, clientC, clientD, beneficiaire, reservante, fusion]) {
     if (u?.id) await db.auth.admin.deleteUser(u.id);
   }
 });
@@ -846,4 +847,80 @@ test("suppression d'une catégorie seule : les prestations restent réservables,
   assert.equal(kept.isActive, true);
   assert.equal(kept.groupName, null);
   assert.equal(kept.categoryId, null);
+});
+
+
+/**
+ * Point 10 du plan : l'identité d'un client chez un salon (migration 0042). Le NUMÉRO fait foi, de
+ * sorte qu'une personne reçue d'abord de passage puis revenue avec un compte ne fasse pas deux
+ * fiches — deux historiques, deux totaux, deux blocs de notes, et un anti-abus qui ne voit qu'une
+ * moitié de son comportement.
+ */
+test('clientèle : de passage puis avec un compte = UNE seule fiche, blocage par identité', async () => {
+  const jour = addDaysToKey(toLocalDateKey(), 10);
+  const numero = '+213770112233';
+  fusion = await createUser('fusion', 'client', 'Nadia Merzouk');
+  assert.equal((await db.from('profiles').update({ phone: numero }).eq('id', fusion.id)).error, null);
+
+  // 1) Le salon la reçoit DE PASSAGE : il saisit un nom et un numéro, sans savoir qu'elle a un compte.
+  const passage = await call('POST', '/v1/pro/bookings', pro.token, {
+    serviceId,
+    staffId,
+    startsAt: localDateTimeToISO(jour, '15:00'),
+    clientName: 'Nadia M.',
+    clientPhone: numero,
+  });
+  assert.equal(passage.statusCode, 201, passage.body);
+
+  // 2) Elle revient, cette fois par l'application, avec son compte.
+  const enLigne = await call('POST', '/v1/bookings', fusion.token, { salonId, serviceId, startsAt: localDateTimeToISO(jour, '15:30') });
+  assert.equal(enLigne.statusCode, 201, enLigne.body);
+  assert.equal(enLigne.json().clientPhone, numero);
+
+  // 3) UNE fiche, les deux rendez-vous : c'est tout l'objet de l'identité par numéro.
+  const liste = await call('GET', `/v1/pro/clients?q=${encodeURIComponent(numero)}`, pro.token);
+  assert.equal(liste.statusCode, 200, liste.body);
+  const fiches = (liste.json().items as { clientKey: string; clientId: string | null; phone: string | null; bookingsCount: number }[]).filter((c) => c.phone === numero);
+  assert.equal(fiches.length, 1, 'un client de passage devenu titulaire d\u2019un compte reste UNE fiche');
+  const fiche = fiches[0]!;
+  assert.equal(fiche.clientKey, numero);
+  assert.equal(fiche.clientId, fusion.id, 'la fiche porte le compte trouvé sur l\u2019un des rendez-vous');
+  assert.equal(fiche.bookingsCount, 2);
+  const hist = await call('GET', `/v1/pro/clients/${encodeURIComponent(fiche.clientKey)}/history`, pro.token);
+  assert.equal(hist.json().total, 2, hist.body);
+
+  // 4) Les notes suivent l'identité, pas le rendez-vous.
+  assert.equal((await call('PUT', `/v1/pro/clients/${encodeURIComponent(fiche.clientKey)}/notes`, pro.token, { notes: 'Cheveux fins' })).statusCode, 204);
+  assert.equal((await call('GET', `/v1/pro/clients/${encodeURIComponent(fiche.clientKey)}`, pro.token)).json().notes, 'Cheveux fins');
+
+  // 5) Blocage par identité : plus de réservation en ligne chez CE salon.
+  const bloc = await call('POST', '/v1/pro/clients/block', pro.token, { clientKey: fiche.clientKey, reason: 'Absences répétées' });
+  assert.equal(bloc.statusCode, 204, bloc.body);
+  const refus = await call('POST', '/v1/bookings', fusion.token, { salonId, serviceId, startsAt: localDateTimeToISO(jour, '16:00') });
+  assert.equal(refus.json().error.code, 'CLIENT_BLOCKED', refus.body);
+  const apres = await call('GET', `/v1/pro/clients/${encodeURIComponent(fiche.clientKey)}`, pro.token);
+  assert.equal(apres.json().blocked, true);
+  assert.equal(apres.json().blockedReason, 'Absences répétées');
+
+  // 6) Déblocage : elle réserve de nouveau.
+  assert.equal((await call('POST', '/v1/pro/clients/unblock', pro.token, { clientKey: fiche.clientKey })).statusCode, 204);
+  const reprise = await call('POST', '/v1/bookings', fusion.token, { salonId, serviceId, startsAt: localDateTimeToISO(jour, '16:00') });
+  assert.equal(reprise.statusCode, 201, reprise.body);
+});
+
+test('clientèle : un client de passage sans numéro est blocable (repère du salon, sans effet en ligne)', async () => {
+  const jour = addDaysToKey(toLocalDateKey(), 11);
+  const nom = `Passage Sans Numero ${RUN}`;
+  const rdv = await call('POST', '/v1/pro/bookings', pro.token, { serviceId, staffId, startsAt: localDateTimeToISO(jour, '15:00'), clientName: nom });
+  assert.equal(rdv.statusCode, 201, rdv.body);
+
+  // Sans compte ni numéro, l'identité est le nom : avant, aucun blocage n'était possible.
+  const key = nom.toLowerCase();
+  const fiche = await call('GET', `/v1/pro/clients/${encodeURIComponent(key)}`, pro.token);
+  assert.equal(fiche.statusCode, 200, fiche.body);
+  assert.equal(fiche.json().clientId, null);
+  assert.equal(fiche.json().phone, null);
+  assert.equal((await call('POST', '/v1/pro/clients/block', pro.token, { clientKey: key })).statusCode, 204);
+  assert.equal((await call('GET', `/v1/pro/clients/${encodeURIComponent(key)}`, pro.token)).json().blocked, true);
+  assert.equal((await call('GET', '/v1/pro/clients', pro.token)).json().blockedCount, 1);
 });

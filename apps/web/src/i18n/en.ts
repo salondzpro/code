@@ -946,4 +946,9 @@ export const en: Record<string, string> = {
   'Rendez-vous, historique, avis': 'Appointments, history, reviews',
   'Repartir d\'une démonstration neuve': 'Start a fresh demo',
   'Tout se passe dans ce navigateur : rien n\'est envoyé, chaque appareil a sa propre démonstration.': 'Everything runs in this browser: nothing is sent, and each device has its own demo.',
+  'Bloquer ce client': 'Block this client',
+  'Débloquer ce client': 'Unblock this client',
+  'Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.': 'This client can no longer book an appointment with you. The block applies to your salon only.',
+  'Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.': 'A blocked client can no longer book with you online. This applies to your salon only.',
+  'Ce client de passage n\'a ni compte ni numéro : le blocage le signale dans votre clientèle, il n\'y a rien à empêcher en ligne.': 'This walk-in has no account and no phone number: the block flags them in your client list, there is nothing to prevent online.',
 };
