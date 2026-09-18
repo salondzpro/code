@@ -167,7 +167,7 @@ export function PublicHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface">
-      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center justify-between gap-3 px-4">
+      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center justify-between gap-3 px-[calc(1rem+var(--shell-px))]">
         <button
           type="button"
           className="ib !border-0 !bg-transparent"

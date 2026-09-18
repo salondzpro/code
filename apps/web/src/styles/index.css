@@ -1200,6 +1200,8 @@
   .scr {
     /* La feuille n'est plus posée en bas de l'écran : plus rien à lui réserver. */
     padding-bottom: var(--scr-b, 1rem);
+    /* Gouttière : celle du téléphone (16 px du design) plus l'aise d'un grand écran. */
+    padding-inline: calc(1rem + var(--shell-px));
   }
 
   /* Feuille MODALE → fenêtre centrée. Même composant, même contenu, autre place. */
@@ -1234,7 +1236,13 @@
     transform: translate(-50%, -50%);
     border-radius: var(--radius-sheet);
     overflow: hidden;
-    box-shadow: var(--shadow-card);
+    /* Le second « ombrage » est le VOILE : une ombre de 100 vmax autour de la fenêtre assombrit
+       la page, sans élément supplémentaire. Le panneau étant `transform`é, un enfant en position
+       fixe y serait rogné par son `overflow: hidden` ; une ombre, elle, vit hors de la boîte.
+       Sur téléphone, le panneau occupe tout l'écran et n'a rien à assombrir. */
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 100vmax rgb(23 24 26 / 0.32);
   }
   @keyframes pnl-in {
     from {
@@ -1246,6 +1254,7 @@
       transform: translate(-50%, -50%);
     }
   }
+
 
   .toast {
     max-width: 28rem;
@@ -1266,7 +1275,8 @@
   :root {
     --shell-px: 1.25rem;
     --read-w: 48rem;
-    --rail-w: 17.5rem;
+    /* Assez large pour « Fermetures et blocages » et le nom du salon sans coupure. */
+    --rail-w: 19rem;
   }
 
   /* Espace pro : rail permanent à gauche, contenu à droite. */
@@ -1308,6 +1318,6 @@
   :root {
     --shell-px: 2rem;
     --read-w: 52rem;
-    --rail-w: 19rem;
+    --rail-w: 20rem;
   }
 }
