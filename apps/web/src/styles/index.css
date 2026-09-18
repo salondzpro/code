@@ -1216,7 +1216,9 @@
     border-radius: var(--radius-sheet);
     box-shadow: var(--shadow-card);
   }
-  .sheet.modal .grab {
+  /* La poignée dit « on peut me tirer » : elle n'a plus de sens ni pour une fenêtre centrée,
+     ni pour une barre d'action posée au bas d'une page qu'on ne fait pas glisser. */
+  .sheet .grab {
     display: none;
   }
   /* Barre d'action d'un écran (elle, reste en bas) : à la largeur de la colonne de lecture. */

@@ -52,7 +52,13 @@ const admin = createClient(SUPABASE_URL, SECRET, { auth: { persistSession: false
 const RUN = Date.now().toString(36);
 const PASSWORD = `Smoke-${RUN}-Aa1!`;
 
-async function createUser(label, role, fullName, market = null) {
+/**
+ * Le NUMÉRO est obligatoire depuis le 15 sept. 2026 (client comme pro) : sans lui, les gardes
+ * `RequireClient` / `RequirePro` renvoient sur `/profil/creer` et le parcours ne démarre jamais.
+ * On le pose donc à la création, comme le marché. Celui de la cliente est le même que celui
+ * qu'elle saisit en réservant, pour que l'écran Profil l'affiche à l'identique.
+ */
+async function createUser(label, role, fullName, market = null, phone = null) {
   const email = `smoke-${label}-${RUN}@salondz.test`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
@@ -61,7 +67,8 @@ async function createUser(label, role, fullName, market = null) {
     user_metadata: { role, full_name: fullName },
   });
   if (error) throw error;
-  if (market) await admin.from('profiles').update({ market }).eq('id', data.user.id);
+  const champs = { ...(market ? { market } : {}), ...(phone ? { phone } : {}) };
+  if (Object.keys(champs).length) await admin.from('profiles').update(champs).eq('id', data.user.id);
   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     headers: { apikey: PUB, 'Content-Type': 'application/json' },
@@ -167,7 +174,10 @@ async function step(name, fn) {
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHROME ? { executablePath: process.env.PLAYWRIGHT_CHROME, headless: true } : { channel: 'chrome', headless: true });
 const users = {};
 try {
-  [users.pro, users.client] = await Promise.all([createUser('pro', 'pro', 'Karim Smoke'), createUser('client', 'client', 'Amine Smoke', 'men')]);
+  [users.pro, users.client] = await Promise.all([
+    createUser('pro', 'pro', 'Karim Smoke', null, '+213550112233'),
+    createUser('client', 'client', 'Amine Smoke', 'men', '+213555667788'),
+  ]);
   console.log('users:', users.pro.email, users.client.email);
 
   const ctxOpts = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'fr-DZ', timezoneId: 'Africa/Algiers' };
@@ -242,10 +252,19 @@ try {
     await page.locator(`button[role=option][data-day="${target}"]`).click();
     await page.locator(`button[role=option][data-day="${target}"][aria-selected="true"]`).waitFor();
   };
+  /**
+   * ATTENTION (18 sept. 2026) : cette suite a DÉRIVÉ du produit et ne passe plus au-delà de
+   * l'inscription pro. Deux causes déjà corrigées ici — le numéro devenu obligatoire (voir
+   * `createUser`) et le titre de l'étape 1 renommé. Il en reste au moins une : l'inscription
+   * compte désormais NEUF étapes et l'étape 1 enchaîne marché puis spécialités (« Que
+   * proposez-vous ? ») sans changer d'URL, alors que le scénario attend `/pro/onboarding/2`.
+   * La remise à niveau de ce scénario est un travail à part entière, à ne pas confondre avec
+   * une régression : rien de ce qui suit n'a été cassé par l'adaptation tablette/ordinateur.
+   */
   await step('pro: /pro → étape 1 (marché)', async () => {
     await p.goto(WEB + '/pro');
     await p.waitForURL(/\/pro\/onboarding\/1$/);
-    await p.getByRole('heading', { name: 'Vous travaillez pour ?' }).waitFor();
+    await p.getByRole('heading', { name: 'Pour qui travaillez-vous ?' }).waitFor();
     await p.getByRole('button', { name: /^Pour Hommes/ }).click();
     await p.getByRole('button', { name: 'Continuer' }).click();
     await p.waitForURL(/\/pro\/onboarding\/2$/);
