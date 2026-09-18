@@ -1,6 +1,6 @@
 # Salon DZ — plan de mise en production
 
-Version du 16 septembre 2026, mise à jour le 18 septembre. **Le service n'est pas encore ouvert au public** (décision du propriétaire, 18 sept.) : les données actuelles sont des données de test et peuvent être modifiées librement. Synthèse de quatre audits (sécurité API et base, règles de gestion, application web, DevOps) et des corrections livrées le jour même. Ce document est la liste de contrôle jusqu'à l'ouverture au public ; il se met à jour à chaque lot.
+Version du 16 septembre 2026, mise à jour le 18 septembre (dernier lot : schémas de réponse des routes publiques). **Le service n'est pas encore ouvert au public** (décision du propriétaire, 18 sept.) : les données actuelles sont des données de test et peuvent être modifiées librement. Synthèse de quatre audits (sécurité API et base, règles de gestion, application web, DevOps) et des corrections livrées le jour même. Ce document est la liste de contrôle jusqu'à l'ouverture au public ; il se met à jour à chaque lot.
 
 ## 1. Corrigé le 16 septembre (en production)
 
@@ -62,7 +62,7 @@ Lot du 17 septembre (commits 23aa8d2 et 9a4d1a5) :
 
 ### Important (première quinzaine)
 7. ~~Lecture directe avec la clé publique~~ : fait le 16 sept. (migration 0039, privilèges de colonnes sur `salons`, `staff`, `reviews`).
-8. Schémas de réponse zod sur les routes publiques (aucune colonne nouvelle ne part par défaut).
+8. ~~Schémas de réponse zod sur les routes publiques~~ (fait le 18 sept.) : `apps/api/src/schemas/public.ts`, branché sur les huit routes publiques. Ce qui n'est pas listé dans le schéma ne sort pas — une colonne ajoutée demain à une table ou au retour d'une fonction SQL ne part plus par défaut. Les schémas filtrent les clés sans juger les valeurs (une valeur inattendue s'affiche, elle ne fait pas tomber la page en 500) ; l'accord entre schémas et types est vérifié à la compilation, la liste des clés servies par deux tests (32/32). `GET /v1/categories` lit désormais ses colonnes nommées au lieu de `select *`.
 9. Réglage « Rappels » lu par le cron (fait le 16 sept.) ; « Confirmations » porté par le profil et respecté à l'envoi des push (17 sept., migration 0040) ; « Nouveautés » retiré, aucune fonctionnalité derrière (l'expiration des demandes à 24 h et la relance du pro sont livrées le 16 sept., ainsi que la liste d'attente « créneau libéré »).
 10. Fiche client sur identifiant stable (fusion compte + numéro), blocage d'un client de passage.
 11. ~~Congés : rendez-vous touchés listés et annulés sur confirmation~~ (fait le 17 sept.) ; horaires modifiés (salon ou membre) : les rendez-vous laissés hors plage sont listés et conservés, feuille « Voir l'agenda » (17 sept.).

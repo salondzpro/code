@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { createClient } from '@supabase/supabase-js';
 import { addDaysToKey, CANCEL_ABUSE_MAX, localDateTimeToISO, toLocalDateKey } from '@salondz/constants';
 import { buildApp, type App } from '../src/app';
+import { salonPublicResponse } from '../src/schemas/public';
 import { config } from '../src/config';
 import { db } from '../src/lib/supabase';
 
@@ -160,6 +161,15 @@ test('public : recherche (wilaya + catégorie + texte accentué)', async () => {
   const mine = items.find((s) => s.id === salonId);
   assert.ok(mine, 'salon publié doit apparaître');
   assert.equal(mine.minPriceDa, 800);
+  // Schéma de réponse : la carte ne transporte que ces clés (point 8 du plan).
+  assert.deepEqual(
+    Object.keys(mine).sort(),
+    [
+      'categoryIds', 'city', 'coverUrl', 'distanceKm', 'genderTarget', 'id', 'isOpenNow', 'lat',
+      'lng', 'logoUrl', 'minPriceDa', 'name', 'nextAvailable', 'nextSlots', 'photoUrls',
+      'ratingAvg', 'ratingCount', 'slug', 'topServices', 'wilayaCode', 'zone',
+    ],
+  );
 });
 
 test('public : page salon par slug (une requête, services/staff actifs)', async () => {
@@ -170,6 +180,54 @@ test('public : page salon par slug (une requête, services/staff actifs)', async
   assert.equal(s.staff.length, 1);
   assert.equal(s.openingHours[0].opensAt, '09:00');
   assert.match(r.headers['cache-control'] as string, /public/);
+});
+
+/**
+ * Point 8 du plan de mise en production : les routes publiques passent par un schéma de réponse,
+ * et le contrat est la LISTE DES CLÉS. Une colonne ajoutée demain à `salons`, `services`, `staff`
+ * ou au retour d'une fonction SQL ne peut plus sortir sans qu'on l'ait décidé — ce test le dit.
+ */
+test('public : la fiche salon ne renvoie que les clés prévues', async () => {
+  const r = await call('GET', `/v1/salons/${salonSlug}`);
+  assert.equal(r.statusCode, 200, r.body);
+  const s = r.json();
+  assert.deepEqual(
+    Object.keys(s).sort(),
+    [
+      'address', 'allowClientReschedule', 'autoConfirm', 'bookingHorizonDays',
+      'bookingLeadTimeMinutes', 'bufferMinutes', 'cancelMinHours', 'categoryIds', 'city',
+      'coverUrl', 'createdAt', 'depositRequired', 'description', 'genderTarget', 'homeService',
+      'id', 'isPublished', 'lat', 'lng', 'logoUrl', 'name', 'openingHours', 'phone', 'photos',
+      'ratingAvg', 'ratingCount', 'services', 'slotIntervalMinutes', 'slug', 'staff', 'updatedAt',
+      'wilayaCode', 'works', 'zone',
+    ],
+  );
+  assert.deepEqual(
+    Object.keys(s.services[0]).sort(),
+    [
+      'categoryId', 'description', 'durationMinutes', 'groupName', 'id', 'isActive', 'name',
+      'photos', 'priceDa', 'salonId', 'sortOrder',
+    ],
+  );
+  assert.deepEqual(Object.keys(s.staff[0]).sort(), ['avatarUrl', 'displayName', 'id']);
+  assert.deepEqual(
+    Object.keys(s.openingHours[0]).sort(),
+    ['closesAt', 'dayOfWeek', 'id', 'isClosed', 'opensAt', 'salonId'],
+  );
+
+  // Le filtrage lui-même : ce qui n'est pas dans le schéma ne part pas, à tous les niveaux.
+  const filtre = salonPublicResponse.parse({
+    ...s,
+    ownerId: 'compte-du-proprietaire',
+    colonneAjouteeDemain: 'secret',
+    services: s.services.map((svc: Record<string, unknown>) => ({ ...svc, coutInterne: 1 })),
+    staff: s.staff.map((m: Record<string, unknown>) => ({ ...m, userId: 'compte', phone: '+213…' })),
+  }) as Record<string, unknown>;
+  assert.ok(!('ownerId' in filtre));
+  assert.ok(!('colonneAjouteeDemain' in filtre));
+  assert.ok(!('coutInterne' in (filtre.services as Record<string, unknown>[])[0]));
+  assert.ok(!('userId' in (filtre.staff as Record<string, unknown>[])[0]));
+  assert.ok(!('phone' in (filtre.staff as Record<string, unknown>[])[0]));
 });
 
 test('public : disponibilités du jour J+3 (créneaux de 30 min, 09:00 → 18:30)', async () => {

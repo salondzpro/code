@@ -19,6 +19,16 @@ import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
 import { loadPublicBySlug } from '../lib/queries';
+import {
+  availabilityResponse,
+  categoriesResponse,
+  citiesResponse,
+  reviewsResponse,
+  salonPublicResponse,
+  searchSalonsResponse,
+  suggestResponse,
+  wilayasResponse,
+} from '../schemas/public';
 import { attachNextSlots } from '../lib/availability';
 
 const CACHE_PUBLIC_LONG = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400';
@@ -32,36 +42,50 @@ const CACHE_AVAILABILITY = 'public, no-cache';
 const CACHE_PUBLIC_REVALIDATE = 'public, no-cache';
 
 const publicRoutes: FastifyPluginAsyncZod = async (app) => {
-  app.get('/categories', async (_req, reply) => {
-    const rows = unwrap(await db.from('categories').select('*').order('sort_order'));
-    reply.header('Cache-Control', CACHE_PUBLIC_LONG);
-    return camelize<Category[]>(rows);
-  });
+  app.get(
+    '/categories',
+    { schema: { response: { 200: categoriesResponse } } },
+    async (_req, reply) => {
+      const rows = unwrap(
+        await db
+          .from('categories')
+          .select('id, label_fr, label_ar, icon, sort_order, market')
+          .order('sort_order'),
+      );
+      reply.header('Cache-Control', CACHE_PUBLIC_LONG);
+      return camelize<Category[]>(rows);
+    },
+  );
 
-  app.get('/wilayas', async (_req, reply) => {
+  app.get('/wilayas', { schema: { response: { 200: wilayasResponse } } }, async (_req, reply) => {
     reply.header('Cache-Control', CACHE_PUBLIC_LONG);
-    return WILAYAS;
+    // Copie : la liste du code est figée (readonly), la réponse ne l'est pas.
+    return [...WILAYAS];
   });
 
   /** Quartiers / villes avec nombre de professionnels (design « Localisation »). */
-  app.get('/salons/cities', { schema: { querystring: citiesQuerySchema } }, async (req, reply) => {
-    const q = req.query;
-    const res = await db.rpc('salon_cities', {
-      p_wilaya: q.wilaya ?? null,
-      p_gender: q.gender ?? null,
-      p_lat: q.lat ?? null,
-      p_lng: q.lng ?? null,
-      p_q: q.q ?? null,
-    });
-    const rows = unwrap(res) as Record<string, unknown>[];
-    reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
-    return { items: rows.map((r) => camelize<CityCount>(r)) };
-  });
+  app.get(
+    '/salons/cities',
+    { schema: { querystring: citiesQuerySchema, response: { 200: citiesResponse } } },
+    async (req, reply) => {
+      const q = req.query;
+      const res = await db.rpc('salon_cities', {
+        p_wilaya: q.wilaya ?? null,
+        p_gender: q.gender ?? null,
+        p_lat: q.lat ?? null,
+        p_lng: q.lng ?? null,
+        p_q: q.q ?? null,
+      });
+      const rows = unwrap(res) as Record<string, unknown>[];
+      reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
+      return { items: rows.map((r) => camelize<CityCount>(r)) };
+    },
+  );
 
   /** Suggestions de recherche (design C-H 07) : salons, prestations et lieux, en une requête. */
   app.get(
     '/salons/suggest',
-    { schema: { querystring: suggestQuerySchema } },
+    { schema: { querystring: suggestQuerySchema, response: { 200: suggestResponse } } },
     async (req, reply) => {
       const q = req.query;
       const res = await db.rpc('search_suggest', {
@@ -76,62 +100,71 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   /** Marketplace (design C-H 01 / C-F 01) : rayon, tri, dispo du jour, prestations phares, prochains créneaux. */
-  app.get('/salons', { schema: { querystring: searchSalonsQuerySchema } }, async (req, reply) => {
-    const q = req.query;
-    const res = await db.rpc('search_salons_v2', {
-      p_q: q.q ?? null,
-      p_wilaya: q.wilaya ?? null,
-      p_city: q.city ?? null,
-      p_category: q.category ?? null,
-      p_gender: q.gender ?? null,
-      p_lat: q.lat ?? null,
-      p_lng: q.lng ?? null,
-      p_radius_km: q.radiusKm ?? null,
-      p_sort: q.sort ?? 'relevance',
-      p_available_today: q.availableToday ?? false,
-      p_limit: q.limit,
-      p_offset: q.offset,
-      p_rating_min: q.ratingMin ?? null,
-    });
-    const rows = unwrap(res) as Record<string, unknown>[];
-    let total = 0;
-    const items: SalonSummary[] = rows.map((r) => {
-      const { top_services, next_slots, next_available, is_open_now, total_count, ...rest } =
-        r as Record<string, unknown> & {
-          top_services: { name: string; priceDa: number }[] | null;
-          next_slots: string[] | null;
-          next_available: { date: string; slots: string[] } | null;
-          is_open_now: boolean;
-          total_count: number | string;
+  app.get(
+    '/salons',
+    { schema: { querystring: searchSalonsQuerySchema, response: { 200: searchSalonsResponse } } },
+    async (req, reply) => {
+      const q = req.query;
+      const res = await db.rpc('search_salons_v2', {
+        p_q: q.q ?? null,
+        p_wilaya: q.wilaya ?? null,
+        p_city: q.city ?? null,
+        p_category: q.category ?? null,
+        p_gender: q.gender ?? null,
+        p_lat: q.lat ?? null,
+        p_lng: q.lng ?? null,
+        p_radius_km: q.radiusKm ?? null,
+        p_sort: q.sort ?? 'relevance',
+        p_available_today: q.availableToday ?? false,
+        p_limit: q.limit,
+        p_offset: q.offset,
+        p_rating_min: q.ratingMin ?? null,
+      });
+      const rows = unwrap(res) as Record<string, unknown>[];
+      let total = 0;
+      const items: SalonSummary[] = rows.map((r) => {
+        const { top_services, next_slots, next_available, is_open_now, total_count, ...rest } =
+          r as Record<string, unknown> & {
+            top_services: { name: string; priceDa: number }[] | null;
+            next_slots: string[] | null;
+            next_available: { date: string; slots: string[] } | null;
+            is_open_now: boolean;
+            total_count: number | string;
+          };
+        total = Number(total_count);
+        const s =
+          camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(
+            rest,
+          );
+        return {
+          ...s,
+          ratingAvg: Number(s.ratingAvg),
+          topServices: top_services ?? [],
+          nextSlots: next_slots ?? [],
+          nextAvailable: next_available ?? null,
+          photoUrls: [],
+          isOpenNow: !!is_open_now,
         };
-      total = Number(total_count);
-      const s =
-        camelize<Omit<SalonSummary, 'topServices' | 'nextSlots' | 'nextAvailable' | 'isOpenNow'>>(
-          rest,
-        );
+      });
+      // Remplace les 3 créneaux « un par heure » de search_salons_v2 par les 5 premiers créneaux libres.
+      await attachNextSlots(items, req.log);
+      reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
       return {
-        ...s,
-        ratingAvg: Number(s.ratingAvg),
-        topServices: top_services ?? [],
-        nextSlots: next_slots ?? [],
-        nextAvailable: next_available ?? null,
-        photoUrls: [],
-        isOpenNow: !!is_open_now,
+        items,
+        total,
+        nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null,
       };
-    });
-    // Remplace les 3 créneaux « un par heure » de search_salons_v2 par les 5 premiers créneaux libres.
-    await attachNextSlots(items, req.log);
-    reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
-    return {
-      items,
-      total,
-      nextCursor: items.length === q.limit ? String(q.offset + q.limit) : null,
-    };
-  });
+    },
+  );
 
   app.get(
     '/salons/:slug',
-    { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } },
+    {
+      schema: {
+        params: z.object({ slug: z.string().min(1).max(80) }),
+        response: { 200: salonPublicResponse },
+      },
+    },
     async (req, reply) => {
       const salon = await loadPublicBySlug(req.params.slug);
       if (!salon) throw notFound('Salon');
@@ -146,7 +179,13 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get(
     '/salons/:id/availability',
-    { schema: { params: z.object({ id: uuid }), querystring: availabilityQuerySchema } },
+    {
+      schema: {
+        params: z.object({ id: uuid }),
+        querystring: availabilityQuerySchema,
+        response: { 200: availabilityResponse },
+      },
+    },
     async (req, reply) => {
       const { id } = req.params;
       const { date, staffId } = req.query;
@@ -233,6 +272,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
           /** 'best' = mieux notés d'abord (puis plus récents) ; 'recent' = plus récents d'abord. */
           sort: z.enum(['best', 'recent']).default('best'),
         }),
+        response: { 200: reviewsResponse },
       },
     },
     async (req, reply) => {

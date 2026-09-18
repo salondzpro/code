@@ -375,11 +375,17 @@ export interface BookingWithSalon extends Booking {
     | 'city'
     | 'coverUrl'
     | 'logoUrl'
-    | 'phone'
     | 'address'
     | 'cancelMinHours'
     | 'allowClientReschedule'
-  >;
+  > & {
+    /**
+     * Téléphone du salon : envoyé UNIQUEMENT si `SHOW_SALON_CONTACT_TO_CLIENTS` est vrai —
+     * aujourd'hui il est faux, l'API ne le sélectionne donc pas (`pnpm check:contact`). Optionnel
+     * pour que le type dise la vérité : un écran qui l'affiche doit tester sa présence.
+     */
+    phone?: string | null;
+  };
   staff: Pick<Staff, 'id' | 'displayName'> | null;
   /** Note déjà donnée par le client pour ce rendez-vous (un seul avis par rendez-vous), sinon null. */
   reviewRating: number | null;
