@@ -576,14 +576,16 @@ try {
     await shot(c, 'client-quand');
   });
   await step('client: coordonnées → récapitulatif → confirmation', async () => {
-    await c.getByRole('heading', { name: 'Vos coordonnées' }).waitFor();
+    // L'écran demande d'abord POUR QUI (soi-même ou quelqu'un d'autre) ; le nom et le numéro
+    // du compte y sont déjà remplis.
+    await c.getByRole('heading', { name: 'Pour qui ?' }).waitFor();
     await c.getByLabel('Téléphone').fill('555667788');
     await c.getByLabel('Note pour le salon (optionnel)').fill('Test smoke');
     await c.getByRole('button', { name: 'Vérifier' }).click();
     await c.waitForURL(new RegExp(`/s/${slug}/reserver/recap`));
     await c.getByRole('heading', { name: 'Récapitulatif' }).waitFor();
-    await c.getByText('Coupe + barbe', { exact: true }).waitFor();
-    await c.getByText('Coupe simple', { exact: true }).waitFor();
+    // Une prestation par rendez-vous : le récapitulatif ne montre que celle-là.
+    await c.getByText('Coupe + barbe', { exact: true }).first().waitFor();
     await c.getByText(/ DA/).first().waitFor();
     await shot(c, 'client-recap');
     await c.getByRole('button', { name: 'Confirmer la réservation' }).click();
