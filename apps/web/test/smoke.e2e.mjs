@@ -607,9 +607,9 @@ try {
     await c.getByRole('heading', { name: 'Récapitulatif' }).waitFor();
     // Une prestation par rendez-vous : le récapitulatif ne montre que celle-là.
     await c.getByText('Coupe + barbe', { exact: true }).first().waitFor();
-    // Le prix, dans la carte des faits : le même texte existe ailleurs dans la page, parfois
-    // dans un élément masqué, et `getByText` attend la VISIBILITÉ du premier trouvé.
-    await c.locator('.li').filter({ hasText: /\d+ DA/ }).first().waitFor();
+    // La ligne du prix, désignée par son sous-titre : unique dans la page et sans ambiguïté,
+    // là où « 800 DA » apparaît à plusieurs endroits dont certains masqués.
+    await c.getByText('Paiement sur place, aucun acompte').waitFor();
     await shot(c, 'client-recap');
     await c.getByRole('button', { name: 'Confirmer la réservation' }).click();
     await c.waitForURL(/\/rendez-vous\/[0-9a-f-]+\/confirme/);
