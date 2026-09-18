@@ -944,4 +944,6 @@ export const en: Record<string, string> = {
   'Barbier, 13 prestations': 'Barber, 13 services',
   'Cheveux, ongles, cils, soins': 'Hair, nails, lashes, skincare',
   'Rendez-vous, historique, avis': 'Appointments, history, reviews',
+  'Repartir d\'une démonstration neuve': 'Start a fresh demo',
+  'Tout se passe dans ce navigateur : rien n\'est envoyé, chaque appareil a sa propre démonstration.': 'Everything runs in this browser: nothing is sent, and each device has its own demo.',
 };

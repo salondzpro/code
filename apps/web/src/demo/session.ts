@@ -43,12 +43,17 @@ export function stopDemo(): void {
   }
 }
 
-/** Efface aussi le monde : la prochaine démonstration repart de zéro sur cet appareil. */
-export function resetDemo(): void {
-  stopDemo();
+/** Une démonstration a-t-elle déjà tourné sur cet appareil (monde enregistré) ? */
+export function hasDemoWorld(): boolean {
   try {
-    localStorage.removeItem('salondz:demo:world');
+    return localStorage.getItem('salondz:demo:world') !== null;
   } catch {
-    /* rien */
+    return false;
   }
 }
+
+/**
+ * Repartir d'une démonstration neuve : fermer la session ET vider le monde. Le monde vit dans
+ * `world.ts` (qui importe ce fichier) : c'est donc `resetWorld` qu'on appelle, jamais un effacement
+ * direct du stockage, sinon le monde déjà chargé en mémoire resterait en place.
+ */

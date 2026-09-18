@@ -925,4 +925,6 @@ export const ar: Record<string, string> = {
   'Barbier, 13 prestations': 'حلاق، 13 خدمة',
   'Cheveux, ongles, cils, soins': 'شعر، أظافر، رموش، عناية',
   'Rendez-vous, historique, avis': 'مواعيد، سجل، تقييمات',
+  'Repartir d\'une démonstration neuve': 'ابدأ تجربة جديدة',
+  'Tout se passe dans ce navigateur : rien n\'est envoyé, chaque appareil a sa propre démonstration.': 'كل شيء يجري في هذا المتصفح: لا يُرسَل شيء، ولكل جهاز تجربته الخاصة.',
 };

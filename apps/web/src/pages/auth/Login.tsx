@@ -10,6 +10,8 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { AlertCircle, Eye, EyeOff, MailOpen, PlayCircle, UserPlus } from 'lucide-react';
 import { DEMO_ACCOUNTS, demoAccountFor } from '@salondz/constants';
+import { hasDemoWorld, stopDemo } from '@/demo/session';
+import { resetWorld } from '@/demo/world';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
@@ -36,6 +38,8 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState<'password' | 'link' | 'resend' | 'demo' | null>(null);
+  // Démonstration déjà jouée sur cet appareil : on propose de repartir d'un monde neuf.
+  const [usedDemo, setUsedDemo] = useState(() => hasDemoWorld());
   const [error, setError] = useState<{ kind: AuthErrorKind | 'form'; text: string } | null>(
     linkErr ? { kind: 'expired', text: LINK_ERRORS[linkErr] ?? LINK_ERRORS.lien! } : null,
   );
@@ -223,6 +227,22 @@ export function Login() {
             </button>
           ))}
         </div>
+        <p className="text-[0.857rem] text-muted">
+          {t("Tout se passe dans ce navigateur : rien n'est envoyé, chaque appareil a sa propre démonstration.")}
+        </p>
+        {usedDemo && (
+          <button
+            type="button"
+            className="self-start py-1 text-[0.857rem] font-semibold underline"
+            onClick={() => {
+              stopDemo();
+              resetWorld();
+              setUsedDemo(false);
+            }}
+          >
+            {t("Repartir d'une démonstration neuve")}
+          </button>
+        )}
       </div>
 
       <div className="mt-auto flex flex-col gap-3 pt-4">
