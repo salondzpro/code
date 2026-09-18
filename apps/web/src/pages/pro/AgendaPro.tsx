@@ -189,7 +189,14 @@ export function AgendaPro() {
         : t(MONTHS[Number(date.slice(5, 7)) - 1]!).replace(/^\w/, (c) => c.toUpperCase());
 
   return (
-    <Screen bottom={NAV_PAD} gap={12}>
+    <Screen
+      bottom={NAV_PAD}
+      gap={12}
+      className="agenda"
+      // Largeur utile de l'agenda : celle de ses colonnes. Deux membres sur un écran de 1 920 px
+      // ne doivent pas donner deux colonnes de 800 px — un agenda se lit en colonnes étroites.
+      style={{ ['--ag-max' as string]: `${Math.max(46, columns.length * 20)}rem` }}
+    >
       {loadError && <ErrorMessage error={loadError.error} retry={() => void loadError.refetch()} />}
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">

@@ -48,7 +48,7 @@ export function PickerSheet<T extends string | number>({
   return createPortal(
     <div onClick={(e) => e.stopPropagation()}>
       <Dim onClose={onClose} className="!z-[45]" />
-      <BottomSheet className="max-h-[85vh] !z-50 overflow-y-auto">
+      <BottomSheet modal className="max-h-[85vh] !z-50 overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{title}</div>
         <div className="crd !gap-0 !py-1" role="radiogroup" aria-label={title}>
           {options.map((o) => {

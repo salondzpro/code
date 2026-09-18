@@ -214,7 +214,7 @@ export function Settings() {
       {confirmDelete && (
         <>
           <Dim onClose={() => deleting === '…' || setConfirmDelete(false)} />
-          <BottomSheet>
+          <BottomSheet modal>
             <div className="h1 !text-[1.429rem]">{t("Supprimer mon compte ?")}</div>
             <p className="p">{t("Vos rendez-vous à venir seront perdus, vos favoris et avis effacés, et vos rendez-vous passés anonymisés chez les salons. Cette action est définitive.")}</p>
             {deleting && deleting !== '…' && (

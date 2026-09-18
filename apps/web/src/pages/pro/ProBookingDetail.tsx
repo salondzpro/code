@@ -261,7 +261,7 @@ export function ProBookingDetail() {
       {cancelling && (
         <>
           <Dim onClose={() => setCancelling(false)} />
-          <BottomSheet className="!z-50">
+          <BottomSheet modal className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
                 {t("Annuler ce rendez-vous ?")}

@@ -16,7 +16,7 @@
  */
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
 import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
 import { useMe } from '@salondz/api-client';
@@ -167,7 +167,7 @@ export function PublicHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface">
-      <div className="mx-auto flex h-[3.5rem] max-w-[var(--app-max-width)] items-center justify-between px-4">
+      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center justify-between gap-3 px-4">
         <button
           type="button"
           className="ib !border-0 !bg-transparent"
@@ -179,12 +179,33 @@ export function PublicHeader() {
         </button>
         <Link
           to="/"
-          className="text-[1.429rem] leading-none tracking-[-0.6px]"
+          // Sur téléphone, la marque est au centre (trois éléments répartis). Sur ordinateur, elle
+          // se range contre le menu et laisse la navigation et le compte à droite.
+          className="text-[1.429rem] leading-none tracking-[-0.6px] lg:me-auto lg:ms-1"
           aria-label={t("Salon DZ · accueil")}
         >
           <span className="font-semibold">Salon</span>
           <span className="ms-[0.16em] font-light text-muted">DZ</span>
         </Link>
+        {/* À partir de 1 024 px, la barre d'onglets flottante disparaît : les mêmes trois
+            destinations passent dans l'en-tête, à leur place sur un écran large. */}
+        <nav className="hidden items-center gap-1 lg:flex" aria-label={t("Navigation")}>
+          {links.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.to === '/'}
+              className={({ isActive }) =>
+                `flex items-center gap-2 rounded-[var(--radius-btn)] px-3 py-2 text-[1rem] ${
+                  isActive ? 'bg-fill font-semibold' : 'text-muted'
+                }`
+              }
+            >
+              <I icon={l.icon} size={18} className="text-current" />
+              {l.label}
+            </NavLink>
+          ))}
+        </nav>
         <Link
           to={session ? '/profil' : `/connexion?next=${next}`}
           className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] bg-ink text-white"

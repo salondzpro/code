@@ -145,7 +145,7 @@ export function Salon() {
   const reviewItems = pagesItems(reviews.data);
 
   return (
-    <div className="min-h-dvh pb-6">
+    <div className="rd min-h-dvh pb-6">
       {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
           qu'on descend dans les prestations, sans avoir à remonter tout en haut. */}
       <Tabs

@@ -30,7 +30,7 @@ export function RefuseRequestSheet({
   return (
     <>
       <Dim onClose={onClose} />
-      <BottomSheet className="!z-50">
+      <BottomSheet modal className="!z-50">
         <div className="text-center">
           <div className="text-[1.429rem] font-bold tracking-[-0.4px]">{t("Refuser cette demande ?")}</div>
           <p className="p mt-2">{request.clientName} {t("sera prévenu·e et le créneau sera libéré.")}</p>

@@ -103,7 +103,7 @@ export function Marketplace() {
       : t('{n} {noun} · prochaines disponibilités ci-dessous', { n: total, noun });
 
   return (
-    <Screen bottom={NAV_PAD} gap={10}>
+    <Screen bottom={NAV_PAD} gap={10} width="page">
       <SearchField
         market={market}
         q={q}
@@ -187,7 +187,8 @@ export function Marketplace() {
       ) : (
         <>
           <p className="text-[1rem] font-semibold text-text">{countLabel}</p>
-          <div className="flex flex-col gap-3.5">
+          {/* `gr` : la liste se range en colonnes dès qu'il y a la place (rien en dessous de 768 px). */}
+          <div className="gr flex flex-col gap-3.5">
             {items.map((s) => (
               <SalonListCard key={s.id} salon={s} />
             ))}

@@ -1,12 +1,15 @@
 /**
- * Cadre d'application : une colonne de largeur téléphone (390–430 px) centrée sur
- * grand écran, fond « écran » du design, barre d'onglets flottante « verre » en bas.
+ * Cadre d'application : sur téléphone, la colonne du design (390–430 px) centrée, fond
+ * « écran », barre d'onglets flottante « verre » en bas. À partir de 768 px, le cadre prend
+ * la largeur de l'écran (`--shell-w`) au lieu de rester une colonne perdue dans le gris ;
+ * c'est la seule différence, et elle est entièrement portée par la feuille de style.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { NavLink } from 'react-router';
 import { useProPendingBookings } from '@salondz/api-client';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
+import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
 
 /**
@@ -27,9 +30,7 @@ export function AppFrame({
   className?: string;
 }) {
   return (
-    <div
-      className={`relative mx-auto min-h-dvh w-full max-w-[var(--app-max-width)] bg-bg ${className}`}
-    >
+    <div className={`relative mx-auto min-h-dvh w-full max-w-[var(--shell-w)] bg-bg ${className}`}>
       {children}
     </div>
   );
@@ -39,24 +40,38 @@ export function AppFrame({
  * Corps d'écran. Les valeurs par défaut commandent la densité de TOUTE l'application :
  * un écran qui ne passe rien reprend ces chiffres, donc c'est ici qu'on gagne du scroll
  * partout à la fois. Gouttière latérale de 16 px, l'écart entre blocs fait le reste.
+ *
+ * `width` n'a d'effet qu'à partir de 768 px — sur téléphone il n'y a qu'une largeur :
+ *   • `read` (défaut) : colonne de lecture centrée. Un formulaire, un réglage ou une fiche
+ *     étirés sur 1 900 px sont illisibles ;
+ *   • `page` : page de contenu qui range ses cartes en colonnes (marketplace, favoris) ;
+ *   • `wide` : écran de TRAVAIL qui prend toute la largeur (agenda, carte).
  */
 export function Screen({
   children,
   bottom = 16,
   gap = 12,
+  width = 'read',
   className = '',
+  style,
 }: {
   children: ReactNode;
   bottom?: number;
   gap?: number;
+  width?: 'read' | 'page' | 'wide';
   className?: string;
+  /** Rare : un écran qui calcule sa propre largeur utile (l'agenda, d'après son nombre de colonnes). */
+  style?: CSSProperties;
 }) {
   return (
     <div
-      className={`flex flex-col px-4 pt-3 ${className}`}
-      // Au moins la marge demandée, et au moins la hauteur réelle de la feuille basse (--sheet-h, publiée
-      // par BottomSheet) : le contenu n'est jamais caché derrière, quel que soit le nombre de boutons.
-      style={{ gap: `${gap / 16}rem`, paddingBottom: `max(${bottom / 16}rem, calc(var(--sheet-h, 0px) + 1rem))` }}
+      className={`scr flex flex-col px-4 pt-3 ${width === 'read' ? '' : width} ${className}`}
+      // `--scr-b` porte la marge basse demandée : la règle `padding-bottom` vit dans la feuille
+      // de style (et non ici) pour qu'une requête de média puisse la reprendre quand la barre
+      // d'onglets disparaît. Sur téléphone, le calcul est exactement celui d'avant : au moins la
+      // marge demandée, au moins la hauteur réelle de la feuille basse (`--sheet-h`, publiée par
+      // BottomSheet), pour que rien ne reste caché derrière.
+      style={{ gap: `${gap / 16}rem`, ['--scr-b' as string]: `${bottom / 16}rem`, ...style }}
     >
       {children}
     </div>
@@ -86,6 +101,12 @@ const PRO_NAV: NavItem[] = [
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
   const items = kind === 'client' ? CLIENT_NAV : PRO_NAV;
+  /**
+   * À partir de 1 024 px, la navigation vit dans l'en-tête (client) ou dans le rail
+   * permanent (pro) : une pastille flottante au milieu d'un écran de 1 900 px n'a plus de
+   * sens. En dessous, rien ne change.
+   */
+  const desktop = useDesktop();
   /**
    * Demandes à confirmer à la main : le compte est posé en rouge sur l'onglet Réservations,
    * visible depuis n'importe quel écran de l'espace pro. Un rendez-vous qui attend une
@@ -119,6 +140,7 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
     };
   }, []);
 
+  if (desktop) return null;
   return (
     <>
       <span aria-hidden className="nvb-veil" />

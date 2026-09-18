@@ -297,7 +297,7 @@ export function BookingDetail() {
       {cancelling && (
         <>
           <Dim onClose={() => setCancelling(false)} />
-          <BottomSheet>
+          <BottomSheet modal>
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
                 {t("Annuler ce rendez-vous ?")}

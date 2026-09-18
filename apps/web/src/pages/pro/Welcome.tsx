@@ -29,7 +29,7 @@ export function ProWelcome() {
     navigate(session ? '/pro' : '/inscription?role=pro');
   };
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="rd flex min-h-dvh flex-col">
       <div className="relative h-[15rem] flex-none overflow-hidden">
         <img src={DESIGN_IMAGES.pro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />

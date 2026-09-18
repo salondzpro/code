@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { useMe, useProSalon } from '@salondz/api-client';
+import { useMe, useProPendingBookings, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { PublicHeader } from '@/components/PublicHeader';
 import { ProHeader } from '@/components/ProHeader';
@@ -10,6 +10,8 @@ import { refreshWebPushIfGranted } from '@/lib/webpush';
 import { Splash } from '@/pages/auth/Splash';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
+import { ProRail } from '@/components/ProNav';
+import { useDesktop } from '@/lib/breakpoint';
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
 export function ClientLayout() {
@@ -46,12 +48,25 @@ export function ProLayout() {
    * le professionnel était ailleurs. Un seul canal pour toute la session pro (deux
    * abonnements au même nom ne sont pas fiables).
    */
-  const salonId = useProSalon().data?.salon?.id;
-  useRealtimeBookings(salonId);
+  const salon = useProSalon().data?.salon ?? null;
+  useRealtimeBookings(salon?.id);
+  const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
+  /**
+   * À partir de 1 024 px, la navigation quitte la barre d'onglets flottante pour un RAIL
+   * permanent à gauche, comme les outils du métier : on voit où l'on est et où aller sans
+   * ouvrir de tiroir. En dessous, `ProRail` n'est pas monté et la coque est celle du
+   * téléphone, inchangée (`.pro-shell` et `.pro-main` sont alors de simples blocs).
+   */
+  const desktop = useDesktop();
   return (
     <AppFrame>
       <ProHeader />
-      <Outlet />
+      <div className="pro-shell">
+        {desktop && <ProRail salon={salon} pending={pending} />}
+        <div className="pro-main">
+          <Outlet />
+        </div>
+      </div>
       <BottomNav kind="pro" />
     </AppFrame>
   );

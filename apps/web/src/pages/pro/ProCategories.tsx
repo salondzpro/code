@@ -148,7 +148,7 @@ export function ProCategories() {
       {del && (
         <>
           <Dim onClose={() => setDel(null)} />
-          <BottomSheet className="!z-50">
+          <BottomSheet modal className="!z-50">
             <div className="h2 text-center !text-[1.143rem]">{t("Supprimer «")}{' '}{del.name} » ?</div>
             {del.mode ? (
               <>

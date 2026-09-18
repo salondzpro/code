@@ -1117,3 +1117,197 @@
     padding: 0;
   }
 }
+
+
+/* ================================================================== */
+/* TABLETTE, ORDINATEUR, GRAND ÉCRAN                                   */
+/*                                                                     */
+/* L'application est dessinée pour le téléphone, et le RESTE : tout ce */
+/* qui suit vit dans une requête de média à partir de 768 px. En       */
+/* dessous, pas une seule de ces règles ne s'applique — le rendu       */
+/* téléphone est celui du design, au pixel près, et doit le rester.    */
+/*                                                                     */
+/* Au-dessus, rien n'est redessiné : mêmes écrans, mêmes cartes, mêmes */
+/* boutons, mêmes couleurs, mêmes arrondis. Seule change la            */
+/* RÉPARTITION dans la largeur disponible :                            */
+/*   • le cadre cesse d'être une colonne de 430 px perdue dans le gris ;*/
+/*   • un écran de lecture (formulaire, réglage, détail) se borne à une */
+/*     largeur lisible et se centre, au lieu de s'étirer sur 1 900 px ; */
+/*   • un écran de travail (agenda, listes) prend toute la largeur ;   */
+/*   • au-delà de 1 024 px l'espace pro échange sa barre d'onglets     */
+/*     contre un rail permanent, comme les outils du métier ;          */
+/*   • une feuille basse devient une fenêtre centrée.                  */
+/*                                                                     */
+/* Ces règles sont HORS `@layer` : elles doivent l'emporter sur celles  */
+/* des composants ci-dessus, qui posent la mise en page téléphone.     */
+/* ================================================================== */
+
+:root {
+  /* Cadre applicatif : la colonne du design. */
+  --shell-w: var(--app-max-width);
+  /* Gouttière du cadre, en plus des 16 px de l'écran. */
+  --shell-px: 0rem;
+  /* Largeur de lecture d'un écran : aucune borne sur téléphone. */
+  --read-w: none;
+  /* Rail de navigation pro : il n'existe pas tant qu'il n'y a pas la place. */
+  --rail-w: 0rem;
+  /* Hauteur de l'en-tête collant (les deux en-têtes font 3,5 rem). */
+  --hdr-h: 3.5rem;
+}
+
+/* Marge basse du corps d'écran, à toutes les largeurs : au moins celle demandée par l'écran
+   (`--scr-b`, posée par `Screen`), et au moins la hauteur RÉELLE de la feuille basse
+   (`--sheet-h`, publiée par `BottomSheet`) — sans quoi la dernière ligne d'un écran se
+   retrouve cachée derrière la feuille. C'est le calcul du design, déplacé du style en ligne
+   vers ici pour qu'une requête de média puisse le reprendre quand la feuille devient une
+   fenêtre centrée et que la barre d'onglets disparaît. */
+.scr {
+  padding-bottom: max(var(--scr-b, 1rem), calc(var(--sheet-h, 0px) + 1rem));
+}
+
+/* ------------------------------ Tablette ------------------------------ */
+@media (min-width: 768px) {
+  :root {
+    --shell-w: 100%;
+    --shell-px: 0.75rem;
+    --read-w: 44rem;
+  }
+
+  /* Largeur d'un écran. Trois valeurs, et trois seulement :
+       • par défaut, une colonne de LECTURE centrée — un formulaire, un réglage, une fiche
+         étirés sur 1 900 px sont illisibles ;
+       • `page` pour une page de contenu qui range des cartes en colonnes ;
+       • `wide` pour un écran de TRAVAIL (agenda, carte), qui prend tout.
+     `.rd` porte la même chose pour les rares écrans qui n'utilisent pas `Screen`. */
+  .scr,
+  .rd {
+    width: 100%;
+    max-width: var(--read-w);
+    margin-inline: auto;
+  }
+  .scr.page,
+  .rd.page {
+    max-width: 75rem;
+  }
+  .scr.wide,
+  .rd.wide {
+    max-width: none;
+  }
+  /* L'agenda calcule sa largeur utile d'après son nombre de colonnes (voir `AgendaPro`). */
+  .scr.agenda {
+    max-width: min(100%, var(--ag-max, var(--read-w)));
+  }
+  .scr {
+    /* La feuille n'est plus posée en bas de l'écran : plus rien à lui réserver. */
+    padding-bottom: var(--scr-b, 1rem);
+  }
+
+  /* Feuille MODALE → fenêtre centrée. Même composant, même contenu, autre place. */
+  .sheet.modal {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(30rem, calc(100vw - 4rem));
+    max-width: none;
+    max-height: calc(100dvh - 4rem);
+    overflow-y: auto;
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-card);
+  }
+  .sheet.modal .grab {
+    display: none;
+  }
+  /* Barre d'action d'un écran (elle, reste en bas) : à la largeur de la colonne de lecture. */
+  .sheet:not(.modal) {
+    width: min(var(--read-w), calc(100vw - 2rem));
+    max-width: none;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  }
+
+  /* Panneau plein écran (prestations, filtres) → fenêtre centrée. */
+  .pnl {
+    top: 50%;
+    bottom: auto;
+    height: min(44rem, calc(100dvh - 4rem));
+    width: min(34rem, calc(100vw - 4rem));
+    max-width: none;
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius-sheet);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  @keyframes pnl-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, calc(-50% + 1.25rem));
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  .toast {
+    max-width: 28rem;
+  }
+
+  /* Grille de cartes : une liste pensée en colonne se range en colonnes quand il y a la place.
+     Les écrans l'appliquent explicitement, jamais par défaut. */
+  .gr {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+    gap: 0.75rem;
+    align-items: start;
+  }
+}
+
+/* ------------------------ Portable et au-delà ------------------------- */
+@media (min-width: 1024px) {
+  :root {
+    --shell-px: 1.25rem;
+    --read-w: 48rem;
+    --rail-w: 17.5rem;
+  }
+
+  /* Espace pro : rail permanent à gauche, contenu à droite. */
+  .pro-shell {
+    display: flex;
+    align-items: flex-start;
+  }
+  .pro-main {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .rail {
+    position: sticky;
+    top: var(--hdr-h);
+    flex: 0 0 var(--rail-w);
+    width: var(--rail-w);
+    height: calc(100dvh - var(--hdr-h));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.75rem 1rem 1.5rem;
+    background: var(--color-surface);
+    border-inline-end: 1px solid var(--color-line);
+  }
+
+  .scr {
+    padding-bottom: 2.5rem;
+  }
+  .gr {
+    gap: 0.875rem;
+  }
+}
+
+/* ----------------------------- Grand écran ---------------------------- */
+/* Pas de largeur maximale sur le cadre : un outil de travail se sert de son
+   écran. Ce sont les colonnes de LECTURE qui sont bornées, pas la fenêtre. */
+@media (min-width: 1600px) {
+  :root {
+    --shell-px: 2rem;
+    --read-w: 52rem;
+    --rail-w: 19rem;
+  }
+}

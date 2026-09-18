@@ -678,11 +678,20 @@ export function Dim({ onClose, className = '' }: { onClose: () => void; classNam
 export function BottomSheet({
   children,
   grab = true,
+  modal = false,
   className = '',
   sheetRef,
 }: {
   children: ReactNode;
   grab?: boolean;
+  /**
+   * Feuille MODALE (toujours accompagnée d'un `Dim`) : elle interrompt, on y répond, elle se
+   * ferme. Sans ce drapeau, la feuille est la BARRE D'ACTION d'un écran, posée en bas en
+   * permanence. La différence ne se voit qu'à partir de 768 px, où une modale devient une
+   * fenêtre centrée tandis qu'une barre d'action reste en bas : sur téléphone, les deux sont
+   * la même feuille basse qu'avant.
+   */
+  modal?: boolean;
   className?: string;
   /** Pour mesurer la hauteur réelle de la feuille (espace inférieur du contenu). */
   sheetRef?: Ref<HTMLDivElement>;
@@ -710,7 +719,7 @@ export function BottomSheet({
     else if (sheetRef && 'current' in sheetRef) (sheetRef as { current: HTMLDivElement | null }).current = node;
   };
   return (
-    <div ref={setRef} className={`sheet ${className}`}>
+    <div ref={setRef} className={`sheet${modal ? ' modal' : ''} ${className}`}>
       {grab && <div className="grab" />}
       {children}
     </div>

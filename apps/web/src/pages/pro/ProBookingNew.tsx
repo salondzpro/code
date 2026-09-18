@@ -131,7 +131,7 @@ function ClientSheet({
   return (
     <>
       <Dim onClose={onClose} className="!z-[45]" />
-      <BottomSheet className="!z-50 max-h-[90vh] overflow-y-auto">
+      <BottomSheet modal className="!z-50 max-h-[90vh] overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{t("Client")}</div>
         <SearchBox value={q} onChange={setQ} placeholder={t("Rechercher dans ma clientèle")} autoFocus />
         {clients.isPending ? (
@@ -222,7 +222,7 @@ function ServicesSheet({
   return (
     <>
       <Dim onClose={onClose} className="!z-[45]" />
-      <BottomSheet className="!z-50 max-h-[90vh] overflow-y-auto">
+      <BottomSheet modal className="!z-50 max-h-[90vh] overflow-y-auto">
         <div className="h2 text-center !text-[1.143rem]">{t("Prestations")}</div>
         <div className="crd !gap-0 !py-1">
           {services.map((s) => {

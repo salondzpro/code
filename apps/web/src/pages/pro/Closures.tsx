@@ -318,7 +318,7 @@ export function Closures() {
       {del && (
         <>
           <Dim onClose={() => setDel(null)} />
-          <BottomSheet className="!z-50">
+          <BottomSheet modal className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
                 {t("Supprimer cette exception ?")}
@@ -351,7 +351,7 @@ export function Closures() {
       {conflict && (
         <>
           <Dim onClose={() => setConflict(null)} className="!z-[45]" />
-          <BottomSheet className="!z-50">
+          <BottomSheet modal className="!z-50">
             <div className="h1 !text-[1.429rem]">{t('{n} rendez-vous dans cette période', { n: conflict.length })}</div>
             <p className="p">{t("Fermer quand même les annule : chaque client est prévenu et le créneau est libéré pour lui ailleurs.")}</p>
             <div className="crd !gap-0 !py-1 max-h-[40vh] overflow-y-auto">

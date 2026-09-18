@@ -10,92 +10,29 @@
  *
  * Monté par un PORTAIL sur `document.body` (voir `PublicHeader`) : un en-tête `sticky`
  * crée son propre contexte d'empilement, et le tiroir passerait sous la barre d'onglets.
+ *
+ * À partir de 1 024 px, ce même contenu (`ProNav`) est affiché en permanence dans le rail
+ * de gauche : le bouton de menu disparaît, la marque prend la largeur du rail et le nom de
+ * l'établissement se range à gauche. Rien d'autre ne change.
  */
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router';
-import {
-  Bell,
-  CalendarCog,
-  CalendarDays,
-  CalendarOff,
-  ChartColumn,
-  Clock,
-  ContactRound,
-  Eye,
-  House,
-  Inbox,
-  LogOut,
-  Menu,
-  Plus,
-  Share2,
-  Store,
-  Tag,
-  UserCircle,
-  Users,
-  X,
-  type LucideIcon,
-} from 'lucide-react';
+import { Link, useLocation } from 'react-router';
+import { Menu, Plus, X } from 'lucide-react';
 import { useProPendingBookings, useProSalon } from '@salondz/api-client';
-import { useAuth } from '@/lib/auth';
-import { Avatar, Badge, I, Dim } from './ui';
-import { usePublicUrl } from '@/pages/pro/Link';
+import { Avatar, I, Dim } from './ui';
+import { ProNav } from './ProNav';
+import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
 
-interface Item {
-  to: string;
-  label: string;
-  icon: LucideIcon;
-  end?: boolean;
-  /** Compteur rouge (demandes à confirmer). */
-  count?: number;
-}
-
-function Group({ title, items }: { title: string; items: Item[] }) {
-  return (
-    <div className="flex flex-col border-t border-line-soft pt-2.5">
-      <span className="h3 pb-1">{title}</span>
-      {items.map((it) => (
-        <NavLink
-          key={it.to}
-          to={it.to}
-          end={it.end}
-          className={({ isActive }) =>
-            `flex items-center gap-3 py-2.5 ${isActive ? 'font-semibold' : ''}`
-          }
-        >
-          {({ isActive }) => (
-            <>
-              <I
-                icon={it.icon}
-                size={20}
-                strokeWidth={isActive ? 2 : 1.6}
-                className={`flex-none ${isActive ? 'text-text' : 'text-muted'}`}
-              />
-              <span className="min-w-0 flex-1 truncate text-[1.143rem]">{it.label}</span>
-              {!!it.count && (
-                <span className="flex h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1.5 text-[0.857rem] font-bold text-white">
-                  {it.count > 9 ? '9+' : it.count}
-                </span>
-              )}
-            </>
-          )}
-        </NavLink>
-      ))}
-    </div>
-  );
-}
-
 export function ProHeader() {
-  const { signOut } = useAuth();
   const [open, setOpen] = useState(false);
   // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
-  const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
-  const { short } = usePublicUrl(salon?.slug ?? '');
+  const desktop = useDesktop();
   useEffect(() => setOpen(false), [pathname, navKey]);
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -126,91 +63,37 @@ export function ProHeader() {
           </button>
         </div>
 
-        {salon && (
-          <Link to="/pro/profil" className="flex items-center gap-3 py-2" aria-label={t("Profil du salon")}>
-            <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={48} />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
-                {salon.name}
-              </span>
-              <span className="block truncate text-[0.857rem] text-muted">{short}</span>
-            </span>
-            <Badge tone={salon.isPublished ? 'ok' : 'pd'}>
-              {salon.isPublished ? 'En ligne' : 'Non publiée'}
-            </Badge>
-          </Link>
-        )}
-
-        <Group
-          title={t("Au quotidien")}
-          items={[
-            { to: '/pro', label: t("Accueil"), icon: House, end: true },
-            { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays },
-            { to: '/pro/reservations', label: t("Réservations"), icon: Inbox, count: pending },
-            { to: '/pro/clients', label: t("Clients"), icon: ContactRound },
-            { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },
-          ]}
-        />
-        <Group
-          title={t("Mon établissement")}
-          items={[
-            { to: '/pro/mon-salon', label: t("Mon salon"), icon: Store },
-            { to: '/pro/catalogue', label: t("Catalogue"), icon: Tag },
-            { to: '/pro/equipe', label: t("Équipe"), icon: Users },
-            { to: '/pro/profil/horaires', label: t("Horaires d'ouverture"), icon: Clock },
-            { to: '/pro/blocages', label: t("Fermetures et blocages"), icon: CalendarOff },
-            { to: '/pro/reglages/rendez-vous', label: t("Règles de rendez-vous"), icon: CalendarCog },
-          ]}
-        />
-        <Group
-          title={t("Page publique")}
-          items={[
-            ...(salon ? [{ to: `/s/${salon.slug}`, label: t("Voir ma page"), icon: Eye }] : []),
-            { to: '/pro/lien', label: t("Lien et partage"), icon: Share2 },
-          ]}
-        />
-        <Group
-          title={t("Compte")}
-          items={[
-            { to: '/pro/compte', label: t("Mon compte"), icon: UserCircle },
-            { to: '/pro/notifications', label: t("Notifications"), icon: Bell },
-          ]}
-        />
-
+        <ProNav salon={salon} pending={pending} after={() => setOpen(false)} />
         {/* Dégagement sous le dernier élément : la barre d'onglets flotte à 78 px du bas. */}
-        <div className="mt-auto flex flex-col pt-2" style={{ paddingBottom: '5.5rem' }}>
-          <button
-            type="button"
-            className="flex items-center gap-3 py-2.5 text-danger"
-            onClick={async () => {
-              setOpen(false);
-              await signOut();
-              navigate('/pro/bienvenue');
-            }}
-          >
-            <I icon={LogOut} size={20} className="flex-none text-current" />
-            <span className="text-[1.143rem]">{t("Se déconnecter")}</span>
-          </button>
-        </div>
+        <div aria-hidden className="h-[5.5rem] flex-none" />
       </nav>
     </>
   );
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface">
-      <div className="mx-auto flex h-[3.5rem] max-w-[var(--app-max-width)] items-center gap-2 px-2">
+      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center gap-2 px-2">
         <button
           type="button"
-          className="ib !border-0 !bg-transparent"
+          className="ib !border-0 !bg-transparent lg:hidden"
           aria-label={t("Menu")}
           aria-expanded={open}
           onClick={() => setOpen(true)}
         >
           <I icon={Menu} size={24} />
         </button>
+        {/* Sur ordinateur, la marque tient exactement la largeur du rail : l'en-tête et le
+            rail sont alignés, comme dans un outil de bureau. */}
+        <span className="hidden w-[var(--rail-w)] flex-none items-center ps-3 text-[1.143rem] leading-none tracking-[-0.4px] lg:flex">
+          <span className="font-semibold">Salon</span>
+          <span className="ms-[0.16em] font-light text-muted">DZ</span>
+          <span className="ms-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
+            {t("Pro")}
+          </span>
+        </span>
         <Link
           to="/pro"
-          className="flex min-w-0 flex-1 items-center justify-center gap-2"
+          className="flex min-w-0 flex-1 items-center justify-center gap-2 lg:justify-start"
           aria-label={salon ? `${salon.name} · accueil` : 'Accueil'}
         >
           {salon && <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={28} />}
@@ -220,14 +103,15 @@ export function ProHeader() {
         </Link>
         <Link
           to="/pro/rendez-vous/nouveau"
-          className="me-2 flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] bg-ink text-white"
+          className="me-2 flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-ink text-white lg:w-auto lg:px-3.5"
           aria-label={t("Nouveau rendez-vous")}
           title={t("Nouveau rendez-vous")}
         >
           <I icon={Plus} size={22} className="text-current" />
+          <span className="hidden text-[1rem] font-semibold lg:inline">{t("Rendez-vous")}</span>
         </Link>
       </div>
-      {open && createPortal(drawer, document.body)}
+      {!desktop && open && createPortal(drawer, document.body)}
     </header>
   );
 }

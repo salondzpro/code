@@ -134,7 +134,7 @@ export function ShareSheet({
   return (
     <>
       <Dim onClose={onClose} />
-      <BottomSheet>
+      <BottomSheet modal>
         <div className="h1 !text-[1.429rem]">{t("Partagez votre page")}</div>
         <div className="flex items-center gap-3 rounded-[var(--radius-card-sm)] bg-fill px-4 py-4 text-[1rem]">
           <I icon={Lock} size={20} className="text-muted" />

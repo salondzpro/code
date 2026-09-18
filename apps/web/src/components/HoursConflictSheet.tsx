@@ -14,7 +14,7 @@ export function HoursConflictSheet({ items, onClose }: { items: OutsideBooking[]
   return (
     <>
       <Dim onClose={onClose} className="!z-[45]" />
-      <BottomSheet className="!z-50">
+      <BottomSheet modal className="!z-50">
         <div className="h1 !text-[1.429rem]">{t('{n} rendez-vous hors des nouveaux horaires', { n: items.length })}</div>
         <p className="p">{t("Les horaires sont enregistrés et ces rendez-vous sont conservés : déplacez-les ou annulez-les depuis l'agenda, ou élargissez les horaires.")}</p>
         <div className="crd !gap-0 !py-1 max-h-[40vh] overflow-y-auto">
