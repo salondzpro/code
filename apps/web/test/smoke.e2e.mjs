@@ -641,7 +641,8 @@ try {
   await step('client: profil (téléphone repris de la réservation)', async () => {
     await c.goto(WEB + '/profil');
     await c.getByRole('heading', { name: 'Mon compte' }).waitFor();
-    await c.getByText('+213 5 55 66 77 88').waitFor();
+    // Le compte affiche le numéro au format national, celui que le client reconnaît.
+    await c.getByText('05 55 66 77 88').waitFor();
     await shot(c, 'client-profil');
   });
   await step('client: réglages + localisation', async () => {
