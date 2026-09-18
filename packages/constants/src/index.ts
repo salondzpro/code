@@ -9,6 +9,7 @@ export * from './dates';
 export * from './lateness';
 export * from './booking';
 export * from './phone';
+export * from './demo';
 export * from './brandLogos';
 export * from './realtime';
 export * from './reasons';

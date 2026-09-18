@@ -190,7 +190,7 @@ export function createApiClient(opts: ApiClientOptions) {
       /** E-mail de réinitialisation du mot de passe. */
       passwordReset: (body: EmailLinkInput) => post<void>('/auth/password-reset', body),
       /** Comptes de démonstration à accès direct : renvoie une vraie session Supabase (sans SMS). */
-      devLogin: (body: { phone: string; code: string }) =>
+      devLogin: (body: { email?: string; phone?: string; code?: string }) =>
         request<{
           accessToken: string;
           refreshToken: string;

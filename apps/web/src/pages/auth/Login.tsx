@@ -3,13 +3,13 @@
  * connexion par e-mail en secours et la réinitialisation du mot de passe. Les actions qui
  * comptent sont de VRAIS boutons, pas des liens discrets : créer un compte, recevoir un lien.
  * Chaque erreur est dite en français et propose la suite (créer un compte, renvoyer le lien).
- * Comptes de démonstration : taper le numéro de démonstration à la place de l'e-mail mène
- * à la saisie du code fixe.
+ * Comptes de démonstration : leur adresse tapée à la place de l'e-mail ouvre la session sans mot
+ * de passe ; les boutons « Démonstration » font de même en un geste.
  */
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { AlertCircle, Eye, EyeOff, MailOpen, UserPlus } from 'lucide-react';
-import { isTestPhone } from '@salondz/constants';
+import { AlertCircle, Eye, EyeOff, MailOpen, PlayCircle, UserPlus } from 'lucide-react';
+import { DEMO_ACCOUNTS, demoAccountFor } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
@@ -26,7 +26,7 @@ const LINK_ERRORS: Record<string, string> = {
 };
 
 export function Login() {
-  const { session, signInWithPassword, sendMagicLink, resendConfirmation } = useAuth();
+  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const role = params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
@@ -35,32 +35,38 @@ export function Login() {
   const [email, setEmail] = useState(() => readAuthFlow()?.identifier ?? '');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
-  const [busy, setBusy] = useState<'password' | 'link' | 'resend' | null>(null);
+  const [busy, setBusy] = useState<'password' | 'link' | 'resend' | 'demo' | null>(null);
   const [error, setError] = useState<{ kind: AuthErrorKind | 'form'; text: string } | null>(
     linkErr ? { kind: 'expired', text: LINK_ERRORS[linkErr] ?? LINK_ERRORS.lien! } : null,
   );
 
   if (session) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
 
-  /** « 0603044618 », « 603044618 » ou « +213603044618 » → E.164 si c'est un compte de démonstration. */
-  const demoPhone = (v: string) => {
-    const digits = v.replace(/\D/g, '');
-    const local = digits.startsWith('213') ? digits.slice(3) : digits.replace(/^0/, '');
-    const e164 = `+213${local}`;
-    return isTestPhone(e164) ? e164 : null;
-  };
   const id = () => email.trim().toLowerCase();
   const fail = (err: unknown) => setError(describeAuthError(err));
 
+  /** Compte de démonstration : session ouverte directement, sans mot de passe. */
+  const demo = async (identifier: string) => {
+    const acct = demoAccountFor(identifier);
+    if (!acct) return;
+    setError(null);
+    setBusy('demo');
+    try {
+      const dest = acct.role === 'pro' ? '/pro' : '/';
+      writeAuthFlow({ role: acct.role, next: dest, identifier: acct.email, channel: 'email' });
+      await demoLogin(acct.email);
+      navigate(`/connexion/retour?next=${encodeURIComponent(dest)}`, { replace: true });
+    } catch (err) {
+      fail(err);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    // Compte de démonstration : numéro à la place de l'e-mail → code fixe.
-    const demo = demoPhone(id());
-    if (demo) {
-      writeAuthFlow({ role, next, identifier: demo, channel: 'sms' });
-      navigate('/connexion/code');
-      return;
-    }
+    // Adresse de démonstration à la place de l'e-mail : accès direct.
+    if (demoAccountFor(id())) return demo(id());
     if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: t("Adresse e-mail invalide.") });
     if (!password) return setError({ kind: 'form', text: t("Saisissez votre mot de passe.") });
     setError(null);
@@ -197,6 +203,27 @@ export function Login() {
       <Button variant="g" onClick={() => void link()} disabled={busy !== null}>
         <I icon={MailOpen} size={18} /> {busy === 'link' ? 'Envoi…' : 'Recevoir un lien de connexion par e-mail'}
       </Button>
+
+      {/* Démonstration : les comptes du rôle en cours, un geste, aucune saisie. */}
+      <div className="crd !gap-2">
+        <p className="flex items-center gap-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
+          <I icon={PlayCircle} size={16} /> {t("Démonstration")}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {DEMO_ACCOUNTS.filter((a) => a.role === role).map((a) => (
+            <button
+              key={a.key}
+              type="button"
+              className="flex flex-col items-start gap-0.5 rounded-[var(--radius-card-sm)] border border-line bg-fill px-3 py-2.5 text-start disabled:opacity-60"
+              disabled={busy !== null}
+              onClick={() => void demo(a.email)}
+            >
+              <span className="text-[1rem] font-semibold">{t(a.label)}</span>
+              <span className="text-[0.857rem] text-muted">{t(a.hint)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-auto flex flex-col gap-3 pt-4">
         <p className="p text-center">{t("Pas encore de compte ?")}</p>

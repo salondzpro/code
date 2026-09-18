@@ -494,14 +494,16 @@ test('realtime : le pro abonné (RLS) reçoit l\'événement quand un client ré
   }
 });
 
-test('connexion de démonstration : numéro + code fixe → vraie session ; mauvais code → 401', async () => {
+test('connexion de démonstration : adresse → vraie session ; ancien numéro + code fixe ; inconnu → 401', async () => {
   const bad = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '0000' });
   assert.equal(bad.statusCode, 401, bad.body);
-
-  // Seul le code officiel « 1111 » passe : la tolérance « toute suite de 1 » élargissait l'espace des codes (audit sécurité).
+  const unknown = await call('POST', '/v1/auth/dev-login', undefined, { email: 'inconnu@salondz.com' });
+  assert.equal(unknown.statusCode, 401, unknown.body);
+  // Seul le code officiel « 1111 » passe pour l'ancien chemin par numéro.
   const five = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '11111' });
   assert.equal(five.statusCode, 401, five.body);
-  const cli = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '1111' });
+
+  const cli = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clienthomme@salondz.com' });
   assert.equal(cli.statusCode, 200, cli.body);
   assert.equal(cli.json().role, 'client');
   assert.ok(cli.json().accessToken && cli.json().refreshToken, cli.body);
@@ -509,22 +511,34 @@ test('connexion de démonstration : numéro + code fixe → vraie session ; mauv
   assert.equal(me.statusCode, 200, me.body);
   assert.equal(me.json().profile.role, 'client');
   assert.equal(me.json().profile.market, 'men');
-  assert.equal(me.json().profile.phone, '+213603044618');
+  assert.equal(me.json().profile.phone, '+213550100003');
+  // Le client de démonstration a un historique : rendez-vous passés et à venir.
+  const mine = await call('GET', '/v1/me/bookings?scope=upcoming', cli.json().accessToken);
+  assert.equal(mine.statusCode, 200, mine.body);
+  assert.ok((mine.json().items ?? mine.json()).length >= 1, 'au moins un rendez-vous à venir');
 
-  const pro = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044619', code: '1111' });
-  assert.equal(pro.statusCode, 200, pro.body);
-  assert.equal(pro.json().role, 'pro');
-  const proMe = await call('GET', '/v1/me', pro.json().accessToken);
-  assert.equal(proMe.json().profile.role, 'pro');
-  // Le compte pro de démonstration a un salon publié prêt à l'emploi.
-  const proSalon = await call('GET', '/v1/pro/salon', pro.json().accessToken);
-  assert.equal(proSalon.statusCode, 200, proSalon.body);
-  assert.ok(proSalon.json().salon, 'le salon de démonstration doit exister');
-  assert.equal(proSalon.json().salon.isPublished, true);
-  assert.ok(proSalon.json().salon.services.length >= 1, 'au moins un service');
+  // Ancien numéro (application mobile) → même compte.
+  const alias = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '1111' });
+  assert.equal(alias.statusCode, 200, alias.body);
+  assert.equal(alias.json().email, 'clienthomme@salondz.com');
+
+  for (const [email, min] of [
+    ['hommes@salondz.com', 13],
+    ['femmes@salondz.com', 20],
+  ] as const) {
+    const pro = await call('POST', '/v1/auth/dev-login', undefined, { email });
+    assert.equal(pro.statusCode, 200, pro.body);
+    assert.equal(pro.json().role, 'pro');
+    const proSalon = await call('GET', '/v1/pro/salon', pro.json().accessToken);
+    assert.equal(proSalon.statusCode, 200, proSalon.body);
+    assert.ok(proSalon.json().salon, 'le salon de démonstration doit exister');
+    assert.equal(proSalon.json().salon.isPublished, true);
+    assert.ok(proSalon.json().salon.services.length >= min, `au moins ${min} prestations`);
+    assert.ok(proSalon.json().salon.services.every((s: { photos?: unknown[] }) => (s.photos ?? []).length >= 1), 'une photo par prestation');
+  }
 
   // Idempotent : une seconde connexion réussit sur le même compte.
-  const again = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '1111' });
+  const again = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clientfemme@salondz.com' });
   assert.equal(again.statusCode, 200, again.body);
 });
 

@@ -23,17 +23,13 @@ export function formatDZPhone(e164: string | null | undefined): string {
 }
 
 /**
- * Comptes de démonstration à accès direct (sans SMS/OTP réel) : le numéro et le code fixe `1111`
- * suffisent, l'API délivre une vraie session Supabase. À désactiver en production réelle
- * (`TEST_LOGIN_ENABLED=0` côté API). Numéros au format E.164 (+213…).
+ * Anciens numéros de démonstration (application mobile, scripts `check:*`) : ils ouvrent les comptes
+ * de `DEMO_ACCOUNTS` (`demo.ts`) avec le code fixe. Les nouveaux accès se font par adresse e-mail.
  */
-export const TEST_LOGIN_CODE = '1111';
-export const TEST_ACCOUNTS: Record<string, { role: 'client' | 'pro'; fullName: string; market: 'men' | 'women' | null }> = {
-  '+213603044618': { role: 'client', fullName: 'Client Démo', market: 'men' },
-  '+213603044619': { role: 'pro', fullName: 'Pro Démo', market: null },
-};
+import { DEMO_LOGIN_CODE, DEMO_PHONE_ALIASES } from './demo';
+export const TEST_LOGIN_CODE = DEMO_LOGIN_CODE;
 
-/** Le numéro (E.164) correspond-il à un compte de démonstration à accès direct ? */
+/** Le numéro (E.164) est-il un ancien numéro de démonstration ? */
 export function isTestPhone(e164: string | null | undefined): boolean {
-  return !!e164 && Object.prototype.hasOwnProperty.call(TEST_ACCOUNTS, e164);
+  return !!e164 && Object.prototype.hasOwnProperty.call(DEMO_PHONE_ALIASES, e164);
 }

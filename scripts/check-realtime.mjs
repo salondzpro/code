@@ -14,7 +14,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Valeurs recopiées volontairement : les paquets internes sont en TypeScript et ne
 // s'importent pas depuis un script .mjs (même choix que scripts/seed-demo.mjs).
-// Source : packages/constants/src/phone.ts (TEST_ACCOUNTS, TEST_LOGIN_CODE).
+// Source : packages/constants/src/demo.ts (DEMO_PHONE_ALIASES → comptes hommes@ / clienthomme@, DEMO_LOGIN_CODE).
 const DEMO_PRO_PHONE = '0603044619';
 const DEMO_CLIENT_PHONE = '0603044618';
 const DEMO_CODE = '1111';

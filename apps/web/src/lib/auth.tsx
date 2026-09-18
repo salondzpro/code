@@ -11,7 +11,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, queryKeys } from '@salondz/api-client';
-import { isTestPhone, type UserRole } from '@salondz/constants';
+import { demoAccountFor, type UserRole } from '@salondz/constants';
 import { api } from './api';
 import { env } from './env';
 import { supabase } from './supabase';
@@ -46,7 +46,8 @@ interface AuthContextValue {
   /** Nouveau mot de passe (session ouverte par le lien de réinitialisation). */
   updatePassword: (password: string) => Promise<void>;
   /** Comptes de démonstration : numéro + code fixe → vraie session par l'API. */
-  demoLogin: (phone: string, code: string) => Promise<void>;
+  /** Compte de démonstration : adresse e-mail (accès direct) ou ancien numéro. */
+  demoLogin: (identifier: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -107,9 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }, []);
 
-  const demoLogin = useCallback(async (phone: string, code: string) => {
-    if (!isTestPhone(phone)) throw new Error('Compte de démonstration inconnu.');
-    const { accessToken, refreshToken } = await api.auth.devLogin({ phone, code: code.trim() });
+  const demoLogin = useCallback(async (identifier: string) => {
+    const acct = demoAccountFor(identifier);
+    if (!acct) throw new Error('Compte de démonstration inconnu.');
+    const { accessToken, refreshToken } = await api.auth.devLogin({ email: acct.email });
     const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
     if (error) throw error;
   }, []);

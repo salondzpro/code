@@ -408,8 +408,12 @@ export const authGoQuerySchema = z.object({
   r: z.string().max(500),
 });
 
-export const devLoginSchema = z.object({
-  phone: p.phoneDZ,
-  code: z.string().trim().min(1).max(8),
-});
+/** Compte de démonstration : par adresse e-mail (accès direct) ou, pour l'application mobile, ancien numéro + code fixe. */
+export const devLoginSchema = z
+  .object({
+    email: z.string().trim().toLowerCase().email().optional(),
+    phone: p.phoneDZ.optional(),
+    code: z.string().trim().min(1).max(8).optional(),
+  })
+  .refine((b) => !!b.email || (!!b.phone && !!b.code), { message: 'E-mail, ou numéro et code' });
 export type DevLoginInput = z.infer<typeof devLoginSchema>;

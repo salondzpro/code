@@ -917,4 +917,12 @@ export const ar: Record<string, string> = {
   'La veille et 2 h avant · application ou navigateur': 'في اليوم السابق وقبل ساعتين · التطبيق أو المتصفح',
   'Les rappels et confirmations arrivent sur l\'application Salon DZ si elle est installée, sinon par ce navigateur : activez « Notifications sur cet appareil » pour les recevoir même application fermée.': 'تصل التذكيرات والتأكيدات إلى تطبيق Salon DZ إن كان مثبتًا، وإلا عبر هذا المتصفح: فعّل «الإشعارات على هذا الجهاز» لتلقيها حتى والتطبيق مغلق.',
   'Notification la veille et 2 h avant': 'إشعار في اليوم السابق وقبل ساعتين',
+  'Démonstration': 'تجربة',
+  'Professionnel · Hommes': 'محترف · رجال',
+  'Professionnel · Femmes': 'محترفة · نساء',
+  'Client · Homme': 'زبون · رجل',
+  'Cliente · Femme': 'زبونة · امرأة',
+  'Barbier, 13 prestations': 'حلاق، 13 خدمة',
+  'Cheveux, ongles, cils, soins': 'شعر، أظافر، رموش، عناية',
+  'Rendez-vous, historique, avis': 'مواعيد، سجل، تقييمات',
 };

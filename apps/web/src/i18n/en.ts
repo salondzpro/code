@@ -936,4 +936,12 @@ export const en: Record<string, string> = {
   'La veille et 2 h avant · application ou navigateur': 'The day before and 2 h ahead · app or browser',
   'Les rappels et confirmations arrivent sur l\'application Salon DZ si elle est installée, sinon par ce navigateur : activez « Notifications sur cet appareil » pour les recevoir même application fermée.': 'Reminders and confirmations reach the Salon DZ app when it is installed, otherwise this browser: turn on “Notifications on this device” to get them even when the app is closed.',
   'Notification la veille et 2 h avant': 'Notification the day before and 2 h ahead',
+  'Démonstration': 'Demo',
+  'Professionnel · Hommes': 'Professional · Men',
+  'Professionnel · Femmes': 'Professional · Women',
+  'Client · Homme': 'Client · Man',
+  'Cliente · Femme': 'Client · Woman',
+  'Barbier, 13 prestations': 'Barber, 13 services',
+  'Cheveux, ongles, cils, soins': 'Hair, nails, lashes, skincare',
+  'Rendez-vous, historique, avis': 'Appointments, history, reviews',
 };
