@@ -558,7 +558,9 @@ try {
     // ce qui écrit le brouillon et enchaîne directement sur l'horaire.
     await c.goto(WEB + `/s/${slug}`);
     await c.getByRole('tab', { name: 'Prendre RDV' }).click();
-    await c.locator('button[aria-expanded="false"]').filter({ hasText: 'prestation' }).first().click();
+    // Une seule catégorie : elle est déjà dépliée. On ne déplie que s'il y a quelque chose à déplier.
+    const repliee = c.locator('button[aria-expanded="false"]').filter({ hasText: 'prestation' });
+    if (await repliee.count()) await repliee.first().click();
     await c.getByRole('button', { name: 'Choisir' }).first().click();
     await c.waitForURL(new RegExp(`/s/${slug}/reserver/quand`));
     await c.getByRole('heading', { name: 'Quand ?' }).waitFor();
