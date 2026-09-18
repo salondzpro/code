@@ -37,7 +37,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useProPendingBookings, useProSalon } from '@salondz/api-client';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, I, Dim } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
 import { t } from '@/i18n';
@@ -87,6 +87,7 @@ function Group({ title, items }: { title: string; items: Item[] }) {
 }
 
 export function ProHeader() {
+  const { signOut } = useAuth();
   const [open, setOpen] = useState(false);
   // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
@@ -183,7 +184,7 @@ export function ProHeader() {
             className="flex items-center gap-3 py-2.5 text-danger"
             onClick={async () => {
               setOpen(false);
-              await supabase.auth.signOut();
+              await signOut();
               navigate('/pro/bienvenue');
             }}
           >

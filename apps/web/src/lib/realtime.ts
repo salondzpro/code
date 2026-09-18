@@ -8,6 +8,8 @@ import {
   realtimeRetryDelay,
 } from '@salondz/constants';
 import { supabase } from './supabase';
+import { isDemo } from '@/demo/session';
+import { demoAdvance, demoWorld } from '@/demo/fetch';
 
 /**
  * Temps réel = synchronisation d'AFFICHAGE. On invalide les caches TanStack quand la base
@@ -48,6 +50,13 @@ function useWatchedChannel(
 
   useEffect(() => {
     if (!key) return;
+    // Démonstration : pas de canal, le monde local avance et l'écran suit (toutes les 20 s).
+    if (isDemo()) {
+      const timer = setInterval(() => {
+        if (demoAdvance(demoWorld(), Date.now(), true) > 0) invalidateRef.current(qc);
+      }, 20_000);
+      return () => clearInterval(timer);
+    }
 
     let alive = true;
     let channel: RealtimeChannel | null = null;

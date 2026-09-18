@@ -5,7 +5,8 @@
  * Le numéro de téléphone n'est plus un moyen de connexion : c'est une donnée du profil,
  * obligatoire et contrôlée dans sa forme seulement (aucun SMS envoyé).
  *
- * Les comptes de démonstration (numéro + code fixe) gardent leur accès direct par l'API.
+ * Les comptes de démonstration vivent ENTIÈREMENT dans le navigateur (`@/demo`) : une session
+ * factice est posée ici, et l'API client répond depuis le monde local. Aucun serveur sollicité.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
@@ -15,7 +16,17 @@ import { demoAccountFor, type UserRole } from '@salondz/constants';
 import { api } from './api';
 import { env } from './env';
 import { supabase } from './supabase';
+import { currentDemo, startDemo, stopDemo, DEMO_USER_IDS } from '@/demo/session';
 import { t } from '@/i18n';
+
+/** Session factice d'un compte de démonstration : même forme qu'une session Supabase pour le reste de l'app. */
+function demoSession(): Session | null {
+  const acct = currentDemo();
+  if (!acct) return null;
+  const id = DEMO_USER_IDS[acct.key];
+  const user = { id, email: acct.email, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: { full_name: acct.fullName, role: acct.role }, created_at: '2026-06-01T10:00:00.000Z' } as unknown as User;
+  return { access_token: 'demo', refresh_token: 'demo', token_type: 'bearer', expires_in: 86_400, expires_at: Math.floor(Date.now() / 1000) + 86_400, user } as Session;
+}
 
 /** Page qui reçoit les liens envoyés par e-mail (confirmation, connexion, mot de passe). */
 export function authRedirectUrl(path: string, next?: string): string {
@@ -55,17 +66,18 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(() => demoSession());
+  const [loading, setLoading] = useState(() => !currentDemo());
 
   useEffect(() => {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
+      if (!mounted || currentDemo()) return;
       setSession(data.session);
       setLoading(false);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
+      if (currentDemo()) return;
       setSession(next);
       setLoading(false);
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
@@ -108,17 +120,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }, []);
 
-  const demoLogin = useCallback(async (identifier: string) => {
-    const acct = demoAccountFor(identifier);
-    if (!acct) throw new Error('Compte de démonstration inconnu.');
-    const { accessToken, refreshToken } = await api.auth.devLogin({ email: acct.email });
-    const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-    if (error) throw error;
-  }, []);
+  const demoLogin = useCallback(
+    async (identifier: string) => {
+      if (!demoAccountFor(identifier)) throw new Error('Compte de démonstration inconnu.');
+      // Une vraie session ouverte à côté serait ambiguë : on la ferme d'abord.
+      await supabase.auth.signOut().catch(() => undefined);
+      startDemo(identifier);
+      qc.clear();
+      setSession(demoSession());
+      setLoading(false);
+    },
+    [qc],
+  );
 
   const signOut = useCallback(async () => {
+    if (currentDemo()) {
+      stopDemo();
+      qc.clear();
+      setSession(null);
+      return;
+    }
     await supabase.auth.signOut();
-  }, []);
+  }, [qc]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

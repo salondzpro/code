@@ -540,6 +540,14 @@ test('connexion de démonstration : adresse → vraie session ; ancien numéro +
   // Idempotent : une seconde connexion réussit sur le même compte.
   const again = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clientfemme@salondz.com' });
   assert.equal(again.statusCode, 200, again.body);
+
+  // La démonstration réelle vit dans le navigateur : ces comptes de test ne doivent rien laisser en base
+  // (leurs salons seraient publiés sur la marketplace).
+  for (const email of ['hommes@salondz.com', 'femmes@salondz.com', 'clienthomme@salondz.com', 'clientfemme@salondz.com']) {
+    const found = await db.rpc('auth_user_by_email', { p_email: email });
+    const id = (found.data as { id: string }[] | null)?.[0]?.id;
+    if (id) await db.auth.admin.deleteUser(id);
+  }
 });
 
 test('salon dépublié → page publique 404 pour un anonyme, visible pour le propriétaire', async () => {

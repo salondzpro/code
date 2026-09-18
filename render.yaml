@@ -75,7 +75,7 @@ services:
       # Comptes de démonstration (0603044618 / 0603044619, code 1111) : DÉSACTIVÉS par défaut dans le code.
       # « 1 » les active — à retirer avant l'ouverture au public (décision propriétaire, voir docs/PRODUCTION.md).
       - key: TEST_LOGIN_ENABLED
-        value: "1"
+        value: "0"
 
   # Web (Vite/React) → site statique Render : gratuit, CDN global, ne consomme pas les heures d'instance.
   # Création en une commande (sans dashboard) : node --env-file=.env scripts/render-web.mjs

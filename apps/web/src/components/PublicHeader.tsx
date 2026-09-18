@@ -21,7 +21,6 @@ import { CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from '
 import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
 import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
 import { I, Dim } from './ui';
 import { t } from '@/i18n';
 
@@ -40,7 +39,7 @@ export function PublicHeader() {
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
   const me = useMe(!!session);
   // Le marché du compte s'ouvre d'office : c'est celui que la cliente ou le client consulte.
   const market = me.data?.profile.market ?? MARKETS[0];
@@ -148,7 +147,7 @@ export function PublicHeader() {
               className="flex items-center gap-3 py-2.5 text-danger"
               onClick={async () => {
                 setOpen(false);
-                await supabase.auth.signOut();
+                await signOut();
                 navigate('/intro');
               }}
             >
