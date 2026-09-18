@@ -67,7 +67,7 @@ export interface World {
   lastEventAt: Record<string, string>;
 }
 
-const WORLD_VERSION = 3;
+const WORLD_VERSION = 4;
 const STORAGE = 'salondz:demo:world';
 
 export const uid = (): string =>
@@ -741,9 +741,13 @@ function topUpClient(w: World, salon: SalonOwnerView, acct: DemoAccount, now: nu
       const svc = svcFor(seed >>> 4);
       const start = freeSlot(w, salon, key, staff.id, svc.durationMinutes, seed >>> 6);
       if (!start) continue;
-      const b = bookingRow(salon, svc, staff.id, start, status, { id: userId, name: acct.fullName, phone: acct.phone }, { source: 'online', createdAt: nowI });
+      // Réservé « il y a un à trois jours » : le journal ne montre pas trois demandes datées de l'instant.
+      // (une demande en attente reste récente : le cron local l'expirerait sinon à 24 h).
+      const createdAt = status === 'pending' ? plus(nowI, -60) : plus(nowI, -((seed % 3) + 1) * 24 * 60 - (seed % 300));
+      const b = bookingRow(salon, svc, staff.id, start, status, { id: userId, name: acct.fullName, phone: acct.phone }, { source: 'online', createdAt });
       w.bookings.push(b);
       onBookingChange(w, null, b);
+      for (const n of w.notifications) if (n.bookingId === b.id) Object.assign(n, { createdAt, readAt: createdAt });
       busy.add(key);
       changes++;
       return;
