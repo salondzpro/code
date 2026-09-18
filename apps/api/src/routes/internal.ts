@@ -7,6 +7,7 @@ import { unauthorized, unwrap } from '../lib/errors';
 import { dispatchPendingPush } from '../lib/push';
 import { NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS } from '@salondz/constants';
 import { notifySlotFreed } from '../lib/waitlist';
+import { ensureDemoWorld } from '../lib/demo';
 
 /**
  * Tâches périodiques, appelées par pg_cron → pg_net (toutes les 15 min) ou manuellement :
@@ -162,6 +163,10 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .select('id, salon_id, staff_id, service_id, starts_at, ends_at');
     const expired = unwrap(expiredRes) as { id: string; salon_id: string; staff_id: string | null; service_id: string | null; starts_at: string; ends_at: string }[];
     for (const b of expired) await notifySlotFreed(log, { salonId: b.salon_id, staffId: b.staff_id, startsAt: b.starts_at, endsAt: b.ends_at, serviceId: b.service_id, excludeBookingId: b.id });
+
+    // 3c) Monde de démonstration : il vit entre deux connexions (journées pleines, demandes, annulations,
+    //     nouveautés, rendez-vous des clients de démonstration). Rien si la démonstration est coupée.
+    if (config.TEST_LOGIN_ENABLED) await ensureDemoWorld(req.log);
 
     // 4) Push en attente (rattrape aussi les notifs créées hors API)
     const pushed = await dispatchPendingPush(req.log);

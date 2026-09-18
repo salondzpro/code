@@ -245,8 +245,6 @@ async function ensureSalon(log: FastifyBaseLogger, ownerId: string, spec: SalonS
     ...(owner.data ? [{ id: owner.data.id as string, name: ownerAcct.fullName.split(' ')[0]! }] : []),
     { id: second.data.id as string, name: spec.staff2.name },
   ];
-  // Agenda vivant : quelques clients de passage aujourd'hui et demain (sans compte).
-  await seedWalkIns(log, { id: salonId, spec, staff, services: built });
   log.info({ salonId, slug: spec.slug }, 'salon de démonstration créé');
   return { id: salonId, spec, staff, services: built };
 }
@@ -280,53 +278,232 @@ function bookingRow(
   };
 }
 
-/** Rendez-vous de clients de passage (sans compte) : l'agenda du pro n'est jamais vide en démonstration. */
-async function seedWalkIns(log: FastifyBaseLogger, salon: BuiltSalon) {
-  const [s1, s2] = salon.staff;
-  if (!s1 || !s2) return;
-  const svc = (key: string) => salon.services.find((s) => s.key === key) ?? salon.services[0]!;
-  const men = salon.spec.gender === 'men';
-  const names: [string, string][] = men
-    ? [
-        ['Mohamed R.', 'h-coupe-barbe'],
-        ['Sid Ali', 'h-coupe'],
-        ['Rayan B.', 'h-barbe'],
-        ['Walid', 'h-coupe-barbe-brushing'],
-        ['Anis K.', 'h-tracage'],
-        ['Hamza', 'h-coupe-barbe'],
-      ]
-    : [
-        ['Nadia B.', 'f-brushing'],
-        ['Sarah M.', 'f-pose-gel'],
-        ['Meriem', 'f-manucure'],
-        ['Rania K.', 'f-extension-cils'],
-        ['Houda', 'f-coupe'],
-        ['Imène', 'f-nettoyage-peau'],
-      ];
-  // Deux colonnes, aucun chevauchement : chaque membre enchaîne ses rendez-vous.
-  const rows: Record<string, unknown>[] = [];
-  const dayPlan: [number, string, string][] = [
-    [0, '10:00', '16:00'],
-    [1, '10:30', '15:00'],
-  ];
-  let n = 0;
-  for (const [day, t1, t2] of dayPlan) {
-    let cursor1 = at(day, t1);
-    let cursor2 = at(day, t2);
-    for (let k = 0; k < 3; k++) {
-      const [name, key] = names[n % names.length]!;
-      n++;
-      const a = svc(key);
-      const useFirst = k % 2 === 0;
-      const start = useFirst ? cursor1 : cursor2;
-      const status = new Date(start).getTime() < Date.now() - 3 * 3_600_000 ? 'completed' : 'confirmed';
-      rows.push(bookingRow(salon, a, useFirst ? s1.id : s2.id, start, status, { id: null, name, phone: null }, { source: 'walk_in' }));
-      if (useFirst) cursor1 = plus(start, a.minutes + 15);
-      else cursor2 = plus(start, a.minutes + 15);
+/* -------------------------------------------------------------------------------------------
+ * Animation : les salons de démonstration VIVENT. À chaque tick du cron (et à chaque connexion de
+ * démonstration) on complète ce qui manque : des rendez-vous d'hier, d'aujourd'hui, de demain et
+ * d'après-demain (clients de passage fictifs), une absence signalée hier, une demande à confirmer,
+ * une annulation récente, une nouveauté « en direct » (nouvelle réservation ou annulation) au plus
+ * toutes les LIVE_EVENT_MINUTES, et pour chaque client de démonstration deux rendez-vous à venir plus
+ * une demande en attente. Tout passe par les déclencheurs habituels : les notifications (et les push)
+ * sont celles de l'application, pas des fausses.
+ * ------------------------------------------------------------------------------------------- */
+const POOL_MEN: [string, string | null][] = [
+  ['Mohamed R.', '+213550100110'], ['Sid Ali', null], ['Rayan B.', '+213550100111'], ['Walid', null], ['Anis K.', '+213550100112'], ['Hamza', null],
+  ['Bilal M.', '+213550100113'], ['Yanis', null], ['Riad T.', '+213550100114'], ['Nassim', null], ['Amine D.', '+213550100115'], ['Islam', null],
+];
+const POOL_WOMEN: [string, string | null][] = [
+  ['Nadia B.', '+213550100120'], ['Sarah M.', null], ['Meriem', '+213550100121'], ['Rania K.', null], ['Houda', '+213550100122'], ['Imène', null],
+  ['Lydia', '+213550100123'], ['Feriel B.', null], ['Kenza', '+213550100124'], ['Asma T.', null], ['Sonia', '+213550100125'], ['Manel', null],
+];
+/** Rendez-vous voulus chaque jour : hier, aujourd'hui, demain, après-demain. */
+const DAY_TARGET: Record<number, number> = { [-1]: 4, 0: 4, 1: 3, 2: 3 };
+/** Une nouveauté « en direct » au plus toutes les 90 minutes. */
+const LIVE_EVENT_MINUTES = 90;
+/** Les clients de passage plus vieux que ça sont effacés (le monde ne grossit pas indéfiniment). */
+const PURGE_AFTER_DAYS = 45;
+
+const hash = (s: string) => {
+  let h = 2166136261;
+  for (const c of s) {
+    h ^= c.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+const dowOf = (dateKey: string) => new Date(`${dateKey}T12:00:00Z`).getUTCDay();
+const toMin = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
+const toHM = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+interface Taken {
+  staff_id: string;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+}
+
+async function bookingsBetween(salonId: string, fromKey: string, toKeyExclusive: string) {
+  const r = await db
+    .from('bookings')
+    .select('id, staff_id, starts_at, ends_at, status, client_id, client_name, source, cancelled_at')
+    .eq('salon_id', salonId)
+    .gte('starts_at', localDateTimeToISO(fromKey, '00:00'))
+    .lt('starts_at', localDateTimeToISO(toKeyExclusive, '00:00'));
+  if (r.error) throw r.error;
+  return (r.data ?? []) as (Taken & { id: string; client_id: string | null; client_name: string; source: string; cancelled_at: string | null })[];
+}
+
+/** Un début de créneau libre pour ce membre ce jour-là, dans les horaires du salon, sans chevauchement. */
+function freeSlot(spec: SalonSpec, dateKey: string, staffId: string, minutes: number, taken: Taken[], seed: number): string | null {
+  const h = spec.hours[dowOf(dateKey)];
+  if (!h) return null;
+  const candidates: string[] = [];
+  for (let m = toMin(h[0]); m + minutes <= toMin(h[1]); m += 30) candidates.push(toHM(m));
+  if (!candidates.length) return null;
+  const first = seed % candidates.length;
+  for (let i = 0; i < candidates.length; i++) {
+    const start = localDateTimeToISO(dateKey, candidates[(first + i) % candidates.length]!);
+    const end = plus(start, minutes);
+    const clash = taken.some((b) => b.staff_id === staffId && b.status !== 'cancelled' && b.status !== 'no_show' && b.starts_at < end && b.ends_at > start);
+    if (!clash) return start;
+  }
+  return null;
+}
+
+const statusFor = (start: string, minutes: number, now: number) => (new Date(plus(start, minutes)).getTime() < now - 3 * 3_600_000 ? 'completed' : 'confirmed');
+
+/** Fait vivre un salon : journées pleines, absence, demande à confirmer, annulation, nouveauté en direct. */
+async function animateSalon(log: FastifyBaseLogger, salon: BuiltSalon, ownerId: string): Promise<number> {
+  const { spec } = salon;
+  if (salon.staff.length === 0 || salon.services.length === 0) return 0;
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  const today = toLocalDateKey();
+  const pool = spec.gender === 'men' ? POOL_MEN : POOL_WOMEN;
+  const hourSeed = hash(`${salon.id}:${Math.floor(now / 3_600_000)}`);
+  const pick = (seed: number) => {
+    const staff = salon.staff[seed % salon.staff.length]!;
+    const svc = salon.services[(seed >>> 3) % salon.services.length]!;
+    const [name, phone] = pool[(seed >>> 9) % pool.length]!;
+    return { staff, svc, name, phone };
+  };
+  let created = 0;
+  let events = 0;
+
+  // Nouveauté « en direct » : décidée AVANT d'écrire, sur la dernière notification du pro.
+  const lastNotif = await db.from('notifications').select('created_at').eq('user_id', ownerId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+  const quietFor = lastNotif.data ? now - new Date(lastNotif.data.created_at as string).getTime() : Infinity;
+  const wantsEvent = quietFor > LIVE_EVENT_MINUTES * 60_000;
+
+  const window = await bookingsBetween(salon.id, addDaysToKey(today, -1), addDaysToKey(today, 4));
+
+  // 1) Hier → après-demain : des journées pleines, clients de passage ou par téléphone.
+  for (const off of [-1, 0, 1, 2]) {
+    const key = addDaysToKey(today, off);
+    if (!spec.hours[dowOf(key)]) continue;
+    const dayRows = window.filter((b) => b.starts_at >= localDateTimeToISO(key, '00:00') && b.starts_at < localDateTimeToISO(addDaysToKey(key, 1), '00:00'));
+    const active = dayRows.filter((b) => b.status !== 'cancelled').length;
+    const rows: ReturnType<typeof bookingRow>[] = [];
+    for (let i = active; i < (DAY_TARGET[off] ?? 0); i++) {
+      const seed = hash(`${salon.id}:${key}:${i}`);
+      const { staff, svc, name, phone } = pick(seed);
+      const start = freeSlot(spec, key, staff.id, svc.minutes, [...dayRows, ...rows], seed >>> 6);
+      if (!start) break;
+      rows.push(
+        bookingRow(salon, svc, staff.id, start, statusFor(start, svc.minutes, now), { id: null, name, phone }, {
+          source: seed % 3 === 0 ? 'phone' : 'walk_in',
+          created_at: plus(start, -(60 + (seed % 5) * 24 * 60)),
+        }),
+      );
+    }
+    if (rows.length) {
+      const ins = await db.from('bookings').insert(rows);
+      if (ins.error) log.warn({ err: ins.error }, 'demo journée');
+      else created += rows.length;
+    }
+    // Hier : une absence signalée, comme dans la vraie vie.
+    if (off === -1 && !dayRows.some((b) => b.status === 'no_show')) {
+      const done = dayRows.find((b) => b.status === 'completed' && !b.client_id);
+      if (done) await db.from('bookings').update({ status: 'no_show' }).eq('id', done.id);
     }
   }
-  const ins = await db.from('bookings').insert(rows);
-  if (ins.error) log.warn({ err: ins.error }, 'demo walk-ins');
+
+  // 2) Une demande à confirmer (le pastille « à valider » n'est jamais vide).
+  const pending = window.filter((b) => b.status === 'pending' && b.starts_at > nowIso);
+  if (!pending.length) {
+    const key = addDaysToKey(today, 1 + (hourSeed % 2));
+    const seed = hash(`${salon.id}:pending:${key}`);
+    const { staff, svc, name, phone } = pick(seed);
+    const start = freeSlot(spec, key, staff.id, svc.minutes, window, seed >>> 6);
+    if (start) {
+      const ins = await db.from('bookings').insert(bookingRow(salon, svc, staff.id, start, 'confirmed', { id: null, name, phone }, { status: 'pending', source: 'online', created_at: nowIso }));
+      if (ins.error) log.warn({ err: ins.error }, 'demo demande');
+      else {
+        created++;
+        events++;
+      }
+    }
+  }
+
+  // 3) Une annulation récente (deux jours) : un client de passage se désiste.
+  const recentCancel = window.some((b) => b.status === 'cancelled' && b.cancelled_at && new Date(b.cancelled_at).getTime() > now - 2 * 86_400_000);
+  if (!recentCancel && events === 0) {
+    const victim = window.find((b) => b.status === 'confirmed' && !b.client_id && b.starts_at > new Date(now + 2 * 3_600_000).toISOString());
+    if (victim) {
+      const upd = await db
+        .from('bookings')
+        .update({ status: 'cancelled', cancelled_at: nowIso, cancelled_by: 'client', cancellation_reason: 'Empêchement' })
+        .eq('id', victim.id);
+      if (upd.error) log.warn({ err: upd.error }, 'demo annulation');
+      else events++;
+    }
+  }
+
+  // 4) Nouveauté en direct : une réservation en ligne qui arrive, si rien ne s'est passé depuis un moment.
+  if (wantsEvent && events === 0) {
+    const key = addDaysToKey(today, 1 + (hourSeed % 3));
+    const seed = hash(`${salon.id}:live:${key}:${hourSeed}`);
+    const { staff, svc, name, phone } = pick(seed);
+    const start = freeSlot(spec, key, staff.id, svc.minutes, window, seed >>> 6);
+    if (start) {
+      const ins = await db
+        .from('bookings')
+        .insert(bookingRow(salon, svc, staff.id, start, 'confirmed', { id: null, name, phone }, { status: spec.autoConfirm ? 'confirmed' : 'pending', source: 'online', created_at: nowIso }));
+      if (ins.error) log.warn({ err: ins.error }, 'demo nouveauté');
+      else {
+        created++;
+        events++;
+      }
+    }
+  }
+
+  // 5) Purge des clients de passage anciens.
+  await db.from('bookings').delete().eq('salon_id', salon.id).is('client_id', null).lt('starts_at', new Date(now - PURGE_AFTER_DAYS * 86_400_000).toISOString());
+
+  if (created || events) log.info({ salon: spec.slug, created, events }, 'démo animée');
+  return created;
+}
+
+/** Un client de démonstration garde toujours deux rendez-vous confirmés à venir et une demande en attente. */
+async function topUpClient(log: FastifyBaseLogger, salon: BuiltSalon, acct: DemoAccount, userId: string) {
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  const today = toLocalDateKey();
+  const up = await db.from('bookings').select('id, status, starts_at, created_at').eq('client_id', userId).eq('salon_id', salon.id).in('status', ['pending', 'confirmed']).gt('starts_at', nowIso);
+  if (up.error) throw up.error;
+  const mine = up.data ?? [];
+  const busyDays = new Set(mine.map((b) => toLocalDateKey(new Date(b.starts_at as string))));
+  const client = { id: userId, name: acct.fullName, phone: acct.phone };
+  const men = acct.key === 'clienthomme';
+  const favourites = men ? ['h-coupe-barbe', 'h-coupe', 'h-barbe', 'h-coupe-barbe-shampoing'] : ['f-brushing', 'f-pose-gel', 'f-manucure', 'f-semi-permanent', 'f-nettoyage-peau'];
+  const svcFor = (seed: number) => salon.services.find((s) => s.key === favourites[seed % favourites.length]) ?? salon.services[0]!;
+  const rows: ReturnType<typeof bookingRow>[] = [];
+  const window = await bookingsBetween(salon.id, today, addDaysToKey(today, 15));
+
+  const place = (status: 'confirmed' | 'pending', fromDay: number, seedKey: string) => {
+    for (let off = fromDay; off < fromDay + 10; off++) {
+      const key = addDaysToKey(today, off);
+      if (busyDays.has(key) || !salon.spec.hours[dowOf(key)]) continue;
+      const seed = hash(`${salon.id}:${userId}:${seedKey}:${key}`);
+      const staff = salon.staff[seed % salon.staff.length]!;
+      const svc = svcFor(seed >>> 4);
+      const start = freeSlot(salon.spec, key, staff.id, svc.minutes, [...window, ...rows], seed >>> 6);
+      if (!start) continue;
+      rows.push(bookingRow(salon, svc, staff.id, start, 'confirmed', client, { status, source: 'online', created_at: nowIso }));
+      busyDays.add(key);
+      return;
+    }
+  };
+  const confirmed = mine.filter((b) => b.status === 'confirmed').length;
+  for (let i = confirmed; i < 2; i++) place('confirmed', 3 + i * 4, `confirmed:${i}`);
+  if (!mine.some((b) => b.status === 'pending')) place('pending', 1, 'pending');
+  if (rows.length) {
+    const ins = await db.from('bookings').insert(rows);
+    if (ins.error) log.warn({ err: ins.error }, 'demo client à venir');
+  }
+  // La demande en attente du client de démonstration ne périme pas tant que le pro ne répond pas :
+  // elle reste « fraîche » pour le cron (expiration à 24 h), et redevient une nouveauté dès qu'il la confirme.
+  const stale = mine.filter((b) => b.status === 'pending' && new Date(b.created_at as string).getTime() < now - 20 * 3_600_000);
+  for (const b of stale) await db.from('bookings').update({ created_at: new Date(now - 3_600_000).toISOString(), pro_reminded_at: null }).eq('id', b.id);
 }
 
 /** Historique d'un client de démonstration dans « son » salon : passés terminés, un annulé, deux à venir, avis. */
@@ -432,7 +609,7 @@ async function ensureClientHistory(log: FastifyBaseLogger, acct: DemoAccount, us
 
 let building: Promise<void> | null = null;
 
-/** Construit (ou complète) tout le monde de démonstration. Jamais deux constructions en parallèle. */
+/** Construit (ou complète) tout le monde de démonstration, puis l'anime. Jamais deux passages en parallèle. */
 export function ensureDemoWorld(log: FastifyBaseLogger): Promise<void> {
   if (!building) {
     building = (async () => {
@@ -447,6 +624,15 @@ export function ensureDemoWorld(log: FastifyBaseLogger): Promise<void> {
         const cf = DEMO_ACCOUNTS.find((a) => a.key === 'clientfemme')!;
         if (men) await ensureClientHistory(log, ch, ids.get('clienthomme')!, men);
         if (women) await ensureClientHistory(log, cf, ids.get('clientfemme')!, women);
+        // Puis la vie du jour : journées pleines, demandes, annulations, nouveautés, rendez-vous des clients.
+        if (men) {
+          await animateSalon(log, men, ids.get('hommes')!);
+          await topUpClient(log, men, ch, ids.get('clienthomme')!);
+        }
+        if (women) {
+          await animateSalon(log, women, ids.get('femmes')!);
+          await topUpClient(log, women, cf, ids.get('clientfemme')!);
+        }
       } catch (err) {
         log.warn({ err }, 'ensureDemoWorld');
       } finally {
