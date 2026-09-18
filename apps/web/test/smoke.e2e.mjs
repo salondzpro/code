@@ -620,9 +620,8 @@ try {
   await step('client: détail → report → annulation', async () => {
     await c.getByRole('button', { name: 'Voir le rendez-vous' }).click();
     await c.waitForURL(new RegExp(`/rendez-vous/${bookingId}$`));
-    // Le prix apparaît deux fois (en grand + total des prestations) : on cible le premier.
-    await c.getByText('1 300 DA').first().waitFor();
-    await c.getByText(/1 prestation/).waitFor();
+    // Une prestation par rendez-vous : 800 DA. Le prix apparaît plusieurs fois, on cible le premier.
+    await c.getByText('800 DA').first().waitFor();
     await shot(c, 'client-rdv');
     await c.getByRole('link', { name: 'Reporter' }).click();
     await c.waitForURL(/\/reporter$/);
@@ -633,7 +632,8 @@ try {
     await c.waitForURL(new RegExp(`/rendez-vous/${bookingId}$`));
     await c.getByRole('button', { name: 'Annuler' }).click();
     await c.getByText('Annuler ce rendez-vous ?').waitFor();
-    await c.getByLabel('Motif').fill('Empêchement');
+    await c.getByRole('button', { name: 'Motif' }).click();
+    await c.getByRole('radio').first().click();
     await c.getByRole('button', { name: 'Annuler le rendez-vous' }).click();
     await c.getByRole('heading', { name: 'Rendez-vous annulé' }).waitFor();
     await shot(c, 'client-annule');
@@ -659,7 +659,9 @@ try {
   });
   await step('client: seconde réservation (une prestation)', async () => {
     await c.goto(WEB + `/s/${slug}/prestations`);
-    await c.getByRole('button', { name: 'Choisir' }).first().click();
+    // « Coupe simple » explicitement : c'est elle que la suite termine, note et retrouve dans
+    // l'agenda et la fiche client.
+    await c.locator('.li').filter({ hasText: 'Coupe simple' }).getByRole('button', { name: 'Choisir' }).click();
     await c.waitForURL(new RegExp(`/s/${slug}/reserver/quand`));
     await pickTargetDay(c);
     await freeSlots(c).nth(2).waitFor();
