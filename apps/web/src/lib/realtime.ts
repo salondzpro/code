@@ -9,7 +9,6 @@ import {
 } from '@salondz/constants';
 import { supabase } from './supabase';
 import { isDemo } from '@/demo/session';
-import { demoAdvance, demoWorld } from '@/demo/fetch';
 
 /**
  * Temps réel = synchronisation d'AFFICHAGE. On invalide les caches TanStack quand la base
@@ -51,9 +50,12 @@ function useWatchedChannel(
   useEffect(() => {
     if (!key) return;
     // Démonstration : pas de canal, le monde local avance et l'écran suit (toutes les 20 s).
+    // Le moteur est importé à la demande (il n'est pas dans le bundle d'entrée).
     if (isDemo()) {
       const timer = setInterval(() => {
-        if (demoAdvance(demoWorld(), Date.now(), true) > 0) invalidateRef.current(qc);
+        void import('@/demo/fetch').then(({ demoAdvance, demoWorld }) => {
+          if (demoAdvance(demoWorld(), Date.now(), true) > 0) invalidateRef.current(qc);
+        });
       }, 20_000);
       return () => clearInterval(timer);
     }

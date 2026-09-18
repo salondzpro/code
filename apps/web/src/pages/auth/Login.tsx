@@ -11,7 +11,6 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { AlertCircle, Eye, EyeOff, MailOpen, PlayCircle, UserPlus } from 'lucide-react';
 import { DEMO_ACCOUNTS, demoAccountFor } from '@salondz/constants';
 import { hasDemoWorld, stopDemo } from '@/demo/session';
-import { resetWorld } from '@/demo/world';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
@@ -236,7 +235,7 @@ export function Login() {
             className="self-start py-1 text-[0.857rem] font-semibold underline"
             onClick={() => {
               stopDemo();
-              resetWorld();
+              void import('@/demo/world').then((m) => m.resetWorld());
               setUsedDemo(false);
             }}
           >
