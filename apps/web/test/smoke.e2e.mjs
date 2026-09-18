@@ -68,7 +68,21 @@ async function createUser(label, role, fullName, market = null, phone = null) {
   });
   if (error) throw error;
   const champs = { ...(market ? { market } : {}), ...(phone ? { phone } : {}) };
-  if (Object.keys(champs).length) await admin.from('profiles').update(champs).eq('id', data.user.id);
+  if (Object.keys(champs).length) {
+    // Le profil est créé par un DÉCLENCHEUR (`handle_new_user`) : à cet instant précis, la ligne
+    // peut ne pas encore exister, et la mise à jour ne toucherait alors aucune ligne — sans erreur.
+    // C'est ce qui rendait le scénario capricieux : un compte sans numéro est renvoyé sur
+    // « Vos coordonnées » et tout son parcours tombe. On attend la ligne, et on vérifie que
+    // l'écriture a porté.
+    let applique = false;
+    for (let essai = 0; essai < 20 && !applique; essai++) {
+      const { data: lignes, error: err } = await admin.from('profiles').update(champs).eq('id', data.user.id).select('id');
+      if (err) throw err;
+      applique = (lignes?.length ?? 0) > 0;
+      if (!applique) await new Promise((r) => setTimeout(r, 250));
+    }
+    if (!applique) throw new Error(`profil de ${label} jamais créé : ${JSON.stringify(champs)}`);
+  }
   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     headers: { apikey: PUB, 'Content-Type': 'application/json' },
