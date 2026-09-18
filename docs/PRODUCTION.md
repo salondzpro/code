@@ -39,6 +39,13 @@ Lot du 17 septembre (commits 23aa8d2 et 9a4d1a5) :
 - Numéro de téléphone verrouillé dès le premier rendez-vous (`PHONE_LOCKED`, support pour le changer) ; `sitemap.xml` servi par l'API et réécrit par le site ; job `deploy` dans la CI (attend le secret GitHub `RENDER_API_KEY`) ; erreurs API traduites dans les trois langues ; page 404 hors indexation ; cibles tactiles 38/44 px et contraste 4,5:1 ; routes `/compte/*` en double supprimées ; interrupteurs protégés contre le double appui ; langue enregistrée avant le rechargement.
 - Tests API : 31/31 contre Supabase ; le rôle des comptes de démonstration est réaffirmé par `dev-login`.
 
+Lot du 18 septembre :
+- **Démonstration 100 % navigateur** : plus aucun compte ni donnée de démonstration côté serveur (`TEST_LOGIN_ENABLED=0`), chaque appareil a la sienne, moteur chargé à la demande (entrée du site allégée de 60 ko).
+- **Schémas de réponse zod sur les routes publiques** (point 8) : une colonne ajoutée à une table ne peut plus partir toute seule vers l'extérieur.
+- **Identité d'un client chez un salon** (point 10, migration 0042) : une seule fiche par personne, et un blocage possible sur un client de passage.
+- **Tablette, ordinateur et grand écran** : le site s'adapte enfin aux écrans larges — l'espace pro passe de la barre d'onglets à un rail permanent à gauche au-delà de 1 024 px, les listes de cartes se rangent en colonnes, l'agenda prend la largeur de ses colonnes et les feuilles deviennent des fenêtres centrées. **Le rendu téléphone est inchangé**, et une sonde le vérifie à chaque modification.
+- **Textes légaux adaptés à l'Algérie**, sauvegardes `pg_dump` gratuites, plan de production en ligne sur `salondz.com/moi`.
+
 ## 2. Décisions à prendre par le propriétaire
 
 | # | Décision | Recommandation |

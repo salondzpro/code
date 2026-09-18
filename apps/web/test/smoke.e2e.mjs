@@ -261,18 +261,23 @@ try {
    * La remise à niveau de ce scénario est un travail à part entière, à ne pas confondre avec
    * une régression : rien de ce qui suit n'a été cassé par l'adaptation tablette/ordinateur.
    */
-  await step('pro: /pro → étape 1 (marché)', async () => {
+  await step('pro: /pro → étape 1 (marché puis spécialités)', async () => {
     await p.goto(WEB + '/pro');
     await p.waitForURL(/\/pro\/onboarding\/1$/);
     await p.getByRole('heading', { name: 'Pour qui travaillez-vous ?' }).waitFor();
     await p.getByRole('button', { name: /^Pour Hommes/ }).click();
     await p.getByRole('button', { name: 'Continuer' }).click();
+    // Deuxième temps de la MÊME étape (pas de changement d'URL) : les spécialités du marché.
+    await p.getByRole('heading', { name: 'Que proposez-vous ?' }).waitFor();
+    await p.getByRole('button', { name: 'Coiffure', exact: true }).click();
+    await p.getByRole('button', { name: 'Barbe', exact: true }).click();
+    await p.getByRole('button', { name: 'Continuer' }).click();
     await p.waitForURL(/\/pro\/onboarding\/2$/);
     await shot(p, 'pro-etape-1');
   });
   await step('pro: nom → identité → adresse (création du salon)', async () => {
-    await p.getByRole('heading', { name: 'Nom de votre salon' }).waitFor();
-    await p.getByLabel('Nom public').fill(`Barber Smoke ${RUN}`);
+    await p.getByRole('heading', { name: "Comment s'appelle votre salon ?" }).waitFor();
+    await p.getByLabel('Nom du salon').fill(`Barber Smoke ${RUN}`);
     await p.getByText('Disponible').waitFor();
     await p.getByRole('button', { name: 'Continuer' }).click();
     await p.waitForURL(/\/pro\/onboarding\/3$/);
@@ -296,7 +301,7 @@ try {
     await p.getByRole('button', { name: '30 min', exact: true }).click();
     await p.getByRole('button', { name: 'Ajouter une photo' }).click();
     await p.waitForURL(/\/pro\/onboarding\/7\/[0-9a-f-]+$/);
-    await p.getByRole('heading', { name: /Photo · Coupe \+ barbe/ }).waitFor();
+    await p.getByRole('heading', { name: /Une photo pour .*Coupe \+ barbe/ }).waitFor();
     await shot(p, 'pro-etape-7');
     await p.getByRole('button', { name: 'Enregistrer et ajouter une autre' }).click();
     await p.waitForURL(/\/pro\/onboarding\/6$/);
@@ -306,12 +311,13 @@ try {
     await p.getByRole('button', { name: '15 min', exact: true }).click();
     await p.getByRole('button', { name: 'Ajouter une photo' }).click();
     await p.waitForURL(/\/pro\/onboarding\/7\/[0-9a-f-]+$/);
-    await p.getByRole('button', { name: 'Enregistrer la prestation' }).click();
+    // Sans photo, le bouton principal le dit : « Enregistrer sans photo ».
+    await p.getByRole('button', { name: 'Enregistrer sans photo' }).click();
     await p.waitForURL(/\/pro\/onboarding\/8$/);
-    await p.getByRole('heading', { name: 'Vos réalisations' }).waitFor();
+    await p.getByRole('heading', { name: 'Montrez votre travail' }).waitFor();
   });
   await step('pro: réalisations → horaires → disponibilités → publication', async () => {
-    await p.getByRole('button', { name: 'Continuer' }).click();
+    await p.getByRole('button', { name: 'Continuer sans photo' }).click();
     await p.waitForURL(/\/pro\/onboarding\/9$/);
     await p.getByRole('heading', { name: 'Horaires' }).waitFor();
     await shot(p, 'pro-etape-9');
@@ -322,22 +328,40 @@ try {
     await p.getByRole('heading', { name: 'Règles de réservation' }).waitFor();
     await p.getByRole('button', { name: 'Continuer' }).click();
     await p.waitForURL(/\/pro\/onboarding\/publier$/);
-    await p.getByRole('heading', { name: 'Tout est prêt' }).waitFor();
+    await p.getByRole('heading', { name: /Tout est prêt|Presque prêt/ }).waitFor();
     await shot(p, 'pro-publier');
     await p.getByRole('button', { name: 'Publier ma page' }).click();
-    await p.waitForURL(/\/pro\/lien$/);
+    // Page publiée : le professionnel entre dans son espace ; le lien reste à un tap.
+    await p.waitForURL(/\/pro$/);
+    await p.getByRole('heading', { name: 'Votre journée' }).waitFor();
+    await p.goto(WEB + '/pro/lien');
     await p.getByRole('heading', { name: 'Votre page de réservation' }).waitFor();
     const { data: s, error } = await admin.from('salons').select('slug, is_published').eq('owner_id', users.pro.id).single();
     if (error) throw error;
     if (!s.is_published) throw new Error('salon non publié');
     slug = s.slug;
+    // Coordonnées du salon : l'étape Adresse les prend du GPS, que le navigateur du test
+    // n'accorde pas au contexte pro. Sans elles, le salon compte dans les résultats mais
+    // n'a aucune bulle sur la carte. On les pose ici, comme le ferait un vrai réglage.
+    const { error: eGeo } = await admin.from('salons').update({ lat: 36.7538, lng: 3.0588 }).eq('owner_id', users.pro.id);
+    if (eGeo) throw eGeo;
     await shot(p, 'pro-lien');
+  });
+  await step('pro: coque ordinateur (rail permanent, pas de barre d’onglets)', async () => {
+    // Le contexte pro tourne à 1 280 px : c'est l'affichage ordinateur, pas la colonne téléphone.
+    await p.goto(WEB + '/pro');
+    await p.locator('.rail').getByRole('link', { name: 'Agenda' }).waitFor();
+    if (await p.locator('.nvb').count()) throw new Error('barre d’onglets flottante affichée sur ordinateur');
+    const large = await p.evaluate(() => document.documentElement.scrollWidth);
+    if (large > 1280) throw new Error(`débordement horizontal : ${large} px`);
+    await shot(p, 'pro-coque-ordinateur');
   });
   await step('pro: profil → photos du salon (logo + couvertures)', async () => {
     await p.goto(WEB + '/pro/profil');
     await p.getByRole('heading', { name: 'Profil' }).waitFor();
     await p.getByRole('button', { name: 'Changer la photo de couverture' }).waitFor();
-    await p.getByRole('link', { name: 'Mon salon' }).click();
+    // Le rail de navigation porte le même libellé : on vise la carte du contenu.
+    await p.locator('.pro-main').getByRole('link', { name: 'Mon salon' }).click();
     await p.waitForURL(/\/pro\/mon-salon$/);
     await p.getByRole('link', { name: /Photos du salon/ }).click();
     await p.waitForURL(/\/pro\/photos$/);
@@ -396,6 +420,8 @@ try {
     await p.getByText(/réservable sur tous les horaires/).waitFor(); // horaires chargés
     await p.getByRole('tab', { name: 'Horaires personnalisés' }).click();
     await p.getByRole('switch', { name: 'Dimanche', exact: true }).click(); // repos le dimanche
+    // Toucher un jour ouvert déplie ses heures et ses pauses (sinon rien à cliquer).
+    await p.getByRole('button', { name: /^Lundi/ }).click();
     await p.getByRole('button', { name: 'Ajouter une pause Lundi' }).click();
     await p.getByRole('button', { name: 'Ajouter une pause Lundi' }).click();
     await p.getByLabel('Début de pause 2 Lundi').fill('16:00');
@@ -490,7 +516,7 @@ try {
   });
   await step('client: carte interactive (bulles de prix, compteur de zone, recherche)', async () => {
     await c.goto(WEB + '/carte');
-    await c.getByText(/dans cette zone/).waitFor();
+    await c.getByText(/dans cette zone/).first().waitFor();
     await c.locator('button.map-bubble').first().waitFor();
     await c.locator('button.map-bubble').first().click();
     await c.locator('a.crd.sel').first().waitFor();
@@ -515,9 +541,9 @@ try {
     await c.waitForURL(new RegExp(`/s/${slug}$`));
     await c.getByRole('heading', { name: /Barber Smoke/ }).waitFor();
     await c.getByText('Coupe + barbe').waitFor();
-    await c.getByRole('tab', { name: 'Infos' }).click();
+    await c.getByRole('tab', { name: 'À propos' }).click();
     await c.getByText('Fermé').first().waitFor(); // vendredi
-    await c.getByRole('tab', { name: 'Prestations' }).click();
+    await c.getByRole('tab', { name: 'Prendre RDV' }).click();
     await shot(c, 'client-salon');
   });
   await step('client: ajouter aux favoris → visible dans Mes favoris', async () => {
@@ -673,15 +699,16 @@ try {
     // Historique détaillé : la prestation terminée y figure avec son statut.
     await sheet.getByText('Historique').waitFor();
     await sheet.locator('.crd', { hasText: 'Coupe simple' }).getByText('Terminé').first().waitFor();
-    // Notes privées
+    // Notes privées : enregistrées en QUITTANT le champ, comme l'identité d'un membre.
     await sheet.getByLabel('Notes privées').fill('Préfère le matin');
-    await sheet.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+    await sheet.getByLabel('Notes privées').blur();
     await sheet.getByText('Enregistré').waitFor();
     await shot(p, 'pro-client');
-    await sheet.getByRole('button', { name: 'Bloquer', exact: true }).click();
-    await sheet.getByText('Client bloqué', { exact: true }).waitFor();
-    await sheet.getByRole('button', { name: 'Débloquer', exact: true }).click();
-    await sheet.getByText('Client actif', { exact: true }).waitFor();
+    // Blocage : le bouton est à l'écart des gestes du quotidien, et la fiche porte la pastille.
+    await sheet.getByRole('button', { name: 'Bloquer ce client' }).click();
+    await sheet.getByText('Bloqué', { exact: true }).waitFor();
+    await sheet.getByRole('button', { name: 'Débloquer ce client' }).click();
+    await sheet.getByRole('button', { name: 'Bloquer ce client' }).waitFor();
   });
   await step('client: noter la prestation → avis visible sur la page publique', async () => {
     await c.goto(WEB + '/rendez-vous?scope=past');
