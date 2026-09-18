@@ -164,7 +164,11 @@ async function step(name, fn) {
   } catch (e) {
     report.steps.push({ name, ok: false, ms: Date.now() - t, error: String(e).slice(0, 600) });
     report.failed.push(name);
-    console.log(`✘ ${name}: ${String(e).split('\n')[0]}`);
+    // Le message seul ne dit pas CE QU'ON ATTENDAIT : on garde aussi la ligne « waiting for »
+    // du journal d'appel de Playwright, sans quoi chaque échec demande une exécution de plus.
+    const lignes = String(e).split(String.fromCharCode(10)).map((l) => l.trim()).filter(Boolean);
+    const attendu = lignes.find((l) => l.replace(/^-\s*/, '').startsWith('waiting for'));
+    console.log(`✘ ${name}: ${lignes[0]}${attendu ? ` — ${attendu}` : ''}`);
     const pg = PAGES[name.split(':')[0]];
     if (pg) await pg.screenshot({ path: path.join(SHOTS, `${String(++n).padStart(2, '0')}-FAIL-${name.replace(/[^a-z0-9]+/gi, '_')}.png`), fullPage: true }).catch(() => undefined);
   }
