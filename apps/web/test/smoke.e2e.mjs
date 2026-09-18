@@ -166,7 +166,10 @@ async function step(name, fn) {
     report.failed.push(name);
     // Le message seul ne dit pas CE QU'ON ATTENDAIT : on garde aussi la ligne « waiting for »
     // du journal d'appel de Playwright, sans quoi chaque échec demande une exécution de plus.
-    const lignes = String(e).split(String.fromCharCode(10)).map((l) => l.trim()).filter(Boolean);
+    // Playwright colore son journal d'appel : sans retirer les codes ANSI, la ligne ne commence
+    // pas par « - » mais par un code d'échappement, et la recherche ne trouve rien.
+    const sansCouleur = String(e).replace(new RegExp(String.fromCharCode(27) + '\[[0-9;]*m', 'g'), '');
+    const lignes = sansCouleur.split(String.fromCharCode(10)).map((l) => l.trim()).filter(Boolean);
     const attendu = lignes.find((l) => l.replace(/^-\s*/, '').startsWith('waiting for'));
     console.log(`✘ ${name}: ${lignes[0]}${attendu ? ` — ${attendu}` : ''}`);
     const pg = PAGES[name.split(':')[0]];
