@@ -932,4 +932,6 @@ export const ar: Record<string, string> = {
   'Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.': 'لم يعد بإمكان هذا الزبون أخذ موعد عندك. الحظر يخص صالونك وحده.',
   'Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.': 'الزبون المحظور لا يمكنه الحجز عندك عبر الإنترنت. هذا يخص صالونك وحده.',
   'Ce client de passage n\'a ni compte ni numéro : le blocage le signale dans votre clientèle, il n\'y a rien à empêcher en ligne.': 'هذا الزبون العابر بلا حساب ولا رقم هاتف: الحظر يضع عليه علامة في قائمة زبائنك، ولا شيء يُمنع عبر الإنترنت.',
+  'Exporter la clientèle': 'تصدير قائمة الزبائن',
+  'Navigation': 'التنقل',
 };
