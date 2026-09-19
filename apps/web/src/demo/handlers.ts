@@ -865,9 +865,13 @@ on('GET', '/pro/bookings/pending', (c) => {
 });
 on('POST', '/pro/bookings', (c) => {
   const s = ownedSalon(c);
-  const body = c.body as { serviceId: string; staffId: string; startsAt: string; clientName: string; clientPhone?: string; notes?: string; source?: Booking['source'] };
-  const svc = s.services.find((x) => x.id === body.serviceId);
-  if (!svc) throw notFound('Service');
+  const body = c.body as { serviceId?: string; serviceIds?: string[]; staffId: string; startsAt: string; clientName: string; clientPhone?: string; notes?: string; source?: Booking['source'] };
+  // Plusieurs prestations = UN rendez-vous, exactement comme côté client (et comme l'API).
+  const ids = body.serviceIds?.length ? body.serviceIds : [body.serviceId!];
+  const services = ids.map((id) => s.services.find((x) => x.id === id)).filter((x): x is Service => !!x);
+  if (services.length !== ids.length) throw notFound('Service');
+  const first = services[0]!;
+  const svc = { ...first, name: services.map((x) => x.name).join(' + '), durationMinutes: services.reduce((a, x) => a + x.durationMinutes, 0), priceDa: services.reduce((a, x) => a + x.priceDa, 0) };
   const staff = pickStaffFor(c.w, s, body.startsAt, svc.durationMinutes, body.staffId, undefined, false, undefined, c.now);
   const b = bookingRow(s, svc, staff.id, new Date(body.startsAt).toISOString(), 'confirmed', { id: null, name: body.clientName, phone: body.clientPhone ?? null }, { source: body.source ?? 'walk_in', notes: body.notes ?? null });
   c.w.bookings.push(b);

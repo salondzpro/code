@@ -924,3 +924,47 @@ test('clientèle : un client de passage sans numéro est blocable (repère du sa
   assert.equal((await call('GET', `/v1/pro/clients/${encodeURIComponent(key)}`, pro.token)).json().blocked, true);
   assert.equal((await call('GET', '/v1/pro/clients', pro.token)).json().blockedCount, 1);
 });
+
+
+/**
+ * Point 16 du plan : le professionnel peut enchaîner plusieurs prestations dans UN rendez-vous,
+ * comme le client. L'écran le permettait déjà, mais créait autant de rendez-vous à la suite :
+ * trois blocs dans l'agenda pour une seule venue, trois lignes dans l'historique du client, et
+ * un rendez-vous coupé en deux si la deuxième création échouait.
+ */
+test('pro : plusieurs prestations dans UN rendez-vous (lignes, durée et prix cumulés)', async () => {
+  const jour = addDaysToKey(toLocalDateKey(), 12);
+  const deuxieme = await call('POST', '/v1/pro/services', pro.token, {
+    name: 'Shampoing',
+    durationMinutes: 10,
+    priceDa: 200,
+  });
+  assert.equal(deuxieme.statusCode, 201, deuxieme.body);
+  const shampoingId = deuxieme.json().id as string;
+
+  const r = await call('POST', '/v1/pro/bookings', pro.token, {
+    serviceIds: [serviceId, shampoingId],
+    staffId,
+    startsAt: localDateTimeToISO(jour, '10:00'),
+    clientName: 'Nadir Cumul',
+    clientPhone: '0661778899',
+  });
+  assert.equal(r.statusCode, 201, r.body);
+  const b = r.json();
+  assert.equal(b.durationMinutes, 40, 'durée cumulée (30 + 10)');
+  assert.equal(b.priceDa, 1000, 'prix cumulé (800 + 200)');
+  assert.equal(b.items.length, 2, 'une ligne par prestation');
+  assert.deepEqual(
+    (b.items as { serviceName: string; sortOrder: number }[]).map((x) => x.serviceName),
+    ['Coupe + barbe', 'Shampoing'],
+    'les lignes gardent l’ordre de réalisation',
+  );
+  assert.equal(new Date(b.endsAt).getTime() - new Date(b.startsAt).getTime(), 40 * 60_000);
+
+  // UN seul rendez-vous dans l'agenda de ce jour, pas deux.
+  const agenda = await call('GET', `/v1/pro/bookings?from=${jour}&to=${jour}`, pro.token);
+  assert.equal(agenda.statusCode, 200, agenda.body);
+  const duJour = (agenda.json().items as { id: string }[]).filter((x) => x.id === b.id);
+  assert.equal(duJour.length, 1);
+  assert.equal((agenda.json().items as unknown[]).length, 1, 'une venue = un bloc');
+});

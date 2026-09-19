@@ -142,22 +142,16 @@ export default function ProBookingNew() {
     if (errs.name || errs.services || errs.phone) return;
     setError(null);
     try {
-      // Plusieurs prestations : enchaînées à la suite, même membre.
-      let start = localDateTimeToISO(date, time);
-      let first: { id: string } | null = null;
-      for (const s of chosen) {
-        const b = await createWalkIn.mutateAsync({
-          serviceId: s!.id,
-          staffId: sid,
-          startsAt: start,
-          clientName: name.trim(),
-          clientPhone,
-          source: 'walk_in',
-        });
-        first ??= b;
-        start = b.endsAt;
-      }
-      setDone(first);
+      // Plusieurs prestations = UN rendez-vous, comme côté client et comme sur le web.
+      const b = await createWalkIn.mutateAsync({
+        serviceIds: chosen.map((s) => s!.id),
+        staffId: sid,
+        startsAt: localDateTimeToISO(date, time),
+        clientName: name.trim(),
+        clientPhone,
+        source: 'walk_in',
+      });
+      setDone(b);
     } catch (err) {
       setError(errorText(err));
     }

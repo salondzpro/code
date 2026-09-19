@@ -227,16 +227,27 @@ export const createBookingSchema = z
   });
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
-/** Réservation créée par le pro (client de passage / téléphone). */
-export const createWalkInBookingSchema = z.object({
-  serviceId: p.uuid,
-  staffId: p.uuid,
-  startsAt: p.isoDateTime,
-  clientName: p.shortText(80),
-  clientPhone: p.phoneDZ.optional(),
-  notes: p.longText(300).optional(),
-  source: z.enum(BOOKING_SOURCES).default('walk_in'),
-});
+/**
+ * Réservation créée par le pro (client de passage / téléphone). Comme côté client, plusieurs
+ * prestations font UN rendez-vous et non plusieurs : un seul bloc dans l'agenda, un seul
+ * historique pour le client, une seule chose à annuler ou à déplacer.
+ */
+export const createWalkInBookingSchema = z
+  .object({
+    serviceId: p.uuid.optional(),
+    /** Prestations enchaînées, dans l'ordre de réalisation. */
+    serviceIds: z.array(p.uuid).min(1).max(8).optional(),
+    staffId: p.uuid,
+    startsAt: p.isoDateTime,
+    clientName: p.shortText(80),
+    clientPhone: p.phoneDZ.optional(),
+    notes: p.longText(300).optional(),
+    source: z.enum(BOOKING_SOURCES).default('walk_in'),
+  })
+  .refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, {
+    message: 'Choisissez au moins une prestation',
+    path: ['serviceIds'],
+  });
 export type CreateWalkInBookingInput = z.infer<typeof createWalkInBookingSchema>;
 
 export const cancelBookingSchema = z.object({

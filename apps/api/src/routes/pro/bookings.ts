@@ -67,12 +67,23 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return { items: rows.map(mapBookingWithStaff), nextCursor: null };
   });
 
-  /** Réservation saisie par le pro (client de passage / téléphone). */
+  /**
+   * Réservation saisie par le pro (client de passage / téléphone). Plusieurs prestations font
+   * UN rendez-vous (`create_booking_multi`, la même fonction que côté client) : un seul bloc
+   * dans l'agenda, une seule ligne dans l'historique du client, une seule chose à annuler ou
+   * à déplacer. L'écran laissait déjà en cocher plusieurs, mais créait autant de rendez-vous
+   * à la suite — avec, si l'un échouait, un rendez-vous coupé en deux et rien pour revenir
+   * en arrière.
+   *
+   * `p_enforce_rules: false` : le professionnel saisit ce qu'il veut dans son propre agenda
+   * (délai, horizon, horaires) ; seule l'exclusion de créneau reste opposable.
+   */
   app.post('/bookings', { schema: { body: createWalkInBookingSchema } }, async (req, reply) => {
     const b = req.body;
-    const res = await db.rpc('create_booking', {
+    const serviceIds = b.serviceIds?.length ? b.serviceIds : [b.serviceId!];
+    const res = await db.rpc('create_booking_multi', {
       p_salon_id: req.salon!.id,
-      p_service_id: b.serviceId,
+      p_service_ids: serviceIds,
       p_staff_id: b.staffId,
       p_starts_at: b.startsAt,
       p_client_id: null,

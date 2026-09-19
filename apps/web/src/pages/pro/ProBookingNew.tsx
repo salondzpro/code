@@ -347,23 +347,18 @@ export function ProBookingNew() {
     if (errs.services) return setSheet('services');
     setError(null);
     try {
-      // Plusieurs prestations : enchaînées à la suite, même membre.
-      let start = localDateTimeToISO(date, time);
-      let first: { id: string } | null = null;
-      for (const s of chosen) {
-        const b = await createWalkIn.mutateAsync({
-          serviceId: s!.id,
-          staffId: staffId || staff[0]!.id,
-          startsAt: start,
-          clientName: name.trim(),
-          clientPhone: phone || undefined,
-          notes: first ? undefined : notes.trim() || undefined,
-          source: 'walk_in',
-        });
-        first ??= b;
-        start = b.endsAt;
-      }
-      setDone(first);
+      // Plusieurs prestations = UN rendez-vous, comme côté client : un seul bloc dans l'agenda,
+      // une seule ligne dans l'historique, une seule chose à annuler ou à déplacer.
+      const b = await createWalkIn.mutateAsync({
+        serviceIds: chosen.map((s) => s!.id),
+        staffId: staffId || staff[0]!.id,
+        startsAt: localDateTimeToISO(date, time),
+        clientName: name.trim(),
+        clientPhone: phone || undefined,
+        notes: notes.trim() || undefined,
+        source: 'walk_in',
+      });
+      setDone(b);
     } catch (err) {
       setError(errorText(err));
     }
