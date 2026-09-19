@@ -31,6 +31,9 @@
   --color-cancel-bg: #fde8e8;
   --color-cancel-fg: #b22f33;
   --color-green: #18a66a; /* interrupteurs, WhatsApp */
+  /* Heures libres sur les cartes de la marketplace (chiffres et cadre) : bleu du drapeau
+     français, demandé le 19 sept. 2026. Seule couleur du projet qui ne vient pas du design. */
+  --color-hour: #0055a4;
 
   /* Catégories (agenda) */
   --color-cat-hair-bg: #ddf3f4;

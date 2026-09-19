@@ -111,8 +111,17 @@ export function PublicHeader() {
                 onClick={() => setPicked(on ? 'none' : market)}
                 className="flex items-center justify-between gap-3 py-3 text-start"
               >
+                {/* Le MOT « Femmes » en rose, exactement comme le titre de la marketplace : la
+                    couleur dit d'un coup d'œil de quel catalogue on parle, et les deux listes ne
+                    se confondent plus. */}
                 <span className="text-[1.143rem] font-bold tracking-[-0.3px]">
-                  {t(MARKET_LABELS_FR[market])}
+                  {market === 'women' ? (
+                    <>
+                      {t('Pour')} <span className="text-women">{t('Femmes')}</span>
+                    </>
+                  ) : (
+                    t(MARKET_LABELS_FR[market])
+                  )}
                 </span>
                 <I
                   icon={ChevronDown}

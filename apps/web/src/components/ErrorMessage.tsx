@@ -12,6 +12,14 @@ const FALLBACKS: Record<string, string> = {
   INTERNAL_ERROR: 'Erreur du serveur. Réessayez dans un instant.',
 };
 
+/**
+ * L'adresse ne mène à rien (salon retiré, lien erroné, rendez-vous supprimé). Ce cas mérite une
+ * PAGE, avec une sortie, et non un bandeau rouge au milieu d'un écran vide.
+ */
+export function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'NOT_FOUND';
+}
+
 /** Message FR lisible pour n'importe quelle erreur (ApiError, Supabase, Error). */
 export function errorText(error: unknown): string {
   if (error instanceof ApiError) return (FALLBACKS[error.code] ? t(FALLBACKS[error.code]!) : '') || error.message || t('Une erreur est survenue.');

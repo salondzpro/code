@@ -11,7 +11,8 @@ import { formatDuration } from '@/lib/format';
 import { Check } from 'lucide-react';
 import { BottomSheet, Button, I, Img, SectionLabel, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { SalonNotFound } from '@/pages/NotFound';
+import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import type { Service } from '@salondz/types';
 import { t } from '@/i18n';
@@ -46,6 +47,7 @@ export function BookingServices() {
   const s = salon.data;
 
   if (salon.isPending) return <Splash />;
+  if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 
   const groups = groupServices(s.services);

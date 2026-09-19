@@ -50,12 +50,21 @@ function Row({ to, icon, label, sub, right }: { to: string; icon: LucideIcon; la
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+/**
+ * Compteur du compte. Il ANNONCE quelque chose qui existe ailleurs : on y va d'un tap, comme
+ * partout ailleurs dans l'application. Un chiffre qui ne mène nulle part invite à le toucher
+ * pour rien.
+ */
+function Stat({ value, label, to }: { value: string; label: string; to: string }) {
   return (
-    <span className="flex min-w-0 flex-col rounded-[var(--radius-card-sm)] bg-fill px-3 py-2.5">
+    <Link
+      to={to}
+      className="flex min-w-0 flex-col rounded-[var(--radius-card-sm)] bg-fill px-3 py-2.5"
+      aria-label={`${value} ${label}`}
+    >
       <span className="truncate text-[1.429rem] font-semibold leading-tight tracking-[-0.5px]">{value}</span>
       <span className="truncate text-[0.857rem] text-muted">{label}</span>
-    </span>
+    </Link>
   );
 }
 
@@ -125,9 +134,18 @@ export function Profile() {
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
-        <Stat value={String(bookings)} label={bookings > 1 ? t('réservations') : t('réservation')} />
-        <Stat value={String(stats.data?.favorites ?? 0)} label={t("favoris")} />
-        <Stat value={stats.data ? String(reviews) : '—'} label={reviews > 1 ? t('avis donnés') : t('avis donné')} />
+        <Stat
+          to="/rendez-vous"
+          value={String(bookings)}
+          label={bookings > 1 ? t('réservations') : t('réservation')}
+        />
+        <Stat to="/favoris" value={String(stats.data?.favorites ?? 0)} label={t('favoris')} />
+        {/* Les avis se donnent depuis un rendez-vous passé : c'est là qu'on les retrouve. */}
+        <Stat
+          to="/rendez-vous?scope=past"
+          value={stats.data ? String(reviews) : '—'}
+          label={reviews > 1 ? t('avis donnés') : t('avis donné')}
+        />
       </div>
 
       <span className="h3">{t("Mes rendez-vous")}</span>

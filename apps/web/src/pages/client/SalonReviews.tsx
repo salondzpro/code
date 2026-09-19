@@ -15,7 +15,8 @@ import { LoadMore } from '@/components/LoadMore';
 import { formatRating } from '@/lib/clientPrefs';
 import { Pill, Skeleton, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { SalonNotFound } from '@/pages/NotFound';
+import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
@@ -27,6 +28,8 @@ export function SalonReviews() {
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
   const reviewItems = pagesItems(reviews.data);
   if (salon.isPending) return <Splash />;
+  // Lien qui ne mène à aucun salon : une page qui le dit et ramène à la marketplace.
+  if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
   // La fiche salon est mise en cache 60 s : juste après un nouvel avis, on se fie aussi à la liste.

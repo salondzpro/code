@@ -46,7 +46,19 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
     return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
   });
 
-  app.get('/share/s/:slug', { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } }, async (req, reply) => {
+  /**
+   * Le site réécrit TOUT `/s/*` vers ici, y compris les pages profondes d'un salon
+   * (`/s/:slug/avis`, `/s/:slug/prestations`, `/s/:slug/reserver/…`). Sans la variante générique,
+   * ces adresses tombaient sur « Route introuvable » en JSON dès qu'on les ouvrait directement :
+   * un lien partagé vers les avis, un favori, ou simplement un rafraîchissement pendant une
+   * réservation. La navigation À L'INTÉRIEUR de l'application ne passant pas par le serveur, le
+   * défaut restait invisible.
+   *
+   * Les deux servent la même coque et les mêmes balises : elles décrivent le salon, ce qui reste
+   * vrai pour ses sous-pages.
+   */
+  for (const chemin of ['/share/s/:slug', '/share/s/:slug/*'] as const)
+  app.get(chemin, { schema: { params: z.object({ slug: z.string().min(1).max(80) }) } }, async (req, reply) => {
     const html = await loadShell();
     // Le site statique ne répond pas : on renvoie le visiteur au site lui-même (sans balises).
     if (!html) return reply.redirect(`${config.webUrl}/?salon=${encodeURIComponent(req.params.slug)}`, 302);

@@ -955,4 +955,7 @@ export const ar: Record<string, string> = {
   'Vos clients pourront noter leur rendez-vous une fois la prestation terminée.': 'سيتمكن زبائنك من تقييم موعدهم بعد انتهاء الخدمة.',
   'Votre réponse': 'ردك',
   'Votre réponse est publique : elle s\'affiche sous l\'avis, sur votre page.': 'ردك علني: يظهر تحت التقييم، في صفحتك.',
+  'Salon introuvable': 'الصالون غير موجود',
+  'Ce lien ne mène à aucun salon : il a peut-être changé, ou le salon n\'est plus en ligne.': 'هذا الرابط لا يؤدي إلى أي صالون: ربما تغيّر، أو لم يعد الصالون متاحًا.',
+  'Voir les salons': 'تصفح الصالونات',
 };

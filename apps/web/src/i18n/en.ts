@@ -974,4 +974,7 @@ export const en: Record<string, string> = {
   'Vos clients pourront noter leur rendez-vous une fois la prestation terminée.': 'Your clients will be able to rate their appointment once the service is finished.',
   'Votre réponse': 'Your reply',
   'Votre réponse est publique : elle s\'affiche sous l\'avis, sur votre page.': 'Your reply is public: it appears under the review, on your page.',
+  'Salon introuvable': 'Salon not found',
+  'Ce lien ne mène à aucun salon : il a peut-être changé, ou le salon n\'est plus en ligne.': 'This link does not lead to any salon: it may have changed, or the salon is no longer online.',
+  'Voir les salons': 'Browse salons',
 };

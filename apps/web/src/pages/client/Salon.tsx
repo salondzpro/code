@@ -60,7 +60,8 @@ import {
   Avatar,
 } from '@/components/ui';
 import { SHEET_PAD } from '@/components/AppFrame';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { SalonNotFound } from '@/pages/NotFound';
+import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
 import { Splash } from '@/pages/auth/Splash';
 import type { SalonPublic, Service } from '@salondz/types';
@@ -121,6 +122,8 @@ export function Salon() {
   };
 
   if (salon.isPending) return <Splash />;
+  // Lien qui ne mène à aucun salon : une page qui le dit et ramène à la marketplace.
+  if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
   const isFav = !!favs.data?.items.some((x) => x.id === s.id);

@@ -6,7 +6,8 @@ import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { I, Img, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { SalonNotFound } from '@/pages/NotFound';
+import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
 
@@ -14,6 +15,8 @@ export function SalonServices() {
   const { slug = '' } = useParams();
   const salon = useSalon(slug);
   if (salon.isPending) return <Splash />;
+  // Lien qui ne mène à aucun salon : une page qui le dit et ramène à la marketplace.
+  if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
   return (
