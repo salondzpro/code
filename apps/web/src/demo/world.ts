@@ -72,7 +72,7 @@ export interface World {
   lastEventAt: Record<string, string>;
 }
 
-const WORLD_VERSION = 6;
+const WORLD_VERSION = 7;
 const STORAGE = 'salondz:demo:world';
 
 export const uid = (): string =>
@@ -304,7 +304,9 @@ function buildDemoSalon(spec: SalonSpec, createdAt: string): SalonOwnerView {
     ...baseSalon(spec.id, ownerId, { ...spec, coverUrl: demoImage(spec.cover), logoUrl: demoImage(spec.logo), phone: owner.phone, rating: [0, 0] }, createdAt),
     photos: [
       { id: uid(), salonId: spec.id, url: demoImage(spec.cover), sortOrder: 0, kind: 'cover' },
-      ...spec.showcase.slice(0, 2).map((k, i) => ({ id: uid(), salonId: spec.id, url: demoImage(k), sortOrder: i + 1, kind: 'cover' as const })),
+      // Quatre couvertures par salon (demande du 19 sept.) : la couverture principale plus trois
+      // photos de réalisation, toutes de vraies photos de métier.
+      ...spec.showcase.slice(0, 3).map((k, i) => ({ id: uid(), salonId: spec.id, url: demoImage(k), sortOrder: i + 1, kind: 'cover' as const })),
     ],
     works: spec.showcase.map((k, i) => ({ id: uid(), salonId: spec.id, url: demoImage(k), sortOrder: i, kind: 'work' as const })),
     services,
