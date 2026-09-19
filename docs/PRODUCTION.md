@@ -82,7 +82,7 @@ Lot du 18 septembre :
 16. ~~Multi-prestations à la saisie pro~~ (fait le 19 sept.) : plusieurs prestations cochées font désormais UN rendez-vous, comme côté client — un seul bloc dans l'agenda, une seule ligne dans l'historique du client, une seule chose à annuler ou à déplacer. L'écran le permettait déjà mais créait autant de rendez-vous à la suite, avec un rendez-vous coupé en deux si l'un d'eux échouait. Export CSV de la clientèle ajouté le même jour (toute la clientèle, pas seulement la page affichée ; le chiffre d'affaires en avait déjà un). Restent : jours fériés, horaires de nuit, grille alignée sur l'horloge.
 17. Accessibilité : cibles 44 px et contraste des textes discrets faits le 17 sept. ; Échap ferme toute feuille modale (`Dim`, 17 sept.) ; RTL en propriétés logiques (codemod du 17 sept. : `ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`/`text-start`, 147 remplacements ; prix, durées et adresses en `dir="ltr"`/`auto`).
 18. Vignettes d'images (transformations Supabase, plan Pro). `sitemap.xml` servi par l'API (fait le 17 sept.).
-19. Modération des avis, réponse du professionnel, rôle administrateur.
+19. ~~Réponse du professionnel aux avis~~ (fait le 19 sept., migration 0043) : l'espace pro n'avait AUCUN écran des avis — le professionnel devait ouvrir sa propre page publique pour seulement les lire. Il les lit désormais dans « Avis » (pastille des avis sans réponse) et y répond publiquement ; la réponse s'affiche sous l'avis sur la page du salon. Il répond, il ne corrige jamais la note ni le texte. Restent : modération des avis et rôle administrateur.
 
 ## 4. Calendrier
 

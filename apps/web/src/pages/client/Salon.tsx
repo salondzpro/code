@@ -61,6 +61,7 @@ import {
 } from '@/components/ui';
 import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { ReviewReply } from '@/components/ReviewReply';
 import { Splash } from '@/pages/auth/Splash';
 import type { SalonPublic, Service } from '@salondz/types';
 import { t } from '@/i18n';
@@ -430,6 +431,7 @@ export function Salon() {
                   </span>
                 </div>
                 {r.comment && <p className="p">{r.comment}</p>}
+                <ReviewReply reply={r.reply} salonName={s.name} />
               </div>
             ))}
             {reviewItems.length > 0 && (

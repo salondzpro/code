@@ -16,6 +16,7 @@ import { formatRating } from '@/lib/clientPrefs';
 import { Pill, Skeleton, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { ReviewReply } from '@/components/ReviewReply';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
 
@@ -82,6 +83,7 @@ export function SalonReviews() {
           </div>
           <span className="text-[1rem] font-semibold">{r.authorName}</span>
           {r.comment && <span className="p text-[1rem]">{r.comment}</span>}
+          <ReviewReply reply={r.reply} salonName={salon.data?.name} />
         </div>
       ))}
       <LoadMore

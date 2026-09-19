@@ -44,6 +44,7 @@ import type {
   UpdateSalonInput,
   UpdateServiceInput,
   BlockClientInput,
+  ReplyReviewInput,
   ClientHistoryStatus,
   EmailSignupInput,
   EmailLinkInput,
@@ -86,6 +87,16 @@ export interface ReviewItem {
   comment: string | null;
   createdAt: string;
   authorName: string;
+  /** Réponse publique du salon, nulle tant qu'il n'a pas répondu. */
+  reply: string | null;
+  repliedAt: string | null;
+}
+
+/** Avis vu par le professionnel : le même, plus le rendez-vous d'où il vient. */
+export interface ProReviewItem extends ReviewItem {
+  bookingId: string;
+  serviceName: string;
+  startsAt: string;
 }
 
 export interface MeResponse {
@@ -306,6 +317,16 @@ export function createApiClient(opts: ApiClientOptions) {
         hours: (id: string) => get<StaffHour[]>(`/pro/staff/${id}/hours`),
         setHours: (id: string, hours: { dayOfWeek: number; startsAt: string; endsAt: string }[]) =>
           put<{ outsideBookings: OutsideBooking[] }>(`/pro/staff/${id}/hours`, { hours }),
+      },
+      reviews: {
+        list: (q: { cursor?: string; limit?: number; unanswered?: boolean } = {}) =>
+          get<Paginated<ProReviewItem>>('/pro/reviews', q as Query),
+        unanswered: () => get<{ count: number }>('/pro/reviews/unanswered'),
+        reply: (id: string, body: ReplyReviewInput) =>
+          put<{ id: string; reply: string | null; repliedAt: string | null }>(
+            `/pro/reviews/${id}/reply`,
+            body,
+          ),
       },
       clients: {
         list: (q: { q?: string; cursor?: string; limit?: number } = {}) =>

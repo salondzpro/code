@@ -27,6 +27,7 @@ import proStaffRoutes from './routes/pro/staff';
 import proBlockRoutes from './routes/pro/blocks';
 import proBookingRoutes from './routes/pro/bookings';
 import proClientRoutes from './routes/pro/clients';
+import proReviewRoutes from './routes/pro/reviews';
 import internalRoutes from './routes/internal';
 
 export type App = FastifyInstance;
@@ -148,6 +149,7 @@ export async function buildApp(): Promise<App> {
   await app.register(proServiceRoutes, { prefix: '/v1/pro' });
   await app.register(proStaffRoutes, { prefix: '/v1/pro' });
   await app.register(proClientRoutes, { prefix: '/v1/pro' });
+  await app.register(proReviewRoutes, { prefix: '/v1/pro' });
   await app.register(proBlockRoutes, { prefix: '/v1/pro' });
   await app.register(proBookingRoutes, { prefix: '/v1/pro' });
   await app.register(internalRoutes, { prefix: '/internal' });

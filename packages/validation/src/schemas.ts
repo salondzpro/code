@@ -164,6 +164,15 @@ export const setStaffHoursSchema = z.object({
  * numéro sont retrouvés côté serveur, jamais déclarés par l'appelant. Un client de passage connu
  * du seul salon, sans compte ni numéro, est donc blocable lui aussi.
  */
+/**
+ * Réponse publique du salon à un avis. Une seule par avis : répondre à nouveau remplace la
+ * réponse, et une réponse vide l'efface. Le professionnel répond, il ne corrige jamais l'avis.
+ */
+export const replyReviewSchema = z.object({
+  reply: z.string().trim().max(600),
+});
+export type ReplyReviewInput = z.infer<typeof replyReviewSchema>;
+
 export const blockClientSchema = z.object({
   clientKey: z.string().min(1).max(200),
   reason: p.shortText(200).optional(),

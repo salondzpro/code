@@ -24,6 +24,7 @@ import {
   Inbox,
   LogOut,
   Share2,
+  Star,
   Store,
   Tag,
   UserCircle,
@@ -31,6 +32,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
+import { useProReviewsUnanswered } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
@@ -91,6 +93,8 @@ export function ProNav({
   after?: () => void;
 }) {
   const { signOut } = useAuth();
+  // Un avis sans réponse attend quelque chose du professionnel : il est compté comme une demande.
+  const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
   const navigate = useNavigate();
   const { short } = usePublicUrl(salon?.slug ?? '');
   return (
@@ -134,6 +138,7 @@ export function ProNav({
       <Group
         title={t("Page publique")}
         items={[
+          { to: '/pro/avis', label: t("Avis"), icon: Star, count: unanswered },
           ...(salon ? [{ to: `/s/${salon.slug}`, label: t("Voir ma page"), icon: Eye }] : []),
           { to: '/pro/lien', label: t("Lien et partage"), icon: Share2 },
         ]}

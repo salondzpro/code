@@ -89,6 +89,7 @@ const Clients = lazyNamed(() => import('@/pages/pro/Clients'), 'Clients');
 const ClientDetail = lazyNamed(() => import('@/pages/pro/ClientDetail'), 'ClientDetail');
 const ProServices = lazyNamed(() => import('@/pages/pro/ProServices'), 'ProServices');
 const ProCategories = lazyNamed(() => import('@/pages/pro/ProCategories'), 'ProCategories');
+const ProReviews = lazyNamed(() => import('@/pages/pro/ProReviews'), 'ProReviews');
 const ProProfile = lazyNamed(() => import('@/pages/pro/ProProfile'), 'ProProfile');
 const MonSalon = lazyNamed(() => import('@/pages/pro/MonSalon'), 'MonSalon');
 const ProRules = lazyNamed(() => import('@/pages/pro/ProRules'), 'ProRules');
@@ -234,6 +235,7 @@ export const router = createBrowserRouter([
               { path: 'prestations', element: <Navigate to="/pro/catalogue" replace /> },
               { path: 'catalogue', element: <ProServices /> },
               { path: 'categories', element: <ProCategories /> },
+              { path: 'avis', element: <ProReviews /> },
               { path: 'reservations', element: <Requests /> },
               { path: 'profil', element: <ProProfile /> },
               { path: 'mon-salon', element: <MonSalon /> },

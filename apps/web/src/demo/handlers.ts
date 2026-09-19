@@ -299,7 +299,7 @@ on('GET', '/salons/:id/reviews', (c, p) => {
   const rows = c.w.reviews
     .filter((r) => r.salonId === p.id)
     .sort((a, b) => (sort === 'best' ? b.rating - a.rating : 0) || b.createdAt.localeCompare(a.createdAt))
-    .map((r) => ({ id: r.id, rating: r.rating, comment: r.comment, createdAt: r.createdAt, authorName: r.authorName }));
+    .map((r) => ({ id: r.id, rating: r.rating, comment: r.comment, createdAt: r.createdAt, authorName: r.authorName, reply: r.reply ?? null, repliedAt: r.repliedAt ?? null }));
   return ok(page(rows, offset, limit));
 });
 
@@ -530,7 +530,7 @@ on('POST', '/bookings/:id/review', (c, p) => {
   if (!b || b.clientId !== u.id) throw new HttpError(403, 'FORBIDDEN', 'Accès refusé.');
   if (b.status !== 'completed') throw conflict('BOOKING_NOT_COMPLETED', 'Vous pourrez laisser un avis après le rendez-vous.');
   if (c.w.reviews.some((r) => r.bookingId === b.id)) throw conflict('ALREADY_REVIEWED', 'Vous avez déjà noté ce rendez-vous.');
-  const r = { id: uid(), salonId: b.salonId, bookingId: b.id, clientId: u.id, rating: c.body.rating as 1 | 2 | 3 | 4 | 5, comment: (c.body.comment as string | undefined) ?? null, createdAt: new Date().toISOString(), authorName: u.fullName ? `${u.fullName.split(' ')[0]} ${u.fullName.split(' ')[1]?.[0] ?? ''}`.trim() : 'Client' };
+  const r = { id: uid(), salonId: b.salonId, bookingId: b.id, clientId: u.id, rating: c.body.rating as 1 | 2 | 3 | 4 | 5, comment: (c.body.comment as string | undefined) ?? null, createdAt: new Date().toISOString(), authorName: u.fullName ? `${u.fullName.split(' ')[0]} ${u.fullName.split(' ')[1]?.[0] ?? ''}`.trim() : 'Client', reply: null, repliedAt: null };
   c.w.reviews.push(r);
   refreshRating(c.w, b.salonId);
   saveWorld();
@@ -782,6 +782,46 @@ function clearBlocks(c: Ctx, salonId: string, key: string): { clientId: string |
   );
   return { clientId: client.clientId, phone: client.phone };
 }
+
+on('GET', '/pro/reviews', (c) => {
+  const s = ownedSalon(c);
+  const limit = num(c.query.get('limit'), 20);
+  const offset = num(c.query.get('cursor'), 0);
+  const sansReponse = c.query.get('unanswered') === 'true';
+  const rows = c.w.reviews
+    .filter((r) => r.salonId === s.id && (!sansReponse || !r.reply))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((r) => {
+      const b = c.w.bookings.find((x) => x.id === r.bookingId);
+      return {
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt,
+        authorName: r.authorName,
+        reply: r.reply ?? null,
+        repliedAt: r.repliedAt ?? null,
+        bookingId: r.bookingId,
+        serviceName: b?.serviceName ?? '',
+        startsAt: b?.startsAt ?? r.createdAt,
+      };
+    });
+  return ok(page(rows, offset, limit));
+});
+on('GET', '/pro/reviews/unanswered', (c) => {
+  const s = ownedSalon(c);
+  return ok({ count: c.w.reviews.filter((r) => r.salonId === s.id && !r.reply).length });
+});
+on('PUT', '/pro/reviews/:id/reply', (c, p) => {
+  const s = ownedSalon(c);
+  const r = c.w.reviews.find((x) => x.id === p.id && x.salonId === s.id);
+  if (!r) throw notFound('Avis');
+  const texte = String((c.body as { reply?: string }).reply ?? '').trim();
+  r.reply = texte || null;
+  r.repliedAt = texte ? new Date(c.now).toISOString() : null;
+  saveWorld();
+  return ok({ id: r.id, reply: r.reply, repliedAt: r.repliedAt });
+});
 
 on('POST', '/pro/clients/block', (c) => {
   const s = ownedSalon(c);

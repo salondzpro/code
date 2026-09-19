@@ -249,6 +249,8 @@ export const reviewsResponse = z.object({
       comment: z.string().nullable(),
       createdAt: z.string(),
       authorName: z.string(),
+      reply: z.string().nullable(),
+      repliedAt: z.string().nullable(),
     }),
   ),
   nextCursor: z.string().nullable(),

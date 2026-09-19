@@ -279,7 +279,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       const { limit, offset, sort } = req.query;
       let q = db
         .from('reviews')
-        .select('id, rating, comment, created_at, profiles(full_name)')
+        .select('id, rating, comment, created_at, reply, replied_at, profiles(full_name)')
         .eq('salon_id', req.params.id);
       if (sort === 'best') q = q.order('rating', { ascending: false });
       const res = await q
@@ -290,6 +290,8 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         rating: number;
         comment: string | null;
         created_at: string;
+        reply: string | null;
+        replied_at: string | null;
         profiles: { full_name: string | null } | null;
       }[];
       const items = rows.map((r) => ({
@@ -298,6 +300,9 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         comment: r.comment,
         createdAt: r.created_at,
         authorName: firstNameOnly(r.profiles?.full_name),
+        // La réponse du salon est publique : elle se lit sous l'avis, par tout le monde.
+        reply: r.reply,
+        repliedAt: r.replied_at,
       }));
       reply.header('Cache-Control', CACHE_PUBLIC_REVALIDATE);
       return { items, nextCursor: items.length === limit ? String(offset + limit) : null };

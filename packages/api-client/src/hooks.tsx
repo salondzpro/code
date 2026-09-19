@@ -385,6 +385,47 @@ export const useProClientHistory = (key: string, enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.clientHistory(key), enabled });
 };
+/** Avis du salon, plus récents d'abord. `unanswered` ne garde que ceux qui attendent une réponse. */
+export const useProReviewsInfinite = (unanswered = false, enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.pro.reviews, { unanswered }] as const,
+    queryFn: ({ pageParam }) =>
+      api.pro.reviews.list({
+        cursor: pageParam ? String(pageParam) : undefined,
+        limit: 20,
+        unanswered: unanswered || undefined,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 60_000,
+    enabled,
+  });
+};
+
+/** Compteur des avis sans réponse (pastille du menu pro). */
+export const useProReviewsUnanswered = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({
+    queryKey: queryKeys.pro.reviewsUnanswered,
+    queryFn: () => api.pro.reviews.unanswered(),
+    staleTime: 60_000,
+    enabled,
+  });
+};
+
+export function useProReviewMutations() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return {
+    reply: useMutation({
+      mutationFn: ({ id, reply }: { id: string; reply: string }) =>
+        api.pro.reviews.reply(id, { reply }),
+      onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.pro.reviews }),
+    }),
+  };
+}
+
 export function useProClientMutations() {
   const { api } = useApi();
   const qc = useQueryClient();

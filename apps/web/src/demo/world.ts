@@ -32,6 +32,9 @@ export interface DemoProfile extends Profile {
 }
 export interface DemoReview extends Review {
   authorName: string;
+  /** Réponse publique du salon, nulle tant qu'il n'a pas répondu. */
+  reply: string | null;
+  repliedAt: string | null;
 }
 export interface BlockedClient {
   id: string;
@@ -69,7 +72,7 @@ export interface World {
   lastEventAt: Record<string, string>;
 }
 
-const WORLD_VERSION = 5;
+const WORLD_VERSION = 6;
 const STORAGE = 'salondz:demo:world';
 
 export const uid = (): string =>
@@ -405,7 +408,7 @@ function seedClientHistory(w: World, acct: DemoAccount, salon: SalonOwnerView) {
     : ['Pose gel très soignée, Lina prend son temps. Tenue parfaite trois semaines.', 'Brushing rapide et brillant, salon calme et propre.'];
   const toReview = done.slice(-2);
   toReview.forEach((b, i) => {
-    w.reviews.push({ id: uid(), salonId: salon.id, bookingId: b.id, clientId: userId, rating: i === toReview.length - 1 ? 5 : 4, comment: comments[i]!, createdAt: plus(b.startsAt, 26 * 60), authorName: firstNameOnly(acct.fullName) });
+    w.reviews.push({ id: uid(), salonId: salon.id, bookingId: b.id, clientId: userId, rating: i === toReview.length - 1 ? 5 : 4, comment: comments[i]!, createdAt: plus(b.startsAt, 26 * 60), authorName: firstNameOnly(acct.fullName), reply: i === 0 ? 'Merci beaucoup, au plaisir de vous revoir !' : null, repliedAt: i === 0 ? plus(b.startsAt, 30 * 60) : null });
   });
   w.favorites.push({ userId, salonId: salon.id, createdAt: at(-52, '20:00') });
   const last = done.at(-1)!;
@@ -437,7 +440,7 @@ function seedDecorReviews(w: World, salon: SalonOwnerView, gender: 'men' | 'wome
     const start = at(-(5 + (seed % 40)), '15:00');
     const b = bookingRow(salon, svc, salon.staff[0]!.id, start, 'completed', { id: null, name: pool[seed % pool.length]![0], phone: null }, { source: 'online', createdAt: plus(start, -3 * 24 * 60) });
     w.bookings.push(b);
-    w.reviews.push({ id: uid(), salonId: salon.id, bookingId: b.id, clientId: uid(), rating: (4 + (seed % 2)) as 4 | 5, comment: texts[i % texts.length]!, createdAt: plus(start, 20 * 60), authorName: pool[seed % pool.length]![0] });
+    w.reviews.push({ id: uid(), salonId: salon.id, bookingId: b.id, clientId: uid(), rating: (4 + (seed % 2)) as 4 | 5, comment: texts[i % texts.length]!, createdAt: plus(start, 20 * 60), authorName: pool[seed % pool.length]![0], reply: i % 2 === 0 ? 'Merci pour votre retour, à bientôt.' : null, repliedAt: i % 2 === 0 ? plus(start, 24 * 60) : null });
   }
 }
 

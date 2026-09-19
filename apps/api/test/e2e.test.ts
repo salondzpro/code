@@ -968,3 +968,74 @@ test('pro : plusieurs prestations dans UN rendez-vous (lignes, durée et prix cu
   assert.equal(duJour.length, 1);
   assert.equal((agenda.json().items as unknown[]).length, 1, 'une venue = un bloc');
 });
+
+
+/**
+ * Point 19 du plan : le professionnel lit ses avis et y répond publiquement. Un avis engage la
+ * réputation d'un salon ; jusqu'ici il ne pouvait rien en dire, et devait ouvrir sa propre page
+ * publique pour seulement les lire. Il RÉPOND : ni la note ni le texte de l'avis ne lui sont
+ * modifiables.
+ */
+test('pro : lire ses avis et y répondre (la réponse est publique, jamais l’avis)', async () => {
+  const jour = addDaysToKey(toLocalDateKey(), 13);
+  // Un rendez-vous terminé, seule porte d'entrée d'un avis.
+  const rdv = await call('POST', '/v1/pro/bookings', pro.token, {
+    serviceId,
+    staffId,
+    startsAt: localDateTimeToISO(jour, '11:00'),
+    clientName: 'Noteur Test',
+  });
+  assert.equal(rdv.statusCode, 201, rdv.body);
+  const bookingId = rdv.json().id as string;
+  // On rattache le rendez-vous au compte client et on le place dans le passé : un avis ne se
+  // donne qu'après la visite.
+  const hier = new Date(Date.now() - 26 * 3_600_000).toISOString();
+  const maj = await db
+    .from('bookings')
+    .update({ client_id: clientB.id, status: 'completed', starts_at: hier, ends_at: new Date(Date.now() - 25 * 3_600_000).toISOString() })
+    .eq('id', bookingId);
+  assert.equal(maj.error, null);
+
+  const note = await call('POST', `/v1/bookings/${bookingId}/review`, clientB.token, { rating: 4, comment: 'Correct, un peu d’attente.' });
+  assert.equal(note.statusCode, 201, note.body);
+
+  // Le pro voit l'avis, sans réponse, et le compteur le signale.
+  const liste = await call('GET', '/v1/pro/reviews', pro.token);
+  assert.equal(liste.statusCode, 200, liste.body);
+  const mien = (liste.json().items as { id: string; rating: number; reply: string | null; serviceName: string; authorName: string }[]).find((x) => x.rating === 4);
+  assert.ok(mien, 'l’avis doit apparaître dans l’espace pro');
+  assert.equal(mien.reply, null);
+  assert.ok(mien.serviceName.length > 0, 'la prestation notée est rappelée');
+  assert.ok(!mien.authorName.includes('Test'), 'l’auteur n’est jamais signé en entier');
+  assert.ok(((await call('GET', '/v1/pro/reviews/unanswered', pro.token)).json().count as number) >= 1);
+
+  // Il répond : la réponse devient publique, l'avis lui-même ne bouge pas.
+  const rep = await call('PUT', `/v1/pro/reviews/${mien.id}/reply`, pro.token, { reply: 'Merci, nous avons ajusté nos créneaux depuis.' });
+  assert.equal(rep.statusCode, 200, rep.body);
+  assert.equal(rep.json().reply, 'Merci, nous avons ajusté nos créneaux depuis.');
+  assert.ok(rep.json().repliedAt);
+
+  const publics = await call('GET', `/v1/salons/${salonId}/reviews?sort=recent`);
+  assert.equal(publics.statusCode, 200, publics.body);
+  const vu = (publics.json().items as { id: string; rating: number; comment: string; reply: string | null }[]).find((x) => x.id === mien.id);
+  assert.ok(vu, 'l’avis est public');
+  assert.equal(vu.reply, 'Merci, nous avons ajusté nos créneaux depuis.');
+  assert.equal(vu.rating, 4, 'la note n’est pas touchée');
+  assert.equal(vu.comment, 'Correct, un peu d’attente.', 'le texte de l’avis n’est pas touché');
+
+  // Une réponse vide l'efface.
+  assert.equal((await call('PUT', `/v1/pro/reviews/${mien.id}/reply`, pro.token, { reply: '  ' })).json().reply, null);
+
+  // Un autre salon ne répond pas à cet avis, même en connaissant son identifiant.
+  const autrePro = await createUser('proavis', 'pro', 'Autre Pro');
+  await call('POST', '/v1/pro/salon', autrePro.token, {
+    name: `Autre Salon ${RUN}`,
+    wilayaCode: 16,
+    city: 'Alger',
+    genderTarget: 'men',
+    categoryIds: ['barbier'],
+  });
+  const vol = await call('PUT', `/v1/pro/reviews/${mien.id}/reply`, autrePro.token, { reply: 'Pas à moi.' });
+  assert.equal(vol.statusCode, 404, vol.body);
+  await db.auth.admin.deleteUser(autrePro.id);
+});

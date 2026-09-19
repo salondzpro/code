@@ -33,6 +33,8 @@ export const queryKeys = {
     bookings: (q: Partial<ListBookingsQuery>) => ['pro', 'bookings', q] as const,
     bookingsAll: ['pro', 'bookings'] as const,
     pending: ['pro', 'bookings', 'pending'] as const,
+    reviews: ['pro', 'reviews'] as const,
+    reviewsUnanswered: ['pro', 'reviews', 'unanswered'] as const,
     booking: (id: string) => ['pro', 'booking', id] as const,
     blocks: (from?: string, to?: string) => ['pro', 'blocks', from, to] as const,
     blocksAll: ['pro', 'blocks'] as const,
