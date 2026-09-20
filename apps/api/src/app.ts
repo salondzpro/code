@@ -14,6 +14,7 @@ import * as Sentry from '@sentry/node';
 import { config } from './config';
 import authPlugin from './plugins/auth';
 import { AppError, fromPostgrest } from './lib/errors';
+import { TRUSTED_PROXIES } from './lib/proxy';
 import healthRoutes from './routes/health';
 import shareRoutes from './routes/share';
 import planRoutes from './routes/plan';
@@ -49,13 +50,8 @@ export async function buildApp(): Promise<App> {
         req: (req: { method: string; url: string; id: string; ip: string }) => ({ method: req.method, url: String(req.url).split('?')[0], id: req.id, ip: req.ip }),
       },
     },
-    // On remonte X-Forwarded-For de la DROITE vers la gauche et on s'arrête à la première adresse
-    // PUBLIQUE : c'est le visiteur. Les sauts internes de Render (10.x) sont les seuls mandataires
-    // de confiance, et une entrée forgée par le client reste à gauche de la vraie — on ne l'atteint
-    // jamais. Compter les sauts à la main (« un seul mandataire ») donnait ici l'adresse interne de
-    // Render : la limitation de débit par adresse retombait sur une poignée d'adresses partagées, et
-    // le journal d'administration enregistrait 10.x au lieu du visiteur. Vérifié en production.
-    trustProxy: 'loopback, linklocal, uniquelocal',
+    // Qui est le visiteur derrière les mandataires : voir `lib/proxy.ts`.
+    trustProxy: TRUSTED_PROXIES,
     bodyLimit: 512 * 1024,
     ajv: undefined,
   }).withTypeProvider<ZodTypeProvider>();
