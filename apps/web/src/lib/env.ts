@@ -11,6 +11,9 @@ const schema = z.object({
   VITE_PUBLIC_SITE_URL: z.string().url().optional(),
 });
 
+/** Adresse dédiée du portail d'administration (voir `docs/ADMIN.md`). */
+export const ADMIN_HOST = 'admin.salondz.com';
+
 const parsed = schema.safeParse(import.meta.env);
 if (!parsed.success) {
   // Affiché en console uniquement : évite un écran blanc silencieux en dev.
@@ -27,4 +30,10 @@ export const env = {
   isDev: import.meta.env.DEV,
   /** Toujours le domaine officiel : un pro qui navigue sur l'ancienne adresse onrender partage quand même salondz.com. */
   siteUrl: (parsed.data.VITE_PUBLIC_SITE_URL ?? (import.meta.env.DEV ? window.location.origin : 'https://salondz.com')).replace(/\/$/, ''),
+  /**
+   * Le portail d'administration a sa propre adresse. Elle sert la MÊME application : ouvrir
+   * `admin.salondz.com` revient à ouvrir `salondz.com/admin`, et le garde reste celui du serveur.
+   * Ce n'est qu'une porte d'entrée plus courte à taper et à retenir.
+   */
+  adminHost: window.location.hostname === ADMIN_HOST,
 };

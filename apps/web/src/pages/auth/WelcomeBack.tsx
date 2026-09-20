@@ -28,7 +28,12 @@ export function WelcomeBack() {
   const profile = me.data?.profile;
   const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : '/');
   const q = `?next=${encodeURIComponent(next)}`;
-  if (!profile?.fullName || !profile.phone) return <Navigate to={`/profil/creer${q}`} replace />;
-  if (profile.role !== 'pro' && !profile.market) return <Navigate to={`/marche${q}`} replace />;
+  // Le nom, le numéro et le marché servent à RÉSERVER. Qui entre dans l'administration ne réserve
+  // rien : on ne lui réclame pas de quoi être rappelé pour un rendez-vous qu'il ne prendra pas.
+  // Rien à contourner ici — c'est `requireAdmin`, côté serveur, qui ouvre ou non la porte.
+  if (!next.startsWith('/admin')) {
+    if (!profile?.fullName || !profile.phone) return <Navigate to={`/profil/creer${q}`} replace />;
+    if (profile.role !== 'pro' && !profile.market) return <Navigate to={`/marche${q}`} replace />;
+  }
   return <Navigate to={next} replace />;
 }

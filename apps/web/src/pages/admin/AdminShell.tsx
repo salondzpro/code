@@ -44,7 +44,12 @@ export function AdminLayout() {
   const { session, loading } = useAuth();
   const me = useAdminMe(!!session);
   if (loading || (!!session && me.isPending)) return <Splash />;
-  if (!session || me.isError) return <Navigate to="/" replace />;
+  // Personne de connecté : l'écran de connexion, et on revient ici ensuite. Cela n'apprend rien —
+  // `/rendez-vous`, `/favoris` et tout l'espace pro demandent aussi de se connecter.
+  if (!session) return <Navigate to="/connexion?next=%2Fadmin" replace />;
+  // Connecté mais pas administrateur : l'accueil, sans un mot. C'est le cas qui compte — on
+  // n'apprend pas à un client curieux qu'une porte existe.
+  if (me.isError) return <Navigate to="/" replace />;
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[var(--shell-w)] bg-bg">

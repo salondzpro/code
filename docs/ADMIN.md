@@ -292,8 +292,17 @@ ou un compteur, non — un journal qui enregistre tout ne se lit plus.
 **Écrans** — `apps/web/src/pages/admin/`, sous `/admin`, chargés à la demande (morceaux séparés,
 jamais téléchargés par une cliente) : vue d'ensemble, professionnels (liste + fiche), comptes
 (liste + fiche), rendez-vous, journal. Aucun lien n'y mène depuis l'application : l'adresse se
-tape, et le garde serveur est la seule barrière qui compte. Une réponse 403 renvoie à l'accueil
-sans message — inutile d'apprendre à quelqu'un qu'une porte existe.
+tape, et le garde serveur est la seule barrière qui compte. Un visiteur non connecté est envoyé
+sur l'écran de connexion, qui le ramène ensuite ici ; un visiteur connecté mais qui n'est PAS
+administrateur est renvoyé à l'accueil sans un mot — c'est ce cas-là qui compte, inutile
+d'apprendre à un client curieux qu'une porte existe.
+
+**Adresse du portail** — `admin.salondz.com` ouvre directement le tableau de bord : c'est la même
+application, et `main.tsx` réécrit simplement la racine en `/admin` avant le démarrage du routeur.
+`salondz.com/admin` reste valable. Le sous-domaine demande soit un moyen de paiement sur Render
+(le plan gratuit s'arrête à deux domaines personnalisés par compte, déjà pris par `salondz.com`,
+`www` et `api`), soit une redirection de sous-domaine chez IONOS vers `https://salondz.com/admin`
+— cette seconde voie ne coûte rien et ne touche pas à l'hébergement.
 
 **Donner et retirer un accès** — `node --env-file=.env scripts/admin.mjs list | grant <e-mail>
 [support|owner] | revoke <e-mail>`. `revoke` pose `disabled_at` et ne supprime jamais la ligne :

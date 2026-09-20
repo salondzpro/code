@@ -20,6 +20,14 @@ if (!env.isDev && /\.onrender\.com$/.test(window.location.hostname)) {
   window.location.replace(env.siteUrl + window.location.pathname + window.location.search + window.location.hash);
 }
 
+// Sur l'adresse dédiée du portail, la racine EST l'administration : `admin.salondz.com` ouvre le
+// tableau de bord, pas la place de marché. On réécrit le chemin avant que le routeur ne démarre —
+// pas de rechargement, donc pas d'aller-retour visible. Les autres chemins sont laissés tels quels :
+// un lien profond (une fiche, le journal) doit continuer de s'ouvrir là où il pointe.
+if (env.adminHost && window.location.pathname === '/') {
+  window.history.replaceState(null, '', '/admin' + window.location.search + window.location.hash);
+}
+
 startUpdateCheck();
 
 // Ordre voulu : dictionnaire de la langue courante (rien en français), PUIS le code de l'application,
