@@ -6,7 +6,7 @@
 import { Link } from 'react-router';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAdminOverview } from '@salondz/api-client';
-import { formatDA } from '@salondz/constants';
+import { formatDA, formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { I, Skeleton } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
@@ -51,7 +51,7 @@ export function AdminOverview() {
       <h1 className="h1">{t("Vue d'ensemble")}</h1>
 
       <span className="h3">{t("Aujourd'hui")}</span>
-      <div className="gr grid grid-cols-2 gap-1.5">
+      <div className="gr four grid grid-cols-2 gap-1.5">
         <Chiffre valeur={String(o.today.bookings)} libelle={t('rendez-vous pris')} to="/admin/rendez-vous" />
         <Chiffre valeur={String(o.today.cancelled)} libelle={t('annulations')} />
         <Chiffre valeur={String(o.today.noShows)} libelle={t('absences')} />
@@ -118,9 +118,7 @@ export function AdminOverview() {
             {t('Tâche automatique')}
           </span>
           <b className={cronOk ? '' : 'text-danger'}>
-            {tic
-              ? new Intl.DateTimeFormat('fr-DZ', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Algiers' }).format(tic)
-              : t('jamais')}
+            {tic ? `${formatDateShortDZ(tic)} ${formatTimeDZ(tic)}` : t('jamais')}
           </b>
         </div>
         <div className="li">

@@ -38,7 +38,7 @@ export function AdminLayout() {
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[var(--shell-w)] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center gap-3 px-[calc(1rem+var(--shell-px))]">
+        <div className="mx-auto flex h-[3.5rem] max-w-[var(--page-w)] items-center gap-3 px-[calc(1rem+var(--shell-px))]">
           <span className="flex items-center gap-2 text-[1.143rem] leading-none tracking-[-0.4px]">
             <span className="font-semibold">Salon</span>
             <span className="font-light text-muted">DZ</span>
@@ -50,7 +50,7 @@ export function AdminLayout() {
             {me.data?.level === 'owner' ? t('Propriétaire') : t('Support')}
           </span>
         </div>
-        <nav className="pills mx-auto max-w-[var(--shell-w)] px-[calc(1rem+var(--shell-px))] pb-2" aria-label={t('Administration')}>
+        <nav className="pills mx-auto max-w-[var(--page-w)] px-[calc(1rem+var(--shell-px))] pb-2" aria-label={t('Administration')}>
           {NAV.map((n) => (
             <NavLink
               key={n.to}

@@ -9,7 +9,14 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Search } from 'lucide-react';
 import { pagesItems, useAdminAudit, useAdminBookings } from '@salondz/api-client';
-import { BOOKING_STATUSES, type BookingStatus, formatDA, formatDZPhone } from '@salondz/constants';
+import {
+  BOOKING_STATUSES,
+  type BookingStatus,
+  formatDA,
+  formatDZPhone,
+  formatDateShortDZ,
+  formatTimeDZ,
+} from '@salondz/constants';
 import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { I, Pill, Skeleton, StatusBadge } from '@/components/ui';
@@ -45,12 +52,8 @@ const parQui = (by: string | null) =>
         ? t('le système (demande expirée)')
         : '—';
 
-const quand = (iso: string) =>
-  new Intl.DateTimeFormat('fr-DZ', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-    timeZone: 'Africa/Algiers',
-  }).format(new Date(iso));
+/** « dim. 20 sept. 14:30 », heure d'Alger — le format de tout le reste du produit. */
+const quand = (iso: string) => `${formatDateShortDZ(iso)} ${formatTimeDZ(iso)}`;
 
 export function AdminBookings() {
   const [q, setQ] = useState('');

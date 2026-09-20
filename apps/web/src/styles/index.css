@@ -1149,6 +1149,9 @@
   --shell-px: 0rem;
   /* Largeur de lecture d'un écran : aucune borne sur téléphone. */
   --read-w: none;
+  /* Largeur d'une page de contenu (`Screen width="page"`) : idem. Un en-tête qui veut s'aligner
+     sur le contenu de la page se borne à cette largeur, et non au cadre. */
+  --page-w: none;
   /* Rail de navigation pro : il n'existe pas tant qu'il n'y a pas la place. */
   --rail-w: 0rem;
   /* Hauteur de l'en-tête collant (les deux en-têtes font 3,5 rem). */
@@ -1171,6 +1174,7 @@
     --shell-w: 100%;
     --shell-px: 0.75rem;
     --read-w: 44rem;
+    --page-w: 75rem;
   }
 
   /* Largeur d'un écran. Trois valeurs, et trois seulement :
@@ -1187,7 +1191,7 @@
   }
   .scr.page,
   .rd.page {
-    max-width: 75rem;
+    max-width: var(--page-w);
   }
   .scr.wide,
   .rd.wide {
@@ -1269,6 +1273,11 @@
     grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
     gap: 0.75rem;
     align-items: start;
+  }
+  /* Une rangée de chiffres se range en autant de colonnes qu'elle a de carreaux : un carreau
+     seul sur une deuxième ligne se lit comme un oubli. */
+  .gr.four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
