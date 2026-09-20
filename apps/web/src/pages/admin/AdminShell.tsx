@@ -25,6 +25,17 @@ const NAV = [
 ];
 
 /**
+ * Le journal enregistre une clé technique — c'est ce qu'on veut y garder, stable et cherchable —
+ * mais à l'écran on lit une phrase. Une clé inconnue s'affiche telle quelle : un journal ne cache
+ * rien, et une ligne sans traduction vaut mieux qu'une ligne vide.
+ */
+export function actionLabel(action: string): string {
+  if (action === 'view_salon') return t('Fiche salon consultée');
+  if (action === 'view_profile') return t('Fiche compte consultée');
+  return action;
+}
+
+/**
  * Garde d'affichage. Une réponse 403 n'est pas une panne : c'est la réponse normale pour qui n'est
  * pas administrateur. On renvoie à l'accueil sans message d'erreur — inutile d'apprendre à
  * quelqu'un qu'une porte existe.

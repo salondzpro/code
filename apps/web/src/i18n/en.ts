@@ -1062,4 +1062,6 @@ export const en: Record<string, string> = {
   '{n} absence': '{n} no-show',
   '{n} annulé': '{n} cancelled',
   '{n} prestation': '{n} service',
+  'Fiche salon consultée': 'Salon record viewed',
+  'Fiche compte consultée': 'Account record viewed',
 };

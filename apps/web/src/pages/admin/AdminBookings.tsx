@@ -21,6 +21,7 @@ import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { I, Pill, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { actionLabel } from './AdminShell';
 import { t } from '@/i18n';
 
 /**
@@ -179,8 +180,7 @@ export function AdminAudit() {
             <div key={a.id} className="li !items-start">
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[1rem]">
-                  <b>{a.action}</b>
-                  {a.targetType && <span className="text-muted"> · {a.targetType}</span>}
+                  <b>{actionLabel(a.action)}</b>
                 </span>
                 <span className="block truncate text-[0.857rem] text-muted">
                   {a.profiles?.fullName ?? a.adminId}

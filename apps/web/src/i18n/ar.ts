@@ -1043,4 +1043,6 @@ export const ar: Record<string, string> = {
   '{n} absence': '{n} غياب',
   '{n} annulé': '{n} ملغى',
   '{n} prestation': '{n} خدمة',
+  'Fiche salon consultée': 'تم الاطّلاع على بطاقة الصالون',
+  'Fiche compte consultée': 'تم الاطّلاع على بطاقة الحساب',
 };

@@ -23,6 +23,7 @@ import { SalonNotFound } from '@/pages/NotFound';
 import { isNotFound } from '@/components/ErrorMessage';
 import { Avatar, Badge, I, Skeleton, StatusBadge, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { actionLabel } from './AdminShell';
 import { formatDuration } from '@/lib/format';
 import { t } from '@/i18n';
 
@@ -173,7 +174,10 @@ export function AdminSalon() {
         {audit.length === 0 && <div className="li"><span className="p">{t('Aucune action enregistrée.')}</span></div>}
         {audit.map((a) => (
           <div key={a.id} className="li">
-            <span className="min-w-0 truncate text-[1rem]">{a.action}{a.reason ? ` · ${a.reason}` : ''}</span>
+            <span className="min-w-0 truncate text-[1rem]">
+              {actionLabel(a.action)}
+              {a.reason ? ` · ${a.reason}` : ''}
+            </span>
             <span className="flex-none text-[0.857rem] text-muted">{formatDateShortDZ(a.createdAt)}</span>
           </div>
         ))}
