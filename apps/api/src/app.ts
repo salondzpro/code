@@ -49,9 +49,13 @@ export async function buildApp(): Promise<App> {
         req: (req: { method: string; url: string; id: string; ip: string }) => ({ method: req.method, url: String(req.url).split('?')[0], id: req.id, ip: req.ip }),
       },
     },
-    // Un seul mandataire devant l'API (Render) : au-delà, X-Forwarded-For serait choisi par le client
-    // et la limitation de débit par adresse deviendrait contournable.
-    trustProxy: (_address: string, hop: number) => hop === 0,
+    // On remonte X-Forwarded-For de la DROITE vers la gauche et on s'arrête à la première adresse
+    // PUBLIQUE : c'est le visiteur. Les sauts internes de Render (10.x) sont les seuls mandataires
+    // de confiance, et une entrée forgée par le client reste à gauche de la vraie — on ne l'atteint
+    // jamais. Compter les sauts à la main (« un seul mandataire ») donnait ici l'adresse interne de
+    // Render : la limitation de débit par adresse retombait sur une poignée d'adresses partagées, et
+    // le journal d'administration enregistrait 10.x au lieu du visiteur. Vérifié en production.
+    trustProxy: 'loopback, linklocal, uniquelocal',
     bodyLimit: 512 * 1024,
     ajv: undefined,
   }).withTypeProvider<ZodTypeProvider>();
