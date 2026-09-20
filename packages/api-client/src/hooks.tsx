@@ -426,6 +426,91 @@ export function useProReviewMutations() {
   };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Administration de la place de marché (lot 1 : lecture). Le garde est côté serveur ; ces crochets
+// ne servent qu'à afficher. `useAdminMe` répond aussi à « suis-je administrateur ? » : une erreur
+// 403 est une réponse valable, pas une panne — l'écran redirige sans bruit.
+// ---------------------------------------------------------------------------------------------
+
+export const useAdminMe = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({
+    queryKey: queryKeys.admin.me,
+    queryFn: () => api.admin.me(),
+    retry: false,
+    staleTime: 5 * 60_000,
+    enabled,
+  });
+};
+
+export const useAdminOverview = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({
+    queryKey: queryKeys.admin.overview,
+    queryFn: () => api.admin.overview(),
+    staleTime: 30_000,
+    enabled,
+  });
+};
+
+export const useAdminSalons = (q: { q?: string; status?: 'published' | 'draft' } = {}, enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: queryKeys.admin.salons(q),
+    queryFn: ({ pageParam }) => api.admin.salons({ ...q, cursor: pageParam ? String(pageParam) : undefined, limit: 30 }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 30_000,
+    enabled,
+  });
+};
+
+export const useAdminSalon = (id: string, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: queryKeys.admin.salon(id), queryFn: () => api.admin.salon(id), enabled: enabled && !!id });
+};
+
+export const useAdminProfiles = (q: { q?: string; role?: 'client' | 'pro' } = {}, enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: queryKeys.admin.profiles(q),
+    queryFn: ({ pageParam }) => api.admin.profiles({ ...q, cursor: pageParam ? String(pageParam) : undefined, limit: 30 }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 30_000,
+    enabled,
+  });
+};
+
+export const useAdminProfile = (id: string, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: queryKeys.admin.profile(id), queryFn: () => api.admin.profile(id), enabled: enabled && !!id });
+};
+
+export const useAdminBookings = (q: { q?: string; status?: string } = {}, enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: queryKeys.admin.bookings(q),
+    queryFn: ({ pageParam }) => api.admin.bookings({ ...q, cursor: pageParam ? String(pageParam) : undefined, limit: 30 }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 30_000,
+    enabled,
+  });
+};
+
+export const useAdminAudit = (enabled = true) => {
+  const { api } = useApi();
+  return useInfiniteQuery({
+    queryKey: queryKeys.admin.audit,
+    queryFn: ({ pageParam }) => api.admin.audit({ cursor: pageParam ? String(pageParam) : undefined, limit: 50 }),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+    staleTime: 15_000,
+    enabled,
+  });
+};
+
 export function useProClientMutations() {
   const { api } = useApi();
   const qc = useQueryClient();

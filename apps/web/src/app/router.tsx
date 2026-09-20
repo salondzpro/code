@@ -105,6 +105,16 @@ const TeamMemberHours = lazyNamed(() => import('@/pages/pro/TeamMember'), 'TeamM
 const TeamMemberServices = lazyNamed(() => import('@/pages/pro/TeamMember'), 'TeamMemberServices');
 const Closures = lazyNamed(() => import('@/pages/pro/Closures'), 'Closures');
 const Requests = lazyNamed(() => import('@/pages/pro/Requests'), 'Requests');
+// Administration de la place de marché (`docs/ADMIN.md`). Chargée à la demande : une poignée de
+// personnes l'ouvrent, elle n'a rien à faire dans le premier chargement d'une cliente en 4G.
+const AdminLayout = lazyNamed(() => import('@/pages/admin/AdminShell'), 'AdminLayout');
+const AdminOverview = lazyNamed(() => import('@/pages/admin/AdminOverview'), 'AdminOverview');
+const AdminSalons = lazyNamed(() => import('@/pages/admin/AdminSalons'), 'AdminSalons');
+const AdminSalon = lazyNamed(() => import('@/pages/admin/AdminSalon'), 'AdminSalon');
+const AdminProfiles = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'AdminProfiles');
+const AdminProfile = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'AdminProfile');
+const AdminBookings = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminBookings');
+const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminAudit');
 
 export const router = createBrowserRouter([
   {
@@ -246,6 +256,22 @@ export const router = createBrowserRouter([
               { path: 'notifications', element: <AccountNotifications /> },
             ],
           },
+        ],
+      },
+      // ---- Administration de la place de marché ----
+      // Le garde est SERVEUR (`requireAdmin`) : `AdminLayout` ne fait que renvoyer à l'accueil, sans
+      // message, quand l'API répond 403. Une adresse devinée ne donne donc rien.
+      {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminOverview /> },
+          { path: 'salons', element: <AdminSalons /> },
+          { path: 'salons/:id', element: <AdminSalon /> },
+          { path: 'comptes', element: <AdminProfiles /> },
+          { path: 'comptes/:id', element: <AdminProfile /> },
+          { path: 'rendez-vous', element: <AdminBookings /> },
+          { path: 'journal', element: <AdminAudit /> },
         ],
       },
       { path: '*', element: <NotFound /> },

@@ -44,6 +44,18 @@ export const queryKeys = {
     client: (key: string) => ['pro', 'clients', 'one', key] as const,
     clientHistory: (key: string) => ['pro', 'clients', key, 'history'] as const,
   },
+  /** Administration de la place de marché (voir `docs/ADMIN.md`). */
+  admin: {
+    all: ['admin'] as const,
+    me: ['admin', 'me'] as const,
+    overview: ['admin', 'overview'] as const,
+    salons: (q: Record<string, unknown>) => ['admin', 'salons', q] as const,
+    salon: (id: string) => ['admin', 'salon', id] as const,
+    profiles: (q: Record<string, unknown>) => ['admin', 'profiles', q] as const,
+    profile: (id: string) => ['admin', 'profile', id] as const,
+    bookings: (q: Record<string, unknown>) => ['admin', 'bookings', q] as const,
+    audit: ['admin', 'audit'] as const,
+  },
 };
 
 const MIN = 60_000;

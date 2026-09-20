@@ -99,6 +99,121 @@ export interface ProReviewItem extends ReviewItem {
   startsAt: string;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Administration de la place de marché (conception : `docs/ADMIN.md`). Lot 1 : lecture seule.
+// ---------------------------------------------------------------------------------------------
+
+export type AdminLevel = 'support' | 'owner';
+
+export interface AdminOverview {
+  today: { bookings: number; cancelled: number; noShows: number; salons: number; signups: number };
+  last30: { bookings: number; revenueDa: number; cancelRate: number; noShowRate: number };
+  marketplace: {
+    salons: number;
+    salonsPublished: number;
+    services: number;
+    pros: number;
+    clients: number;
+    reviews: number;
+    reviewsNoReply: number;
+  };
+  health: { lastCronTick: string | null; lastBookingAt: string | null; pendingOverdue: number };
+}
+
+export interface AdminSalonRow {
+  id: string;
+  slug: string;
+  name: string;
+  city: string;
+  wilayaCode: number;
+  genderTarget: string;
+  isPublished: boolean;
+  createdAt: string;
+  ownerId: string;
+  ownerName: string | null;
+  ownerPhone: string | null;
+  ownerEmail: string | null;
+  servicesCount: number;
+  staffCount: number;
+  bookings30: number;
+  revenue30: number;
+  cancelled30: number;
+  noShow30: number;
+  lastBookingAt: string | null;
+  ratingAvg: number;
+  ratingCount: number;
+}
+
+export interface AdminProfileRow {
+  id: string;
+  role: 'client' | 'pro';
+  fullName: string | null;
+  phone: string | null;
+  email: string | null;
+  avatarUrl: string | null;
+  market: string | null;
+  createdAt: string;
+  bookingsCount: number;
+  cancelledCount: number;
+  noShowCount: number;
+  reviewsCount: number;
+  blockedBy: number;
+  lastBookingAt: string | null;
+  salonId: string | null;
+  salonName: string | null;
+}
+
+export interface AdminBookingRow {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  status: string;
+  serviceName: string;
+  priceDa: number;
+  source: string;
+  clientName: string;
+  clientPhone: string | null;
+  clientId: string | null;
+  salonId: string;
+  salonName: string | null;
+  salonSlug: string | null;
+  staffName: string | null;
+  cancelledAt: string | null;
+  cancelledBy: string | null;
+  cancellationReason: string | null;
+  createdAt: string;
+}
+
+export interface AdminAuditRow {
+  id: string;
+  adminId: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  reason: string | null;
+  ip: string | null;
+  createdAt: string;
+  profiles: { fullName: string | null } | null;
+}
+
+export interface AdminSalonSheet {
+  salon: SalonOwnerView;
+  owner: { id: string; fullName: string | null; phone: string | null; avatarUrl: string | null; createdAt: string } | null;
+  ownerEmail: string | null;
+  bookings: AdminBookingRow[];
+  reviews: { id: string; rating: number; comment: string | null; createdAt: string; reply: string | null }[];
+  audit: AdminAuditRow[];
+}
+
+export interface AdminProfileSheet {
+  profile: Profile;
+  email: string | null;
+  bookings: (AdminBookingRow & { salons: { name: string; slug: string } | null })[];
+  reviews: { id: string; rating: number; comment: string | null; createdAt: string; salons: { name: string; slug: string } | null }[];
+  blockedBy: { salonId: string; reason: string | null; createdAt: string; salons: { name: string; slug: string } | null }[];
+  salon: { id: string; slug: string; name: string; isPublished: boolean } | null;
+}
+
 export interface MeResponse {
   profile: Profile;
   salon: { id: string; slug: string; name: string; isPublished: boolean } | null;
@@ -366,6 +481,24 @@ export function createApiClient(opts: ApiClientOptions) {
         reschedule: (id: string, body: { startsAt: string; staffId?: string | null }) =>
           post<BookingWithStaff>(`/pro/bookings/${id}/reschedule`, body),
       },
+    },
+
+    /**
+     * Administration de la place de marché. Toutes ces routes passent par `requireAdmin` côté
+     * serveur : l'interface ne protège rien, une adresse devinée ne donne rien.
+     */
+    admin: {
+      me: () => get<{ id: string; level: AdminLevel }>('/admin/me'),
+      overview: () => get<AdminOverview>('/admin/overview'),
+      salons: (q: { q?: string; status?: 'published' | 'draft'; wilaya?: number; cursor?: string; limit?: number } = {}) =>
+        get<Paginated<AdminSalonRow> & { total: number }>('/admin/salons', q as Query),
+      salon: (id: string) => get<AdminSalonSheet>(`/admin/salons/${id}`),
+      profiles: (q: { q?: string; role?: 'client' | 'pro'; cursor?: string; limit?: number } = {}) =>
+        get<Paginated<AdminProfileRow> & { total: number }>('/admin/profiles', q as Query),
+      profile: (id: string) => get<AdminProfileSheet>(`/admin/profiles/${id}`),
+      bookings: (q: { q?: string; status?: string; from?: string; to?: string; cursor?: string; limit?: number } = {}) =>
+        get<Paginated<AdminBookingRow> & { total: number }>('/admin/bookings', q as Query),
+      audit: (q: { cursor?: string; limit?: number } = {}) => get<Paginated<AdminAuditRow>>('/admin/audit', q as Query),
     },
   };
 }

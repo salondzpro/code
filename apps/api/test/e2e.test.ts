@@ -1039,3 +1039,71 @@ test('pro : lire ses avis et y répondre (la réponse est publique, jamais l’a
   assert.equal(vol.statusCode, 404, vol.body);
   await db.auth.admin.deleteUser(autrePro.id);
 });
+
+
+/**
+ * Espace d'administration, lot 1 (`docs/ADMIN.md`). Deux choses comptent ici : que la porte soit
+ * VRAIMENT fermée — un client, un pro, un compte sans accès ne doivent rien obtenir, quelle que
+ * soit l'adresse devinée — et que la consultation d'une fiche nominative laisse une trace.
+ */
+test("administration : la porte est fermée, et l'ouverture laisse une trace", async () => {
+  // 1) Personne n'est administrateur : même le pro et le client du scénario sont refoulés.
+  for (const [qui, jeton] of [['anonyme', undefined], ['client', clientA.token], ['pro', pro.token]] as const) {
+    const r = await call('GET', '/v1/admin/overview', jeton);
+    assert.ok([401, 403].includes(r.statusCode), `${qui} ne doit pas entrer (${r.statusCode})`);
+  }
+
+  // 2) On donne l'accès au compte du pro : c'est un compte ordinaire, l'accès vit à côté.
+  const donne = await db.from('platform_admins').insert({ user_id: pro.id, level: 'owner' });
+  assert.equal(donne.error, null);
+  try {
+    const moi = await call('GET', '/v1/admin/me', pro.token);
+    assert.equal(moi.statusCode, 200, moi.body);
+    assert.equal(moi.json().level, 'owner');
+
+    // 3) Le tableau de bord répond en une requête, avec ses quatre blocs.
+    const vue = await call('GET', '/v1/admin/overview', pro.token);
+    assert.equal(vue.statusCode, 200, vue.body);
+    const o = vue.json();
+    for (const bloc of ['today', 'last30', 'marketplace', 'health']) assert.ok(o[bloc], `bloc ${bloc}`);
+    assert.ok(o.marketplace.salons >= 1, 'au moins le salon du scénario');
+
+    // 4) La liste des professionnels retrouve le salon par son nom, avec son activité.
+    const liste = await call('GET', `/v1/admin/salons?q=${encodeURIComponent('Barber')}`, pro.token);
+    assert.equal(liste.statusCode, 200, liste.body);
+    const mien = (liste.json().items as { id: string; ownerEmail: string | null; servicesCount: number }[]).find((x) => x.id === salonId);
+    assert.ok(mien, 'le salon du scénario doit apparaître');
+    assert.equal(mien.ownerEmail, pro.email, "l'e-mail du propriétaire est celui qu'on demande au téléphone");
+    assert.ok(mien.servicesCount >= 1);
+
+    // 5) La fiche donne la vue COMPLÈTE du pro — c'est tout l'intérêt quand il appelle.
+    const fiche = await call('GET', `/v1/admin/salons/${salonId}`, pro.token);
+    assert.equal(fiche.statusCode, 200, fiche.body);
+    assert.ok(fiche.json().salon.services.length >= 1, 'le catalogue');
+    assert.ok(fiche.json().salon.openingHours.length >= 1, 'les horaires');
+    assert.equal(fiche.json().ownerEmail, pro.email);
+
+    // 6) …et cette consultation est tracée.
+    const journal = await call('GET', '/v1/admin/audit', pro.token);
+    assert.equal(journal.statusCode, 200, journal.body);
+    const trace = (journal.json().items as { action: string; targetId: string }[]).find(
+      (x) => x.action === 'view_salon' && x.targetId === salonId,
+    );
+    assert.ok(trace, 'la consultation d’une fiche doit laisser une trace');
+
+    // 7) Comptes et rendez-vous : la recherche globale du litige.
+    const comptes = await call('GET', `/v1/admin/profiles?q=${encodeURIComponent('Amine')}`, pro.token);
+    assert.equal(comptes.statusCode, 200, comptes.body);
+    assert.ok((comptes.json().items as unknown[]).length >= 1);
+    const rdv = await call('GET', '/v1/admin/bookings?limit=5', pro.token);
+    assert.equal(rdv.statusCode, 200, rdv.body);
+    assert.ok((rdv.json().items as { salonName: string }[]).every((x) => typeof x.salonName === 'string'));
+
+    // 8) Un accès RETIRÉ ne vaut plus, mais sa ligne reste pour expliquer le journal.
+    assert.equal((await db.from('platform_admins').update({ disabled_at: new Date().toISOString() }).eq('user_id', pro.id)).error, null);
+    assert.equal((await call('GET', '/v1/admin/overview', pro.token)).statusCode, 403);
+  } finally {
+    await db.from('admin_audit').delete().eq('admin_id', pro.id);
+    await db.from('platform_admins').delete().eq('user_id', pro.id);
+  }
+});

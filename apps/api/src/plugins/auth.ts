@@ -14,6 +14,16 @@ export interface AuthUser {
   token: string;
 }
 
+/**
+ * Administrateur de la PLACE DE MARCHÉ — pas un type d'utilisateur : son compte reste un compte
+ * client ou pro ordinaire, et son accès vit dans `platform_admins` (voir `docs/ADMIN.md`).
+ * `support` répare (masquer un avis, lever une suspension) ; `owner` fait tout.
+ */
+export interface PlatformAdmin {
+  id: string;
+  level: 'support' | 'owner';
+}
+
 declare module 'fastify' {
   interface FastifyRequest {
     user: AuthUser | null;
@@ -21,6 +31,8 @@ declare module 'fastify' {
     profile: Profile | null;
     /** Chargé par `requireSalon` (routes /pro) */
     salon: Salon | null;
+    /** Chargé par `requireAdmin` (routes /admin) */
+    admin: PlatformAdmin | null;
   }
   interface FastifyInstance {
     /** Exige un JWT valide. */
@@ -29,6 +41,10 @@ declare module 'fastify' {
     requireProfile: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** Exige un profil pro possédant un salon ; charge `req.salon`. */
     requireSalon: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    /** Exige un administrateur de la place de marché ; charge `req.admin`. */
+    requireAdmin: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    /** Exige le niveau `owner` (suppression, réglages, gestion des administrateurs). */
+    requireOwner: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
 
@@ -80,6 +96,7 @@ export default fp(async (app) => {
   app.decorateRequest('user', null);
   app.decorateRequest('profile', null);
   app.decorateRequest('salon', null);
+  app.decorateRequest('admin', null);
 
   // Décodage "soft" : les routes publiques peuvent personnaliser si un token est présent.
   app.addHook('onRequest', async (req) => {
@@ -132,5 +149,36 @@ export default fp(async (app) => {
     const salon = await loadOwnedSalon(req.user!.id);
     if (!salon) throw forbidden("Vous n'avez pas encore de salon. Créez-le d'abord.");
     req.salon = salon;
+  });
+
+  /**
+   * Garde de l'espace d'administration. C'est LE point de contrôle : les écrans ne protègent
+   * rien, une adresse devinée ne donne rien. Un accès retiré (`disabled_at`) ne vaut plus, mais
+   * sa ligne reste — elle explique le journal laissé derrière.
+   */
+  app.decorate('requireAdmin', async (req: FastifyRequest, reply: FastifyReply) => {
+    await app.requireProfile(req, reply);
+    const { data, error } = await db
+      .from('platform_admins')
+      .select('user_id, level, disabled_at')
+      .eq('user_id', req.user!.id)
+      .maybeSingle();
+    if (error) throw error;
+    const row = data as { level: 'support' | 'owner'; disabled_at: string | null } | null;
+    if (!row || row.disabled_at) {
+      // Une porte fermée ne dit rien à celui qui pousse, mais elle se signale de notre côté :
+      // des tentatives répétées sur `/v1/admin/*` sont exactement ce qu'on veut voir passer.
+      req.log.warn(
+        { user: req.user!.id, ip: req.ip, route: req.routeOptions.url, revoked: !!row?.disabled_at },
+        'admin refusé',
+      );
+      throw forbidden("Accès réservé à l'administration.");
+    }
+    req.admin = { id: req.user!.id, level: row.level };
+  });
+
+  app.decorate('requireOwner', async (req: FastifyRequest, reply: FastifyReply) => {
+    await app.requireAdmin(req, reply);
+    if (req.admin!.level !== 'owner') throw forbidden('Cette action demande le niveau propriétaire.');
   });
 });

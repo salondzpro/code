@@ -1,7 +1,11 @@
 # Salon DZ — espace d'administration de la place de marché
 
-Analyse et conception, 20 septembre 2026. **Rien n'est encore construit** : ce document sert à
-décider avant d'écrire une ligne. Les décisions attendues du propriétaire sont en section 9.
+Analyse et conception, 20 septembre 2026. Les décisions attendues du propriétaire sont en
+section 9 ; l'état de la livraison est en section 11.
+
+**Le lot 1 est livré** (20 septembre 2026) : migration `0044_platform_admin.sql`, garde
+`requireAdmin`, routes `/v1/admin/*`, écrans sous `/admin`, journal. Rien ne s'y modifie encore —
+le lot 2 apportera les actions.
 
 ---
 
@@ -265,5 +269,41 @@ Le lot 1 est utile seul et sans risque : il ne modifie rien. C'est par lui qu'il
 
 ---
 
-*Ce document vit dans le dépôt et se met à jour à chaque lot. L'implémentation ne commence qu'une
-fois les décisions de la section 9 prises.*
+## 11. Lot 1 — ce qui est livré (20 septembre 2026)
+
+**Données** — `supabase/migrations/0044_platform_admin.sql` : type `admin_level`
+(`support` | `owner`), table `platform_admins` (`user_id`, `level`, `created_at`, `created_by`,
+`disabled_at`), table `admin_audit`, et quatre fonctions de lecture (`admin_overview`,
+`admin_salons_page`, `admin_profiles_page`, `admin_bookings_page`). Les deux tables ont la RLS
+activée **sans aucune politique**, et tous les droits sont révoqués pour `anon` et
+`authenticated` : personne n'y accède depuis un navigateur, seule l'API (clé secrète) les lit.
+
+**Garde** — `requireAdmin` dans `apps/api/src/plugins/auth.ts`, quatrième maillon après
+`requireAuth` → `requireProfile`. Un accès retiré (`disabled_at`) vaut refus. Tout refus part dans
+les journaux (compte, adresse IP, route) : une tentative répétée se voit. `requireOwner` ajoute le
+niveau `owner`, en attente du lot 2.
+
+**API** — `apps/api/src/routes/admin.ts`, montée sur `/v1/admin`, limitée à 120 requêtes par
+minute et par compte, `Cache-Control: private, no-store` sur toutes les réponses : `/me`,
+`/overview`, `/salons`, `/salons/:id`, `/profiles`, `/profiles/:id`, `/bookings`, `/audit`. La
+consultation d'une fiche **nominative** (un salon, un compte) écrit dans `admin_audit` ; une liste
+ou un compteur, non — un journal qui enregistre tout ne se lit plus.
+
+**Écrans** — `apps/web/src/pages/admin/`, sous `/admin`, chargés à la demande (morceaux séparés,
+jamais téléchargés par une cliente) : vue d'ensemble, professionnels (liste + fiche), comptes
+(liste + fiche), rendez-vous, journal. Aucun lien n'y mène depuis l'application : l'adresse se
+tape, et le garde serveur est la seule barrière qui compte. Une réponse 403 renvoie à l'accueil
+sans message — inutile d'apprendre à quelqu'un qu'une porte existe.
+
+**Donner et retirer un accès** — `node --env-file=.env scripts/admin.mjs list | grant <e-mail>
+[support|owner] | revoke <e-mail>`. `revoke` pose `disabled_at` et ne supprime jamais la ligne :
+le journal doit rester lisible après coup.
+
+**Vérifié par** — le test e2e 37 de l'API, « administration : la porte est fermée, et l'ouverture
+laisse une trace » : anonyme, client et pro reçoivent 401/403 ; une fois l'accès donné, la vue
+d'ensemble rend ses quatre blocs et la fiche d'un salon rend la vue du propriétaire avec son
+adresse e-mail ; la consultation laisse une ligne dans `admin_audit` ; l'accès retiré redonne 403.
+
+---
+
+*Ce document vit dans le dépôt et se met à jour à chaque lot.*
