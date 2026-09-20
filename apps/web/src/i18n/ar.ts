@@ -1040,4 +1040,7 @@ export const ar: Record<string, string> = {
   '{n} prestations': '{n} خدمة',
   '{n} rendez-vous · 30 j': '{n} موعد · 30 يومًا',
   'À confirmer': 'للتأكيد',
+  '{n} absence': '{n} غياب',
+  '{n} annulé': '{n} ملغى',
+  '{n} prestation': '{n} خدمة',
 };

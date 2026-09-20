@@ -17,6 +17,9 @@ import { Avatar, Badge, I, Pill, Skeleton, StatusBadge, TopBar } from '@/compone
 import { Screen } from '@/components/AppFrame';
 import { LOCALES, t } from '@/i18n';
 
+/** En français, zéro et un restent au singulier. */
+const nAbsences = (n: number) => (n > 1 ? t('{n} absences', { n }) : t('{n} absence', { n }));
+
 export function AdminProfiles() {
   const [params, setParams] = useSearchParams();
   const role = (params.get('role') as 'client' | 'pro' | null) ?? undefined;
@@ -85,7 +88,7 @@ export function AdminProfiles() {
               </span>
               <span className="flex-none text-end text-[0.857rem] text-muted">
                 <span className="block">{t('{n} RDV', { n: p.bookingsCount })}</span>
-                {p.noShowCount > 0 && <span className="block text-danger">{t('{n} absences', { n: p.noShowCount })}</span>}
+                {p.noShowCount > 0 && <span className="block text-danger">{nAbsences(p.noShowCount)}</span>}
               </span>
               <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
             </Link>

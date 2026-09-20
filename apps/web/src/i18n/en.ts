@@ -1059,4 +1059,7 @@ export const en: Record<string, string> = {
   '{n} prestations': '{n} services',
   '{n} rendez-vous · 30 j': '{n} appointments · 30 d',
   'À confirmer': 'To confirm',
+  '{n} absence': '{n} no-show',
+  '{n} annulé': '{n} cancelled',
+  '{n} prestation': '{n} service',
 };

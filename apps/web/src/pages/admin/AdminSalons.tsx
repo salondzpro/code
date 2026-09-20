@@ -14,6 +14,13 @@ import { Avatar, Badge, I, Pill, Skeleton } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { t } from '@/i18n';
 
+/** En français, zéro et un restent au singulier. Une phrase par cas : l'extracteur de
+    traductions ne voit que celles écrites en toutes lettres. */
+const nAnnules = (n: number) => (n > 1 ? t('{n} annulés', { n }) : t('{n} annulé', { n }));
+const nAbsences = (n: number) => (n > 1 ? t('{n} absences', { n }) : t('{n} absence', { n }));
+const nPrestations = (n: number) =>
+  n > 1 ? t('{n} prestations', { n }) : t('{n} prestation', { n });
+
 export function AdminSalons() {
   const [params, setParams] = useSearchParams();
   const statut = (params.get('status') as 'published' | 'draft' | null) ?? undefined;
@@ -94,9 +101,9 @@ export function AdminSalons() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-[0.857rem] text-muted">
                 <span>{t('{n} rendez-vous · 30 j', { n: s.bookings30 })}</span>
                 <span dir="ltr">{formatDA(s.revenue30)}</span>
-                <span>{t('{n} annulés', { n: s.cancelled30 })}</span>
-                <span>{t('{n} absences', { n: s.noShow30 })}</span>
-                <span>{t('{n} prestations', { n: s.servicesCount })}</span>
+                <span>{nAnnules(s.cancelled30)}</span>
+                <span>{nAbsences(s.noShow30)}</span>
+                <span>{nPrestations(s.servicesCount)}</span>
               </div>
             </Link>
           ))}
