@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Search } from 'lucide-react';
-import { pagesItems, useAdminAudit, useAdminBookings } from '@salondz/api-client';
+import { pagesItems, useAdminActions, useAdminAudit, useAdminBookings } from '@salondz/api-client';
 import {
   BOOKING_STATUSES,
   type BookingStatus,
@@ -19,9 +19,10 @@ import {
 } from '@salondz/constants';
 import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { I, Pill, Skeleton, StatusBadge } from '@/components/ui';
+import { Button, I, Pill, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { actionLabel } from './AdminShell';
+import { ReasonSheet } from './ReasonSheet';
 import { t } from '@/i18n';
 
 /**
@@ -57,6 +58,8 @@ const parQui = (by: string | null) =>
 const quand = (iso: string) => `${formatDateShortDZ(iso)} ${formatTimeDZ(iso)}`;
 
 export function AdminBookings() {
+  const actions = useAdminActions();
+  const [annuler, setAnnuler] = useState<string | null>(null);
   const [q, setQ] = useState('');
   const [needle, setNeedle] = useState('');
   const [statut, setStatut] = useState<string | undefined>(undefined);
@@ -137,6 +140,11 @@ export function AdminBookings() {
                   </span>
                 )}
               </span>
+              {(b.status === 'pending' || b.status === 'confirmed') && (
+                <Button variant="g" sm auto onClick={() => setAnnuler(b.id)}>
+                  {t('Annuler')}
+                </Button>
+              )}
               <StatusBadge status={b.status as BookingStatus} />
             </div>
           ))}
@@ -149,6 +157,21 @@ export function AdminBookings() {
         onMore={() => void liste.fetchNextPage()}
         label={t('Voir plus de rendez-vous')}
       />
+
+      {annuler && (
+        <ReasonSheet
+          title={t('Annuler au nom de la plateforme')}
+          description={t('Le client et le salon sont prévenus, et le créneau repart en liste d’attente. Ni l’un ni l’autre n’en portera la responsabilité.')}
+          confirmLabel={t('Annuler le rendez-vous')}
+          danger
+          pending={actions.cancelBooking.isPending}
+          error={actions.cancelBooking.error}
+          onClose={() => setAnnuler(null)}
+          onConfirm={(reason) =>
+            actions.cancelBooking.mutate({ id: annuler, reason }, { onSuccess: () => setAnnuler(null) })
+          }
+        />
+      )}
     </Screen>
   );
 }

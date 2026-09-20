@@ -12,6 +12,7 @@ import { camelize, snakeize } from '../lib/mappers';
 import { unwrap, conflict } from '../lib/errors';
 import { loadOwnedSalon } from '../plugins/auth';
 import { attachNextSlots } from '../lib/availability';
+import { eraseClientAccount } from '../lib/moderation';
 import { clientStanding } from '../lib/standing';
 import {
   CANCEL_ABUSE_WINDOW_DAYS,
@@ -20,7 +21,7 @@ import {
   SHOW_SALON_CONTACT_TO_CLIENTS, SLOT_ALERT_MAX_PER_CLIENT } from '@salondz/constants';
 
 const PROFILE_COLS =
-  'id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at';
+  'id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at, suspended_at, suspended_reason';
 
 const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
@@ -82,11 +83,33 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       loadOwnedSalon(req.user!.id),
       req.profile!.role === 'client' ? clientStanding({ id: req.user!.id, phone: req.profile!.phone }) : Promise.resolve(null),
     ]);
+    // La suspension d'un salon n'est pas une colonne comme les autres : elle ne voyage pas dans
+    // l'objet `Salon` (qui sert aussi la fiche publique), et on la lit donc à part. Le pro doit la
+    // voir et en lire le MOTIF — une plateforme qui coupe sans dire pourquoi n'est pas un
+    // partenaire.
+    const suspension = salon
+      ? await db
+          .from('salons')
+          .select('suspended_at, suspension_level, suspended_reason')
+          .eq('id', salon.id)
+          .maybeSingle()
+      : null;
+    const susp = (suspension?.data ?? null) as
+      | { suspended_at: string | null; suspension_level: 'frozen' | 'hidden' | null; suspended_reason: string | null }
+      | null;
     reply.header('Cache-Control', 'private, no-store');
     return {
       profile: req.profile!,
       salon: salon
-        ? { id: salon.id, slug: salon.slug, name: salon.name, isPublished: salon.isPublished }
+        ? {
+            id: salon.id,
+            slug: salon.slug,
+            name: salon.name,
+            isPublished: salon.isPublished,
+            suspendedAt: susp?.suspended_at ?? null,
+            suspensionLevel: susp?.suspension_level ?? null,
+            suspendedReason: susp?.suspended_reason ?? null,
+          }
         : null,
       standing,
     };
@@ -342,31 +365,9 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
    * compte d'authentification lui-même. Un professionnel doit d'abord fermer son salon (support).
    */
   app.delete('/me', async (req, reply) => {
-    const uid = req.user!.id;
-    const owned = await db.from('salons').select('id').eq('owner_id', uid).limit(1);
-    if (owned.error) throw owned.error;
-    if ((owned.data ?? []).length)
-      throw conflict('HAS_SALON', 'Votre compte porte un salon : écrivez à support@salondz.com pour le fermer avant de supprimer le compte.');
-    const anonymized = { client_id: null, client_name: 'Client supprimé', client_phone: null, notes: null };
-    const steps = [
-      db.from('bookings').update(anonymized).eq('client_id', uid),
-      db.from('bookings').update({ booked_by: null, booked_by_name: null }).eq('booked_by', uid),
-      db.from('reviews').delete().eq('client_id', uid),
-      db.from('favorites').delete().eq('client_id', uid),
-      db.from('push_tokens').delete().eq('user_id', uid),
-      db.from('notifications').delete().eq('user_id', uid),
-      db.from('client_notes').delete().eq('client_key', uid),
-      db.from('blocked_clients').delete().eq('client_id', uid),
-    ];
-    for (const step of steps) {
-      const r = await step;
-      if (r.error) throw r.error;
-    }
-    const files = await db.storage.from('avatars').list(uid);
-    if (!files.error && files.data?.length) await db.storage.from('avatars').remove(files.data.map((f) => `${uid}/${f.name}`));
-    const gone = await db.auth.admin.deleteUser(uid);
-    if (gone.error) throw gone.error;
-    req.log.info({ userId: uid }, 'compte supprimé');
+    // Même effacement que celui déclenché par l'administration à la demande du titulaire :
+    // une seule implémentation, dans `lib/moderation.ts`.
+    await eraseClientAccount(req.log, req.user!.id);
     reply.status(204);
     return null;
   });

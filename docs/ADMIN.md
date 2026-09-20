@@ -3,9 +3,10 @@
 Analyse et conception, 20 septembre 2026. Les décisions attendues du propriétaire sont en
 section 9 ; l'état de la livraison est en section 11.
 
-**Le lot 1 est livré** (20 septembre 2026) : migration `0044_platform_admin.sql`, garde
-`requireAdmin`, routes `/v1/admin/*`, écrans sous `/admin`, journal. Rien ne s'y modifie encore —
-le lot 2 apportera les actions.
+**Les lots 1 et 2 sont livrés.** Lot 1 le 20 septembre 2026 (migration `0044`, garde
+`requireAdmin`, routes `/v1/admin/*`, écrans sous `/admin`, journal). Lot 2 le 21 septembre 2026
+(migration `0045`) : geler ou masquer un salon, suspendre un client, masquer un avis, annuler au
+nom de la plateforme, et piloter l'espace d'un professionnel. Détail en sections 11 et 12.
 
 ---
 
@@ -312,6 +313,49 @@ le journal doit rester lisible après coup.
 laisse une trace » : anonyme, client et pro reçoivent 401/403 ; une fois l'accès donné, la vue
 d'ensemble rend ses quatre blocs et la fiche d'un salon rend la vue du propriétaire avec son
 adresse e-mail ; la consultation laisse une ligne dans `admin_audit` ; l'accès retiré redonne 403.
+
+---
+
+## 12. Lot 2 — ce qui est livré (21 septembre 2026)
+
+Le propriétaire a tranché autrement que les recommandations des décisions 3 et 4 : un
+administrateur peut faire **tout** ce que fait un professionnel, et gérer les clients de bout en
+bout. La contrepartie est tenue : **tout est tracé, tout porte un motif, et la personne concernée
+voit ce motif.**
+
+**Suspendre un salon, à deux degrés** (migration `0045`) — `frozen` gèle les réservations en
+laissant la page en ligne ; `hidden` retire le salon de la place de marché. `is_published` n'est
+jamais touché : c'est l'intention du professionnel, et la plateforme n'a pas à la réécrire. La
+colonne calculée `is_visible` croise les deux, et c'est elle qu'interrogent les trois fonctions de
+recherche publique — un levier oublié quelque part se verrait tout de suite.
+
+**Suspendre un client** — `profiles.suspended_at` : plus de réservation en ligne, sur toute la
+place de marché. Ce n'est pas `blocked_clients`, qui est propre à un salon ; et un client reçu en
+personne au comptoir reste l'affaire du salon.
+
+**Masquer un avis** — il quitte la page publique et le calcul de la note, sans être supprimé : une
+décision doit pouvoir s'expliquer six mois plus tard.
+
+**Une suspension arrête ce qui ENTRE, jamais ce qui est déjà pris.** Créer et reporter sont
+refusés (`SALON_SUSPENDED`, `CLIENT_SUSPENDED`) ; confirmer, terminer et annuler un rendez-vous
+existant restent possibles. Sans cela, on laisserait des clients devant une porte close sans que
+personne puisse les prévenir.
+
+**Annuler au nom de la plateforme** — `cancelled_by = 'platform'`, une nouvelle valeur : ni le
+client ni le salon n'en porte la responsabilité, et le créneau repart en liste d'attente.
+
+**Agir en tant que professionnel** — l'en-tête `X-Admin-Salon` fait porter toutes les routes
+`/v1/pro/*` sur le salon désigné. Le pro appelle, il ne trouve pas comment fermer une journée : on
+le fait avec lui au lieu de lui dicter des clics. Chaque écriture faite ainsi part au journal
+(`acted_as_salon`), et un bandeau noir permanent rappelle chez qui l'on travaille.
+
+**Le motif, partout** — huit caractères minimum, refusé par le serveur en deçà. Il est affiché à
+la personne concernée : le professionnel suspendu lit pourquoi dans son espace, le client aussi.
+Une plateforme qui coupe sans rien dire n'est pas un partenaire.
+
+**Ce qui reste** — les signalements par les utilisateurs (décision 7 : ils devaient venir avec ce
+lot, ils demandent un écran côté client et une file d'attente côté administration), puis le lot 3
+(réglages de la plateforme, contenu, export du journal, second facteur).
 
 ---
 

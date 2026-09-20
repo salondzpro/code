@@ -2,6 +2,7 @@ import { createApiClient } from '@salondz/api-client';
 import { env } from './env';
 import { supabase } from './supabase';
 import { isDemo } from '@/demo/session';
+import { actingAsId } from './actingAs';
 
 export const api = createApiClient({
   baseUrl: env.apiUrl,
@@ -16,6 +17,11 @@ export const api = createApiClient({
     const { demoFetch } = await import('@/demo/fetch');
     return demoFetch(input, init);
   },
+  /**
+   * Un administrateur qui pilote l'espace d'un professionnel : l'en-tête n'a d'effet que derrière
+   * `requireAdmin`, côté serveur, qui journalise chaque écriture faite ainsi.
+   */
+  actingAsSalon: () => (isDemo() ? null : actingAsId()),
   getAccessToken: async () => {
     if (isDemo()) return 'demo';
     const { data } = await supabase.auth.getSession();

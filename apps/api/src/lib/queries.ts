@@ -88,10 +88,10 @@ export async function loadOwnerView(salonId: string): Promise<SalonOwnerView> {
 /** `ownerId` est renvoyé pour le contrôle d'accès de la route, qui le retire de la réponse publique. */
 export async function loadPublicBySlug(
   slug: string,
-): Promise<(SalonPublic & { ownerId: string }) | null> {
+): Promise<(SalonPublic & { ownerId: string; isVisible: boolean }) | null> {
   const res = await db
     .from('salons')
-    .select(FULL_SALON_SELECT)
+    .select(`${FULL_SALON_SELECT}, is_visible`)
     .eq('slug', slug)
     .eq('services.is_active', true)
     .eq('staff.is_active', true)
@@ -101,6 +101,9 @@ export async function loadPublicBySlug(
   const full = composeSalon(res.data as Row);
   return {
     ...full,
+    // Visible = publié par le pro ET non masqué par la plateforme (colonne calculée, migration
+    // 0045). Elle sert au contrôle d'accès de la route, qui la retire ensuite de la réponse.
+    isVisible: (res.data as Row).is_visible === true,
     staff: full.staff.map((s) => ({
       id: s.id,
       displayName: s.displayName,

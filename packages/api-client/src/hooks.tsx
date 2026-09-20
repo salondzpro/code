@@ -511,6 +511,60 @@ export const useAdminAudit = (enabled = true) => {
   });
 };
 
+/**
+ * Les gestes de la plateforme (lot 2). Chacun porte un motif, et le serveur l'exige — inutile de
+ * l'oublier dans l'interface, la requête serait refusée.
+ *
+ * Après chaque geste on invalide TOUT `admin` : une suspension change la fiche, la liste, le
+ * tableau de bord et le journal d'un coup. Recharger ces quatre choses coûte moins cher que de
+ * laisser une seule d'entre elles mentir.
+ */
+export function useAdminActions() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  const fait = () => qc.invalidateQueries({ queryKey: queryKeys.admin.all });
+  return {
+    suspendSalon: useMutation({
+      mutationFn: ({ id, level, reason }: { id: string; level: 'frozen' | 'hidden'; reason: string }) =>
+        api.admin.suspendSalon(id, { level, reason }),
+      onSuccess: fait,
+    }),
+    unsuspendSalon: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason?: string }) => api.admin.unsuspendSalon(id, reason),
+      onSuccess: fait,
+    }),
+    suspendProfile: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => api.admin.suspendProfile(id, reason),
+      onSuccess: fait,
+    }),
+    unsuspendProfile: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason?: string }) => api.admin.unsuspendProfile(id, reason),
+      onSuccess: fait,
+    }),
+    editProfile: useMutation({
+      mutationFn: ({ id, ...body }: { id: string; fullName?: string; phone?: string; reason: string }) =>
+        api.admin.editProfile(id, body),
+      onSuccess: fait,
+    }),
+    deleteProfile: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => api.admin.deleteProfile(id, reason),
+      onSuccess: fait,
+    }),
+    hideReview: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => api.admin.hideReview(id, reason),
+      onSuccess: fait,
+    }),
+    unhideReview: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason?: string }) => api.admin.unhideReview(id, reason),
+      onSuccess: fait,
+    }),
+    cancelBooking: useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => api.admin.cancelBooking(id, reason),
+      onSuccess: fait,
+    }),
+  };
+}
+
 export function useProClientMutations() {
   const { api } = useApi();
   const qc = useQueryClient();

@@ -86,9 +86,13 @@ export function AdminSalons() {
                     {s.city} · {wilayaName(s.wilayaCode)}
                   </span>
                 </span>
-                <Badge tone={s.isPublished ? 'ok' : 'pd'}>
-                  {s.isPublished ? t('En ligne') : t('Brouillon')}
-                </Badge>
+                {s.suspendedAt ? (
+                  <Badge tone="cn">{s.suspensionLevel === 'hidden' ? t('Masqué') : t('Gelé')}</Badge>
+                ) : (
+                  <Badge tone={s.isPublished ? 'ok' : 'pd'}>
+                    {s.isPublished ? t('En ligne') : t('Brouillon')}
+                  </Badge>
+                )}
                 <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
               </div>
               <div className="sf !py-2 text-[0.857rem]">

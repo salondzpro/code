@@ -5,6 +5,7 @@ import { config } from '../config';
 import { db } from '../lib/supabase';
 import { forbidden, unauthorized } from '../lib/errors';
 import { camelize } from '../lib/mappers';
+import { trace } from '../lib/audit';
 import type { Profile, Salon } from '@salondz/types';
 
 export interface AuthUser {
@@ -33,6 +34,8 @@ declare module 'fastify' {
     salon: Salon | null;
     /** Chargé par `requireAdmin` (routes /admin) */
     admin: PlatformAdmin | null;
+    /** Identifiant du salon qu'un administrateur pilote à la place du professionnel, s'il y en a un. */
+    actingAs: string | null;
   }
   interface FastifyInstance {
     /** Exige un JWT valide. */
@@ -92,11 +95,19 @@ export async function loadOwnedSalon(userId: string): Promise<Salon | null> {
   return data ? mapSalon(data as Record<string, unknown>) : null;
 }
 
+/** Le même salon, mais désigné par son identifiant : c'est ainsi qu'un administrateur le nomme. */
+export async function loadSalonById(salonId: string): Promise<Salon | null> {
+  const { data, error } = await db.from('salons').select(SALON_COLUMNS).eq('id', salonId).maybeSingle();
+  if (error) throw error;
+  return data ? mapSalon(data as Record<string, unknown>) : null;
+}
+
 export default fp(async (app) => {
   app.decorateRequest('user', null);
   app.decorateRequest('profile', null);
   app.decorateRequest('salon', null);
   app.decorateRequest('admin', null);
+  app.decorateRequest('actingAs', null);
 
   // Décodage "soft" : les routes publiques peuvent personnaliser si un token est présent.
   app.addHook('onRequest', async (req) => {
@@ -124,9 +135,11 @@ export default fp(async (app) => {
 
   app.decorate('requireProfile', async (req: FastifyRequest) => {
     if (!req.user) throw unauthorized();
+    // `requireAdmin` et `requireSalon` passent tous deux par ici : un seul aller-retour suffit.
+    if (req.profile) return;
     const { data, error } = await db
       .from('profiles')
-      .select('id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at')
+      .select('id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at, suspended_at, suspended_reason')
       .eq('id', req.user.id)
       .maybeSingle();
     if (error) throw error;
@@ -135,7 +148,7 @@ export default fp(async (app) => {
       const ins = await db
         .from('profiles')
         .insert({ id: req.user.id, phone: req.user.phone })
-        .select('id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at')
+        .select('id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at, suspended_at, suspended_reason')
         .single();
       if (ins.error) throw ins.error;
       req.profile = camelize<Profile>(ins.data);
@@ -144,8 +157,29 @@ export default fp(async (app) => {
     req.profile = camelize<Profile>(data);
   });
 
+  /**
+   * Le salon sur lequel on travaille.
+   *
+   * Normalement, c'est celui qu'on possède. Un ADMINISTRATEUR peut en désigner un autre par
+   * l'en-tête `X-Admin-Salon` : toutes les routes `/v1/pro/*` s'appliquent alors à ce salon-là,
+   * exactement comme pour son propriétaire. C'est ce qui permet de dépanner un professionnel au
+   * téléphone au lieu de lui dicter des clics.
+   *
+   * Le pouvoir est réel, donc il se paie : `actingAs` est posé ici, et le crochet `onResponse`
+   * plus bas écrit au journal CHAQUE écriture faite à sa place. Personne ne travaille dans le dos
+   * d'un professionnel.
+   */
   app.decorate('requireSalon', async (req: FastifyRequest, reply: FastifyReply) => {
     await app.requireProfile(req, reply);
+    const demande = req.headers['x-admin-salon'];
+    if (typeof demande === 'string' && demande.trim()) {
+      await app.requireAdmin(req, reply);
+      const salon = await loadSalonById(demande.trim());
+      if (!salon) throw forbidden("Ce salon n'existe pas.");
+      req.salon = salon;
+      req.actingAs = salon.id;
+      return;
+    }
     const salon = await loadOwnedSalon(req.user!.id);
     if (!salon) throw forbidden("Vous n'avez pas encore de salon. Créez-le d'abord.");
     req.salon = salon;
@@ -180,5 +214,15 @@ export default fp(async (app) => {
   app.decorate('requireOwner', async (req: FastifyRequest, reply: FastifyReply) => {
     await app.requireAdmin(req, reply);
     if (req.admin!.level !== 'owner') throw forbidden('Cette action demande le niveau propriétaire.');
+  });
+
+  /**
+   * Tout ce qu'un administrateur ÉCRIT à la place d'un professionnel laisse une ligne au journal :
+   * la méthode, la route et le salon concerné. On journalise après coup et seulement en cas de
+   * succès — une tentative refusée n'a rien changé, et l'inscrire noierait ce qui compte.
+   */
+  app.addHook('onResponse', async (req, reply) => {
+    if (!req.actingAs || req.method === 'GET' || reply.statusCode >= 400) return;
+    await trace(req, 'acted_as_salon', 'salon', req.actingAs, `${req.method} ${req.routeOptions.url ?? req.url}`);
   });
 });

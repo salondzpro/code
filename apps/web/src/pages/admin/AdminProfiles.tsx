@@ -6,15 +6,16 @@
  * quoi trancher « ce client est-il de mauvaise foi ou a-t-il eu un empêchement ? ».
  */
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
-import { ChevronRight, ExternalLink, Search } from 'lucide-react';
-import { pagesItems, useAdminProfile, useAdminProfiles } from '@salondz/api-client';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { ChevronRight, ExternalLink, Pencil, Play, Search, Trash2, UserX } from 'lucide-react';
+import { pagesItems, useAdminActions, useAdminMe, useAdminProfile, useAdminProfiles } from '@salondz/api-client';
 import { type BookingStatus, formatDA, formatDZPhone, formatDateShortDZ } from '@salondz/constants';
 import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { NotFoundState } from '@/pages/NotFound';
-import { Avatar, Badge, I, Pill, Skeleton, StatusBadge, TopBar } from '@/components/ui';
+import { Avatar, Badge, Button, Field, I, Input, Pill, Skeleton, StatusBadge, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { ReasonSheet } from './ReasonSheet';
 import { LOCALES, t } from '@/i18n';
 
 /** En français, zéro et un restent au singulier. */
@@ -84,6 +85,7 @@ export function AdminProfiles() {
                   <span className="mono block truncate text-[0.857rem] text-muted" dir="ltr">
                     {p.phone ? formatDZPhone(p.phone) : (p.email ?? '—')}
                   </span>
+                  {p.suspendedAt && <Badge tone="cn">{t('Suspendu')}</Badge>}
                 </span>
               </span>
               <span className="flex-none text-end text-[0.857rem] text-muted">
@@ -106,9 +108,17 @@ export function AdminProfiles() {
   );
 }
 
+type Geste = { quoi: 'suspend' | 'unsuspend' | 'edit' | 'delete' } | null;
+
 export function AdminProfile() {
   const { id = '' } = useParams();
   const fiche = useAdminProfile(id);
+  const actions = useAdminActions();
+  const moi = useAdminMe();
+  const navigate = useNavigate();
+  const [geste, setGeste] = useState<Geste>(null);
+  const [nom, setNom] = useState('');
+  const [tel, setTel] = useState('');
 
   if (isNotFound(fiche.error))
     return (
@@ -125,6 +135,25 @@ export function AdminProfile() {
     return <Screen gap={12}><Skeleton className="h-[8rem] w-full !rounded-[var(--radius-card)]" /></Screen>;
 
   const { profile: p, email, bookings, reviews, blockedBy, salon } = fiche.data;
+  const suspendu = !!p.suspendedAt;
+  const enCours =
+    actions.suspendProfile.isPending ||
+    actions.unsuspendProfile.isPending ||
+    actions.editProfile.isPending ||
+    actions.deleteProfile.isPending;
+  const erreur =
+    actions.suspendProfile.error ??
+    actions.unsuspendProfile.error ??
+    actions.editProfile.error ??
+    actions.deleteProfile.error;
+  const fermer = () => setGeste(null);
+  const apres = { onSuccess: fermer };
+
+  const ouvrirEdition = () => {
+    setNom(p.fullName ?? '');
+    setTel(p.phone ?? '');
+    setGeste({ quoi: 'edit' });
+  };
 
   return (
     <Screen gap={14} width="page">
@@ -142,12 +171,52 @@ export function AdminProfile() {
               <span className="mono block text-[0.857rem] text-muted" dir="ltr">{formatDZPhone(p.phone)}</span>
             )}
           </span>
-          <Badge tone={p.role === 'pro' ? 'cf' : 'nu'}>{p.role === 'pro' ? t('Professionnel') : t('Client')}</Badge>
+          {suspendu ? (
+            <Badge tone="cn">{t('Suspendu')}</Badge>
+          ) : (
+            <Badge tone={p.role === 'pro' ? 'cf' : 'nu'}>{p.role === 'pro' ? t('Professionnel') : t('Client')}</Badge>
+          )}
         </div>
         {salon && (
           <Link to={`/admin/salons/${salon.id}`} className="btn g sm !justify-center">
             <I icon={ExternalLink} size={16} /> {salon.name}
           </Link>
+        )}
+      </div>
+
+      <span className="h3">{t('Décisions de la plateforme')}</span>
+      <div className="crd !gap-3">
+        {suspendu ? (
+          <>
+            <p className="p text-[1rem]">
+              {t('Ce compte est suspendu : il ne peut plus réserver en ligne, dans aucun salon. Il garde ses rendez-vous déjà pris et son historique.')}
+            </p>
+            {p.suspendedReason && (
+              <p className="sf !py-2 text-[0.857rem]">
+                {t('Motif :')} {p.suspendedReason}
+              </p>
+            )}
+            <Button variant="g" onClick={() => setGeste({ quoi: 'unsuspend' })}>
+              <I icon={Play} size={16} /> {t('Lever la suspension')}
+            </Button>
+          </>
+        ) : (
+          <>
+            <p className="p text-[1rem]">
+              {t('Suspendre empêche ce compte de réserver en ligne partout sur la place de marché. Un salon qui veut seulement refuser ce client chez lui le bloque depuis sa clientèle.')}
+            </p>
+            <Button variant="d" onClick={() => setGeste({ quoi: 'suspend' })}>
+              <I icon={UserX} size={16} /> {t('Suspendre ce compte')}
+            </Button>
+          </>
+        )}
+        <Button variant="g" onClick={ouvrirEdition}>
+          <I icon={Pencil} size={16} /> {t('Corriger le nom ou le numéro')}
+        </Button>
+        {moi.data?.level === 'owner' && !salon && (
+          <Button variant="d" onClick={() => setGeste({ quoi: 'delete' })}>
+            <I icon={Trash2} size={16} /> {t('Supprimer ce compte')}
+          </Button>
         )}
       </div>
 
@@ -218,6 +287,115 @@ export function AdminProfile() {
           </div>
         ))}
       </div>
+
+      {geste?.quoi === 'suspend' && (
+        <ReasonSheet
+          title={t('Suspendre ce compte')}
+          description={t('La personne ne pourra plus réserver en ligne dans aucun salon. Ses rendez-vous déjà pris tiennent, et elle garde l’accès à son compte.')}
+          confirmLabel={t('Suspendre')}
+          danger
+          pending={enCours}
+          error={erreur}
+          onClose={fermer}
+          onConfirm={(reason) => actions.suspendProfile.mutate({ id, reason }, apres)}
+        />
+      )}
+      {geste?.quoi === 'unsuspend' && (
+        <ReasonSheet
+          title={t('Lever la suspension')}
+          description={t('La personne peut de nouveau réserver en ligne.')}
+          confirmLabel={t('Lever la suspension')}
+          optional
+          pending={enCours}
+          error={erreur}
+          onClose={fermer}
+          onConfirm={(reason) => actions.unsuspendProfile.mutate({ id, reason: reason || undefined }, apres)}
+        />
+      )}
+      {geste?.quoi === 'delete' && (
+        <ReasonSheet
+          title={t('Supprimer ce compte')}
+          description={t('Irréversible. Les rendez-vous passés ne sont pas supprimés mais anonymisés : ils appartiennent aussi à la comptabilité des salons. Les avis, favoris et notifications partent.')}
+          confirmLabel={t('Supprimer définitivement')}
+          danger
+          pending={enCours}
+          error={erreur}
+          onClose={fermer}
+          onConfirm={(reason) =>
+            actions.deleteProfile.mutate({ id, reason }, { onSuccess: () => navigate('/admin/comptes', { replace: true }) })
+          }
+        />
+      )}
+      {geste?.quoi === 'edit' && (
+        <EditSheet
+          nom={nom}
+          tel={tel}
+          setNom={setNom}
+          setTel={setTel}
+          pending={enCours}
+          error={erreur}
+          onClose={fermer}
+          onConfirm={(reason) =>
+            actions.editProfile.mutate(
+              {
+                id,
+                reason,
+                ...(nom.trim() && nom.trim() !== p.fullName ? { fullName: nom.trim() } : {}),
+                ...(tel.trim() && tel.trim() !== p.phone ? { phone: tel.trim() } : {}),
+              },
+              apres,
+            )
+          }
+        />
+      )}
     </Screen>
+  );
+}
+
+/**
+ * Corriger l'identité d'un compte. Le cas réel : un numéro mal saisi, et la personne ne reçoit
+ * plus ni rappel ni confirmation. Elle ne peut pas le corriger elle-même dès son premier
+ * rendez-vous (le numéro sert d'identité dans les fiches clients et les règles anti-abus) — c'est
+ * exactement pour cela que le support existe.
+ */
+function EditSheet({
+  nom,
+  tel,
+  setNom,
+  setTel,
+  pending,
+  error,
+  onClose,
+  onConfirm,
+}: {
+  nom: string;
+  tel: string;
+  setNom: (v: string) => void;
+  setTel: (v: string) => void;
+  pending: boolean;
+  error: unknown;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+}) {
+  return (
+    <ReasonSheet
+      title={t('Corriger l’identité')}
+      description={t('Le numéro identifie la personne dans les fiches des salons et dans les règles anti-abus : ne le changez que sur sa demande.')}
+      confirmLabel={t('Enregistrer')}
+      pending={pending}
+      error={error}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      extra={
+        <>
+          <Field label={t('Nom')} htmlFor="adm-nom">
+            <Input id="adm-nom" value={nom} onChange={(e) => setNom(e.target.value)} maxLength={80} />
+          </Field>
+          <Field label={t('Téléphone')} htmlFor="adm-tel" hint={t('Format algérien, par exemple 0661 22 33 44.')}>
+            <Input id="adm-tel" value={tel} onChange={(e) => setTel(e.target.value)} inputMode="tel" dir="ltr" />
+          </Field>
+        </>
+      }
+    />
   );
 }

@@ -168,9 +168,12 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req, reply) => {
       const salon = await loadPublicBySlug(req.params.slug);
       if (!salon) throw notFound('Salon');
-      const { ownerId, ...pub } = salon;
+      const { ownerId, isVisible, ...pub } = salon;
       const isOwner = req.user?.id === ownerId;
-      if (!pub.isPublished && !isOwner) throw notFound('Salon');
+      // `isVisible` croise la publication (décidée par le pro) et la suspension (décidée par la
+      // plateforme, migration 0045) : un salon masqué n'a plus de page, même par son lien direct.
+      // Son propriétaire, lui, continue de voir la sienne — sinon il ne saurait pas ce qui se passe.
+      if (!isVisible && !isOwner) throw notFound('Salon');
       reply.header('Cache-Control', isOwner ? 'private, no-cache' : CACHE_PUBLIC_SHORT);
       // L'identifiant du propriétaire (compte auth) ne fait pas partie de la fiche publique.
       return pub;
@@ -197,13 +200,13 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       const [salonRes, totalRes] = await Promise.all([
         db
           .from('salons')
-          .select('id, slot_interval_minutes, is_published, owner_id, booking_horizon_days')
+          .select('id, slot_interval_minutes, is_visible, owner_id, booking_horizon_days')
           .eq('id', id)
           .maybeSingle(),
         db.rpc('services_total', { p_salon_id: id, p_service_ids: serviceIds }).single(),
       ]);
       const salon = unwrap(salonRes, 'Salon');
-      if (!salon.is_published && req.user?.id !== salon.owner_id) throw notFound('Salon');
+      if (!salon.is_visible && req.user?.id !== salon.owner_id) throw notFound('Salon');
       const total = unwrap(totalRes) as {
         duration_minutes: number;
         price_da: number;
@@ -280,7 +283,10 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       let q = db
         .from('reviews')
         .select('id, rating, comment, created_at, reply, replied_at, profiles(full_name)')
-        .eq('salon_id', req.params.id);
+        .eq('salon_id', req.params.id)
+        // Un avis masqué par la plateforme quitte la page publique et le calcul de la note ; il
+        // reste en base, parce qu'une décision doit pouvoir s'expliquer plus tard.
+        .is('hidden_at', null);
       if (sort === 'best') q = q.order('rating', { ascending: false });
       const res = await q
         .order('created_at', { ascending: false })

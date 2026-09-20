@@ -34,6 +34,12 @@ export interface Profile {
   /** Push pour réservation, confirmation, report, annulation (les notifications restent dans l'app). */
   notifyConfirmations: boolean;
   createdAt: ISODateTime;
+  /**
+   * Suspendu par la PLATEFORME (migration 0045) : plus de réservation en ligne nulle part. Le
+   * blocage d'un salon, lui, est propre à ce salon (`blocked_clients`) — ce sont deux choses.
+   */
+  suspendedAt: ISODateTime | null;
+  suspendedReason: string | null;
 }
 
 export interface Category {

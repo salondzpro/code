@@ -12,12 +12,16 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
 import { ProRail } from '@/components/ProNav';
 import { useDesktop } from '@/lib/breakpoint';
+import { useActingAs } from '@/lib/actingAs';
+import { ActingAsBanner } from '@/components/ActingAsBanner';
+import { AccountSuspendedNotice, SalonSuspendedNotice } from '@/components/SuspensionNotice';
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
 export function ClientLayout() {
   return (
     <AppFrame>
       <PublicHeader />
+      <AccountSuspendedNotice />
       <Outlet />
       <BottomNav kind="client" />
     </AppFrame>
@@ -60,7 +64,9 @@ export function ProLayout() {
   const desktop = useDesktop();
   return (
     <AppFrame>
+      <ActingAsBanner />
       <ProHeader />
+      <SalonSuspendedNotice />
       <div className="pro-shell">
         {desktop && <ProRail salon={salon} pending={pending} />}
         <div className="pro-main">
@@ -143,6 +149,7 @@ export function RequireClient() {
  */
 export function RequirePro() {
   const { session, loading } = useAuth();
+  const acting = useActingAs();
   const location = useLocation();
   const path = location.pathname.replace(/\/$/, '');
   const stepMatch = path.match(/^\/pro\/onboarding\/(\d+)/);
@@ -166,7 +173,9 @@ export function RequirePro() {
   }
   if (salonQuery.isPending || me.isPending) return <Splash />;
   // Le professionnel aussi complète nom et numéro avant d'entrer : ses clients l'appellent.
-  if (me.data && (!me.data.profile.fullName || !me.data.profile.phone) && !onboarding)
+  // Un administrateur qui pilote le salon d'un autre n'a pas à donner son propre numéro : ce sont
+  // les coordonnées DU SALON que les clients voient et appellent.
+  if (me.data && !acting && (!me.data.profile.fullName || !me.data.profile.phone) && !onboarding)
     return <Navigate to={`/profil/creer?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (salonQuery.isError)
     return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;

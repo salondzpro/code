@@ -74,6 +74,14 @@ export interface ApiClientOptions {
   /** Timeout réseau (ms) — 4G moyenne : 15 s par défaut. */
   timeoutMs?: number;
   onUnauthorized?: () => void;
+  /**
+   * Salon qu'un ADMINISTRATEUR pilote à la place de son propriétaire, s'il y en a un.
+   *
+   * Lu à chaque requête (et non figé à la construction) : on entre et on sort de ce mode sans
+   * reconstruire le client. Le serveur exige `requireAdmin` derrière cet en-tête, et journalise
+   * chaque écriture faite ainsi — personne ne travaille dans le dos d'un professionnel.
+   */
+  actingAsSalon?: () => string | null;
 }
 
 type Query = Record<string, string | number | boolean | undefined | null>;
@@ -105,6 +113,19 @@ export interface ProReviewItem extends ReviewItem {
 
 export type AdminLevel = 'support' | 'owner';
 
+/**
+ * Suspension d'un salon par la plateforme. Deux degrés, parce que les deux situations existent :
+ * `frozen` gèle les réservations en laissant la page en ligne (mesure conservatoire), `hidden`
+ * retire le salon de la place de marché. Dans les deux cas les rendez-vous déjà pris tiennent.
+ */
+export type SuspensionLevel = 'frozen' | 'hidden';
+
+export interface Suspension {
+  suspendedAt: string | null;
+  suspensionLevel: SuspensionLevel | null;
+  suspendedReason: string | null;
+}
+
 export interface AdminOverview {
   today: { bookings: number; cancelled: number; noShows: number; salons: number; signups: number };
   last30: { bookings: number; revenueDa: number; cancelRate: number; noShowRate: number };
@@ -128,6 +149,9 @@ export interface AdminSalonRow {
   wilayaCode: number;
   genderTarget: string;
   isPublished: boolean;
+  suspendedAt: string | null;
+  suspensionLevel: SuspensionLevel | null;
+  suspendedReason: string | null;
   createdAt: string;
   ownerId: string;
   ownerName: string | null;
@@ -153,6 +177,8 @@ export interface AdminProfileRow {
   avatarUrl: string | null;
   market: string | null;
   createdAt: string;
+  suspendedAt: string | null;
+  suspendedReason: string | null;
   bookingsCount: number;
   cancelledCount: number;
   noShowCount: number;
@@ -198,10 +224,11 @@ export interface AdminAuditRow {
 
 export interface AdminSalonSheet {
   salon: SalonOwnerView;
+  suspension: Suspension;
   owner: { id: string; fullName: string | null; phone: string | null; avatarUrl: string | null; createdAt: string } | null;
   ownerEmail: string | null;
   bookings: AdminBookingRow[];
-  reviews: { id: string; rating: number; comment: string | null; createdAt: string; reply: string | null }[];
+  reviews: { id: string; rating: number; comment: string | null; createdAt: string; reply: string | null; hiddenAt: string | null; hiddenReason: string | null }[];
   audit: AdminAuditRow[];
 }
 
@@ -209,14 +236,14 @@ export interface AdminProfileSheet {
   profile: Profile;
   email: string | null;
   bookings: (AdminBookingRow & { salons: { name: string; slug: string } | null })[];
-  reviews: { id: string; rating: number; comment: string | null; createdAt: string; salons: { name: string; slug: string } | null }[];
+  reviews: { id: string; rating: number; comment: string | null; createdAt: string; hiddenAt: string | null; hiddenReason: string | null; salons: { name: string; slug: string } | null }[];
   blockedBy: { salonId: string; reason: string | null; createdAt: string; salons: { name: string; slug: string } | null }[];
   salon: { id: string; slug: string; name: string; isPublished: boolean } | null;
 }
 
 export interface MeResponse {
   profile: Profile;
-  salon: { id: string; slug: string; name: string; isPublished: boolean } | null;
+  salon: ({ id: string; slug: string; name: string; isPublished: boolean } & Suspension) | null;
   /** Situation anti-abus du client (annulations / absences récentes, suspension) ; null pour un pro. */
   standing: ClientStanding | null;
 }
@@ -252,6 +279,8 @@ export function createApiClient(opts: ApiClientOptions) {
     if (init.auth !== false) {
       const token = await opts.getAccessToken();
       if (token) headers.Authorization = `Bearer ${token}`;
+      const asSalon = opts.actingAsSalon?.();
+      if (asSalon && path.startsWith('/pro/')) headers['X-Admin-Salon'] = asSalon;
     }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -302,7 +331,8 @@ export function createApiClient(opts: ApiClientOptions) {
   const post = <T>(path: string, body?: unknown) => request<T>('POST', path, { body });
   const put = <T>(path: string, body?: unknown) => request<T>('PUT', path, { body });
   const patch = <T>(path: string, body?: unknown) => request<T>('PATCH', path, { body });
-  const del = <T>(path: string) => request<T>('DELETE', path);
+  // Une suppression peut porter un corps : l'administration y met le motif, qui part au journal.
+  const del = <T>(path: string, body?: unknown) => request<T>('DELETE', path, body === undefined ? undefined : { body });
 
   return {
     request,
@@ -499,6 +529,28 @@ export function createApiClient(opts: ApiClientOptions) {
       bookings: (q: { q?: string; status?: string; from?: string; to?: string; cursor?: string; limit?: number } = {}) =>
         get<Paginated<AdminBookingRow> & { total: number }>('/admin/bookings', q as Query),
       audit: (q: { cursor?: string; limit?: number } = {}) => get<Paginated<AdminAuditRow>>('/admin/audit', q as Query),
+
+      /**
+       * Agir (lot 2). Chaque geste porte un MOTIF et laisse une ligne au journal : une suspension
+       * se justifie devant la personne suspendue, et six mois plus tard il ne reste que l'écrit.
+       */
+      suspendSalon: (id: string, body: { level: SuspensionLevel; reason: string }) =>
+        post<Suspension & { id: string }>(`/admin/salons/${id}/suspend`, body),
+      unsuspendSalon: (id: string, reason?: string) =>
+        post<Suspension & { id: string }>(`/admin/salons/${id}/unsuspend`, { reason }),
+      suspendProfile: (id: string, reason: string) =>
+        post<{ id: string; suspendedAt: string | null; suspendedReason: string | null }>(`/admin/profiles/${id}/suspend`, { reason }),
+      unsuspendProfile: (id: string, reason?: string) =>
+        post<{ id: string; suspendedAt: string | null; suspendedReason: string | null }>(`/admin/profiles/${id}/unsuspend`, { reason }),
+      editProfile: (id: string, body: { fullName?: string; phone?: string; reason: string }) =>
+        patch<{ id: string; fullName: string | null; phone: string | null }>(`/admin/profiles/${id}`, body),
+      deleteProfile: (id: string, reason: string) => del<void>(`/admin/profiles/${id}`, { reason }),
+      hideReview: (id: string, reason: string) =>
+        post<{ id: string; hiddenAt: string | null }>(`/admin/reviews/${id}/hide`, { reason }),
+      unhideReview: (id: string, reason?: string) =>
+        post<{ id: string; hiddenAt: string | null }>(`/admin/reviews/${id}/unhide`, { reason }),
+      cancelBooking: (id: string, reason: string) =>
+        post<BookingWithStaff>(`/admin/bookings/${id}/cancel`, { reason }),
     },
   };
 }

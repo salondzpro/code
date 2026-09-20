@@ -270,12 +270,18 @@ export const Input = forwardRef<
 
 export function Textarea({
   err,
+  elRef,
   className = '',
   ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement> & { err?: boolean }) {
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  err?: boolean;
+  /** Rappel recevant l'élément (mise au point, mesure) — la primitive ne transmet pas `ref`. */
+  elRef?: (el: HTMLTextAreaElement | null) => void;
+}) {
   return (
     <textarea
       {...props}
+      ref={elRef}
       className={['inp', err ? 'err' : '', className].filter(Boolean).join(' ')}
       style={{ resize: 'none', minHeight: '6rem' }}
     />

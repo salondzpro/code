@@ -237,6 +237,9 @@ function profileFor(acct: DemoAccount, createdAt: string): DemoProfile {
     market: acct.market,
     remindersEnabled: true,
     notifyConfirmations: true,
+    // La démonstration n'a pas de plateforme qui suspend : personne n'y est suspendu.
+    suspendedAt: null,
+    suspendedReason: null,
     createdAt,
   };
 }
