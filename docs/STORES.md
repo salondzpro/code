@@ -45,7 +45,7 @@ Les confirmations, les demandes et les rappels passent par les notifications de 
 ## 2. Google Play — questionnaires
 
 **Contenu de l'application**
-- *Accès à l'application* : **restreint** (compte requis). Il faut fournir un identifiant de test aux relecteurs → dépend du salon de démonstration et des comptes « relecteur » (**en attente**).
+- *Accès à l'application* : **restreint** (compte requis). Identifiants de test : `secrets/store-review.txt` (cliente `relecteur-client@salondz.com`, professionnel `relecteur-pro@salondz.com`), créés le 21 sept. par `scripts/store-review.mjs`.
 - *Annonces* : **non**.
 - *Public cible* : **18 ans et plus** (évite les exigences « Familles »).
 - *Classification (IARC)* : catégorie « Utilitaire / autre ». Violence, sexualité, langage, drogues, jeux d'argent : **non**. Contenu généré par les utilisateurs : **oui** (avis sur les salons). Partage de position avec d'autres utilisateurs : **non**. Achats numériques : **non**. Résultat attendu : tous publics.
@@ -64,7 +64,7 @@ Les confirmations, les demandes et les rappels passent par les notifications de 
 | Identifiants de l'appareil (jeton de notification) | oui | non | Fonctionnement (notifications) | oui |
 
 - Données **chiffrées en transit** : oui (HTTPS partout).
-- **Suppression** : oui. Depuis l'application (Réglages → « Supprimer mon compte », clients) et sur demande à `support@salondz.com`. URL de suppression à déclarer : `https://salondz.com/confidentialite` (à remplacer par une page dédiée).
+- **Suppression** : oui. Depuis l'application (clients : Réglages → « Supprimer mon compte » ; professionnels : Compte → « Supprimer mon compte et mon salon », **dans le build v4 et suivants, pas dans le v3**) et sur demande à `support@salondz.com`. URL de suppression à déclarer : `https://salondz.com/confidentialite` (à remplacer par une page dédiée).
 - Aucune donnée vendue. Aucun pistage publicitaire.
 
 ## 3. App Store — questionnaires
@@ -73,14 +73,15 @@ Les confirmations, les demandes et les rappels passent par les notifications de 
 
 **Classification par âge** : contenu généré par les utilisateurs = **oui** (avis) ; tout le reste = **non**. Résultat attendu : 4+.
 
-**Notes pour la revue** : compte de test (e-mail + mot de passe) à fournir — **en attente** (comptes « relecteur »). Préciser que la position n'est utilisée qu'app ouverte, et que les notifications servent aux rappels de rendez-vous.
+**Notes pour la revue** : identifiants de `secrets/store-review.txt` (e-mail + mot de passe ; les deux comptes sont déjà confirmés, aucun e-mail à ouvrir). Préciser que la position n'est utilisée qu'app ouverte, et que les notifications servent aux rappels de rendez-vous.
 
 **Coordonnées de revue** : nom, téléphone et e-mail du propriétaire (Apple exige un numéro).
 
 ## 4. Risques connus avant une revue
 
-1. **Marketplace vide** — aucun salon publié depuis le nettoyage du 21 sept. Les relecteurs verraient une application sans contenu. → salon de démonstration (**décision en attente**).
-2. **Suppression du compte d'un professionnel** — impossible dans l'application tant qu'il porte un salon (`HAS_SALON`). Apple (5.1.1(v)) et Google l'exigent. → **décision en attente**.
-3. **Signalement d'un avis** — les avis sont du contenu généré par les utilisateurs ; Apple (1.2) attend un moyen de les signaler et de bloquer un abus, avec un contact publié. L'administration sait masquer un avis, mais un utilisateur ne peut pas encore en signaler un. → à faire (« signalements », lot 2 de `docs/ADMIN.md`).
-4. **Captures d'écran** — Play : 2 à 8 captures de téléphone ; App Store : au moins une série 6,7" (1290×2796) ou 6,9" (1320×2868). À prendre depuis l'application installée.
+1. ~~Marketplace vide~~ — **traité le 21 sept.** : « Salon Démonstration » (Alger Centre, publié, réservation confirmée d'office, 6 prestations, 2 membres, photos) et deux comptes de revue, par `node --env-file=.env scripts/store-review.mjs`. Aucun avis fabriqué. Le salon est clairement présenté comme une démonstration ; à retirer (`--remove`) quand de vrais salons existent, ou à laisser : décision du propriétaire.
+2. ~~Suppression du compte d'un professionnel~~ — **traité le 21 sept.** : « Supprimer mon compte et mon salon » (web et mobile), `DELETE /v1/me` avec `{ withSalon: true }`. Les rendez-vous à venir sont annulés et leurs clients prévenus ; l'historique des rendez-vous passés disparaît aussi chez les clients (l'écran le dit). Ce contrôle a révélé que l'effacement de compte — client compris — n'avait **jamais abouti** (colonne `favorites.client_id` inexistante) : corrigé, vérifié par `pnpm check:pro-deletion`.
+3. **Signalement d'un avis** — les avis sont du contenu généré par les utilisateurs ; Apple (1.2) attend un moyen de les signaler et de bloquer un abus, avec un contact publié. L'administration sait masquer un avis, mais un utilisateur ne peut pas encore en signaler un. → à faire avant la soumission Apple (« signalements », lot 2 de `docs/ADMIN.md`).
+4. **Captures d'écran** — Play : 2 à 8 captures de téléphone ; App Store : au moins une série 6,7" (1290×2796) ou 6,9" (1320×2868). **À prendre depuis l'application installée** sur un vrai téléphone : le site web n'a pas la même interface que l'application, et des captures du site ne seraient pas celles de l'application.
 5. **Application non essayée sur appareil** avant le premier envoi : le test interne (Play) et TestFlight (Apple) servent à ça, pas la production.
+6. **iOS** — aucun build jamais fait ; bloqué en attente de la clé App Store Connect, de la clé APNs et du Team ID.
