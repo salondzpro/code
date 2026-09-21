@@ -105,7 +105,13 @@ try {
   const rdv = await call('GET', '/me/bookings?scope=upcoming', client.token);
   ok(!(rdv.json?.items ?? []).some((b) => b.id === bookingId), 'plus de rendez-vous à venir chez ce salon');
 
-  console.log('\n4. Un compte administrateur ne se supprime pas');
+  console.log('\n4. Un client supprime son compte (sans corps de requête, comme l\'application)');
+  await db.from('favorites').insert({ user_id: client.id, salon_id: (await db.from('salons').select('id').limit(1).maybeSingle()).data?.id ?? null }).then(() => undefined, () => undefined);
+  const clientDel = await call('DELETE', '/me', client.token);
+  ok(clientDel.status === 204, `suppression du compte client → ${clientDel.status}`);
+  ok(!(await db.auth.admin.getUserById(client.id)).data?.user, 'le compte du client n’existe plus');
+
+  console.log('\n5. Un compte administrateur ne se supprime pas');
   const donne = await db.from('platform_admins').insert({ user_id: admin.id, level: 'support' });
   if (donne.error) throw donne.error;
   const refuse = await call('DELETE', '/me', admin.token);

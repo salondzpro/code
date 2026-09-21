@@ -364,19 +364,20 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
    * passés restent dans l'historique des salons mais anonymisés ; tout le reste est supprimé, puis le
    * compte d'authentification lui-même. Un professionnel doit d'abord fermer son salon (support).
    */
-  app.delete(
-    '/me',
-    { schema: { body: z.object({ withSalon: z.boolean().optional() }).optional() } },
-    async (req, reply) => {
-      // Même effacement que celui déclenché par l'administration à la demande du titulaire :
-      // une seule implémentation, dans `lib/moderation.ts`. Un professionnel ferme son salon EN MÊME
-      // TEMPS (`withSalon`) : ses clients à venir sont prévenus, et la confirmation le dit à l'écran.
-      if (req.body?.withSalon) await eraseProAccount(req.log, req.user!.id);
-      else await eraseClientAccount(req.log, req.user!.id);
-      reply.status(204);
-      return null;
-    },
-  );
+  app.delete('/me', async (req, reply) => {
+    // Même effacement que celui déclenché par l'administration à la demande du titulaire :
+    // une seule implémentation, dans `lib/moderation.ts`. Un professionnel ferme son salon EN MÊME
+    // TEMPS (`withSalon`) : ses clients à venir sont prévenus, et la confirmation le dit à l'écran.
+    //
+    // Le corps est lu À LA MAIN, sans schéma : un client supprime son compte SANS corps, et un schéma
+    // (même `.optional()`) répond 400 à une requête DELETE vide — c'est ce qui avait cassé la
+    // suppression d'un compte client le temps d'un déploiement.
+    const body = z.object({ withSalon: z.boolean().optional() }).safeParse(req.body ?? {});
+    if (body.success && body.data.withSalon) await eraseProAccount(req.log, req.user!.id);
+    else await eraseClientAccount(req.log, req.user!.id);
+    reply.status(204);
+    return null;
+  });
 
   // ---- Alertes « prévenez-moi si un créneau se libère » ----
 

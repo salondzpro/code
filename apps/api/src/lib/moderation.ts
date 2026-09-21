@@ -154,7 +154,10 @@ async function wipeAccount(log: FastifyBaseLogger, uid: string): Promise<void> {
     db.from('bookings').update(anonymized).eq('client_id', uid),
     db.from('bookings').update({ booked_by: null, booked_by_name: null }).eq('booked_by', uid),
     db.from('reviews').delete().eq('client_id', uid),
-    db.from('favorites').delete().eq('client_id', uid),
+    // `favorites` est rattachée par `user_id`, pas `client_id` : cette faute a rendu l'effacement de compte
+    // impossible (500 « column favorites.client_id does not exist », APRÈS avoir anonymisé les rendez-vous et
+    // supprimé les avis). Aucun test ne le couvrait ; `pnpm check:pro-deletion` le fait maintenant.
+    db.from('favorites').delete().eq('user_id', uid),
     db.from('push_tokens').delete().eq('user_id', uid),
     db.from('notifications').delete().eq('user_id', uid),
     db.from('client_notes').delete().eq('client_key', uid),
