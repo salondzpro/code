@@ -331,6 +331,8 @@ on('POST', '/me/role', (c) => {
   return ok(profile);
 });
 on('POST', '/me/push-tokens', () => none());
+// Démonstration : le signalement d'un avis est accepté sans rien envoyer (comme tout le reste de la démonstration).
+on('POST', '/reviews/:id/report', () => none());
 on('DELETE', '/me/push-tokens/:token', () => none());
 on('GET', '/me/notifications', (c) => {
   const u = requireUser(c);

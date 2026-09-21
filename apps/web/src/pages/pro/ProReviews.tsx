@@ -25,6 +25,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BottomSheet, Button, Dim, I, Pill, Skeleton, Textarea, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
+import { ReportReviewButton } from '@/components/ReportReview';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
 
@@ -158,6 +159,8 @@ export function ProReviews() {
               {r.serviceName && <span className="text-muted"> · {r.serviceName}</span>}
             </span>
             {r.comment && <p className="p text-[1rem]">{r.comment}</p>}
+            {/* Un avis mensonger fait d'abord du tort au professionnel : c'est lui qui le voit en premier. */}
+            <ReportReviewButton reviewId={r.id} />
 
             {r.reply ? (
               <div className="sf !py-2.5">

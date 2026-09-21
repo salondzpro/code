@@ -463,6 +463,45 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  // ------------------------------------------------------------------ signalements d'avis (migration 0047)
+  /**
+   * La file des signalements ouverts, du plus récent au plus ancien : ce que dit l'avis, chez quel salon,
+   * qui le signale et pourquoi. Le geste (masquer) est celui de toujours, `/reviews/:id/hide`, avec son
+   * motif ; ici on lit, puis on CLASSE le signalement.
+   */
+  app.get('/reports', async () => {
+    const res = await db
+      .from('review_reports')
+      .select(
+        'id, reason, message, created_at, review_id, reviews(id, rating, comment, hidden_at, salon_id, salons(id, name, slug)), reporter:profiles!review_reports_reporter_id_fkey(full_name)',
+      )
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    return { items: (unwrap(res) as Record<string, unknown>[]).map((r) => camelize(r)) };
+  });
+
+  /** Classer un signalement : `handled` (on a agi) ou `rejected` (sans suite). Rien d'autre n'est modifié. */
+  app.post(
+    '/reports/:id/close',
+    { schema: { params: z.object({ id: uuid }), body: z.object({ outcome: z.enum(['handled', 'rejected']), note: motif.optional() }) } },
+    async (req, reply) => {
+      const { id } = req.params;
+      const res = await db
+        .from('review_reports')
+        .update({ status: req.body.outcome, handled_by: req.admin!.id, handled_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('status', 'open')
+        .select('id, review_id')
+        .maybeSingle();
+      if (res.error) throw res.error;
+      if (!res.data) throw notFound('Signalement');
+      await trace(req, req.body.outcome === 'handled' ? 'report_handled' : 'report_rejected', 'review', (res.data as { review_id: string }).review_id, req.body.note ?? null);
+      reply.status(204);
+      return null;
+    },
+  );
+
   // ------------------------------------------------------------------ journal
   app.get('/audit', { schema: { querystring: page } }, async (req) => {
     const { limit } = req.query;

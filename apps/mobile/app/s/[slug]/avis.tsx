@@ -16,6 +16,7 @@ import { LoadMore } from '@/ui/LoadMore';
 import { formatRating } from '@/lib/format';
 import { Card, ErrorText, H1, P, Pill, Skeleton, TopBar, Tx } from '@/ui';
 import { PillRow } from '@/ui/Pills';
+import { ReportReviewButton } from '@/ui/ReportReview';
 import { Screen } from '@/ui/Screen';
 import { Splash } from '@/ui/Splash';
 import { C } from '@/theme/design';
@@ -102,6 +103,7 @@ export default function SalonReviews() {
             {r.authorName}
           </Tx>
           {!!r.comment && <P>{r.comment}</P>}
+          <ReportReviewButton reviewId={r.id} />
         </Card>
       ))}
       <LoadMore

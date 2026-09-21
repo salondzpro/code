@@ -115,6 +115,7 @@ const AdminProfiles = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'Ad
 const AdminProfile = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'AdminProfile');
 const AdminBookings = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminBookings');
 const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminAudit');
+const AdminReports = lazyNamed(() => import('@/pages/admin/AdminReports'), 'AdminReports');
 
 export const router = createBrowserRouter([
   {
@@ -271,6 +272,7 @@ export const router = createBrowserRouter([
           { path: 'comptes', element: <AdminProfiles /> },
           { path: 'comptes/:id', element: <AdminProfile /> },
           { path: 'rendez-vous', element: <AdminBookings /> },
+          { path: 'signalements', element: <AdminReports /> },
           { path: 'journal', element: <AdminAudit /> },
         ],
       },

@@ -55,6 +55,7 @@ export const queryKeys = {
     profile: (id: string) => ['admin', 'profile', id] as const,
     bookings: (q: Record<string, unknown>) => ['admin', 'bookings', q] as const,
     audit: ['admin', 'audit'] as const,
+    reports: ['admin', 'reports'] as const,
   },
 };
 

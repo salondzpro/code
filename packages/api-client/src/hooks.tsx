@@ -18,6 +18,7 @@ import type {
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
 import type { ReviewSort } from './client';
+import type { ReportReason } from '@salondz/constants';
 
 interface ApiContextValue {
   api: ApiClient;
@@ -519,6 +520,21 @@ export const useAdminAudit = (enabled = true) => {
  * tableau de bord et le journal d'un coup. Recharger ces quatre choses coûte moins cher que de
  * laisser une seule d'entre elles mentir.
  */
+/** File des signalements d'avis ouverts (administration). */
+export const useAdminReports = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: queryKeys.admin.reports, queryFn: () => api.admin.reports(), staleTime: 15_000, enabled });
+};
+
+/** Signaler un avis : toute personne connectée sauf son auteur. */
+export function useReportReview() {
+  const { api } = useApi();
+  return useMutation({
+    mutationFn: ({ id, reason, message }: { id: string; reason: ReportReason; message?: string }) =>
+      api.bookings.reportReview(id, { reason, message }),
+  });
+}
+
 export function useAdminActions() {
   const { api } = useApi();
   const qc = useQueryClient();
@@ -567,6 +583,11 @@ export function useAdminActions() {
      * l'autre ne change rien à ce que montre l'administration (l'appelant vide de toute façon tout
      * le cache en changeant de contexte).
      */
+    closeReport: useMutation({
+      mutationFn: ({ id, outcome, note }: { id: string; outcome: 'handled' | 'rejected'; note?: string }) =>
+        api.admin.closeReport(id, outcome, note),
+      onSuccess: fait,
+    }),
     enterSalon: useMutation({ mutationFn: (id: string) => api.admin.control(id) }),
     leaveSalon: useMutation({ mutationFn: (id: string) => api.admin.endControl(id) }),
   };

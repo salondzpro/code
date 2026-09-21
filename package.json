@@ -32,7 +32,8 @@
     "check:badge": "node --env-file=.env scripts/check-pending-badge.mjs",
     "check:control": "node --env-file=.env scripts/check-admin-control.mjs",
     "check:pro-reminder": "node --env-file=.env scripts/check-pro-reminder.mjs",
-    "check:pro-deletion": "node --env-file=.env scripts/check-pro-deletion.mjs"
+    "check:pro-deletion": "node --env-file=.env scripts/check-pro-deletion.mjs",
+    "check:review-report": "node --env-file=.env scripts/check-review-report.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

@@ -18,6 +18,7 @@ import { Screen } from '@/components/AppFrame';
 import { SalonNotFound } from '@/pages/NotFound';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
+import { ReportReviewButton } from '@/components/ReportReview';
 import { Splash } from '@/pages/auth/Splash';
 import { t } from '@/i18n';
 
@@ -87,6 +88,7 @@ export function SalonReviews() {
           <span className="text-[1rem] font-semibold">{r.authorName}</span>
           {r.comment && <span className="p text-[1rem]">{r.comment}</span>}
           <ReviewReply reply={r.reply} salonName={salon.data?.name} />
+          <ReportReviewButton reviewId={r.id} />
         </div>
       ))}
       <LoadMore

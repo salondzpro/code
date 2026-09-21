@@ -6,6 +6,7 @@ import {
   createBookingSchema,
   createReviewSchema,
   myBookingsQuerySchema,
+  reportReviewSchema,
   rescheduleBookingSchema,
   uuid,
 } from '@salondz/validation';
@@ -20,6 +21,37 @@ import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
 
 const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
+
+  /**
+   * Signaler un avis (migration 0047). Ouvert à toute personne connectée SAUF son auteur — le professionnel
+   * visé compris : c'est le premier à qui un avis mensonger fait du tort. Un signalement est unique par
+   * personne et par avis, ne masque rien à lui seul (un opérateur décide, avec un motif, dans
+   * `/v1/admin/reports`) et ne dit jamais à l'auteur de l'avis qu'on l'a signalé. Répondre 204 dans tous les
+   * cas où l'avis existe : refaire le geste n'est pas une erreur.
+   */
+  app.post(
+    '/reviews/:id/report',
+    {
+      config: { rateLimit: { max: 10, timeWindow: '1 hour' } },
+      schema: { params: z.object({ id: uuid }), body: reportReviewSchema },
+    },
+    async (req, reply) => {
+      const review = await db.from('reviews').select('id, client_id, hidden_at').eq('id', req.params.id).maybeSingle();
+      if (review.error) throw review.error;
+      const r = review.data as { id: string; client_id: string; hidden_at: string | null } | null;
+      if (!r || r.hidden_at) throw notFound('Avis');
+      if (r.client_id === req.user!.id) throw badRequest('OWN_REVIEW', "C'est votre propre avis : vous pouvez le modifier, pas le signaler.");
+      const ins = await db
+        .from('review_reports')
+        .upsert(
+          { review_id: r.id, reporter_id: req.user!.id, reason: req.body.reason, message: req.body.message ?? null },
+          { onConflict: 'review_id,reporter_id', ignoreDuplicates: true },
+        );
+      if (ins.error) throw ins.error;
+      reply.status(204);
+      return null;
+    },
+  );
 
   /** Réservation en ligne (atomique côté DB via create_booking). */
   app.post('/bookings', { schema: { body: createBookingSchema } }, async (req, reply) => {

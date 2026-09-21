@@ -4,6 +4,7 @@ import {
   BOOKING_STATUSES,
   GENDER_TARGETS,
   MAX_TIME_BLOCK_DAYS,
+  REPORT_REASONS,
   SALON_MAX_PHOTOS,
   USER_ROLES,
   SALON_MAX_WORKS,
@@ -258,6 +259,13 @@ export const createWalkInBookingSchema = z
     path: ['serviceIds'],
   });
 export type CreateWalkInBookingInput = z.infer<typeof createWalkInBookingSchema>;
+
+/** Signalement d'un avis (migration 0047) : un motif parmi quatre, et un mot facultatif. */
+export const reportReviewSchema = z.object({
+  reason: z.enum(REPORT_REASONS),
+  message: p.longText(300).optional(),
+});
+export type ReportReviewInput = z.infer<typeof reportReviewSchema>;
 
 export const cancelBookingSchema = z.object({
   reason: p.shortText(200).optional(),

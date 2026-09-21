@@ -28,7 +28,7 @@ import type {
   ProClientHistoryItem,
   BookingStanding,
 } from '@salondz/types';
-import type { Wilaya } from '@salondz/constants';
+import type { ReportReason, Wilaya } from '@salondz/constants';
 import type {
   AvailabilityQuery,
   CreateBookingInput,
@@ -222,6 +222,24 @@ export interface AdminAuditRow {
   ip: string | null;
   createdAt: string;
   profiles: { fullName: string | null } | null;
+}
+
+/** Un signalement d'avis ouvert, avec l'avis et le salon concernés. */
+export interface AdminReportRow {
+  id: string;
+  reason: ReportReason;
+  message: string | null;
+  createdAt: string;
+  reviewId: string;
+  reviews: {
+    id: string;
+    rating: number;
+    comment: string | null;
+    hiddenAt: string | null;
+    salonId: string;
+    salons: { id: string; name: string; slug: string } | null;
+  } | null;
+  reporter: { fullName: string | null } | null;
 }
 
 export interface AdminSalonSheet {
@@ -429,6 +447,9 @@ export function createApiClient(opts: ApiClientOptions) {
         post<BookingWithSalon>(`/bookings/${id}/reschedule`, body),
       review: (id: string, body: { rating: number; comment?: string }) =>
         post<Review>(`/bookings/${id}/review`, body),
+      /** Signaler un avis (Apple 1.2 / Google Play) : un motif, un mot facultatif. Un opérateur décide ensuite. */
+      reportReview: (id: string, body: { reason: ReportReason; message?: string }) =>
+        post<void>(`/reviews/${id}/report`, body),
     },
     pro: {
       salon: () => get<ProSalonResponse>('/pro/salon'),
@@ -550,6 +571,10 @@ export function createApiClient(opts: ApiClientOptions) {
       bookings: (q: { q?: string; status?: string; from?: string; to?: string; cursor?: string; limit?: number } = {}) =>
         get<Paginated<AdminBookingRow> & { total: number }>('/admin/bookings', q as Query),
       audit: (q: { cursor?: string; limit?: number } = {}) => get<Paginated<AdminAuditRow>>('/admin/audit', q as Query),
+      /** File des signalements d'avis ouverts, du plus récent au plus ancien. */
+      reports: () => get<{ items: AdminReportRow[] }>('/admin/reports'),
+      closeReport: (id: string, outcome: 'handled' | 'rejected', note?: string) =>
+        post<void>(`/admin/reports/${id}/close`, { outcome, note }),
 
       /**
        * Agir (lot 2). Chaque geste porte un MOTIF et laisse une ligne au journal : une suspension

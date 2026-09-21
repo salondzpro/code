@@ -13,6 +13,7 @@ export * from './demo';
 export * from './brandLogos';
 export * from './realtime';
 export * from './reasons';
+export * from './reports';
 export * from './visibility';
 
 export const APP_NAME = 'SalonDZ';

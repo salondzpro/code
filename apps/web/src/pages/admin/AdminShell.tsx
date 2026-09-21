@@ -9,7 +9,7 @@
  * sache à tout instant qu'on agit en tant que plateforme et non en tant que salon.
  */
 import { NavLink, Outlet, Navigate } from 'react-router';
-import { CalendarSearch, ContactRound, LayoutGrid, ScrollText, Store } from 'lucide-react';
+import { CalendarSearch, ContactRound, Flag, LayoutGrid, ScrollText, Store } from 'lucide-react';
 import { useAdminMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { I } from '@/components/ui';
@@ -21,6 +21,7 @@ const NAV = [
   { to: '/admin/salons', label: 'Professionnels', icon: Store },
   { to: '/admin/comptes', label: 'Comptes', icon: ContactRound },
   { to: '/admin/rendez-vous', label: 'Rendez-vous', icon: CalendarSearch },
+  { to: '/admin/signalements', label: 'Signalements', icon: Flag },
   { to: '/admin/journal', label: 'Journal', icon: ScrollText },
 ];
 
@@ -59,6 +60,10 @@ export function actionLabel(action: string): string {
       return t('Avis masqué');
     case 'review_unhidden':
       return t('Avis rétabli');
+    case 'report_handled':
+      return t('Signalement traité');
+    case 'report_rejected':
+      return t('Signalement classé sans suite');
     case 'booking_cancelled':
       return t('Rendez-vous annulé au nom de la plateforme');
     default:
