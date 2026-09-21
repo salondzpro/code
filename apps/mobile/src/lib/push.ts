@@ -98,6 +98,8 @@ interface PushData {
   bookingId?: string;
   salonId?: string;
   type?: string;
+  /** `pro` : notification adressée au professionnel dont le type est partagé avec le client (le rappel). */
+  audience?: 'pro' | 'client';
 }
 
 /**
@@ -129,7 +131,7 @@ export function usePushNotificationsListener() {
       const me =
         queryClient.getQueryData<MeResponse>(queryKeys.me) ??
         (await queryClient.fetchQuery({ queryKey: queryKeys.me, queryFn: () => apiClient.me.get() }).catch(() => undefined));
-      const toPro = !!me?.salon && !!data.type && PRO_TYPES.has(data.type);
+      const toPro = !!me?.salon && (data.audience === 'pro' || (!!data.type && PRO_TYPES.has(data.type)));
       if (data.bookingId) {
         router.push((toPro ? `/pro-rdv/${data.bookingId}` : `/rdv/${data.bookingId}`) as never);
       } else {

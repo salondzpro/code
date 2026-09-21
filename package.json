@@ -30,7 +30,8 @@
     "check:webpush": "node --env-file=.env scripts/check-webpush.mjs",
     "check:for-other": "node --env-file=.env scripts/check-booking-for-other.mjs",
     "check:badge": "node --env-file=.env scripts/check-pending-badge.mjs",
-    "check:control": "node --env-file=.env scripts/check-admin-control.mjs"
+    "check:control": "node --env-file=.env scripts/check-admin-control.mjs",
+    "check:pro-reminder": "node --env-file=.env scripts/check-pro-reminder.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

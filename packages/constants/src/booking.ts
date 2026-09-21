@@ -69,6 +69,13 @@ export const MAX_FOR_OTHER_PER_DAY = 5;
  * créneau est libéré — le client est prévenu et peut réserver ailleurs.
  */
 export const PENDING_REMINDER_HOURS = 2;
+/**
+ * Rappel au PROFESSIONNEL : une notification PRO_REMINDER_LEAD_MINUTES avant chaque rendez-vous confirmé
+ * (envoyée au propriétaire du salon). Elle remplace le message WhatsApp qu'on s'envoyait à soi-même pour ne
+ * pas oublier. Un rendez-vous pris moins de 15 minutes avant l'heure du rappel n'en reçoit pas : le pro vient
+ * d'être prévenu par la notification de la réservation elle-même.
+ */
+export const PRO_REMINDER_LEAD_MINUTES = 60;
 export const PENDING_REQUEST_TTL_HOURS = 24;
 /** Alertes « créneau libéré » actives au plus par client. */
 export const SLOT_ALERT_MAX_PER_CLIENT = 10;

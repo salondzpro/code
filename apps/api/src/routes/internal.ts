@@ -5,7 +5,7 @@ import { config } from '../config';
 import { db } from '../lib/supabase';
 import { unauthorized, unwrap } from '../lib/errors';
 import { dispatchPendingPush } from '../lib/push';
-import { NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS } from '@salondz/constants';
+import { NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS, PRO_REMINDER_LEAD_MINUTES } from '@salondz/constants';
 import { notifySlotFreed } from '../lib/waitlist';
 
 /**
@@ -108,6 +108,43 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       if (upd.error) throw upd.error;
     }
 
+    // 1c) Rappel au PROFESSIONNEL : une notification PRO_REMINDER_LEAD_MINUTES avant chaque rendez-vous
+    //     confirmé, envoyée au propriétaire du salon. Fenêtre de 20 à 70 min avant le début : on ne rate
+    //     rien si un tick a sauté, et on n'envoie jamais un rappel pour un rendez-vous déjà imminent.
+    //     Un rendez-vous pris peu avant l'heure du rappel (le pro vient d'être prévenu par la réservation
+    //     elle-même) est marqué traité sans rien envoyer. Pas d'interrupteur : le réglage « Rappels » est
+    //     celui du CLIENT, et un professionnel n'a aucun écran pour le rallumer.
+    const remProRes = await db
+      .from('bookings')
+      .select('id, client_name, service_name, starts_at, created_at, salons(owner_id)')
+      .eq('status', 'confirmed')
+      .is('reminder_pro_sent_at', null)
+      .gte('starts_at', new Date(now + 20 * 60_000).toISOString())
+      .lt('starts_at', new Date(now + (PRO_REMINDER_LEAD_MINUTES + 10) * 60_000).toISOString())
+      .limit(500);
+    const dueForPro = unwrap(remProRes) as unknown as { id: string; client_name: string; service_name: string; starts_at: string; created_at: string; salons: { owner_id: string } | null }[];
+    const proCutoff = (PRO_REMINDER_LEAD_MINUTES + 15) * 60_000;
+    const toRemindPro = dueForPro.filter((b) => b.salons?.owner_id && new Date(b.starts_at).getTime() - new Date(b.created_at).getTime() > proCutoff);
+    if (dueForPro.length) {
+      if (toRemindPro.length) {
+        const ins = await db.from('notifications').insert(
+          toRemindPro.map((b) => ({
+            user_id: b.salons!.owner_id,
+            type: 'booking_reminder',
+            title: 'Rendez-vous dans 1 h',
+            body: `${b.client_name} · ${b.service_name} · à ${fmtTime(b.starts_at)}`,
+            // `audience: 'pro'` : le type est partagé avec le rappel client, l'application s'en sert pour
+            // ouvrir la fiche côté professionnel.
+            data: { bookingId: b.id, audience: 'pro', url: `/pro/rendez-vous/${b.id}` },
+            booking_id: b.id,
+          })),
+        );
+        if (ins.error) throw ins.error;
+      }
+      const upd = await db.from('bookings').update({ reminder_pro_sent_at: new Date().toISOString() }).in('id', dueForPro.map((b) => b.id));
+      if (upd.error) throw upd.error;
+    }
+
     // 2) Clôture automatique des RDV confirmés terminés depuis > 3 h
     const doneRes = await db
       .from('bookings')
@@ -190,9 +227,13 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .upsert({ key: 'cron_last_tick', value: new Date(now).toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (beat.error) req.log.warn({ err: beat.error }, 'cron heartbeat');
 
-    return { reminders: toRemind.length, reminders2h: toRemind2.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
+    return { reminders: toRemind.length, reminders2h: toRemind2.length, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
   }
 };
+
+function fmtTime(iso: string): string {
+  return new Intl.DateTimeFormat('fr-DZ', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Africa/Algiers' }).format(new Date(iso));
+}
 
 function fmtWhen(iso: string): string {
   return new Intl.DateTimeFormat('fr-DZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Africa/Algiers' }).format(new Date(iso));
