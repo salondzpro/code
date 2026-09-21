@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Redirect, Stack, useSegments } from 'expo-router';
 import { useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
-import { api } from '@/lib/api';
-import { registerForPushNotifications } from '@/lib/push';
 import { useRealtimeBookings } from '@/lib/realtime';
+import { PushPrompt } from '@/ui/PushPrompt';
 import { Splash } from '@/ui/Splash';
 import { Screen } from '@/ui/Screen';
 import { ErrorText } from '@/ui';
@@ -19,7 +18,6 @@ export default function ProLayout() {
   const { session, loading } = useAuth();
   const segments = useSegments() as string[];
   const pro = useProSalon(!!session);
-  const pushRegistered = useRef(false);
   const salon = pro.data?.salon ?? null;
   /**
    * UN SEUL canal pour toute la session pro : agenda, demandes, chiffres et notifications
@@ -28,13 +26,6 @@ export default function ProLayout() {
    * ouvrait deux canaux de même nom — pas fiable, et inutile puisque ce calque les couvre.
    */
   useRealtimeBookings(salon?.id);
-
-  useEffect(() => {
-    if (salon && !pushRegistered.current) {
-      pushRegistered.current = true;
-      registerForPushNotifications(api).catch((err) => console.warn('[push]', err));
-    }
-  }, [salon]);
 
   if (loading || (session && pro.isPending)) return <Splash />;
   if (!session) return <Redirect href={{ pathname: '/connexion', params: { role: 'pro', next: '/pro' } } as never} />;
@@ -57,5 +48,11 @@ export default function ProLayout() {
     return <Redirect href={salon.services.length === 0 ? '/onboarding/6' : '/(pro)/(tabs)'} />;
   }
 
-  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg }, animation: 'slide_from_right' }} />;
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg }, animation: 'slide_from_right' }} />
+      {/* Les demandes arrivent par notification : expliqué d'abord, puis la fenêtre du système. */}
+      <PushPrompt audience="pro" active={!!salon && !onboarding} />
+    </>
+  );
 }

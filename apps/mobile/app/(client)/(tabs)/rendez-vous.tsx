@@ -31,6 +31,7 @@ import {
 import type { BookingWithSalon } from '@salondz/types';
 import { useAuth } from '@/lib/auth';
 import { directionsUrl, open } from '@/lib/salon';
+import { PushPrompt } from '@/ui/PushPrompt';
 import {
   Button,
   Card,
@@ -348,6 +349,8 @@ export default function Bookings() {
       refreshing={list.isRefetching}
       onRefresh={() => void list.refetch()}
     >
+      {/* Dès qu'il a un rendez-vous, le client comprend à quoi servent les notifications. */}
+      <PushPrompt audience="client" active={scope === 'upcoming' && items.length > 0} />
       <H1 size={23} lh={26} ls={-0.8}>
         Rendez-vous
       </H1>

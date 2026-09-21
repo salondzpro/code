@@ -9,7 +9,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeftRight, Search } from 'lucide-react-native';
+import { ArrowLeftRight, MapPin, Search } from 'lucide-react-native';
 import { pagesItems, useMe, useSalonSearchInfinite, useUpdateProfile } from '@salondz/api-client';
 import { LoadMore } from '@/ui/LoadMore';
 import {
@@ -18,8 +18,9 @@ import {
   type CategoryId,
   type Market,
 } from '@salondz/constants';
+import { useAutoLocation } from '@/lib/geo';
 import { useLocationPrefs } from '@/lib/prefs';
-import { ErrorText, H1, I, IconButton, P, Pill, Skeleton, Tx } from '@/ui';
+import { Button, ErrorText, H1, H2, I, IconButton, ModalSheet, P, Pill, Skeleton, Tx } from '@/ui';
 import { SearchField, SearchTools } from '@/ui/SearchTools';
 import { Screen } from '@/ui/Screen';
 import { SalonListCard } from '@/ui/SalonListCard';
@@ -36,6 +37,8 @@ export default function Marketplace() {
   const me = useMe();
   const update = useUpdateProfile();
   const [prefs, setPrefs] = useLocationPrefs();
+  // La marketplace se filtre sur la position de l'appareil dès l'ouverture (voir lib/geo.ts).
+  const geo = useAutoLocation();
   const market: Market = me.data?.profile.market ?? 'women';
   const q = params.q ?? '';
   const [category, setCategory] = useState<string>(params.category ?? '');
@@ -203,6 +206,20 @@ export default function Marketplace() {
           />
         </>
       )}
+
+      {/* Expliqué AVANT la fenêtre du système, une seule fois : un refus sans contexte est définitif sur iOS. */}
+      <ModalSheet open={geo.prompt} onClose={geo.decline}>
+        <I icon={MapPin} size={28} />
+        <H2>Trouvez les salons près de vous</H2>
+        <P>
+          Salon DZ utilise votre position quand vous ouvrez l’application, pour afficher les salons autour de vous.
+          Elle n’est jamais lue application fermée, et elle n’est pas transmise aux salons.
+        </P>
+        <Button onPress={geo.accept}>Utiliser ma position</Button>
+        <Button variant="g" onPress={geo.decline}>
+          Plus tard
+        </Button>
+      </ModalSheet>
     </Screen>
   );
 }

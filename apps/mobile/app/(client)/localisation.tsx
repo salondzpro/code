@@ -125,7 +125,8 @@ export default function Localisation() {
           : choice.kind === 'point'
             ? { city: null, lat: choice.lat, lng: choice.lng, label: choice.label }
             : { city: null, lat: pos?.lat ?? null, lng: pos?.lng ?? null, label };
-    setPrefs({ ...next, radiusKm: radius });
+    // Un quartier ou une ville choisis à la main ne doivent plus être écrasés par la position de l'appareil.
+    setPrefs({ ...next, radiusKm: radius, autoLocate: choice.kind === 'gps', locationAsked: true });
     const wilaya = choice.kind === 'city' || choice.kind === 'wilaya' ? choice.wilaya : prefs.wilaya;
     if (choice.kind !== 'gps') pushRecentPlace({ label: next.label, city: next.city, wilaya, lat: next.lat, lng: next.lng });
     if (router.canGoBack()) router.back();

@@ -33,6 +33,14 @@ export interface LocationPrefs {
   /** Notifications (réglages client) : confirmations de réservation, nouveautés des salons suivis. */
   notifConfirmations: boolean;
   notifNews: boolean;
+  /**
+   * La position de l'appareil est relue à chaque ouverture de l'application et filtre la marketplace.
+   * Passe à false dès que la personne choisit elle-même un quartier ou une ville : on ne défait
+   * jamais un choix explicite.
+   */
+  autoLocate: boolean;
+  /** L'écran qui explique pourquoi on demande la position a déjà été montré (une seule fois). */
+  locationAsked: boolean;
 }
 
 /** Lieu choisi récemment (quartier, ville, wilaya ou adresse géocodée). */
@@ -58,6 +66,8 @@ const DEFAULTS: LocationPrefs = {
   openNow: false,
   notifConfirmations: true,
   notifNews: false,
+  autoLocate: true,
+  locationAsked: false,
 };
 const PLACES_KEY = 'salondz:recentPlaces';
 const CANCELLED_KEY = 'salondz:pro:showCancelled';
@@ -68,8 +78,16 @@ let showCancelled = false;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
-/** À appeler une fois au démarrage : relit les préférences persistées. */
-export async function hydratePrefs(): Promise<void> {
+let hydration: Promise<void> | null = null;
+/**
+ * Relit les préférences persistées. Idempotent : le démarrage l'appelle, et tout écran qui décide d'après
+ * une préférence (position automatique) peut l'attendre sans risquer de lire les valeurs par défaut.
+ */
+export function hydratePrefs(): Promise<void> {
+  return (hydration ??= loadPrefs());
+}
+
+async function loadPrefs(): Promise<void> {
   try {
     const [p, pl, sc] = await Promise.all([
       AsyncStorage.getItem(KEY),
