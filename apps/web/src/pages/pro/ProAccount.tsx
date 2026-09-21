@@ -6,13 +6,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '@/lib/api';
 import { disableWebPush, enableWebPush, webPushPermission, webPushSupported } from '@/lib/webpush';
-import { ArrowLeftRight, Bell, Globe, Languages, LogOut, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
+import { ArrowLeftRight, Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { errorText } from '@/components/ErrorMessage';
-import { Badge, I, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { Badge, BottomSheet, Button, Dim, I, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { Splash } from '@/pages/auth/Splash';
@@ -34,7 +34,22 @@ export function ProAccount() {
   const updateProfile = useUpdateProfile();
   const [locale] = useLocale();
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  /** '…' = suppression en cours ; sinon le message d'erreur à montrer dans la feuille. */
+  const [deleting, setDeleting] = useState<string | null>(null);
   if (!salon) return <Splash />;
+
+  /** Exigé par Apple et Google : la suppression se fait dans l'application. Ferme aussi le salon. */
+  const deleteAccount = async () => {
+    setDeleting('…');
+    try {
+      await api.me.deleteAccount({ withSalon: true });
+      await signOut();
+      navigate('/intro', { replace: true });
+    } catch (err) {
+      setDeleting(errorText(err));
+    }
+  };
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
@@ -139,7 +154,40 @@ export function ProAccount() {
             <span className="text-[1rem] font-semibold">{t("Se déconnecter")}</span>
           </span>
         </button>
+        {/* Jamais en pilotage : `/me` serait le compte de l'administrateur, pas celui du professionnel. */}
+        {!owner && (
+          <button type="button" className="li w-full text-start" onClick={() => setConfirmDelete(true)}>
+            <span className="flex items-center gap-3.5 text-danger">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-cancel-bg">
+                <I icon={Trash2} size={18} />
+              </span>
+              <span className="text-[1rem] font-semibold">{t("Supprimer mon compte et mon salon")}</span>
+            </span>
+          </button>
+        )}
       </div>
+      {confirmDelete && (
+        <>
+          <Dim onClose={() => deleting === '…' || setConfirmDelete(false)} />
+          <BottomSheet modal>
+            <div className="h1 !text-[1.429rem]">{t("Supprimer mon compte et mon salon ?")}</div>
+            <p className="p">
+              {t("Vos rendez-vous à venir seront annulés et vos clients prévenus. Votre page, votre catalogue, votre équipe, vos avis et l’historique de vos rendez-vous seront supprimés, chez vous comme chez vos clients. Cette action est définitive.")}
+            </p>
+            {deleting && deleting !== '…' && (
+              <p className="text-[1rem] text-danger" role="alert">
+                {deleting}
+              </p>
+            )}
+            <Button variant="d" onClick={() => void deleteAccount()} disabled={deleting === '…'}>
+              {deleting === '…' ? t('Suppression…') : t('Supprimer définitivement')}
+            </Button>
+            <Button variant="g" onClick={() => setConfirmDelete(false)} disabled={deleting === '…'}>
+              {t("Garder mon compte")}
+            </Button>
+          </BottomSheet>
+        </>
+      )}
       <BrandFooter />
     </Screen>
   );

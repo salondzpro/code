@@ -394,7 +394,8 @@ export function createApiClient(opts: ApiClientOptions) {
       get: () => get<MeResponse>('/me'),
       bookingStanding: (salonId: string) => get<BookingStanding>(`/me/booking-standing/${salonId}`),
       /** Efface le compte (rendez-vous passés anonymisés). Un pro doit d'abord fermer son salon (HAS_SALON). */
-      deleteAccount: () => del<void>('/me'),
+      /** `withSalon` : un professionnel ferme son salon en même temps (rendez-vous à venir annulés, clients prévenus). */
+      deleteAccount: (opts?: { withSalon?: boolean }) => del<void>('/me', opts),
       /** Toutes les données du compte en JSON. */
       exportData: () => get<Record<string, unknown>>('/me/export'),
       /** Alertes « prévenez-moi si un créneau se libère » (un salon, un jour). */

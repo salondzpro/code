@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeftRight, Bell, Globe, LogOut, User } from 'lucide-react-native';
+import { ArrowLeftRight, Bell, Globe, LogOut, Trash2, User } from 'lucide-react-native';
 import { useMe, useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
+import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { errorText } from '@/lib/errors';
-import { Alert, Badge, H1, ListCard, Row, SectionLabel, Toggle, TopBar, Tx } from '@/ui';
+import { Alert, Badge, Button, H1, H2, ListCard, ModalSheet, P, Row, SectionLabel, Toggle, TopBar, Tx } from '@/ui';
 import { Ic, RowText } from '@/ui/ProRows';
 import { BrandFooter } from '@/ui/BrandFooter';
 import { Screen } from '@/ui/Screen';
@@ -21,7 +22,22 @@ export default function ProAccount() {
   const salon = useProSalon().data?.salon ?? null;
   const { updateSalon } = useProSalonMutations();
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  /** '…' = suppression en cours ; sinon le message d'erreur à montrer dans la feuille. */
+  const [deleting, setDeleting] = useState<string | null>(null);
   if (!salon) return <Splash />;
+
+  /** Exigé par Apple et Google : la suppression se fait DANS l'application. Ferme aussi le salon. */
+  const deleteAccount = async () => {
+    setDeleting('…');
+    try {
+      await api.me.deleteAccount({ withSalon: true });
+      await signOut();
+      router.replace('/intro');
+    } catch (err) {
+      setDeleting(errorText(err));
+    }
+  };
 
   return (
     <Screen gap={13}>
@@ -63,8 +79,33 @@ export default function ProAccount() {
             Se déconnecter
           </Tx>
         </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Supprimer mon compte et mon salon"
+          onPress={() => setConfirmDelete(true)}
+          style={{ paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 11 }}
+        >
+          <Ic icon={Trash2} danger />
+          <Tx size={14} weight={600} lh={17} color={C.danger}>
+            Supprimer mon compte et mon salon
+          </Tx>
+        </Pressable>
       </ListCard>
       <BrandFooter />
+
+      <ModalSheet open={confirmDelete} onClose={() => deleting === '…' || setConfirmDelete(false)}>
+        <H2>Supprimer mon compte et mon salon ?</H2>
+        <P>
+          Vos rendez-vous à venir seront annulés et vos clients prévenus. Votre page, votre catalogue, votre équipe, vos avis et l’historique de vos rendez-vous seront supprimés, chez vous comme chez vos clients. Cette action est définitive.
+        </P>
+        {deleting && deleting !== '…' ? <Alert>{deleting}</Alert> : null}
+        <Button variant="d" onPress={() => void deleteAccount()} disabled={deleting === '…'} loading={deleting === '…'}>
+          Supprimer définitivement
+        </Button>
+        <Button variant="g" onPress={() => setConfirmDelete(false)} disabled={deleting === '…'}>
+          Garder mon compte
+        </Button>
+      </ModalSheet>
     </Screen>
   );
 }

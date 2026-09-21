@@ -1110,4 +1110,7 @@ export const ar: Record<string, string> = {
   'Avis masqué': 'تقييم مخفي',
   'Avis rétabli': 'أُعيد التقييم',
   'Rendez-vous annulé au nom de la plateforme': 'موعد أُلغي باسم المنصة',
+  'Supprimer mon compte et mon salon': 'حذف حسابي وصالوني',
+  'Supprimer mon compte et mon salon ?': 'حذف حسابي وصالوني؟',
+  'Vos rendez-vous à venir seront annulés et vos clients prévenus. Votre page, votre catalogue, votre équipe, vos avis et l’historique de vos rendez-vous seront supprimés, chez vous comme chez vos clients. Cette action est définitive.': 'ستُلغى مواعيدك القادمة ويُبلَّغ زبائنك. ستُحذف صفحتك وقائمة خدماتك وفريقك وتقييماتك وسجل مواعيدك، لديك ولدى زبائنك. هذا الإجراء نهائي.',
 };

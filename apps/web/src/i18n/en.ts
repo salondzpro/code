@@ -1129,4 +1129,7 @@ export const en: Record<string, string> = {
   'Avis masqué': 'Review hidden',
   'Avis rétabli': 'Review restored',
   'Rendez-vous annulé au nom de la plateforme': 'Appointment cancelled on behalf of the platform',
+  'Supprimer mon compte et mon salon': 'Delete my account and salon',
+  'Supprimer mon compte et mon salon ?': 'Delete my account and salon?',
+  'Vos rendez-vous à venir seront annulés et vos clients prévenus. Votre page, votre catalogue, votre équipe, vos avis et l’historique de vos rendez-vous seront supprimés, chez vous comme chez vos clients. Cette action est définitive.': 'Your upcoming appointments will be cancelled and your clients notified. Your page, catalogue, team, reviews and appointment history will be deleted, for you and for your clients. This cannot be undone.',
 };
