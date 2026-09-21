@@ -24,7 +24,12 @@ export function ProAccount() {
   const [webPush, setWebPush] = useState<NotificationPermission | 'unsupported'>(webPushPermission());
   const { signOut } = useAuth();
   const me = useMe();
-  const salon = useProSalon().data?.salon ?? null;
+  const proSalon = useProSalon().data;
+  const salon = proSalon?.salon ?? null;
+  // Présent seulement quand un administrateur PILOTE ce salon : `me` est alors le compte de
+  // l'administrateur, et c'est l'identité du professionnel que cette page doit montrer.
+  const owner = proSalon?.owner ?? null;
+  const identity = owner ?? me.data?.profile ?? null;
   const { updateSalon } = useProSalonMutations();
   const updateProfile = useUpdateProfile();
   const [locale] = useLocale();
@@ -38,17 +43,19 @@ export function ProAccount() {
 
       <SectionLabel>{t("Profil professionnel")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
-        <ListRow to="/pro/compte/informations">
+        {/* Piloté par un administrateur : l'identité se corrige dans l'administration, avec un motif
+            et une trace — jamais ici, où l'on modifierait le compte de l'administrateur. */}
+        <ListRow to={owner ? `/admin/comptes/${owner.id}` : '/pro/compte/informations'}>
           <RowText
             icon={User}
-            title={me.data?.profile.fullName ?? t('Vous')}
-            sub={me.data?.profile.phone ? formatDZPhone(me.data.profile.phone) : t('Numéro non renseigné')}
+            title={identity?.fullName ?? (owner ? t('Propriétaire sans nom') : t('Vous'))}
+            sub={identity?.phone ? formatDZPhone(identity.phone) : t('Numéro non renseigné')}
           />
         </ListRow>
         <ListRow to="/pro/notifications">
           <RowText icon={Bell} title={t("Notifications")} sub={t("Demandes, confirmations, annulations")} />
         </ListRow>
-        {webPushSupported() && (
+        {webPushSupported() && !owner && (
           <div className="li">
             <RowText
               icon={BellRing}

@@ -35,7 +35,8 @@ function useNow(): number {
 export function ProHome() {
   const navigate = useNavigate();
   const me = useMe();
-  const salon = useProSalon().data?.salon ?? null;
+  const proSalon = useProSalon().data;
+  const salon = proSalon?.salon ?? null;
   const stats = useProStats();
   const pending = useProPendingBookings();
   const today = toLocalDateKey();
@@ -45,7 +46,9 @@ export function ProHome() {
   const [staffId, setStaffId] = useStaffFilter();
   const byStaff = <T extends { staffId: string | null }>(list: T[]) =>
     staffId ? list.filter((b) => b.staffId === staffId) : list;
-  const firstName = (me.data?.profile.fullName ?? salon?.name ?? '').split(' ')[0];
+  // `owner` n'existe que lorsqu'un administrateur pilote ce salon : on salue alors le professionnel,
+  // pas l'administrateur dont `me` est le compte.
+  const firstName = ((proSalon?.owner ?? me.data?.profile)?.fullName ?? salon?.name ?? '').split(' ')[0];
   const now = useNow();
   const [share, setShare] = useState(false);
   const link = usePublicUrl(salon?.slug ?? '');

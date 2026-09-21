@@ -22,6 +22,7 @@ import { camelize, snakeize } from '../lib/mappers';
 import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
+import { issueControlToken } from '../lib/control';
 
 const page = z.object({
   q: z.string().trim().max(120).optional(),
@@ -285,6 +286,36 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       return camelize(res.data);
     },
   );
+
+  /**
+   * ENTRER dans l'espace d'un professionnel : délivre le jeton de contrôle (`lib/control.ts`).
+   *
+   * Avec lui, l'administrateur fait tout ce que le professionnel ferait, depuis l'application
+   * habituelle. L'entrée est tracée — elle expose sa clientèle, ses numéros, son agenda — et chaque
+   * ÉCRITURE faite ensuite l'est aussi (`acted_as_salon`, voir `plugins/auth.ts`). Pas de motif
+   * demandé à l'entrée : entrer ne prive personne de rien, et un dépannage au téléphone ne se
+   * fait pas avec un formulaire. Le journal dit qui, quand, depuis quelle adresse.
+   */
+  app.post('/salons/:id/control', { schema: { params: z.object({ id: uuid }) } }, async (req) => {
+    const { id } = req.params;
+    const res = await db.from('salons').select('id, name').eq('id', id).maybeSingle();
+    if (res.error) throw res.error;
+    if (!res.data) throw notFound('Salon');
+    const { token, expiresAt } = await issueControlToken(req.admin!.id, id);
+    await trace(req, 'salon_control_start', 'salon', id);
+    return { token, expiresAt, salon: res.data as { id: string; name: string } };
+  });
+
+  /**
+   * SORTIR de l'espace d'un professionnel. Le jeton meurt de toute façon à son échéance ; cette
+   * route ne sert qu'à dater la sortie au journal, pour qu'on lise « entré à 14 h 02, sorti à
+   * 14 h 20 » plutôt qu'une ouverture sans fin.
+   */
+  app.post('/salons/:id/control/end', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    await trace(req, 'salon_control_end', 'salon', req.params.id);
+    reply.status(204);
+    return null;
+  });
 
   /** Suspendre un client : plus de réservation EN LIGNE, sur toute la place de marché. */
   app.post(

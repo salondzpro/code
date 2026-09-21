@@ -24,10 +24,32 @@ import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon } from '../../plugins/auth';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
-  /** Salon du pro connecté (null si pas encore créé → onboarding). */
+  /**
+   * Salon du pro connecté (null si pas encore créé → onboarding).
+   *
+   * C'est CETTE route qui décide si l'espace pro s'ouvre ou renvoie vers l'inscription : elle doit
+   * donc suivre le pilotage d'un administrateur (jeton de contrôle), sans quoi il serait renvoyé
+   * vers la création d'un salon qu'il n'a pas. Dans ce cas seulement, la réponse porte aussi le
+   * PROPRIÉTAIRE — l'espace pro affiche l'identité du professionnel, pas celle de l'administrateur.
+   */
   app.get('/salon', { preHandler: app.requireProfile }, async (req, reply) => {
-    const salon = await loadOwnedSalon(req.user!.id);
     reply.header('Cache-Control', 'private, no-store');
+    const pilote = await app.resolveActing(req, reply);
+    if (pilote) {
+      const [salon, profil, compte] = await Promise.all([
+        loadOwnerView(pilote.id),
+        db.from('profiles').select('id, full_name, phone').eq('id', pilote.ownerId).maybeSingle(),
+        db.auth.admin.getUserById(pilote.ownerId).catch(() => null),
+      ]);
+      const p = profil.data as { id: string; full_name: string | null; phone: string | null } | null;
+      return {
+        salon,
+        owner: p
+          ? { id: p.id, fullName: p.full_name, phone: p.phone, email: compte?.data.user?.email ?? null }
+          : null,
+      };
+    }
+    const salon = await loadOwnedSalon(req.user!.id);
     return { salon: salon ? await loadOwnerView(salon.id) : null };
   });
 
@@ -36,6 +58,9 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     '/salon',
     { preHandler: app.requireProfile, schema: { body: createSalonSchema } },
     async (req, reply) => {
+      // Un administrateur qui pilote le salon d'un professionnel n'ouvre pas un salon à son nom.
+      if (await app.resolveActing(req, reply))
+        throw conflict('SALON_EXISTS', 'Ce professionnel a déjà un salon.');
       const existing = await loadOwnedSalon(req.user!.id);
       if (existing) throw conflict('SALON_EXISTS', 'Vous avez déjà un salon.');
       const { categoryIds, ...rest } = req.body;

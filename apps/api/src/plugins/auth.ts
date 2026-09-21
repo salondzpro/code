@@ -6,6 +6,7 @@ import { db } from '../lib/supabase';
 import { forbidden, unauthorized } from '../lib/errors';
 import { camelize } from '../lib/mappers';
 import { trace } from '../lib/audit';
+import { readControlToken } from '../lib/control';
 import type { Profile, Salon } from '@salondz/types';
 
 export interface AuthUser {
@@ -34,7 +35,7 @@ declare module 'fastify' {
     salon: Salon | null;
     /** Chargé par `requireAdmin` (routes /admin) */
     admin: PlatformAdmin | null;
-    /** Identifiant du salon qu'un administrateur pilote à la place du professionnel, s'il y en a un. */
+    /** Identifiant du salon qu'un administrateur pilote (jeton de contrôle) à la place du professionnel, s'il y en a un. */
     actingAs: string | null;
   }
   interface FastifyInstance {
@@ -42,8 +43,10 @@ declare module 'fastify' {
     requireAuth: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** Exige un JWT + charge le profil. */
     requireProfile: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
-    /** Exige un profil pro possédant un salon ; charge `req.salon`. */
+    /** Exige un profil pro possédant un salon ; charge `req.salon`. Un administrateur muni d'un jeton de contrôle : celui du jeton. */
     requireSalon: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    /** Le salon qu'un administrateur pilote (jeton de contrôle valide), ou `null` si la requête est ordinaire. */
+    resolveActing: (req: FastifyRequest, reply: FastifyReply) => Promise<Salon | null>;
     /** Exige un administrateur de la place de marché ; charge `req.admin`. */
     requireAdmin: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** Exige le niveau `owner` (suppression, réglages, gestion des administrateurs). */
@@ -158,26 +161,46 @@ export default fp(async (app) => {
   });
 
   /**
+   * Le salon qu'un ADMINISTRATEUR pilote à la place de son propriétaire, s'il en pilote un ; `null`
+   * sinon (requête ordinaire, sans en-tête).
+   *
+   * L'accès est un JETON DE CONTRÔLE (`lib/control.ts`) dans l'en-tête `X-Admin-Control` : signé,
+   * daté, lié à l'administrateur ET au salon. Ici on vérifie les trois — l'auteur de la requête
+   * est bien un administrateur (toujours, à chaque requête : retirer l'accès coupe les jetons en
+   * cours), le jeton est le sien, il n'a pas expiré — puis on charge le salon qu'il nomme.
+   *
+   * Toute route `/v1/pro/*` qui lit « le salon de l'appelant » doit passer par ici, ou par
+   * `requireSalon` qui s'en sert : une route qui lirait `loadOwnedSalon(req.user.id)` toute seule
+   * ignorerait le pilotage et renverrait l'administrateur vers l'inscription d'un salon.
+   */
+  async function resolveActing(req: FastifyRequest, reply: FastifyReply): Promise<Salon | null> {
+    const jeton = req.headers['x-admin-control'];
+    if (typeof jeton !== 'string' || !jeton.trim()) return null;
+    await app.requireAdmin(req, reply);
+    const salon = await loadSalonById(await readControlToken(jeton.trim(), req.admin!.id));
+    if (!salon) throw forbidden("Ce salon n'existe plus.");
+    req.actingAs = salon.id;
+    return salon;
+  }
+  app.decorate('resolveActing', resolveActing);
+
+  /**
    * Le salon sur lequel on travaille.
    *
-   * Normalement, c'est celui qu'on possède. Un ADMINISTRATEUR peut en désigner un autre par
-   * l'en-tête `X-Admin-Salon` : toutes les routes `/v1/pro/*` s'appliquent alors à ce salon-là,
+   * Normalement, c'est celui qu'on possède. Un administrateur muni d'un jeton de contrôle travaille
+   * sur celui que le jeton désigne : toutes les routes `/v1/pro/*` s'appliquent alors à ce salon-là,
    * exactement comme pour son propriétaire. C'est ce qui permet de dépanner un professionnel au
    * téléphone au lieu de lui dicter des clics.
    *
-   * Le pouvoir est réel, donc il se paie : `actingAs` est posé ici, et le crochet `onResponse`
-   * plus bas écrit au journal CHAQUE écriture faite à sa place. Personne ne travaille dans le dos
-   * d'un professionnel.
+   * Le pouvoir est réel, donc il se paie : `actingAs` est posé par `resolveActing`, et le crochet
+   * `onResponse` plus bas écrit au journal CHAQUE écriture faite à sa place. Personne ne travaille
+   * dans le dos d'un professionnel.
    */
   app.decorate('requireSalon', async (req: FastifyRequest, reply: FastifyReply) => {
     await app.requireProfile(req, reply);
-    const demande = req.headers['x-admin-salon'];
-    if (typeof demande === 'string' && demande.trim()) {
-      await app.requireAdmin(req, reply);
-      const salon = await loadSalonById(demande.trim());
-      if (!salon) throw forbidden("Ce salon n'existe pas.");
-      req.salon = salon;
-      req.actingAs = salon.id;
+    const pilote = await resolveActing(req, reply);
+    if (pilote) {
+      req.salon = pilote;
       return;
     }
     const salon = await loadOwnedSalon(req.user!.id);

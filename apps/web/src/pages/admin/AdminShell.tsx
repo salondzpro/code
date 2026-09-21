@@ -30,9 +30,40 @@ const NAV = [
  * rien, et une ligne sans traduction vaut mieux qu'une ligne vide.
  */
 export function actionLabel(action: string): string {
-  if (action === 'view_salon') return t('Fiche salon consultée');
-  if (action === 'view_profile') return t('Fiche compte consultée');
-  return action;
+  switch (action) {
+    case 'view_salon':
+      return t('Fiche salon consultée');
+    case 'view_profile':
+      return t('Fiche compte consultée');
+    case 'salon_control_start':
+      return t('Espace du salon ouvert');
+    case 'salon_control_end':
+      return t('Espace du salon quitté');
+    case 'acted_as_salon':
+      return t('Modification faite dans l’espace du salon');
+    case 'salon_frozen':
+      return t('Réservations du salon gelées');
+    case 'salon_hidden':
+      return t('Salon masqué');
+    case 'salon_unsuspended':
+      return t('Suspension du salon levée');
+    case 'profile_suspended':
+      return t('Compte suspendu');
+    case 'profile_unsuspended':
+      return t('Suspension du compte levée');
+    case 'profile_edited':
+      return t('Compte corrigé');
+    case 'profile_deleted':
+      return t('Compte supprimé');
+    case 'review_hidden':
+      return t('Avis masqué');
+    case 'review_unhidden':
+      return t('Avis rétabli');
+    case 'booking_cancelled':
+      return t('Rendez-vous annulé au nom de la plateforme');
+    default:
+      return action;
+  }
 }
 
 /**

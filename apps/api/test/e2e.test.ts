@@ -13,6 +13,7 @@ import { buildApp, type App } from '../src/app';
 import { salonPublicResponse } from '../src/schemas/public';
 import { config } from '../src/config';
 import { db } from '../src/lib/supabase';
+import { issueControlToken } from '../src/lib/control';
 
 const RUN = Date.now().toString(36);
 const PASSWORD = `Test-${RUN}-Aa1!`;
@@ -61,13 +62,14 @@ let stalePendingId = '';
 const dateKey = addDaysToKey(toLocalDateKey(), 3);
 const slotIso = localDateTimeToISO(dateKey, '10:00');
 
-const call = (method: string, url: string, token?: string, body?: unknown) =>
+const call = (method: string, url: string, token?: string, body?: unknown, extra: Record<string, string> = {}) =>
   app.inject({
     method: method as 'GET',
     url,
     headers: {
       ...(token ? { authorization: `Bearer ${token}` } : {}),
       ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+      ...extra,
     },
     payload: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -1105,5 +1107,140 @@ test("administration : la porte est fermée, et l'ouverture laisse une trace", a
   } finally {
     await db.from('admin_audit').delete().eq('admin_id', pro.id);
     await db.from('platform_admins').delete().eq('user_id', pro.id);
+  }
+});
+
+/**
+ * Administration, lot 2 : ENTRER dans l'espace d'un professionnel avec un jeton daté, et le BLOQUER.
+ *
+ * Le pilotage n'avait aucun test, et c'est ainsi que `GET /pro/salon` a pu ignorer le jeton
+ * (l'administrateur aurait été renvoyé vers l'inscription d'un salon) et que `SALON_SUSPENDED` a pu
+ * sortir en 500 « Erreur base de données ». Ce test fixe les deux, et surtout que le jeton est
+ * PERSONNEL (lié à son administrateur), DATÉ, et que rien de ce qu'il fait n'échappe au journal.
+ */
+test('administration : piloter l’espace d’un professionnel avec un jeton, et le bloquer', async () => {
+  const admin = clientB; // un compte ordinaire, sans salon : c'est le salon du pro qu'il pilote
+  const autreAdmin = pro; // administrateur aussi, pour prouver que le jeton n'est pas transférable
+  const cliente = await createUser('cliente-gel', 'client', 'Cliente Gel');
+  const trace = async (action: string) => {
+    // Le journal des écritures part APRÈS la réponse (crochet onResponse) : on lui laisse un instant.
+    for (let i = 0; i < 30; i++) {
+      const r = await db.from('admin_audit').select('id').eq('admin_id', admin.id).eq('action', action).eq('target_id', salonId).limit(1);
+      if ((r.data ?? []).length) return true;
+      await new Promise((ok) => setTimeout(ok, 100));
+    }
+    return false;
+  };
+
+  // 1) Sans accès d'administrateur, aucun jeton ne se délivre.
+  assert.equal((await call('POST', `/v1/admin/salons/${salonId}/control`, admin.token)).statusCode, 403);
+
+  const donne = await db.from('platform_admins').insert([
+    { user_id: admin.id, level: 'support' },
+    { user_id: autreAdmin.id, level: 'support' },
+  ]);
+  assert.equal(donne.error, null);
+  try {
+    // 2) Délivrance : un jeton, son échéance (deux heures), le salon désigné.
+    const ouvre = await call('POST', `/v1/admin/salons/${salonId}/control`, admin.token);
+    assert.equal(ouvre.statusCode, 200, ouvre.body);
+    const { token: jeton, expiresAt, salon } = ouvre.json() as { token: string; expiresAt: string; salon: { id: string } };
+    assert.equal(salon.id, salonId);
+    const reste = new Date(expiresAt).getTime() - Date.now();
+    assert.ok(reste > 100 * 60_000 && reste <= 120 * 60_000, `l'accès dure deux heures, pas ${Math.round(reste / 60_000)} min`);
+    const avec = { 'x-admin-control': jeton };
+
+    // 3) LE point qui manquait : `GET /pro/salon` décide si l'espace pro s'ouvre. Sans le jeton,
+    //    l'administrateur n'a pas de salon ; avec, il a celui du pro — et l'identité du pro.
+    assert.equal((await call('GET', '/v1/pro/salon', admin.token)).json().salon, null);
+    const vue = await call('GET', '/v1/pro/salon', admin.token, undefined, avec);
+    assert.equal(vue.statusCode, 200, vue.body);
+    assert.equal(vue.json().salon.id, salonId);
+    assert.equal(vue.json().owner.id, pro.id);
+    assert.equal(vue.json().owner.email, pro.email);
+    // Le vrai propriétaire, lui, ne reçoit pas ce bloc : il n'y a personne à « représenter ».
+    assert.equal((await call('GET', '/v1/pro/salon', pro.token)).json().owner, undefined);
+
+    // 4) Les autres routes /pro suivent le même salon.
+    assert.equal((await call('GET', '/v1/pro/stats', admin.token, undefined, avec)).statusCode, 200);
+
+    // 5) Écrire à sa place : appliqué chez le pro, et tracé.
+    const description = `Corrigé avec le support ${RUN}`;
+    const ecrit = await call('PATCH', '/v1/pro/salon', admin.token, { description }, avec);
+    assert.equal(ecrit.statusCode, 200, ecrit.body);
+    assert.equal((await call('GET', '/v1/pro/salon', pro.token)).json().salon.description, description);
+    assert.ok(await trace('salon_control_start'), "l'entrée laisse une trace");
+    assert.ok(await trace('acted_as_salon'), 'chaque écriture faite à sa place laisse une trace');
+
+    // 6) Jamais de salon créé au nom de l'administrateur.
+    const cree = await call('POST', '/v1/pro/salon', admin.token, {
+      name: `Ne doit pas exister ${RUN}`, wilayaCode: 16, city: 'Alger Centre', address: '1 rue Test',
+      phone: '05 51 23 45 67', genderTarget: 'men', categoryIds: ['barbier'],
+    }, avec);
+    assert.equal(cree.statusCode, 409, cree.body);
+    assert.equal(cree.json().error.code, 'SALON_EXISTS');
+
+    // 7) Le jeton est PERSONNEL : un autre administrateur, ou un simple client, ne s'en sert pas.
+    const vole = await call('GET', '/v1/pro/salon', autreAdmin.token, undefined, avec);
+    assert.equal(vole.statusCode, 403, vole.body);
+    assert.equal(vole.json().error.code, 'CONTROL_INVALID');
+    assert.equal((await call('GET', '/v1/pro/salon', clientA.token, undefined, avec)).statusCode, 403);
+
+    // 8) Daté : expiré → CONTROL_EXPIRED (un 403, jamais un 401 qui déconnecterait l'administrateur).
+    const perime = await call('GET', '/v1/pro/salon', admin.token, undefined, {
+      'x-admin-control': (await issueControlToken(admin.id, salonId, -60)).token,
+    });
+    assert.equal(perime.statusCode, 403, perime.body);
+    assert.equal(perime.json().error.code, 'CONTROL_EXPIRED');
+    const bidon = await call('GET', '/v1/pro/salon', admin.token, undefined, { 'x-admin-control': 'pas.un.jeton' });
+    assert.equal(bidon.statusCode, 403);
+    assert.equal(bidon.json().error.code, 'CONTROL_INVALID');
+
+    // 9) BLOQUER le professionnel. Le motif est exigé (8 caractères), puis la mesure prend effet.
+    const suspend = `/v1/admin/salons/${salonId}/suspend`;
+    assert.equal((await call('POST', suspend, admin.token, { level: 'frozen', reason: 'court' })).statusCode, 400);
+    const motif = `Litige en cours ${RUN}`;
+    const gele = await call('POST', suspend, admin.token, { level: 'frozen', reason: motif });
+    assert.equal(gele.statusCode, 200, gele.body);
+
+    //    Gelé : la page reste en ligne, mais plus personne ne réserve — avec un vrai message, pas un 500.
+    assert.equal((await call('GET', `/v1/salons/${salonSlug}`)).statusCode, 200);
+    const refus = await call('POST', '/v1/bookings', cliente.token, {
+      salonId, serviceId, startsAt: localDateTimeToISO(addDaysToKey(toLocalDateKey(), 5), '11:00'),
+    });
+    assert.equal(refus.statusCode, 409, refus.body);
+    assert.equal(refus.json().error.code, 'SALON_SUSPENDED');
+    //    Le professionnel lit la mesure ET son motif, et son intention de publier n'a pas été réécrite.
+    const moiPro = (await call('GET', '/v1/me', pro.token)).json();
+    assert.equal(moiPro.salon.suspensionLevel, 'frozen');
+    assert.equal(moiPro.salon.suspendedReason, motif);
+    assert.equal((await call('GET', '/v1/pro/salon', pro.token)).json().salon.isPublished, true);
+
+    //    Masqué : le salon disparaît de la recherche et sa page ne s'ouvre plus.
+    assert.equal((await call('POST', suspend, admin.token, { level: 'hidden', reason: motif })).statusCode, 200);
+    assert.equal((await call('GET', `/v1/salons/${salonSlug}`)).statusCode, 404);
+    const cherche = await call('GET', '/v1/salons?wilaya=16&category=barbier&q=elegance');
+    assert.ok(!(cherche.json().items as { id: string }[]).some((s) => s.id === salonId), 'un salon masqué sort de la recherche');
+
+    //    Levée : tout redevient comme avant.
+    assert.equal((await call('POST', `/v1/admin/salons/${salonId}/unsuspend`, admin.token, {})).statusCode, 200);
+    assert.equal((await call('GET', `/v1/salons/${salonSlug}`)).statusCode, 200);
+
+    //    Même vocabulaire pour un CLIENT suspendu : plus de réservation en ligne, avec un vrai message.
+    const dateRdv = localDateTimeToISO(addDaysToKey(toLocalDateKey(), 6), '11:00');
+    assert.equal((await call('POST', `/v1/admin/profiles/${cliente.id}/suspend`, admin.token, { reason: motif })).statusCode, 200);
+    const clientRefuse = await call('POST', '/v1/bookings', cliente.token, { salonId, serviceId, startsAt: dateRdv });
+    assert.equal(clientRefuse.statusCode, 403, clientRefuse.body);
+    assert.equal(clientRefuse.json().error.code, 'CLIENT_SUSPENDED');
+    assert.equal((await call('POST', `/v1/admin/profiles/${cliente.id}/unsuspend`, admin.token, {})).statusCode, 200);
+
+    // 10) Retirer l'accès de l'administrateur coupe aussi ses jetons en cours : rien à révoquer.
+    assert.equal((await db.from('platform_admins').update({ disabled_at: new Date().toISOString() }).eq('user_id', admin.id)).error, null);
+    assert.equal((await call('GET', '/v1/pro/salon', admin.token, undefined, avec)).statusCode, 403);
+  } finally {
+    await db.from('salons').update({ suspended_at: null, suspension_level: null, suspended_reason: null, suspended_by: null }).eq('id', salonId);
+    await db.from('admin_audit').delete().in('admin_id', [admin.id, autreAdmin.id]);
+    await db.from('platform_admins').delete().in('user_id', [admin.id, autreAdmin.id]);
+    await db.auth.admin.deleteUser(cliente.id);
   }
 });

@@ -36,6 +36,11 @@ const BUSINESS_MESSAGES: Record<string, { status: number; message: string }> = {
   RESCHEDULE_DISABLED: { status: 409, message: 'Ce salon ne permet pas le report en ligne. Contactez-le.' },
   RESCHEDULE_LIMIT: { status: 409, message: 'Ce rendez-vous a déjà été reporté une fois. Pour le déplacer encore, contactez le salon.' },
   CLIENT_BLOCKED: { status: 403, message: "Ce salon n'accepte pas vos réservations en ligne. Contactez-le directement." },
+  // Suspensions décidées par la PLATEFORME (migration 0045). Sans ces deux lignes, la base lève le
+  // code mais l'API le rend en 500 « Erreur base de données » — le pire message pour quelqu'un à
+  // qui l'on vient de fermer une porte. Le motif détaillé est montré dans les bandeaux, pas ici.
+  SALON_SUSPENDED: { status: 409, message: 'Les réservations de ce salon sont suspendues par la plateforme pour le moment.' },
+  CLIENT_SUSPENDED: { status: 403, message: 'Votre compte ne peut plus réserver en ligne. Écrivez à support@salondz.com pour en discuter.' },
   SALON_NOT_FOUND: { status: 404, message: 'Salon introuvable.' },
   BOOKING_NOT_FOUND: { status: 404, message: 'Réservation introuvable.' },
   UNAUTHENTICATED: { status: 401, message: 'Authentification requise.' },

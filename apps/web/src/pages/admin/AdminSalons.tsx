@@ -5,13 +5,14 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { ChevronRight, Search } from 'lucide-react';
+import { ChevronRight, LogIn, Search } from 'lucide-react';
 import { pagesItems, useAdminSalons } from '@salondz/api-client';
 import { formatDA, formatDZPhone, wilayaName } from '@salondz/constants';
 import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Avatar, Badge, I, Pill, Skeleton } from '@/components/ui';
+import { Avatar, Badge, Button, I, Pill, Skeleton } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { useEnterSalon } from './useEnterSalon';
 import { t } from '@/i18n';
 
 /** En français, zéro et un restent au singulier. Une phrase par cas : l'extracteur de
@@ -31,6 +32,7 @@ export function AdminSalons() {
     return () => window.clearTimeout(h);
   }, [q]);
 
+  const espace = useEnterSalon();
   const liste = useAdminSalons({ q: needle || undefined, status: statut });
   const rows = pagesItems(liste.data);
   const total = liste.data?.pages[0]?.total ?? rows.length;
@@ -77,42 +79,56 @@ export function AdminSalons() {
       ) : (
         <div className="gr flex flex-col gap-2">
           {rows.map((s) => (
-            <Link key={s.id} to={`/admin/salons/${s.id}`} className="crd !gap-2">
-              <div className="flex items-center gap-3">
-                <Avatar name={s.name} size={40} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[1.143rem] font-semibold">{s.name}</span>
-                  <span className="block truncate text-[0.857rem] text-muted">
-                    {s.city} · {wilayaName(s.wilayaCode)}
+            <div key={s.id} className="crd !gap-2">
+              {/* La fiche s'ouvre par le corps de la carte ; le bouton d'entrée est à part, jamais
+                  un bouton dans un lien. */}
+              <Link to={`/admin/salons/${s.id}`} className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <Avatar name={s.name} size={40} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[1.143rem] font-semibold">{s.name}</span>
+                    <span className="block truncate text-[0.857rem] text-muted">
+                      {s.city} · {wilayaName(s.wilayaCode)}
+                    </span>
                   </span>
-                </span>
-                {s.suspendedAt ? (
-                  <Badge tone="cn">{s.suspensionLevel === 'hidden' ? t('Masqué') : t('Gelé')}</Badge>
-                ) : (
-                  <Badge tone={s.isPublished ? 'ok' : 'pd'}>
-                    {s.isPublished ? t('En ligne') : t('Brouillon')}
-                  </Badge>
-                )}
-                <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
-              </div>
-              <div className="sf !py-2 text-[0.857rem]">
-                <span className="block truncate">
-                  <b>{s.ownerName ?? t('Propriétaire sans nom')}</b>
-                  {s.ownerPhone && <span className="mono text-muted" dir="ltr"> · {formatDZPhone(s.ownerPhone)}</span>}
-                </span>
-                {s.ownerEmail && <span className="block truncate text-muted">{s.ownerEmail}</span>}
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[0.857rem] text-muted">
-                <span>{t('{n} rendez-vous · 30 j', { n: s.bookings30 })}</span>
-                <span dir="ltr">{formatDA(s.revenue30)}</span>
-                <span>{nAnnules(s.cancelled30)}</span>
-                <span>{nAbsences(s.noShow30)}</span>
-                <span>{nPrestations(s.servicesCount)}</span>
-              </div>
-            </Link>
+                  {s.suspendedAt ? (
+                    <Badge tone="cn">{s.suspensionLevel === 'hidden' ? t('Masqué') : t('Gelé')}</Badge>
+                  ) : (
+                    <Badge tone={s.isPublished ? 'ok' : 'pd'}>
+                      {s.isPublished ? t('En ligne') : t('Brouillon')}
+                    </Badge>
+                  )}
+                  <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
+                </div>
+                <div className="sf !py-2 text-[0.857rem]">
+                  <span className="block truncate">
+                    <b>{s.ownerName ?? t('Propriétaire sans nom')}</b>
+                    {s.ownerPhone && <span className="mono text-muted" dir="ltr"> · {formatDZPhone(s.ownerPhone)}</span>}
+                  </span>
+                  {s.ownerEmail && <span className="block truncate text-muted">{s.ownerEmail}</span>}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[0.857rem] text-muted">
+                  <span>{t('{n} rendez-vous · 30 j', { n: s.bookings30 })}</span>
+                  <span dir="ltr">{formatDA(s.revenue30)}</span>
+                  <span>{nAnnules(s.cancelled30)}</span>
+                  <span>{nAbsences(s.noShow30)}</span>
+                  <span>{nPrestations(s.servicesCount)}</span>
+                </div>
+              </Link>
+              <Button
+                variant="g"
+                sm
+                onClick={() => espace.enter({ id: s.id, name: s.name })}
+                disabled={espace.pending}
+              >
+                <I icon={LogIn} size={16} />{' '}
+                {espace.entering === s.id ? t('Ouverture…') : t('Ouvrir son espace')}
+              </Button>
+            </div>
           ))}
         </div>
       )}
+      {espace.error && <ErrorMessage error={espace.error} />}
 
       <LoadMore
         hasMore={liste.hasNextPage}

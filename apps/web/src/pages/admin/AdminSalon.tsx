@@ -12,8 +12,7 @@
  * masquer un avis, annuler un rendez-vous en son nom. Chacun avec un motif.
  */
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { Link, useParams } from 'react-router';
 import { EyeOff, ExternalLink, LogIn, Pause, Play, X } from 'lucide-react';
 import { useAdminActions, useAdminSalon } from '@salondz/api-client';
 import {
@@ -31,7 +30,7 @@ import { Avatar, Badge, Button, I, Skeleton, StatusBadge, TopBar } from '@/compo
 import { Screen } from '@/components/AppFrame';
 import { actionLabel } from './AdminShell';
 import { ReasonSheet } from './ReasonSheet';
-import { startActingAs } from '@/lib/actingAs';
+import { useEnterSalon } from './useEnterSalon';
 import { formatDuration } from '@/lib/format';
 import { t } from '@/i18n';
 
@@ -50,8 +49,7 @@ export function AdminSalon() {
   const fiche = useAdminSalon(id);
   const actions = useAdminActions();
   const [geste, setGeste] = useState<Geste>(null);
-  const qc = useQueryClient();
-  const navigate = useNavigate();
+  const espace = useEnterSalon();
 
   if (isNotFound(fiche.error)) return <SalonNotFound />;
   if (fiche.isError)
@@ -71,13 +69,6 @@ export function AdminSalon() {
   const { salon: s, suspension, owner, ownerEmail, bookings, reviews, audit } = fiche.data;
   const suspendu = !!suspension.suspendedAt;
   const masque = suspension.suspensionLevel === 'hidden';
-
-  /** Entrer dans l'espace du salon : on vide le cache, il appartient à un autre contexte. */
-  const piloter = () => {
-    startActingAs({ id: s.id, name: s.name });
-    qc.clear();
-    navigate('/pro');
-  };
 
   const enCours =
     actions.suspendSalon.isPending ||
@@ -116,9 +107,10 @@ export function AdminSalon() {
         <a href={`/s/${s.slug}`} target="_blank" rel="noreferrer" className="btn g sm !justify-center">
           <I icon={ExternalLink} size={16} /> {t('Voir la page publique')}
         </a>
-        <Button variant="g" sm onClick={piloter} className="!justify-center">
-          <I icon={LogIn} size={16} /> {t('Ouvrir l’espace de ce salon')}
+        <Button onClick={() => espace.enter({ id: s.id, name: s.name })} disabled={espace.pending}>
+          <I icon={LogIn} size={18} /> {espace.pending ? t('Ouverture…') : t('Ouvrir l’espace de ce salon')}
         </Button>
+        {espace.error && <ErrorMessage error={espace.error} />}
       </div>
 
       <span className="h3">{t('Décisions de la plateforme')}</span>

@@ -75,13 +75,15 @@ export interface ApiClientOptions {
   timeoutMs?: number;
   onUnauthorized?: () => void;
   /**
-   * Salon qu'un ADMINISTRATEUR pilote à la place de son propriétaire, s'il y en a un.
+   * Jeton de contrôle d'un ADMINISTRATEUR qui pilote l'espace d'un professionnel, s'il y en a un
+   * (voir `admin.control`).
    *
    * Lu à chaque requête (et non figé à la construction) : on entre et on sort de ce mode sans
-   * reconstruire le client. Le serveur exige `requireAdmin` derrière cet en-tête, et journalise
-   * chaque écriture faite ainsi — personne ne travaille dans le dos d'un professionnel.
+   * reconstruire le client. Il n'est envoyé qu'aux routes `/pro/*`. Le serveur le vérifie à chaque
+   * fois — signature, échéance, lien avec l'administrateur — et journalise chaque écriture faite
+   * ainsi : personne ne travaille dans le dos d'un professionnel.
    */
-  actingAsSalon?: () => string | null;
+  actingAsToken?: () => string | null;
 }
 
 type Query = Record<string, string | number | boolean | undefined | null>;
@@ -241,6 +243,24 @@ export interface AdminProfileSheet {
   salon: { id: string; slug: string; name: string; isPublished: boolean } | null;
 }
 
+/**
+ * `GET /pro/salon`. `owner` n'existe que lorsqu'un administrateur PILOTE le salon (jeton de
+ * contrôle) : il porte l'identité du professionnel, que l'espace pro affiche à la place de celle
+ * de l'administrateur, et ce champ absent signifie « c'est bien le propriétaire qui est là ».
+ */
+export interface ProSalonResponse {
+  salon: SalonOwnerView | null;
+  owner?: { id: string; fullName: string | null; phone: string | null; email: string | null } | null;
+}
+
+/** Accès délivré à un administrateur pour piloter l'espace d'un professionnel. */
+export interface AdminControl {
+  token: string;
+  /** ISO — au-delà, le serveur refuse le jeton (`CONTROL_EXPIRED`). */
+  expiresAt: string;
+  salon: { id: string; name: string };
+}
+
 export interface MeResponse {
   profile: Profile;
   salon: ({ id: string; slug: string; name: string; isPublished: boolean } & Suspension) | null;
@@ -279,8 +299,8 @@ export function createApiClient(opts: ApiClientOptions) {
     if (init.auth !== false) {
       const token = await opts.getAccessToken();
       if (token) headers.Authorization = `Bearer ${token}`;
-      const asSalon = opts.actingAsSalon?.();
-      if (asSalon && path.startsWith('/pro/')) headers['X-Admin-Salon'] = asSalon;
+      const control = opts.actingAsToken?.();
+      if (control && path.startsWith('/pro/')) headers['X-Admin-Control'] = control;
     }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -410,7 +430,7 @@ export function createApiClient(opts: ApiClientOptions) {
         post<Review>(`/bookings/${id}/review`, body),
     },
     pro: {
-      salon: () => get<{ salon: SalonOwnerView | null }>('/pro/salon'),
+      salon: () => get<ProSalonResponse>('/pro/salon'),
       createSalon: (body: CreateSalonInput) => post<SalonOwnerView>('/pro/salon', body),
       updateSalon: (body: UpdateSalonInput) => patch<SalonOwnerView>('/pro/salon', body),
       setPhotos: (photos: { url: string }[]) =>
@@ -538,6 +558,10 @@ export function createApiClient(opts: ApiClientOptions) {
         post<Suspension & { id: string }>(`/admin/salons/${id}/suspend`, body),
       unsuspendSalon: (id: string, reason?: string) =>
         post<Suspension & { id: string }>(`/admin/salons/${id}/unsuspend`, { reason }),
+      /** Entrer dans l'espace d'un professionnel : délivre le jeton de contrôle (deux heures). */
+      control: (id: string) => post<AdminControl>(`/admin/salons/${id}/control`),
+      /** En sortir : le jeton meurt seul à son échéance, cet appel ne fait que dater la sortie au journal. */
+      endControl: (id: string) => post<void>(`/admin/salons/${id}/control/end`),
       suspendProfile: (id: string, reason: string) =>
         post<{ id: string; suspendedAt: string | null; suspendedReason: string | null }>(`/admin/profiles/${id}/suspend`, { reason }),
       unsuspendProfile: (id: string, reason?: string) =>

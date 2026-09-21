@@ -562,6 +562,13 @@ export function useAdminActions() {
       mutationFn: ({ id, reason }: { id: string; reason: string }) => api.admin.cancelBooking(id, reason),
       onSuccess: fait,
     }),
+    /**
+     * Entrer dans l'espace d'un professionnel / en sortir. Volontairement SANS `fait` : ni l'un ni
+     * l'autre ne change rien à ce que montre l'administration (l'appelant vide de toute façon tout
+     * le cache en changeant de contexte).
+     */
+    enterSalon: useMutation({ mutationFn: (id: string) => api.admin.control(id) }),
+    leaveSalon: useMutation({ mutationFn: (id: string) => api.admin.endControl(id) }),
   };
 }
 

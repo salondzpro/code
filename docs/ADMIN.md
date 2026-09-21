@@ -344,10 +344,21 @@ personne puisse les prévenir.
 **Annuler au nom de la plateforme** — `cancelled_by = 'platform'`, une nouvelle valeur : ni le
 client ni le salon n'en porte la responsabilité, et le créneau repart en liste d'attente.
 
-**Agir en tant que professionnel** — l'en-tête `X-Admin-Salon` fait porter toutes les routes
-`/v1/pro/*` sur le salon désigné. Le pro appelle, il ne trouve pas comment fermer une journée : on
-le fait avec lui au lieu de lui dicter des clics. Chaque écriture faite ainsi part au journal
-(`acted_as_salon`), et un bandeau noir permanent rappelle chez qui l'on travaille.
+**Agir en tant que professionnel** — le bouton « Ouvrir son espace », dans la liste comme sur la
+fiche, délivre un **jeton de contrôle** : signé, valable deux heures, lié à l'administrateur ET au
+salon. Envoyé dans `X-Admin-Control`, il fait porter toutes les routes `/v1/pro/*` sur ce salon :
+l'administrateur voit et fait ce que le professionnel voit et fait, depuis la même application.
+Le pro appelle, il ne trouve pas comment fermer une journée : on le fait avec lui au lieu de lui
+dicter des clics.
+
+Le jeton est étroit parce que le pouvoir est total. Il est *personnel* (un autre compte, même
+administrateur, ne s'en sert pas), *daté* (l'espace se referme tout seul, on n'oublie pas une porte
+ouverte), et revérifié à chaque requête contre `platform_admins` : retirer l'accès d'un
+administrateur coupe ses jetons en cours, sans rien à révoquer. L'entrée et la sortie sont au
+journal, chaque écriture faite ainsi aussi (`acted_as_salon`), et un bandeau noir permanent rappelle
+chez qui l'on travaille et jusqu'à quelle heure. Dans cet espace, l'accueil et la page Compte
+parlent du professionnel, pas de l'administrateur ; son identité se corrige depuis l'administration
+(avec motif), jamais depuis l'espace pro.
 
 **Le motif, partout** — huit caractères minimum, refusé par le serveur en deçà. Il est affiché à
 la personne concernée : le professionnel suspendu lit pourquoi dans son espace, le client aussi.
