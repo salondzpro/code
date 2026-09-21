@@ -36,7 +36,7 @@ export default function ClientLayout() {
       </Screen>
     );
   const p = me.data!.profile;
-  if (!p.fullName) return <Redirect href="/profil-creer" />;
+  if (!p.fullName || !p.phone) return <Redirect href="/profil-creer" />;
   if (!p.market && p.role !== 'pro') return <Redirect href="/marche" />;
   return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg }, animation: 'slide_from_right' }} />;
 }

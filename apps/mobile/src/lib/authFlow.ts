@@ -1,22 +1,20 @@
 /**
- * État du parcours de connexion (AUTH 04 → 12) partagé entre les écrans (mémoire de l'app),
+ * État du parcours de connexion partagé entre les écrans (mémoire de l'app),
  * et visuels repris du design (photos Unsplash référencées dans le fichier Claude Design).
  */
 import { useSyncExternalStore } from 'react';
 import type { UserRole } from '@salondz/constants';
-import type { OtpChannel } from './auth';
 
 export interface AuthFlowState {
   role: UserRole;
-  /** Numéro E.164 (+213…) ou e-mail si canal e-mail. */
+  /** Adresse e-mail saisie (reprise d'un écran à l'autre). */
   identifier: string;
-  channel: OtpChannel;
   /** Où aller après la connexion (chemin web : « / », « /pro », « /s/<slug> »…). */
   next: string;
   sentAt?: number;
 }
 
-const DEFAULTS: AuthFlowState = { role: 'client', identifier: '', channel: 'whatsapp', next: '/' };
+const DEFAULTS: AuthFlowState = { role: 'client', identifier: '', next: '/' };
 let state: AuthFlowState = { ...DEFAULTS };
 const listeners = new Set<() => void>();
 
@@ -30,6 +28,7 @@ export function writeAuthFlow(patch: Partial<AuthFlowState>): AuthFlowState {
 }
 export function clearAuthFlow(): void {
   state = { ...DEFAULTS };
+  pending = null;
   listeners.forEach((l) => l());
 }
 export function useAuthFlow(): AuthFlowState {
@@ -42,6 +41,18 @@ export function useAuthFlow(): AuthFlowState {
     readAuthFlow,
   );
 }
+
+/**
+ * Identifiants tout juste saisis à l'inscription, gardés EN MÉMOIRE seulement (jamais écrits
+ * sur le disque) le temps que la personne confirme son adresse dans son navigateur : au retour,
+ * « J'ai confirmé mon adresse » ouvre la session d'un geste, sans retaper le mot de passe.
+ */
+let pending: { email: string; password: string } | null = null;
+export const rememberCredentials = (email: string, password: string): void => {
+  pending = { email: email.trim().toLowerCase(), password };
+};
+export const recalledCredentials = (email: string): { email: string; password: string } | null =>
+  pending && pending.email === email.trim().toLowerCase() ? pending : null;
 
 /** Destination après connexion : chemin web du design → route expo-router. */
 export function resolveNext(next: string | undefined | null): string {
@@ -63,9 +74,6 @@ export function groupLocalDigits(digits: string): string {
   const d = digits.replace(/\D/g, '').slice(0, 9);
   return [d.slice(0, 1), d.slice(1, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean).join(' ');
 }
-
-/** Le secours e-mail n'est proposé que si le projet Supabase n'a pas de fournisseur SMS. */
-export const EMAIL_FALLBACK = process.env.EXPO_PUBLIC_AUTH_EMAIL_FALLBACK === '1' || __DEV__;
 
 export const DESIGN_IMAGES = {
   intro: { src: 'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=900&q=75&auto=format&fit=crop', credit: 'Benyamin Bohlouli · Unsplash' },

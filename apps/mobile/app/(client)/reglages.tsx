@@ -1,12 +1,14 @@
 /** C-F 23 — Réglages client : notifications, préférences (langue, catalogue, ville), compte (session, confidentialité, données, déconnexion). */
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable } from 'react-native';
+import { Linking, Pressable, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { MARKET_LABELS_FR } from '@salondz/constants';
+import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { errorText } from '@/lib/errors';
 import { useLocationPrefs } from '@/lib/prefs';
-import { Badge, H1, ListCard, P, Row, SectionLabel, Toggle, TopBar, Tx } from '@/ui';
+import { Alert, Badge, Button, H1, H2, ListCard, ModalSheet, P, Row, SectionLabel, Toggle, TopBar, Tx } from '@/ui';
 import { PickerSheet } from '@/ui/Pickers';
 import { Screen } from '@/ui/Screen';
 import { C, NAV_PAD } from '@/theme/design';
@@ -23,7 +25,38 @@ export default function Settings() {
   const [prefs, setPrefs] = useLocationPrefs();
   const [reminders, setReminders] = useState(true);
   const [sheet, setSheet] = useState<'locale' | 'market' | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  /** '…' = suppression en cours ; sinon le message d'erreur à montrer dans la feuille. */
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const p = me.data?.profile;
+
+  /** Loi 18-07 : la personne peut emporter ses données. Le partage natif laisse le choix de la destination. */
+  const exportData = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const data = await api.me.exportData();
+      await Share.share({ title: 'Mes données Salon DZ', message: JSON.stringify(data, null, 2) });
+    } catch (err) {
+      setExportError(errorText(err));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  /** Exigé par Apple et Google : la suppression du compte se fait DANS l'application. */
+  const deleteAccount = async () => {
+    setDeleting('…');
+    try {
+      await api.me.deleteAccount();
+      await signOut();
+      router.replace('/intro');
+    } catch (err) {
+      setDeleting(errorText(err));
+    }
+  };
 
   useEffect(() => {
     if (p) setReminders(p.remindersEnabled ?? true);
@@ -140,9 +173,19 @@ export default function Settings() {
             Confidentialité
           </Tx>
         </Row>
-        <Row py={13} onPress={() => void Linking.openURL(`mailto:support@salondz.com?subject=${encodeURIComponent('Suppression de mes données')}&body=${encodeURIComponent(`Compte : ${session?.user.email ?? session?.user.phone ?? ''}`)}`).catch(() => undefined)}>
+        <Row py={13} onPress={() => void exportData()} chevron={false}>
           <Tx size={12} lh={16}>
-            Supprimer mes données
+            {exporting ? 'Préparation…' : 'Télécharger mes données'}
+          </Tx>
+          {exportError ? (
+            <Tx size={12} color={C.danger} lh={15.5}>
+              {exportError}
+            </Tx>
+          ) : null}
+        </Row>
+        <Row py={13} onPress={() => setConfirmDelete(true)} chevron={false} accessibilityLabel="Supprimer mon compte">
+          <Tx size={12} lh={16} color={C.danger}>
+            Supprimer mon compte
           </Tx>
         </Row>
         <Pressable
@@ -159,6 +202,20 @@ export default function Settings() {
         </Pressable>
       </ListCard>
       <P> </P>
+
+      <ModalSheet open={confirmDelete} onClose={() => deleting === '…' || setConfirmDelete(false)}>
+        <H2>Supprimer mon compte ?</H2>
+        <P>
+          Vos rendez-vous à venir seront perdus, vos favoris et avis effacés, et vos rendez-vous passés anonymisés chez les salons. Cette action est définitive.
+        </P>
+        {deleting && deleting !== '…' ? <Alert>{deleting}</Alert> : null}
+        <Button variant="d" onPress={() => void deleteAccount()} disabled={deleting === '…'} loading={deleting === '…'}>
+          Supprimer définitivement
+        </Button>
+        <Button variant="g" onPress={() => setConfirmDelete(false)} disabled={deleting === '…'}>
+          Garder mon compte
+        </Button>
+      </ModalSheet>
     </Screen>
   );
 }

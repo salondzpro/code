@@ -5,7 +5,7 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronRight, RefreshCw } from 'lucide-react-native';
 import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
-import { DESIGN_IMAGES, formatIntlDZ, readAuthFlow, resolveNext } from '@/lib/authFlow';
+import { DESIGN_IMAGES, readAuthFlow, resolveNext } from '@/lib/authFlow';
 import { Avatar, Badge, Button, H1, I, ListCard, P, Row, Tx } from '@/ui';
 import { Screen } from '@/ui/Screen';
 import { C } from '@/theme/design';
@@ -19,11 +19,11 @@ export default function WelcomeBack() {
 
   const profile = me.data?.profile;
   const firstName = (profile?.fullName ?? '').split(' ')[0] || 'vous';
-  const contact = user?.phone ? formatIntlDZ(`+${user.phone.replace(/^\+/, '')}`) : profile?.phone ? formatIntlDZ(profile.phone) : user?.email;
+  const contact = user?.email;
   const next = params.next ?? readAuthFlow().next ?? (profile?.role === 'pro' ? '/pro' : '/');
 
   const proceed = () => {
-    if (!profile?.fullName) return router.replace({ pathname: '/profil-creer', params: { next } });
+    if (!profile?.fullName || !profile.phone) return router.replace({ pathname: '/profil-creer', params: { next } });
     if (profile.role !== 'pro' && !profile.market) return router.replace({ pathname: '/marche', params: { next } });
     router.replace(resolveNext(next) as never);
   };
@@ -56,7 +56,7 @@ export default function WelcomeBack() {
           right={<I icon={RefreshCw} size={14} color={C.disabled} />}
         >
           <Tx size={12} lh={14.5}>
-            Utiliser un autre numéro
+            Changer de compte
           </Tx>
         </Row>
       </ListCard>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Salon DZ",
     "slug": "salondz",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "scheme": "salondz",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -17,6 +17,7 @@
       "bundleIdentifier": "dz.salondz.app",
       "supportsTablet": false,
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "SalonDZ a besoin d'accéder à vos photos pour illustrer votre salon.",
         "NSCameraUsageDescription": "SalonDZ utilise l'appareil photo pour ajouter des photos de votre salon."
       }
@@ -29,11 +30,11 @@
         "backgroundColor": "#FFFFFF"
       },
       "permissions": [
-        "android.permission.NOTIFICATIONS",
-        "android.permission.VIBRATE",
-        "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
       ],
       "edgeToEdgeEnabled": true
     },
@@ -73,7 +74,8 @@
         "expo-image-picker",
         {
           "photosPermission": "SalonDZ a besoin d'accéder à vos photos pour illustrer votre salon.",
-          "cameraPermission": "SalonDZ utilise l'appareil photo pour ajouter des photos de votre salon."
+          "cameraPermission": "SalonDZ utilise l'appareil photo pour ajouter des photos de votre salon.",
+          "microphonePermission": false
         }
       ],
       [

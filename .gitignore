@@ -47,3 +47,6 @@ apps/mobile/test/shots/
 scripts/.demo.json
 # Sauvegardes locales de la base (pnpm db:backup)
 backups/
+
+# Clés et fichiers de publication (Play Console, App Store Connect, APNs) : jamais dans git.
+secrets/

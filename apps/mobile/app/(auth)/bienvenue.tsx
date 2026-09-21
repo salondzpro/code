@@ -37,7 +37,7 @@ export default function Welcome() {
         </Card>
       </View>
       <Button onPress={go}>Continuer</Button>
-      <P center>Une seule vérification WhatsApp · session conservée ensuite</P>
+      <P center>Compte gratuit · session conservée ensuite</P>
     </Screen>
   );
 }

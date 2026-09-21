@@ -5,8 +5,8 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@salondz/api-client';
-import type { Api } from './api';
+import { queryKeys, type MeResponse } from '@salondz/api-client';
+import { api as apiClient, type Api } from './api';
 
 // Affichage des notifications quand l'app est au premier plan.
 Notifications.setNotificationHandler({
@@ -78,14 +78,33 @@ export async function registerPushIfGranted(api: Api): Promise<string | null> {
   return registerForPushNotifications(api);
 }
 
+/**
+ * Retire ce téléphone des notifications du compte qu'on quitte. Sans cela, le jeton resterait
+ * rattaché à l'ancien compte jusqu'à la prochaine connexion sur cet appareil : les rendez-vous de
+ * quelqu'un qui s'est déconnecté s'afficheraient sur l'écran de verrouillage du suivant. À appeler
+ * AVANT la fermeture de la session (l'appel exige d'être connecté). Ne bloque jamais la déconnexion.
+ */
+export async function unregisterPush(api: Api): Promise<void> {
+  if (Platform.OS === 'web' || !Device.isDevice) return;
+  const projectId = getProjectId();
+  if (!projectId) return;
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') return;
+  const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+  await api.me.removePushToken(token);
+}
+
 interface PushData {
   bookingId?: string;
   salonId?: string;
   type?: string;
 }
 
-/** Types de notification adressés au salon (les autres vont à la cliente). */
-const PRO_TYPES = new Set(['booking_created', 'booking_cancelled', 'booking_rescheduled']);
+/**
+ * Types de notification adressés au salon (les autres vont à la cliente) : nouvelle demande,
+ * annulation ou report par la cliente, et la relance d'une demande qui attend sa réponse.
+ */
+const PRO_TYPES = new Set(['booking_created', 'booking_cancelled', 'booking_rescheduled', 'request_pending']);
 
 /** Réagit aux notifications : rafraîchit les données, navigue au tap. */
 export function usePushNotificationsListener() {
@@ -101,11 +120,15 @@ export function usePushNotificationsListener() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.pro.all });
     };
 
-    const navigate = (data: PushData | undefined) => {
+    const navigate = async (data: PushData | undefined) => {
       if (!data) return;
       // Un compte qui possède un salon reçoit les notifs « salon » (nouvelle réservation, annulation
-      // ou report par la cliente) → détail pro du rendez-vous ; sinon → détail client.
-      const me = queryClient.getQueryData(queryKeys.me) as { salon: unknown } | undefined;
+      // ou report par la cliente) → détail pro du rendez-vous ; sinon → détail client. Au démarrage à
+      // froid depuis une notification, le profil n'est pas encore en cache : on le charge plutôt que
+      // d'envoyer un professionnel sur l'écran d'un client.
+      const me =
+        queryClient.getQueryData<MeResponse>(queryKeys.me) ??
+        (await queryClient.fetchQuery({ queryKey: queryKeys.me, queryFn: () => apiClient.me.get() }).catch(() => undefined));
       const toPro = !!me?.salon && !!data.type && PRO_TYPES.has(data.type);
       if (data.bookingId) {
         router.push((toPro ? `/pro-rdv/${data.bookingId}` : `/rdv/${data.bookingId}`) as never);
@@ -119,12 +142,12 @@ export function usePushNotificationsListener() {
     const received = Notifications.addNotificationReceivedListener(refresh);
     const responded = Notifications.addNotificationResponseReceivedListener((response) => {
       refresh();
-      navigate(response.notification.request.content.data as PushData | undefined);
+      void navigate(response.notification.request.content.data as PushData | undefined);
     });
 
     // Démarrage à froid depuis une notification
     void Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) navigate(response.notification.request.content.data as PushData | undefined);
+      if (response) void navigate(response.notification.request.content.data as PushData | undefined);
     });
 
     return () => {

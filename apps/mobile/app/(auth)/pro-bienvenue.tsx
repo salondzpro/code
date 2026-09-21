@@ -20,7 +20,7 @@ export default function ProWelcome() {
   const start = () => {
     writeAuthFlow({ role: 'pro', next: '/pro' });
     if (session) router.replace('/(pro)');
-    else router.push({ pathname: '/connexion', params: { role: 'pro' } });
+    else router.push({ pathname: '/inscription', params: { role: 'pro' } });
   };
   return (
     <ScrollView style={{ flex: 1, backgroundColor: C.bg }} contentContainerStyle={{ flexGrow: 1 }} bounces={false}>

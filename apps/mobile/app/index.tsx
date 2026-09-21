@@ -23,7 +23,7 @@ export default function Index() {
       </Screen>
     );
   const p = me.data!.profile;
-  if (!p.fullName) return <Redirect href="/profil-creer" />;
+  if (!p.fullName || !p.phone) return <Redirect href="/profil-creer" />;
   if (p.role === 'pro') return <Redirect href="/(pro)" />;
   if (!p.market) return <Redirect href="/marche" />;
   return <Redirect href="/(client)/(tabs)" />;
