@@ -41,6 +41,17 @@ const FONT_CSS = [400, 600, 700].map(font).join('');
 const letter = (size, fontSize, fill) =>
   `<text x="${size / 2}" y="${size / 2 + (CAP * fontSize) / 2}" text-anchor="middle" font-family="Inter" font-weight="700" font-size="${fontSize}" fill="${fill}">S</text>`;
 
+/**
+ * Le wordmark complet « Salon DZ » (même graphie que l'en-tête et le pied de page : « Salon » en 600, « DZ »
+ * en 400 et gris clair), centré dans un carré de côté `size`. `textWidth` fixe la largeur totale rendue
+ * (`textLength`/`lengthAdjust`) pour que le mot tienne toujours exactement dans la zone voulue, quelle que
+ * soit la métrique de la police.
+ */
+const wordmark = (size, fontSize, textWidth, mutedFill = '#9aa0a6') => {
+  const y = size / 2 + (CAP * fontSize) / 2;
+  return `<text x="${size / 2}" y="${y}" text-anchor="middle" font-family="Inter" font-size="${fontSize}" textLength="${textWidth}" lengthAdjust="spacingAndGlyphs"><tspan font-weight="600" fill="#fff">Salon </tspan><tspan font-weight="400" fill="${mutedFill}">DZ</tspan></text>`;
+};
+
 const svg = (size, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${body}</svg>`;
 
 const browser = await pw.chromium.launch({ channel: 'chrome' });
@@ -59,11 +70,12 @@ async function shoot(file, width, height, body, { transparent = false } = {}) {
 
 try {
   // iOS : plein cadre, sans transparence ni coins arrondis (le système applique son propre masque).
-  await shoot(path.join(ASSETS, 'icon.png'), 1024, 1024, svg(1024, `<rect width="1024" height="1024" fill="${INK}"/>${letter(1024, 640, '#fff')}`));
+  // Wordmark complet (façon Uber) plutôt que la seule initiale : « Salon » plein blanc, « DZ » gris clair.
+  await shoot(path.join(ASSETS, 'icon.png'), 1024, 1024, svg(1024, `<rect width="1024" height="1024" fill="${INK}"/>${wordmark(1024, 190, 820)}`));
 
   // Android adaptatif : le fond (`backgroundColor` d'app.json = INK) est séparé du premier plan.
-  // Zone sûre = disque central de 66 % ; le « S » (≈ 0,6 em de large, 0,73 em de haut) y tient à 560.
-  await shoot(path.join(ASSETS, 'adaptive-icon.png'), 1024, 1024, svg(1024, letter(1024, 560, '#fff')), { transparent: true });
+  // Zone sûre = disque central de 66 % (rayon 338) ; à 130/560 le coin du mot reste à ≈284 du centre.
+  await shoot(path.join(ASSETS, 'adaptive-icon.png'), 1024, 1024, svg(1024, wordmark(1024, 130, 560)), { transparent: true });
 
   // Écran de démarrage : la pastille de la marque sur fond blanc (fond réglé dans app.json).
   await shoot(
