@@ -16,8 +16,8 @@ export const COVER_ASPECT_RN: [number, number] = [16, 10];
  * l'utilisateur déplace et zoome la photo dans le cadre avant de valider.
  */
 export async function pickImages({ multiple = false, square = false, aspect, max = 6 }: { multiple?: boolean; square?: boolean; aspect?: [number, number]; max?: number } = {}): Promise<LocalImage[]> {
-  const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!perm.granted) throw new Error("Autorisez l'accès aux photos dans les réglages pour continuer.");
+  // Pas de demande de permission : le sélecteur système (Android 13+) ne l'exige pas pour un choix ponctuel,
+  // et Google Play refuse READ_MEDIA_IMAGES/VIDEO déclarées sans un accès persistant justifié.
   const picked = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     allowsMultipleSelection: multiple,

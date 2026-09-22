@@ -41,8 +41,7 @@ export async function uploadToStorage(bucket: Bucket, path: string, localUri: st
 
 /** Ouvre la galerie, compresse et envoie une photo de salon. null si annulé. */
 export async function pickAndUploadSalonPhoto(salonId: string): Promise<string | null> {
-  const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!perm.granted) throw new Error("Autorisez l'accès aux photos dans les réglages pour continuer.");
+  // Pas de demande de permission : sélecteur système (Android 13+), aucun accès persistant nécessaire.
   const picked = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     allowsMultipleSelection: false,
@@ -57,8 +56,7 @@ export async function pickAndUploadSalonPhoto(salonId: string): Promise<string |
 
 /** Avatar utilisateur : bucket avatars/<userId>/… */
 export async function pickAndUploadAvatar(userId: string): Promise<string | null> {
-  const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!perm.granted) throw new Error("Autorisez l'accès aux photos dans les réglages pour continuer.");
+  // Pas de demande de permission : sélecteur système (Android 13+), aucun accès persistant nécessaire.
   const picked = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     allowsEditing: true,
