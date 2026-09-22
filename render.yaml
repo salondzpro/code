@@ -111,16 +111,18 @@ services:
         source: /*
         destination: /index.html
     headers:
+      # Le CDN met en cache par URL DEMANDÉE, pas par fichier physique servi : une route comme /supprimer,
+      # servie par le même index.html via la réécriture générique /*, restait bloquée sur l'ancienne version
+      # de l'application tant que /`et`/index.html` seuls portaient `no-cache` (22 sept. 2026, page /supprimer
+      # invisible malgré un déploiement "live"). Toute route non-asset doit rester fraîche à chaque visite ;
+      # seuls les fichiers d'empreinte (assets, polices) peuvent être mis en cache indéfiniment, et leurs
+      # règles, plus spécifiques, sont déclarées APRÈS pour l'emporter sur ce `/*`.
+      - path: /*
+        name: Cache-Control
+        value: no-cache
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
-      # L'index ne se met jamais en cache : un téléphone doit voir la nouvelle version au prochain chargement.
-      - path: /
-        name: Cache-Control
-        value: no-cache
-      - path: /index.html
-        name: Cache-Control
-        value: no-cache
       - path: /fonts/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
