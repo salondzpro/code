@@ -1,13 +1,16 @@
 /**
  * AUTH 16 / PRO-F 01 — Bienvenue professionnel, façon Planity Pro. Dans l'ordre : retour (on vient souvent
- * du compte client), photo et promesse, LE CHOIX tout de suite (créer mon espace / me connecter — ou
- * « Ouvrir mon espace pro » si déjà connecté), puis les avantages en grandes lignes et les quatre étapes.
+ * du compte client), photo et promesse, LE CHOIX tout de suite (créer mon espace / me connecter / voir une
+ * démonstration — ou « Ouvrir mon espace pro » si déjà connecté), puis les avantages et les quatre étapes.
  */
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BellRing, CalendarCheck, ChevronLeft, Link2, Users, type LucideIcon } from 'lucide-react';
+import { BellRing, CalendarCheck, ChevronLeft, Link2, PlayCircle, Users, type LucideIcon } from 'lucide-react';
+import { DEMO_ACCOUNTS, demoAccountFor } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES, writeAuthFlow } from '@/lib/authFlow';
 import { useBack } from '@/lib/useBack';
+import { describeAuthError } from '@/lib/auth';
 import { Button, I, IconButton, LinkButton, SectionLabel } from '@/components/ui';
 import { t } from '@/i18n';
 
@@ -23,10 +26,28 @@ const STEPS = ['Votre salon : nom, photo, adresse', 'Vos prestations et vos prix
 export function ProWelcome() {
   const navigate = useNavigate();
   const back = useBack('/profil');
-  const { session } = useAuth();
+  const { session, demoLogin } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const start = () => {
     writeAuthFlow({ role: 'pro', next: '/pro' });
     navigate(session ? '/pro' : '/inscription?role=pro');
+  };
+  /** Deux salons de démonstration prêts à l'emploi (Hommes / Femmes) : un geste, aucune saisie. */
+  const demo = async (identifier: string) => {
+    const acct = demoAccountFor(identifier);
+    if (!acct) return;
+    setError(null);
+    setBusy(true);
+    try {
+      writeAuthFlow({ role: 'pro', next: '/pro', identifier: acct.email, channel: 'email' });
+      await demoLogin(acct.email);
+      navigate('/connexion/retour?next=%2Fpro', { replace: true });
+    } catch (err) {
+      setError(describeAuthError(err).text);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <div className="rd flex min-h-dvh flex-col">
@@ -50,7 +71,8 @@ export function ProWelcome() {
       </div>
 
       <div className="flex flex-1 flex-col gap-5 px-5 pb-8 pt-5">
-        {/* Le choix d'abord : créer ou se connecter. Déjà connecté (compte client) : on ouvre l'espace. */}
+        {/* Le choix d'abord : créer, se connecter, ou essayer sans engagement. Déjà connecté (compte
+            client) : on ouvre l'espace, la démonstration n'a alors plus lieu d'être proposée. */}
         <div className="flex flex-col gap-3">
           <Button onClick={start}>{session ? t("Ouvrir mon espace pro") : t("Créer mon espace pro")}</Button>
           {!session && (
@@ -60,6 +82,36 @@ export function ProWelcome() {
           )}
           <p className="p text-center text-[0.857rem]">{t("Gratuit · Sans engagement · Votre page prête en 5 minutes")}</p>
         </div>
+
+        {!session && (
+          <div className="crd !gap-2">
+            <p className="flex items-center gap-2 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
+              <I icon={PlayCircle} size={16} /> {t("Démonstration")}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.filter((a) => a.role === 'pro').map((a) => (
+                <button
+                  key={a.key}
+                  type="button"
+                  className="flex flex-col items-start gap-0.5 rounded-[var(--radius-card-sm)] border border-line bg-fill px-3 py-2.5 text-start disabled:opacity-60"
+                  disabled={busy}
+                  onClick={() => void demo(a.email)}
+                >
+                  <span className="text-[1rem] font-semibold">{t(a.label)}</span>
+                  <span className="text-[0.857rem] text-muted">{t(a.hint)}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-[0.857rem] text-muted">
+              {t("Tout se passe dans ce navigateur : rien n'est envoyé, chaque appareil a sa propre démonstration.")}
+            </p>
+            {error && (
+              <p className="text-[0.857rem] text-danger" role="alert">
+                {error}
+              </p>
+            )}
+          </div>
+        )}
 
         <SectionLabel>{t("Pourquoi Salon DZ")}</SectionLabel>
         <ul className="flex flex-col gap-4">

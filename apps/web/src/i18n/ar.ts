@@ -1135,4 +1135,6 @@ export const ar: Record<string, string> = {
   'Sans suite': 'بدون إجراء',
   'Signalement traité': 'بلاغ تمت معالجته',
   'Signalement classé sans suite': 'بلاغ أُغلق بدون إجراء',
+  'Réservez votre rendez-vous.': 'احجز موعدك.',
+  'Portail des professionnels': 'بوابة المحترفين',
 };

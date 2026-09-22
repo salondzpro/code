@@ -261,6 +261,44 @@ export function LegalNotice() {
   );
 }
 
+export function DeleteAccount() {
+  return (
+    <Doc title="Supprimer mon compte">
+      <p>
+        Vous pouvez supprimer votre compte Salon DZ (client ou professionnel) à tout moment, directement depuis l'application ou le site,
+        sans avoir besoin de contacter le support.
+      </p>
+      <h2>Depuis l'application ou le site</h2>
+      <ul>
+        <li><strong>Client :</strong> Réglages → « Supprimer mon compte », en bas de l'écran.</li>
+        <li><strong>Professionnel :</strong> Compte → « Supprimer mon compte et mon salon », en bas de l'écran.</li>
+      </ul>
+      <p>La suppression est immédiate et définitive : elle ne peut pas être annulée.</p>
+      <h2>Sans l'application</h2>
+      <p>
+        Vous pouvez aussi demander la suppression par e-mail à <Mailto to={SUPPORT} />, depuis l'adresse liée à votre compte. Elle est
+        traitée sous 30 jours au plus tard.
+      </p>
+      <h2>Ce qui est supprimé</h2>
+      <ul>
+        <li>Votre compte : nom, e-mail, numéro de téléphone, photo de profil, préférences.</li>
+        <li>Pour un professionnel qui supprime aussi son salon : la page du salon, ses prestations, son équipe et ses photos.</li>
+        <li>Vos rendez-vous à venir sont annulés et les personnes concernées sont prévenues avant la suppression.</li>
+        <li>Vos notifications, favoris et notes personnelles.</li>
+      </ul>
+      <h2>Ce qui est conservé</h2>
+      <p>
+        Vos rendez-vous passés restent dans l'historique du salon concerné, mais anonymisés : votre nom, votre e-mail et votre numéro en
+        sont retirés, seule la trace de la prestation (date, durée, montant) subsiste à des fins comptables. Aucune autre donnée personnelle
+        n'est conservée après la suppression.
+      </p>
+      <p>
+        Voir aussi la <Link to="/confidentialite">politique de confidentialité</Link> complète.
+      </p>
+    </Doc>
+  );
+}
+
 export function Help() {
   return (
     <Doc title="Aide et contact">

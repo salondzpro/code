@@ -14,8 +14,6 @@ import { ScrollToTop } from './ScrollToTop';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
 import { NotFound } from '@/pages/NotFound';
 // Parcours de connexion (design AUTH 01 → 16)
-import { Intro } from '@/pages/auth/Intro';
-import { Welcome } from '@/pages/auth/Welcome';
 import { Login } from '@/pages/auth/Login';
 import { SignUp } from '@/pages/auth/SignUp';
 import { EmailSent } from '@/pages/auth/EmailSent';
@@ -69,6 +67,7 @@ const Help = lazyNamed(() => import('@/pages/Legal'), 'Help');
 const LegalNotice = lazyNamed(() => import('@/pages/Legal'), 'LegalNotice');
 const Privacy = lazyNamed(() => import('@/pages/Legal'), 'Privacy');
 const Terms = lazyNamed(() => import('@/pages/Legal'), 'Terms');
+const DeleteAccount = lazyNamed(() => import('@/pages/Legal'), 'DeleteAccount');
 const Step1Market = lazyNamed(() => import('@/pages/pro/onboarding/Step1Market'), 'Step1Market');
 const Step2Name = lazyNamed(() => import('@/pages/pro/onboarding/Step2Name'), 'Step2Name');
 const Step3Identity = lazyNamed(() => import('@/pages/pro/onboarding/Step3Identity'), 'Step3Identity');
@@ -127,8 +126,10 @@ export const router = createBrowserRouter([
       {
         element: <PlainLayout />,
         children: [
-          { path: '/intro', element: <Intro /> },
-          { path: '/bienvenue', element: <Welcome /> },
+          // Ex-« Intro » + « Bienvenue » : un visiteur non connecté n'a rien d'autre à faire que se
+          // connecter, autant l'y amener directement plutôt que deux écrans intermédiaires.
+          { path: '/intro', element: <Login landing /> },
+          { path: '/bienvenue', element: <Navigate to="/intro" replace /> },
           { path: '/connexion', element: <Login /> },
           { path: '/inscription', element: <SignUp /> },
           { path: '/connexion/envoye', element: <EmailSent /> },
@@ -185,6 +186,7 @@ export const router = createBrowserRouter([
           { path: '/confidentialite', element: <Privacy /> },
           { path: '/mentions-legales', element: <LegalNotice /> },
           { path: '/aide', element: <Help /> },
+          { path: '/supprimer', element: <DeleteAccount /> },
           { path: '/s/:slug', element: <Salon /> },
           { path: '/s/:slug/realisations', element: <SalonWorks /> },
           { path: '/s/:slug/avis', element: <SalonReviews /> },

@@ -64,7 +64,7 @@ Les confirmations, les demandes et les rappels passent par les notifications de 
 | Identifiants de l'appareil (jeton de notification) | oui | non | Fonctionnement (notifications) | oui |
 
 - Données **chiffrées en transit** : oui (HTTPS partout).
-- **Suppression** : oui. Depuis l'application (clients : Réglages → « Supprimer mon compte » ; professionnels : Compte → « Supprimer mon compte et mon salon », **dans le build v4 et suivants, pas dans le v3**) et sur demande à `support@salondz.com`. URL de suppression à déclarer : `https://salondz.com/confidentialite` (à remplacer par une page dédiée).
+- **Suppression** : oui. Depuis l'application (clients : Réglages → « Supprimer mon compte » ; professionnels : Compte → « Supprimer mon compte et mon salon », **dans le build v4 et suivants, pas dans le v3**) et sur demande à `support@salondz.com`. URL de suppression à déclarer : `https://salondz.com/supprimer` (page dédiée, détaille ce qui est supprimé et ce qui est conservé).
 - Aucune donnée vendue. Aucun pistage publicitaire.
 
 ## 3. App Store — questionnaires

@@ -1154,4 +1154,6 @@ export const en: Record<string, string> = {
   'Sans suite': 'No action',
   'Signalement traité': 'Report handled',
   'Signalement classé sans suite': 'Report closed without action',
+  'Réservez votre rendez-vous.': 'Book your appointment.',
+  'Portail des professionnels': 'Professionals’ portal',
 };

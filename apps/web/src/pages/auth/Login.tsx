@@ -5,16 +5,23 @@
  * Chaque erreur est dite en français et propose la suite (créer un compte, renvoyer le lien).
  * Comptes de démonstration : leur adresse tapée à la place de l'e-mail ouvre la session sans mot
  * de passe ; les boutons « Démonstration » font de même en un geste.
+ *
+ * `landing` : cette même page sert aussi de PAGE D'ACCUEIL (`/intro`, ex-« Intro » + « Bienvenue »
+ * fusionnées en une seule — un visiteur non connecté ne peut rien faire d'autre que se connecter,
+ * inutile de lui faire cliquer deux écrans avant d'arriver ici). Dans ce mode : bandeau de marque en
+ * haut au lieu du bouton retour, rôle toujours client (jamais de reliquat d'un rôle précédent), et
+ * « Portail des professionnels » tout en bas — la porte d'entrée pro reste `/pro/bienvenue`.
  */
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { AlertCircle, Eye, EyeOff, MailOpen, PlayCircle, UserPlus } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, MailOpen, PlayCircle, Store, UserPlus } from 'lucide-react';
 import { DEMO_ACCOUNTS, demoAccountFor } from '@salondz/constants';
 import { hasDemoWorld, stopDemo } from '@/demo/session';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
-import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
+import { readAuthFlow, writeAuthFlow, DESIGN_IMAGES } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
+import { LangSwitch } from '@/components/LangSwitch';
 import { t } from '@/i18n';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,14 +33,17 @@ const LINK_ERRORS: Record<string, string> = {
   lien: 'Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.',
 };
 
-export function Login() {
+export function Login({ landing }: { landing?: boolean } = {}) {
   const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const role = params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
-  const next = params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/');
+  // La page d'accueil est TOUJOURS le portail client : jamais de rôle ou de destination hérités
+  // d'une visite précédente (l'état de authFlow ne survit qu'à la navigation interne, pas au
+  // rechargement, mais autant ne dépendre de rien ici — c'est la première porte).
+  const role = landing ? 'client' : params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
+  const next = landing ? '/' : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
   const linkErr = params.get('erreur');
-  const [email, setEmail] = useState(() => readAuthFlow()?.identifier ?? '');
+  const [email, setEmail] = useState(() => (landing ? '' : (readAuthFlow()?.identifier ?? '')));
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState<'password' | 'link' | 'resend' | 'demo' | null>(null);
@@ -115,7 +125,19 @@ export function Login() {
 
   return (
     <Screen className="min-h-dvh" gap={16}>
-      <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : '/bienvenue'} />
+      {landing ? (
+        <div className="relative -mx-4 -mt-3 h-[11rem] flex-none overflow-hidden">
+          <img src={DESIGN_IMAGES.intro.src} alt="" className="h-full w-full object-cover" />
+          <div className="ovl" />
+          <div className="ovl-t !pb-3">
+            <div className="text-[1.429rem] font-bold leading-[1.1] tracking-[-0.6px]">{t("Réservez votre rendez-vous.")}</div>
+          </div>
+          <span className="absolute start-3 top-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
+          <LangSwitch className="absolute end-3 top-3" />
+        </div>
+      ) : (
+        <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : undefined} noBack={role !== 'pro'} />
+      )}
       <div>
         <h1 className="h1">{role === 'pro' ? 'Espace professionnel' : 'Connexion'}</h1>
         <p className="p mt-2">
@@ -249,6 +271,11 @@ export function Login() {
         <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
           <I icon={UserPlus} size={18} /> {role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
         </Link>
+        {landing && (
+          <Link to="/pro/bienvenue" className="mt-2 flex items-center justify-center gap-2 border-t border-line pt-5 text-[1rem] font-semibold underline">
+            <I icon={Store} size={18} /> {t("Portail des professionnels")}
+          </Link>
+        )}
       </div>
     </Screen>
   );
