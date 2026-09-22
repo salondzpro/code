@@ -84,6 +84,15 @@
         {
           "locationWhenInUsePermission": "SalonDZ utilise votre position pour trouver les salons autour de vous."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
       ]
     ],
     "experiments": {
