@@ -50,3 +50,8 @@ backups/
 
 # Clés et fichiers de publication (Play Console, App Store Connect, APNs) : jamais dans git.
 secrets/
+
+# Artefacts de build téléchargés localement pour import manuel Play Console : volumineux, régénérables,
+# et gonflent l'archive envoyée à EAS Build s'ils traînent dans apps/mobile.
+*.aab
+*.apk
