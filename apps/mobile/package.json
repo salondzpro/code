@@ -9,6 +9,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "eas-build-post-install": "node scripts/check-build-env.mjs",
     "doctor": "npx expo-doctor",
     "clean": "rm -rf .expo .turbo",
     "test:e2e": "node --env-file=../../.env test/smoke.e2e.mjs"
