@@ -69,6 +69,11 @@
     "typescript": "^5.8.3"
   },
   "expo": {
+    "autolinking": {
+      "buildFromSource": [
+        ".*"
+      ]
+    },
     "doctor": {
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false
