@@ -55,3 +55,6 @@ secrets/
 # et gonflent l'archive envoyée à EAS Build s'ils traînent dans apps/mobile.
 *.aab
 *.apk
+
+# Identifiants de signature locaux (mot de passe du .p12) : jamais dans git.
+apps/mobile/credentials.json

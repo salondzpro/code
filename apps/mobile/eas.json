@@ -21,6 +21,7 @@
       "autoIncrement": true,
       "channel": "production",
       "android": { "buildType": "app-bundle" },
+      "ios": { "credentialsSource": "local" },
       "env": { "EXPO_PUBLIC_API_URL": "https://api.salondz.com" }
     }
   },
