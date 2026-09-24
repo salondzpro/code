@@ -12,6 +12,15 @@
     "test:e2e": "node test/smoke.e2e.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/geolocation": "^8.2.2",
+    "@capacitor/push-notifications": "^8.1.2",
+    "@capacitor/share": "^8.0.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3",
     "@salondz/api-client": "workspace:*",
     "@salondz/constants": "workspace:*",
     "@salondz/types": "workspace:*",
@@ -30,6 +39,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@tailwindcss/vite": "^4.1.0",
     "@types/leaflet": "^1.9.22",
     "@types/qrcode": "^1.5.6",

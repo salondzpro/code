@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Salon DZ</string>
+    <string name="title_activity_main">Salon DZ</string>
+    <string name="package_name">dz.salondz.app</string>
+    <string name="custom_url_scheme">dz.salondz.app</string>
+</resources>

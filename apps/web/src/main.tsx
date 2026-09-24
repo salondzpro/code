@@ -35,4 +35,15 @@ startUpdateCheck();
 void loadDictionary(getLocale())
   .catch(() => undefined)
   .then(() => import('./app/boot'))
-  .then((m) => m.render());
+  .then((m) => m.render())
+  .then(async () => {
+    // Coque native (application mobile) : position, partage, bouton retour, liens profonds, barre d'état.
+    // Sans effet — et sans téléchargement — pour un visiteur du site.
+    const { isNative, initNative } = await import('./lib/native');
+    if (!isNative()) return;
+    const { router } = await import('./app/router');
+    const go = (path: string) => void router.navigate(path);
+    await initNative(go);
+    const { wireNativePushTaps } = await import('./lib/nativePush');
+    await wireNativePushTaps(go);
+  });

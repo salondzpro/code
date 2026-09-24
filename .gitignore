@@ -56,5 +56,16 @@ secrets/
 *.aab
 *.apk
 
+# Coque native Capacitor (apps/web/android) : le projet est versionné (manifeste, icônes, signature),
+# mais pas ce que Gradle régénère ni les chemins propres à une machine.
+apps/web/android/build/
+apps/web/android/app/build/
+apps/web/android/.gradle/
+apps/web/android/local.properties
+apps/web/android/capacitor-cordova-android-plugins/
+apps/web/android/app/src/main/assets/public/
+apps/web/android/app/src/main/assets/capacitor.config.json
+apps/web/android/app/src/main/assets/capacitor.plugins.json
+
 # Identifiants de signature locaux (mot de passe du .p12) : jamais dans git.
 apps/mobile/credentials.json

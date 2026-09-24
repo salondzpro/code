@@ -12,11 +12,17 @@
  * fermé.
  */
 import type { ApiClient } from '@salondz/api-client';
+import { Capacitor } from '@capacitor/core';
 import { env } from './env';
 
 const SW_URL = '/sw.js';
 
+/** Vrai dans l'application mobile (coque Capacitor), faux sur le site. */
+const nativeShell = (): boolean => Capacitor.isNativePlatform();
+
 export function webPushSupported(): boolean {
+  // L'application mobile est toujours joignable : c'est Firebase qui s'en charge.
+  if (nativeShell()) return true;
   return (
     typeof window !== 'undefined' &&
     'serviceWorker' in navigator &&
@@ -27,6 +33,9 @@ export function webPushSupported(): boolean {
 }
 
 export function webPushPermission(): NotificationPermission | 'unsupported' {
+  // `Notification` n'existe pas dans une WebView : l'état réel est lu de façon asynchrone par
+  // `nativePushPermission()`. « default » revient à proposer l'activation, ce qui est le bon défaut.
+  if (nativeShell()) return 'default';
   return webPushSupported() ? Notification.permission : 'unsupported';
 }
 
@@ -56,6 +65,12 @@ async function subscribe(): Promise<PushSubscription | null> {
  * Retourne `true` seulement si le navigateur est désormais joignable.
  */
 export async function enableWebPush(api: ApiClient): Promise<boolean> {
+  // Dans l'application mobile, les notifications passent par Firebase : une WebView ne reçoit rien
+  // par service worker. Les écrans appellent la même fonction, ils n'ont pas à connaître la différence.
+  if (nativeShell()) {
+    const { enableNativePush } = await import('./nativePush');
+    return enableNativePush(api);
+  }
   if (!webPushSupported()) return false;
   try {
     const permission =
@@ -81,12 +96,22 @@ export async function enableWebPush(api: ApiClient): Promise<boolean> {
  * et un jeton périmé ne reçoit plus rien sans que personne s'en aperçoive.
  */
 export async function refreshWebPushIfGranted(api: ApiClient): Promise<void> {
+  if (nativeShell()) {
+    const { refreshNativePushIfGranted } = await import('./nativePush');
+    await refreshNativePushIfGranted(api);
+    return;
+  }
   if (!webPushSupported() || Notification.permission !== 'granted') return;
   await enableWebPush(api);
 }
 
 /** Coupe les notifications sur CE navigateur : désabonnement local puis retrait côté API. */
 export async function disableWebPush(api: ApiClient): Promise<void> {
+  if (nativeShell()) {
+    const { disableNativePush } = await import('./nativePush');
+    await disableNativePush(api);
+    return;
+  }
   if (!webPushSupported()) return;
   try {
     const reg = await navigator.serviceWorker.getRegistration(SW_URL);
