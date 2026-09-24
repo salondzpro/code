@@ -53,7 +53,7 @@ services:
       # `https://localhost` et `capacitor://localhost` = l'APPLICATION MOBILE (coque Capacitor) : le site
       # y est embarqué, donc ses appels partent de cette origine et non de salondz.com.
       - key: CORS_ORIGINS
-        value: https://salondz.com,https://www.salondz.com,https://salondz.onrender.com,https://localhost,capacitor://localhost
+        value: https://salondz.pages.dev,https://salondz.onrender.com,https://salondz.com,https://www.salondz.com,https://admin.salondz.com,https://localhost,capacitor://localhost
       # Origine publique de l'API : OBLIGATOIRE (liens des e-mails ; jamais déduite de l'en-tête Host).
       - key: API_PUBLIC_URL
         value: https://api.salondz.com
