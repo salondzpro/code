@@ -2,6 +2,7 @@ import { Expo, type ExpoPushMessage, type ExpoPushTicket } from 'expo-server-sdk
 import type { FastifyBaseLogger } from 'fastify';
 import { db } from './supabase';
 import { isWebPushToken, sendWebPush, webPushEnabled } from './webpush';
+import { fcmEnabled, isFcmToken, sendFcm } from './fcm';
 
 const expo = new Expo({ useFcmV1: true });
 
@@ -55,12 +56,18 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // navigateurs. Un jeton qui n'est ni l'un ni l'autre est ignoré plutôt que de faire échouer
   // le lot entier.
   const tokensByUser = new Map<string, string[]>();
+  const fcmByUser = new Map<string, string[]>();
   const webByUser = new Map<string, string[]>();
   for (const t of tokens ?? []) {
     if (Expo.isExpoPushToken(t.token)) {
       const list = tokensByUser.get(t.user_id) ?? [];
       list.push(t.token);
       tokensByUser.set(t.user_id, list);
+    } else if (fcmEnabled && isFcmToken(t.token)) {
+      // Application mobile (coque Capacitor) : Firebase directement.
+      const list = fcmByUser.get(t.user_id) ?? [];
+      list.push(t.token);
+      fcmByUser.set(t.user_id, list);
     } else if (webPushEnabled && isWebPushToken(t.token)) {
       const list = webByUser.get(t.user_id) ?? [];
       list.push(t.token);
@@ -100,12 +107,29 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     }
   }
 
+  // Application mobile (Capacitor → Firebase) : même règle de priorité que le reste, une seule
+  // notification par personne. Elle passe avant le navigateur, qui ne sert qu'à qui n'a pas l'application.
+  let fcmSent = 0;
+  for (const n of pending as PendingNotification[]) {
+    if (!wanted(n) || tokensByUser.has(n.user_id)) continue;
+    for (const token of fcmByUser.get(n.user_id) ?? []) {
+      const ok = await sendFcm(log, {
+        token,
+        title: n.title,
+        body: n.body,
+        data: { ...n.data, type: n.type, notificationId: n.id },
+      });
+      if (ok) fcmSent++;
+      else invalidTokens.push(token);
+    }
+  }
+
   // Navigateurs : un envoi par abonnement, les abonnements morts sont supprimés. Une personne qui a
   // l'application mobile est prévenue par elle, pas en double par le navigateur ; le navigateur ne sert
   // qu'à qui n'a pas l'application (un jeton mobile mort est retiré au tour précédent, le navigateur prend le relais).
   let webSent = 0;
   for (const n of pending as PendingNotification[]) {
-    if (!wanted(n) || tokensByUser.has(n.user_id)) continue;
+    if (!wanted(n) || tokensByUser.has(n.user_id) || fcmByUser.has(n.user_id)) continue;
     for (const token of webByUser.get(n.user_id) ?? []) {
       const r = await sendWebPush(log, token, {
         title: n.title,
@@ -127,7 +151,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     .in('id', pending.map((n) => n.id as string));
   if (uErr) throw uErr;
 
-  return messages.length + webSent;
+  return messages.length + fcmSent + webSent;
 }
 
 /** Fire-and-forget après une mutation de réservation (ne bloque pas la réponse HTTP). */

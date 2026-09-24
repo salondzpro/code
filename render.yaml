@@ -67,6 +67,10 @@ services:
         value: Salon DZ <noreply@salondz.com>
       - key: EMAIL_REPLY_TO
         value: support@salondz.com
+      # Notifications de l'APPLICATION MOBILE (coque Capacitor) : clé de service Firebase (FCM v1),
+      # le JSON complet sur une ligne. Sans elle, l'envoi mobile est désactivé sans rien casser.
+      - key: FCM_SERVICE_ACCOUNT
+        sync: false
       # Web Push (VAPID) : la clé publique est aussi VITE_VAPID_PUBLIC_KEY côté site.
       - key: VAPID_PUBLIC_KEY
         sync: false
