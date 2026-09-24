@@ -16,7 +16,6 @@ import {
   LogOut,
   Pencil,
   Settings,
-  Store,
   type LucideIcon,
 } from 'lucide-react';
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
@@ -161,24 +160,9 @@ export function Profile() {
         <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
       </div>
 
-      {/* Passerelle vers l'espace pro : une carte, pas une rubrique parmi d'autres. */}
-      <Link
-        to={me.data?.salon ? '/pro' : '/pro/bienvenue'}
-        className="crd !flex-row items-center gap-3.5 !border-ink"
-      >
-        <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-ink text-white">
-          <I icon={Store} size={20} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[1rem] font-semibold tracking-[-0.2px]">
-            {me.data?.salon ? t('Gérer {salon}', { salon: me.data.salon.name }) : t('Vous êtes professionnel ?')}
-          </span>
-          <span className="block text-[0.857rem] text-muted">
-            {me.data?.salon ? t('Agenda, demandes, page publique') : t('Ouvrez votre espace et recevez des réservations')}
-          </span>
-        </span>
-        <I icon={ChevronRight} size={20} className="text-disabled" />
-      </Link>
+      {/* Plus de passerelle vers l'espace pro : décision du 24 sept. 2026. Un compte sert à UN usage à
+          la fois ; faire cohabiter les deux espaces dans le même écran embrouillait plus qu'il n'aidait.
+          La porte d'entrée professionnelle reste « Portail des professionnels », sur l'écran de connexion. */}
 
       {error && (
         <p className="text-[1rem] text-danger" role="alert">

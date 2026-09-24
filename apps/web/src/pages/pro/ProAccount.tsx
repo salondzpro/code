@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '@/lib/api';
 import { disableWebPush, enableWebPush, webPushPermission, webPushSupported } from '@/lib/webpush';
-import { ArrowLeftRight, Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
+import { Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
@@ -120,9 +120,8 @@ export function ProAccount() {
             label={t("Page publiée")}
           />
         </div>
-        <ListRow to="/">
-          <RowText icon={ArrowLeftRight} title={t("Espace client")} sub="Réserver comme un client" />
-        </ListRow>
+        {/* Plus de bascule vers l'espace client : décision du 24 sept. 2026, symétrique de celle prise
+            côté client. Un professionnel qui veut réserver ailleurs passe par le site. */}
       </div>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
