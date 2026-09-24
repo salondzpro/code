@@ -13,6 +13,15 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Le système réserve lui-même la place de la barre d'état (heure, réseau, batterie) et de la
+             barre de navigation du bas. C'est ce qui permet de s'adapter à TOUS les téléphones — encoche,
+             barre gestuelle ou trois boutons — sans mesurer quoi que ce soit dans l'application. Sans
+             cela, les boutons du bas et le haut des écrans passaient sous les barres du téléphone. -->
+        <item name="android:fitsSystemWindows">true</item>
+        <!-- Barres opaques et claires, cohérentes avec le fond de l'application. -->
+        <item name="android:statusBarColor">@color/salondzSurface</item>
+        <item name="android:navigationBarColor">@color/salondzSurface</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
 

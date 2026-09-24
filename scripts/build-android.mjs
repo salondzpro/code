@@ -26,7 +26,14 @@ const OUT = path.join(process.env.USERPROFILE ?? process.env.HOME ?? '', 'Deskto
 
 const JAVA_HOME = process.env.SALONDZ_JAVA_HOME ?? 'C:/Users/gaci/tools/jdk-21.0.12.1+1';
 const ANDROID_HOME = process.env.ANDROID_HOME ?? 'C:/Users/gaci/AppData/Local/Android/Sdk';
-const env = { ...process.env, JAVA_HOME, ANDROID_HOME, ANDROID_SDK_ROOT: ANDROID_HOME };
+/**
+ * Android charge le site publié (`remote`) : un déploiement met à jour l'application de tout le monde
+ * sans passer par le Play Store, et la connexion s'y comporte exactement comme sur le site.
+ * `--embarque` revient aux fichiers embarqués (fonctionne hors ligne, mais impose un envoi au Store
+ * pour la moindre correction).
+ */
+const mode = process.argv.includes('--embarque') ? 'bundled' : 'remote';
+const env = { ...process.env, JAVA_HOME, ANDROID_HOME, ANDROID_SDK_ROOT: ANDROID_HOME, SALONDZ_APP_MODE: mode };
 
 const run = (cmd, args, cwd) => {
   console.log(`\n▸ ${cmd} ${args.join(' ')}`);
@@ -42,6 +49,7 @@ if (next !== current) {
   writeFileSync(VERSION_FILE, raw.replace(/^versionCode=\d+$/m, `versionCode=${next}`));
 }
 console.log(`Version ${versionName} (${next})${next === current ? ' — inchangée' : ` — était ${current}`}`);
+console.log(mode === 'remote' ? 'Mode : EN LIGNE (mises à jour sans passer par le Play Store)' : 'Mode : EMBARQUÉ (fonctionne hors ligne)');
 
 // 2. Le site, puis la coque
 // Le raccourci `pnpm` global est cassé sur cette machine : on passe par le fichier de corepack.

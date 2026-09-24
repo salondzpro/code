@@ -100,7 +100,10 @@ async function setupChrome(): Promise<void> {
     import('@capacitor/splash-screen'),
   ]);
   await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
-  await StatusBar.setOverlaysWebView({ overlay: true }).catch(() => undefined);
+  // L'application ne dessine PAS sous les barres du téléphone : c'est le système qui leur réserve
+  // la place (`android:fitsSystemWindows`), donc l'affichage s'adapte tout seul à chaque appareil —
+  // encoche, barre gestuelle ou trois boutons. Le contraire cachait des boutons en haut et en bas.
+  await StatusBar.setOverlaysWebView({ overlay: false }).catch(() => undefined);
   await SplashScreen.hide().catch(() => undefined);
 }
 

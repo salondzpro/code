@@ -23,6 +23,20 @@ const config: CapacitorConfig = {
   },
   server: {
     androidScheme: 'https',
+    /**
+     * MODE EN LIGNE (`SALONDZ_APP_MODE=remote`, utilisé par `scripts/build-android.mjs`).
+     *
+     * L'application charge le site publié au lieu de sa copie embarquée. Deux conséquences voulues :
+     * un déploiement sur salondz.com met à jour l'application de TOUT LE MONDE immédiatement, sans
+     * repasser par le Play Store ; et l'application vit sur la même origine que le site, donc la
+     * connexion, la session et les appels à l'API s'y comportent exactement pareil.
+     *
+     * En contrepartie, l'application a besoin du réseau pour démarrer. C'est acceptable ici :
+     * réserver, consulter un agenda ou recevoir une demande exigent de toute façon le réseau.
+     *
+     * Les fichiers embarqués restent dans l'application et servent de secours au chargement.
+     */
+    ...(process.env.SALONDZ_APP_MODE === 'remote' ? { url: 'https://salondz.com', errorPath: 'index.html' } : {}),
   },
   plugins: {
     SplashScreen: {

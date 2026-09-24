@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Reprend les jetons du design (apps/web/src/styles/tokens.css) : les barres du téléphone
+         doivent prolonger l'écran, pas trancher avec lui. -->
+    <color name="colorPrimary">#111214</color>
+    <color name="colorPrimaryDark">#111214</color>
+    <color name="colorAccent">#111214</color>
+    <!-- Le fond des écrans de l'application (jeton color-bg). -->
+    <color name="salondzSurface">#f8f9fa</color>
+</resources>
