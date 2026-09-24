@@ -32,11 +32,18 @@ startUpdateCheck();
 
 // Ordre voulu : dictionnaire de la langue courante (rien en français), PUIS le code de l'application,
 // dont certains modules traduisent au chargement. Le rendu vient en dernier.
+// Application mobile : le logo s'affiche PENDANT le chargement, pas après — il masque l'attente au
+// lieu de s'y ajouter. La coque injecte `window.Capacitor` avant le code de l'application, ce qui
+// évite d'importer le paquet ici : son chargement coûterait justement ce qu'on cherche à masquer.
+const inNativeShell = Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
+if (inNativeShell) void import('./lib/launchAnimation').then((m) => m.startLaunchAnimation());
+
 void loadDictionary(getLocale())
   .catch(() => undefined)
   .then(() => import('./app/boot'))
   .then((m) => m.render())
   .then(async () => {
+    if (inNativeShell) void import('./lib/launchAnimation').then((m) => m.endLaunchAnimation());
     // Coque native (application mobile) : position, partage, bouton retour, liens profonds, barre d'état.
     // Sans effet — et sans téléchargement — pour un visiteur du site.
     const { isNative, initNative } = await import('./lib/native');

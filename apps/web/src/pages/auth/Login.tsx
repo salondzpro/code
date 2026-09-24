@@ -22,6 +22,7 @@ import { readAuthFlow, writeAuthFlow, DESIGN_IMAGES } from '@/lib/authFlow';
 import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { LangSwitch } from '@/components/LangSwitch';
+import { Wordmark } from '@/components/Wordmark';
 import { t } from '@/i18n';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -138,6 +139,11 @@ export function Login({ landing }: { landing?: boolean } = {}) {
       ) : (
         <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : undefined} noBack={role !== 'pro'} />
       )}
+      {/* La marque ouvre toute page de connexion, côté client comme côté professionnel : c'est la
+          première chose que voit quelqu'un qui installe l'application, elle doit dire chez qui il est. */}
+      <div className="flex justify-center pt-1">
+        <Wordmark size={1.714} />
+      </div>
       <div>
         <h1 className="h1">{role === 'pro' ? 'Espace professionnel' : 'Connexion'}</h1>
         <p className="p mt-2">

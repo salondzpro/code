@@ -61,6 +61,20 @@ try {
     await shoot(path.join(dir, 'ic_launcher_foreground.png'), size, svg(size, wordmark(size, size * 0.127, size * 0.55)), true);
     console.log('✔', `mipmap-${density}`, `${size}px`);
   }
+  // Écran de démarrage natif : le fond d'encre et le wordmark, identiques à l'animation d'ouverture,
+  // pour qu'on ne voie aucune rupture entre l'écran système et l'application.
+  const SPLASH = { mdpi: 320, hdpi: 480, xhdpi: 720, xxhdpi: 960, xxxhdpi: 1280 };
+  for (const [density, size] of Object.entries(SPLASH)) {
+    const body = svg(size, `<rect width="${size}" height="${size}" fill="${INK}"/>${wordmark(size, size * 0.1, size * 0.44)}`);
+    for (const orientation of ['port', 'land']) {
+      const dir = path.join(RES, `drawable-${orientation}-${density}`);
+      mkdirSync(dir, { recursive: true });
+      await shoot(path.join(dir, 'splash.png'), size, body);
+    }
+  }
+  await shoot(path.join(RES, 'drawable', 'splash.png'), 480, svg(480, `<rect width="480" height="480" fill="${INK}"/>${wordmark(480, 48, 211)}`));
+  console.log('✔ écrans de démarrage');
+
   // Play Store : icône 512 pleine, même marque.
   const store = path.join(ROOT, 'apps', 'web', 'android', 'store');
   mkdirSync(store, { recursive: true });

@@ -26,8 +26,13 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
+      // L'écran natif reste affiché jusqu'à ce que l'application prenne le relais, sur le MÊME fond
+      // d'encre que l'animation d'ouverture : aucun éclair blanc entre les deux.
       launchAutoHide: false,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#111214',
+      androidSplashResourceName: 'splash',
+      splashFullScreen: false,
+      splashImmersive: false,
     },
   },
 };
