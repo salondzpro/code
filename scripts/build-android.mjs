@@ -5,7 +5,8 @@
  *   node scripts/build-android.mjs --same     → reconstruit SANS changer le numéro (mise au point)
  *
  * Enchaîne : numéro de version → construction du site → synchronisation de la coque → `.aab` (Play
- * Console) et `.apk` (essai sur téléphone) → copie sur le Bureau.
+ * Console) → copie sur le Bureau. UNIQUEMENT le `.aab` : les essais passent par le test interne de
+ * Play Console, jamais par un fichier installé à la main.
  *
  * Pourquoi un script : Google REFUSE un envoi dont le numéro a déjà servi, et ce numéro ne peut
  * jamais redescendre. Oublier de l'incrémenter coûte un aller-retour complet avec Play Console —
@@ -59,17 +60,16 @@ const PNPM = process.env.SALONDZ_PNPM ?? 'C:/Users/gaci/AppData/Local/node/corep
 run('node', [PNPM, '--filter', '@salondz/web', 'build'], ROOT);
 run('npx', ['cap', 'sync', 'android'], WEB);
 
-// 3. Les deux formats : `.aab` pour Play Console, `.apk` pour essayer sur un téléphone
+// 3. UNIQUEMENT le `.aab`. Le propriétaire essaie ses versions par le TEST INTERNE de Play Console,
+// jamais par un fichier installé à la main : un `.apk` en plus allongeait la compilation pour rien, et
+// deux fichiers voisins ont déjà été confondus (l'ancien APK Expo installé à la place du nouveau).
 // Chemin complet : sous Windows, « ./gradlew.bat » n'est pas reconnu par l'interpréteur de commandes.
-run(`"${path.join(ANDROID, 'gradlew.bat')}"`, [':app:bundleRelease', ':app:assembleRelease', '--no-daemon'], ANDROID);
+run(`"${path.join(ANDROID, 'gradlew.bat')}"`, [':app:bundleRelease', '--no-daemon'], ANDROID);
 
 // 4. Sur le Bureau, avec le numéro dans le nom : impossible d'envoyer deux fois le même fichier
 mkdirSync(OUT, { recursive: true });
 const built = path.join(ANDROID, 'app', 'build', 'outputs');
 const aab = path.join(OUT, `salon-dz-${versionName}-versionCode${next}.aab`);
-const apk = path.join(OUT, `salon-dz-${versionName}-versionCode${next}-test.apk`);
 copyFileSync(path.join(built, 'bundle', 'release', 'app-release.aab'), aab);
-copyFileSync(path.join(built, 'apk', 'release', 'app-release.apk'), apk);
 
 console.log(`\n✔ À envoyer sur Play Console : ${aab}`);
-console.log(`✔ À installer pour essayer  : ${apk}`);
