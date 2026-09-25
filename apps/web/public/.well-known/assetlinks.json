@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dz.salondz.app",
+      "sha256_cert_fingerprints": [
+        "00:DD:BF:0C:40:F7:77:12:AB:18:48:07:E9:CA:80:9D:1E:70:00:A5:F0:1C:4F:D2:BF:E0:63:C4:13:69:CA:57",
+        "44:7E:B9:52:6D:CE:47:DA:45:A2:4B:BE:C4:37:1F:A0:40:18:B0:F0:94:EB:04:A7:38:4C:46:78:7D:1A:3A:EC"
+      ]
+    }
+  }
+]

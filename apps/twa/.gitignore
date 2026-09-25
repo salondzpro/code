@@ -1,0 +1,7 @@
+# Régénérable par « npx @bubblewrap/cli update » puis Gradle.
+app/build/
+build/
+.gradle/
+local.properties
+*.keystore
+*.jks
