@@ -75,7 +75,11 @@ android {
         applicationId "dz.salondz.app"
         minSdkVersion 23
         targetSdkVersion 36
-        versionCode 30
+        // Numéro volontairement haut : Play Console refuse de déployer une version dont le numéro
+        // n'est pas supérieur à TOUTES celles déjà envoyées, toutes pistes confondues (« aucun
+        // utilisateur actuel ne peut effectuer la mise à jour »). Les envois précédents sont montés
+        // jusqu'à 30 ; on repart franchement au-dessus plutôt que de compter au plus juste.
+        versionCode 100
         // Play Console refuse un nom de version vide (Bubblewrap ne l'a pas repris du manifeste).
         versionName "1.0.0"
 
