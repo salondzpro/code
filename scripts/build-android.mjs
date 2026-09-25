@@ -27,12 +27,14 @@ const OUT = path.join(process.env.USERPROFILE ?? process.env.HOME ?? '', 'Deskto
 const JAVA_HOME = process.env.SALONDZ_JAVA_HOME ?? 'C:/Users/gaci/tools/jdk-21.0.12.1+1';
 const ANDROID_HOME = process.env.ANDROID_HOME ?? 'C:/Users/gaci/AppData/Local/Android/Sdk';
 /**
- * Android charge le site publié (`remote`) : un déploiement met à jour l'application de tout le monde
- * sans passer par le Play Store, et la connexion s'y comporte exactement comme sur le site.
- * `--embarque` revient aux fichiers embarqués (fonctionne hors ligne, mais impose un envoi au Store
- * pour la moindre correction).
+ * Par défaut, les fichiers du site sont EMBARQUÉS : l'application démarre toujours, même sans réseau.
+ *
+ * `--en-ligne` la fait charger salondz.com — un déploiement mettrait alors à jour tout le monde sans
+ * passer par le Play Store. **Non validé** : essayé le 25 sept. 2026, l'application s'ouvrait sur un
+ * écran blanc, cause non identifiée faute de pouvoir lire les journaux de l'appareil. Ne pas livrer
+ * dans ce mode sans l'avoir vu fonctionner sur un téléphone.
  */
-const mode = process.argv.includes('--embarque') ? 'bundled' : 'remote';
+const mode = process.argv.includes('--en-ligne') ? 'remote' : 'bundled';
 const env = { ...process.env, JAVA_HOME, ANDROID_HOME, ANDROID_SDK_ROOT: ANDROID_HOME, SALONDZ_APP_MODE: mode };
 
 const run = (cmd, args, cwd) => {
