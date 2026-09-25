@@ -564,7 +564,7 @@ test('connexion de démonstration : adresse → vraie session ; ancien numéro +
   const five = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '11111' });
   assert.equal(five.statusCode, 401, five.body);
 
-  const cli = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clienthomme@salondz.com' });
+  const cli = await call('POST', '/v1/auth/dev-login', undefined, { email: 'client@salondz.com' });
   assert.equal(cli.statusCode, 200, cli.body);
   assert.equal(cli.json().role, 'client');
   assert.ok(cli.json().accessToken && cli.json().refreshToken, cli.body);
@@ -581,11 +581,11 @@ test('connexion de démonstration : adresse → vraie session ; ancien numéro +
   // Ancien numéro (application mobile) → même compte.
   const alias = await call('POST', '/v1/auth/dev-login', undefined, { phone: '0603044618', code: '1111' });
   assert.equal(alias.statusCode, 200, alias.body);
-  assert.equal(alias.json().email, 'clienthomme@salondz.com');
+  assert.equal(alias.json().email, 'client@salondz.com');
 
   for (const [email, min] of [
-    ['hommes@salondz.com', 13],
-    ['femmes@salondz.com', 20],
+    ['pro-homme@salondz.com', 13],
+    ['pro-femme@salondz.com', 20],
   ] as const) {
     const pro = await call('POST', '/v1/auth/dev-login', undefined, { email });
     assert.equal(pro.statusCode, 200, pro.body);
@@ -599,12 +599,12 @@ test('connexion de démonstration : adresse → vraie session ; ancien numéro +
   }
 
   // Idempotent : une seconde connexion réussit sur le même compte.
-  const again = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clientfemme@salondz.com' });
+  const again = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clientfemme@salondz.internal' });
   assert.equal(again.statusCode, 200, again.body);
 
   // La démonstration réelle vit dans le navigateur : ces comptes de test ne doivent rien laisser en base
   // (leurs salons seraient publiés sur la marketplace).
-  for (const email of ['hommes@salondz.com', 'femmes@salondz.com', 'clienthomme@salondz.com', 'clientfemme@salondz.com']) {
+  for (const email of ['pro-homme@salondz.com', 'pro-femme@salondz.com', 'client@salondz.com', 'clientfemme@salondz.internal']) {
     const found = await db.rpc('auth_user_by_email', { p_email: email });
     const id = (found.data as { id: string }[] | null)?.[0]?.id;
     if (id) await db.auth.admin.deleteUser(id);

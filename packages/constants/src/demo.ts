@@ -17,16 +17,20 @@ export interface DemoAccount {
   phone: string;
   gender: 'male' | 'female';
   market: 'men' | 'women' | null;
-  /** Ce que montre le bouton de l'écran Connexion. */
+  /** Libellé lisible, utilisé dans les scripts et les journaux. */
   label: string;
   hint: string;
+  /** Ce compte ouvre une session de démonstration. Les autres ne font que peupler le monde. */
+  login: boolean;
 }
 
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
-  { key: 'hommes', email: 'hommes@salondz.com', role: 'pro', fullName: 'Karim Bouzid', phone: '+213550100001', gender: 'male', market: null, label: 'Professionnel · Hommes', hint: 'Barbier, 13 prestations' },
-  { key: 'femmes', email: 'femmes@salondz.com', role: 'pro', fullName: 'Yasmine Haddad', phone: '+213550100002', gender: 'female', market: null, label: 'Professionnel · Femmes', hint: 'Cheveux, ongles, cils, soins' },
-  { key: 'clienthomme', email: 'clienthomme@salondz.com', role: 'client', fullName: 'Yacine Benali', phone: '+213550100003', gender: 'male', market: 'men', label: 'Client · Homme', hint: 'Rendez-vous, historique, avis' },
-  { key: 'clientfemme', email: 'clientfemme@salondz.com', role: 'client', fullName: 'Amel Kaci', phone: '+213550100004', gender: 'female', market: 'women', label: 'Cliente · Femme', hint: 'Rendez-vous, historique, avis' },
+  { key: 'hommes', email: 'pro-homme@salondz.com', role: 'pro', fullName: 'Karim Bouzid', phone: '+213550100001', gender: 'male', market: null, label: 'Professionnel · Hommes', hint: 'Barbier, 13 prestations', login: true },
+  { key: 'femmes', email: 'pro-femme@salondz.com', role: 'pro', fullName: 'Yasmine Haddad', phone: '+213550100002', gender: 'female', market: null, label: 'Professionnel · Femmes', hint: 'Cheveux, ongles, cils, soins', login: true },
+  { key: 'clienthomme', email: 'client@salondz.com', role: 'client', fullName: 'Yacine Benali', phone: '+213550100003', gender: 'male', market: 'men', label: 'Client', hint: 'Rendez-vous, historique, avis', login: true },
+  // Cliente du salon femmes : elle PEUPLE le monde de démonstration (historique, avis du salon de
+  // Yasmine) mais ne sert pas à se connecter — trois accès suffisent, un par rôle à montrer.
+  { key: 'clientfemme', email: 'clientfemme@salondz.internal', role: 'client', fullName: 'Amel Kaci', phone: '+213550100004', gender: 'female', market: 'women', label: 'Cliente · Femme', hint: 'Rendez-vous, historique, avis', login: false },
 ];
 
 /**
@@ -45,10 +49,21 @@ const byKey = (key: DemoAccountKey) => DEMO_ACCOUNTS.find((a) => a.key === key)!
 export function demoAccountFor(identifier: string | null | undefined): DemoAccount | null {
   if (!identifier) return null;
   const v = identifier.trim().toLowerCase();
-  const byEmail = DEMO_ACCOUNTS.find((a) => a.email === v);
+  const byEmail = DEMO_ACCOUNTS.find((a) => a.login && a.email === v);
   if (byEmail) return byEmail;
   const alias = DEMO_PHONE_ALIASES[identifier.trim()];
   return alias ? byKey(alias) : null;
+}
+
+/**
+ * La démonstration ne s'affiche plus nulle part : elle s'ouvre en se connectant normalement, avec
+ * l'adresse ET le mot de passe qui lui est identique. Un visiteur n'a donc aucun moyen de tomber
+ * dessus, et une démonstration se montre en tapant une seule chose.
+ */
+export function demoAccountForCredentials(identifier: string | null | undefined, password: string | null | undefined): DemoAccount | null {
+  const account = demoAccountFor(identifier);
+  if (!account) return null;
+  return password?.trim().toLowerCase() === account.email ? account : null;
 }
 
 export const isDemoEmail = (email: string | null | undefined) => !!demoAccountFor(email);

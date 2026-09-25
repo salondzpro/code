@@ -12,7 +12,7 @@ if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) throw new Error('SUPABASE_URL / SUPAB
 const admin = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 
 // Recopiés de packages/constants/src/demo.ts (les paquets TypeScript ne s'importent pas depuis un .mjs).
-const EMAILS = ['hommes@salondz.com', 'femmes@salondz.com', 'clienthomme@salondz.com', 'clientfemme@salondz.com'];
+const EMAILS = ['pro-homme@salondz.com', 'pro-femme@salondz.com', 'client@salondz.com', 'clientfemme@salondz.internal'];
 
 async function findByEmail(email) {
   const { data, error } = await admin.rpc('auth_user_by_email', { p_email: email });
