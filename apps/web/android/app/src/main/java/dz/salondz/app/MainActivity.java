@@ -24,6 +24,10 @@ import com.getcapacitor.BridgeActivity;
  */
 public class MainActivity extends BridgeActivity {
 
+  /** Dernières marges connues, en pixels d'interface : elles servent à les REPOSER après un rechargement. */
+  private int lastTop = 0, lastBottom = 0, lastLeft = 0, lastRight = 0;
+  private View rootView;
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -32,8 +36,8 @@ public class MainActivity extends BridgeActivity {
     // contenu des barres. Sans cela, on perdrait deux bandes grises en haut et en bas.
     WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-    final View root = findViewById(android.R.id.content);
-    ViewCompat.setOnApplyWindowInsetsListener(root, (view, windowInsets) -> {
+    rootView = findViewById(android.R.id.content);
+    ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, windowInsets) -> {
       // `systemBars` couvre la barre d'état et la barre de navigation (boutons comme gestes),
       // `displayCutout` l'encoche ou le poinçon de l'appareil. On garde le plus grand des deux.
       Insets bars = windowInsets.getInsets(
@@ -50,8 +54,24 @@ public class MainActivity extends BridgeActivity {
     });
   }
 
+  /**
+   * Les variables CSS vivent dans la page : un rechargement les efface, et les marges ne seraient
+   * alors reposées qu'au prochain changement — l'application reprendrait sous les barres. On les
+   * réapplique donc au retour au premier plan, et on redemande au système de les notifier.
+   */
+  @Override
+  public void onResume() {
+    super.onResume();
+    applyInsets(lastTop, lastBottom, lastLeft, lastRight);
+    if (rootView != null) ViewCompat.requestApplyInsets(rootView);
+  }
+
   /** Écrit les marges dans les variables CSS lues par la feuille de style. */
   private void applyInsets(int top, int bottom, int left, int right) {
+    lastTop = top;
+    lastBottom = bottom;
+    lastLeft = left;
+    lastRight = right;
     final String js =
       "(function(){var s=document.documentElement.style;" +
       "s.setProperty('--sat','" + top + "px');" +

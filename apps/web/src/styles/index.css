@@ -1182,7 +1182,17 @@
    vers ici pour qu'une requête de média puisse le reprendre quand la feuille devient une
    fenêtre centrée et que la barre d'onglets disparaît. */
 .scr {
-  padding-bottom: max(var(--scr-b, 1rem), calc(var(--sheet-h, 0px) + 1rem));
+  /* La marge basse ajoute TOUJOURS la barre de navigation du téléphone : sans elle, le dernier
+     bouton d'un écran (se déconnecter, créer un compte, valider) passait dessous et devenait
+     inatteignable. Quand une feuille d'actions est ouverte, c'est sa hauteur qui l'emporte —
+     elle inclut déjà cette marge, donc rien n'est compté deux fois. */
+  padding-bottom: max(calc(var(--scr-b, 1rem) + var(--safe-bottom)), calc(var(--sheet-h, 0px) + 1rem));
+}
+
+/* Les rares écrans qui n'utilisent pas `Screen` (bienvenue professionnel, carte) : même réserve,
+   sinon leur dernier bouton se retrouve lui aussi sous la barre du téléphone. */
+.rd {
+  padding-bottom: var(--safe-bottom);
 }
 
 /* ------------------------------ Tablette ------------------------------ */
