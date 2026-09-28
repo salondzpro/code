@@ -18,10 +18,10 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 60
     integrations:
+      # Ce nom doit être EXACTEMENT celui donné à l'intégration dans Codemagic (Teams → Integrations
+      # → App Store Connect). S'il diffère, la compilation s'arrête au moment de signer.
       app_store_connect: salondz
     environment:
-      groups:
-        - salondz
       vars:
         BUNDLE_ID: dz.salondz.app
         XCODE_WORKSPACE: apps/web/ios/App/App.xcworkspace
@@ -45,10 +45,12 @@ workflows:
           cd apps/web/ios/App
           pod install
       - name: Numéro de version
-        # Apple refuse un numéro déjà envoyé : on prend le suivant d'après TestFlight, jamais à la main.
+        # Apple refuse un numéro déjà envoyé, et il ne peut jamais redescendre. `BUILD_NUMBER` est
+        # fourni par Codemagic et s'incrémente à chaque compilation : rien à tenir à la main, et
+        # aucune dépendance à l'identifiant de l'application, inconnu avant sa création.
         script: |
           cd apps/web/ios/App
-          agvtool new-version -all $(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID") + 1))
+          agvtool new-version -all "$BUILD_NUMBER"
       - name: Signature
         script: |
           keychain initialize
