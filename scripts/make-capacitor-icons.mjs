@@ -10,7 +10,7 @@
  *   ic_launcher_foreground  premier plan de l'icône ADAPTATIVE : le fond est séparé et la zone sûre
  *                           n'est qu'un disque central de 66 %, d'où un wordmark plus petit.
  */
-import { readFileSync, mkdirSync } from 'node:fs';
+import fs, { readFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pw from 'playwright-core';
@@ -74,6 +74,22 @@ try {
   }
   await shoot(path.join(RES, 'drawable', 'splash.png'), 480, svg(480, `<rect width="480" height="480" fill="${INK}"/>${wordmark(480, 48, 211)}`));
   console.log('✔ écrans de démarrage');
+
+  // iOS : une seule icône de 1024 (Xcode décline les tailles), et l'écran de démarrage en trois
+  // densités. Même marque que l'Android, au pixel près.
+  const IOS = path.join(ROOT, 'apps', 'web', 'ios', 'App', 'App', 'Assets.xcassets');
+  const iconSet = path.join(IOS, 'AppIcon.appiconset');
+  if (fs.existsSync(iconSet)) {
+    await shoot(path.join(iconSet, 'AppIcon-512@2x.png'), 1024, svg(1024, `<rect width="1024" height="1024" fill="${INK}"/>${wordmark(1024, 190, 820)}`));
+    console.log('✔ icône iOS 1024');
+  }
+  const splashSet = path.join(IOS, 'Splash.imageset');
+  if (fs.existsSync(splashSet)) {
+    for (const [nom, taille] of [['splash-2732x2732.png', 2732], ['splash-2732x2732-1.png', 2732], ['splash-2732x2732-2.png', 2732]]) {
+      await shoot(path.join(splashSet, nom), taille, svg(taille, `<rect width="${taille}" height="${taille}" fill="${INK}"/>${wordmark(taille, taille * 0.062, taille * 0.28)}`));
+    }
+    console.log('✔ écran de démarrage iOS');
+  }
 
   // Play Store : icône 512 pleine, même marque.
   const store = path.join(ROOT, 'apps', 'web', 'android', 'store');
