@@ -39,6 +39,19 @@ workflows:
         # dépôt — chercher l'un ou l'autre arrête la compilation avant qu'elle ne commence.
         XCODE_PROJECT: apps/web/ios/App/App.xcodeproj
         XCODE_SCHEME: App
+        # Variables de CONSTRUCTION du site. Elles sont indispensables : `apps/web/src/lib/env.ts`
+        # les valide au démarrage et JETTE si elles manquent. Vite, lui, compile sans broncher — on
+        # obtiendrait donc un build accepté par Apple qui s'ouvre sur un écran blanc. C'est la même
+        # panne que celle vécue avec Expo en septembre, et elle ne se voit qu'une fois installée.
+        #
+        # Elles ne sont PAS secrètes : ce sont les valeurs publiables, déjà présentes dans le
+        # bundle servi par salondz.com et lisibles par quiconque ouvre le site. Les vrais secrets
+        # (clé Supabase secrète, base de données) ne franchissent jamais cette limite.
+        VITE_SUPABASE_URL: https://thpwvmtqzhtqlosgvced.supabase.co
+        VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_vw_A2TLxG9oLTFXX-hz_Lg_keOHltrM
+        VITE_API_URL: https://api.salondz.com
+        VITE_PUBLIC_SITE_URL: https://salondz.com
+        VITE_VAPID_PUBLIC_KEY: BPqRbQsauc6_C0idEme8kaf_cSOxcRkg4ASmmHMn2qTz4eCuh7bucBcPvDNwZ04xZr4LaMeBMKllbKoI7PvYSUQ
       node: 22
       xcode: latest
     scripts:
@@ -47,7 +60,15 @@ workflows:
           corepack enable
           pnpm install --frozen-lockfile
       - name: Construction du site
-        script: pnpm --filter @salondz/web build
+        # Le garde-fou qui manquait : on VÉRIFIE que l'adresse de l'API se retrouve bien dans le
+        # bundle. Une variable oubliée ne fait pas échouer Vite — elle fait échouer l'application
+        # chez la personne qui l'installe, ce qui se découvre beaucoup trop tard.
+        script: |
+          pnpm --filter @salondz/web build
+          if ! grep -rq "api.salondz.com" apps/web/dist/assets; then
+            echo "Le bundle ne contient pas l'adresse de l'API : variables VITE_* manquantes."
+            exit 1
+          fi
       - name: Synchronisation de la coque iOS
         script: |
           cd apps/web
