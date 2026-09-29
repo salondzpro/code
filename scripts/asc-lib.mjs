@@ -21,12 +21,32 @@ function token() {
   return `${head}.${body}.${sig}`;
 }
 
+/**
+ * Un appel à l'API d'Apple. Les lectures sont retentées deux fois sur les pannes passagères
+ * (429 quand on enchaîne les requêtes, 5xx, coupure réseau) : sans cela, un hoquet au milieu d'un
+ * script de remplissage laisse la fiche à moitié écrite, et il faut deviner où il s'est arrêté.
+ * Les ÉCRITURES ne sont jamais retentées d'office — rejouer un POST créerait un doublon.
+ */
 export async function asc(method, p, body) {
-  const r = await fetch('https://api.appstoreconnect.apple.com' + p, {
-    method,
-    headers: { Authorization: 'Bearer ' + token(), ...(body ? { 'Content-Type': 'application/json' } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const json = await r.json().catch(() => null);
-  return { status: r.status, json };
+  const relancable = method === 'GET';
+  for (let essai = 0; ; essai++) {
+    let r, json;
+    try {
+      r = await fetch('https://api.appstoreconnect.apple.com' + p, {
+        method,
+        headers: { Authorization: 'Bearer ' + token(), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      json = await r.json().catch(() => null);
+    } catch (err) {
+      if (!relancable || essai >= 2) throw err;
+      await new Promise((f) => setTimeout(f, 1500 * (essai + 1)));
+      continue;
+    }
+    if (relancable && essai < 2 && (r.status === 429 || r.status >= 500)) {
+      await new Promise((f) => setTimeout(f, 1500 * (essai + 1)));
+      continue;
+    }
+    return { status: r.status, json };
+  }
 }
