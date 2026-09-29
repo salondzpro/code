@@ -14,8 +14,15 @@
  * Le script télécharge, recadre au format voulu et enregistre en WebP dans `apps/web/public/demo/`.
  * Recadrage et encodage passent par Chrome, déjà présent pour les captures : aucune dépendance.
  *
- *   node scripts/demo-photos.mjs              # tout
- *   node scripts/demo-photos.mjs prestation   # une famille de formats seulement
+ *   node scripts/demo-photos.mjs                          # tout
+ *   node scripts/demo-photos.mjs prestation               # une famille de formats seulement
+ *   node --env-file=.env scripts/demo-photos.mjs --stockage   # envoie aussi dans Supabase Storage
+ *
+ * POURQUOI `--stockage` EXISTE : les photos servent à DEUX mondes distincts. La démonstration du
+ * navigateur lit `apps/web/public/demo/` (fichiers du site) ; le salon de démonstration PUBLIÉ en
+ * production — celui que voient les relecteurs d'Apple et de Google — lit le stockage Supabase.
+ * Ce second envoi manquait : le stockage était resté aux illustrations du 18 septembre pendant que
+ * le site passait aux vraies photos le 19. La place de marché montrait donc des pictogrammes.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,6 +31,9 @@ import pw from 'playwright-core';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'apps/web/public/demo');
+const STOCKAGE = process.argv.includes('--stockage');
+/** Seul un argument SANS tiret nomme une famille de formats : sinon `--stockage` la filtrerait. */
+const FAMILLE = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? null;
 
 /** Formats : couverture large, portrait carré, prestation en 4/3. */
 const FORMATS = {
@@ -88,7 +98,6 @@ const PHOTOS = {
   'f-epilation-visage': ['prestation', '1531299244174-d247dd4e5a66', 0.5],
 };
 
-const seulement = process.argv[2];
 fs.mkdirSync(OUT, { recursive: true });
 
 const browser = await pw.chromium.launch({ channel: 'chrome' });
@@ -97,7 +106,7 @@ let faits = 0;
 const manques = [];
 
 for (const [nom, [famille, id, pos]] of Object.entries(PHOTOS)) {
-  if (seulement && famille !== seulement) continue;
+  if (FAMILLE && famille !== FAMILLE) continue;
   const f = FORMATS[famille];
   // On demande à Unsplash une image déjà proche de la taille finale : moins d'octets, et le
   // recadrage travaille sur une source nette.
@@ -137,3 +146,35 @@ const poids = fs
   .reduce((a, f) => a + fs.statSync(path.join(OUT, f)).size, 0);
 console.log(`${faits} photo(s) écrite(s) · dossier ${Math.round(poids / 1024)} ko`);
 if (manques.length) console.log(`À REPRENDRE : ${manques.join(', ')}`);
+
+// ---------------------------------------------------------------------------------------------
+// Envoi dans Supabase Storage : le dossier local fait foi, le stockage le recopie à l'identique.
+// `upsert` écrase le fichier de même nom — l'URL publique ne change pas, donc rien à rebrancher
+// côté salon de démonstration. Un cache court évite qu'un ancien visuel traîne chez les visiteurs.
+// ---------------------------------------------------------------------------------------------
+if (STOCKAGE) {
+  const { createClient } = await import('@supabase/supabase-js');
+  const url = process.env.SUPABASE_URL;
+  const cle = process.env.SUPABASE_SECRET_KEY;
+  if (!url || !cle) throw new Error('SUPABASE_URL et SUPABASE_SECRET_KEY requis : node --env-file=.env …');
+  const sb = createClient(url, cle);
+
+  let envoyees = 0;
+  const refus = [];
+  for (const fichier of fs.readdirSync(OUT).filter((f) => f.endsWith('.webp'))) {
+    // Un portrait va dans le seau des avatars, tout le reste dans celui des salons : c'est la
+    // répartition que l'API attend, et les URL publiques déjà enregistrées en base la suivent.
+    const seau = fichier.startsWith('avatar-') ? 'avatars' : 'salons';
+    const { error } = await sb.storage
+      .from(seau)
+      .upload(`demo/${fichier}`, fs.readFileSync(path.join(OUT, fichier)), {
+        contentType: 'image/webp',
+        cacheControl: '300',
+        upsert: true,
+      });
+    if (error) refus.push(`${seau}/${fichier} : ${error.message}`);
+    else envoyees++;
+  }
+  console.log(`${envoyees} photo(s) envoyée(s) dans le stockage`);
+  for (const r of refus) console.log('  ✖', r);
+}

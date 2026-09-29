@@ -77,11 +77,30 @@ Les confirmations, les demandes et les rappels passent par les notifications de 
 
 **Coordonnées de revue** : nom, téléphone et e-mail du propriétaire (Apple exige un numéro).
 
+## 3 bis. App Store Connect par l'API (29 sept. 2026)
+
+L'application « Salon DZ » existe dans App Store Connect : id **`6817317513`**, bundle `dz.salondz.app`, SKU `salondz`, langue principale `fr-FR`, version `1.0`.
+
+Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de `secrets/`, client dans `scripts/asc-lib.mjs`) :
+
+| Script | Ce qu'il fait |
+|---|---|
+| `node scripts/asc-fiche.mjs` | sous-titre, confidentialité, catégories, description, mots-clés, liens, copyright, classification par âge, notes de revue, tarif gratuit, disponibilité (175 pays). Idempotent. `--telephone "+213 …"` pose le numéro de revue, `--lire` n'écrit rien. |
+| `node scripts/make-store-panels.mjs` | les six visuels de présentation 1290×2796 (panorama continu, `apps/web/ios/store/presentation-6-7/`) |
+| `node scripts/asc-captures.mjs` | les envoie sur la fiche (série `APP_IPHONE_67`), en quatre temps comme l'exige Apple ; `--lire` montre l'état |
+
+**Ce que l'API ne peut PAS faire, et qui reste à la main** :
+- **créer la fiche** (fait par le propriétaire le 29 sept.) ;
+- **les étiquettes de confidentialité** (« App Privacy ») : Apple a retiré `appDataUsages` de l'API — les six chemins répondent 404, vérifié. Le contenu à cocher est au § 3 ci-dessus ;
+- **le numéro de téléphone de revue** : Apple l'exige et il n'est écrit nulle part dans le dépôt.
+
+**iPhone seulement** (`TARGETED_DEVICE_FAMILY = "1"`) : le site a bien une mise en page tablette, mais l'application n'a jamais été essayée sur iPad, et déclarer l'iPad obligerait à fournir une série de captures 13". À rouvrir après la 1.0, en connaissance de cause.
+
 ## 4. Risques connus avant une revue
 
 1. ~~Marketplace vide~~ — **traité le 21 sept.** : « Salon Démonstration » (Alger Centre, publié, réservation confirmée d'office, 6 prestations, 2 membres, photos) et deux comptes de revue, par `node --env-file=.env scripts/store-review.mjs`. Aucun avis fabriqué. Le salon est clairement présenté comme une démonstration ; à retirer (`--remove`) quand de vrais salons existent, ou à laisser : décision du propriétaire.
 2. ~~Suppression du compte d'un professionnel~~ — **traité le 21 sept.** : « Supprimer mon compte et mon salon » (web et mobile), `DELETE /v1/me` avec `{ withSalon: true }`. Les rendez-vous à venir sont annulés et leurs clients prévenus ; l'historique des rendez-vous passés disparaît aussi chez les clients (l'écran le dit). Ce contrôle a révélé que l'effacement de compte — client compris — n'avait **jamais abouti** (colonne `favorites.client_id` inexistante) : corrigé, vérifié par `pnpm check:pro-deletion`.
 3. ~~Signalement d'un avis~~ — **traité le 21 sept.** : « Signaler » sous chaque avis (web : page salon, tous les avis, avis du professionnel ; application : liste des avis), un motif parmi quatre ; file `/admin/signalements` (masquer avec motif, ou sans suite) ; migration 0047 ; vérifié par `pnpm check:review-report`. Contact publié : `support@salondz.com`. **Dans le build v5 et suivants** de l'application.
-4. **Captures d'écran** — Play : 2 à 8 captures de téléphone ; App Store : au moins une série 6,7" (1290×2796) ou 6,9" (1320×2868). **À prendre depuis l'application installée** sur un vrai téléphone : le site web n'a pas la même interface que l'application, et des captures du site ne seraient pas celles de l'application.
+4. ~~**Captures d'écran** à prendre depuis un vrai téléphone~~ — **caduc depuis la bascule Capacitor (24 sept.)** : l'application EST le site embarqué, donc un rendu du site à la taille d'un iPhone est l'application au pixel près. `node scripts/make-ios-screenshots.mjs` ouvre la production en 430×932 à densité 3 (= 1290×2796), se connecte aux comptes de démonstration et prend six écrans ; il injecte les marges de sécurité de l'iPhone (59 pt en haut, 34 pt en bas) dans les mêmes variables CSS que le natif, sinon la mise en page serait celle d'un navigateur de bureau. Il ÉCHOUE bruyamment si la connexion ne prend pas — sans ce garde-fou, les six captures seraient six fois l'écran de connexion.
 5. **Application non essayée sur appareil** avant le premier envoi : le test interne (Play) et TestFlight (Apple) servent à ça, pas la production.
 6. **iOS** — aucun build jamais fait ; bloqué en attente de la clé App Store Connect, de la clé APNs et du Team ID.

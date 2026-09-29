@@ -69,3 +69,7 @@ apps/web/android/app/src/main/assets/capacitor.plugins.json
 
 # Identifiants de signature locaux (mot de passe du .p12) : jamais dans git.
 apps/mobile/credentials.json
+
+# Panorama des visuels de boutique : 4,7 Mo de polices et d images en base64, entierement
+# regenere par scripts/make-store-panels.mjs. Ce sont les PNG decoupes qui sont la livraison.
+apps/web/ios/store/panorama.html
