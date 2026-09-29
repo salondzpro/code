@@ -44,6 +44,51 @@ async function ecrire(label, method, p, body) {
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
 
+/**
+ * `--lire` : l'état réel de la fiche chez Apple, sans rien écrire. C'est ce qu'on regarde avant
+ * d'annoncer que la fiche est prête — un champ vide ne se voit pas autrement qu'en le demandant.
+ */
+if (LIRE) {
+  const infos = await lire(`/v1/apps/${APP}/appInfos`);
+  const INFO = infos[0].id;
+  const [fiche] = await lire(`/v1/appInfos/${INFO}/appInfoLocalizations`);
+  const cat = await lire(`/v1/appInfos/${INFO}/primaryCategory`);
+  const cat2 = await lire(`/v1/appInfos/${INFO}/secondaryCategory`);
+  const age = await lire(`/v1/appInfos/${INFO}/ageRatingDeclaration`);
+  const versions = await lire(`/v1/apps/${APP}/appStoreVersions?limit=5`);
+  const v = versions.find((x) => x.attributes.platform === 'IOS');
+  const [locv] = await lire(`/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations`);
+  const revue = await lire(`/v1/appStoreVersions/${v.id}/appStoreReviewDetail`);
+  const prix = await lire(`/v1/appPriceSchedules/${APP}/manualPrices?limit=2`);
+  const pays = (await asc('GET', `/v2/appAvailabilities/${APP}/territoryAvailabilities?limit=1`)).json?.meta?.paging?.total;
+  const series = (await lire(`/v1/appStoreVersionLocalizations/${locv.id}/appScreenshotSets`)) ?? [];
+
+  const dit = (nom, valeur) => console.log(` ${valeur ? '✔' : '✖'} ${nom.padEnd(28)} ${valeur ? String(valeur).replace(/\s+/g, ' ').slice(0, 72) : '— vide —'}`);
+  console.log(`\nFiche « ${infos[0].attributes ? 'Salon DZ' : ''} » · version ${v.attributes.versionString} · ${v.attributes.appStoreState}\n`);
+  dit('nom', fiche.attributes.name);
+  dit('sous-titre', fiche.attributes.subtitle);
+  dit('confidentialité', fiche.attributes.privacyPolicyUrl);
+  dit('catégories', [cat?.id, cat2?.id].filter(Boolean).join(' / '));
+  dit('description', locv.attributes.description?.length + ' caractères');
+  dit('mots-clés', locv.attributes.keywords);
+  dit('texte promotionnel', locv.attributes.promotionalText);
+  dit('assistance', locv.attributes.supportUrl);
+  dit('marketing', locv.attributes.marketingUrl);
+  dit('copyright', v.attributes.copyright);
+  dit('classification', age?.attributes?.userGeneratedContent === null ? null : 'renseignée (4+)');
+  dit('compte de démonstration', revue?.attributes?.demoAccountName);
+  // Le numéro fictif remplit le champ mais ne joint personne : il doit se signaler comme manquant,
+  // sinon un futur passage conclurait que la fiche est complète.
+  const tel = revue?.attributes?.contactPhone;
+  dit('téléphone de revue', tel === '+213 555 00 00 00' ? null : tel);
+  if (tel === '+213 555 00 00 00') console.log('   ↳ numéro fictif en place : node scripts/asc-fiche.mjs --telephone "+213 …"');
+  dit('tarif', prix?.length ? 'gratuit' : null);
+  dit('disponibilité', pays ? `${pays} pays` : null);
+  dit('captures', series.map((s) => s.attributes.screenshotDisplayType).join(', '));
+  console.log('\n Étiquettes de confidentialité : à cocher dans l’interface web (Apple a retiré l’API).');
+  process.exit(0);
+}
+
 // ---------------------------------------------------------------------------------------------
 // Les textes. Repris mot pour mot de docs/STORES.md, pour que les deux boutiques disent la même chose.
 // ---------------------------------------------------------------------------------------------
