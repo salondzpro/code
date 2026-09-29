@@ -3,6 +3,7 @@ import type { FastifyBaseLogger } from 'fastify';
 import { db } from './supabase';
 import { isWebPushToken, sendWebPush, webPushEnabled } from './webpush';
 import { fcmEnabled, isFcmToken, sendFcm } from './fcm';
+import { apnsEnabled, isApnsToken, sendApns } from './apns';
 
 const expo = new Expo({ useFcmV1: true });
 
@@ -52,10 +53,12 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     .in('user_id', userIds);
   if (tErr) throw tErr;
 
-  // Deux canaux, deux protocoles : Expo pour les applications mobiles, Web Push pour les
-  // navigateurs. Un jeton qui n'est ni l'un ni l'autre est ignoré plutôt que de faire échouer
-  // le lot entier.
+  // Quatre canaux, quatre protocoles, reconnus à la FORME du jeton : Expo (ancienne application),
+  // APNs (iPhone), Firebase (Android), Web Push (navigateur). L'ORDRE des tests compte — un jeton
+  // APNs doit être reconnu AVANT Firebase, qui accepte « tout le reste ». Un jeton d'aucune de ces
+  // formes est ignoré plutôt que de faire échouer le lot entier.
   const tokensByUser = new Map<string, string[]>();
+  const apnsByUser = new Map<string, string[]>();
   const fcmByUser = new Map<string, string[]>();
   const webByUser = new Map<string, string[]>();
   for (const t of tokens ?? []) {
@@ -63,6 +66,11 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
       const list = tokensByUser.get(t.user_id) ?? [];
       list.push(t.token);
       tokensByUser.set(t.user_id, list);
+    } else if (apnsEnabled && isApnsToken(t.token)) {
+      // iPhone : la coque iOS n'a pas Firebase, on parle à Apple directement.
+      const list = apnsByUser.get(t.user_id) ?? [];
+      list.push(t.token);
+      apnsByUser.set(t.user_id, list);
     } else if (fcmEnabled && isFcmToken(t.token)) {
       // Application mobile (coque Capacitor) : Firebase directement.
       const list = fcmByUser.get(t.user_id) ?? [];
@@ -107,6 +115,23 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     }
   }
 
+  // iPhone (Capacitor → APNs). Un iPhone et un Android ne sont JAMAIS le même appareil : quelqu'un
+  // qui a les deux doit être prévenu sur les deux, ce canal ne s'exclut donc pas avec Firebase.
+  let apnsSent = 0;
+  for (const n of pending as PendingNotification[]) {
+    if (!wanted(n) || tokensByUser.has(n.user_id)) continue;
+    for (const token of apnsByUser.get(n.user_id) ?? []) {
+      const ok = await sendApns(log, {
+        token,
+        title: n.title,
+        body: n.body,
+        data: { ...n.data, type: n.type, notificationId: n.id },
+      });
+      if (ok) apnsSent++;
+      else invalidTokens.push(token);
+    }
+  }
+
   // Application mobile (Capacitor → Firebase) : même règle de priorité que le reste, une seule
   // notification par personne. Elle passe avant le navigateur, qui ne sert qu'à qui n'a pas l'application.
   let fcmSent = 0;
@@ -129,7 +154,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // qu'à qui n'a pas l'application (un jeton mobile mort est retiré au tour précédent, le navigateur prend le relais).
   let webSent = 0;
   for (const n of pending as PendingNotification[]) {
-    if (!wanted(n) || tokensByUser.has(n.user_id) || fcmByUser.has(n.user_id)) continue;
+    if (!wanted(n) || tokensByUser.has(n.user_id) || apnsByUser.has(n.user_id) || fcmByUser.has(n.user_id)) continue;
     for (const token of webByUser.get(n.user_id) ?? []) {
       const r = await sendWebPush(log, token, {
         title: n.title,
@@ -151,7 +176,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     .in('id', pending.map((n) => n.id as string));
   if (uErr) throw uErr;
 
-  return messages.length + fcmSent + webSent;
+  return messages.length + apnsSent + fcmSent + webSent;
 }
 
 /** Fire-and-forget après une mutation de réservation (ne bloque pas la réponse HTTP). */

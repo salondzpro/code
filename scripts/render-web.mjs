@@ -123,6 +123,22 @@ if (apiService) {
   } else {
     console.log(`CORS_ORIGINS de l'API contient déjà ${siteUrl}.`);
   }
+
+  // Secrets de l'API tenus dans le `.env` local et recopiés sur Render à l'identique. Ils ne sont
+  // jamais affichés — seulement leur nom et le fait qu'ils aient changé. Un secret absent du `.env`
+  // est ignoré : on ne l'efface pas sur Render, où il a pu être posé à la main.
+  const SECRETS_API = ['APNS_KEY', 'APNS_KEY_ID', 'APNS_TEAM_ID', 'FCM_SERVICE_ACCOUNT'];
+  for (const cle of SECRETS_API) {
+    const local = process.env[cle];
+    if (!local) continue;
+    if (vars.find((v) => v.key === cle)?.value === local) {
+      console.log(`${cle} : déjà à jour.`);
+      continue;
+    }
+    await call('PUT', `/services/${apiService.id}/env-vars/${cle}`, { value: local });
+    console.log(`${cle} : posé sur Render.`);
+    changed = true;
+  }
   // Une variable modifiée par l'API Render ne redéploie PAS le service : on le fait explicitement.
   if (changed || redeployApi) {
     const dep = await call('POST', `/services/${apiService.id}/deploys`, { clearCache: 'do_not_clear' });

@@ -1,9 +1,12 @@
 /**
- * Notifications de l'application mobile (Capacitor + Firebase). C'est la raison d'être de l'application :
+ * Notifications de l'application mobile (Capacitor). C'est la raison d'être de l'application :
  * joindre le professionnel et le client quand l'application est fermée, sans passer par WhatsApp.
  *
- * Le jeton Firebase est enregistré dans `push_tokens` comme les autres, avec `platform = 'android'`.
- * Côté serveur, il se reconnaît à ce qu'il n'est ni un jeton Expo ni un abonnement navigateur (JSON).
+ * LE MÊME CODE SERT LES DEUX SYSTÈMES, mais le jeton obtenu n'est pas de la même nature :
+ *   - Android : la coque embarque Firebase, le greffon rend un jeton FCM ;
+ *   - iPhone : la coque n'embarque PAS Firebase, le greffon rend le jeton APNs brut de l'appareil.
+ * Côté serveur, les deux se reconnaissent à leur forme et partent chez Google ou chez Apple
+ * (`apps/api/src/lib/fcm.ts` et `lib/apns.ts`). Rien à décider ici.
  *
  * Dans une WebView, les notifications du NAVIGATEUR (service worker, VAPID) ne fonctionnent pas : c'est
  * ce module qui prend le relais, et `webpush.ts` lui délègue dès que l'on tourne en natif.
@@ -44,7 +47,15 @@ export async function enableNativePush(api: ApiClient): Promise<boolean> {
     await Push.register();
     const value = await token;
     if (!value) return false;
-    await api.me.registerPushToken({ token: value, platform: 'android', deviceName: 'Application Android' });
+    // L'appareil dit lui-même ce qu'il est : un iPhone enregistré comme « android » se retrouverait
+    // dans la mauvaise liste de la page Appareils, et le propriétaire ne saurait plus quoi révoquer.
+    const { Capacitor } = await import('@capacitor/core');
+    const ios = Capacitor.getPlatform() === 'ios';
+    await api.me.registerPushToken({
+      token: value,
+      platform: ios ? 'ios' : 'android',
+      deviceName: ios ? 'Application iPhone' : 'Application Android',
+    });
     return true;
   } catch (err) {
     console.warn('[push natif] enregistrement impossible', err);

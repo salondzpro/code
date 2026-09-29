@@ -71,6 +71,16 @@ services:
       # le JSON complet sur une ligne. Sans elle, l'envoi mobile est désactivé sans rien casser.
       - key: FCM_SERVICE_ACCOUNT
         sync: false
+      # Notifications de l'iPhone : la coque iOS n'embarque pas Firebase, on parle à Apple
+      # directement (APNs). `APNS_KEY` est la clé .p8 encodée en base64 — un PEM multiligne se
+      # transporte mal dans une variable d'environnement. Sans ces trois-là, l'envoi iPhone est
+      # désactivé sans rien casser, exactement comme pour Firebase.
+      - key: APNS_KEY
+        sync: false
+      - key: APNS_KEY_ID
+        sync: false
+      - key: APNS_TEAM_ID
+        sync: false
       # Web Push (VAPID) : la clé publique est aussi VITE_VAPID_PUBLIC_KEY côté site.
       - key: VAPID_PUBLIC_KEY
         sync: false

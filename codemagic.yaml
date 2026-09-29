@@ -10,8 +10,8 @@
 #   2. Ajouter la clé App Store Connect : Teams → Integrations → Developer Portal.
 #      Fichier `secrets/AuthKey_4HZRQ9GV7F.p8`, Key ID 4HZRQ9GV7F,
 #      Issuer ID b02ec096-b36d-489d-9348-e4850df4f647.
-#   3. Créer l'application « Salon DZ » dans App Store Connect (bundle dz.salondz.app, SKU salondz) :
-#      l'API d'Apple ne permet PAS de la créer, c'est la seule étape manuelle obligatoire.
+#   3. L'application « Salon DZ » existe dans App Store Connect depuis le 29 sept. 2026
+#      (id 6817317513) : sa fiche est remplie par `scripts/asc-fiche.mjs`.
 workflows:
   ios:
     name: Salon DZ · iOS
@@ -24,11 +24,13 @@ workflows:
     environment:
       vars:
         BUNDLE_ID: dz.salondz.app
-        XCODE_WORKSPACE: apps/web/ios/App/App.xcworkspace
+        # PROJET, pas espace de travail : Capacitor 8 gère ses dépendances natives par Swift Package
+        # Manager (`App/CapApp-SPM/Package.swift`). Il n'y a NI Podfile NI .xcworkspace dans ce
+        # dépôt — chercher l'un ou l'autre arrête la compilation avant qu'elle ne commence.
+        XCODE_PROJECT: apps/web/ios/App/App.xcodeproj
         XCODE_SCHEME: App
       node: 22
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Dépendances du dépôt
         script: |
@@ -40,10 +42,11 @@ workflows:
         script: |
           cd apps/web
           npx cap sync ios
-      - name: Dépendances natives
+      - name: Dépendances natives (Swift Package Manager)
+        # `cap sync ios` a déjà écrit Package.swift ; on demande à Xcode de résoudre les paquets
+        # maintenant plutôt que pendant la compilation, pour que l'échec éventuel soit lisible.
         script: |
-          cd apps/web/ios/App
-          pod install
+          xcodebuild -resolvePackageDependencies -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME"
       - name: Numéro de version
         # Apple refuse un numéro déjà envoyé, et il ne peut jamais redescendre. `BUILD_NUMBER` est
         # fourni par Codemagic et s'incrémente à chaque compilation : rien à tenir à la main, et
@@ -59,7 +62,7 @@ workflows:
           xcode-project use-profiles
       - name: Compilation
         script: |
-          xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:

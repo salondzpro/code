@@ -1,9 +1,10 @@
 /**
  * Envoi direct à Firebase (FCM HTTP v1), pour l'APPLICATION MOBILE (coque Capacitor).
  *
- * Trois canaux cohabitent désormais dans `push_tokens`, et se reconnaissent à la FORME du jeton :
+ * Quatre canaux cohabitent désormais dans `push_tokens`, et se reconnaissent à la FORME du jeton :
  *   - abonnement navigateur : du JSON (`lib/webpush.ts`) ;
  *   - jeton Expo : `ExponentPushToken[…]`, hérité de l'ancienne application ;
+ *   - jeton APNs : 64 caractères hexadécimaux, pour l'iPhone (`lib/apns.ts`) ;
  *   - jeton Firebase : tout le reste, c'est-à-dire ce module.
  *
  * L'authentification se fait par un jeton d'accès Google obtenu à partir de la clé de service
@@ -11,6 +12,7 @@
  * notifications restent visibles dans l'application et le reste du service fonctionne.
  */
 import { createSign } from 'node:crypto';
+import { isApnsToken } from './apns';
 import type { FastifyBaseLogger } from 'fastify';
 
 type ServiceAccount = { client_email: string; private_key: string; project_id: string };
@@ -29,9 +31,13 @@ function readServiceAccount(): ServiceAccount | null {
 const account = readServiceAccount();
 export const fcmEnabled = account !== null;
 
-/** Un jeton Firebase n'est ni du JSON (navigateur) ni un jeton Expo : il ne reste que lui. */
+/**
+ * Un jeton Firebase n'est ni du JSON (navigateur), ni un jeton Expo, ni un jeton APNs (64 caractères
+ * hexadécimaux, voir `lib/apns.ts`). Le test sur APNs est indispensable : sans lui, tous les iPhone
+ * partiraient chez Firebase, qui ne les connaît pas, et aucune notification n'arriverait.
+ */
 export function isFcmToken(token: string): boolean {
-  return !token.startsWith('{') && !token.startsWith('ExponentPushToken');
+  return !token.startsWith('{') && !token.startsWith('ExponentPushToken') && !isApnsToken(token);
 }
 
 let cached: { token: string; expiresAt: number } | null = null;
