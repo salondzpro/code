@@ -19,8 +19,18 @@ workflows:
     max_build_duration: 60
     integrations:
       # Ce nom doit être EXACTEMENT celui donné à l'intégration dans Codemagic (Teams → Integrations
-      # → App Store Connect). S'il diffère, la compilation s'arrête au moment de signer.
-      app_store_connect: salondz
+      # → Apple Developer Portal). S'il diffère, la compilation s'arrête au moment de signer.
+      # Relevé le 29 sept. 2026 dans l'interface : « salondz_asc », clé GZ7CF8ABHX.
+      app_store_connect: salondz_asc
+    # Une compilation iOS se paie à la minute : elle ne part donc PAS à chaque poussée sur main,
+    # mais sur une ÉTIQUETTE `ios-…` posée exprès. `git tag ios-3 && git push origin ios-3` suffit,
+    # et le numéro de build reste fourni par Codemagic.
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'ios-*'
+          include: true
     environment:
       vars:
         BUNDLE_ID: dz.salondz.app
