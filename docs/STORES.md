@@ -88,6 +88,13 @@ Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de 
 | `node scripts/asc-fiche.mjs` | sous-titre, confidentialité, catégories, description, mots-clés, liens, copyright, classification par âge, notes de revue, tarif gratuit, disponibilité (175 pays). Idempotent. `--telephone "+213 …"` pose le numéro de revue, `--lire` n'écrit rien. |
 | `node scripts/make-store-panels.mjs` | les six visuels de présentation 1290×2796 (panorama continu, `apps/web/ios/store/presentation-6-7/`) |
 | `node scripts/asc-captures.mjs` | les envoie sur la fiche (série `APP_IPHONE_67`), en quatre temps comme l'exige Apple ; `--lire` montre l'état |
+| `node scripts/asc-builds.mjs` | les builds reçus par Apple et leur état de traitement |
+| `node scripts/asc-signature.mjs` | capacités de l'App ID et profils : dit si la signature passera |
+| `node scripts/asc-soumettre.mjs` | rattache le dernier build traité à la version et l'envoie EN REVUE ; `--verifier` ne fait que dire ce qui manque |
+| `node --env-file=.env scripts/check-review-accounts.mjs` | les deux comptes que le relecteur va utiliser s'ouvrent-ils vraiment, et leur profil est-il complet |
+| `node --env-file=.env scripts/check-apns.mjs` | la clé APNs est-elle acceptée par Apple (sans appareil) |
+
+**Lancer une compilation iOS** : `git tag ios-N && git push origin ios-N`. Le déclenchement se fait sur l'étiquette et non sur chaque poussée — une machine macOS se paie à la minute. L'intégration Codemagic doit s'appeler **`salondz_asc`**.
 
 **Ce que l'API ne peut PAS faire, et qui reste à la main** :
 - **créer la fiche** (fait par le propriétaire le 29 sept.) ;
