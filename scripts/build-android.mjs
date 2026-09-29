@@ -15,7 +15,7 @@
  * Java 21 est OBLIGATOIRE (Capacitor 7) : le Java 17 du système échoue sur « invalid source release ».
  */
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,6 +58,22 @@ console.log(mode === 'remote' ? 'Mode : EN LIGNE (mises à jour sans passer par 
 // Le raccourci `pnpm` global est cassé sur cette machine : on passe par le fichier de corepack.
 const PNPM = process.env.SALONDZ_PNPM ?? 'C:/Users/gaci/AppData/Local/node/corepack/v1/pnpm/9.15.0/bin/pnpm.cjs';
 run('node', [PNPM, '--filter', '@salondz/web', 'build'], ROOT);
+
+// Garde-fou : l'adresse de l'API doit se retrouver dans le bundle. Sans lui, une construction qui
+// reprend le `.env` de développement produit une application qui cherche le serveur SUR LE
+// TÉLÉPHONE (`http://localhost:8090`) : tout appel réel échoue sur « Pas de connexion ». C'est
+// exactement ce qui a été livré, et le défaut est resté invisible parce que les comptes de
+// démonstration n'appellent jamais l'API. Les bonnes valeurs sont dans `.env.production`.
+const ASSETS = path.join(WEB, 'dist', 'assets');
+const vise = readdirSync(ASSETS)
+  .filter((f) => f.endsWith('.js'))
+  .map((f) => /VITE_API_URL:"([^"]*)"/.exec(readFileSync(path.join(ASSETS, f), 'utf8'))?.[1])
+  .find(Boolean);
+if (vise !== 'https://api.salondz.com') {
+  throw new Error(`Le site a été construit pour « ${vise ?? 'aucune adresse' } » au lieu de https://api.salondz.com — vérifier .env.production`);
+}
+console.log(`API visée par l'application : ${vise}`);
+
 run('npx', ['cap', 'sync', 'android'], WEB);
 
 // 3. UNIQUEMENT le `.aab`. Le propriétaire essaie ses versions par le TEST INTERNE de Play Console,

@@ -9,6 +9,11 @@ build/
 .env
 .env.*
 !.env.example
+# Exception assumée : `.env.production` ne contient QUE des valeurs publiables (préfixe VITE_),
+# déjà lisibles dans le bundle servi à chaque visiteur. Il est versionné pour qu'une compilation
+# — site, Android, iOS — parte des bonnes adresses sans dépendre de la configuration d'un
+# hébergeur. N'y ajouter aucun secret : son en-tête le rappelle.
+!.env.production
 
 # expo / mobile
 .expo/
