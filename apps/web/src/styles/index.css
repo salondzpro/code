@@ -387,8 +387,11 @@ body::before {
   }
 
   /* Badges de statut */
+  /* Pastille de statut RECTANGULAIRE (6 px), pas une gélule : elle se lit comme une étiquette
+     posée sur la fiche, et s'aligne avec le reste du petit mobilier, qui a le même arrondi.
+     Seule exception à la règle « badges inchangés » des arrondis réduits — demandée, et cohérente. */
   .badge {
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-card-sm);
     padding: 0.25rem 0.625rem;
     font-size: 0.6875rem;
     font-weight: 600;
@@ -423,9 +426,12 @@ body::before {
     color: var(--color-muted);
   }
   /* Confirmé (violet) et Client absent (noir) : statuts simples du lancement */
+  /* CONFIRMÉ : vert. C'est l'état qu'on cherche des yeux dans une liste — un rendez-vous validé.
+     Plus soutenu que le vert de « Terminé » (`b-ok`), qui parle d'un rendez-vous passé : les deux
+     sont positifs, celui-ci est encore à venir. */
   .b-cf {
-    background: #e7dfff;
-    color: #4b2c91;
+    background: #dcf5e8;
+    color: #0b6b43;
   }
   .b-dk {
     background: #e3e4e6;
