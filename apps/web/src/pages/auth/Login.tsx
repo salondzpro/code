@@ -8,11 +8,14 @@
  * `client@salondz.com`), puis chacun atterrit dans l'espace qui lui convient. Un visiteur ne peut
  * donc pas tomber dessus, et une démonstration se montre en tapant une seule chose.
  *
- * `landing` : cette même page sert aussi de PAGE D'ACCUEIL (`/intro`, ex-« Intro » + « Bienvenue »
- * fusionnées en une seule — un visiteur non connecté ne peut rien faire d'autre que se connecter,
- * inutile de lui faire cliquer deux écrans avant d'arriver ici). Dans ce mode : bandeau de marque en
- * haut au lieu du bouton retour, rôle toujours client (jamais de reliquat d'un rôle précédent), et
- * « Portail des professionnels » tout en bas — la porte d'entrée pro reste `/pro/bienvenue`.
+ * UNE SEULE PORTE D'ENTRÉE : `/intro`. `/connexion` y renvoie en gardant la destination visée, et
+ * toute déconnexion y ramène. Seule exception, la porte PROFESSIONNELLE (`?role=pro`), qui vient de
+ * `/pro/bienvenue` et garde son bouton retour vers cette page.
+ *
+ * L'écran tient SANS DÉFILEMENT, y compris sur un petit téléphone (360×740) : c'est une contrainte,
+ * pas un constat. Toute addition ici doit être mesurée — le portail est la première chose que voit
+ * quelqu'un qui installe l'application, et il ne doit rien cacher sous la ligne de flottaison.
+ * Le lien de connexion par e-mail a SA page (`/connexion/lien`) : il a besoin de son propre champ.
  */
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
@@ -36,7 +39,7 @@ const LINK_ERRORS: Record<string, string> = {
 };
 
 export function Login({ landing }: { landing?: boolean } = {}) {
-  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin } = useAuth();
+  const { session, signInWithPassword, resendConfirmation, demoLogin } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   // Le portail est TOUJOURS celui du client : jamais de rôle hérité d'une visite précédente
@@ -49,7 +52,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   const [email, setEmail] = useState(() => (landing ? '' : (readAuthFlow()?.identifier ?? '')));
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
-  const [busy, setBusy] = useState<'password' | 'link' | 'resend' | 'demo' | null>(null);
+  const [busy, setBusy] = useState<'password' | 'resend' | 'demo' | null>(null);
   // Démonstration déjà jouée sur cet appareil : on propose de repartir d'un monde neuf.
   const [error, setError] = useState<{ kind: AuthErrorKind | 'form'; text: string } | null>(
     linkErr ? { kind: 'expired', text: LINK_ERRORS[linkErr] ?? LINK_ERRORS.lien! } : null,
@@ -103,21 +106,6 @@ export function Login({ landing }: { landing?: boolean } = {}) {
       writeAuthFlow({ role, next, identifier: id(), channel: 'email' });
       await signInWithPassword(id(), password);
       navigate(`/connexion/retour?next=${encodeURIComponent(next)}`, { replace: true });
-    } catch (err) {
-      fail(err);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const link = async () => {
-    if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: t("Indiquez votre adresse e-mail pour recevoir le lien.") });
-    setError(null);
-    setBusy('link');
-    try {
-      writeAuthFlow({ role, next, identifier: id(), channel: 'email', sentAt: Date.now() });
-      await sendMagicLink(id(), next);
-      navigate('/connexion/envoye?mode=link');
     } catch (err) {
       fail(err);
     } finally {
@@ -272,9 +260,14 @@ export function Login({ landing }: { landing?: boolean } = {}) {
         <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
           <I icon={UserPlus} size={18} /> {role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
         </Link>
-        <Button variant="g" onClick={() => void link()} disabled={busy !== null}>
-          <I icon={MailOpen} size={18} /> {busy === 'link' ? 'Envoi…' : 'Recevoir un lien par e-mail'}
-        </Button>
+        {/* Vers sa PAGE, avec son champ : quelqu'un qui vient ici pour éviter le mot de passe
+            n'a pas forcément rempli le formulaire au-dessus. L'adresse déjà tapée est emportée. */}
+        <Link
+          to={`/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`}
+          className="btn g"
+        >
+          <I icon={MailOpen} size={18} /> {t("Recevoir un lien par e-mail")}
+        </Link>
         {landing && (
           <Link to="/pro/bienvenue" className="flex items-center justify-center gap-2 pt-2 text-[1rem] font-semibold underline">
             <I icon={Store} size={18} /> {t("Portail des professionnels")}

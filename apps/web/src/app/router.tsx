@@ -18,6 +18,7 @@ import { Login } from '@/pages/auth/Login';
 import { SignUp } from '@/pages/auth/SignUp';
 import { EmailSent } from '@/pages/auth/EmailSent';
 import { ForgotPassword, NewPassword } from '@/pages/auth/Password';
+import { MagicLink } from '@/pages/auth/MagicLink';
 import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 import { Market } from '@/pages/auth/Market';
@@ -134,6 +135,7 @@ export const router = createBrowserRouter([
           { path: '/inscription', element: <SignUp /> },
           { path: '/connexion/envoye', element: <EmailSent /> },
           { path: '/connexion/oubli', element: <ForgotPassword /> },
+          { path: '/connexion/lien', element: <MagicLink /> },
           { path: '/connexion/mot-de-passe', element: <NewPassword /> },
           { path: '/connexion/retour', element: <WelcomeBack /> },
           { path: '/pro/bienvenue', element: <ProWelcome /> },
