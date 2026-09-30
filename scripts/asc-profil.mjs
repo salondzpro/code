@@ -17,6 +17,9 @@ import { asc } from './asc-lib.mjs';
 
 const BUNDLE = 'dz.salondz.app';
 const REFAIRE = process.argv.includes('--refaire');
+const CREER = process.argv.includes('--creer');
+/** Le certificat dont NOUS avons la clé privée (`secrets/ios/dist.key`, créé le 23 sept. 2026). */
+const CERTIFICAT = '52365KLG2Z';
 
 const idr = await asc('GET', `/v1/bundleIds?filter[identifier]=${BUNDLE}&include=bundleIdCapabilities`);
 const appId = idr.json?.data?.[0];
@@ -32,17 +35,42 @@ const miens = (profils?.data ?? []).filter((p) => {
   const bid = profils.included?.find((i) => i.type === 'bundleIds' && i.id === p.relationships?.bundleId?.data?.id);
   return bid?.attributes?.identifier === BUNDLE;
 });
-if (!miens.length) {
-  console.log('aucun profil pour cette application — Codemagic en créera un tout seul');
-  process.exit(0);
-}
 for (const p of miens) {
   const a = p.attributes;
   console.log(` profil « ${a.name} » (${p.id}) · ${a.profileType} · ${a.profileState} · créé ${a.createdDate?.slice(0, 10)}`);
 }
+if (!miens.length) console.log('aucun profil pour cette application');
 
+if (CREER) {
+  // POURQUOI LE CRÉER NOUS-MÊMES plutôt que de laisser Codemagic le faire : le compte a déjà TROIS
+  // certificats de distribution, le maximum qu'Apple autorise. `fetch-signing-files --create` ne
+  // peut donc pas en fabriquer un quatrième, et sans certificat utilisable il ne crée AUCUN profil.
+  // La compilation échouait alors sur « requires a provisioning profile with the Push Notifications
+  // feature », qui ne dit rien de la vraie cause. Nous, nous avons la clé privée de l'un des trois
+  // (`secrets/ios/dist.key`) : on s'en sert.
+  const r = await asc('POST', '/v1/profiles', {
+    data: {
+      type: 'profiles',
+      attributes: { name: 'Salon DZ App Store', profileType: 'IOS_APP_STORE' },
+      relationships: {
+        bundleId: { data: { type: 'bundleIds', id: appId.id } },
+        certificates: { data: [{ type: 'certificates', id: CERTIFICAT }] },
+      },
+    },
+  });
+  if (r.status >= 300) {
+    console.log('✖ création du profil :', r.status, JSON.stringify(r.json?.errors ?? r.json).slice(0, 400));
+    process.exit(1);
+  }
+  const a = r.json.data.attributes;
+  console.log(`✔ profil « ${a.name} » créé (${r.json.data.id}) · expire ${a.expirationDate?.slice(0, 10)}`);
+  console.log('  Il reprend les capacités ACTUELLES de l’App ID, notifications comprises.');
+  process.exit(0);
+}
+
+if (!miens.length) process.exit(0);
 if (!REFAIRE) {
-  console.log('\n(--refaire pour les supprimer et laisser Codemagic en recréer)');
+  console.log('\n(--refaire pour les supprimer · --creer pour en fabriquer un avec notre certificat)');
   process.exit(0);
 }
 for (const p of miens) {
