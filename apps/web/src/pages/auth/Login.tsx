@@ -157,7 +157,9 @@ export function Login({ landing }: { landing?: boolean } = {}) {
             <Wordmark size={1.571} light />
             <LangSwitch />
           </div>
-          <span className="absolute bottom-2.5 start-4 text-[0.75rem] text-white/45">{DESIGN_IMAGES.intro.credit}</span>
+          {/* Crédit de la photo : discret et en bout de bandeau. Posé en bas à gauche, il passait
+              pour un défaut d'affichage sous la marque. */}
+          <span className="absolute bottom-2 end-4 text-[0.6875rem] text-white/40">{DESIGN_IMAGES.intro.credit}</span>
         </div>
       ) : (
         <>
@@ -266,7 +268,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
        * Plus aucune mention de la démonstration : elle s'ouvre en se connectant normalement avec
        * une adresse de démonstration et le même mot de passe.
        */}
-      <div className="mt-auto flex flex-col gap-2.5 pt-2">
+      <div className="flex flex-col gap-2.5 border-t border-line pt-4">
         <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
           <I icon={UserPlus} size={18} /> {role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
         </Link>
@@ -274,7 +276,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
           <I icon={MailOpen} size={18} /> {busy === 'link' ? 'Envoi…' : 'Recevoir un lien par e-mail'}
         </Button>
         {landing && (
-          <Link to="/pro/bienvenue" className="flex items-center justify-center gap-2 pt-1 text-[1rem] font-semibold underline">
+          <Link to="/pro/bienvenue" className="flex items-center justify-center gap-2 pt-2 text-[1rem] font-semibold underline">
             <I icon={Store} size={18} /> {t("Portail des professionnels")}
           </Link>
         )}
