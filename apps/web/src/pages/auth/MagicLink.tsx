@@ -10,11 +10,11 @@
  */
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { AlertCircle, MailOpen } from 'lucide-react';
+import { MailOpen } from 'lucide-react';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, Field, I, Input, TopBar } from '@/components/ui';
-import { Screen } from '@/components/AppFrame';
+import { Button, Field, I, Input } from '@/components/ui';
+import { AuthError, AuthShell } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
 import { t } from '@/i18n';
 
@@ -46,40 +46,35 @@ export function MagicLink() {
   };
 
   return (
-    <Screen className="h-app" gap={16}>
-      <TopBar backTo="/intro" />
-      <div>
-        <h1 className="h1">{t("Recevoir un lien de connexion")}</h1>
-        <p className="p mt-2">
-          {t("Indiquez votre adresse : vous recevrez un lien qui vous connecte directement, sans mot de passe.")}
-        </p>
-      </div>
-      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <Field label={t("E-mail")} htmlFor="ml-email">
+    <AuthShell
+      role={role}
+      back={`/connexion?role=${role}`}
+      titre="Recevoir un lien de connexion"
+      sous={t('Indiquez votre adresse : vous recevrez un lien qui vous connecte directement, sans mot de passe.')}
+    >
+      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+        <Field label={t('E-mail')} htmlFor="ml-email">
           <Input
             id="ml-email"
             lg
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder={t("vous@exemple.dz")}
+            placeholder={t('vous@exemple.dz')}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
               setError(null);
             }}
+            err={!!error}
             autoFocus
           />
         </Field>
-        {error && (
-          <p className="flex items-center gap-2 text-[1rem] text-danger" role="alert">
-            <I icon={AlertCircle} size={16} /> {error}
-          </p>
-        )}
-        <Button type="submit" disabled={busy}>
-          <I icon={MailOpen} size={18} /> {busy ? 'Envoi…' : 'Recevoir le lien'}
+        {error && <AuthError texte={error} />}
+        <Button type="submit" loading={busy}>
+          <I icon={MailOpen} size={18} /> {t('Recevoir le lien')}
         </Button>
       </form>
-    </Screen>
+    </AuthShell>
   );
 }

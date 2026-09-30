@@ -4,11 +4,10 @@
  */
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, Field, I, Input, TopBar } from '@/components/ui';
-import { Screen } from '@/components/AppFrame';
+import { Button, Field, Input } from '@/components/ui';
+import { AuthError, AuthShell, PasswordField } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
 import { t } from '@/i18n';
 
@@ -49,25 +48,30 @@ export function SignUp() {
   };
 
   return (
-    <Screen className="h-app" gap={16}>
-      <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : `/connexion?role=${role}`} />
-      <div>
-        <h1 className="h1">{role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}</h1>
-        <p className="p mt-2">
-          {role === 'pro'
-            ? 'Votre agenda, vos réservations et votre page en ligne, en quelques minutes.'
-            : 'Réservez en ligne dans les salons de votre choix, sans appel.'}
-        </p>
-      </div>
-      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <Field label={t("E-mail")} htmlFor="su-email" hint={t("Un lien de confirmation vous sera envoyé.")}>
+    <AuthShell
+      role={role}
+      back={role === 'pro' ? '/pro/bienvenue' : `/connexion?role=${role}`}
+      titre={role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
+      sous={
+        role === 'pro'
+          ? t('Votre agenda, vos réservations et votre page en ligne, en quelques minutes. Gratuit.')
+          : t('Réservez dans les salons de votre choix, sans appeler.')
+      }
+      pied={
+        <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn g">
+          {t('J’ai déjà un compte')}
+        </Link>
+      }
+    >
+      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+        <Field label={t('E-mail')} htmlFor="su-email" hint={t('Un lien de confirmation vous sera envoyé.')}>
           <Input
             id="su-email"
             lg
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder={t("vous@exemple.dz")}
+            placeholder={t('vous@exemple.dz')}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -77,62 +81,48 @@ export function SignUp() {
             autoFocus
           />
         </Field>
-        <Field label={t("Mot de passe")} htmlFor="su-password" hint={`${PASSWORD_MIN} caractères au minimum.`}>
-          <div className="relative">
-            <Input
-              id="su-password"
-              lg
-              type={show ? 'text' : 'password'}
-              autoComplete="new-password"
-              placeholder={t("Choisissez un mot de passe")}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError(null);
-              }}
-              err={error?.kind === 'password'}
-              className="!pe-12"
-            />
-            <button
-              type="button"
-              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted"
-              aria-label={show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-              onClick={() => setShow((v) => !v)}
-            >
-              <I icon={show ? EyeOff : Eye} size={20} />
-            </button>
-          </div>
-        </Field>
+        <PasswordField
+          id="su-password"
+          label={t('Mot de passe')}
+          autoComplete="new-password"
+          placeholder={t('Choisissez un mot de passe')}
+          hint={`${PASSWORD_MIN} caractères au minimum.`}
+          value={password}
+          onChange={(v) => {
+            setPassword(v);
+            setError(null);
+          }}
+          err={error?.kind === 'password'}
+        />
         {error && (
-          <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg p-3" role="alert">
-            <p className="flex items-start gap-2 text-[1rem] text-cancel-fg">
-              <I icon={AlertCircle} size={18} className="mt-0.5 flex-none" /> {error.text}
-            </p>
+          <AuthError texte={error.text}>
             {error.kind === 'exists' && (
               <div className="g2">
                 <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
-                  {t("Se connecter")}
+                  {t('Se connecter')}
                 </Link>
                 <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
-                  {t("Mot de passe oublié")}
+                  {t('Mot de passe oublié')}
                 </Link>
               </div>
             )}
-          </div>
+          </AuthError>
         )}
-        <Button type="submit" disabled={busy}>
-          {busy ? 'Création…' : 'Créer mon compte'}
+        <Button type="submit" loading={busy}>
+          {t('Créer mon compte')}
         </Button>
-        <p className="t3 text-center">
-          {t("En créant un compte vous acceptez que Salon DZ vous envoie les confirmations et rappels de vos rendez-vous.")}
+        <p className="t3 text-center leading-[1.5]">
+          {t('En créant un compte, vous acceptez les')}{' '}
+          <Link to="/cgu" className="underline underline-offset-2">
+            {t('conditions d’utilisation')}
+          </Link>{' '}
+          {t('et la')}{' '}
+          <Link to="/confidentialite" className="underline underline-offset-2">
+            {t('politique de confidentialité')}
+          </Link>
+          .
         </p>
       </form>
-      <div className="mt-auto flex flex-col gap-3 pt-4">
-        <p className="p text-center">{t("Déjà inscrit ?")}</p>
-        <Link to={`/connexion?role=${role}&next=${encodeURIComponent(next)}`} className="btn g">
-          {t("Se connecter")}
-        </Link>
-      </div>
-    </Screen>
+    </AuthShell>
   );
 }

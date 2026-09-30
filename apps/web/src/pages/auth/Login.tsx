@@ -19,14 +19,12 @@
  */
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { AlertCircle, Eye, EyeOff, MailOpen, Store, UserPlus } from 'lucide-react';
+import { MailOpen, Store, UserPlus } from 'lucide-react';
 import { demoAccountFor, demoAccountForCredentials } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
-import { readAuthFlow, writeAuthFlow, DESIGN_IMAGES } from '@/lib/authFlow';
-import { Button, Field, I, Input, TopBar } from '@/components/ui';
-import { Screen } from '@/components/AppFrame';
-import { LangSwitch } from '@/components/LangSwitch';
-import { Wordmark } from '@/components/Wordmark';
+import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
+import { Button, Field, I, Input } from '@/components/ui';
+import { AuthError, AuthShell, PasswordField } from '@/components/AuthShell';
 import { HOME, PRO_ONLY } from '@/lib/flavor';
 import { t } from '@/i18n';
 
@@ -128,52 +126,48 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   };
 
   return (
-    <Screen className="h-app" gap={12}>
-      {/**
-       * BANDEAU DE MARQUE COMPACT. L'écran tenait sur une page et demie : entre la photo de
-       * 11 rem, le logo sur sa propre rangée, un séparateur « ou » et deux intitulés de section,
-       * il fallait défiler pour atteindre « Créer un compte ». Photo et logo sont désormais UN
-       * seul bloc de 7 rem — la marque est toujours la première chose qu'on voit, elle ne coûte
-       * plus un tiers de l'écran.
-       */}
-      {landing ? (
-        <div className="relative -mx-4 -mt-3 h-[7rem] flex-none overflow-hidden">
-          <img src={DESIGN_IMAGES.intro.src} alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-ink/55" />
-          {/* Une vraie rangée d'en-tête : marque à gauche, langues à droite, sur la même ligne.
-              Centrer la marque la faisait buter contre le sélecteur dès 360 px de large. */}
-          <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
-            <Wordmark size={1.571} light />
-            <LangSwitch />
-          </div>
-          {/* Crédit de la photo : discret et en bout de bandeau. Posé en bas à gauche, il passait
-              pour un défaut d'affichage sous la marque. */}
-          <span className="absolute bottom-2 end-4 text-[0.6875rem] text-white/40">{DESIGN_IMAGES.intro.credit}</span>
-        </div>
-      ) : (
+    <AuthShell
+      role={role}
+      back={landing ? undefined : role === 'pro' ? '/pro/bienvenue' : '/home'}
+      titre={role === 'pro' ? 'Espace professionnel' : 'Connexion'}
+      sous={
+        role === 'pro'
+          ? t('Retrouvez votre agenda, vos réservations et votre page.')
+          : t('Vos rendez-vous et vos salons favoris, en quelques secondes.')
+      }
+      pied={
         <>
-          <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : undefined} noBack={role !== 'pro'} />
-          {/* Hors portail (arrivée par un lien), la marque garde sa rangée : il n'y a pas de photo. */}
-          <div className="flex justify-center">
-            <Wordmark size={1.714} />
-          </div>
+          <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
+            <I icon={UserPlus} size={18} /> {role === 'pro' ? t('Créer mon espace pro') : t('Créer un compte')}
+          </Link>
+          {/* Vers sa PAGE, avec son champ : quelqu'un qui vient ici pour éviter le mot de passe
+              n'a pas forcément rempli le formulaire au-dessus. L'adresse déjà tapée est emportée. */}
+          <Link
+            to={`/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`}
+            className="btn g"
+          >
+            <I icon={MailOpen} size={18} /> {t('Recevoir un lien par e-mail')}
+          </Link>
+          {landing && !PRO_ONLY && (
+            <Link
+              to="/pro/bienvenue"
+              className="flex items-center justify-center gap-2 pt-2 text-[1rem] font-semibold underline underline-offset-2"
+            >
+              <I icon={Store} size={18} /> {t('Portail des professionnels')}
+            </Link>
+          )}
         </>
-      )}
-      <div>
-        <h1 className="h1">{role === 'pro' ? 'Espace professionnel' : 'Connexion'}</h1>
-        <p className="p mt-1">
-          {role === 'pro' ? 'Retrouvez votre agenda et vos réservations.' : 'Vos rendez-vous, en quelques secondes.'}
-        </p>
-      </div>
-      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <Field label={t("E-mail")} htmlFor="login-email">
+      }
+    >
+      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+        <Field label={t('E-mail')} htmlFor="login-email">
           <Input
             id="login-email"
             lg
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder={t("vous@exemple.dz")}
+            placeholder={t('vous@exemple.dz')}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -183,98 +177,50 @@ export function Login({ landing }: { landing?: boolean } = {}) {
             autoFocus
           />
         </Field>
-        <Field
-          label={t("Mot de passe")}
-          htmlFor="login-password"
+        <PasswordField
+          id="login-password"
+          label={t('Mot de passe')}
+          autoComplete="current-password"
+          placeholder={t('Votre mot de passe')}
+          value={password}
+          onChange={(v) => {
+            setPassword(v);
+            setError(null);
+          }}
+          err={error?.kind === 'credentials'}
           action={
             <Link
               to={`/connexion/oubli${email ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
-              className="text-[0.875rem] font-semibold underline"
+              className="text-[0.875rem] font-semibold underline underline-offset-2"
             >
-              {t("Mot de passe oublié ?")}
+              {t('Mot de passe oublié ?')}
             </Link>
           }
-        >
-          <div className="relative">
-            <Input
-              id="login-password"
-              lg
-              type={show ? 'text' : 'password'}
-              autoComplete="current-password"
-              placeholder={t("Votre mot de passe")}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError(null);
-              }}
-              err={error?.kind === 'credentials'}
-              className="!pe-12"
-            />
-            <button
-              type="button"
-              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted"
-              aria-label={show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-              onClick={() => setShow((v) => !v)}
-            >
-              <I icon={show ? EyeOff : Eye} size={20} />
-            </button>
-          </div>
-        </Field>
+        />
         {error && (
-          <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg p-3" role="alert">
-            <p className="flex items-start gap-2 text-[1rem] text-cancel-fg">
-              <I icon={AlertCircle} size={18} className="mt-0.5 flex-none" /> {error.text}
-            </p>
+          <AuthError texte={error.text}>
             {/* La suite logique de l'erreur, à portée de pouce. */}
             {error.kind === 'no_account' && (
               <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
-                <I icon={UserPlus} size={16} /> {t("Créer un compte avec cette adresse")}
+                <I icon={UserPlus} size={16} /> {t('Créer un compte avec cette adresse')}
               </Link>
             )}
             {error.kind === 'unconfirmed' && (
-              <Button sm variant="g" onClick={() => void resend()} disabled={busy !== null}>
-                {busy === 'resend' ? 'Envoi…' : 'Renvoyer le lien de confirmation'}
+              <Button sm variant="g" loading={busy === 'resend'} onClick={() => void resend()} disabled={busy !== null}>
+                {t('Renvoyer le lien de confirmation')}
               </Button>
             )}
             {error.kind === 'credentials' && (
               <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
-                {t("Réinitialiser mon mot de passe")}
+                {t('Réinitialiser mon mot de passe')}
               </Link>
             )}
-          </div>
+          </AuthError>
         )}
-        <Button type="submit" disabled={busy !== null}>
-          {busy === 'password' ? 'Connexion…' : 'Se connecter'}
+        <Button type="submit" loading={busy === 'password' || busy === 'demo'} disabled={busy !== null}>
+          {t('Se connecter')}
         </Button>
       </form>
-
-      {/**
-       * Les trois autres portes, groupées, sans intitulé ni séparateur : « ou », « Pas encore de
-       * compte ? » et un trait de séparation coûtaient trois rangées pour ne rien dire que les
-       * boutons ne disent déjà. Elles restent de VRAIS boutons — créer un compte et recevoir un
-       * lien ne sont pas des détails qu'on cache dans un lien discret.
-       *
-       * Plus aucune mention de la démonstration : elle s'ouvre en se connectant normalement avec
-       * une adresse de démonstration et le même mot de passe.
-       */}
-      <div className="flex flex-col gap-2.5 border-t border-line pt-4">
-        <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
-          <I icon={UserPlus} size={18} /> {role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
-        </Link>
-        {/* Vers sa PAGE, avec son champ : quelqu'un qui vient ici pour éviter le mot de passe
-            n'a pas forcément rempli le formulaire au-dessus. L'adresse déjà tapée est emportée. */}
-        <Link
-          to={`/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`}
-          className="btn g"
-        >
-          <I icon={MailOpen} size={18} /> {t("Recevoir un lien par e-mail")}
-        </Link>
-        {landing && !PRO_ONLY && (
-          <Link to="/pro/bienvenue" className="flex items-center justify-center gap-2 pt-2 text-[1rem] font-semibold underline">
-            <I icon={Store} size={18} /> {t("Portail des professionnels")}
-          </Link>
-        )}
-      </div>
-    </Screen>
+    </AuthShell>
   );
 }

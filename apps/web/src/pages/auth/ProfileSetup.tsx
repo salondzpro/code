@@ -12,8 +12,8 @@ import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { groupLocalDigits } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
-import { Badge, Button, Field, I, Input, Toggle, TopBar } from '@/components/ui';
-import { Screen } from '@/components/AppFrame';
+import { Badge, Button, Field, I, Input, Toggle } from '@/components/ui';
+import { AuthShell } from '@/components/AuthShell';
 import { t } from '@/i18n';
 
 export function ProfileSetup() {
@@ -57,16 +57,17 @@ export function ProfileSetup() {
   };
 
   return (
-    <Screen className="h-app" gap={16}>
-      <TopBar noBack right="Dernière étape" />
-      <div>
-        <h1 className="h1">{t("Vos coordonnées")}</h1>
-        <p className="p mt-3">
-          {isPro
-            ? 'Votre nom et le numéro où vos clients peuvent vous joindre.'
-            : 'Le salon voit votre nom sur la réservation et vous appelle sur ce numéro si besoin.'}
-        </p>
-      </div>
+    <AuthShell
+      role={isPro ? 'pro' : 'client'}
+      marque={false}
+      titre="Vos coordonnées"
+      sous={
+        isPro
+          ? t('Votre nom et le numéro où vos clients peuvent vous joindre.')
+          : t('Le salon voit votre nom sur la réservation et vous appelle sur ce numéro si besoin.')
+      }
+    >
+      <p className="-mt-2 text-[0.875rem] font-semibold uppercase tracking-[0.08em] text-muted">{t('Dernière étape')}</p>
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <Field label={t("Prénom et nom")} htmlFor="full-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
@@ -140,6 +141,6 @@ export function ProfileSetup() {
           {update.isPending ? 'Enregistrement…' : 'Terminer'}
         </Button>
       </form>
-    </Screen>
+    </AuthShell>
   );
 }

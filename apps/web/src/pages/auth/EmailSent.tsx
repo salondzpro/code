@@ -7,8 +7,8 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { MailCheck } from 'lucide-react';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, I, InfoBox, TopBar } from '@/components/ui';
-import { Screen } from '@/components/AppFrame';
+import { Button, I, InfoBox } from '@/components/ui';
+import { AuthError, AuthShell } from '@/components/AuthShell';
 import { t } from '@/i18n';
 
 const RESEND_SECONDS = 60;
@@ -75,33 +75,36 @@ export function EmailSent() {
   };
 
   return (
-    <Screen className="h-app" gap={16}>
-      <TopBar backTo="/connexion" />
-      <div className="flex flex-col items-center gap-3 pt-4 text-center">
-        <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">
-          <I icon={MailCheck} size={34} />
+    <AuthShell back="/connexion" titre={txt.title} sous={<>{txt.body}</>}>
+      {/* L'ADRESSE, en évidence : c'est la seule chose à vérifier quand rien n'arrive. Noyée dans
+          le paragraphe, elle passait inaperçue et l'on cherchait la faute de frappe ailleurs. */}
+      <div className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5">
+        <span className="flex size-11 flex-none items-center justify-center rounded-full bg-ok-bg text-ok-fg">
+          <I icon={MailCheck} size={22} />
         </span>
-        <h1 className="h1">{txt.title}</h1>
-        <p className="p">
-          {txt.body}
-          <br />
-          <b className="text-text">{email}</b>
-        </p>
+        <span className="min-w-0">
+          <span className="block text-[0.875rem] text-muted">{t('Envoyé à')}</span>
+          <span className="block truncate font-semibold" dir="ltr">
+            {email}
+          </span>
+        </span>
       </div>
-      <InfoBox>
-        {t("Rien reçu ? Regardez dans les courriers indésirables. Le lien reste valable une heure.")}
-      </InfoBox>
-      {error && (
-        <p className="text-[1rem] text-danger" role="alert">
-          {error}
-        </p>
-      )}
-      <Button variant="g" onClick={() => void resend()} disabled={busy || resendIn > 0}>
-        {busy ? 'Envoi…' : resendIn > 0 ? `${txt.resend} (${resendIn} s)` : sent ? 'Renvoyé' : txt.resend}
-      </Button>
-      <button type="button" className="text-center text-[1rem] text-muted underline" onClick={() => navigate('/connexion')}>
-        {t("Changer d’adresse ou se connecter autrement")}
-      </button>
-    </Screen>
+
+      <InfoBox>{t('Rien reçu ? Regardez dans les courriers indésirables. Le lien reste valable une heure.')}</InfoBox>
+      {error && <AuthError texte={error} />}
+
+      <div className="flex flex-col gap-2.5">
+        <Button variant="g" loading={busy} onClick={() => void resend()} disabled={busy || resendIn > 0}>
+          {resendIn > 0 ? `${txt.resend} (${resendIn} s)` : sent ? t('Renvoyé') : txt.resend}
+        </Button>
+        <button
+          type="button"
+          className="py-1 text-center text-[1rem] text-muted underline underline-offset-2 transition-colors hover:text-ink"
+          onClick={() => navigate('/connexion')}
+        >
+          {t('Changer d’adresse ou se connecter autrement')}
+        </button>
+      </div>
+    </AuthShell>
   );
 }

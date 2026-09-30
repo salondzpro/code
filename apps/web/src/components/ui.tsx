@@ -53,19 +53,31 @@ export function Button({
   variant = 'ink',
   sm,
   auto,
+  loading,
   className = '',
+  children,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; sm?: boolean; auto?: boolean }) {
-  const cls = [
-    'btn',
-    variant !== 'ink' ? variant : '',
-    sm ? 'sm' : '',
-    auto ? 'auto' : '',
-    className,
-  ]
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: Variant;
+  sm?: boolean;
+  auto?: boolean;
+  /**
+   * Action en cours : un disque tourne DANS le bouton, qui garde sa taille et son libellé.
+   * Remplacer le texte par « Envoi… » faisait sauter la mise en page et perdait l'information
+   * de ce qu'on est en train de faire. Le bouton se désactive tout seul : deux envois pour un
+   * clic impatient, c'est deux comptes créés ou deux e-mails partis.
+   */
+  loading?: boolean;
+}) {
+  const cls = ['btn', variant !== 'ink' ? variant : '', sm ? 'sm' : '', auto ? 'auto' : '', className]
     .filter(Boolean)
     .join(' ');
-  return <button type="button" {...props} className={cls} />;
+  return (
+    <button type="button" {...props} disabled={props.disabled || loading} aria-busy={loading || undefined} className={cls}>
+      {loading && <span className="btn-spin" aria-hidden />}
+      {children}
+    </button>
+  );
 }
 
 export function LinkButton({

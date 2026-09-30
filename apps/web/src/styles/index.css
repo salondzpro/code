@@ -1531,3 +1531,91 @@ body::before {
     }
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Authentification — coque, champs et retours visuels                 */
+/* ------------------------------------------------------------------ */
+@layer components {
+  /* Disque de chargement dans un bouton : la taille du bouton ne bouge pas, le libellé reste
+     lisible. On sait ce qui se passe ET ce qu'on avait demandé. */
+  @keyframes btn-spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+  .btn-spin {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: none;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    opacity: 0.85;
+    animation: btn-spin 0.6s linear infinite;
+  }
+
+  /* Coque d'authentification : colonne unique sur téléphone, deux volets à partir de 1024 px.
+     Le volet de gauche n'est PAS décoratif — il dit à qui l'écran s'adresse (une cliente qui
+     réserve, un salon qui s'équipe), ce qu'un formulaire seul ne dit jamais. */
+  .auth-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - var(--safe-top));
+    background: var(--color-bg);
+  }
+  .auth-vitrine {
+    display: none;
+  }
+  .auth-col {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+  .auth-form {
+    width: 100%;
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .auth-shell {
+      flex-direction: row;
+    }
+    .auth-vitrine {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 46%;
+      max-width: 40rem;
+      padding: 3rem;
+      overflow: hidden;
+      color: #fff;
+      background: var(--color-ink);
+      isolation: isolate;
+    }
+    .auth-vitrine img {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.75;
+    }
+    /* Le voile n'est pas uniforme : presque transparent en haut, dense en bas, là où le texte se
+       pose. La photo reste lisible ET le texte garde son contraste — un aplat unique sacrifiait
+       forcément l'un des deux. */
+    .auth-vitrine::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(190deg, rgb(17 18 20 / 0.25) 0%, rgb(17 18 20 / 0.55) 45%, rgb(17 18 20 / 0.9) 100%);
+    }
+    .auth-col {
+      justify-content: center;
+      padding: 3rem;
+    }
+  }
+}

@@ -8,6 +8,12 @@ import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
 import { Splash } from '@/pages/auth/Splash';
+/**
+ * Coque native, testée SANS importer Capacitor : la coque pose `window.Capacitor` avant le code de
+ * l'application, et importer le paquet ici coûterait un chargement au premier rendu d'un garde.
+ */
+const enCoque = (): boolean =>
+  Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
 import { ErrorState } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
 import { ProRail } from '@/components/ProNav';
@@ -125,8 +131,13 @@ export function RequireClient() {
     return (
       <Navigate
         to={
+          // Racine du SITE : un visiteur non connecté arrive sur la présentation, qui explique ce
+          // qu'est Salon DZ avant de lui demander de se connecter. Dans l'APPLICATION, il a déjà
+          // choisi de l'installer : on lui ouvre directement le portail.
           location.pathname === '/'
-            ? '/intro'
+            ? enCoque()
+              ? '/intro'
+              : '/home'
             : `/connexion?next=${encodeURIComponent(location.pathname + location.search)}`
         }
         replace
