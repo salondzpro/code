@@ -5,13 +5,20 @@
 # fichier décrit la compilation pour une machine macOS louée à la minute (500 min/mois gratuites),
 # afin de ne pas avoir à acheter un Mac.
 #
-# À FAIRE UNE FOIS, côté Codemagic (interface web) :
-#   1. Connecter ce dépôt GitHub.
-#   2. Ajouter la clé App Store Connect : Teams → Integrations → Developer Portal.
-#      Fichier `secrets/AuthKey_4HZRQ9GV7F.p8`, Key ID 4HZRQ9GV7F,
-#      Issuer ID b02ec096-b36d-489d-9348-e4850df4f647.
-#   3. L'application « Salon DZ » existe dans App Store Connect depuis le 29 sept. 2026
-#      (id 6817317513) : sa fiche est remplie par `scripts/asc-fiche.mjs`.
+# À FAIRE UNE FOIS, côté Codemagic (interface web) — état au 30 sept. 2026 :
+#   1. Connecter ce dépôt GitHub.  ✔ fait
+#   2. Ajouter la clé App Store Connect (Teams → Integrations → Apple Developer Portal).
+#      ✔ fait : intégration « salondz_asc », Key ID GZ7CF8ABHX. C'est une clé PROPRE à Codemagic,
+#      distincte de `secrets/AuthKey_4HZRQ9GV7F.p8` qui sert aux scripts `asc-*` depuis le PC.
+#   3. **Régler l'application sur « Use codemagic.yaml »** et non sur le Workflow Editor. Tant
+#      qu'elle est sur l'éditeur visuel, CE FICHIER EST IGNORÉ — aucune compilation, aucune erreur,
+#      aucune trace. C'est la cause la plus probable du silence observé le 29 sept. : deux
+#      étiquettes poussées, zéro build reçu par Apple en 45 minutes.
+#   4. Lancer une première compilation À LA MAIN (« Start new build », branche `main`). Codemagic
+#      n'arme ses déclencheurs automatiques qu'après avoir vu le dépôt une première fois.
+#
+# L'application « Salon DZ » existe dans App Store Connect depuis le 29 sept. 2026 (id 6817317513) ;
+# sa fiche, ses visuels et sa classification sont remplis par les scripts `scripts/asc-*.mjs`.
 workflows:
   ios:
     name: Salon DZ · iOS
