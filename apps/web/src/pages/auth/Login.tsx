@@ -39,11 +39,12 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  // La page d'accueil est TOUJOURS le portail client : jamais de rôle ou de destination hérités
-  // d'une visite précédente (l'état de authFlow ne survit qu'à la navigation interne, pas au
-  // rechargement, mais autant ne dépendre de rien ici — c'est la première porte).
+  // Le portail est TOUJOURS celui du client : jamais de rôle hérité d'une visite précédente
+  // (l'état de authFlow ne survit pas au rechargement, mais autant ne dépendre de rien ici —
+  // c'est la première porte). En revanche, une DESTINATION passée explicitement est respectée :
+  // quelqu'un renvoyé ici depuis « Mes favoris » doit y retourner une fois connecté.
   const role = landing ? 'client' : params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
-  const next = landing ? '/' : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
+  const next = landing ? (params.get('next') ?? '/') : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
   const linkErr = params.get('erreur');
   const [email, setEmail] = useState(() => (landing ? '' : (readAuthFlow()?.identifier ?? '')));
   const [password, setPassword] = useState('');
@@ -55,6 +56,18 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   );
 
   if (session) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
+
+  /**
+   * UNE SEULE PORTE D'ENTRÉE. `/connexion` et `/intro` servaient le même écran sous deux allures,
+   * et l'on pouvait donc atterrir tantôt sur l'un, tantôt sur l'autre selon d'où l'on venait.
+   * `/connexion` renvoie désormais sur le portail, en gardant la destination visée. Seule
+   * exception, la porte PROFESSIONNELLE (`?role=pro`), qui vient de `/pro/bienvenue` et garde son
+   * retour vers cette page.
+   */
+  if (!landing && params.get('role') !== 'pro') {
+    const q = params.toString();
+    return <Navigate to={`/intro${q ? `?${q}` : ''}`} replace />;
+  }
 
   const id = () => email.trim().toLowerCase();
   const fail = (err: unknown) => setError(describeAuthError(err));
@@ -126,29 +139,39 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   };
 
   return (
-    <Screen className="h-app" gap={16}>
+    <Screen className="h-app" gap={12}>
+      {/**
+       * BANDEAU DE MARQUE COMPACT. L'écran tenait sur une page et demie : entre la photo de
+       * 11 rem, le logo sur sa propre rangée, un séparateur « ou » et deux intitulés de section,
+       * il fallait défiler pour atteindre « Créer un compte ». Photo et logo sont désormais UN
+       * seul bloc de 7 rem — la marque est toujours la première chose qu'on voit, elle ne coûte
+       * plus un tiers de l'écran.
+       */}
       {landing ? (
-        <div className="relative -mx-4 -mt-3 h-[11rem] flex-none overflow-hidden">
+        <div className="relative -mx-4 -mt-3 h-[7rem] flex-none overflow-hidden">
           <img src={DESIGN_IMAGES.intro.src} alt="" className="h-full w-full object-cover" />
-          <div className="ovl" />
-          <div className="ovl-t !pb-3">
-            <div className="text-[1.429rem] font-bold leading-[1.1] tracking-[-0.6px]">{t("Réservez votre rendez-vous.")}</div>
+          <div className="absolute inset-0 bg-ink/55" />
+          {/* Une vraie rangée d'en-tête : marque à gauche, langues à droite, sur la même ligne.
+              Centrer la marque la faisait buter contre le sélecteur dès 360 px de large. */}
+          <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
+            <Wordmark size={1.571} light />
+            <LangSwitch />
           </div>
-          <span className="absolute start-3 top-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{DESIGN_IMAGES.intro.credit}</span>
-          <LangSwitch className="absolute end-3 top-3" />
+          <span className="absolute bottom-2.5 start-4 text-[0.75rem] text-white/45">{DESIGN_IMAGES.intro.credit}</span>
         </div>
       ) : (
-        <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : undefined} noBack={role !== 'pro'} />
+        <>
+          <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : undefined} noBack={role !== 'pro'} />
+          {/* Hors portail (arrivée par un lien), la marque garde sa rangée : il n'y a pas de photo. */}
+          <div className="flex justify-center">
+            <Wordmark size={1.714} />
+          </div>
+        </>
       )}
-      {/* La marque ouvre toute page de connexion, côté client comme côté professionnel : c'est la
-          première chose que voit quelqu'un qui installe l'application, elle doit dire chez qui il est. */}
-      <div className="flex justify-center pt-1">
-        <Wordmark size={1.714} />
-      </div>
       <div>
         <h1 className="h1">{role === 'pro' ? 'Espace professionnel' : 'Connexion'}</h1>
-        <p className="p mt-2">
-          {role === 'pro' ? 'Retrouvez votre agenda et vos réservations.' : 'Retrouvez vos rendez-vous et réservez en quelques secondes.'}
+        <p className="p mt-1">
+          {role === 'pro' ? 'Retrouvez votre agenda et vos réservations.' : 'Vos rendez-vous, en quelques secondes.'}
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
@@ -169,7 +192,18 @@ export function Login({ landing }: { landing?: boolean } = {}) {
             autoFocus
           />
         </Field>
-        <Field label={t("Mot de passe")} htmlFor="login-password">
+        <Field
+          label={t("Mot de passe")}
+          htmlFor="login-password"
+          action={
+            <Link
+              to={`/connexion/oubli${email ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
+              className="text-[0.875rem] font-semibold underline"
+            >
+              {t("Mot de passe oublié ?")}
+            </Link>
+          }
+        >
           <div className="relative">
             <Input
               id="login-password"
@@ -221,31 +255,26 @@ export function Login({ landing }: { landing?: boolean } = {}) {
         <Button type="submit" disabled={busy !== null}>
           {busy === 'password' ? 'Connexion…' : 'Se connecter'}
         </Button>
-        <Link
-          to={`/connexion/oubli${email ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
-          className="py-1 text-center text-[1rem] font-semibold underline"
-        >
-          {t("Mot de passe oublié ?")}
-        </Link>
       </form>
 
-      <div className="flex items-center gap-3 text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
-        <span className="h-px flex-1 bg-line" /> {t("ou")}{' '}<span className="h-px flex-1 bg-line" />
-      </div>
-      <Button variant="g" onClick={() => void link()} disabled={busy !== null}>
-        <I icon={MailOpen} size={18} /> {busy === 'link' ? 'Envoi…' : 'Recevoir un lien de connexion par e-mail'}
-      </Button>
-
-      {/* Plus aucune mention de la démonstration à l'écran : elle s'ouvre en se connectant
-          normalement avec une adresse de démonstration et le même mot de passe. */}
-
-      <div className="mt-auto flex flex-col gap-3 pt-4">
-        <p className="p text-center">{t("Pas encore de compte ?")}</p>
+      {/**
+       * Les trois autres portes, groupées, sans intitulé ni séparateur : « ou », « Pas encore de
+       * compte ? » et un trait de séparation coûtaient trois rangées pour ne rien dire que les
+       * boutons ne disent déjà. Elles restent de VRAIS boutons — créer un compte et recevoir un
+       * lien ne sont pas des détails qu'on cache dans un lien discret.
+       *
+       * Plus aucune mention de la démonstration : elle s'ouvre en se connectant normalement avec
+       * une adresse de démonstration et le même mot de passe.
+       */}
+      <div className="mt-auto flex flex-col gap-2.5 pt-2">
         <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
           <I icon={UserPlus} size={18} /> {role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
         </Link>
+        <Button variant="g" onClick={() => void link()} disabled={busy !== null}>
+          <I icon={MailOpen} size={18} /> {busy === 'link' ? 'Envoi…' : 'Recevoir un lien par e-mail'}
+        </Button>
         {landing && (
-          <Link to="/pro/bienvenue" className="mt-2 flex items-center justify-center gap-2 border-t border-line pt-5 text-[1rem] font-semibold underline">
+          <Link to="/pro/bienvenue" className="flex items-center justify-center gap-2 pt-1 text-[1rem] font-semibold underline">
             <I icon={Store} size={18} /> {t("Portail des professionnels")}
           </Link>
         )}

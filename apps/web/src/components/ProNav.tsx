@@ -158,7 +158,8 @@ export function ProNav({
           onClick={async () => {
             after?.();
             await signOut();
-            navigate('/pro/bienvenue');
+            // Une seule porte d'entrée : la déconnexion ramène au portail, pro comme client.
+            navigate('/intro');
           }}
         >
           <I icon={LogOut} size={20} className="flex-none text-current" />

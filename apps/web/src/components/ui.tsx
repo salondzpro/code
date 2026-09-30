@@ -293,19 +293,35 @@ export function Field({
   hint,
   error,
   htmlFor,
+  action,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string | null;
   htmlFor?: string;
+  /**
+   * Action secondaire posée SUR la ligne de l'étiquette (« Mot de passe oublié ? »). Elle y tient
+   * sans coûter une rangée de plus, ce qui compte sur un écran d'authentification : chaque ligne
+   * gagnée est une ligne que l'on n'a pas à aller chercher en défilant.
+   */
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <div>
-      <label className="lbl" htmlFor={htmlFor}>
-        {label}
-      </label>
+      {action ? (
+        <div className="flex items-baseline justify-between gap-3">
+          <label className="lbl" htmlFor={htmlFor}>
+            {label}
+          </label>
+          {action}
+        </div>
+      ) : (
+        <label className="lbl" htmlFor={htmlFor}>
+          {label}
+        </label>
+      )}
       {children}
       {error ? (
         <p className="mt-1.5 text-[0.857rem] text-danger">{error}</p>

@@ -33,7 +33,7 @@ export const api = createApiClient({
     if (isDemo()) return;
     void supabase.auth.signOut().finally(() => {
       const next = window.location.pathname + window.location.search;
-      window.location.assign(`/connexion?next=${encodeURIComponent(next)}`);
+      window.location.assign(`/intro?next=${encodeURIComponent(next)}`);
     });
   },
 });

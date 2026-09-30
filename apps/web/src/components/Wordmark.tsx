@@ -6,11 +6,20 @@
  * `Salon` en demi-gras, `DZ` en maigre et gris : c'est la graphie de référence, celle de l'icône de
  * l'application et de l'affiche QR.
  */
-export function Wordmark({ size = 1.429, className = '' }: { size?: number; className?: string }) {
+export function Wordmark({
+  size = 1.429,
+  className = '',
+  light = false,
+}: {
+  size?: number;
+  className?: string;
+  /** Posé sur une photo ou un fond sombre : le gris du « DZ » y disparaîtrait. */
+  light?: boolean;
+}) {
   return (
-    <span className={`leading-none tracking-[-0.6px] ${className}`} style={{ fontSize: `${size}rem` }}>
+    <span className={`leading-none tracking-[-0.6px] ${light ? 'text-white' : ''} ${className}`} style={{ fontSize: `${size}rem` }}>
       <span className="font-semibold">Salon</span>
-      <span className="ms-[0.16em] font-light text-muted">DZ</span>
+      <span className={`ms-[0.16em] font-light ${light ? 'text-white/70' : 'text-muted'}`}>DZ</span>
     </span>
   );
 }
