@@ -113,6 +113,7 @@ async function controler(nom, chemin) {
 }
 
 try {
+  await controler('présentation', '/home');
   await controler("page d'accueil", '/intro');
   await controler('connexion', '/connexion');
   await controler('inscription', '/inscription');

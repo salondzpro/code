@@ -65,6 +65,7 @@ function lazyNamed(loader: () => Promise<Record<string, unknown>>, name: string)
   };
 }
 const MapView = lazyNamed(() => import('@/pages/client/MapView'), 'MapView');
+const Home = lazyNamed(() => import('@/pages/Home'), 'Home');
 const Help = lazyNamed(() => import('@/pages/Legal'), 'Help');
 const LegalNotice = lazyNamed(() => import('@/pages/Legal'), 'LegalNotice');
 const Privacy = lazyNamed(() => import('@/pages/Legal'), 'Privacy');
@@ -214,6 +215,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      ...(PRO_ONLY ? [] : [{ path: '/home', element: <Home /> }]),
       ...routesClient,
       // ---- Pages légales (et pages salon hors variante pro) ----
       { element: PRO_ONLY ? <PlainLayout /> : <ClientPlainLayout />, children: routesPubliques },

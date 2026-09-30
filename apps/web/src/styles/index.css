@@ -1407,3 +1407,127 @@ body::before {
     --rail-w: 20rem;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Page de présentation (/home) — animations                           */
+/* ------------------------------------------------------------------ */
+/* Tout est en CSS et déclenché par une seule classe posée à l'entrée dans l'écran
+   (`lib/reveal.ts`). Aucune bibliothèque d'animation : à cette échelle, elles coûtent plus de
+   kilo-octets que la page entière. Les transformations se limitent à `opacity` et `translate`,
+   les deux seules propriétés qu'un navigateur anime sans recalculer la mise en page. */
+@layer components {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--d, 0ms);
+    will-change: opacity, transform;
+  }
+  [data-reveal].in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Bandeau d'ouverture : la photo monte lentement pendant que le titre se pose. */
+  @keyframes hm-zoom {
+    from {
+      transform: scale(1.12);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  @keyframes hm-monte {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .hm-hero-img {
+    animation: hm-zoom 8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hm-in {
+    animation: hm-monte 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  /* Carte de catégorie : la photo respire au survol, le voile s'éclaircit. Au doigt, `:active`
+     donne le même retour — sans quoi rien ne se passe sur un téléphone. */
+  .hm-cat {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--color-ink);
+    isolation: isolate;
+  }
+  .hm-cat img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s;
+    opacity: 0.72;
+  }
+  .hm-cat:hover img,
+  .hm-cat:focus-visible img,
+  .hm-cat:active img {
+    transform: scale(1.07);
+    opacity: 0.85;
+  }
+  .hm-cat::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(17 18 20 / 0.85) 0%, rgb(17 18 20 / 0.15) 55%, transparent 100%);
+    z-index: 1;
+  }
+  .hm-cat > .hm-cat-txt {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 0.875rem;
+    color: #fff;
+  }
+
+  /* Fil de l'histoire : un trait continu que les étapes viennent ponctuer. */
+  .hm-fil {
+    position: relative;
+    padding-inline-start: 1.75rem;
+  }
+  .hm-fil::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.4rem 0.4rem;
+    inset-inline-start: 0.3125rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--color-line), var(--color-ink), var(--color-line));
+  }
+  .hm-etape::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -1.75rem;
+    top: 0.45rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--color-ink);
+    box-shadow: 0 0 0 4px var(--color-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal],
+    .hm-hero-img,
+    .hm-in {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+}
