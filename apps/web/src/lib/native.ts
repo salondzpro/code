@@ -86,6 +86,13 @@ async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
   await App.addListener('appUrlOpen', ({ url }) => {
     try {
       const target = new URL(url);
+      /**
+       * PASSATION depuis le navigateur (`salondz://reprise?d=…`) : la destination complète, jetons
+       * de session compris, est encodée dans un seul paramètre. Voir `lib/appHandoff.ts` — une
+       * adresse `intent://` porte déjà son propre fragment, le nôtre ne pouvait pas y tenir.
+       */
+      const reprise = target.searchParams.get('d');
+      if (reprise && reprise.startsWith('/')) return navigate(reprise);
       navigate(`${target.pathname}${target.search}${target.hash}`);
     } catch {
       /* lien illisible : on reste où l'on est */

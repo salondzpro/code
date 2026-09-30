@@ -36,6 +36,14 @@ startUpdateCheck();
 // lieu de s'y ajouter. La coque injecte `window.Capacitor` avant le code de l'application, ce qui
 // évite d'importer le paquet ici : son chargement coûterait justement ce qu'on cherche à masquer.
 const inNativeShell = Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
+
+/**
+ * PASSATION À L'APPLICATION, avant tout le reste. Un lien d'e-mail atterrit dans le navigateur ;
+ * si l'application est installée sur ce téléphone, c'est elle qui doit recevoir la session — sinon
+ * la personne est connectée d'un côté et pas de l'autre, et l'application ne sert plus à rien.
+ * Appelé ICI parce que Supabase efface le fragment dès qu'il l'a lu, et les jetons avec.
+ */
+if (!inNativeShell) void import('./lib/appHandoff').then((m) => m.handOffToApp());
 if (inNativeShell) void import('./lib/launchAnimation').then((m) => m.startLaunchAnimation());
 
 void loadDictionary(getLocale())

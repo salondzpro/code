@@ -32,6 +32,17 @@
                 <data android:scheme="https" android:host="www.salondz.com" />
             </intent-filter>
 
+            <!-- SCHÉMA D'APPLICATION. Les liens d'application ouvrent l'app depuis un e-mail ou un
+                 message, mais PAS depuis une page déjà ouverte dans le navigateur. Ce schéma sert
+                 à la PASSATION : la page web réveille l'application et lui remet la session.
+                 (Android accepte aussi une adresse `intent://`, qui passe par le même filtre.) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="salondz" />
+            </intent-filter>
+
         </activity>
 
         <provider

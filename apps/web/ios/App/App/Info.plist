@@ -64,6 +64,21 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- SCHÉMA D'APPLICATION. Les liens universels ouvrent l'app depuis un e-mail ou un message,
+	     mais PAS depuis une page déjà ouverte dans le navigateur : iOS n'intercepte pas une
+	     navigation que Safari fait vers une adresse où il se trouve déjà. Ce schéma est le seul
+	     moyen, depuis une page web, de passer la main à l'application. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>dz.salondz.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>salondz</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<!-- Apple REFUSE une application qui demande une autorisation sans dire pourquoi, et le texte
