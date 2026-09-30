@@ -8,16 +8,23 @@ if (keystorePropsFile.exists()) {
     keystoreProps.load(new FileInputStream(keystorePropsFile))
 }
 
+// VARIANTE PROFESSIONNELLE : `-PsalondzPro` produit la seconde application, `pro.salondz.app`,
+// qui ne contient que l'espace professionnel. Elle a son PROPRE numéro de version : les deux
+// applications vivent côte à côte sur Play Console et leurs numéros n'ont rien à voir.
+// Le `namespace` (paquet Java) reste `dz.salondz.app` : seul l'identifiant PUBLIÉ change, ce qui
+// évite de dupliquer MainActivity et les ressources.
+def pro = project.hasProperty('salondzPro')
+
 // Numéro de version dans un fichier à part (versionne dans git) : Google refuse un envoi dont le
 // numéro a déjà servi, et l'oublier coûte un aller-retour complet avec Play Console.
 def versionProps = new Properties()
-versionProps.load(new FileInputStream(rootProject.file("version.properties")))
+versionProps.load(new FileInputStream(rootProject.file(pro ? "version-pro.properties" : "version.properties")))
 
 android {
     namespace = "dz.salondz.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "dz.salondz.app"
+        applicationId pro ? "pro.salondz.app" : "dz.salondz.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode versionProps['versionCode'].toInteger()

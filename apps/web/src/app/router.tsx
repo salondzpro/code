@@ -12,6 +12,7 @@ import {
 } from './guards';
 import { ScrollToTop } from './ScrollToTop';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
+import { PRO_ONLY } from '@/lib/flavor';
 import { NotFound } from '@/pages/NotFound';
 // Parcours de connexion (design AUTH 01 → 16)
 import { Login } from '@/pages/auth/Login';
@@ -117,38 +118,14 @@ const AdminBookings = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'Ad
 const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminAudit');
 const AdminReports = lazyNamed(() => import('@/pages/admin/AdminReports'), 'AdminReports');
 
-export const router = createBrowserRouter([
-  {
-    errorElement: <ErrorBoundary />,
-    // Chaque page s'ouvre en haut : le navigateur restaurerait sinon la position de la precedente.
-    element: <ScrollToTop />,
-    children: [
-      // ---- Connexion (sans barre d'onglets) ----
-      {
-        element: <PlainLayout />,
-        children: [
-          // Ex-« Intro » + « Bienvenue » : un visiteur non connecté n'a rien d'autre à faire que se
-          // connecter, autant l'y amener directement plutôt que deux écrans intermédiaires.
-          { path: '/intro', element: <Login landing /> },
-          { path: '/bienvenue', element: <Navigate to="/intro" replace /> },
-          { path: '/connexion', element: <Login /> },
-          { path: '/inscription', element: <SignUp /> },
-          { path: '/connexion/envoye', element: <EmailSent /> },
-          { path: '/connexion/oubli', element: <ForgotPassword /> },
-          { path: '/connexion/lien', element: <MagicLink /> },
-          { path: '/connexion/mot-de-passe', element: <NewPassword /> },
-          { path: '/connexion/retour', element: <WelcomeBack /> },
-          { path: '/pro/bienvenue', element: <ProWelcome /> },
-          {
-            element: <RequireAuth />,
-            children: [
-              { path: '/profil/creer', element: <ProfileSetup /> },
-              { path: '/marche', element: <Market /> },
-            ],
-          },
-        ],
-      },
-      // ---- Espace client : onglets Marketplace · Rendez-vous · Profil ----
+/**
+ * Routes CLIENT. Dans la variante professionnelle (`VITE_APP_FLAVOR=pro`) elles ne sont pas
+ * montées du tout : l'espace client n'existe pas dans ce bundle, aucune adresse tapée à la main
+ * ne peut y mener, et le code correspondant n'est même pas livré.
+ */
+const routesClient = PRO_ONLY
+  ? [{ path: '/', element: <Navigate to="/pro" replace /> }]
+  : [
       {
         element: <RequireClient />,
         children: [
@@ -180,25 +157,66 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      // ---- Pages salon (publiques, lisibles sans compte) ----
+    ];
+
+/**
+ * Pages de salon et parcours de RÉSERVATION : publiques sur le site, retirées de la variante pro —
+ * un professionnel n'y réserve pas. Les pages LÉGALES restent : les boutiques les exigent.
+ */
+const routesPubliques = [
+  { path: '/cgu', element: <Terms /> },
+  { path: '/confidentialite', element: <Privacy /> },
+  { path: '/mentions-legales', element: <LegalNotice /> },
+  { path: '/aide', element: <Help /> },
+  { path: '/supprimer', element: <DeleteAccount /> },
+  ...(PRO_ONLY
+    ? []
+    : [
+        { path: '/s/:slug', element: <Salon /> },
+        { path: '/s/:slug/realisations', element: <SalonWorks /> },
+        { path: '/s/:slug/avis', element: <SalonReviews /> },
+        { path: '/s/:slug/prestations', element: <BookingServices /> },
+        { path: '/s/:slug/catalogue', element: <SalonServices /> },
+        { path: '/s/:slug/prestation/:serviceId', element: <ServiceDetail /> },
+        { path: '/s/:slug/reserver/quand', element: <BookingWhen /> },
+        { path: '/s/:slug/reserver', element: <BookingServices /> },
+      ]),
+];
+
+export const router = createBrowserRouter([
+  {
+    errorElement: <ErrorBoundary />,
+    // Chaque page s'ouvre en haut : le navigateur restaurerait sinon la position de la precedente.
+    element: <ScrollToTop />,
+    children: [
+      // ---- Connexion (sans barre d'onglets) ----
       {
-        element: <ClientPlainLayout />,
+        element: <PlainLayout />,
         children: [
-          { path: '/cgu', element: <Terms /> },
-          { path: '/confidentialite', element: <Privacy /> },
-          { path: '/mentions-legales', element: <LegalNotice /> },
-          { path: '/aide', element: <Help /> },
-          { path: '/supprimer', element: <DeleteAccount /> },
-          { path: '/s/:slug', element: <Salon /> },
-          { path: '/s/:slug/realisations', element: <SalonWorks /> },
-          { path: '/s/:slug/avis', element: <SalonReviews /> },
-          { path: '/s/:slug/prestations', element: <BookingServices /> },
-          { path: '/s/:slug/catalogue', element: <SalonServices /> },
-          { path: '/s/:slug/prestation/:serviceId', element: <ServiceDetail /> },
-          { path: '/s/:slug/reserver/quand', element: <BookingWhen /> },
-          { path: '/s/:slug/reserver', element: <BookingServices /> },
+          // Ex-« Intro » + « Bienvenue » : un visiteur non connecté n'a rien d'autre à faire que se
+          // connecter, autant l'y amener directement plutôt que deux écrans intermédiaires.
+          { path: '/intro', element: <Login landing /> },
+          { path: '/bienvenue', element: <Navigate to="/intro" replace /> },
+          { path: '/connexion', element: <Login /> },
+          { path: '/inscription', element: <SignUp /> },
+          { path: '/connexion/envoye', element: <EmailSent /> },
+          { path: '/connexion/oubli', element: <ForgotPassword /> },
+          { path: '/connexion/lien', element: <MagicLink /> },
+          { path: '/connexion/mot-de-passe', element: <NewPassword /> },
+          { path: '/connexion/retour', element: <WelcomeBack /> },
+          { path: '/pro/bienvenue', element: <ProWelcome /> },
+          {
+            element: <RequireAuth />,
+            children: [
+              { path: '/profil/creer', element: <ProfileSetup /> },
+              ...(PRO_ONLY ? [] : [{ path: '/marche', element: <Market /> }]),
+            ],
+          },
         ],
       },
+      ...routesClient,
+      // ---- Pages légales (et pages salon hors variante pro) ----
+      { element: PRO_ONLY ? <PlainLayout /> : <ClientPlainLayout />, children: routesPubliques },
       // ---- Espace pro ----
       {
         path: '/pro',

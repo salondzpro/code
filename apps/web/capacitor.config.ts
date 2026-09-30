@@ -12,9 +12,16 @@
  */
 import type { CapacitorConfig } from '@capacitor/cli';
 
+/**
+ * VARIANTE PROFESSIONNELLE (`SALONDZ_APP_FLAVOR=pro`) : une seconde application, publiée à part
+ * sous `pro.salondz.app`, qui ne contient QUE l'espace professionnel. Le bundle web est lui aussi
+ * construit en variante pro (`VITE_APP_FLAVOR=pro`) : les écrans clients n'y sont pas livrés.
+ */
+const pro = process.env.SALONDZ_APP_FLAVOR === 'pro';
+
 const config: CapacitorConfig = {
-  appId: 'dz.salondz.app',
-  appName: 'Salon DZ',
+  appId: pro ? 'pro.salondz.app' : 'dz.salondz.app',
+  appName: pro ? 'Salon DZ Pro' : 'Salon DZ',
   webDir: 'dist',
   android: {
     // Origine `https://localhost` (et non `http://`) : sans cela, Chrome traite l'app comme non sécurisée

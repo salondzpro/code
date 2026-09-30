@@ -27,6 +27,7 @@ import { Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { LangSwitch } from '@/components/LangSwitch';
 import { Wordmark } from '@/components/Wordmark';
+import { HOME, PRO_ONLY } from '@/lib/flavor';
 import { t } from '@/i18n';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,8 +47,8 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   // (l'état de authFlow ne survit pas au rechargement, mais autant ne dépendre de rien ici —
   // c'est la première porte). En revanche, une DESTINATION passée explicitement est respectée :
   // quelqu'un renvoyé ici depuis « Mes favoris » doit y retourner une fois connecté.
-  const role = landing ? 'client' : params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
-  const next = landing ? (params.get('next') ?? '/') : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
+  const role = PRO_ONLY ? 'pro' : landing ? 'client' : params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
+  const next = landing ? (params.get('next') ?? HOME) : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
   const linkErr = params.get('erreur');
   const [email, setEmail] = useState(() => (landing ? '' : (readAuthFlow()?.identifier ?? '')));
   const [password, setPassword] = useState('');
@@ -268,7 +269,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
         >
           <I icon={MailOpen} size={18} /> {t("Recevoir un lien par e-mail")}
         </Link>
-        {landing && (
+        {landing && !PRO_ONLY && (
           <Link to="/pro/bienvenue" className="flex items-center justify-center gap-2 pt-2 text-[1rem] font-semibold underline">
             <I icon={Store} size={18} /> {t("Portail des professionnels")}
           </Link>

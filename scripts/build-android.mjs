@@ -2,6 +2,7 @@
  * Livraison Android complète, en une commande :
  *
  *   node scripts/build-android.mjs            → incrémente le numéro de version, puis construit
+ *   node scripts/build-android.mjs --pro      → la variante PROFESSIONNELLE (`pro.salondz.app`)
  *   node scripts/build-android.mjs --same     → reconstruit SANS changer le numéro (mise au point)
  *
  * Enchaîne : numéro de version → construction du site → synchronisation de la coque → `.aab` (Play
@@ -15,14 +16,20 @@
  * Java 21 est OBLIGATOIRE (Capacitor 7) : le Java 17 du système échoue sur « invalid source release ».
  */
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WEB = path.join(ROOT, 'apps', 'web');
 const ANDROID = path.join(WEB, 'android');
-const VERSION_FILE = path.join(ANDROID, 'version.properties');
+/**
+ * VARIANTE PROFESSIONNELLE : une seconde application, publiée à part, qui ne contient QUE l'espace
+ * professionnel. Tout diffère de bout en bout — le bundle web (les écrans clients n'y sont pas
+ * livrés), l'identifiant publié, le nom, le numéro de version et le fichier Firebase.
+ */
+const PRO = process.argv.includes('--pro');
+const VERSION_FILE = path.join(ANDROID, PRO ? 'version-pro.properties' : 'version.properties');
 const OUT = path.join(process.env.USERPROFILE ?? process.env.HOME ?? '', 'Desktop', 'salondz-play');
 
 const JAVA_HOME = process.env.SALONDZ_JAVA_HOME ?? 'C:/Users/gaci/tools/jdk-21.0.12.1+1';
@@ -36,7 +43,16 @@ const ANDROID_HOME = process.env.ANDROID_HOME ?? 'C:/Users/gaci/AppData/Local/An
  * dans ce mode sans l'avoir vu fonctionner sur un téléphone.
  */
 const mode = process.argv.includes('--en-ligne') ? 'remote' : 'bundled';
-const env = { ...process.env, JAVA_HOME, ANDROID_HOME, ANDROID_SDK_ROOT: ANDROID_HOME, SALONDZ_APP_MODE: mode };
+const env = {
+  ...process.env,
+  JAVA_HOME,
+  ANDROID_HOME,
+  ANDROID_SDK_ROOT: ANDROID_HOME,
+  SALONDZ_APP_MODE: mode,
+  // Lu par `capacitor.config.ts` (identifiant, nom) et par Vite (`VITE_APP_FLAVOR`, qui retire les
+  // écrans clients du bundle — ils ne sont pas cachés, ils ne sont pas livrés).
+  ...(PRO ? { SALONDZ_APP_FLAVOR: 'pro', VITE_APP_FLAVOR: 'pro' } : {}),
+};
 
 const run = (cmd, args, cwd) => {
   console.log(`\n▸ ${cmd} ${args.join(' ')}`);
@@ -53,6 +69,7 @@ if (next !== current) {
 }
 console.log(`Version ${versionName} (${next})${next === current ? ' — inchangée' : ` — était ${current}`}`);
 console.log(mode === 'remote' ? 'Mode : EN LIGNE (mises à jour sans passer par le Play Store)' : 'Mode : EMBARQUÉ (fonctionne hors ligne)');
+console.log(PRO ? 'Variante : PROFESSIONNELLE (pro.salondz.app)' : 'Variante : grand public (dz.salondz.app)');
 
 // 2. Le site, puis la coque
 // Le raccourci `pnpm` global est cassé sur cette machine : on passe par le fichier de corepack.
@@ -80,12 +97,30 @@ run('npx', ['cap', 'sync', 'android'], WEB);
 // jamais par un fichier installé à la main : un `.apk` en plus allongeait la compilation pour rien, et
 // deux fichiers voisins ont déjà été confondus (l'ancien APK Expo installé à la place du nouveau).
 // Chemin complet : sous Windows, « ./gradlew.bat » n'est pas reconnu par l'interpréteur de commandes.
-run(`"${path.join(ANDROID, 'gradlew.bat')}"`, [':app:bundleRelease', '--no-daemon'], ANDROID);
+const GS = path.join(ANDROID, 'app', 'google-services.json');
+const GS_PRO = path.join(ANDROID, 'app', 'google-services-pro.json');
+const GS_SAUVE = path.join(ANDROID, 'app', 'google-services.grandpublic.json');
+if (PRO) {
+  // Le greffon Google Services REFUSE de compiler si l'identifiant publié ne figure pas dans le
+  // fichier (« No matching client found »). On pose celui de la variante pro le temps de la
+  // compilation, et on remet l'autre ensuite — y compris si Gradle échoue.
+  if (!existsSync(GS_PRO)) throw new Error(`${GS_PRO} manquant : lancer node --env-file=.env scripts/firebase-app-pro.mjs`);
+  copyFileSync(GS, GS_SAUVE);
+  copyFileSync(GS_PRO, GS);
+}
+try {
+  run(`"${path.join(ANDROID, 'gradlew.bat')}"`, [':app:bundleRelease', ...(PRO ? ['-PsalondzPro'] : []), '--no-daemon'], ANDROID);
+} finally {
+  if (PRO && existsSync(GS_SAUVE)) {
+    copyFileSync(GS_SAUVE, GS);
+    rmSync(GS_SAUVE);
+  }
+}
 
 // 4. Sur le Bureau, avec le numéro dans le nom : impossible d'envoyer deux fois le même fichier
 mkdirSync(OUT, { recursive: true });
 const built = path.join(ANDROID, 'app', 'build', 'outputs');
-const aab = path.join(OUT, `salon-dz-${versionName}-versionCode${next}.aab`);
+const aab = path.join(OUT, `salon-dz${PRO ? '-pro' : ''}-${versionName}-versionCode${next}.aab`);
 copyFileSync(path.join(built, 'bundle', 'release', 'app-release.aab'), aab);
 
 console.log(`\n✔ À envoyer sur Play Console : ${aab}`);
