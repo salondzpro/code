@@ -126,7 +126,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       {landing ? (
         <div className="relative -mx-4 -mt-3 h-[11rem] flex-none overflow-hidden">
           <img src={DESIGN_IMAGES.intro.src} alt="" className="h-full w-full object-cover" />

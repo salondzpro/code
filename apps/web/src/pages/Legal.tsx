@@ -28,7 +28,7 @@ const EDITOR = {
 
 function Doc({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar backTo="/" />
       <h1 className="h1">{title}</h1>
       <p className="p -mt-2 text-[0.857rem]">Dernière mise à jour : {UPDATED}</p>

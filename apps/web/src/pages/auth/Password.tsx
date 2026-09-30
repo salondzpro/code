@@ -39,7 +39,7 @@ export function ForgotPassword() {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar backTo="/connexion" />
       <div>
         <h1 className="h1">{t("Mot de passe oublié")}</h1>
@@ -99,7 +99,7 @@ export function NewPassword() {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar noBack />
       <div>
         <h1 className="h1">{t("Nouveau mot de passe")}</h1>

@@ -24,6 +24,50 @@
   --safe-right: var(--sar, env(safe-area-inset-right, 0px));
 }
 
+/* LA réserve, posée UNE FOIS sur la racine de l'application.
+   Elle vivait auparavant dans `AppFrame`, c'est-à-dire dans un composant que tout le monde
+   n'emprunte pas : un garde qui affiche une erreur avant d'entrer dans le cadre, l'écran de
+   plantage, l'écran de chargement s'affichaient alors SOUS la barre d'état, illisibles. Ici,
+   plus aucun cas ne peut y échapper, quel que soit l'écran et quelle que soit l'erreur.
+
+   Le bas n'y figure pas volontairement : il est porté par `.scr` et `.rd` (contenu) et par les
+   éléments fixes (barre d'onglets, feuilles), qui doivent pouvoir s'y coller au pixel près. */
+#root {
+  padding-top: var(--safe-top);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+/* Hauteur d'un écran PLEIN, une fois la barre d'état déduite. Remplace `min-h-dvh`, qui mesurait
+   l'écran entier et débordait donc de la réserve ci-dessus — chaque page gagnait une bande de
+   défilement inutile. À utiliser partout où un écran doit occuper toute la hauteur. */
+.h-app {
+  min-height: calc(100dvh - var(--safe-top));
+}
+
+/* Bandeau opaque sous la barre d'état.
+   La réserve de `#root` DÉFILE avec la page : elle place bien le contenu sous la barre d'état au
+   repos, mais dès qu'on descend, le texte repasse derrière — l'application dessinant de bord à
+   bord (Android 15). Ce bandeau, lui, est fixe : il masque ce qui glisse dessous, à toute position
+   de défilement. C'est ce qui rend la promesse vraie, et non seulement vraie « en haut de page ».
+
+   `--bar-top-bg` permet à un écran de fond différent (l'ouverture, sur fond d'encre) de l'accorder.
+   Sous les tiroirs (50), panneaux (1000) et feuilles, qui réservent déjà leur propre marge. */
+:root {
+  --bar-top-bg: var(--color-bg);
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top);
+  background: var(--bar-top-bg);
+  z-index: 30;
+  pointer-events: none;
+}
+
 /* ------------------------------------------------------------------ */
 /* Base — reproduit .ph du design (fond, police, taille 15, interligne) */
 /* ------------------------------------------------------------------ */
@@ -161,7 +205,8 @@
     flex-direction: column;
     gap: 0.625rem;
     width: min(85vw, 22rem);
-    padding: 0.75rem 1.25rem calc(1.25rem + var(--safe-bottom));
+    /* Idem : le tiroir couvre toute la hauteur de l'écran, barre d'état comprise. */
+    padding: calc(0.75rem + var(--safe-top)) 1.25rem calc(1.25rem + var(--safe-bottom));
     background: var(--color-surface);
     overflow-y: auto;
     animation: drw-in 0.22s ease-out;
@@ -552,7 +597,9 @@
      croix et son bouton « Enregistrer » étaient recouverts, donc incliquables. */
   .pnl {
     position: fixed;
+    /* Idem : le panneau part du haut de l'écran, il doit descendre sous la barre d'état. */
     top: 0;
+    padding-top: var(--safe-top);
     bottom: 0;
     left: 50%;
     width: 100%;
@@ -993,7 +1040,8 @@
   }
   .toast {
     position: fixed;
-    top: 1rem;
+    /* Fixe = placé sur l'ÉCRAN, pas dans #root : la réserve de la racine ne l'atteint pas. */
+    top: calc(1rem + var(--safe-top));
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 2.5rem);

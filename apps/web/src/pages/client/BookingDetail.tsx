@@ -170,7 +170,7 @@ export function BookingDetail() {
   const address = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
 
   return (
-    <Screen className="min-h-dvh" gap={12}>
+    <Screen className="h-app" gap={12}>
       <TopBar backTo="/rendez-vous" />
       {/* Où : le salon et son adresse, l'état de la réservation, de quoi le joindre. */}
       <div className="crd !gap-3">

@@ -137,7 +137,7 @@ export function Localisation() {
   if (geo === 'denied' && choice.kind === 'gps' && prefs.lat == null) {
     // C-H 03 — Position non reconnue
     return (
-      <Screen className="min-h-dvh" gap={16}>
+      <Screen className="h-app" gap={16}>
         <TopBar close right={t(MARKET_LABELS_FR[market])} />
         <div className="flex flex-col items-center gap-3 pt-5 text-center">
           <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">

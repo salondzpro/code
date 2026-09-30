@@ -27,7 +27,7 @@ export function Market() {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <div className="pt-4">
         <div className="h3">{me.data?.profile.market ? 'Changer de marché' : 'Alger'}</div>
         <h1 className="h1 mt-2">{t("Que recherchez-vous ?")}</h1>

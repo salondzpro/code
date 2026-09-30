@@ -31,7 +31,7 @@ export function ProWelcome() {
   // La démonstration n'est plus proposée ici : elle s'ouvre depuis l'écran de connexion, en saisissant
   // une adresse de démonstration et le même mot de passe qu'elle.
   return (
-    <div className="rd flex min-h-dvh flex-col">
+    <div className="rd flex h-app flex-col">
       <div className="relative h-[15rem] flex-none overflow-hidden">
         <img src={DESIGN_IMAGES.pro.src} alt="" className="h-full w-full object-cover" />
         <div className="ovl" />

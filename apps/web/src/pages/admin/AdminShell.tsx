@@ -88,7 +88,7 @@ export function AdminLayout() {
   if (me.isError) return <Navigate to="/" replace />;
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-[var(--shell-w)] bg-bg">
+    <div className="mx-auto h-app w-full max-w-[var(--shell-w)] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-surface">
         <div className="mx-auto flex h-[3.5rem] max-w-[var(--page-w)] items-center gap-3 px-[calc(1rem+var(--shell-px))]">
           <span className="flex items-center gap-2 text-[1.143rem] leading-none tracking-[-0.4px]">

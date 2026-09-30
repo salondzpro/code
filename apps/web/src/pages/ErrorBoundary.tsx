@@ -13,7 +13,7 @@ export function ErrorBoundary() {
     void import('@sentry/react').then((Sentry) => Sentry.captureException(error));
   }, [error, is404]);
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-3 px-4 text-center">
+    <div className="mx-auto flex h-app max-w-md flex-col items-center justify-center gap-3 px-4 text-center">
       <h1 className="text-xl font-bold">{is404 ? t('Page introuvable') : t('Oups, quelque chose a cassé')}</h1>
       {!is404 && <p className="text-sm text-muted">{errorText(error)}</p>}
       <div className="flex gap-2">

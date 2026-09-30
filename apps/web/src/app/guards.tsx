@@ -8,7 +8,7 @@ import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
 import { Splash } from '@/pages/auth/Splash';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { ErrorState } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
 import { ProRail } from '@/components/ProNav';
 import { useDesktop } from '@/lib/breakpoint';
@@ -133,7 +133,7 @@ export function RequireClient() {
       />
     );
   if (me.isPending) return <Splash />;
-  if (me.isError) return <ErrorMessage error={me.error} retry={() => me.refetch()} />;
+  if (me.isError) return <ErrorState error={me.error} retry={() => me.refetch()} accueil={false} />;
   const p = me.data.profile;
   const next = encodeURIComponent(location.pathname + location.search);
   // Nom ET numéro obligatoires : le salon doit pouvoir joindre la personne.
@@ -178,7 +178,7 @@ export function RequirePro() {
   if (me.data && !acting && (!me.data.profile.fullName || !me.data.profile.phone) && !onboarding)
     return <Navigate to={`/profil/creer?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (salonQuery.isError)
-    return <ErrorMessage error={salonQuery.error} retry={() => salonQuery.refetch()} />;
+    return <ErrorState error={salonQuery.error} retry={() => salonQuery.refetch()} accueil={false} />;
 
   const salon = salonQuery.data.salon;
   if (!salon) {

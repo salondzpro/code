@@ -38,7 +38,7 @@ export function NotFoundState({
 }) {
   useNoIndex();
   return (
-    <Screen className="min-h-dvh justify-center" gap={16}>
+    <Screen className="h-app justify-center" gap={16}>
       <EmptyState
         icon={icon}
         title={title}

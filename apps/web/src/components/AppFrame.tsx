@@ -30,20 +30,11 @@ export function AppFrame({
   className?: string;
 }) {
   return (
-    // Les marges système du téléphone (barre d'état en haut, encoche, et les bords en paysage) sont
-    // réservées ICI, une fois pour toutes : tout écran en hérite, y compris les en-têtes collants,
-    // qui se figent alors SOUS la barre d'état et non derrière elle. Les valeurs sont mesurées sur
-    // l'appareil (voir `MainActivity`), jamais devinées.
-    <div
-      className={`relative mx-auto min-h-dvh w-full max-w-[var(--shell-w)] bg-bg ${className}`}
-      style={{
-        paddingTop: 'var(--safe-top)',
-        paddingLeft: 'var(--safe-left)',
-        paddingRight: 'var(--safe-right)',
-      }}
-    >
-      {children}
-    </div>
+    // Les marges système ne sont PLUS réservées ici : elles le sont sur `#root` (voir index.css),
+    // donc sur absolument tout ce que l'application affiche — y compris les écrans d'erreur et de
+    // chargement, qui passaient avant l'entrée dans ce cadre et s'affichaient sous la barre d'état.
+    // Les valeurs restent mesurées sur l'appareil par `MainActivity`, jamais devinées.
+    <div className={`relative mx-auto h-app w-full max-w-[var(--shell-w)] bg-bg ${className}`}>{children}</div>
   );
 }
 

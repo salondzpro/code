@@ -75,7 +75,7 @@ export function EmailSent() {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar backTo="/connexion" />
       <div className="flex flex-col items-center gap-3 pt-4 text-center">
         <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ok-bg text-ok-fg">

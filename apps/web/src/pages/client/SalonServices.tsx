@@ -20,7 +20,7 @@ export function SalonServices() {
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar backTo={`/s/${s.slug}`} right={s.name} />
       <h1 className="h1">{t("Prestations")}</h1>
       {groupServices(s.services).map((g) => (

@@ -49,7 +49,7 @@ export function SignUp() {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar backTo={role === 'pro' ? '/pro/bienvenue' : `/connexion?role=${role}`} />
       <div>
         <h1 className="h1">{role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}</h1>

@@ -57,7 +57,7 @@ export function ProfileSetup() {
   };
 
   return (
-    <Screen className="min-h-dvh" gap={16}>
+    <Screen className="h-app" gap={16}>
       <TopBar noBack right="Dernière étape" />
       <div>
         <h1 className="h1">{t("Vos coordonnées")}</h1>

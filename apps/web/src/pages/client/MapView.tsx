@@ -299,7 +299,7 @@ export function MapView() {
   const noun = market === 'men' ? 'barbier' : 'salon';
 
   return (
-    <div className="relative min-h-dvh">
+    <div className="relative h-app">
       <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}
 .map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#17181a;border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
 .map-bubble.on{background:#111214;color:#fff}
