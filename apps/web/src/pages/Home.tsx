@@ -37,6 +37,7 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
+import { InstagramLogo, SnapchatLogo, TikTokLogo, WhatsAppLogo } from '@/components/BrandIcons';
 import { useReveal } from '@/lib/reveal';
 import { Wordmark } from '@/components/Wordmark';
 import { I } from '@/components/ui';
@@ -57,8 +58,8 @@ const METIERS: { nom: string; detail: string; photo: string; large?: boolean }[]
 ];
 
 /** Côté professionnel. Chaque ligne correspond à un écran qui existe. */
-const PRO: { icone: LucideIcon; titre: string; texte: string }[] = [
-  { icone: Share2, titre: 'Votre lien à partager', texte: 'Instagram, WhatsApp, Snap : on réserve en un tap.' },
+const PRO: { icone: LucideIcon; titre: string; texte: string; marques?: boolean }[] = [
+  { icone: Share2, titre: 'Votre lien à partager', texte: 'Un tap depuis votre bio, votre story, une conversation.', marques: true },
   { icone: QrCode, titre: 'Votre QR code', texte: 'Sur la vitrine, le miroir, la carte de visite.' },
   { icone: CheckCheck, titre: 'Confirmation auto ou manuelle', texte: 'Vous validez chaque demande, ou tout passe seul.' },
   { icone: CalendarDays, titre: 'Agenda par membre', texte: 'Toute l’équipe, heure par heure, sur un écran.' },
@@ -114,12 +115,16 @@ function Atout({
   icone,
   titre,
   texte,
+  marques = false,
   sombre = false,
   delai = 0,
 }: {
   icone: LucideIcon;
   titre: string;
   texte: string;
+  /** Les logos des réseaux à la place de l'icône : quatre marques se comprennent d'un coup d'œil,
+   *  là où « Instagram, WhatsApp, Snap » demande d'être lu. */
+  marques?: boolean;
   sombre?: boolean;
   delai?: number;
 }) {
@@ -131,13 +136,27 @@ function Atout({
         sombre ? 'border-white/10 bg-white/[0.04] hover:border-white/25' : 'border-line bg-surface hover:border-ink/30'
       }`}
     >
-      <span
-        className={`flex size-10 items-center justify-center rounded-[var(--radius-card-sm)] transition-transform duration-300 group-hover:-translate-y-0.5 ${
-          sombre ? 'bg-white/10' : 'bg-fill'
-        }`}
-      >
-        <I icon={icone} size={20} strokeWidth={1.7} />
-      </span>
+      {marques ? (
+        <span className="flex h-10 items-center gap-1.5">
+          {[InstagramLogo, WhatsAppLogo, SnapchatLogo, TikTokLogo].map((Logo, i) => (
+            <span
+              key={i}
+              className="transition-transform duration-300 group-hover:-translate-y-0.5"
+              style={{ transitionDelay: `${i * 45}ms` }}
+            >
+              <Logo size={26} />
+            </span>
+          ))}
+        </span>
+      ) : (
+        <span
+          className={`flex size-10 items-center justify-center rounded-[var(--radius-card-sm)] transition-transform duration-300 group-hover:-translate-y-0.5 ${
+            sombre ? 'bg-white/10' : 'bg-fill'
+          }`}
+        >
+          <I icon={icone} size={20} strokeWidth={1.7} />
+        </span>
+      )}
       <h3 className="text-[1.071rem] font-semibold leading-tight tracking-[-0.2px]">{t(titre)}</h3>
       <p className={`text-[0.938rem] leading-[1.45] ${sombre ? 'text-white/60' : 'text-muted'}`}>{t(texte)}</p>
     </div>

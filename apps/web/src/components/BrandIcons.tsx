@@ -1,5 +1,5 @@
 /**
- * PRO-F 18 — logos des applications de partage (WhatsApp, Instagram, Facebook, TikTok).
+ * PRO-F 18 — logos des applications de partage (WhatsApp, Instagram, Snapchat, Facebook, TikTok).
  * Vrais glyphes de marque en SVG inline, aux couleurs officielles ; tracés partagés avec le
  * mobile via @salondz/constants. Aucune image distante : rien à charger sur une 4G lente.
  */
@@ -14,6 +14,8 @@ import {
   TIKTOK_PATH,
   TIKTOK_RED,
   TIKTOK_RED_OFFSET,
+  SNAPCHAT_COLOR,
+  SNAPCHAT_PATH,
   WHATSAPP_COLOR,
   WHATSAPP_PATH,
 } from '@salondz/constants';
@@ -60,6 +62,21 @@ export function InstagramLogo({ size }: LogoProps) {
         </linearGradient>
       </defs>
       <path d={INSTAGRAM_PATH} fill={`url(#${id})`} />
+    </Logo>
+  );
+}
+
+/**
+ * Le fantôme de Snapchat est JAUNE VIF : posé sur un fond clair il disparaît. On lui met donc son
+ * pastille noire, comme le fait Snapchat lui-même sur fond blanc.
+ */
+export function SnapchatLogo({ size }: LogoProps) {
+  return (
+    <Logo size={size} label={t("Snapchat")}>
+      <rect width="24" height="24" rx="5.4" fill="#111214" />
+      <g transform="translate(3 3) scale(0.75)">
+        <path d={SNAPCHAT_PATH} fill={SNAPCHAT_COLOR} />
+      </g>
     </Logo>
   );
 }
