@@ -41,6 +41,12 @@ const SITE_HEADERS = [
   { path: '/', name: 'Cache-Control', value: 'no-cache' },
   { path: '/index.html', name: 'Cache-Control', value: 'no-cache' },
   { path: '/manifest.webmanifest', name: 'Content-Type', value: 'application/manifest+json' },
+  // Liens universels iOS : Apple exige `application/json` sur un fichier SANS extension, et refuse
+  // silencieusement l'association si le type est autre — le lien s'ouvre alors dans Safari, sans
+  // la moindre erreur pour le dire.
+  { path: '/.well-known/apple-app-site-association', name: 'Content-Type', value: 'application/json' },
+  { path: '/.well-known/apple-app-site-association', name: 'Cache-Control', value: 'no-cache' },
+  { path: '/.well-known/assetlinks.json', name: 'Cache-Control', value: 'no-cache' },
   { path: '/*', name: 'X-Content-Type-Options', value: 'nosniff' },
   { path: '/*', name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { path: '/*', name: 'X-Frame-Options', value: 'DENY' },

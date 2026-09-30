@@ -78,6 +78,8 @@ export type FcmMessage = {
   token: string;
   title: string;
   body: string;
+  /** Pastille sur l'icône : nombre de notifications non lues. */
+  badge?: number;
   data?: Record<string, unknown>;
 };
 
@@ -106,7 +108,16 @@ export async function sendFcm(log: FastifyBaseLogger, msg: FcmMessage): Promise<
         token: msg.token,
         notification: { title: msg.title, body: msg.body },
         data,
-        android: { priority: 'HIGH', notification: { channel_id: 'bookings', sound: 'default' } },
+        android: {
+          priority: 'HIGH',
+          notification: {
+            channel_id: 'bookings',
+            sound: 'default',
+            // Pastille du lanceur. Tous les lanceurs Android ne l'affichent pas — c'est une
+            // décision du constructeur, pas de l'application ; là où elle existe, elle est juste.
+            ...(msg.badge === undefined ? {} : { notification_count: msg.badge }),
+          },
+        },
       },
     }),
   });

@@ -135,7 +135,7 @@ const MORTS = new Set(['BadDeviceToken', 'Unregistered', 'DeviceTokenNotForTopic
  */
 export async function sendApns(
   log: FastifyBaseLogger,
-  msg: { token: string; title: string; body: string; data?: Record<string, unknown> },
+  msg: { token: string; title: string; body: string; badge?: number; data?: Record<string, unknown> },
 ): Promise<boolean> {
   const autorisation = authToken();
   if (!autorisation) return true;
@@ -148,6 +148,9 @@ export async function sendApns(
       aps: {
         alert: { title: msg.title, body: msg.body },
         sound: 'default',
+        // Pastille sur l'icône : le NOMBRE exact de notifications non lues, pas un incrément.
+        // Apple pose la valeur telle quelle, donc elle redescend seule quand on les lit.
+        ...(msg.badge === undefined ? {} : { badge: msg.badge }),
       },
       ...(msg.data ?? {}),
     }),

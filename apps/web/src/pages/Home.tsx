@@ -195,7 +195,18 @@ export function Home() {
           >
             {t('Coiffure, barbier, onglerie, esthétique. Partout en Algérie, en dinars, sans appeler.')}
           </p>
-          <div className="hm-in mt-8 flex flex-wrap gap-3" style={{ ['--d' as string]: '480ms' }}>
+          {/* Les logos EN PREMIER, dans l'ouverture : c'est la promesse la plus parlante de la
+              page — vos clients réservent depuis là où ils sont déjà. Écrite en mots, elle se lit ;
+              en marques, elle se comprend avant même d'être lue. */}
+          <div className="hm-in mt-7 flex flex-wrap items-center gap-x-3 gap-y-2" style={{ ['--d' as string]: '420ms' }}>
+            <span className="flex items-center gap-1.5">
+              {[InstagramLogo, WhatsAppLogo, SnapchatLogo, TikTokLogo].map((Logo, i) => (
+                <Logo key={i} size={28} />
+              ))}
+            </span>
+            <span className="text-[1rem] text-white/70">{t('Réservez depuis un lien, une story, un message.')}</span>
+          </div>
+          <div className="hm-in mt-7 flex flex-wrap gap-3" style={{ ['--d' as string]: '560ms' }}>
             <Link
               to="/intro"
               className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-white px-6 py-3.5 font-semibold text-ink transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"

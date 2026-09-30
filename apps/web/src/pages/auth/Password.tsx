@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, Input } from '@/components/ui';
-import { AuthError, AuthShell, PasswordField } from '@/components/AuthShell';
+import { AuthError, AuthShell, MatchHint, PasswordField, matchState } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
 import { t } from '@/i18n';
@@ -70,7 +70,8 @@ export function NewPassword() {
   const navigate = useNavigate();
   const { session, updatePassword } = useAuth();
   const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
+  const [confirmation, setConfirmation] = useState('');
+  const accord = matchState(password, confirmation);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const next = readAuthFlow()?.next ?? '/';
@@ -78,6 +79,8 @@ export function NewPassword() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (password.length < PASSWORD_MIN) return setError(`Mot de passe trop court : ${PASSWORD_MIN} caractères au minimum.`);
+    // Garde-fou : le bouton est désactivé, mais la touche Entrée ne passe pas par lui.
+    if (password !== confirmation) return setError(t('Les deux mots de passe ne correspondent pas.'));
     setBusy(true);
     setError(null);
     try {
@@ -103,19 +106,30 @@ export function NewPassword() {
         <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
           <PasswordField
             id="np-password"
-            label={t('Mot de passe')}
+            label={t('Nouveau mot de passe')}
             autoComplete="new-password"
             hint={`${PASSWORD_MIN} caractères au minimum.`}
             value={password}
             onChange={(v) => {
               setPassword(v);
+              // Le mot de passe change : la confirmation déjà saisie ne veut plus rien dire.
+              setConfirmation('');
               setError(null);
             }}
             err={!!error}
             autoFocus
           />
+          <PasswordField
+            id="np-confirm"
+            label={t('Confirmer le mot de passe')}
+            autoComplete="new-password"
+            value={confirmation}
+            onChange={setConfirmation}
+            err={accord === 'different'}
+          />
+          <MatchHint etat={accord} />
           {error && <AuthError texte={error} />}
-          <Button type="submit" loading={busy}>
+          <Button type="submit" loading={busy} disabled={accord !== 'ok'}>
             {t('Enregistrer')}
           </Button>
         </form>

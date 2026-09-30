@@ -4,6 +4,7 @@ import { db } from './supabase';
 import { isWebPushToken, sendWebPush, webPushEnabled } from './webpush';
 import { fcmEnabled, isFcmToken, sendFcm } from './fcm';
 import { apnsEnabled, isApnsToken, sendApns } from './apns';
+import { audienceOf, pushTitle, pushUrl } from './pushContent';
 
 const expo = new Expo({ useFcmV1: true });
 
@@ -17,6 +18,7 @@ interface PendingNotification {
   body: string;
   data: Record<string, unknown>;
   type: string;
+  booking_id: string | null;
 }
 
 /**
@@ -27,7 +29,7 @@ interface PendingNotification {
 export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: string): Promise<number> {
   let q = db
     .from('notifications')
-    .select('id, user_id, title, body, data, type')
+    .select('id, user_id, title, body, data, type, booking_id')
     .is('pushed_at', null)
     .order('created_at', { ascending: true })
     .limit(200);
@@ -83,15 +85,45 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     }
   }
 
+  /**
+   * BADGE DE L'ICÔNE : le nombre de notifications non lues, par personne. Recalculé à chaque
+   * envoi et posé sur la notification elle-même — c'est le système qui l'affiche sur l'icône.
+   * Il redescend tout seul quand la personne les ouvre, la lecture posant `read_at`.
+   */
+  const badges = new Map<string, number>();
+  {
+    const { data: nonLues, error } = await db
+      .from('notifications')
+      .select('user_id')
+      .in('user_id', userIds)
+      .is('read_at', null);
+    if (error) log.warn({ err: error }, 'badge: comptage impossible');
+    for (const r of nonLues ?? []) badges.set(r.user_id as string, (badges.get(r.user_id as string) ?? 0) + 1);
+  }
+
+  /** Le contenu POUSSÉ d'une notification : titre avec emoji, destination, badge. */
+  const pousse = (n: PendingNotification) => {
+    const audience = audienceOf(n.data);
+    const url = pushUrl(n, audience);
+    return {
+      title: pushTitle(n.type, audience, n.title),
+      body: n.body,
+      badge: badges.get(n.user_id) ?? 0,
+      data: { ...n.data, type: n.type, notificationId: n.id, ...(url ? { url } : {}) },
+    };
+  };
+
   const messages: ExpoPushMessage[] = [];
   for (const n of pending as PendingNotification[]) {
     if (!wanted(n)) continue;
+    const p = pousse(n);
     for (const to of tokensByUser.get(n.user_id) ?? []) {
       messages.push({
         to,
-        title: n.title,
-        body: n.body,
-        data: { ...n.data, type: n.type, notificationId: n.id },
+        title: p.title,
+        body: p.body,
+        data: p.data,
+        badge: p.badge,
         sound: 'default',
         channelId: 'bookings',
         priority: 'high',
@@ -120,13 +152,9 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   let apnsSent = 0;
   for (const n of pending as PendingNotification[]) {
     if (!wanted(n) || tokensByUser.has(n.user_id)) continue;
+    const p = pousse(n);
     for (const token of apnsByUser.get(n.user_id) ?? []) {
-      const ok = await sendApns(log, {
-        token,
-        title: n.title,
-        body: n.body,
-        data: { ...n.data, type: n.type, notificationId: n.id },
-      });
+      const ok = await sendApns(log, { token, title: p.title, body: p.body, badge: p.badge, data: p.data });
       if (ok) apnsSent++;
       else invalidTokens.push(token);
     }
@@ -137,13 +165,9 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   let fcmSent = 0;
   for (const n of pending as PendingNotification[]) {
     if (!wanted(n) || tokensByUser.has(n.user_id)) continue;
+    const p = pousse(n);
     for (const token of fcmByUser.get(n.user_id) ?? []) {
-      const ok = await sendFcm(log, {
-        token,
-        title: n.title,
-        body: n.body,
-        data: { ...n.data, type: n.type, notificationId: n.id },
-      });
+      const ok = await sendFcm(log, { token, title: p.title, body: p.body, badge: p.badge, data: p.data });
       if (ok) fcmSent++;
       else invalidTokens.push(token);
     }
@@ -155,12 +179,9 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   let webSent = 0;
   for (const n of pending as PendingNotification[]) {
     if (!wanted(n) || tokensByUser.has(n.user_id) || apnsByUser.has(n.user_id) || fcmByUser.has(n.user_id)) continue;
+    const p = pousse(n);
     for (const token of webByUser.get(n.user_id) ?? []) {
-      const r = await sendWebPush(log, token, {
-        title: n.title,
-        body: n.body,
-        data: { ...n.data, type: n.type, notificationId: n.id },
-      });
+      const r = await sendWebPush(log, token, { title: p.title, body: p.body, data: p.data });
       if (r === 'sent') webSent++;
       if (r === 'gone') invalidTokens.push(token);
     }

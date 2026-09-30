@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["PRB75K5S58.dz.salondz.app", "PRB75K5S58.pro.salondz.app"],
+        "components": [
+          { "/": "/s/*", "comment": "Page publique d'un salon, partagée par le professionnel" },
+          { "/": "/rendez-vous/*", "comment": "Un rendez-vous précis, côté client" },
+          { "/": "/pro/*", "comment": "Espace professionnel" },
+          { "/": "/favoris" },
+          { "/": "/carte" },
+          { "/": "/home" },
+          { "/": "/supprimer" }
+        ]
+      }
+    ]
+  }
+}

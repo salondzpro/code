@@ -16,7 +16,7 @@
  */
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { AlertCircle, CalendarDays, CalendarCheck, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, type LucideIcon } from 'lucide-react';
+import { AlertCircle, CalendarDays, CalendarCheck, CheckCircle2, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, XCircle, type LucideIcon } from 'lucide-react';
 import { BackButton, Field, I, Input } from './ui';
 import { Wordmark } from './Wordmark';
 import { LangSwitch } from './LangSwitch';
@@ -49,6 +49,8 @@ export function AuthShell({
   role = 'client',
   back,
   marque = true,
+  etape,
+  etapes,
   titre,
   sous,
   children,
@@ -59,6 +61,9 @@ export function AuthShell({
   back?: string;
   /** Bandeau de marque en haut sur téléphone. Un écran d'étape s'en passe. */
   marque?: boolean;
+  /** Parcours en plusieurs temps : où l'on en est, sur combien. */
+  etape?: number;
+  etapes?: number;
   titre: string;
   sous?: ReactNode;
   children: ReactNode;
@@ -115,6 +120,30 @@ export function AuthShell({
             <Link to={back} className="mb-6 hidden text-[0.938rem] font-medium text-muted transition-colors hover:text-ink lg:inline-block">
               ← {t('Retour')}
             </Link>
+          )}
+          {/* Progression : on sait combien il reste AVANT de commencer à taper. Un formulaire qui
+              ne dit pas où il s'arrête se fait abandonner au deuxième champ. */}
+          {etape !== undefined && etapes !== undefined && (
+            <div className="mb-5">
+              <div className="mb-2 flex items-center justify-between text-[0.875rem] text-muted">
+                <span>{t('Étape {n} sur {total}', { n: etape, total: etapes })}</span>
+              </div>
+              <div
+                className="flex gap-1"
+                role="progressbar"
+                aria-valuemin={1}
+                aria-valuemax={etapes}
+                aria-valuenow={etape}
+                aria-label={t('Progression')}
+              >
+                {Array.from({ length: etapes }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < etape ? 'bg-ink' : 'bg-line'}`}
+                  />
+                ))}
+              </div>
+            </div>
           )}
           <h1 className="text-[1.714rem] font-semibold leading-[1.15] tracking-[-0.8px] lg:text-[2rem]">{t(titre)}</h1>
           {sous && <p className="p mt-2">{sous}</p>}
@@ -179,6 +208,34 @@ export function PasswordField({
         </button>
       </div>
     </Field>
+  );
+}
+
+/**
+ * CONFIRMATION DU MOT DE PASSE. Le verdict s'affiche pendant la frappe, pas à l'envoi : découvrir
+ * après coup qu'on s'est trompé oblige à tout recommencer, et c'est exactement le cas où l'on se
+ * retrouve avec un compte dont on ignore le mot de passe.
+ *
+ * `etat` vaut `null` tant que la confirmation est vide — on n'annonce pas une erreur à quelqu'un
+ * qui n'a pas encore fini de taper.
+ */
+export function matchState(mdp: string, confirmation: string): 'vide' | 'ok' | 'different' {
+  if (!confirmation) return 'vide';
+  return mdp === confirmation ? 'ok' : 'different';
+}
+
+export function MatchHint({ etat }: { etat: ReturnType<typeof matchState> }) {
+  if (etat === 'vide') return null;
+  const ok = etat === 'ok';
+  return (
+    <p
+      className={`flex items-center gap-2 text-[0.938rem] font-medium ${ok ? 'text-ok-fg' : 'text-danger'}`}
+      role={ok ? undefined : 'alert'}
+      aria-live="polite"
+    >
+      <I icon={ok ? CheckCircle2 : XCircle} size={17} />
+      {ok ? t('Les mots de passe correspondent.') : t('Les deux mots de passe ne correspondent pas.')}
+    </p>
   );
 }
 

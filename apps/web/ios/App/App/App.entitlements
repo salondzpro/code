@@ -7,5 +7,14 @@
 	     valeur des builds TestFlight et App Store, les seuls que l'on produise. -->
 	<key>aps-environment</key>
 	<string>production</string>
+	<!-- LIENS UNIVERSELS : un lien salondz.com tapé depuis un message, un e-mail ou Instagram
+	     ouvre l'application sur la bonne page au lieu de Safari. iOS lit
+	     https://salondz.com/.well-known/apple-app-site-association à l'installation ; sans cette
+	     habilitation il ne le lit même pas, et rien n'indique pourquoi le lien part au navigateur. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:salondz.com</string>
+		<string>applinks:www.salondz.com</string>
+	</array>
 </dict>
 </plist>
