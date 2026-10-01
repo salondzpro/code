@@ -42,6 +42,50 @@ POUR LES PROFESSIONNELS
 Les confirmations, les demandes et les rappels passent par les notifications de l'application : fini les messages à recopier.
 ```
 
+## 1 bis. Salon DZ Pro — seconde fiche Google Play (1er oct. 2026)
+
+L'application professionnelle est une application **à part** sur Play : identifiant **`pro.salondz.app`**, sa propre fiche, ses propres visuels, sa propre file de versions (`version-pro.properties`). Elle ne contient **que** l'espace professionnel — les routes clientes ne sont pas livrées dans le bundle (`VITE_APP_FLAVOR=pro`).
+
+| | Valeur |
+|---|---|
+| Nom (30 max) | `Salon DZ Pro` |
+| Description courte (80 max) | `L’agenda de votre salon : réservations, clientèle et chiffre d’affaires.` |
+| Catégorie | Entreprise |
+| Public cible | 18 ans et plus |
+| Accès à l'application | restreint — compte **professionnel** (`relecteur-pro@salondz.com`, mot de passe dans `secrets/store-review.txt`) |
+
+```
+Salon DZ Pro, c'est votre salon dans votre poche. Réservé aux professionnels de la beauté en Algérie : barbiers, coiffeurs, coiffeuses, ongleries, instituts, cils et soins.
+
+VOTRE JOURNÉE, D'UN COUP D'ŒIL
+• Les rendez-vous du jour, les demandes à confirmer et le prochain client dès l'ouverture
+• Agenda en colonnes, une par personne de l'équipe : un appui sur un creux crée le rendez-vous
+• Fermetures, congés et pauses, sans qu'un client puisse réserver dessus
+
+LES DEMANDES, EN DIRECT
+• Chaque nouvelle demande arrive en notification, à l'instant où elle est faite
+• Confirmez, reportez ou refusez d'un geste — ou laissez la confirmation automatique
+• Un rappel une heure avant chaque rendez-vous
+
+VOS CLIENTS RÉSERVENT SANS VOUS APPELER
+• Votre page, votre lien et votre QR code à mettre sur Instagram, WhatsApp, Snapchat ou en vitrine
+• Vos prestations, vos durées, vos prix en dinars, vos photos de réalisations
+• Vos avis, auxquels vous pouvez répondre publiquement
+
+VOTRE CLIENTÈLE ET VOS CHIFFRES
+• Une fiche par client : historique, notes, numéro
+• Chiffre d'affaires du jour, de la semaine et du mois, encaissé et prévisionnel
+• Export de votre clientèle et de vos chiffres
+
+Gratuit, en français, en arabe et en anglais. Vos clients réservent depuis l'application Salon DZ ou depuis votre lien.
+```
+
+**Visuels** : `node scripts/make-play-pro-assets.mjs` → `apps/web/android/store/pro/` (six visuels de téléphone 1080×1920 + image de présentation 1024×500). L'icône 512 vient de `node scripts/make-capacitor-icons.mjs --pro` (`store/icone-play-store-512-pro.png`). **Ne pas réutiliser les visuels iPhone** : ils font 1290×2796, soit un rapport de 2,167, et Google refuse au-delà de 2:1.
+
+**Sécurité des données** : la même déclaration qu'en § 2, moins la position (l'espace professionnel ne géolocalise pas) et moins les avis (le professionnel y répond, il n'en dépose pas).
+
+**Reste à faire** : `apps/web/public/.well-known/assetlinks.json` ne déclare que `dz.salondz.app`. L'empreinte de signature de `pro.salondz.app` n'est connue qu'après le premier envoi sur Play (clé de Google) — ajouter une seconde entrée alors, sinon les liens `salondz.com` n'ouvriront pas l'application professionnelle.
+
 ## 2. Google Play — questionnaires
 
 **Contenu de l'application**
