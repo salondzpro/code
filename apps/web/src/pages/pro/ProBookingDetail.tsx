@@ -2,9 +2,10 @@
  * C-F 15 — Détail du rendez-vous côté pro : client (appeler, WhatsApp), lignes, note, historique,
  * Confirmer / Reporter / Annuler ; Terminé / Absent après l'heure. Report : nouvelle date, heure, membre.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
+  useMarkBookingSeen,
   useProBooking,
   useProBookingMutations,
   useProBookings,
@@ -58,6 +59,18 @@ export function ProBookingDetail() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const booking = useProBooking(id);
+  /**
+   * OUVRIR une fiche, c'est l'avoir vue : le compteur de l'agenda baisse d'autant. Une seule fois
+   * par rendez-vous — la référence empêche de relancer l'appel à chaque rendu.
+   */
+  const marquerVu = useMarkBookingSeen();
+  const dejaMarque = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id || dejaMarque.current === id) return;
+    dejaMarque.current = id;
+    marquerVu.mutate(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
   const salon = useProSalon().data?.salon ?? null;
   const { setStatus, cancel } = useProBookingMutations();
   const b = booking.data;

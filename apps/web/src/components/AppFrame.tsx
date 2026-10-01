@@ -6,7 +6,7 @@
  */
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { NavLink } from 'react-router';
-import { useProPendingBookings } from '@salondz/api-client';
+import { useProPendingBookings, useProUnseenBookings } from '@salondz/api-client';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 import { useDesktop } from '@/lib/breakpoint';
@@ -120,7 +120,19 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
    * sans rien actualiser.
    */
   const pending = useProPendingBookings(kind === 'pro');
-  const badge = kind === 'pro' ? (pending.data?.items.length ?? 0) : 0;
+  /**
+   * Rendez-vous PAS ENCORE VUS, quelle que soit leur date. Un rendez-vous pris pour la semaine
+   * prochaine n'apparaissait nulle part tant qu'on ne descendait pas jusqu'à ce jour-là : on
+   * pouvait passer à côté pendant des jours. Le compteur de l'agenda le signale.
+   */
+  const unseen = useProUnseenBookings(kind === 'pro');
+  const badges: Record<string, number> =
+    kind === 'pro'
+      ? {
+          '/pro/reservations': pending.data?.items.length ?? 0,
+          '/pro/agenda': unseen.data?.total ?? 0,
+        }
+      : {};
   /**
    * La barre se réduit aux icônes pendant le défilement, et se rouvre avec ses libellés dès
    * qu'on s'arrête : elle rend de la hauteur au contenu quand on parcourt, et redevient
@@ -158,8 +170,8 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
             className={({ isActive }) => `nvi${isActive ? ' on' : ''}`}
             title={it.label}
             aria-label={
-              it.to === '/pro/reservations' && badge > 0
-                ? `${it.label} · ${badge} à confirmer`
+              badges[it.to]
+                ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? 'nouveau(x)' : 'à confirmer'}`
                 : undefined
             }
           >
@@ -172,9 +184,9 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
                     strokeWidth={isActive ? 2 : 1.6}
                     className="text-current"
                   />
-                  {it.to === '/pro/reservations' && badge > 0 && (
+                  {!!badges[it.to] && (
                     <span className="nvd" aria-hidden>
-                      {badge > 9 ? '9+' : badge}
+                      {badges[it.to]! > 9 ? '9+' : badges[it.to]}
                     </span>
                   )}
                 </span>
