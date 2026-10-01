@@ -17,7 +17,26 @@ const APP = '6817317513';
 const VERIFIER = process.argv.includes('--verifier');
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
-const detail = (r) => r.json?.errors?.map((e) => `${e.title} — ${e.detail || ''}`).join(' | ') || JSON.stringify(r.json);
+/**
+ * Le message d'Apple sur un refus de mise en revue est volontairement vague : « cette ressource ne
+ * peut pas être relue, voyez les erreurs associées ». Les VRAIES raisons sont enfouies dans
+ * `meta.associatedErrors`, et sans elles on cherche à l'aveugle — c'est ainsi qu'on a soupçonné
+ * les étiquettes de confidentialité pendant deux jours alors qu'il manquait une tout autre
+ * déclaration. On les déplie donc systématiquement.
+ */
+const detail = (r) => {
+  const erreurs = r.json?.errors ?? [];
+  const lignes = [];
+  for (const e of erreurs) {
+    lignes.push(`${e.title} — ${e.detail || ''}`);
+    for (const [ou, liste] of Object.entries(e.meta?.associatedErrors ?? {})) {
+      for (const a of liste) {
+        lignes.push(`  ↳ ${a.code}`, `     ${a.title} : ${a.detail}`, `     (${ou})`);
+      }
+    }
+  }
+  return lignes.join('\n  ') || JSON.stringify(r.json);
+};
 
 // ---------------------------------------------------------------------------------------------
 // 1. Le build

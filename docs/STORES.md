@@ -96,7 +96,10 @@ Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de 
 
 **Lancer une compilation iOS** : `git tag ios-N && git push origin ios-N`. Le déclenchement se fait sur l'étiquette et non sur chaque poussée — une machine macOS se paie à la minute. L'intégration Codemagic doit s'appeler **`salondz_asc`**.
 
+**Diagnostiquer un refus de mise en revue** : Apple répond « cette ressource ne peut pas être relue, voyez les erreurs associées » — un message qui ne dit rien. Les VRAIES raisons sont dans `meta.associatedErrors` de la réponse ; `asc-soumettre.mjs` les déplie désormais systématiquement. **C'est ce qui a permis de trouver le vrai blocage** après l'avoir attribué à tort aux étiquettes de confidentialité.
+
 **Ce que l'API ne peut PAS faire, et qui reste à la main** :
+- **la déclaration « dispositif médical réglementé »** (`CANNOT_SUBMIT_MISSING_REGULATED_MEDICAL_DEVICE_APP_DECLARATION`). Ajoutée par Apple au questionnaire de classification par âge, elle n'est exposée NULLE PART dans l'API — vérifié : ni attribut de `appInfos`, de `appStoreVersions` ou de `ageRatingDeclarations`, ni chemin dédié. À répondre dans App Store Connect → **Informations sur l'app** → **Classification par âge** → **Modifier** → « Votre app est-elle un dispositif médical réglementé ? » → **Non** ;
 - **créer la fiche** (fait par le propriétaire le 29 sept.) ;
 - **les étiquettes de confidentialité** (« App Privacy ») : Apple a retiré `appDataUsages` de l'API — les six chemins répondent 404, vérifié. Le contenu à cocher est au § 3 ci-dessus ;
 - **le numéro de téléphone de revue** : Apple l'exige et il n'est écrit nulle part dans le dépôt.
