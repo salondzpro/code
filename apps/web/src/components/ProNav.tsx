@@ -30,12 +30,15 @@ import {
   UserCircle,
   Users,
   type LucideIcon,
+  ExternalLink,
 } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
 import { useProReviewsUnanswered } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
+import { env } from '@/lib/env';
+import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
 
 interface Item {
@@ -45,13 +48,30 @@ interface Item {
   end?: boolean;
   /** Compteur rouge (demandes à confirmer). */
   count?: number;
+  /**
+   * Adresse à ouvrir HORS de l'application (aperçu de sa page publique). Un rôle, un espace :
+   * un écran de client n'a pas à s'ouvrir dans la coque professionnelle.
+   */
+  externe?: string;
 }
 
 function Group({ title, items }: { title: string; items: Item[] }) {
   return (
     <div className="flex flex-col border-t border-line-soft pt-2.5">
       <span className="h3 pb-1">{title}</span>
-      {items.map((it) => (
+      {items.map((it) =>
+        it.externe ? (
+          <button
+            key={it.to}
+            type="button"
+            className="flex items-center gap-3 py-2.5 text-start"
+            onClick={() => void openExternal(it.externe!)}
+          >
+            <I icon={it.icon} size={20} strokeWidth={1.6} className="flex-none text-muted" />
+            <span className="min-w-0 flex-1 truncate text-[1.143rem]">{it.label}</span>
+            <I icon={ExternalLink} size={16} className="flex-none text-subtle" />
+          </button>
+        ) : (
         <NavLink
           key={it.to}
           to={it.to}
@@ -77,7 +97,8 @@ function Group({ title, items }: { title: string; items: Item[] }) {
             </>
           )}
         </NavLink>
-      ))}
+        ),
+      )}
     </div>
   );
 }
@@ -139,7 +160,9 @@ export function ProNav({
         title={t("Page publique")}
         items={[
           { to: '/pro/avis', label: t("Avis"), icon: Star, count: unanswered },
-          ...(salon ? [{ to: `/s/${salon.slug}`, label: t("Voir ma page"), icon: Eye }] : []),
+          ...(salon
+            ? [{ to: `apercu:${salon.slug}`, label: t('Aperçu de ma page'), icon: Eye, externe: `${env.siteUrl}/s/${salon.slug}` }]
+            : []),
           { to: '/pro/lien', label: t("Lien et partage"), icon: Share2 },
         ]}
       />

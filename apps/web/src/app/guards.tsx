@@ -146,10 +146,18 @@ export function RequireClient() {
   if (me.isPending) return <Splash />;
   if (me.isError) return <ErrorState error={me.error} retry={() => me.refetch()} accueil={false} />;
   const p = me.data.profile;
+  /**
+   * UN RÔLE, UN ESPACE. Un professionnel n'a rien à faire dans la place de marché : c'est ce qui
+   * le ramenait à l'ouverture de l'application. Celle-ci démarre sur `/`, et ce garde laissait
+   * passer tout le monde — un professionnel rouvrait donc son application en client, et devait
+   * retrouver son espace à la main.
+   */
+  if (p.role === 'pro') return <Navigate to="/pro" replace />;
   const next = encodeURIComponent(location.pathname + location.search);
   // Nom ET numéro obligatoires : le salon doit pouvoir joindre la personne.
   if (!p.fullName || !p.phone) return <Navigate to={`/profil/creer?next=${next}`} replace />;
-  if (!p.market && p.role !== 'pro') return <Navigate to={`/marche?next=${next}`} replace />;
+  // Le rôle est forcément « client » ici (un professionnel a été renvoyé plus haut).
+  if (!p.market) return <Navigate to={`/marche?next=${next}`} replace />;
   return <Outlet />;
 }
 
