@@ -303,10 +303,62 @@ export function createApiClient(opts: ApiClientOptions) {
   const doFetch = opts.fetch ?? globalThis.fetch.bind(globalThis);
   const timeoutMs = opts.timeoutMs ?? 15_000;
 
+  /**
+   * REPRISES. Sur un réseau mobile algérien, une requête échoue souvent sans que rien ne soit
+   * cassé : coupure d'une seconde, passage 4G → 3G, réponse perdue en chemin. Réessayer est donc
+   * la règle, pas l'exception.
+   *
+   * Une LECTURE se reprend toujours sans risque. Une ÉCRITURE ne se reprend que parce qu'elle
+   * porte une clé d'idempotence : le serveur reconnaît la reprise et rejoue sa réponse d'origine
+   * au lieu de refaire le travail (voir `plugins/idempotency.ts`). Sans cette clé, on ne reprend
+   * rien — mieux vaut une erreur affichée que deux rendez-vous créés.
+   */
+  const ATTENTES = [400, 1200, 2500];
+
+  /** Un identifiant par APPEL LOGIQUE, réutilisé à chaque reprise du même appel. */
+  const nouvelleCle = (): string =>
+    globalThis.crypto?.randomUUID?.() ??
+    `k-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}-${Math.random().toString(36).slice(2, 12)}`;
+
+  /** Un échec passager : rien n'indique que la demande ait été refusée sur le fond. */
+  function passager(err: unknown): boolean {
+    if (!(err instanceof ApiError)) return false;
+    if (err.status === 0) return true; // réseau coupé, délai dépassé
+    if (err.status === 429) return true; // trop de requêtes : on laisse retomber
+    if (err.status >= 500) return true; // panne serveur
+    // Une reprise arrivée pendant que la première est encore en cours.
+    return err.status === 409 && err.code === 'IDEMPOTENCY_IN_PROGRESS';
+  }
+
   async function request<T>(
     method: string,
     path: string,
     init: { query?: Query; body?: unknown; auth?: boolean } = {},
+  ): Promise<T> {
+    const ecriture = method !== 'GET' && method !== 'HEAD';
+    // La clé est tirée UNE FOIS, hors de la boucle : c'est ce qui fait qu'une reprise est reconnue
+    // comme telle. La tirer à chaque tentative reviendrait à n'avoir aucune protection.
+    const cle = ecriture ? nouvelleCle() : null;
+    const reprenable = !ecriture || cle !== null;
+
+    let derniere: unknown;
+    for (let essai = 0; essai <= (reprenable ? ATTENTES.length : 0); essai++) {
+      if (essai > 0) await new Promise((f) => setTimeout(f, ATTENTES[essai - 1]));
+      try {
+        return await envoyer<T>(method, path, init, cle);
+      } catch (err) {
+        derniere = err;
+        if (!reprenable || !passager(err)) throw err;
+      }
+    }
+    throw derniere;
+  }
+
+  async function envoyer<T>(
+    method: string,
+    path: string,
+    init: { query?: Query; body?: unknown; auth?: boolean },
+    idempotencyKey: string | null,
   ): Promise<T> {
     const url = new URL(`${base}/v1${path}`);
     for (const [k, v] of Object.entries(init.query ?? {})) {
@@ -314,6 +366,7 @@ export function createApiClient(opts: ApiClientOptions) {
     }
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (init.body !== undefined) headers['Content-Type'] = 'application/json';
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
     if (init.auth !== false) {
       const token = await opts.getAccessToken();
       if (token) headers.Authorization = `Bearer ${token}`;
@@ -543,6 +596,10 @@ export function createApiClient(opts: ApiClientOptions) {
         list: (q: Partial<ListBookingsQuery> = {}) =>
           get<Paginated<BookingWithStaff>>('/pro/bookings', q as Query),
         pending: () => get<Paginated<BookingWithStaff>>('/pro/bookings/pending'),
+        /** Rendez-vous pas encore vus, et le jour où ils tombent : compteurs de l'agenda. */
+        unseen: () => get<{ total: number; byDate: Record<string, number>; bookingIds: string[] }>('/pro/bookings/unseen'),
+        /** « J'ai vu ce rendez-vous » : fait baisser le compteur du jour et de l'onglet. */
+        markSeen: (id: string) => post<void>(`/pro/bookings/${id}/seen`, {}),
         get: (id: string) => get<BookingWithStaff>(`/pro/bookings/${id}`),
         createWalkIn: (body: CreateWalkInBookingInput) =>
           post<BookingWithStaff>('/pro/bookings', body),

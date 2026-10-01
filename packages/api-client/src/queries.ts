@@ -33,6 +33,7 @@ export const queryKeys = {
     bookings: (q: Partial<ListBookingsQuery>) => ['pro', 'bookings', q] as const,
     bookingsAll: ['pro', 'bookings'] as const,
     pending: ['pro', 'bookings', 'pending'] as const,
+    unseen: ['pro', 'bookings', 'unseen'] as const,
     reviews: ['pro', 'reviews'] as const,
     reviewsUnanswered: ['pro', 'reviews', 'unanswered'] as const,
     booking: (id: string) => ['pro', 'booking', id] as const,
@@ -211,6 +212,12 @@ export function makeQueries(api: ApiClient) {
         queryOptions({
           queryKey: queryKeys.pro.pending,
           queryFn: () => api.pro.bookings.pending(),
+          staleTime: 15_000,
+        }),
+      unseen: () =>
+        queryOptions({
+          queryKey: queryKeys.pro.unseen,
+          queryFn: () => api.pro.bookings.unseen(),
           staleTime: 15_000,
         }),
       booking: (id: string) =>

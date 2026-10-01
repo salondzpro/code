@@ -274,6 +274,25 @@ export const useProPendingBookings = (enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.pending(), enabled });
 };
+/** Rendez-vous pas encore vus : le total pour l'onglet, et le compte par jour pour l'agenda. */
+export const useProUnseenBookings = (enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.pro.unseen(), enabled });
+};
+
+/**
+ * « J'ai vu ce rendez-vous. » À appeler à l'OUVERTURE de sa fiche : le compteur du jour et celui
+ * de l'onglet baissent d'autant. Les listes ne sont pas rechargées — seuls les compteurs changent.
+ */
+export function useMarkBookingSeen() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.pro.bookings.markSeen(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.pro.unseen }),
+  });
+}
+
 export const useProBooking = (id: string) => useQuery(useApi().queries.pro.booking(id));
 export const useProBlocks = (from?: string, to?: string) =>
   useQuery(useApi().queries.pro.blocks(from, to));

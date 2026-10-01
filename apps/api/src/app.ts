@@ -13,6 +13,7 @@ import {
 import * as Sentry from '@sentry/node';
 import { config } from './config';
 import authPlugin from './plugins/auth';
+import { idempotencyPlugin } from './plugins/idempotency';
 import { AppError, fromPostgrest } from './lib/errors';
 import { TRUSTED_PROXIES } from './lib/proxy';
 import healthRoutes from './routes/health';
@@ -69,6 +70,10 @@ export async function buildApp(): Promise<App> {
   });
   await app.register(etag);
   await app.register(authPlugin);
+  // Après l'authentification : une clé d'idempotence appartient à la personne qui l'a posée, et il
+  // faut donc savoir qui elle est. Avant les routes : le garde doit pouvoir rejouer une réponse
+  // sans que la route ne s'exécute une seconde fois.
+  await app.register(idempotencyPlugin);
   // Après l'authentification et au stade preHandler : la clé est le compte quand il est connu, le
   // corps de la requête est lisible (limites par adresse e-mail sur les routes d'envoi).
   await app.register(rateLimit, {

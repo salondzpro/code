@@ -219,6 +219,14 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     if (purgedOld.error) throw purgedOld.error;
     const purged = (purgedRead.count ?? 0) + (purgedOld.count ?? 0);
 
+    // Clés d'idempotence : elles ne servent qu'au temps des reprises d'un réseau capricieux.
+    // 24 h couvrent très largement ; au-delà, la table ne ferait que grossir.
+    const purgedKeys = await db
+      .from('idempotency_keys')
+      .delete({ count: 'exact' })
+      .lt('created_at', new Date(Date.now() - 24 * 3600_000).toISOString());
+    if (purgedKeys.error) throw purgedKeys.error;
+
     // Battement de cœur : le tableau de bord d'administration lit cette clé pour dire si la
     // machine tourne. Écriture volontairement non bloquante — un tic réussi ne doit pas échouer
     // parce qu'un réglage n'a pas pu s'enregistrer.
@@ -227,7 +235,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .upsert({ key: 'cron_last_tick', value: new Date(now).toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (beat.error) req.log.warn({ err: beat.error }, 'cron heartbeat');
 
-    return { reminders: toRemind.length, reminders2h: toRemind2.length, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged };
+    return { reminders: toRemind.length, reminders2h: toRemind2.length, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0 };
   }
 };
 

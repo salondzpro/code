@@ -31,6 +31,63 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireSalon);
 
+  /**
+   * RENDEZ-VOUS PAS ENCORE VUS, et à quelle date ils tombent.
+   *
+   * Un rendez-vous pris pour la semaine prochaine n'apparaît nulle part tant que le professionnel
+   * ne descend pas jusqu'à ce jour-là dans son agenda : il peut passer à côté d'une réservation
+   * pendant des jours. On lui pose donc un compteur sur la date concernée.
+   *
+   * « Pas encore vu » se lit sur les NOTIFICATIONS non lues rattachées à un rendez-vous : elles
+   * existent déjà, elles sont créées au même instant que le rendez-vous, et elles portent déjà la
+   * notion de lu. Ajouter une colonne « vu » sur `bookings` aurait dupliqué cette information et
+   * l'aurait fait diverger au premier oubli.
+   */
+  app.get('/bookings/unseen', async (req, reply) => {
+    const { data: notifs, error } = await db
+      .from('notifications')
+      .select('booking_id')
+      .eq('user_id', req.user!.id)
+      .is('read_at', null)
+      .not('booking_id', 'is', null);
+    if (error) throw error;
+
+    const ids = [...new Set((notifs ?? []).map((n) => n.booking_id as string))];
+    if (!ids.length) return reply.send({ total: 0, byDate: {}, bookingIds: [] });
+
+    // On ne garde que les rendez-vous DE CE SALON : le professionnel est aussi un client ailleurs,
+    // et ses propres rendez-vous n'ont rien à faire dans le compteur de son agenda.
+    const { data: rdv, error: e2 } = await db
+      .from('bookings')
+      .select('id, starts_at')
+      .eq('salon_id', req.salon!.id)
+      .in('id', ids);
+    if (e2) throw e2;
+
+    const byDate: Record<string, number> = {};
+    for (const b of rdv ?? []) {
+      const jour = toLocalDateKey(new Date(b.starts_at as string));
+      byDate[jour] = (byDate[jour] ?? 0) + 1;
+    }
+    return reply.send({ total: (rdv ?? []).length, byDate, bookingIds: (rdv ?? []).map((b) => b.id as string) });
+  });
+
+  /**
+   * « J'ai vu ce rendez-vous. » Marque lues les notifications du professionnel qui s'y rapportent,
+   * ce qui fait baisser le compteur du jour et celui de l'onglet.
+   */
+  app.post('/bookings/:id/seen', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    const { error } = await db
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('user_id', req.user!.id)
+      .eq('booking_id', req.params.id)
+      .is('read_at', null);
+    if (error) throw error;
+    reply.status(204);
+    return null;
+  });
+
   /** Agenda : réservations sur une plage de dates locales (défaut : 7 jours). */
   app.get('/bookings', { schema: { querystring: listBookingsQuerySchema } }, async (req, reply) => {
     const { from = toLocalDateKey(), status, staffId, limit } = req.query;
