@@ -140,6 +140,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       return;
     }
+    /**
+     * DÉTACHER LES NOTIFICATIONS AVANT DE FERMER LA SESSION. Sans cela, le jeton de cet appareil
+     * reste rattaché au compte : la personne se déconnecte et continue de recevoir les rendez-vous
+     * de quelqu'un qui n'est plus connecté là — sur un téléphone partagé, elle voit les rendez-vous
+     * d'un autre. L'ordre compte : une fois la session fermée, l'API refuserait le retrait.
+     *
+     * Jamais bloquant : un réseau coupé ne doit pas empêcher quelqu'un de se déconnecter.
+     */
+    try {
+      const [{ disableWebPush }, { api }] = await Promise.all([import('./webpush'), import('./api')]);
+      await disableWebPush(api);
+    } catch {
+      /* sans conséquence : la déconnexion prime */
+    }
     await supabase.auth.signOut();
   }, [qc]);
 

@@ -63,6 +63,36 @@ export async function enableNativePush(api: ApiClient): Promise<boolean> {
   }
 }
 
+/**
+ * Première entrée dans l'application : on DEMANDE la permission, une seule fois.
+ *
+ * Pourquoi : sans jeton natif, le serveur n'a que l'abonnement du NAVIGATEUR — et la personne
+ * reçoit des notifications qui portent l'icône de Chrome et le nom du site, alors qu'elle a
+ * l'application. C'est exactement ce qui a été constaté. Les notifications sont la raison d'être
+ * de cette application : joindre un professionnel quand elle est fermée.
+ *
+ * Une seule demande par installation : si elle est refusée, on n'insiste jamais — le réglage reste
+ * accessible dans l'écran Notifications.
+ */
+const DEJA_DEMANDE = 'salondz:push:demande';
+
+export async function ensureNativePush(api: ApiClient): Promise<void> {
+  try {
+    const { PushNotifications: Push } = await load();
+    const { receive } = await Push.checkPermissions();
+    if (receive === 'granted') {
+      await enableNativePush(api);
+      return;
+    }
+    if (receive !== 'prompt') return; // refusée : on n'insiste pas
+    if (localStorage.getItem(DEJA_DEMANDE)) return;
+    localStorage.setItem(DEJA_DEMANDE, '1');
+    await enableNativePush(api);
+  } catch {
+    /* sans conséquence : l'application reste utilisable */
+  }
+}
+
 /** Réenregistre le jeton quand la permission est DÉJÀ accordée, sans jamais afficher de demande. */
 export async function refreshNativePushIfGranted(api: ApiClient): Promise<void> {
   try {

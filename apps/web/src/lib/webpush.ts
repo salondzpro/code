@@ -97,8 +97,11 @@ export async function enableWebPush(api: ApiClient): Promise<boolean> {
  */
 export async function refreshWebPushIfGranted(api: ApiClient): Promise<void> {
   if (nativeShell()) {
-    const { refreshNativePushIfGranted } = await import('./nativePush');
-    await refreshNativePushIfGranted(api);
+    // Dans l'application, on va plus loin qu'un rafraîchissement : si la permission n'a jamais été
+    // demandée, on la demande UNE fois. Sans jeton natif, c'est le navigateur qui notifierait —
+    // avec son icône et son nom, ce qui n'a aucun sens quand on a l'application.
+    const { ensureNativePush } = await import('./nativePush');
+    await ensureNativePush(api);
     return;
   }
   if (!webPushSupported() || Notification.permission !== 'granted') return;
