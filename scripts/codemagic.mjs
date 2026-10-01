@@ -16,12 +16,22 @@ const api = async (p, init) => (await fetch('https://api.codemagic.io' + p, { he
 
 const arg = (n) => process.argv.includes(n);
 
+/** Identifiant de la compilation à suivre : celle qu'on vient de lancer, sinon la dernière. */
+let suivi = null;
+
 if (arg('--lancer')) {
   const r = await api('/builds', { method: 'POST', body: JSON.stringify({ appId: APP, workflowId: 'ios', branch: 'main' }) });
-  console.log('compilation lancée :', r.buildId ?? JSON.stringify(r));
+  suivi = r.buildId ?? null;
+  console.log('compilation lancée :', suivi ?? JSON.stringify(r));
 }
 
-const dernier = async () => (await api(`/builds?appId=${APP}&limit=1`)).builds?.[0];
+/**
+ * On suit la compilation PAR SON IDENTIFIANT. Interroger « la dernière » juste après l'avoir
+ * lancée renvoyait parfois la précédente, déjà terminée : le suivi s'arrêtait aussitôt en
+ * annonçant un succès qui n'était pas le sien.
+ */
+const dernier = async () =>
+  suivi ? (await api(`/builds/${suivi}`)).build : (await api(`/builds?appId=${APP}&limit=1`)).builds?.[0];
 
 if (arg('--suivre') || arg('--lancer')) {
   const fin = Date.now() + 45 * 60_000;
