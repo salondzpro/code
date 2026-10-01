@@ -14,6 +14,7 @@ import { formatDA, formatTimeDZ, toLocalDateKey, untilLabelFR, formatLocale } fr
 import { formatDuration } from '@/lib/format';
 import { Avatar, Button, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
+import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
 import { StaffFilter } from '@/components/StaffFilter';
@@ -67,6 +68,9 @@ export function ProHome() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
+      {/* Les notifications décident si l'application sert à quelque chose quand elle est fermée :
+          une demande manquée est un client perdu. Le bandeau ne revient qu'à intervalle. */}
+      <NotificationsNudge role="pro" />
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[1rem] text-muted">{t("Bonjour,")}{' '}{firstName}</div>
