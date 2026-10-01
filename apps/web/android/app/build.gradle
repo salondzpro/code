@@ -21,6 +21,11 @@ def versionProps = new Properties()
 versionProps.load(new FileInputStream(rootProject.file(pro ? "version-pro.properties" : "version.properties")))
 
 android {
+    // Les icônes de la variante professionnelle NE passent PAS par un second dossier de ressources :
+    // Gradle FUSIONNE les `res.srcDirs` au lieu de les superposer, et refuse les doublons. C'est
+    // `scripts/build-android.mjs` qui pose `res-pro/` par-dessus `res/` le temps de la compilation,
+    // puis remet tout en place — comme il le fait déjà pour `google-services.json`.
+
     namespace = "dz.salondz.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {

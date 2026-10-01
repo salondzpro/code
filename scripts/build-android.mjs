@@ -97,9 +97,28 @@ run('npx', ['cap', 'sync', 'android'], WEB);
 // jamais par un fichier installé à la main : un `.apk` en plus allongeait la compilation pour rien, et
 // deux fichiers voisins ont déjà été confondus (l'ancien APK Expo installé à la place du nouveau).
 // Chemin complet : sous Windows, « ./gradlew.bat » n'est pas reconnu par l'interpréteur de commandes.
+/**
+ * ICÔNES DE LA VARIANTE PROFESSIONNELLE. `res-pro/` ne contient QUE les fichiers qui diffèrent ;
+ * on les pose par-dessus `res/` le temps de la compilation, après avoir mis de côté les originaux.
+ * Gradle refuse deux dossiers de ressources (il les fusionne et signale les doublons), d'où cette
+ * superposition plutôt qu'un `sourceSets`.
+ */
+const RES = path.join(ANDROID, 'app', 'src', 'main', 'res');
+const RES_PRO = path.join(ANDROID, 'app', 'src', 'main', 'res-pro');
+
+/** Chemins relatifs de tous les fichiers d'un dossier, en descendant. */
+const fichiersDe = (racine, base = '') =>
+  existsSync(racine)
+    ? readdirSync(path.join(racine, base), { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? fichiersDe(racine, path.join(base, e.name)) : [path.join(base, e.name)],
+      )
+    : [];
+
 const GS = path.join(ANDROID, 'app', 'google-services.json');
 const GS_PRO = path.join(ANDROID, 'app', 'google-services-pro.json');
 const GS_SAUVE = path.join(ANDROID, 'app', 'google-services.grandpublic.json');
+/** Originaux mis de côté, pour être remis quoi qu'il arrive. */
+const sauvegardes = [];
 if (PRO) {
   // Le greffon Google Services REFUSE de compiler si l'identifiant publié ne figure pas dans le
   // fichier (« No matching client found »). On pose celui de la variante pro le temps de la
@@ -107,6 +126,23 @@ if (PRO) {
   if (!existsSync(GS_PRO)) throw new Error(`${GS_PRO} manquant : lancer node --env-file=.env scripts/firebase-app-pro.mjs`);
   copyFileSync(GS, GS_SAUVE);
   copyFileSync(GS_PRO, GS);
+
+  const icones = fichiersDe(RES_PRO);
+  if (!icones.length) throw new Error(`${RES_PRO} vide : lancer node scripts/make-capacitor-icons.mjs --pro`);
+  // Les originaux sont mis de côté HORS de `res/` : Android refuse toute extension qui ne soit pas
+  // .png ou .xml, et une sauvegarde laissée dans l'arborescence fait échouer la fusion.
+  const ABRI = path.join(ANDROID, 'build', 'icones-grandpublic');
+  for (const rel of icones) {
+    const dest = path.join(RES, rel);
+    if (existsSync(dest)) {
+      const garde = path.join(ABRI, rel);
+      mkdirSync(path.dirname(garde), { recursive: true });
+      copyFileSync(dest, garde);
+      sauvegardes.push([garde, dest]);
+    }
+    copyFileSync(path.join(RES_PRO, rel), dest);
+  }
+  console.log(`Icônes professionnelles posées (${icones.length} fichiers).`);
 }
 try {
   run(`"${path.join(ANDROID, 'gradlew.bat')}"`, [':app:bundleRelease', ...(PRO ? ['-PsalondzPro'] : []), '--no-daemon'], ANDROID);
@@ -114,6 +150,10 @@ try {
   if (PRO && existsSync(GS_SAUVE)) {
     copyFileSync(GS_SAUVE, GS);
     rmSync(GS_SAUVE);
+  }
+  for (const [garde, dest] of sauvegardes) {
+    copyFileSync(garde, dest);
+    rmSync(garde);
   }
 }
 

@@ -2,7 +2,8 @@
  * Icônes Android de l'application mobile (coque Capacitor) : le wordmark « Salon DZ » sur fond noir,
  * la MÊME marque que l'en-tête du site et que le favicon.
  *
- *   node scripts/make-capacitor-icons.mjs
+ *   node scripts/make-capacitor-icons.mjs          → l'application grand public
+ *   node scripts/make-capacitor-icons.mjs --pro    → la variante PROFESSIONNELLE (res-pro/)
  *
  * Trois jeux d'images, aux cinq densités d'Android :
  *   ic_launcher          icône pleine (appareils anciens)
@@ -17,7 +18,16 @@ import pw from 'playwright-core';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
-const RES = path.join(ROOT, 'apps', 'web', 'android', 'app', 'src', 'main', 'res');
+/**
+ * VARIANTE PROFESSIONNELLE. Les deux applications sont voisines sur un écran d'accueil : elles
+ * doivent se reconnaître d'un coup d'œil sans qu'on lise. D'où la MÊME marque, et un bandeau clair
+ * marqué PRO sous le logo — un contraste inversé se repère plus vite qu'un mot de plus à déchiffrer.
+ *
+ * Les fichiers vont dans `res-pro/`, que Gradle superpose à `res/` pour cette variante (voir
+ * `app/build.gradle`) : rien à échanger ni à remettre en place avant et après chaque compilation.
+ */
+const PRO = process.argv.includes('--pro');
+const RES = path.join(ROOT, 'apps', 'web', 'android', 'app', 'src', 'main', PRO ? 'res-pro' : 'res');
 const FONTS = path.join(ROOT, 'apps', 'web', 'public', 'fonts');
 
 const INK = '#111214';
@@ -34,6 +44,24 @@ const FONT_CSS = [400, 600].map(font).join('');
 /** Le wordmark, à largeur imposée pour tenir exactement dans la zone voulue quelle que soit la police. */
 const wordmark = (size, fontSize, textWidth) =>
   `<text x="${size / 2}" y="${size / 2 + (CAP * fontSize) / 2}" text-anchor="middle" font-family="Inter" font-size="${fontSize}" textLength="${textWidth}" lengthAdjust="spacingAndGlyphs"><tspan font-weight="600" fill="#fff">Salon </tspan><tspan font-weight="400" fill="#9aa0a6">DZ</tspan></text>`;
+
+/**
+ * Bandeau « PRO » : rectangle clair aux arrondis de la marque, texte en encre, lettres espacées.
+ * Posé sous le logo, à une taille qui reste lisible à 48 px — la plus petite densité d'Android.
+ */
+const badgePro = (size) => {
+  const w = size * 0.42;
+  const h = size * 0.165;
+  const x = (size - w) / 2;
+  const y = size * 0.6;
+  const r = size * 0.035;
+  return (
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="#E8DACB"/>` +
+    `<text x="${size / 2}" y="${y + h / 2 + CAP * (h * 0.56) / 2}" text-anchor="middle" font-family="Inter" ` +
+    `font-size="${h * 0.56}" font-weight="700" letter-spacing="${size * 0.012}" fill="${INK}" ` +
+    `textLength="${w * 0.58}" lengthAdjust="spacingAndGlyphs">PRO</text>`
+  );
+};
 
 const svg = (size, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${body}</svg>`;
 
@@ -54,11 +82,29 @@ try {
   for (const [density, size] of Object.entries(DENSITIES)) {
     const dir = path.join(RES, `mipmap-${density}`);
     mkdirSync(dir, { recursive: true });
-    const full = svg(size, `<rect width="${size}" height="${size}" fill="${INK}"/>${wordmark(size, size * 0.185, size * 0.8)}`);
+    const full = PRO
+      ? svg(
+          size,
+          `<rect width="${size}" height="${size}" fill="${INK}"/>` +
+            `<g transform="translate(0 ${-size * 0.1})">${wordmark(size, size * 0.165, size * 0.72)}</g>` +
+            badgePro(size),
+        )
+      : svg(size, `<rect width="${size}" height="${size}" fill="${INK}"/>${wordmark(size, size * 0.185, size * 0.8)}`);
     await shoot(path.join(dir, 'ic_launcher.png'), size, full);
     await shoot(path.join(dir, 'ic_launcher_round.png'), size, full);
     // Premier plan adaptatif : le fond est fourni à part, et seul le disque central est garanti visible.
-    await shoot(path.join(dir, 'ic_launcher_foreground.png'), size, svg(size, wordmark(size, size * 0.127, size * 0.55)), true);
+    await shoot(
+      path.join(dir, 'ic_launcher_foreground.png'),
+      size,
+      PRO
+        ? svg(
+            size,
+            `<g transform="translate(0 ${-size * 0.07})">${wordmark(size, size * 0.112, size * 0.48)}</g>` +
+              `<g transform="translate(${size * 0.5} ${size * 0.5}) scale(0.66) translate(${-size * 0.5} ${-size * 0.5})">${badgePro(size)}</g>`,
+          )
+        : svg(size, wordmark(size, size * 0.127, size * 0.55)),
+      true,
+    );
     console.log('✔', `mipmap-${density}`, `${size}px`);
   }
   // Écran de démarrage natif : le fond d'encre et le wordmark, identiques à l'animation d'ouverture,
@@ -77,14 +123,19 @@ try {
 
   // iOS : une seule icône de 1024 (Xcode décline les tailles), et l'écran de démarrage en trois
   // densités. Même marque que l'Android, au pixel près.
-  const IOS = path.join(ROOT, 'apps', 'web', 'ios', 'App', 'App', 'Assets.xcassets');
-  const iconSet = path.join(IOS, 'AppIcon.appiconset');
-  if (fs.existsSync(iconSet)) {
+  /**
+   * iOS n'a PAS de variante professionnelle : il n'existe qu'une application iPhone, celle du grand
+   * public. Ces visuels sont partagés — les écrire en mode `--pro` donnerait l'icône PRO à
+   * l'application iPhone de tout le monde. C'est arrivé une fois ; d'où ce garde.
+   */
+  const IOS = PRO ? null : path.join(ROOT, 'apps', 'web', 'ios', 'App', 'App', 'Assets.xcassets');
+  const iconSet = IOS ? path.join(IOS, 'AppIcon.appiconset') : null;
+  if (iconSet && fs.existsSync(iconSet)) {
     await shoot(path.join(iconSet, 'AppIcon-512@2x.png'), 1024, svg(1024, `<rect width="1024" height="1024" fill="${INK}"/>${wordmark(1024, 190, 820)}`));
     console.log('✔ icône iOS 1024');
   }
-  const splashSet = path.join(IOS, 'Splash.imageset');
-  if (fs.existsSync(splashSet)) {
+  const splashSet = IOS ? path.join(IOS, 'Splash.imageset') : null;
+  if (splashSet && fs.existsSync(splashSet)) {
     for (const [nom, taille] of [['splash-2732x2732.png', 2732], ['splash-2732x2732-1.png', 2732], ['splash-2732x2732-2.png', 2732]]) {
       await shoot(path.join(splashSet, nom), taille, svg(taille, `<rect width="${taille}" height="${taille}" fill="${INK}"/>${wordmark(taille, taille * 0.062, taille * 0.28)}`));
     }
@@ -94,8 +145,12 @@ try {
   // Play Store : icône 512 pleine, même marque.
   const store = path.join(ROOT, 'apps', 'web', 'android', 'store');
   mkdirSync(store, { recursive: true });
-  await shoot(path.join(store, 'icone-play-store-512.png'), 512, svg(512, `<rect width="512" height="512" fill="${INK}"/>${wordmark(512, 96, 410)}`));
-  console.log('✔ icône Play Store 512');
+  const nomStore = PRO ? 'icone-play-store-512-pro.png' : 'icone-play-store-512.png';
+  const dessinStore = PRO
+    ? `<rect width="512" height="512" fill="${INK}"/><g transform="translate(0 -51)">${wordmark(512, 85, 369)}</g>${badgePro(512)}`
+    : `<rect width="512" height="512" fill="${INK}"/>${wordmark(512, 96, 410)}`;
+  await shoot(path.join(store, nomStore), 512, svg(512, dessinStore));
+  console.log('✔ icône Play Store 512', PRO ? '(pro)' : '');
 } finally {
   await browser.close();
 }
