@@ -80,7 +80,19 @@ VOTRE CLIENTÈLE ET VOS CHIFFRES
 Gratuit, en français, en arabe et en anglais. Vos clients réservent depuis l'application Salon DZ ou depuis votre lien.
 ```
 
-**Visuels** : `node scripts/make-play-pro-assets.mjs` → `apps/web/android/store/pro/` (six visuels de téléphone 1080×1920 + image de présentation 1024×500). L'icône 512 vient de `node scripts/make-capacitor-icons.mjs --pro` (`store/icone-play-store-512-pro.png`). **Ne pas réutiliser les visuels iPhone** : ils font 1290×2796, soit un rapport de 2,167, et Google refuse au-delà de 2:1.
+**Visuels** : `node scripts/make-play-pro-assets.mjs` (ou `--format tablette-10` pour n'en refaire qu'un) → `apps/web/android/store/pro/`.
+
+| Emplacement de la fiche | Dossier | Taille | Rendu capturé |
+|---|---|---|---|
+| Téléphone | `telephone/` | 1080×1920 | 360×640 points × 3 — barre d'onglets flottante |
+| Tablette 7 pouces | `tablette-7/` | 1920×1200 | 960×600 points × 2 — encore sous 1 024, donc barre d'onglets |
+| Tablette 10 pouces | `tablette-10/` | 2560×1600 | 1280×800 points × 2 — **rail permanent** |
+| Image de présentation | racine | 1024×500 | imposé par Google |
+| Icône | `store/icone-play-store-512-pro.png` | 512×512 | `make-capacitor-icons.mjs --pro` |
+
+**Ne pas réutiliser les visuels iPhone** : ils font 1290×2796, soit un rapport de 2,167, et Google refuse au-delà de 2:1. **Ne pas non plus agrandir les visuels téléphone** : à partir de 1 024 px l'espace professionnel échange sa barre d'onglets contre un rail permanent, et c'est précisément cette adaptation que l'emplacement tablette sert à montrer. La densité fait la taille, jamais la largeur de fenêtre : poser 2 560 px de large donnerait une mise en page de très grand écran.
+
+Cinquième volet différent selon le format : **Lien et QR code** sur téléphone, **Catalogue** sur tablette — l'écran du lien est une colonne de lecture sans rail, qui sur 2 560 px n'est qu'un QR code au milieu d'une grande surface grise.
 
 **Sécurité des données** : la même déclaration qu'en § 2, moins la position (l'espace professionnel ne géolocalise pas) et moins les avis (le professionnel y répond, il n'en dépose pas).
 
