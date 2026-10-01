@@ -179,6 +179,8 @@ export type AuthErrorKind =
   | 'password'
   | 'email'
   | 'network'
+  /** Bon mot de passe, mauvais portail : compte professionnel sur le portail client, ou l'inverse. */
+  | 'wrong_portal'
   | 'other';
 
 /**

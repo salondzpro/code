@@ -17,7 +17,7 @@
  * quelqu'un qui installe l'application, et il ne doit rien cacher sous la ligne de flottaison.
  * Le lien de connexion par e-mail a SA page (`/connexion/lien`) : il a besoin de son propre champ.
  */
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { MailOpen, Store, UserPlus } from 'lucide-react';
 import { demoAccountFor, demoAccountForCredentials } from '@salondz/constants';
@@ -26,6 +26,7 @@ import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input } from '@/components/ui';
 import { AuthError, AuthShell, PasswordField } from '@/components/AuthShell';
 import { HOME, PRO_ONLY } from '@/lib/flavor';
+import { api } from '@/lib/api';
 import { t } from '@/i18n';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,7 +39,7 @@ const LINK_ERRORS: Record<string, string> = {
 };
 
 export function Login({ landing }: { landing?: boolean } = {}) {
-  const { session, signInWithPassword, resendConfirmation, demoLogin } = useAuth();
+  const { session, signInWithPassword, resendConfirmation, demoLogin, signOut } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   // Le portail est TOUJOURS celui du client : jamais de rôle hérité d'une visite précédente
@@ -52,12 +53,24 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState<'password' | 'resend' | 'demo' | null>(null);
+  /**
+   * Connexion en cours. UNE RÉFÉRENCE, pas un état : React regroupe les mises à jour, et l'état
+   * de session changeait parfois AVANT que `busy` ne soit commité — la redirection partait alors
+   * en pleine vérification, et le compte du mauvais portail entrait quand même, une fois sur deux.
+   * Une référence s'écrit tout de suite.
+   */
+  const connexionEnCours = useRef(false);
   // Démonstration déjà jouée sur cet appareil : on propose de repartir d'un monde neuf.
   const [error, setError] = useState<{ kind: AuthErrorKind | 'form'; text: string } | null>(
     linkErr ? { kind: 'expired', text: LINK_ERRORS[linkErr] ?? LINK_ERRORS.lien! } : null,
   );
 
-  if (session) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
+  /**
+   * Session déjà ouverte : on entre. MAIS pas pendant qu'une connexion est en cours — le contrôle
+   * du portail a besoin de la session pour lire le rôle, et cette redirection, pilotée par l'état
+   * de session, se déclenchait AVANT lui. Le compte du mauvais portail entrait quand même.
+   */
+  if (session && !connexionEnCours.current) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
 
   /**
    * UNE SEULE PORTE D'ENTRÉE. `/connexion` et `/intro` servaient le même écran sous deux allures,
@@ -92,6 +105,34 @@ export function Login({ landing }: { landing?: boolean } = {}) {
     }
   };
 
+  /**
+   * UN COMPTE APPARTIENT À UN PORTAIL. Le mot de passe peut être juste et l'accès refusé : un
+   * compte professionnel ne s'ouvre pas sur le portail client, et réciproquement. Sans ce
+   * contrôle, se connecter au mauvais endroit « marchait », puis le garde renvoyait aussitôt vers
+   * l'autre espace — on croyait à un bug plutôt qu'à une règle.
+   *
+   * Le contrôle se fait APRÈS la connexion : c'est la seule façon de connaître le rôle. On referme
+   * donc la session ouverte à tort, pour ne laisser personne à moitié connecté.
+   */
+  const portailCorrect = async (): Promise<boolean> => {
+    try {
+      const { profile } = await api.me.get();
+      if (profile.role === role) return true;
+      await signOut();
+      setError({
+        kind: 'wrong_portal',
+        text:
+          role === 'pro'
+            ? t('Ce compte n’est pas un compte professionnel. Créez un espace pro avec une autre adresse.')
+            : t('Ce compte est un compte professionnel. Créez un compte client avec une autre adresse.'),
+      });
+      return false;
+    } catch {
+      // Profil illisible (réseau) : on n'invente pas un refus. Les gardes trancheront à l'entrée.
+      return true;
+    }
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     // Démonstration : adresse ET mot de passe identiques (pro-homme@, pro-femme@, client@). Rien
@@ -101,13 +142,16 @@ export function Login({ landing }: { landing?: boolean } = {}) {
     if (!password) return setError({ kind: 'form', text: t("Saisissez votre mot de passe.") });
     setError(null);
     setBusy('password');
+    connexionEnCours.current = true;
     try {
       writeAuthFlow({ role, next, identifier: id(), channel: 'email' });
       await signInWithPassword(id(), password);
+      if (!(await portailCorrect())) return;
       navigate(`/connexion/retour?next=${encodeURIComponent(next)}`, { replace: true });
     } catch (err) {
       fail(err);
     } finally {
+      connexionEnCours.current = false;
       setBusy(null);
     }
   };
@@ -209,6 +253,11 @@ export function Login({ landing }: { landing?: boolean } = {}) {
               <Button sm variant="g" loading={busy === 'resend'} onClick={() => void resend()} disabled={busy !== null}>
                 {t('Renvoyer le lien de confirmation')}
               </Button>
+            )}
+            {error.kind === 'wrong_portal' && (
+              <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
+                <I icon={UserPlus} size={16} /> {role === 'pro' ? t('Créer un espace professionnel') : t('Créer un compte client')}
+              </Link>
             )}
             {error.kind === 'credentials' && (
               <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
