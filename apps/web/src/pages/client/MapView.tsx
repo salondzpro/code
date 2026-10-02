@@ -225,10 +225,19 @@ export function MapView() {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mePos || recentre.current) return;
-    recentre.current = true;
+    // Un lieu choisi, ou une carte déjà prise en main, l'emportent sur le capteur. On ne pose pas
+    // le drapeau dans ce cas : il dit « la carte est sur la personne », et il sert à savoir si
+    // l'ajustement sur les résultats a encore le droit de la déplacer.
     if (touchee.current || prefs.lat != null || prefs.city) return;
+    recentre.current = true;
+    // On pose AUSSI la zone de recherche, et pas seulement la vue. Sans lieu connu, la recherche
+    // retombe sur la wilaya d'Alger, et l'ajustement automatique sur les résultats ramenait la
+    // carte à Alger une seconde après l'avoir centrée sur la personne. Cherchant autour d'elle,
+    // les résultats sont les siens — et il n'y a plus rien à ramener ailleurs.
+    const a = { lat: Number(mePos.lat.toFixed(4)), lng: Number(mePos.lng.toFixed(4)), radiusKm: prefs.radiusKm };
+    setArea(a);
     programmatic.current = true;
-    map.setView([mePos.lat, mePos.lng], 14, { animate: false });
+    map.setView([a.lat, a.lng], 14, { animate: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mePos]);
 
@@ -279,7 +288,10 @@ export function MapView() {
         .on('click', () => setSelected(s.id))
         .addTo(layer);
     }
-    if (bounds.length > 1 && !area) {
+    // Ajustement sur les résultats : seulement tant qu'on n'a pas placé la carte sur la personne.
+    // `area` ne suffit pas à l'empêcher — il est posé dans le même tour de rendu que le recentrage,
+    // et les résultats de la démonstration arrivent en 80 ms, avant que React n'ait rendu.
+    if (bounds.length > 1 && !area && !recentre.current) {
       programmatic.current = true;
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
