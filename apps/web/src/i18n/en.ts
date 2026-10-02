@@ -859,6 +859,8 @@ export const en: Record<string, string> = {
   'Localisation refusée': 'Location denied',
   'Montrez votre travail': 'Show your work',
   'Recherche…': 'Searching…',
+  'Aucune ville de ce nom. Essayez une wilaya.': 'No city by that name. Try a wilaya.',
+  'Aucune adresse de ce nom. Placez l’épingle sur la carte.': 'No address by that name. Drop the pin on the map.',
   'Recherche d’adresses…': 'Looking up addresses…',
   'Aucun lieu trouvé. Essayez une ville ou une wilaya.': 'No place found. Try a city or a wilaya.',
   'Les adresses ne répondent pas pour l’instant. Cherchez une ville ou une wilaya.': 'Address lookup is not responding right now. Search for a city or a wilaya.',

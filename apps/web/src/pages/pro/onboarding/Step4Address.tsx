@@ -9,7 +9,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { MapPin, Search } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { WILAYAS, categoriesForMarket, formatDZPhone, geocodeDZ, type CategoryId, type GeoPlace } from '@salondz/constants';
+import { WILAYAS, categoriesForMarket, formatDZPhone, type CategoryId, type GeoPlace } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { clearProDraft, draftFiles, readProDraft, writeProDraft } from '@/lib/proDraft';
@@ -18,6 +18,9 @@ import { errorText } from '@/components/ErrorMessage';
 import { I, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { PlacePicker, type LatLng } from '@/components/PlacePicker';
+import { PlaceSuggestions } from '@/components/PlaceSuggestions';
+import { useDebounced } from '@/lib/useDebounced';
+import { prechargerLieux, useLieux, type Lieu } from '@/lib/places';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
@@ -43,33 +46,35 @@ export function Step4Address({ settings }: { settings?: boolean }) {
   const [phone, setPhone] = useState(settings && salon?.phone ? formatDZPhone(salon.phone) : '');
   const initial = settings ? salon : draft;
   const [pos, setPos] = useState<LatLng | null>(initial?.lat != null && initial?.lng != null ? { lat: initial.lat, lng: initial.lng } : null);
-  const [suggestions, setSuggestions] = useState<GeoPlace[]>([]);
   const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Suggestions d'adresses pendant la saisie (silencieux en cas d'échec réseau).
-  useEffect(() => {
-    if (!searching || address.trim().length < 3) return setSuggestions([]);
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => {
-      geocodeDZ(address, ctrl.signal)
-        .then(setSuggestions)
-        .catch(() => setSuggestions([]));
-    }, 300);
-    return () => {
-      clearTimeout(timer);
-      ctrl.abort();
-    };
-  }, [address, searching]);
+  /**
+   * Suggestions : les mêmes qu'ailleurs dans le produit (`lib/places.ts`) — wilayas et communes
+   * d'Algérie en mémoire, dès la première lettre, puis les adresses fines d'OpenStreetMap. Ce champ
+   * n'interrogeait que le géocodeur, donc ne proposait rien tant qu'on n'avait pas tapé trois
+   * lettres, et rien du tout quand le réseau faisait défaut.
+   */
+  const saisie = useDebounced(searching ? address.trim() : '', 250);
+  const lieux = useLieux(saisie);
 
   if (!settings && (!draft.market || !draft.name)) return <Navigate to={stepPath(1)} replace />;
   if (!session) return <Navigate to="/connexion?role=pro" replace />;
 
+  /** Une suggestion partagée (wilaya, commune ou adresse) se ramène à la forme locale. */
+  const pickLieu = (l: Lieu) => {
+    if (l.kind === 'wilaya') {
+      setWilaya(l.wilaya);
+      setSearching(false);
+      return;
+    }
+    pick({ label: l.label, detail: l.detail, lat: l.lat, lng: l.lng });
+  };
+
   const pick = (p: GeoPlace) => {
     setAddress(p.label);
     setPos({ lat: p.lat, lng: p.lng });
-    setSuggestions([]);
     setSearching(false);
     const w = wilayaFromLabel(`${p.label} ${p.detail}`);
     if (w) setWilaya(w);
@@ -144,30 +149,32 @@ export function Step4Address({ settings }: { settings?: boolean }) {
                 setAddress(e.target.value);
                 setSearching(true);
               }}
-              onFocus={() => setSearching(true)}
-              onBlur={() => setTimeout(() => setSearching(false), 150)}
+              onFocus={() => {
+                setSearching(true);
+                prechargerLieux();
+              }}
+              onBlur={() => setTimeout(() => setSearching(false), 200)}
               placeholder={t("12 rue des Frères Bouadou, Hydra")}
               aria-label={t("Adresse")}
               maxLength={200}
               autoComplete="off"
             />
           </label>
-          {searching && suggestions.length > 0 && (
-            <ul className="crd absolute start-0 end-0 top-full z-[500] mt-1 !gap-0 !py-1 shadow-card" role="listbox">
-              {suggestions.slice(0, 5).map((p) => (
-                <li key={`${p.lat},${p.lng}`}>
-                  <button type="button" className="li w-full text-start" onMouseDown={(e) => e.preventDefault()} onClick={() => pick(p)} role="option" aria-selected={false}>
-                    <span className="flex min-w-0 items-center gap-3">
-                      <I icon={MapPin} size={18} className="flex-none text-muted" />
-                      <span className="min-w-0">
-                        <span className="block truncate text-[1rem] font-semibold">{p.label}</span>
-                        <span className="block truncate text-[0.857rem] text-muted">{p.detail}</span>
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {searching && !!saisie && (
+            <div
+              className="absolute start-0 end-0 top-full z-[500] mt-1 shadow-card"
+              // Le champ perd le focus avant que le clic n'aboutisse : sans cela la liste se
+              // refermerait sous le doigt et le choix serait perdu.
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <PlaceSuggestions
+                lieux={lieux.locaux}
+                adresses={lieux.adresses}
+                geocodage={lieux.geocodage}
+                onPick={pickLieu}
+                vide={t("Aucune adresse de ce nom. Placez l’épingle sur la carte.")}
+              />
+            </div>
           )}
         </div>
         <PlacePicker value={pos} onChange={onMap} autoLocate={!settings && !pos} />

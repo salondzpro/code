@@ -840,6 +840,8 @@ export const ar: Record<string, string> = {
   'Localisation refusée': 'تم رفض تحديد الموقع',
   'Montrez votre travail': 'اعرض أعمالك',
   'Recherche…': 'جارٍ البحث…',
+  'Aucune ville de ce nom. Essayez une wilaya.': 'لا توجد مدينة بهذا الاسم. جرّب ولاية.',
+  'Aucune adresse de ce nom. Placez l’épingle sur la carte.': 'لا يوجد عنوان بهذا الاسم. ضَع المؤشّر على الخريطة.',
   'Recherche d’adresses…': 'جارٍ البحث عن العناوين…',
   'Aucun lieu trouvé. Essayez une ville ou une wilaya.': 'لم يُعثر على أي مكان. جرّب مدينة أو ولاية.',
   'Les adresses ne répondent pas pour l’instant. Cherchez une ville ou une wilaya.': 'خدمة العناوين لا تستجيب حاليًا. ابحث عن مدينة أو ولاية.',

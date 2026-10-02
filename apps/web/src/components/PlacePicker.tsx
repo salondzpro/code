@@ -9,6 +9,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { reverseGeocode } from '@salondz/constants';
+import { positionPrecise } from '@/lib/position';
 import { I } from '@/components/ui';
 import { t } from '@/i18n';
 
@@ -37,6 +38,9 @@ export function PlacePicker({
   onChangeRef.current = onChange;
   const [label, setLabel] = useState<string | null>(null);
   const [geo, setGeo] = useState<'idle' | 'asking' | 'denied'>('idle');
+  /** Le relevé s'arrête avec le composant : sinon le GPS resterait allumé après la sortie. */
+  const arret = useRef<(() => void) | null>(null);
+  useEffect(() => () => arret.current?.(), []);
 
   // Carte créée une fois ; chaque arrêt de déplacement = nouvelle position.
   useEffect(() => {
@@ -79,16 +83,21 @@ export function PlacePicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * Position réelle, affinée (`lib/position.ts`). Un professionnel place ici la devanture de son
+   * salon : une position réseau à trois rues de là lui ferait poser son épingle au mauvais endroit,
+   * et ses clients chercheraient une boutique qui n'y est pas.
+   */
   const locate = () => {
-    if (!('geolocation' in navigator)) return setGeo('denied');
     setGeo('asking');
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
+    arret.current?.();
+    arret.current = positionPrecise(
+      (m) => {
         setGeo('idle');
-        mapRef.current?.setView([p.coords.latitude, p.coords.longitude], 17, { animate: true });
+        mapRef.current?.setView([m.lat, m.lng], 17, { animate: true });
       },
       () => setGeo('denied'),
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+      { precisionM: 30 },
     );
   };
 

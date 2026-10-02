@@ -54,7 +54,9 @@ import {
   RADIUS_OPTIONS,
 } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
+import { prechargerLieux, useLieux, type Lieu } from '@/lib/places';
 import { Accordion, Avatar, Button, I, Pill } from './ui';
+import { PlaceSuggestions } from './PlaceSuggestions';
 import { t } from '@/i18n';
 
 const PLACEHOLDER: Record<Market, string> = {
@@ -98,6 +100,10 @@ export function SearchField({
   const suggest = useSalonSuggest({ q: dq, gender: market, wilaya }, active);
   const data = active ? suggest.data : undefined;
   const noun = market === 'men' ? 'barbier' : 'salon';
+  // Wilayas, communes et adresses : dès la PREMIÈRE lettre, et sans dépendre de ce que la place de
+  // marché contient déjà. Avant, le champ ne proposait que les quartiers pourvus d'un salon —
+  // c'est-à-dire rien, et taper « Oran » n'affichait aucune suggestion.
+  const lieux = useLieux(focus === 'place' ? dq : '');
 
   const close = () => {
     setOpen(false);
@@ -112,6 +118,26 @@ export function SearchField({
     const label = parentCity ? `${city}, ${parentCity}` : city;
     setPrefs({ city, wilaya: wilayaCode, lat: null, lng: null, label });
     pushRecentPlace({ label, city, wilaya: wilayaCode, lat: null, lng: null });
+    close();
+  };
+
+  /**
+   * Une commune ou une adresse devient un POINT ET UN RAYON, jamais un nom de ville à faire
+   * correspondre : c'est la règle posée par la migration 0048. Se placer sur « Akbou » doit montrer
+   * les professionnels autour d'Akbou, y compris ceux dont la commune s'écrit « Daïra Akbou ».
+   * Une wilaya entière, elle, n'a pas de centre utile : elle reste un filtre administratif.
+   */
+  const pickLieu = (l: Lieu) => {
+    const suite =
+      l.kind === 'wilaya'
+        ? { city: null, wilaya: l.wilaya, lat: null, lng: null, label: l.label }
+        : l.kind === 'commune'
+          ? // Une commune algérienne dépasse souvent 5 km : un rayon trop serré autour du centre
+            // laisserait dehors les quartiers périphériques de la ville qu'on vient de choisir.
+            { city: null, wilaya: l.wilaya, lat: l.lat, lng: l.lng, label: l.label, radiusKm: Math.max(radiusKm, 10) }
+          : { city: null, lat: l.lat, lng: l.lng, label: l.label };
+    setPrefs(suite);
+    pushRecentPlace({ label: l.label, city: null, wilaya: l.kind === 'adresse' ? wilaya : l.wilaya, lat: 'lat' in l ? l.lat : null, lng: 'lng' in l ? l.lng : null });
     close();
   };
 
@@ -184,7 +210,10 @@ export function SearchField({
           aria-label={t("Lieu")}
           value={placeDraft}
           onChange={(e) => setPlaceDraft(e.target.value)}
-          onFocus={() => setFocus('place')}
+          onFocus={() => {
+            setFocus('place');
+            prechargerLieux();
+          }}
           placeholder={place}
           className="min-w-0 flex-1 bg-transparent text-[1.143rem] outline-none placeholder:text-text"
         />
@@ -240,8 +269,16 @@ export function SearchField({
       )}
 
       {focus === 'place' && (
-        <div className="crd !gap-0 !py-1" aria-live="polite">
-          {(data?.places ?? []).map((p) => (
+        <PlaceSuggestions
+          lieux={lieux.locaux}
+          adresses={lieux.adresses}
+          geocodage={lieux.geocodage}
+          onPick={pickLieu}
+          vide={t("Aucune ville de ce nom. Essayez une wilaya.")}
+          /* Les quartiers qui ont DÉJÀ des professionnels passent devant tout le reste : ce sont
+             les seuls dont on sait qu'ils donneront des résultats. Puis « Autour de moi », le seul
+             réglage de lieu qu'un champ de saisie ne sait pas exprimer. */
+          avant={(data?.places ?? []).map((p) => (
             <button
               key={`pl-${p.city}-${p.wilayaCode}`}
               type="button"
@@ -264,23 +301,23 @@ export function SearchField({
               <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
             </button>
           ))}
-          {/* Position de l'appareil et rayon : le seul réglage de lieu qu'un champ de
-              saisie ne sait pas exprimer. */}
-          <Link to="/localisation" className="li">
-            <span className="flex min-w-0 items-center gap-3">
-              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
-                <I icon={Crosshair} size={18} />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-[1rem] font-semibold">{t("Autour de moi")}</span>
-                <span className="block truncate text-[0.857rem] text-muted">
-                  {t("Ma position · rayon")}{' '}{radiusKm} {t("km")}
+          apres={
+            <Link to="/localisation" className="li">
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
+                  <I icon={Crosshair} size={18} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[1rem] font-semibold">{t("Autour de moi")}</span>
+                  <span className="block truncate text-[0.857rem] text-muted">
+                    {t("Ma position · rayon")}{' '}{radiusKm} {t("km")}
+                  </span>
                 </span>
               </span>
-            </span>
-            <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
-          </Link>
-        </div>
+              <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
+            </Link>
+          }
+        />
       )}
     </div>
   );

@@ -14,6 +14,7 @@ import { LocateFixed } from 'lucide-react';
 import { useMe, useSalonSearch } from '@salondz/api-client';
 import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
+import { arrondir, positionPrecise } from '@/lib/position';
 import { BottomNav } from '@/components/AppFrame';
 import { I, Img } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
@@ -69,6 +70,9 @@ export function MapView() {
   const touchee = useRef(false);
   /** Le recentrage d'ouverture n'a lieu qu'une fois, à la première mesure. */
   const recentre = useRef(false);
+  /** Arrêt du relevé précis déclenché par le bouton de position. */
+  const arretPosition = useRef<(() => void) | null>(null);
+  useEffect(() => () => arretPosition.current?.(), []);
 
   const tooWide = !!area && area.radiusKm > MAX_ZONE_KM;
   const query = useSalonSearch(
@@ -174,7 +178,13 @@ export function MapView() {
     });
     // Zone par zone : chaque déplacement (même programmé) relance la recherche sur la zone visible, après 500 ms de calme.
     map.on('moveend', () => {
-      programmatic.current = false;
+      // Déplacement PROGRAMMÉ (recentrage sur la personne, ajustement sur les résultats) : la zone
+      // est déjà posée, avec le rayon choisi. La recalculer d'après l'écran l'écrasait — on
+      // demandait 10 km, la carte se plaçait au zoom 14, et la recherche retombait à « 2,9 km ».
+      if (programmatic.current) {
+        programmatic.current = false;
+        return;
+      }
       if (moveTimer.current) window.clearTimeout(moveTimer.current);
       moveTimer.current = window.setTimeout(() => {
         setArea(areaOf(map));
@@ -326,7 +336,7 @@ export function MapView() {
   const locate = () => {
     if (!('geolocation' in navigator)) return;
     const goTo = (lat: number, lng: number) => {
-      const a = { lat: Number(lat.toFixed(4)), lng: Number(lng.toFixed(4)), radiusKm: prefs.radiusKm };
+      const a = { lat: arrondir(lat), lng: arrondir(lng), radiusKm: prefs.radiusKm };
       setArea(a);
       setPrefs({ lat: a.lat, lng: a.lng, city: null, label: t("Ma position") });
       void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
@@ -342,14 +352,17 @@ export function MapView() {
       return;
     }
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (p) => goTo(p.coords.latitude, p.coords.longitude),
+    // Vrai GPS, sans relevé en cache, affiné au fil des mesures : la position réseau d'Android
+    // tombe couramment à plusieurs kilomètres en Algérie, et un cache de cinq minutes pouvait
+    // ramener l'endroit où l'on était avant de partir.
+    arretPosition.current?.();
+    arretPosition.current = positionPrecise(
+      (m) => goTo(m.lat, m.lng),
       () => {
         setLocating(false);
         programmatic.current = true;
         mapRef.current?.setView(area ? [area.lat, area.lng] : ALGIERS, 13, { animate: true });
       },
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
     );
   };
 

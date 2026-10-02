@@ -6,14 +6,17 @@
  * professionnels (toutes wilayas), les wilayas elles-mêmes, et des adresses géocodées (OpenStreetMap)
  * qui deviennent un point + rayon. Le nombre de résultats se met à jour en direct.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useBack } from '@/lib/useBack';
 import { Building2, Check, Clock, MapPin, Navigation, Settings, Smartphone } from 'lucide-react';
 import { useMe, useSalonCities, useSalonSearch } from '@salondz/api-client';
-import { MARKET_LABELS_FR, WILAYAS, geocodeDZ, reverseGeocode, wilayaName, type GeoPlace } from '@salondz/constants';
+import { MARKET_LABELS_FR, reverseGeocode, wilayaName } from '@salondz/constants';
 import { RADIUS_OPTIONS, formatKm, pushRecentPlace, readRecentPlaces, useLocationPrefs, type RecentPlace } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
+import { prechargerLieux, useLieux, type Lieu } from '@/lib/places';
+import { arrondir, positionPrecise } from '@/lib/position';
 import { BottomSheet, Button, Card, I, InfoBox, Pill, SearchBox, SectionLabel, TopBar } from '@/components/ui';
+import { PlaceSuggestions } from '@/components/PlaceSuggestions';
 import { MiniMap } from '@/components/MiniMap';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
@@ -48,43 +51,18 @@ export function Localisation() {
           ? { kind: 'city', city: prefs.city, wilaya: prefs.wilaya, label: prefs.label }
           : { kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) },
   );
-  const [addresses, setAddresses] = useState<GeoPlace[]>([]);
-  /** Où en est la recherche d'adresses. Un écran qui dit « Aucun lieu trouvé » alors qu'il attend encore
-   *  ment : sur le réseau algérien, c'est le cas le plus fréquent. */
-  const [geocodage, setGeocodage] = useState<'repos' | 'cherche' | 'fini' | 'injoignable'>('repos');
   /** Libellé de la position réelle (géocodage inverse), jamais le quartier le plus proche ayant des salons. */
   const [posLabel, setPosLabel] = useState<{ label: string; inDZ: boolean } | null>(prefs.lat != null && !prefs.city && prefs.label !== 'Ma position' && prefs.label !== wilayaName(prefs.wilaya) ? { label: prefs.label, inDZ: true } : null);
   const [recent] = useState<RecentPlace[]>(readRecentPlaces);
+  /** Le suivi GPS s'arrête avec l'écran : sans cela le capteur resterait allumé. */
+  const arretPosition = useRef<(() => void) | null>(null);
+  useEffect(() => () => arretPosition.current?.(), []);
 
   // Lieux (quartiers + villes) : autour de moi sans saisie, tout le pays dès qu'on tape.
   const cities = useSalonCities({ wilaya: dq ? undefined : prefs.wilaya, gender: market, lat: pos?.lat, lng: pos?.lng, q: dq || undefined });
-  const wilayaHits = useMemo(() => (dq.length < 2 ? [] : WILAYAS.filter((w) => normalize(w.name).includes(normalize(dq))).slice(0, 4)), [dq]);
-
-  /**
-   * Adresses géocodées (OpenStreetMap). On garde la liste précédente pendant la recherche suivante :
-   * vider à chaque frappe fait clignoter l'écran et donne l'impression que rien ne marche.
-   */
-  useEffect(() => {
-    if (dq.length < 3) {
-      setAddresses([]);
-      setGeocodage('repos');
-      return;
-    }
-    const ctrl = new AbortController();
-    setGeocodage('cherche');
-    geocodeDZ(dq, ctrl.signal)
-      .then((r) => {
-        if (ctrl.signal.aborted) return;
-        setAddresses(r);
-        setGeocodage('fini');
-      })
-      .catch(() => {
-        if (ctrl.signal.aborted) return;
-        setAddresses([]);
-        setGeocodage('injoignable');
-      });
-    return () => ctrl.abort();
-  }, [dq]);
+  // Wilayas, communes et adresses : une seule source, partagée avec la place de marché et avec
+  // l'adresse du salon côté professionnel (`lib/places.ts`).
+  const lieux = useLieux(dq);
 
   // Aperçu du nombre de résultats pour le choix courant.
   // Libellé de la position réelle, recalculé à chaque nouvelle position (même celle mémorisée).
@@ -106,23 +84,22 @@ export function Localisation() {
     limit: 1,
   });
 
+  /** Position réelle, affinée au fil des mesures (`lib/position.ts`), jamais un relevé en cache. */
   const locate = () => {
-    if (!('geolocation' in navigator)) return setGeo('denied');
     setGeo('asking');
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        const lat = Number(p.coords.latitude.toFixed(4));
-        const lng = Number(p.coords.longitude.toFixed(4));
-        setPos({ lat, lng, accuracy: Math.round(p.coords.accuracy) });
+    arretPosition.current?.();
+    arretPosition.current = positionPrecise(
+      (m) => {
+        setPos({ lat: arrondir(m.lat), lng: arrondir(m.lng), accuracy: Math.round(m.acc) });
         setGeo('granted');
         setChoice({ kind: 'gps' });
       },
       () => setGeo('denied'),
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
     );
   };
 
   useEffect(() => {
+    prechargerLieux();
     if (geo === 'idle' && prefs.lat == null && !prefs.city) locate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -146,6 +123,17 @@ export function Localisation() {
     const wilaya = choice.kind === 'city' || choice.kind === 'wilaya' ? choice.wilaya : prefs.wilaya;
     if (choice.kind !== 'gps') pushRecentPlace({ label: next.label, city: next.city, wilaya, lat: next.lat, lng: next.lng });
     back();
+  };
+
+  /**
+   * Une commune ou une adresse devient un POINT ET UN RAYON : c'est la règle de la migration 0048,
+   * le rayon prime sur le nom. Une commune algérienne dépassant souvent 5 km, on élargit au moins à
+   * 10 km, sans quoi choisir « Oran » ne montrerait que son centre exact.
+   */
+  const pickLieu = (l: Lieu) => {
+    if (l.kind === 'wilaya') return setChoice({ kind: 'wilaya', wilaya: l.wilaya, label: l.label });
+    if (l.kind === 'commune') setRadius((r) => Math.max(r, 10));
+    setChoice({ kind: 'point', lat: l.lat, lng: l.lng, label: l.label });
   };
 
   const pickRecent = (r: RecentPlace) => {
@@ -216,71 +204,41 @@ export function Localisation() {
         </div>
       )}
 
-      {/* Résultats de la saisie : wilayas, quartiers/villes, adresses */}
+      {/* Résultats de la saisie : d'abord les quartiers qui ont des professionnels, puis les
+          wilayas, communes et adresses de la source partagée. */}
       {searching ? (
-        <Card className="!gap-0 !py-1" aria-live="polite">
-          {wilayaHits.map((w) => {
-            const on = choice.kind === 'wilaya' && choice.wilaya === w.code;
-            return (
-              <button key={`w-${w.code}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'wilaya', wilaya: w.code, label: w.name })}>
-                <span className="flex items-center gap-3.5">
-                  <I icon={Building2} size={20} className="text-subtle" />
-                  <span>
-                    <span className="block text-[1rem] font-semibold">{w.name}</span>
-                    <span className="p block">{t("Wilaya")}{' '}{String(w.code).padStart(2, '0')} {t("· toute la wilaya")}</span>
-                  </span>
-                </span>
-                {on && <I icon={Check} size={20} />}
-              </button>
-            );
-          })}
-          {places.map((c) => {
+        <PlaceSuggestions
+          lieux={lieux.locaux}
+          adresses={lieux.adresses}
+          geocodage={lieux.geocodage}
+          onPick={pickLieu}
+          estChoisi={(l) =>
+            l.kind === 'wilaya'
+              ? choice.kind === 'wilaya' && choice.wilaya === l.wilaya
+              : choice.kind === 'point' && choice.lat === l.lat && choice.lng === l.lng
+          }
+          avant={places.map((c) => {
             const on = choice.kind === 'city' && choice.city === c.city && choice.wilaya === c.wilayaCode;
             const label = c.parentCity ? `${c.city}, ${c.parentCity}` : c.city;
             return (
               <button key={`c-${c.city}-${c.wilayaCode}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'city', city: c.city, wilaya: c.wilayaCode, label })}>
-                <span className="flex items-center gap-3.5">
-                  <I icon={MapPin} size={20} className="text-subtle" />
-                  <span>
-                    <span className="block text-[1rem] font-semibold">{label}</span>
-                    <span className="p block">
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
+                    <I icon={MapPin} size={18} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[1rem] font-semibold">{label}</span>
+                    <span className="block truncate text-[0.857rem] text-muted">
                       {c.salonCount} {t("professionnel")}{c.salonCount > 1 ? 's' : ''} · {wilayaName(c.wilayaCode)}
                       {formatKm(c.distanceKm) ? ` · ${formatKm(c.distanceKm)}` : ''}
                     </span>
                   </span>
                 </span>
-                {on && <I icon={Check} size={20} />}
+                {on && <I icon={Check} size={20} className="flex-none" />}
               </button>
             );
           })}
-          {addresses.map((a) => {
-            const on = choice.kind === 'point' && choice.lat === a.lat && choice.lng === a.lng;
-            return (
-              <button key={`a-${a.lat}-${a.lng}`} type="button" className="li w-full text-start" onClick={() => setChoice({ kind: 'point', lat: a.lat, lng: a.lng, label: a.label })}>
-                <span className="flex items-center gap-3.5">
-                  <I icon={Navigation} size={20} className="text-subtle" />
-                  <span>
-                    <span className="block text-[1rem] font-semibold">{a.label}</span>
-                    <span className="p block">{a.detail || 'Adresse'} {t("· rayon autour de ce point")}</span>
-                  </span>
-                </span>
-                {on && <I icon={Check} size={20} />}
-              </button>
-            );
-          })}
-          {/* Les adresses arrivent d'un service tiers, donc après les quartiers : on le dit, au lieu
-              de laisser croire qu'il n'y a rien. */}
-          {geocodage === 'cherche' && <p className="p py-3">{t("Recherche d’adresses…")}</p>}
-          {wilayaHits.length === 0 && places.length === 0 && addresses.length === 0 && geocodage !== 'cherche' && (
-            <p className="p py-3">
-              {cities.isFetching
-                ? t("Recherche…")
-                : geocodage === 'injoignable'
-                  ? t("Les adresses ne répondent pas pour l’instant. Cherchez une ville ou une wilaya.")
-                  : t("Aucun lieu trouvé. Essayez une ville ou une wilaya.")}
-            </p>
-          )}
-        </Card>
+        />
       ) : (
         <>
           <Card as="button" sel={choice.kind === 'gps'} className="!flex-row items-center gap-4" onClick={() => (pos ? setChoice({ kind: 'gps' }) : locate())}>
