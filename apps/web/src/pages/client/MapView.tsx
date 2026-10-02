@@ -65,6 +65,10 @@ export function MapView() {
   /** Position de l'appareil, suivie en continu : point bleu + halo de précision. */
   const [mePos, setMePos] = useState<{ lat: number; lng: number; acc: number } | null>(null);
   const programmatic = useRef(false);
+  /** La personne a pris la carte en main : on ne la recentre plus sous son doigt. */
+  const touchee = useRef(false);
+  /** Le recentrage d'ouverture n'a lieu qu'une fois, à la première mesure. */
+  const recentre = useRef(false);
 
   const tooWide = !!area && area.radiusKm > MAX_ZONE_KM;
   const query = useSalonSearch(
@@ -104,7 +108,7 @@ export function MapView() {
   const cardSettle = useRef<number | null>(null);
   const current = items.find((s) => s.id === selected) ?? items[0] ?? null;
 
-  const drawArea = useCallback((a: Area | null) => {
+  const drawArea = useCallback((a: Area | null, moi: { lat: number; lng: number } | null) => {
     const layer = areaLayerRef.current;
     if (!layer) return;
     layer.clearLayers();
@@ -117,6 +121,11 @@ export function MapView() {
       fillColor: '#111214',
       fillOpacity: 0.04,
     }).addTo(layer);
+    // Quand le centre de la zone EST la position de la personne — le cas dès qu'elle appuie sur le
+    // bouton de position — la pastille noire se poserait sur le point bleu. Deux pastilles au même
+    // endroit ne disent pas deux choses : on laisse parler le point bleu. (~55 m de tolérance.)
+    const surMoi = !!moi && Math.abs(moi.lat - a.lat) < 0.0005 && Math.abs(moi.lng - a.lng) < 0.0005;
+    if (surMoi) return;
     L.circleMarker([a.lat, a.lng], {
       radius: 9,
       color: '#fff',
@@ -141,8 +150,28 @@ export function MapView() {
     }).addTo(map);
     areaLayerRef.current = L.layerGroup().addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
-    // Le point bleu passe au-dessus du reste, mais laisse les clics filer vers les bulles.
+    /**
+     * Le point « vous êtes ici » a SON PROPRE CALQUE, au-dessus des tracés.
+     *
+     * Sans cela il disparaissait : la zone de recherche est redessinée à chaque déplacement, et
+     * comme Leaflet empile ses tracés dans l'ordre de création, la pastille NOIRE du centre de la
+     * zone se replaçait par-dessus le point bleu. Dès qu'on utilisait sa position — où les deux
+     * points se superposent exactement — on ne voyait plus qu'un gros point noir.
+     * 450 : au-dessus des tracés (400), en dessous des bulles de prix (600), qui doivent rester
+     * lisibles et cliquables.
+     */
+    map.createPane('moi');
+    const calqueMoi = map.getPane('moi');
+    if (calqueMoi) {
+      calqueMoi.style.zIndex = '450';
+      calqueMoi.style.pointerEvents = 'none';
+    }
     meLayerRef.current = L.layerGroup().addTo(map);
+    // Une prise en main par la personne coupe tout recentrage automatique : un déplacement de carte
+    // sous le doigt de quelqu'un qui explore un quartier est odieux.
+    map.on('dragstart', () => {
+      touchee.current = true;
+    });
     // Zone par zone : chaque déplacement (même programmé) relance la recherche sur la zone visible, après 500 ms de calme.
     map.on('moveend', () => {
       programmatic.current = false;
@@ -153,7 +182,7 @@ export function MapView() {
       }, 500);
     });
     mapRef.current = map;
-    drawArea(area);
+    drawArea(area, null);
     return () => {
       map.remove();
       mapRef.current = null;
@@ -161,7 +190,7 @@ export function MapView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => drawArea(area), [area, drawArea]);
+  useEffect(() => drawArea(area, mePos), [area, mePos, drawArea]);
 
   /**
    * Position en TEMPS RÉEL : `watchPosition` pousse chaque nouvelle mesure, donc le point
@@ -174,11 +203,34 @@ export function MapView() {
     const id = navigator.geolocation.watchPosition(
       (p) =>
         setMePos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy ?? 0 }),
-      () => setMePos(null),
+      // Une mesure qui échoue n'EFFACE PAS la précédente : en ville, un relevé sur trois expire, et
+      // le point bleu se mettait à clignoter puis à disparaître alors qu'on savait très bien où
+      // l'on était. Seul un refus de permission fait vraiment tomber le point.
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) setMePos(null);
+      },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
     );
     return () => navigator.geolocation.clearWatch(id);
   }, []);
+
+  /**
+   * OUVERTURE : on se place là où est la personne.
+   *
+   * La carte démarrait sur Alger dès qu'aucun lieu n'avait encore été choisi — donc quelqu'un à
+   * Akbou ouvrait la carte sur une ville à 200 km, son point bleu hors de l'écran, et devait
+   * trouver le bouton de position pour voir son propre quartier. On recentre UNE fois, à la
+   * première mesure, et jamais si un lieu a été choisi ou si la carte a déjà été prise en main.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mePos || recentre.current) return;
+    recentre.current = true;
+    if (touchee.current || prefs.lat != null || prefs.city) return;
+    programmatic.current = true;
+    map.setView([mePos.lat, mePos.lng], 14, { animate: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mePos]);
 
   useEffect(() => {
     const layer = meLayerRef.current;
@@ -193,6 +245,7 @@ export function MapView() {
         fillColor: '#1a73e8',
         fillOpacity: 0.12,
         interactive: false,
+        pane: 'moi',
       }).addTo(layer);
     L.circleMarker([mePos.lat, mePos.lng], {
       radius: 7,
@@ -201,6 +254,7 @@ export function MapView() {
       fillColor: '#1a73e8',
       fillOpacity: 1,
       interactive: false,
+      pane: 'moi',
     }).addTo(layer);
   }, [mePos]);
 

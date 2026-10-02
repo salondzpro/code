@@ -49,6 +49,9 @@ export function Localisation() {
           : { kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) },
   );
   const [addresses, setAddresses] = useState<GeoPlace[]>([]);
+  /** Où en est la recherche d'adresses. Un écran qui dit « Aucun lieu trouvé » alors qu'il attend encore
+   *  ment : sur le réseau algérien, c'est le cas le plus fréquent. */
+  const [geocodage, setGeocodage] = useState<'repos' | 'cherche' | 'fini' | 'injoignable'>('repos');
   /** Libellé de la position réelle (géocodage inverse), jamais le quartier le plus proche ayant des salons. */
   const [posLabel, setPosLabel] = useState<{ label: string; inDZ: boolean } | null>(prefs.lat != null && !prefs.city && prefs.label !== 'Ma position' && prefs.label !== wilayaName(prefs.wilaya) ? { label: prefs.label, inDZ: true } : null);
   const [recent] = useState<RecentPlace[]>(readRecentPlaces);
@@ -57,13 +60,29 @@ export function Localisation() {
   const cities = useSalonCities({ wilaya: dq ? undefined : prefs.wilaya, gender: market, lat: pos?.lat, lng: pos?.lng, q: dq || undefined });
   const wilayaHits = useMemo(() => (dq.length < 2 ? [] : WILAYAS.filter((w) => normalize(w.name).includes(normalize(dq))).slice(0, 4)), [dq]);
 
-  // Adresses géocodées (OpenStreetMap) — silencieux en cas d'échec réseau.
+  /**
+   * Adresses géocodées (OpenStreetMap). On garde la liste précédente pendant la recherche suivante :
+   * vider à chaque frappe fait clignoter l'écran et donne l'impression que rien ne marche.
+   */
   useEffect(() => {
-    if (dq.length < 3) return setAddresses([]);
+    if (dq.length < 3) {
+      setAddresses([]);
+      setGeocodage('repos');
+      return;
+    }
     const ctrl = new AbortController();
+    setGeocodage('cherche');
     geocodeDZ(dq, ctrl.signal)
-      .then(setAddresses)
-      .catch(() => setAddresses([]));
+      .then((r) => {
+        if (ctrl.signal.aborted) return;
+        setAddresses(r);
+        setGeocodage('fini');
+      })
+      .catch(() => {
+        if (ctrl.signal.aborted) return;
+        setAddresses([]);
+        setGeocodage('injoignable');
+      });
     return () => ctrl.abort();
   }, [dq]);
 
@@ -249,7 +268,18 @@ export function Localisation() {
               </button>
             );
           })}
-          {wilayaHits.length === 0 && places.length === 0 && addresses.length === 0 && <p className="p py-3">{cities.isFetching ? 'Recherche…' : 'Aucun lieu trouvé. Essayez une ville ou une wilaya.'}</p>}
+          {/* Les adresses arrivent d'un service tiers, donc après les quartiers : on le dit, au lieu
+              de laisser croire qu'il n'y a rien. */}
+          {geocodage === 'cherche' && <p className="p py-3">{t("Recherche d’adresses…")}</p>}
+          {wilayaHits.length === 0 && places.length === 0 && addresses.length === 0 && geocodage !== 'cherche' && (
+            <p className="p py-3">
+              {cities.isFetching
+                ? t("Recherche…")
+                : geocodage === 'injoignable'
+                  ? t("Les adresses ne répondent pas pour l’instant. Cherchez une ville ou une wilaya.")
+                  : t("Aucun lieu trouvé. Essayez une ville ou une wilaya.")}
+            </p>
+          )}
         </Card>
       ) : (
         <>

@@ -18,10 +18,20 @@ async function patchGeolocation(): Promise<void> {
   // Le greffon rend des coordonnées simples ; les écrans n'en lisent que les champs usuels.
   const toPosition = (p: { coords: { latitude: number; longitude: number; accuracy: number }; timestamp: number }): GeolocationPosition =>
     ({ coords: p.coords, timestamp: p.timestamp }) as unknown as GeolocationPosition;
-  const toError = (e: unknown): GeolocationPositionError =>
-    ({ code: 1, message: String(e), PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 }) as GeolocationPositionError;
+  /**
+   * Le CODE compte autant que le message : les écrans s'en servent pour distinguer un refus (plus
+   * rien à tenter) d'un relevé qui a expiré (on garde la position précédente et on réessaie). Tout
+   * renvoyer en « permission refusée », comme avant, faisait disparaître le point bleu de la carte
+   * au premier relevé manqué.
+   */
+  const toError = (e: unknown): GeolocationPositionError => {
+    const message = e instanceof Error ? e.message : String(e ?? 'position indisponible');
+    const code = /denied|permission|refus/i.test(message) ? 1 : /timeout|expir|délai/i.test(message) ? 3 : 2;
+    return { code, message, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError;
+  };
 
-  const watches = new Map<number, string>();
+  /** `natif` arrive APRÈS coup : le greffon ne rend son identifiant de veille qu'en promesse. */
+  const watches = new Map<number, { natif: string | null; annule: boolean }>();
   let nextId = 1;
 
   Object.defineProperty(navigator, 'geolocation', {
@@ -37,16 +47,32 @@ async function patchGeolocation(): Promise<void> {
       },
       watchPosition(ok: PositionCallback, fail?: PositionErrorCallback, opts?: PositionOptions): number {
         const id = nextId++;
-        void Geolocation.watchPosition(
-          { enableHighAccuracy: opts?.enableHighAccuracy ?? false },
+        const veille = { natif: null as string | null, annule: false };
+        watches.set(id, veille);
+        Geolocation.watchPosition(
+          { enableHighAccuracy: opts?.enableHighAccuracy ?? false, timeout: opts?.timeout ?? 20_000 },
           (p, err) => (err || !p ? fail?.(toError(err)) : ok(toPosition(p))),
-        ).then((watchId) => watches.set(id, watchId));
+        )
+          .then((watchId) => {
+            veille.natif = watchId;
+            // `clearWatch` a pu passer AVANT que le greffon ne rende son identifiant : sans ce
+            // rattrapage la veille GPS restait allumée pour toujours, et chaque aller-retour sur la
+            // carte en empilait une de plus — batterie vidée, et des relevés qui continuaient
+            // d'arriver dans un écran démonté.
+            if (veille.annule) void Geolocation.clearWatch({ id: watchId }).finally(() => watches.delete(id));
+          })
+          .catch((err) => {
+            watches.delete(id);
+            fail?.(toError(err));
+          });
         return id;
       },
       clearWatch(id: number) {
-        const watchId = watches.get(id);
-        if (watchId) {
-          void Geolocation.clearWatch({ id: watchId });
+        const veille = watches.get(id);
+        if (!veille) return;
+        veille.annule = true;
+        if (veille.natif) {
+          void Geolocation.clearWatch({ id: veille.natif });
           watches.delete(id);
         }
       },
