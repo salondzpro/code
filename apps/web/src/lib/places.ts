@@ -112,7 +112,9 @@ export async function chercherLieux(q: string, max = 7): Promise<Lieu[]> {
     const r = Math.min(...[rang(c.plat, needle), rang(c.ar, needle)].map((x) => (x < 0 ? 9 : x)));
     if (r > 3) continue;
     trouves.push({
-      lieu: { kind: 'commune', cle: `c-${c.wilaya}-${c.nom}`, label: c.nom, detail: wilayaName(c.wilaya), wilaya: c.wilaya, lat: c.lat, lng: c.lng },
+      // Le chef-lieu porte le nom de sa wilaya : « Oran · Oran » n'apprend rien, et donne l'air
+      // d'un doublon juste au-dessus de la ligne « Oran · toute la wilaya ».
+      lieu: { kind: 'commune', cle: `c-${c.wilaya}-${c.nom}`, label: c.nom, detail: wilayaName(c.wilaya) === c.nom ? 'Commune' : wilayaName(c.wilaya), wilaya: c.wilaya, lat: c.lat, lng: c.lng },
       rang: r * 2,
       taille: c.nom.length,
     });
