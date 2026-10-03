@@ -58,6 +58,19 @@ function read(): LocationPrefs {
   return cache;
 }
 
+/**
+ * Un lieu a-t-il DÉJÀ été choisi sur cet appareil ? On regarde l'entrée de stockage elle-même, et
+ * non le contenu des préférences : les valeurs par défaut (wilaya 16, « Alger ») sont
+ * indiscernables d'un choix réel, et la détection automatique écraserait alors une décision prise.
+ */
+export function aDejaUnLieu(): boolean {
+  try {
+    return localStorage.getItem(KEY) != null;
+  } catch {
+    return false;
+  }
+}
+
 export function writeLocationPrefs(patch: Partial<LocationPrefs>): LocationPrefs {
   cache = { ...read(), ...patch };
   try {

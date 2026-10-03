@@ -15,6 +15,7 @@ import { useMe, useSalonSearch } from '@salondz/api-client';
 import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { arrondir, positionPrecise } from '@/lib/position';
+import { useAutoLocate } from '@/lib/useAutoLocate';
 import { BottomNav } from '@/components/AppFrame';
 import { I, Img } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
@@ -50,6 +51,8 @@ export function MapView() {
   const me = useMe();
   const market = me.data?.profile.market ?? 'women';
   const [prefs, setPrefs] = useLocationPrefs();
+  // La carte n'est pas sous `ClientLayout` : la détection d'ouverture s'y monte aussi.
+  useAutoLocate();
   const category = params.get('category') ?? '';
   const [selected, setSelected] = useState<string | null>(null);
   /** Zone recherchée : celle des préférences, ou celle choisie en déplaçant la carte. */

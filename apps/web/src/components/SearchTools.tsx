@@ -26,7 +26,7 @@
  * une liste servie par le serveur, chaque touche appliquée immédiatement relance une
  * requête et fait sauter les résultats sous le doigt.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
 import {
@@ -43,6 +43,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSalonSuggest } from '@salondz/api-client';
+import { reverseGeocode } from '@salondz/constants';
 import { categoriesForMarket, formatDA, wilayaName, type Market } from '@salondz/constants';
 import {
   SORT_OPTIONS,
@@ -55,6 +56,7 @@ import {
 } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
 import { prechargerLieux, useLieux, type Lieu } from '@/lib/places';
+import { arrondir, positionPrecise } from '@/lib/position';
 import { Accordion, Avatar, Button, I, Pill } from './ui';
 import { PlaceSuggestions } from './PlaceSuggestions';
 import { t } from '@/i18n';
@@ -88,8 +90,11 @@ export function SearchField({
   shadow?: boolean;
   className?: string;
 }) {
-  const [, setPrefs] = useLocationPrefs();
+  const [prefs, setPrefs] = useLocationPrefs();
   const [open, setOpen] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const arretPosition = useRef<(() => void) | null>(null);
+  useEffect(() => () => arretPosition.current?.(), []);
   const [qDraft, setQDraft] = useState(q);
   const [placeDraft, setPlaceDraft] = useState('');
   const [focus, setFocus] = useState<'q' | 'place'>('q');
@@ -139,6 +144,28 @@ export function SearchField({
     setPrefs(suite);
     pushRecentPlace({ label: l.label, city: null, wilaya: l.kind === 'adresse' ? wilaya : l.wilaya, lat: 'lat' in l ? l.lat : null, lng: 'lng' in l ? l.lng : null });
     close();
+  };
+
+  /**
+   * « Autour de moi » AGIT ICI, au lieu d'envoyer sur un autre écran. C'est tout l'objet de ce
+   * panneau : chercher un lieu, se localiser et régler le rayon sont trois faces du même geste, et
+   * les séparer obligeait à quitter les résultats pour y revenir.
+   * Le panneau reste ouvert : on vient de trouver la position, on veut pouvoir ajuster le rayon.
+   */
+  const autourDeMoi = () => {
+    setLocating(true);
+    arretPosition.current?.();
+    const ctrl = new AbortController();
+    arretPosition.current = positionPrecise(
+      (m) => {
+        const lat = arrondir(m.lat);
+        const lng = arrondir(m.lng);
+        setPrefs({ lat, lng, city: null, label: t("Ma position") });
+        setLocating(false);
+        void reverseGeocode(lat, lng, ctrl.signal).then((r) => r?.inDZ && setPrefs({ label: r.label }));
+      },
+      () => setLocating(false),
+    );
   };
 
   if (!open)
@@ -302,20 +329,42 @@ export function SearchField({
             </button>
           ))}
           apres={
-            <Link to="/localisation" className="li">
-              <span className="flex min-w-0 items-center gap-3">
-                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
-                  <I icon={Crosshair} size={18} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[1rem] font-semibold">{t("Autour de moi")}</span>
-                  <span className="block truncate text-[0.857rem] text-muted">
-                    {t("Ma position · rayon")}{' '}{radiusKm} {t("km")}
+            <>
+              <button type="button" className="li w-full text-start" onClick={autourDeMoi} disabled={locating}>
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
+                    <I icon={Crosshair} size={18} className={locating ? 'animate-pulse' : ''} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[1rem] font-semibold">{t("Autour de moi")}</span>
+                    <span className="block truncate text-[0.857rem] text-muted">
+                      {locating ? t("Recherche de votre position…") : `${prefs.label} · ${prefs.radiusKm} ${t("km")}`}
+                    </span>
                   </span>
                 </span>
-              </span>
-              <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
-            </Link>
+                {prefs.lat != null && !locating && <I icon={Check} size={20} className="flex-none" />}
+              </button>
+              {/* Le rayon vit ICI, avec le lieu : c'est le même réglage, et il n'a de sens qu'autour
+                  d'un point. Sur une wilaya entière, il ne filtrerait rien. */}
+              {prefs.lat != null && (
+                <div className="flex items-center gap-2 px-3 pb-2 pt-1">
+                  <span className="text-[0.857rem] font-semibold text-muted">{t("Rayon")}</span>
+                  <div className="flex flex-1 gap-1.5">
+                    {RADIUS_OPTIONS.map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        className={`slot flex-1 !py-2 !text-[0.938rem] ${prefs.radiusKm === r ? 'on' : ''}`}
+                        aria-pressed={prefs.radiusKm === r}
+                        onClick={() => setPrefs({ radiusKm: r })}
+                      >
+                        {r} {t("km")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           }
         />
       )}

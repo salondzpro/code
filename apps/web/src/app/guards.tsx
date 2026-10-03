@@ -19,11 +19,15 @@ import { AppFrame, BottomNav } from '@/components/AppFrame';
 import { ProRail } from '@/components/ProNav';
 import { useDesktop } from '@/lib/breakpoint';
 import { useActingAs } from '@/lib/actingAs';
+import { useAutoLocate } from '@/lib/useAutoLocate';
 import { ActingAsBanner } from '@/components/ActingAsBanner';
 import { AccountSuspendedNotice, SalonSuspendedNotice } from '@/components/SuspensionNotice';
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
 export function ClientLayout() {
+  // La position se détecte d'office à la première ouverture : sans cela l'application démarre sur
+  // Alger, sa valeur par défaut, pour quelqu'un qui est à Oran.
+  useAutoLocate();
   return (
     <AppFrame>
       <PublicHeader />
