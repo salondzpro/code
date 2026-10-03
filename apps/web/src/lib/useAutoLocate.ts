@@ -40,10 +40,11 @@ export function useAutoLocate(): void {
         writeLocationPrefs({ lat, lng, city: null, ...(pose ? {} : { label: 'Ma position' }) });
         if (pose) return;
         pose = true;
+        // Le libellé est posé MÊME HORS D'ALGÉRIE (« Roubaix, France ») : voir où l'application
+        // pense qu'on se trouve explique d'un coup pourquoi la liste est vide, là où « Ma
+        // position » laissait croire à une panne. La distance aux salons fait le reste.
         void reverseGeocode(lat, lng, ctrl.signal).then((r) => {
-          // Hors d'Algérie, le nom d'une ville étrangère en tête de la place de marché n'aide
-          // personne : on garde « Ma position », et les écrans disent déjà la distance.
-          if (r?.inDZ) writeLocationPrefs({ label: r.label });
+          if (r?.label) writeLocationPrefs({ label: r.label });
         });
       },
       (err) => {

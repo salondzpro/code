@@ -108,7 +108,7 @@ export function Settings() {
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
-            <span className="p block text-[0.857rem]">{t("La veille et 2 h avant · application ou navigateur")}</span>
+            <span className="p block text-[0.857rem]">{t("1 h puis 30 min avant le rendez-vous")}</span>
           </span>
           <Toggle
             on={reminders}

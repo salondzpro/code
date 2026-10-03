@@ -177,7 +177,11 @@ export function Step4Address({ settings }: { settings?: boolean }) {
             </div>
           )}
         </div>
-        <PlacePicker value={pos} onChange={onMap} autoLocate={!settings && !pos} />
+        {/* La position se cherche d'office dès qu'aucune n'est connue — à l'inscription comme dans les
+            réglages. Le professionnel est presque toujours DANS son salon quand il remplit cette
+            fiche : lui faire chercher son adresse à la main alors que son téléphone la connaît
+            n'avait aucune raison d'être réservé au premier passage. */}
+        <PlacePicker value={pos} onChange={onMap} autoLocate={!pos} />
         <p className="p -mt-2 text-[0.857rem]">{t("Déplacez la carte pour placer l'épingle sur votre salon, ou touchez « Ma position ».")}</p>
         <div className="crd !gap-0 !py-1">
           <label className="li">

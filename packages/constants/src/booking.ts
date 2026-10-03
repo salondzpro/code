@@ -76,6 +76,16 @@ export const PENDING_REMINDER_HOURS = 2;
  * d'être prévenu par la notification de la réservation elle-même.
  */
 export const PRO_REMINDER_LEAD_MINUTES = 60;
+
+/**
+ * Rappels du CLIENT, en minutes avant le début : une heure, puis trente minutes.
+ *
+ * C'étaient la veille et deux heures avant. La veille, le rappel arrive trop tôt pour changer quoi
+ * que ce soit à la journée ; deux heures avant, on est déjà engagé ailleurs. Une heure, puis une
+ * dernière à trente minutes : c'est là qu'un rappel sert encore à partir à temps, ou à prévenir le
+ * salon qu'on ne viendra pas — ce qui libère le créneau pour quelqu'un d'autre.
+ */
+export const CLIENT_REMINDER_MINUTES = [60, 30] as const;
 export const PENDING_REQUEST_TTL_HOURS = 24;
 /** Alertes « créneau libéré » actives au plus par client. */
 export const SLOT_ALERT_MAX_PER_CLIENT = 10;

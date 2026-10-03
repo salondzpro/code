@@ -771,7 +771,7 @@ function topUpClient(w: World, salon: SalonOwnerView, acct: DemoAccount, now: nu
   return changes;
 }
 
-/** Ce que fait le cron : clôtures, expirations, rappels (la veille et 2 h avant), purge des notifications. */
+/** Ce que fait le cron : clôtures, expirations, rappels (1 h et 30 min avant), purge des notifications. */
 function cronLike(w: World, now: number): number {
   let changes = 0;
   const nowI = new Date(now).toISOString();
@@ -792,20 +792,20 @@ function cronLike(w: World, now: number): number {
       changes++;
     }
   }
-  // Rappels : la veille (23–25 h avant) et 2 h avant (30 min – 2 h 15), pour les clients de démonstration.
+  // Rappels : 1 h puis 30 min avant, mêmes fenêtres que le cron (`CLIENT_REMINDER_MINUTES`).
   const reminded = (key: string) => w.notifications.some((n) => n.type === 'booking_reminder' && (n.data as { reminder?: string }).reminder === key);
+  const RAPPELS = [
+    { minutes: 60, cle: '1h', titre: 'Rappel : rendez-vous dans 1 h' },
+    { minutes: 30, cle: '30m', titre: 'Rappel : rendez-vous dans 30 min' },
+  ];
   for (const b of w.bookings) {
     if (b.status !== 'confirmed' || !b.clientId || !w.profiles[b.clientId]?.remindersEnabled) continue;
     const salon = w.salons.find((s) => s.id === b.salonId);
     const startMs = new Date(b.startsAt).getTime();
-    const dayKey = `${b.id}:j-1`;
-    const twoKey = `${b.id}:2h`;
-    if (startMs > now + 23 * 3_600_000 && startMs < now + 25 * 3_600_000 && !reminded(dayKey)) {
-      notify(w, b.clientId, 'booking_reminder', 'Rappel : rendez-vous demain', `${salon?.name ?? 'Votre salon'} · ${b.serviceName} · ${fmtWhen(b.startsAt)}`, b, { data: { bookingId: b.id, salonId: b.salonId, status: b.status, reminder: dayKey } });
-      changes++;
-    }
-    if (startMs > now + 30 * 60_000 && startMs < now + 135 * 60_000 && !reminded(twoKey)) {
-      notify(w, b.clientId, 'booking_reminder', 'Rappel : rendez-vous dans 2 h', `${salon?.name ?? 'Votre salon'} · ${b.serviceName} · ${fmtWhen(b.startsAt)}`, b, { data: { bookingId: b.id, salonId: b.salonId, status: b.status, reminder: twoKey } });
+    for (const r of RAPPELS) {
+      const cle = `${b.id}:${r.cle}`;
+      if (startMs <= now + (r.minutes - 5) * 60_000 || startMs >= now + (r.minutes + 10) * 60_000 || reminded(cle)) continue;
+      notify(w, b.clientId, 'booking_reminder', r.titre, `${salon?.name ?? 'Votre salon'} · ${b.serviceName} · ${fmtWhen(b.startsAt)}`, b, { data: { bookingId: b.id, salonId: b.salonId, status: b.status, reminder: cle } });
       changes++;
     }
   }

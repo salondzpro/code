@@ -4,30 +4,36 @@
  */
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
-import { MailCheck } from 'lucide-react';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, I, InfoBox } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { AuthError, AuthShell } from '@/components/AuthShell';
 import { t } from '@/i18n';
 
 const RESEND_SECONDS = 60;
 type Mode = 'confirm' | 'link' | 'reset';
 
+/**
+ * UNE LIGNE SOUS LE TITRE, ET RIEN D'AUTRE. L'écran portait le titre, un paragraphe, l'adresse en
+ * encadré, un encadré « rien reçu ? », le bouton et un lien : six blocs pour une seule chose à
+ * faire. Tout ce qui se répète a sauté — l'adresse figure déjà dans le courrier qu'on vient de
+ * recevoir, et l'on ne lit pas un avertissement sur les courriers indésirables avant d'avoir
+ * constaté qu'il manque quelque chose.
+ */
 const TEXT: Record<Mode, { title: string; body: string; resend: string }> = {
   confirm: {
-    title: t("Confirmez votre adresse"),
-    body: 'Nous venons d’envoyer un lien de confirmation. Ouvrez-le depuis ce téléphone pour activer votre compte.',
-    resend: 'Renvoyer le lien de confirmation',
+    title: t("Confirmez votre adresse mail"),
+    body: 'Cliquez sur le lien reçu dans votre boîte mail.',
+    resend: 'Renvoyer le lien',
   },
   link: {
     title: t("Lien de connexion envoyé"),
-    body: 'Si un compte existe avec cette adresse, vous recevez un lien : il vous connecte directement, sans mot de passe.',
-    resend: 'Renvoyer le lien de connexion',
+    body: 'Cliquez sur le lien reçu dans votre boîte mail.',
+    resend: 'Renvoyer le lien',
   },
   reset: {
     title: t("E-mail envoyé"),
-    body: 'Si un compte existe avec cette adresse, vous recevez un lien pour choisir un nouveau mot de passe.',
+    body: 'Cliquez sur le lien reçu pour choisir un mot de passe.',
     resend: 'Renvoyer l’e-mail',
   },
 };
@@ -76,33 +82,19 @@ export function EmailSent() {
 
   return (
     <AuthShell back="/connexion" titre={txt.title} sous={<>{txt.body}</>}>
-      {/* L'ADRESSE, en évidence : c'est la seule chose à vérifier quand rien n'arrive. Noyée dans
-          le paragraphe, elle passait inaperçue et l'on cherchait la faute de frappe ailleurs. */}
-      <div className="flex items-center gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5">
-        <span className="flex size-11 flex-none items-center justify-center rounded-full bg-ok-bg text-ok-fg">
-          <I icon={MailCheck} size={22} />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-[0.875rem] text-muted">{t('Envoyé à')}</span>
-          <span className="block truncate font-semibold" dir="ltr">
-            {email}
-          </span>
-        </span>
-      </div>
-
-      <InfoBox>{t('Rien reçu ? Regardez dans les courriers indésirables. Le lien reste valable une heure.')}</InfoBox>
       {error && <AuthError texte={error} />}
 
       <div className="flex flex-col gap-2.5">
         <Button variant="g" loading={busy} onClick={() => void resend()} disabled={busy || resendIn > 0}>
           {resendIn > 0 ? `${txt.resend} (${resendIn} s)` : sent ? t('Renvoyé') : txt.resend}
         </Button>
+        {/* La seule porte de sortie quand l'adresse a été mal tapée : deux mots, mais indispensables. */}
         <button
           type="button"
           className="py-1 text-center text-[1rem] text-muted underline underline-offset-2 transition-colors hover:text-ink"
           onClick={() => navigate('/connexion')}
         >
-          {t('Changer d’adresse ou se connecter autrement')}
+          {t('Changer d’adresse')}
         </button>
       </div>
     </AuthShell>

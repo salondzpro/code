@@ -89,7 +89,7 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
         <p className="p mt-1 text-[0.938rem]">
           {role === 'pro'
             ? t('Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.')
-            : t('Rappel la veille et deux heures avant, et un mot dès que le salon confirme.')}
+            : t('Rappel 1 h puis 30 min avant, et un mot dès que le salon confirme.')}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button sm auto loading={occupe} onClick={() => void agir()}>

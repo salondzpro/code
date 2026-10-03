@@ -12,7 +12,7 @@ import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { groupLocalDigits } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
-import { Badge, Button, Field, I, Input, Toggle } from '@/components/ui';
+import { Button, Field, I, Input } from '@/components/ui';
 import { AuthShell } from '@/components/AuthShell';
 import { t } from '@/i18n';
 
@@ -20,24 +20,21 @@ export function ProfileSetup() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get('next') || '/';
-  const { session, user } = useAuth();
+  const { session } = useAuth();
   const me = useMe(!!session);
   const update = useUpdateProfile();
   const [name, setName] = useState('');
   const [digits, setDigits] = useState('');
-  const [reminders, setReminders] = useState(true);
   const [error, setError] = useState<{ field: 'name' | 'phone' | 'form'; msg: string } | null>(null);
 
   useEffect(() => {
     if (me.data) {
       setName((v) => v || me.data!.profile.fullName || '');
       setDigits((v) => v || (me.data!.profile.phone ?? '').replace(/^\+213/, ''));
-      setReminders(me.data.profile.remindersEnabled ?? true);
     }
   }, [me.data]);
 
   if (!session) return <Navigate to="/connexion" replace />;
-  const email = user?.email;
   const isPro = me.data?.profile.role === 'pro';
 
   const submit = async (e: FormEvent) => {
@@ -47,7 +44,10 @@ export function ProfileSetup() {
     if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
-      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, remindersEnabled: reminders });
+      // Les rappels sont ACQUIS, pas proposés : un interrupteur sur l'écran d'inscription demandait
+      // un arbitrage avant même d'avoir pris un rendez-vous. Il reste dans Réglages, pour qui veut
+      // les couper après coup.
+      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, remindersEnabled: true });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });
@@ -61,11 +61,6 @@ export function ProfileSetup() {
       role={isPro ? 'pro' : 'client'}
       marque={false}
       titre="Vos coordonnées"
-      sous={
-        isPro
-          ? t('Votre nom et le numéro où vos clients peuvent vous joindre.')
-          : t('Le salon voit votre nom sur la réservation et vous appelle sur ce numéro si besoin.')
-      }
     >
       <p className="-mt-2 text-[0.875rem] font-semibold uppercase tracking-[0.08em] text-muted">{t('Dernière étape')}</p>
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
@@ -112,26 +107,6 @@ export function ProfileSetup() {
             {error?.field === 'phone' ? error.msg : 'Format algérien · aucun SMS envoyé.'}
           </p>
         </div>
-        {email && (
-          <div>
-            <span className="lbl">{t("Adresse vérifiée")}</span>
-            <div className="flex items-center justify-between rounded-[var(--radius-input)] bg-fill px-4 py-[1.125rem] text-[0.857rem]">
-              <span className="truncate">{email}</span>
-              <Badge tone="ok" md>
-                {t("Vérifiée")}
-              </Badge>
-            </div>
-          </div>
-        )}
-        {!isPro && (
-          <div className="flex items-center justify-between">
-            <span>
-              <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
-              <span className="p block">{t("La veille et 2 h avant · application ou navigateur")}</span>
-            </span>
-            <Toggle on={reminders} onChange={setReminders} label={t("Rappels de rendez-vous")} />
-          </div>
-        )}
         {error?.field === 'form' && (
           <p className="text-[1rem] text-danger" role="alert">
             {error.msg}

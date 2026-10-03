@@ -31,7 +31,7 @@ const VITRINE: Record<AuthRole, { photo: string; titre: string; points: { icone:
     points: [
       { icone: MapPin, texte: 'Les salons autour de vous, avec leurs disponibilités du jour' },
       { icone: CalendarCheck, texte: 'Réservation en quelques secondes, prix en dinars' },
-      { icone: Sparkles, texte: 'Rappel la veille et deux heures avant chaque rendez-vous' },
+      { icone: Sparkles, texte: 'Rappel 1 h puis 30 min avant chaque rendez-vous' },
     ],
   },
   pro: {

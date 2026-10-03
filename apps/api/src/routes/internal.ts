@@ -5,7 +5,7 @@ import { config } from '../config';
 import { db } from '../lib/supabase';
 import { unauthorized, unwrap } from '../lib/errors';
 import { dispatchPendingPush } from '../lib/push';
-import { NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS, PRO_REMINDER_LEAD_MINUTES } from '@salondz/constants';
+import { CLIENT_REMINDER_MINUTES, NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS, PRO_REMINDER_LEAD_MINUTES } from '@salondz/constants';
 import { notifySlotFreed } from '../lib/waitlist';
 
 /**
@@ -33,78 +33,66 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     }
   });
 
+  /** Les deux rappels du client : délai visé, colonne qui dit « celui-ci est parti », et son titre. */
+  const CLIENT_REMINDERS = [
+    { minutes: CLIENT_REMINDER_MINUTES[0], colonne: 'reminder_1h_sent_at', titre: 'Rappel : rendez-vous dans 1 h' },
+    { minutes: CLIENT_REMINDER_MINUTES[1], colonne: 'reminder_30m_sent_at', titre: 'Rappel : rendez-vous dans 30 min' },
+  ] as const;
+
   async function tick(log: FastifyRequest['log']) {
     const req = { log };
     const now = Date.now();
 
-    // 1) Rappels J-1 (fenêtre 23h–25h avant le début)
-    const remRes = await db
-      .from('bookings')
-      .select('id, client_id, service_name, starts_at, salons(name)')
-      .eq('status', 'confirmed')
-      .is('reminder_sent_at', null)
-      .not('client_id', 'is', null)
-      .gte('starts_at', new Date(now + 23 * 3_600_000).toISOString())
-      .lt('starts_at', new Date(now + 25 * 3_600_000).toISOString())
-      .limit(500);
-    const candidates = unwrap(remRes) as unknown as { id: string; client_id: string; service_name: string; starts_at: string; salons: { name: string } | null }[];
-    // Réglage « Rappels de rendez-vous » du client (Réglages → Notifications) : respecté ici. Les
-    // rendez-vous des clients qui ont coupé les rappels sont quand même marqués traités.
-    let optedOut = new Set<string>();
-    if (candidates.length) {
-      const prefs = await db.from('profiles').select('id, reminders_enabled').in('id', [...new Set(candidates.map((b) => b.client_id))]).eq('reminders_enabled', false);
-      if (prefs.error) throw prefs.error;
-      optedOut = new Set((prefs.data ?? []).map((p) => p.id as string));
-    }
-    const toRemind = candidates.filter((b) => !optedOut.has(b.client_id));
-    if (candidates.length) {
-      const ins = await db.from('notifications').insert(
-        toRemind.map((b) => ({
-          user_id: b.client_id,
-          type: 'booking_reminder',
-          title: 'Rappel : rendez-vous demain',
-          body: `${b.salons?.name ?? 'Votre salon'} · ${b.service_name} · ${fmtWhen(b.starts_at)}`,
-          data: { bookingId: b.id },
-          booking_id: b.id,
-        })),
-      );
-      if (ins.error && toRemind.length) throw ins.error;
-      const upd = await db.from('bookings').update({ reminder_sent_at: new Date().toISOString() }).in('id', candidates.map((b) => b.id));
-      if (upd.error) throw upd.error;
-    }
+    /**
+     * 1) Rappels du CLIENT : une heure avant, puis trente minutes avant.
+     *
+     * Ils partaient la veille et deux heures avant. Un rappel la veille arrive trop tôt pour changer
+     * la journée, et deux heures avant on est déjà engagé ailleurs ; une heure puis trente minutes,
+     * c'est là qu'il sert encore à partir à temps ou à prévenir le salon.
+     *
+     * Les deux passages sont le MÊME travail à un délai près — ils étaient écrits deux fois, et la
+     * moindre correction devait être faite aux deux endroits. La fenêtre va de 5 min avant à 10 min
+     * après l'heure visée : le cron bat toutes les 10 minutes, aucun rendez-vous ne peut la
+     * traverser sans être vu, et un tick sauté ne fait rien manquer.
+     *
+     * Le réglage « Rappels de rendez-vous » du client est respecté ici ; les rendez-vous de ceux qui
+     * les ont coupés sont tout de même marqués traités, pour ne pas les repasser en revue à chaque
+     * tick.
+     */
+    const envoyes: Record<string, number> = {};
+    for (const rappel of CLIENT_REMINDERS) {
+      const res = await db
+        .from('bookings')
+        .select('id, client_id, service_name, starts_at, salons(name)')
+        .eq('status', 'confirmed')
+        .is(rappel.colonne, null)
+        .not('client_id', 'is', null)
+        .gte('starts_at', new Date(now + (rappel.minutes - 5) * 60_000).toISOString())
+        .lt('starts_at', new Date(now + (rappel.minutes + 10) * 60_000).toISOString())
+        .limit(500);
+      const dus = unwrap(res) as unknown as { id: string; client_id: string; service_name: string; starts_at: string; salons: { name: string } | null }[];
+      if (!dus.length) continue;
 
-    // 1b) Rappel 2 h avant (fenêtre 30 min – 2 h 15 avant le début, pour ne rien rater si un tick a sauté).
-    //     Même réglage client que la veille ; un rendez-vous déplacé repart de zéro (déclencheur SQL).
-    const rem2Res = await db
-      .from('bookings')
-      .select('id, client_id, service_name, starts_at, salons(name)')
-      .eq('status', 'confirmed')
-      .is('reminder_2h_sent_at', null)
-      .not('client_id', 'is', null)
-      .gte('starts_at', new Date(now + 30 * 60_000).toISOString())
-      .lt('starts_at', new Date(now + 135 * 60_000).toISOString())
-      .limit(500);
-    const soon = unwrap(rem2Res) as unknown as typeof candidates;
-    let optedOut2 = new Set<string>();
-    if (soon.length) {
-      const prefs = await db.from('profiles').select('id, reminders_enabled').in('id', [...new Set(soon.map((b) => b.client_id))]).eq('reminders_enabled', false);
+      const prefs = await db.from('profiles').select('id, reminders_enabled').in('id', [...new Set(dus.map((b) => b.client_id))]).eq('reminders_enabled', false);
       if (prefs.error) throw prefs.error;
-      optedOut2 = new Set((prefs.data ?? []).map((p) => p.id as string));
-    }
-    const toRemind2 = soon.filter((b) => !optedOut2.has(b.client_id));
-    if (soon.length) {
-      const ins = await db.from('notifications').insert(
-        toRemind2.map((b) => ({
-          user_id: b.client_id,
-          type: 'booking_reminder',
-          title: 'Rappel : rendez-vous dans 2 h',
-          body: `${b.salons?.name ?? 'Votre salon'} · ${b.service_name} · ${fmtWhen(b.starts_at)}`,
-          data: { bookingId: b.id },
-          booking_id: b.id,
-        })),
-      );
-      if (ins.error && toRemind2.length) throw ins.error;
-      const upd = await db.from('bookings').update({ reminder_2h_sent_at: new Date().toISOString() }).in('id', soon.map((b) => b.id));
+      const coupes = new Set((prefs.data ?? []).map((p) => p.id as string));
+      const aPrevenir = dus.filter((b) => !coupes.has(b.client_id));
+
+      if (aPrevenir.length) {
+        const ins = await db.from('notifications').insert(
+          aPrevenir.map((b) => ({
+            user_id: b.client_id,
+            type: 'booking_reminder',
+            title: rappel.titre,
+            body: `${b.salons?.name ?? 'Votre salon'} · ${b.service_name} · ${fmtWhen(b.starts_at)}`,
+            data: { bookingId: b.id },
+            booking_id: b.id,
+          })),
+        );
+        if (ins.error) throw ins.error;
+      }
+      envoyes[rappel.colonne] = aPrevenir.length;
+      const upd = await db.from('bookings').update({ [rappel.colonne]: new Date().toISOString() }).in('id', dus.map((b) => b.id));
       if (upd.error) throw upd.error;
     }
 
@@ -235,7 +223,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .upsert({ key: 'cron_last_tick', value: new Date(now).toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (beat.error) req.log.warn({ err: beat.error }, 'cron heartbeat');
 
-    return { reminders: toRemind.length, reminders2h: toRemind2.length, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0 };
+    return { reminders1h: envoyes.reminder_1h_sent_at ?? 0, reminders30m: envoyes.reminder_30m_sent_at ?? 0, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0 };
   }
 };
 
