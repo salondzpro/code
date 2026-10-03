@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Salon DZ</title>
+    <!--
+      PAGE DE SECOURS DE L'APPLICATION EN MODE EN LIGNE.
+
+      Quand la coque n'arrive pas à charger salondz.com, Capacitor affiche le fichier désigné par
+      `server.errorPath`. Il pointait sur `index.html`, c'est-à-dire sur une SECONDE copie de
+      l'application, servie depuis une autre origine que celle qu'elle attend : elle démarrait sans
+      session, sans réglages, et pouvait ne rien afficher du tout — l'écran blanc constaté le
+      25 septembre.
+
+      Cette page-ci ne dépend de rien : pas de bundle, pas de police distante, pas d'appel réseau.
+      Elle dit ce qui se passe et propose de réessayer. Une panne de réseau doit se lire, pas se
+      deviner.
+    -->
+    <style>
+      :root { color-scheme: light; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 2rem 1.75rem calc(2rem + env(safe-area-inset-bottom));
+        background: #f6f7f8;
+        color: #111214;
+        font: 400 1rem/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        text-align: center;
+      }
+      .marque { font-size: 1.5rem; letter-spacing: -0.04em; margin-bottom: 0.5rem; }
+      .marque b { font-weight: 600; }
+      .marque span { font-weight: 300; color: #6b7076; margin-left: 0.14em; }
+      h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; }
+      p { color: #6b7076; max-width: 22rem; }
+      button {
+        margin-top: 0.5rem;
+        width: 100%;
+        max-width: 22rem;
+        padding: 1rem;
+        border: 0;
+        border-radius: 6px;
+        background: #111214;
+        color: #fff;
+        font: 600 1rem system-ui, sans-serif;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="marque"><b>Salon</b><span>DZ</span></div>
+    <h1>Pas de connexion</h1>
+    <p>Salon DZ a besoin d’Internet pour afficher vos rendez-vous. Vérifiez votre connexion, puis réessayez.</p>
+    <button type="button" onclick="location.replace('https://salondz.com/')">Réessayer</button>
+  </body>
+</html>

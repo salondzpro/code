@@ -37,12 +37,26 @@ const ANDROID_HOME = process.env.ANDROID_HOME ?? 'C:/Users/gaci/AppData/Local/An
 /**
  * Par défaut, les fichiers du site sont EMBARQUÉS : l'application démarre toujours, même sans réseau.
  *
- * `--en-ligne` la fait charger salondz.com — un déploiement mettrait alors à jour tout le monde sans
- * passer par le Play Store. **Non validé** : essayé le 25 sept. 2026, l'application s'ouvrait sur un
- * écran blanc, cause non identifiée faute de pouvoir lire les journaux de l'appareil. Ne pas livrer
- * dans ce mode sans l'avoir vu fonctionner sur un téléphone.
+ * `--en-ligne` la fait charger salondz.com : un déploiement met alors à jour l'application de tout
+ * le monde, sans repasser par le Play Store. C'est le mode à préférer pour la variante GRAND PUBLIC.
+ *
+ * Essayé le 25 sept. 2026, il ouvrait sur un écran blanc. La page de secours (`server.errorPath`)
+ * pointait alors sur `index.html`, donc sur une seconde copie de l'application servie depuis une
+ * autre origine — cause la plus plausible. Elle pointe depuis le 3 oct. sur `hors-ligne.html`, qui
+ * ne dépend de rien et AFFICHE le problème. À confirmer sur un téléphone avant d'en faire le
+ * défaut.
+ *
+ * LA VARIANTE PRO NE PEUT PAS ÊTRE EN LIGNE : salondz.com sert le bundle GRAND PUBLIC, et le propre
+ * de l'application professionnelle est de ne pas embarquer les écrans clients. Il lui faudrait son
+ * propre site publié — ce que le plan gratuit de Render n'autorise pas (2 domaines par compte, déjà
+ * pris). Elle reste donc embarquée, et demande un envoi à chaque changement.
  */
 const mode = process.argv.includes('--en-ligne') ? 'remote' : 'bundled';
+if (mode === 'remote' && PRO) {
+  console.error("✖ --en-ligne est impossible avec --pro : salondz.com sert le bundle grand public,");
+  console.error("  l'application professionnelle y chargerait l'espace client. Voir l'en-tete de ce fichier.");
+  process.exit(1);
+}
 const env = {
   ...process.env,
   JAVA_HOME,

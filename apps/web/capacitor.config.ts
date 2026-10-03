@@ -41,9 +41,13 @@ const config: CapacitorConfig = {
      * En contrepartie, l'application a besoin du réseau pour démarrer. C'est acceptable ici :
      * réserver, consulter un agenda ou recevoir une demande exigent de toute façon le réseau.
      *
-     * Les fichiers embarqués restent dans l'application et servent de secours au chargement.
+     * EN CAS D'ÉCHEC DE CHARGEMENT, on affiche `hors-ligne.html` et non `index.html`. Renvoyer vers
+     * l'index embarqué démarrait une SECONDE copie de l'application depuis une autre origine que
+     * celle qu'elle attend — sans session ni réglages, et parfois sans rien afficher : c'est le
+     * candidat le plus sérieux à l'écran blanc constaté le 25 septembre 2026. Une page de secours
+     * qui ne dépend de rien dit ce qui se passe au lieu de le laisser deviner.
      */
-    ...(process.env.SALONDZ_APP_MODE === 'remote' ? { url: 'https://salondz.com', errorPath: 'index.html' } : {}),
+    ...(process.env.SALONDZ_APP_MODE === 'remote' ? { url: 'https://salondz.com', errorPath: 'hors-ligne.html' } : {}),
   },
   plugins: {
     SplashScreen: {
