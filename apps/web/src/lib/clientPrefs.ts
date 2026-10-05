@@ -59,13 +59,22 @@ function read(): LocationPrefs {
 }
 
 /**
- * Un lieu a-t-il DÉJÀ été choisi sur cet appareil ? On regarde l'entrée de stockage elle-même, et
- * non le contenu des préférences : les valeurs par défaut (wilaya 16, « Alger ») sont
- * indiscernables d'un choix réel, et la détection automatique écraserait alors une décision prise.
+ * Un lieu a-t-il DÉJÀ été choisi sur cet appareil ?
+ *
+ * On lit les CHAMPS DE LIEU de l'entrée enregistrée, et non la simple présence de cette entrée :
+ * tout ce qui s'écrit ici la crée — un tri, une puce de filtre, un rayon. Se fier à sa présence
+ * revenait à dire « cette personne a choisi son quartier » parce qu'elle avait trié par note, et la
+ * détection automatique de la position ne se serait alors jamais déclenchée.
+ *
+ * Les valeurs par défaut (wilaya 16, « Alger ») ne comptent pas comme un choix : elles ne sont pas
+ * enregistrées, et `lat`/`city` y sont nuls — c'est exactement ce qui les distingue d'une décision.
  */
 export function aDejaUnLieu(): boolean {
   try {
-    return localStorage.getItem(KEY) != null;
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return false;
+    const p = JSON.parse(raw) as Partial<LocationPrefs>;
+    return p.lat != null || p.city != null;
   } catch {
     return false;
   }
