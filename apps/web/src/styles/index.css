@@ -1108,6 +1108,9 @@ body::before {
     border-radius: var(--radius-card-sm);
     background-image: linear-gradient(90deg, #eff0f1 0, #f8f9fa 50%, #eff0f1 100%);
     background-size: 280px 100%;
+    /* Le dégradé fait 280 px : au-delà, il se RÉPÉTAIT, et une couture claire coupait en deux tout
+       pavé plus large — on croyait voir deux colonnes. Il balaie maintenant une seule fois. */
+    background-repeat: no-repeat;
     animation: shim 1.5s linear infinite;
   }
   /* Validation animée (SuccessSplash) */
