@@ -6,6 +6,8 @@
 // Requiert dans .env : RENDER_API_KEY, VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY.
 // Idempotent : relançable sans risque (le site existant est réutilisé, les variables sont réécrites).
 
+import { fileURLToPath } from 'node:url';
+
 const API = 'https://api.render.com/v1';
 const OWNER_ID = 'tea-dag6rklbedkc73fmbv2g'; // workspace Render « My Workspace »
 const REPO = 'https://github.com/salondzpro/code';
@@ -175,15 +177,14 @@ console.log(`GET ${siteUrl}/favoris → ${deep.status} (règle SPA ${deep.status
  * vu PAR la coque. `--sans-controle` pour s'en passer (déploiement de l'API seule, mise au point).
  */
 if (deployId && !process.argv.includes('--sans-controle')) {
-  console.log('
-Contrôle de la coque mobile…');
+  console.log('\nContrôle de la coque mobile…');
   const { execFileSync } = await import('node:child_process');
+  const controle = fileURLToPath(new URL('check-coque.mjs', import.meta.url));
   try {
-    execFileSync(process.execPath, [new URL('check-coque.mjs', import.meta.url).pathname.replace(/^\/(\w:)/, '$1'), '--url', siteUrl], { stdio: 'inherit' });
+    execFileSync(process.execPath, [controle, '--url', siteUrl], { stdio: 'inherit' });
   } catch {
-    fail('
-✖ Le site ne se comporte plus correctement dans la coque : il est l’application de tout le monde.
-  Corriger et redéployer, ou revenir en arrière.');
+    console.error('\n✖ Le site ne se comporte plus correctement dans la coque, et il EST l’application de tout le monde.');
+    fail('  Corriger et redéployer, ou revenir en arrière.');
   }
 }
 
