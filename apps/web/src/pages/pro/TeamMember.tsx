@@ -34,7 +34,7 @@ import {
   TopBar,
 } from '@/components/ui';
 import { Screen, NAV_PAD, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { ServicesPicker } from './Team';
 import { WeekHoursEditor } from './onboarding/Step9Hours';
 import { ImageCropper } from '@/components/ImageCropper';
@@ -72,7 +72,7 @@ export function TeamMember() {
     setName(member?.displayName ?? '');
     setPhone(member?.phone ? formatDZPhone(member.phone) : '');
   }, [member?.displayName, member?.phone]);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   if (!member)
     return (
       <Screen bottom={NAV_PAD} gap={16}>
@@ -345,7 +345,7 @@ export function TeamMemberServices() {
   const [all, setAll] = useState(member?.allServices ?? true);
   const [selected, setSelected] = useState<string[]>(member?.serviceIds ?? []);
   const [error, setError] = useState<string | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   if (!member)
     return (
       <Screen bottom={NAV_PAD}>
@@ -427,7 +427,7 @@ export function TeamMemberHours() {
       );
     }
   }, [salon, hours.data]);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   if (!member)
     return (
       <Screen bottom={NAV_PAD}>

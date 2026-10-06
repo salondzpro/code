@@ -35,7 +35,7 @@ import { Avatar, BottomSheet, Button, I, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function BookingReview() {
@@ -52,7 +52,7 @@ export function BookingReview() {
 
   if (!draft.startsAt || !draft.name || draft.serviceIds.length === 0)
     return <Navigate to={`/s/${slug}`} replace />;
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   const s = salon.data;
   if (!s) return null;
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);

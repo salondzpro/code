@@ -47,7 +47,7 @@ import {
   TopBar, Dim } from '@/components/ui';
 import { DayScroller } from '@/components/DayCarousel';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
 import type { LucideIcon } from 'lucide-react';
@@ -336,7 +336,7 @@ export function ProBookingNew() {
     el?.scrollIntoView({ block: 'nearest', inline: 'center' });
   }, [time, date]);
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
 
   const submit = async () => {
     const errs: typeof fieldErr = {};

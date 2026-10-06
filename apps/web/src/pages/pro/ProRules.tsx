@@ -20,7 +20,7 @@ import {
 import { errorText } from '@/components/ErrorMessage';
 import { ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { RowText } from './MonSalon';
 import { t } from '@/i18n';
 
@@ -38,7 +38,7 @@ export function ProRules() {
   const salon = useProSalon().data?.salon ?? null;
   const { updateSalon } = useProSalonMutations();
   const [error, setError] = useState<string | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const before = `${salon.cancelMinHours} h avant`;
 
   return (

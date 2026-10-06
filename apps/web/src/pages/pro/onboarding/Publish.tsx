@@ -5,7 +5,7 @@ import { ApiError, useProSalon, useProSalonMutations } from '@salondz/api-client
 import { errorText } from '@/components/ErrorMessage';
 import { Badge, Button, I } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { useState } from 'react';
 import { t } from '@/i18n';
@@ -16,7 +16,7 @@ export function Publish() {
   const salon = useProSalon().data?.salon ?? null;
   const { updateSalon } = useProSalonMutations();
   const [error, setError] = useState<string | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const host = env.siteUrl.replace(/^https?:\/\/(www\.)?/, '');
   const withPhotos = salon.services.filter((s) => s.isActive && (s.photos?.length ?? 0) > 0).length;
   const works = salon.photos.length + salon.services.reduce((a, s) => a + (s.photos?.length ?? 0), 0);

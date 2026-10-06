@@ -12,7 +12,7 @@ import { groupServices } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
 import { BottomSheet, Button, I, Input, TopBar, Dim } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 type Mode = 'with-services' | 'keep-services';
@@ -25,7 +25,7 @@ export function ProCategories() {
   const [draft, setDraft] = useState('');
   const [del, setDel] = useState<{ name: string; count: number; mode?: Mode } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const groups = groupServices(salon.services.filter((sv) => sv.isActive));
 
   const save = async (from: string) => {

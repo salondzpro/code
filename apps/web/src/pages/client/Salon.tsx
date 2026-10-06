@@ -64,7 +64,7 @@ import { SalonNotFound } from '@/pages/NotFound';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
 import { ReportReviewButton } from '@/components/ReportReview';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
 import { t } from '@/i18n';
 
@@ -122,7 +122,7 @@ export function Salon() {
     navigate(`/s/${slug}/reserver/quand`);
   };
 
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   // Lien qui ne mène à aucun salon : une page qui le dit et ramène à la marketplace.
   if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;

@@ -1065,6 +1065,43 @@ body::before {
     z-index: 50;
   }
 
+  /* Barre de progression indéterminée : une page se charge, on ne sait pas pour combien de temps.
+     Logique (`inset-inline`) et non gauche/droite : en arabe elle doit courir dans l'autre sens. */
+  .ldbar {
+    position: relative;
+    height: 0.1875rem;
+    overflow: hidden;
+    background: var(--color-line-soft);
+  }
+  .ldbar::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inline-size: 40%;
+    background: var(--color-ink);
+    animation: ldbar 1.1s ease-in-out infinite;
+  }
+  @keyframes ldbar {
+    0% {
+      inset-inline-start: -40%;
+    }
+    100% {
+      inset-inline-start: 100%;
+    }
+  }
+  /* Quelqu'un qui a demandé moins d'animations n'a pas demandé moins d'information : la barre
+     reste, elle cesse seulement de courir. */
+  @media (prefers-reduced-motion: reduce) {
+    .ldbar::after {
+      animation: none;
+      inline-size: 100%;
+      opacity: 0.35;
+    }
+    .sk {
+      animation: none;
+    }
+  }
+
   /* Squelette */
   .sk {
     background: var(--color-line-soft);

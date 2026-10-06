@@ -7,7 +7,7 @@ import { ProHeader } from '@/components/ProHeader';
 import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 /**
  * Coque native, testée SANS importer Capacitor : la coque pose `window.Capacitor` avant le code de
  * l'application, et importer le paquet ici coûterait un chargement au premier rendu d'un garde.
@@ -101,7 +101,7 @@ export function PlainLayout() {
 export function RequireAuth() {
   const { session, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <Splash />;
+  if (loading) return <PageLoading />;
   if (!session) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/connexion?next=${next}`} replace />;
@@ -130,7 +130,7 @@ export function RequireClient() {
     pushRefreshed.current = true;
     void refreshWebPushIfGranted(api);
   }, [session]);
-  if (loading) return <Splash />;
+  if (loading) return <PageLoading />;
   if (!session)
     return (
       <Navigate
@@ -147,7 +147,7 @@ export function RequireClient() {
         replace
       />
     );
-  if (me.isPending) return <Splash />;
+  if (me.isPending) return <PageLoading />;
   if (me.isError) return <ErrorState error={me.error} retry={() => me.refetch()} accueil={false} />;
   const p = me.data.profile;
   /**
@@ -189,12 +189,12 @@ export function RequirePro() {
     void refreshWebPushIfGranted(api);
   }, [session]);
 
-  if (loading) return <Splash />;
+  if (loading) return <PageLoading />;
   if (!session) {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/connexion?role=pro&next=${next}`} replace />;
   }
-  if (salonQuery.isPending || me.isPending) return <Splash />;
+  if (salonQuery.isPending || me.isPending) return <PageLoading />;
   // Le professionnel aussi complète nom et numéro avant d'entrer : ses clients l'appellent.
   // Un administrateur qui pilote le salon d'un autre n'a pas à donner son propre numéro : ce sont
   // les coordonnées DU SALON que les clients voient et appellent.

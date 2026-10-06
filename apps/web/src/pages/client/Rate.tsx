@@ -7,7 +7,7 @@ import { formatDA, formatLocale } from '@salondz/constants';
 import { Avatar, BottomSheet, Button, Field, Pill, SectionLabel, Textarea, Toggle, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 const TAGS = ['Ponctualité', 'Hygiène', 'Accueil', 'Résultat', 'Rapport qualité-prix'];
@@ -27,7 +27,7 @@ export function Rate() {
   const [comment, setComment] = useState('');
   const [publish, setPublish] = useState(true);
 
-  if (booking.isPending) return <Splash />;
+  if (booking.isPending) return <PageLoading />;
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;
   // Un seul avis par rendez-vous, et seulement après un rendez-vous terminé (règle API BOOKING_NOT_COMPLETED / ALREADY_REVIEWED).

@@ -19,7 +19,7 @@ import { SalonNotFound } from '@/pages/NotFound';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
 import { ReportReviewButton } from '@/components/ReportReview';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function SalonReviews() {
@@ -28,7 +28,7 @@ export function SalonReviews() {
   const [sort, setSort] = useState<ReviewSort>('best');
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 10, sort);
   const reviewItems = pagesItems(reviews.data);
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   // Lien qui ne mène à aucun salon : une page qui le dit et ramène à la marketplace.
   if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;

@@ -13,7 +13,7 @@ import { groupLocalDigits } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
 import { Badge, Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function AccountInfo({ backTo = '/profil' }: { backTo?: string }) {
@@ -34,7 +34,7 @@ export function AccountInfo({ backTo = '/profil' }: { backTo?: string }) {
     }
   }, [p]);
 
-  if (me.isPending || !p) return <Splash />;
+  if (me.isPending || !p) return <PageLoading />;
   const dirty = name.trim() !== (p.fullName ?? '') || `+213${digits}` !== (p.phone ?? '');
 
   const submit = async (e: FormEvent) => {

@@ -13,7 +13,7 @@ import { CalendarSearch, ContactRound, Flag, LayoutGrid, ScrollText, Store } fro
 import { useAdminMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { I } from '@/components/ui';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 const NAV = [
@@ -79,7 +79,7 @@ export function actionLabel(action: string): string {
 export function AdminLayout() {
   const { session, loading } = useAuth();
   const me = useAdminMe(!!session);
-  if (loading || (!!session && me.isPending)) return <Splash />;
+  if (loading || (!!session && me.isPending)) return <PageLoading />;
   // Personne de connecté : l'écran de connexion, et on revient ici ensuite. Cela n'apprend rien —
   // `/rendez-vous`, `/favoris` et tout l'espace pro demandent aussi de se connecter.
   if (!session) return <Navigate to="/connexion?next=%2Fadmin" replace />;

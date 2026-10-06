@@ -1,5 +1,5 @@
 import { Suspense, lazy, type ComponentType } from 'react';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { createBrowserRouter, Navigate } from 'react-router';
 import {
   ClientLayout,
@@ -58,7 +58,7 @@ function lazyNamed(loader: () => Promise<Record<string, unknown>>, name: string)
   const Lazy = lazy(async () => ({ default: (await loader())[name] as ComponentType<Record<string, unknown>> }));
   return function LazyPage(props: Record<string, unknown>) {
     return (
-      <Suspense fallback={<Splash />}>
+      <Suspense fallback={<PageLoading />}>
         <Lazy {...props} />
       </Suspense>
     );

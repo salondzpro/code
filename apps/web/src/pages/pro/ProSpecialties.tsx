@@ -7,7 +7,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { BottomSheet, Button, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { MAX_SPECIALTIES, SpecialtiesGrid, specialtiesFor } from '@/components/SpecialtiesGrid';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepTitle } from './onboarding/Shared';
 import { t } from '@/i18n';
 
@@ -20,7 +20,7 @@ export function ProSpecialties() {
   useEffect(() => {
     if (salon) setChosen(salon.categoryIds);
   }, [salon]);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const dirty = chosen.join(',') !== salon.categoryIds.join(',');
 
   const save = async () => {

@@ -9,7 +9,7 @@ import { useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { readAuthFlow } from '@/lib/authFlow';
 import { supabase } from '@/lib/supabase';
-import { Splash } from './Splash';
+import { PageLoading } from '@/components/PageLoading';
 
 /**
  * Jetons arrivés par une PASSATION depuis le navigateur (`lib/appHandoff.ts`). Supabase ne lit le
@@ -50,13 +50,13 @@ export function WelcomeBack() {
   const hashErr = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   // Session en cours d'installation depuis les jetons : on attend, sinon on repartirait sur la
   // connexion alors que tout est là.
-  if (reprise === 'en-cours') return <Splash />;
+  if (reprise === 'en-cours') return <PageLoading />;
   if (!session && (hashErr.get('error') || hashErr.get('error_code')))
     return <Navigate to={`/connexion?erreur=${encodeURIComponent(hashErr.get('error_code') ?? hashErr.get('error') ?? 'lien')}`} replace />;
-  if (loading) return <Splash />;
+  if (loading) return <PageLoading />;
   if (!session) return <Navigate to="/connexion" replace />;
   // Profil injoignable (réseau) : on entre quand même, les gardes des pages feront le reste.
-  if (!me.data && !me.isError) return <Splash />;
+  if (!me.data && !me.isError) return <PageLoading />;
 
   const profile = me.data?.profile;
   const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : '/');

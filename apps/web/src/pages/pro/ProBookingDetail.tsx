@@ -52,7 +52,7 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function ProBookingDetail() {
@@ -97,7 +97,7 @@ export function ProBookingDetail() {
     .filter((x) => x.startsAt < (b?.startsAt ?? ''))
     .sort((a, c) => c.startsAt.localeCompare(a.startsAt))[0];
 
-  if (booking.isPending || !salon) return <Splash />;
+  if (booking.isPending || !salon) return <PageLoading />;
   if (booking.isError)
     return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   if (!b) return null;
@@ -326,7 +326,7 @@ export function ProBookingReschedule() {
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
-  if (!b || !salon) return <Splash />;
+  if (!b || !salon) return <PageLoading />;
   const d = date ?? toLocalDateKey(new Date(b.startsAt));
   const tm = time ?? formatTimeDZ(b.startsAt);
   const staff = salon.staff.filter((s) => s.isActive);

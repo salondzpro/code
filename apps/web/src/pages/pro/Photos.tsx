@@ -11,7 +11,7 @@ import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { Avatar, Button, I, InfoBox, SectionLabel, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
 import { t } from '@/i18n';
 
@@ -26,7 +26,7 @@ export function ProPhotos() {
   const [ready, setReady] = useState<File[]>([]);
   const logoInput = useRef<HTMLInputElement | null>(null);
   const photosInput = useRef<HTMLInputElement | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const photos = salon.photos;
   const room = Math.max(0, SALON_MAX_PHOTOS - photos.length);
 

@@ -5,13 +5,13 @@ import { useSalon } from '@salondz/api-client';
 import { EmptyState, Img, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function SalonWorks() {
   const { slug = '' } = useParams();
   const salon = useSalon(slug);
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
   const photos = s.works;

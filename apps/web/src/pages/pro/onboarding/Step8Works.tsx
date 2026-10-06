@@ -12,7 +12,7 @@ import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { I } from '@/components/ui';
 import { Screen, SHEET_PAD, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -24,7 +24,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const works = salon.works;
   const room = Math.max(0, SALON_MAX_WORKS - works.length);
 

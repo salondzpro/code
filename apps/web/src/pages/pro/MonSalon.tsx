@@ -19,7 +19,7 @@ import { PickerField } from '@/components/Picker';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, I, ListRow, SectionLabel, Textarea, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function RowText({ icon, title, sub }: { icon: LucideIcon; title: string; sub?: string }) {
@@ -41,7 +41,7 @@ export function MonSalon() {
   const { updateSalon } = useProSalonMutations();
   const [desc, setDesc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const place = [salon.address, salon.zone ?? salon.city, wilayaName(salon.wilayaCode)]
     .filter(Boolean)
     .join(', ');

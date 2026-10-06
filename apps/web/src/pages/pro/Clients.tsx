@@ -12,7 +12,7 @@ import { formatDZPhone, formatDateShortDZ, toLocalDateKey } from '@salondz/const
 import { Avatar, Badge, I, IconButton, Skeleton, Pill } from '@/components/ui';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 /** Une cellule de CSV : le point-virgule, le guillemet et le retour à la ligne s'échappent. */
@@ -84,7 +84,7 @@ export function Clients() {
     }
   };
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>

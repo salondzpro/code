@@ -39,7 +39,7 @@ import {
   Toast,
   TopBar, Dim } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 /** Lien public d'un salon : TOUJOURS sur le domaine officiel (env.siteUrl), jamais sur l'adresse de navigation. */
@@ -172,7 +172,7 @@ export function ProLink() {
   const [copied, copy] = useCopy();
   const { url, short } = usePublicUrl(salon?.slug ?? '');
   const qr = useQr(url, 400);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const lead =
     salon.bookingLeadTimeMinutes >= 60
       ? `${Math.round(salon.bookingLeadTimeMinutes / 60)} h`
@@ -273,7 +273,7 @@ export function ProQr() {
       alive = false;
     };
   }, [salon?.name, salon?.logoUrl, salon?.coverUrl, url, short, salon]);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   return (
     <Screen bottom={24} gap={16}>
       <TopBar backTo="/pro/lien" right="QR code" />

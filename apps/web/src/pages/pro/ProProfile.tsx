@@ -30,7 +30,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Avatar, Badge, Button, I, ListRow, SectionLabel } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { ShareSheet, usePublicUrl } from './Link';
 import { RowText } from './MonSalon';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
@@ -72,7 +72,7 @@ export function ProProfile() {
   const coverInput = useRef<HTMLInputElement | null>(null);
   const logoInput = useRef<HTMLInputElement | null>(null);
   const { url, short } = usePublicUrl(salon?.slug ?? '');
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const active = salon.staff.filter((m) => m.isActive).length;
   const services = salon.services.filter((s) => s.isActive).length;
   const todayDow = dayOfWeekFromKey(toLocalDateKey());

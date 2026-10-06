@@ -11,7 +11,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Button, I } from '@/components/ui';
 import { ImageCropper } from '@/components/ImageCropper';
 import { Screen, SHEET_PAD_2 } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -27,7 +27,7 @@ export function Step7ServicePhotos() {
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   if (!service) return <Navigate to={stepPath(6)} replace />;
   const photo = url === undefined ? (service.photos?.[0]?.url ?? null) : url;
   // Salon déjà publié = on vient du catalogue (retour au catalogue) ; sinon on est dans l'inscription (étape 8).

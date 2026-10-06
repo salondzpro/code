@@ -9,7 +9,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Field, Input, Pill, Textarea } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -31,7 +31,7 @@ export function Step6Service() {
   const [description, setDescription] = useState(existing?.description ?? '');
   const [error, setError] = useState<string | null>(null);
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   if (serviceId && !existing) return <Navigate to={stepPath(6)} replace />;
   // Catégories Salon DZ : d'abord celles choisies par ce salon à l'inscription, puis les autres de son marché (les deux pour un salon unisexe).
   const { suggested, others } = categoriesForSalon(salon.genderTarget, salon.categoryIds);

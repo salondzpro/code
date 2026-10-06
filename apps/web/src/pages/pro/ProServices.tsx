@@ -10,7 +10,7 @@ import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { Button, I, Img, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
 
@@ -18,7 +18,7 @@ export function ProServices() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const { update, remove } = useProServiceMutations();
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const groups = groupServices(salon.services);
   return (
     <Screen bottom={NAV_PAD} gap={16}>

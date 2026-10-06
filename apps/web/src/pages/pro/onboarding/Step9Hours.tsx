@@ -14,7 +14,7 @@ import { HoursConflictSheet } from '@/components/HoursConflictSheet';
 import type { OutsideBooking } from '@salondz/types';
 import { I, Toggle } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -124,7 +124,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
     setRows(rowsFromRanges(salon.openingHours.filter((h) => !h.isClosed).map((h) => ({ dayOfWeek: h.dayOfWeek, start: h.opensAt, end: h.closesAt }))));
   }, [salon]);
 
-  if (!salon || rows.length === 0) return <Splash />;
+  if (!salon || rows.length === 0) return <PageLoading />;
   const invalid = rows.some((r) => rowError(r) !== null);
 
   const save = async () => {

@@ -28,7 +28,7 @@ import { FactRow } from '@/components/BookingFacts';
 import { directionsUrl } from './Bookings';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { formatDuration } from '@/lib/format';
 import type { BookingWithSalon } from '@salondz/types';
 import { t } from '@/i18n';
@@ -60,7 +60,7 @@ export function BookingConfirmed() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const booking = useBooking(id);
-  if (booking.isPending) return <Splash />;
+  if (booking.isPending) return <PageLoading />;
   if (booking.isError)
     return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;

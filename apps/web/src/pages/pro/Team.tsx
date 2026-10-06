@@ -9,7 +9,7 @@ import { formatDA } from '@salondz/constants';
 import type { Service, Staff } from '@salondz/types';
 import { Avatar, Button, Checkbox, I, Segmented, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 /** Choix des prestations d'un membre : toutes, ou cases à cocher. */
@@ -75,7 +75,7 @@ export function ServicesPicker({
 export function Team() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
 
   const summary = (m: Staff) => {
     const state = m.isActive ? 'Actif' : 'Inactif';

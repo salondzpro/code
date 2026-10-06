@@ -13,7 +13,7 @@ import { BottomSheet, Button, I, Img, SectionLabel, TopBar } from '@/components/
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { SalonNotFound } from '@/pages/NotFound';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import type { Service } from '@salondz/types';
 import { t } from '@/i18n';
 
@@ -46,7 +46,7 @@ export function BookingServices() {
 
   const s = salon.data;
 
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 

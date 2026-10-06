@@ -10,7 +10,7 @@ import { formatDuration } from '@/lib/format';
 import { Avatar, BottomSheet, Button, I, IconButton, Img } from '@/components/ui';
 import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { openingStatus } from './Salon';
 import { t } from '@/i18n';
 
@@ -22,7 +22,7 @@ export function ServiceDetail() {
   const salon = useSalon(slug);
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
   const sv = s.services.find((x) => x.id === serviceId);

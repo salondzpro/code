@@ -24,7 +24,7 @@ import { Badge, BottomSheet, Button, Pill, SectionLabel, Skeleton, TopBar, Dim }
 import { MonthNav, dayNumber } from '@/components/DaySelector';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 const HORIZON_DAYS = 90;
@@ -104,7 +104,7 @@ export function Closures() {
     () => new Map((salon?.staff ?? []).map((m) => [m.id, m.displayName])),
     [salon],
   );
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const active = salon.staff.filter((m) => m.isActive);
   const items = blocks.data?.items ?? [];
 

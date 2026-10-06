@@ -30,7 +30,7 @@ import {
   TopBar,
 } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 type Who = 'me' | 'other';
@@ -105,7 +105,7 @@ export function BookingDetails() {
         replace
       />
     );
-  if (salon.isPending || me.isPending) return <Splash />;
+  if (salon.isPending || me.isPending) return <PageLoading />;
   const s = salon.data;
   if (!s) return null;
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);

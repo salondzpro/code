@@ -11,7 +11,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { SectionLabel, Slot, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -60,7 +60,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     setOnline(settings ? salon.isPublished : true);
   }, [salon, settings]);
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
   const backTo = settings ? '/pro/reglages/rendez-vous' : stepPath(9);
 

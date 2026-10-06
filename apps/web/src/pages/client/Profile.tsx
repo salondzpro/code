@@ -24,7 +24,7 @@ import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, Button, I } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { ImageCropper } from '@/components/ImageCropper';
 import { uploadAvatar } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
@@ -77,7 +77,7 @@ export function Profile() {
   const [cropAvatar, setCropAvatar] = useState<File | null>(null);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  if (me.isPending) return <Splash />;
+  if (me.isPending) return <PageLoading />;
   const p = me.data?.profile;
   const phone = p?.phone ?? null;
   const email = user?.email ?? null;

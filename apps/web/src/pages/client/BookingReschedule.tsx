@@ -8,7 +8,7 @@ import { BottomSheet, Button, I, InfoBox, Skeleton, Slot, TopBar } from '@/compo
 import { DayStrip, MonthNav, dayNumber } from '@/components/DaySelector';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function BookingReschedule() {
@@ -34,7 +34,7 @@ export function BookingReschedule() {
   }, [b]);
   useEffect(() => setSlot(null), [date]);
 
-  if (booking.isPending || (b && salon.isPending)) return <Splash />;
+  if (booking.isPending || (b && salon.isPending)) return <PageLoading />;
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   if (!b || !salon.data) return null;
   const s = salon.data;

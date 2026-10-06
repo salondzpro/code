@@ -26,7 +26,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { BottomSheet, Button, Dim, I, Pill, Skeleton, Textarea, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ReportReviewButton } from '@/components/ReportReview';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 const MAX = 600;
@@ -98,7 +98,7 @@ export function ProReviews() {
   // Compteur dédié : charger tous les avis pour compter ceux sans réponse serait du gaspillage.
   const waiting = useProReviewsUnanswered(!!salon).data?.count ?? 0;
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>

@@ -54,7 +54,7 @@ import {
   TopBar,
 } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 /** « Annulé par le client », « Annulé par le salon », « Expiré » (demande jamais validée). */
@@ -176,7 +176,7 @@ export function ClientDetail() {
     if (c) setNotesDraft(c.notes ?? '');
   }, [c?.notes, c]);
 
-  if (client.isPending) return <Splash />;
+  if (client.isPending) return <PageLoading />;
   if (!c)
     return (
       <Screen bottom={NAV_PAD} gap={16}>

@@ -15,7 +15,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Badge, BottomSheet, Button, Dim, I, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { RowText } from './MonSalon';
 import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
@@ -37,7 +37,7 @@ export function ProAccount() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** '…' = suppression en cours ; sinon le message d'erreur à montrer dans la feuille. */
   const [deleting, setDeleting] = useState<string | null>(null);
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
 
   /** Exigé par Apple et Google : la suppression se fait dans l'application. Ferme aussi le salon. */
   const deleteAccount = async () => {

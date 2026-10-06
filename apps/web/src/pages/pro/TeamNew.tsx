@@ -6,7 +6,7 @@ import { errorText } from '@/components/ErrorMessage';
 import { Button, Field, Input, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { BottomSheet } from '@/components/ui';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { ServicesPicker } from './Team';
 import { t } from '@/i18n';
 
@@ -22,7 +22,7 @@ export function TeamNew() {
     () => (salon?.services ?? []).filter((s) => s.isActive),
     [salon?.services],
   );
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const invalid = !name.trim() || (!all && selected.length === 0 && activeServices.length > 0);
 
   const add = async () => {

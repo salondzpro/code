@@ -55,7 +55,7 @@ import { PickerField } from '@/components/Picker';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { LateRule } from '@/components/LateRule';
 import { FactRow } from '@/components/BookingFacts';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { GoogleCalendarButton } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
 import { t } from '@/i18n';
@@ -72,7 +72,7 @@ export function BookingDetail() {
   const [reason, setReason] = useState('');
   const [done, setDone] = useState(false);
 
-  if (booking.isPending) return <Splash />;
+  if (booking.isPending) return <PageLoading />;
   if (booking.isError)
     return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   const b = booking.data;

@@ -25,7 +25,7 @@ import { Avatar, BottomSheet, Button, InfoBox, Skeleton, Slot, TopBar } from '@/
 import { DayStrip, MonthNav } from '@/components/DaySelector';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 type Period = 'Matin' | 'Après-midi' | 'Soir';
@@ -118,7 +118,7 @@ export function BookingWhen() {
   }, [availability.data, grid, slot]);
 
   if (serviceIds.length === 0) return <Navigate to={`/s/${slug}/prestations`} replace />;
-  if (salon.isPending) return <Splash />;
+  if (salon.isPending) return <PageLoading />;
   if (salon.isError || !s)
     return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 

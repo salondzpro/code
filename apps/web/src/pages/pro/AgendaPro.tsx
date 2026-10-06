@@ -40,7 +40,7 @@ import {
 } from '@/components/ui';
 import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { Splash } from '@/pages/auth/Splash';
+import { PageLoading } from '@/components/PageLoading';
 import type { BookingWithStaff } from '@salondz/types';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
@@ -145,7 +145,7 @@ export function AgendaPro() {
     return m;
   }, [items]);
 
-  if (!salon) return <Splash />;
+  if (!salon) return <PageLoading />;
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter(
     (d) => !salon.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed),
   );
