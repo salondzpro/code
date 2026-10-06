@@ -44,10 +44,12 @@ export function ProfileSetup() {
     if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
-      // Les rappels sont ACQUIS, pas proposés : un interrupteur sur l'écran d'inscription demandait
-      // un arbitrage avant même d'avoir pris un rendez-vous. Il reste dans Réglages, pour qui veut
-      // les couper après coup.
-      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, remindersEnabled: true });
+      // Les rappels sont ACQUIS, pas proposés : un interrupteur sur l'écran d'inscription demandait un
+      // arbitrage avant même d'avoir pris un rendez-vous. Il reste dans Réglages, pour qui veut les
+      // couper après coup — et c'est pourquoi on ne les force PAS ici : la colonne vaut `true` par
+      // défaut en base, donc l'écrire ne servirait qu'à rallumer, en silence, ce que quelqu'un
+      // aurait éteint.
+      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });

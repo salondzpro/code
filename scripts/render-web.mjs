@@ -168,6 +168,25 @@ console.log(`GET ${siteUrl}/ → ${r.status} ${/<div id="root">/.test(html) ? '(
 const deep = await fetch(`${siteUrl}/favoris`, { redirect: 'manual' });
 console.log(`GET ${siteUrl}/favoris → ${deep.status} (règle SPA ${deep.status === 200 ? 'ok' : 'KO'})`);
 
+/**
+ * LE SITE EST L'APPLICATION. Depuis que la coque grand public tourne en mode EN LIGNE, ce qui part
+ * ici part aussi, dans la minute, sur tous les téléphones — sans que le Play Store serve de filet.
+ * On ne quitte donc pas ce script sans avoir vérifié que le site se comporte encore correctement
+ * vu PAR la coque. `--sans-controle` pour s'en passer (déploiement de l'API seule, mise au point).
+ */
+if (deployId && !process.argv.includes('--sans-controle')) {
+  console.log('
+Contrôle de la coque mobile…');
+  const { execFileSync } = await import('node:child_process');
+  try {
+    execFileSync(process.execPath, [new URL('check-coque.mjs', import.meta.url).pathname.replace(/^\/(\w:)/, '$1'), '--url', siteUrl], { stdio: 'inherit' });
+  } catch {
+    fail('
+✖ Le site ne se comporte plus correctement dans la coque : il est l’application de tout le monde.
+  Corriger et redéployer, ou revenir en arrière.');
+  }
+}
+
 // ---------------------------------------------------------------------------
 async function get(path) {
   return call('GET', path);
