@@ -299,12 +299,17 @@ export function ProBookingDetail() {
               className="!bg-danger !text-white"
               disabled={cancel.isPending}
               onClick={async () => {
-                await cancel.mutateAsync({ id: b.id, reason: reason || undefined });
-                setCancelling(false);
+                try {
+                  await cancel.mutateAsync({ id: b.id, reason: reason || undefined });
+                  setCancelling(false);
+                } catch {
+                  /* affichée ci-dessous, DANS la feuille (celle de la page est sous le voile) */
+                }
               }}
             >
               {t("Annuler le rendez-vous")}
             </Button>
+            <ErrorMessage error={cancel.error} />
             <Button variant="g" onClick={() => setCancelling(false)}>
               {t("Garder le rendez-vous")}
             </Button>
@@ -326,6 +331,7 @@ export function ProBookingReschedule() {
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
+  if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   if (!b || !salon) return <PageLoading />;
   const d = date ?? toLocalDateKey(new Date(b.startsAt));
   const tm = time ?? formatTimeDZ(b.startsAt);

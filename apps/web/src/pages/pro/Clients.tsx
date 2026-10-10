@@ -26,6 +26,7 @@ export function Clients() {
   const { api } = useApi();
   const salon = useProSalon().data?.salon ?? null;
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<unknown>(null);
   const [q, setQ] = useState('');
   const [onlyBlocked, setOnlyBlocked] = useState(false);
   // Recherche côté serveur, après une courte pause de saisie : on ne charge jamais toute la clientèle.
@@ -79,6 +80,8 @@ export function Clients() {
       a.download = `clients-${salon?.slug ?? 'salon'}-${toLocalDateKey()}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
+    } catch (err) {
+      setExportError(err);
     } finally {
       setExporting(false);
     }
@@ -124,6 +127,7 @@ export function Clients() {
           </Pill>
         </div>
       )}
+      <ErrorMessage error={exportError} />
       {clients.isError ? (
         <ErrorMessage error={clients.error} retry={() => void clients.refetch()} />
       ) : clients.isPending ? (

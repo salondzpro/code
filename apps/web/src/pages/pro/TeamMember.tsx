@@ -19,7 +19,7 @@ import {
 import type { OpeningHour, OutsideBooking, SalonOwnerView, Staff } from '@salondz/types';
 import { phoneDZ } from '@salondz/validation';
 import { formatDZPhone } from '@salondz/constants';
-import { errorText } from '@/components/ErrorMessage';
+import { ErrorMessage, errorText } from '@/components/ErrorMessage';
 import { HoursConflictSheet } from '@/components/HoursConflictSheet';
 import {
   Avatar,
@@ -471,7 +471,9 @@ export function TeamMemberHours() {
           { value: 'custom', label: t("Horaires personnalisés") },
         ]}
       />
-      {hours.isPending || rows.length === 0 ? (
+      {hours.isError ? (
+        <ErrorMessage error={hours.error} retry={() => hours.refetch()} />
+      ) : hours.isPending || rows.length === 0 ? (
         <Skeleton className="h-[7.5rem]" />
       ) : custom ? (
         <WeekHoursEditor rows={rows} onChange={setRows} closedLabel="Repos" />
@@ -504,7 +506,7 @@ export function TeamMemberHours() {
       <BottomSheet grab={false}>
         <Button
           onClick={() => void save()}
-          disabled={setHours.isPending || invalid || hours.isPending}
+          disabled={setHours.isPending || invalid || hours.isPending || hours.isError}
         >
           {setHours.isPending ? t('Enregistrement…') : t('Enregistrer')}
         </Button>

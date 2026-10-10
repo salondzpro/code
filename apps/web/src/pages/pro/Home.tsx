@@ -186,7 +186,9 @@ export function ProHome() {
         </Link>
       </div>
       {todayList.isPending && <Skeleton className="h-[9rem] w-full !rounded-[var(--radius-card)]" />}
-      {!todayList.isPending && !next && (
+      {todayList.isError && <ErrorMessage error={todayList.error} retry={() => todayList.refetch()} />}
+      <ErrorMessage error={setStatus.error} />
+      {!todayList.isPending && !todayList.isError && !next && (
         <div className="crd">
           <p className="p">
             {passed

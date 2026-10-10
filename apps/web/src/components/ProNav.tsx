@@ -33,7 +33,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
-import { useProReviewsUnanswered, useUnreadNotifications } from '@salondz/api-client';
+import { useProReviewsUnanswered, useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
@@ -118,6 +118,7 @@ export function ProNav({
   const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
   // Non lues : même requête que la cloche de l'en-tête et la liste — un seul chiffre partout.
   const nonLues = useUnreadNotifications(!!salon);
+  const pasVus = useProUnseenBookings(!!salon).data?.total ?? 0;
   const navigate = useNavigate();
   const { short } = usePublicUrl(salon?.slug ?? '');
   return (
@@ -141,7 +142,7 @@ export function ProNav({
         title={t("Au quotidien")}
         items={[
           { to: '/pro', label: t("Accueil"), icon: House, end: true },
-          { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays },
+          { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, count: pasVus },
           { to: '/pro/reservations', label: t("Réservations"), icon: Inbox, count: pending },
           { to: '/pro/clients', label: t("Clients"), icon: ContactRound },
           { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },

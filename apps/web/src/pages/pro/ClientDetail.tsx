@@ -40,7 +40,7 @@ import {
   untilLabelFR, formatLocale } from '@salondz/constants';
 import type { ProClientHistoryItem } from '@salondz/types';
 import type { ClientHistoryStatus } from '@salondz/validation';
-import { errorText } from '@/components/ErrorMessage';
+import { ErrorMessage, errorText } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import {
   Avatar,
@@ -417,6 +417,7 @@ export function ClientDetail() {
                     </Button>
                   </div>
                 )}
+                {pendingOutcome && setStatus.error && <ErrorMessage error={setStatus.error} className="mt-2" />}
               </div>
             );
           })}

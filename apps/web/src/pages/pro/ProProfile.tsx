@@ -34,6 +34,8 @@ import { PageLoading } from '@/components/PageLoading';
 import { ShareSheet, usePublicUrl } from './Link';
 import { RowText } from './MonSalon';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
+import { env } from '@/lib/env';
+import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
 
 /** Tuile de rubrique (2 par ligne) : icône, titre, ce qu'on y trouve. */
@@ -165,7 +167,7 @@ export function ProProfile() {
           }}
         />
         <div className="g2">
-          <Button variant="g" sm onClick={() => navigate(`/s/${salon.slug}`)}>
+          <Button variant="g" sm onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
             <I icon={Eye} size={18} /> {t("Aperçu")}
           </Button>
           <Button sm onClick={() => setSheet(true)}>

@@ -1147,4 +1147,11 @@ export const ar: Record<string, string> = {
   'Signalement classé sans suite': 'بلاغ أُغلق بدون إجراء',
   'Réservez votre rendez-vous.': 'احجز موعدك.',
   'Portail des professionnels': 'بوابة المحترفين',
+  'Publié sous «': 'يُنشر باسم «',
+  'Confirmation et rappels': 'التأكيد والتذكيرات',
+  'Notification 1 h puis 30 min avant · réglable dans Réglages': 'إشعار قبل ساعة ثم قبل 30 دقيقة · يُضبط في الإعدادات',
+  'Vous serez rappelé(e) 1 h puis 30 min avant.': 'سنذكّرك قبل ساعة ثم قبل 30 دقيقة.',
+  'Des rendez-vous tombent dans cette fermeture': 'هناك مواعيد ضمن فترة الإغلاق هذه',
+  '{n} rendez-vous sont prévus d’ici là. Les annuler préviendra leurs clients ; sinon, laissez le salon ouvert et prévenez-les vous-même.': '{n} موعدًا مقررة حتى ذلك الحين. إلغاؤها سيُبلغ عملاءها؛ وإلا فأبقِ الصالون مفتوحًا وأبلغهم بنفسك.',
+  'Rester ouvert': 'البقاء مفتوحًا',
 };

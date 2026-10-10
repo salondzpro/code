@@ -37,7 +37,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   const [phase, setPhase] = useState<'slots' | 'rules'>('slots');
   const [interval, setIntervalMin] = useState(30);
   const [buffer, setBuffer] = useState(0);
-  const [online, setOnline] = useState(true);
   const [manual, setManual] = useState(false);
   const [lead, setLead] = useState(120);
   const [horizon, setHorizon] = useState(30);
@@ -56,8 +55,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     setCancel(salon.cancelMinHours ?? 2);
     setReport(salon.allowClientReschedule ?? true);
     setDeposit(salon.depositRequired ?? false);
-    // En réglage, l'interrupteur reflète la publication ; pendant l'onboarding, la page est publiée à la fin.
-    setOnline(settings ? salon.isPublished : true);
   }, [salon, settings]);
 
   if (!salon) return <PageLoading />;
@@ -115,10 +112,6 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         </Link>
         {!settings && (
           <>
-            <div className="li">
-              <span className="text-[1rem] font-semibold">{t("Réservation en ligne")}</span>
-              <Toggle on={online} onChange={setOnline} label={t("Réservation en ligne")} />
-            </div>
             <div className="li">
               <span className="text-[1rem] font-semibold">{t("Je valide chaque demande")}</span>
               <Toggle on={manual} onChange={setManual} label={t("Validation manuelle")} />

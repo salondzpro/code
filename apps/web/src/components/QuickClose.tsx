@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { PickerSheet } from './Picker';
 import { DoorClosed, DoorOpen, Siren } from 'lucide-react';
-import { useProBlockMutations, useProBlocks } from '@salondz/api-client';
+import { ApiError, useProBlockMutations, useProBlocks } from '@salondz/api-client';
 import {
   addDaysToKey,
   dayOfWeekFromKey,
@@ -19,7 +19,7 @@ import {
 } from '@salondz/constants';
 import type { OpeningHour } from '@salondz/types';
 import { errorText } from './ErrorMessage';
-import { Button, I, Toast } from './ui';
+import { BottomSheet, Button, Dim, I, Toast } from './ui';
 import { t } from '@/i18n';
 
 const DURATIONS = [1, 2, 3] as const;
@@ -67,11 +67,23 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
   // Depuis un appareil hors UTC+1, l'heure de réouverture semble fausse d'une heure : on la nomme.
   const dzNote = isDeviceOnDZTime() ? '' : " (heure d'Alger)";
 
-  const closeFor = async (endsAt: string, reason: string) => {
+  /**
+   * Des rendez-vous tombent dans la fenêtre : l'API refuse (409 `BLOCK_CONFLICT`) tant qu'on ne dit
+   * pas quoi en faire. Avant, le professionnel n'avait qu'un message qui s'effaçait en 4 s et aucun
+   * moyen d'avancer. On lui pose la question, comme l'écran Fermetures.
+   */
+  const [conflit, setConflit] = useState<{ endsAt: string; reason: string; n: number } | null>(null);
+  const closeFor = async (endsAt: string, reason: string, cancelBookings = false) => {
     setError(null);
     try {
-      await create.mutateAsync({ startsAt: new Date(now).toISOString(), endsAt, reason });
+      await create.mutateAsync({ startsAt: new Date(now).toISOString(), endsAt, reason, ...(cancelBookings ? { cancelBookings: true } : {}) });
+      setConflit(null);
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'BLOCK_CONFLICT') {
+        const n = Array.isArray(err.details) ? err.details.length : 0;
+        setConflit({ endsAt, reason, n });
+        return;
+      }
       setError(errorText(err));
     }
   };
@@ -103,6 +115,21 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
         <I icon={active ? DoorOpen : Siren} size={18} /> {active ? t('Rouvrir') : t('Arrêt/Pause')}
       </Button>
       {error && <Toast>{error}</Toast>}
+      {conflit && (
+        <>
+          <Dim onClose={() => setConflit(null)} />
+          <BottomSheet modal>
+            <div className="h1 !text-[1.429rem]">{t('Des rendez-vous tombent dans cette fermeture')}</div>
+            <p className="p">
+              {t('{n} rendez-vous sont prévus d’ici là. Les annuler préviendra leurs clients ; sinon, laissez le salon ouvert et prévenez-les vous-même.', { n: conflit.n || '…' })}
+            </p>
+            <Button variant="d" disabled={create.isPending} onClick={() => void closeFor(conflit.endsAt, conflit.reason, true)}>
+              {t('Annuler ces rendez-vous et fermer')}
+            </Button>
+            <Button variant="g" onClick={() => setConflit(null)}>{t('Rester ouvert')}</Button>
+          </BottomSheet>
+        </>
+      )}
       <PickerSheet
         open={choosing}
         onClose={() => setChoosing(false)}

@@ -10,7 +10,7 @@
  * Le rendez-vous est relu par son identifiant plutôt que passé en entier : la fenêtre
  * affiche donc toujours l'état courant, même si l'agenda a été chargé il y a dix minutes.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   AlarmClock,
@@ -25,7 +25,7 @@ import {
   UserX,
   XCircle,
 } from 'lucide-react';
-import { useProBooking, useProBookingMutations } from '@salondz/api-client';
+import { useMarkBookingSeen, useProBooking, useProBookingMutations } from '@salondz/api-client';
 import {
   formatDA,
   formatDateLongDZ,
@@ -53,14 +53,37 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
   const [reason, setReason] = useState('');
   const b = booking.data;
 
+  /**
+   * OUVRIR la fenêtre, c'est avoir vu le rendez-vous : c'est le chemin principal depuis l'agenda,
+   * et seule la page de détail le marquait — la pastille « pas vus » ne redescendait jamais d'ici.
+   */
+  const marquerVu = useMarkBookingSeen();
+  const dejaMarque = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id || dejaMarque.current === id) return;
+    dejaMarque.current = id;
+    marquerVu.mutate(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
   // Le salon décide, puis revient à son planning : chaque action referme la fenêtre.
+  // Une erreur reste affichée DANS la fenêtre (`setStatus.error` / `cancel.error`) : on ne la referme pas.
   const act = async (p: Promise<unknown>) => {
-    await p;
-    onClose();
+    try {
+      await p;
+      onClose();
+    } catch {
+      /* affichée par ErrorMessage ci-dessous */
+    }
   };
 
   const active = b ? b.status === 'pending' || b.status === 'confirmed' : false;
   const past = b ? new Date(b.startsAt).getTime() < Date.now() : false;
+  // Mêmes règles que l'API : une demande dont l'heure est passée ne se confirme plus (le cron
+  // l'expire) ; « Terminé » / « Absent » ne valent que pour un rendez-vous CONFIRMÉ ; reporter ou
+  // annuler, seulement avant l'heure. Proposer le reste, c'est promettre un refus du serveur.
+  const confirmable = b?.status === 'pending' && !past;
+  const closable = b?.status === 'confirmed' && past;
   const late = !!b && active && isLate(b.startsAt);
   const lines = b?.items?.length
     ? b.items
@@ -171,7 +194,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 
             {/* Décisions, dans l'ordre où elles se présentent réellement. */}
-            {b.status === 'pending' && (
+            {confirmable && (
               <Button
                 variant="ok"
                 disabled={setStatus.isPending}
@@ -180,7 +203,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 <I icon={Check} size={18} /> {t("Confirmer le rendez-vous")}
               </Button>
             )}
-            {active && past && (
+            {closable && (
               <div className="g2">
                 <Button
                   disabled={setStatus.isPending}
@@ -209,7 +232,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 {LATE_TOLERANCE_MINUTES} {t("min)")}
               </Button>
             )}
-            {active && !cancelling && (
+            {active && !past && !cancelling && (
               <div className="g2">
                 <Button
                   variant="g"

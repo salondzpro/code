@@ -8,6 +8,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { useState } from 'react';
+import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
 import { env } from '@/lib/env';
 
@@ -72,7 +73,7 @@ export function Publish() {
           {host}{t("/s/")}{salon.slug}
         </div>
       </div>
-      <Button variant="g" onClick={() => navigate(`/s/${salon.slug}`)}>
+      <Button variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
         {t("Prévisualiser la page")}
       </Button>
       {error && (

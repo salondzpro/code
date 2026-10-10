@@ -1166,4 +1166,11 @@ export const en: Record<string, string> = {
   'Signalement classé sans suite': 'Report closed without action',
   'Réservez votre rendez-vous.': 'Book your appointment.',
   'Portail des professionnels': 'Professionals’ portal',
+  'Publié sous «': 'Published as “',
+  'Confirmation et rappels': 'Confirmation and reminders',
+  'Notification 1 h puis 30 min avant · réglable dans Réglages': 'Notification 1 h then 30 min before · adjustable in Settings',
+  'Vous serez rappelé(e) 1 h puis 30 min avant.': 'You will be reminded 1 h then 30 min before.',
+  'Des rendez-vous tombent dans cette fermeture': 'Appointments fall within this closure',
+  '{n} rendez-vous sont prévus d’ici là. Les annuler préviendra leurs clients ; sinon, laissez le salon ouvert et prévenez-les vous-même.': '{n} appointments are scheduled until then. Cancelling them will notify their clients; otherwise keep the salon open and contact them yourself.',
+  'Rester ouvert': 'Stay open',
 };
