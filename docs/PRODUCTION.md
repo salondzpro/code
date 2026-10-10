@@ -46,6 +46,13 @@ Lot du 18 septembre :
 - **Tablette, ordinateur et grand écran** : le site s'adapte enfin aux écrans larges — l'espace pro passe de la barre d'onglets à un rail permanent à gauche au-delà de 1 024 px, les listes de cartes se rangent en colonnes, l'agenda prend la largeur de ses colonnes et les feuilles deviennent des fenêtres centrées. **Le rendu téléphone est inchangé**, et une sonde le vérifie à chaque modification.
 - **Textes légaux adaptés à l'Algérie**, sauvegardes `pg_dump` gratuites, plan de production en ligne sur `salondz.com/moi`.
 
+Lot du 10 octobre (audit de lancement, commit `075032a` et suivants) :
+- **Envoi poussé sans doublon** : le lot se réserve avant de s'envoyer (`claimPendingPush`) ; issue tracée par notification (`push_outcome`, `push_attempts`, `push_error`, migration 0051) ; reprise bornée des échecs passagers ; jetons morts retirés sans faire tomber le lot. `apns-topic` par application (`push_tokens.app_id`) pour l'application pro iPhone.
+- **Deux routes répondaient 500 depuis le 21 sept.** (`GET /pro/reviews`, `GET /salons/:id/reviews` : relation `reviews → profiles` devenue ambiguë avec `hidden_by`) et `GET /me/export` depuis toujours (`favorites.client_id`). Corrigées, couvertes par les tests (44/44).
+- **Pastilles** : une règle (non-lues), une requête partagée ; cloche client et pro, ligne du profil, tiroir ; lecture = lignes affichées ou rendez-vous ouvert ; « à valider » et « pas vus » restent distincts.
+- **Application ouverte** : bandeau `PushToast` + rechargement des données à la réception ; pro abonné à ses notifications en temps réel ; service worker qui suit `data.url`.
+- **Salon DZ Pro iPhone** : flux Codemagic `ios-pro`, App ID `pro.salondz.app`, icône dédiée — fiche App Store Connect à créer par le propriétaire.
+
 ## 2. Décisions à prendre par le propriétaire
 
 | # | Décision | Recommandation |

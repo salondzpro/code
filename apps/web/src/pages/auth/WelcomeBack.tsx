@@ -61,6 +61,9 @@ export function WelcomeBack() {
   const profile = me.data?.profile;
   const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : '/');
   const q = `?next=${encodeURIComponent(next)}`;
+  // Sans profil (erreur réseau), on ne sait rien de la personne : la renvoyer sur « créer son profil »
+  // montrait un formulaire vide à un compte existant. On entre, et le garde de la page tranchera.
+  if (me.isError) return <Navigate to={next} replace />;
   // Le nom, le numéro et le marché servent à RÉSERVER. Qui entre dans l'administration ne réserve
   // rien : on ne lui réclame pas de quoi être rappelé pour un rendez-vous qu'il ne prendra pas.
   // Rien à contourner ici — c'est `requireAdmin`, côté serveur, qui ouvre ou non la porte.

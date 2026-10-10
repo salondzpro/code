@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import { Star } from 'lucide-react';
 import { useBooking, useCreateReview, useMe } from '@salondz/api-client';
 import { formatDA, formatLocale } from '@salondz/constants';
-import { Avatar, BottomSheet, Button, Field, Pill, SectionLabel, Textarea, Toggle, TopBar } from '@/components/ui';
+import { Avatar, BottomSheet, Button, Field, Pill, SectionLabel, Textarea, TopBar } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
@@ -25,7 +25,6 @@ export function Rate() {
   const [rating, setRating] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [comment, setComment] = useState('');
-  const [publish, setPublish] = useState(true);
 
   if (booking.isPending) return <PageLoading />;
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
@@ -37,8 +36,12 @@ export function Rate() {
 
   const send = async () => {
     const text = [tags.length ? tags.join(' · ') : '', comment.trim()].filter(Boolean).join(' — ');
-    await review.mutateAsync({ bookingId: b.id, rating, comment: text || undefined });
-    navigate('/rendez-vous?scope=past', { replace: true });
+    try {
+      await review.mutateAsync({ bookingId: b.id, rating, comment: text || undefined });
+      navigate('/rendez-vous?scope=past', { replace: true });
+    } catch {
+      /* affiché par `review.error` sous le formulaire */
+    }
   };
 
   return (
@@ -86,12 +89,11 @@ export function Rate() {
       <Field label={t("Commentaire (optionnel)")} htmlFor="rv-comment">
         <Textarea id="rv-comment" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={600} placeholder={t("Très bon travail, salon impeccable. Un peu d'attente à l'arrivée.")} />
       </Field>
-      <div className="crd !flex-row items-center justify-between">
-        <span>
-          <span className="block text-[1rem] font-semibold">{t("Publier sous «")}{' '}{initials} »</span>
-          <span className="p block text-[1rem]">{t("Votre numéro reste privé")}</span>
-        </span>
-        <Toggle on={publish} onChange={setPublish} label={t("Publier sous mon prénom")} />
+      {/* Un avis est toujours signé prénom + initiale (règle de l'API, aucune option anonyme) : on le
+          DIT, sans interrupteur — l'ancien ne changeait rien à ce qui était envoyé. */}
+      <div className="crd">
+        <span className="block text-[1rem] font-semibold">{t("Publié sous «")}{' '}{initials} »</span>
+        <span className="p block text-[1rem]">{t("Votre numéro reste privé")}</span>
       </div>
       <ErrorMessage error={review.error} />
       <BottomSheet>

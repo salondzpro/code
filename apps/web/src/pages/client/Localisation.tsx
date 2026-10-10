@@ -19,6 +19,7 @@ import { BottomSheet, Button, Card, I, InfoBox, Pill, SearchBox, SectionLabel, T
 import { PlaceSuggestions } from '@/components/PlaceSuggestions';
 import { MiniMap } from '@/components/MiniMap';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
+import { ouvrirReglagesApplication } from '@/lib/pushSettings';
 import { t } from '@/i18n';
 
 type GeoState = 'idle' | 'asking' | 'granted' | 'denied';
@@ -174,7 +175,9 @@ export function Localisation() {
           </span>
         </Card>
         <InfoBox>{t("Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».")}</InfoBox>
-        <Button onClick={locate}>
+        {/* Dans l'application : la fiche Salon DZ des réglages du téléphone. Sur le web, rien n'est
+            adressable : on redemande, le navigateur dira si la porte est rouverte. */}
+        <Button onClick={() => ouvrirReglagesApplication() || locate()}>
           <I icon={Settings} size={18} /> {t("Ouvrir les réglages")}
         </Button>
         <Button variant="g" onClick={() => setChoice({ kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) })}>

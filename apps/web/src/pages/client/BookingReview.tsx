@@ -53,8 +53,10 @@ export function BookingReview() {
   if (!draft.startsAt || !draft.name || draft.serviceIds.length === 0)
     return <Navigate to={`/s/${slug}`} replace />;
   if (salon.isPending) return <PageLoading />;
+  // Dernière étape : un écran blanc ici ferait croire à une réservation perdue. On dit ce qui se passe.
+  if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
-  if (!s) return null;
+  if (!s) return <ErrorMessage error={new Error('Salon introuvable')} />;
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);
   const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);

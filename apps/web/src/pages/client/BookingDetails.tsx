@@ -11,6 +11,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { BellRing, ChevronDown } from 'lucide-react';
+import { ErrorState } from '@/components/ErrorMessage';
 import { useMe, useSalon } from '@salondz/api-client';
 import { formatDA, formatDateLongDZ, formatTimeDZ } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
@@ -26,7 +27,6 @@ import {
   Input,
   Segmented,
   Textarea,
-  Toggle,
   TopBar,
 } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -85,7 +85,6 @@ export function BookingDetails() {
     (draft.otherPhone ?? '').replace(/^\+213/, ''),
   );
   const [notes, setNotes] = useState(draft.notes ?? '');
-  const [whatsapp, setWhatsapp] = useState(draft.whatsapp ?? true);
   const [err, setErr] = useState<{ field: FieldName; msg: string } | null>(null);
 
   useEffect(() => {
@@ -93,7 +92,6 @@ export function BookingDetails() {
     if (!p) return;
     setName((v) => v || p.fullName || '');
     setDigits((v) => v || (p.phone ?? '').replace(/^\+213/, ''));
-    setWhatsapp(p.remindersEnabled ?? true);
   }, [me.data]);
 
   if (!draft.startsAt || draft.serviceIds.length === 0)
@@ -106,8 +104,9 @@ export function BookingDetails() {
       />
     );
   if (salon.isPending || me.isPending) return <PageLoading />;
+  if (salon.isError) return <ErrorState error={salon.error} retry={() => salon.refetch()} />;
   const s = salon.data;
-  if (!s) return null;
+  if (!s) return <ErrorState error={new Error('Salon introuvable')} accueil />;
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);
   const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);
@@ -131,7 +130,6 @@ export function BookingDetails() {
         name: name.trim() || me.data?.profile.fullName || '',
         phone: parse(digits).success ? parse(digits).data : (me.data?.profile.phone ?? undefined),
         notes: notes.trim(),
-        whatsapp,
       });
       return navigate(`/s/${slug}/reserver/recap`);
     }
@@ -147,7 +145,6 @@ export function BookingDetails() {
       name: name.trim(),
       phone: p.data,
       notes: notes.trim(),
-      whatsapp,
     });
     navigate(`/s/${slug}/reserver/recap`);
   };
@@ -232,11 +229,12 @@ export function BookingDetails() {
           <span className="flex h-[2.75rem] w-[2.75rem] flex-none items-center justify-center rounded-full border border-line bg-surface">
             <I icon={BellRing} size={20} />
           </span>
+          {/* Un FAIT, pas un interrupteur : l'ancien n'était envoyé nulle part. Les rappels se règlent
+              dans Réglages (`reminders_enabled`), et c'est dit. */}
           <span className="min-w-0 flex-1">
-            <span className="block text-[1rem] font-semibold">{t("Confirmation et rappel")}</span>
-            <span className="block text-[0.857rem] text-muted">{t("Notification la veille et 2 h avant")}</span>
+            <span className="block text-[1rem] font-semibold">{t("Confirmation et rappels")}</span>
+            <span className="block text-[0.857rem] text-muted">{t("Notification 1 h puis 30 min avant · réglable dans Réglages")}</span>
           </span>
-          <Toggle on={whatsapp} onChange={setWhatsapp} label={t("Rappels de rendez-vous")} />
         </div>
       </form>
 

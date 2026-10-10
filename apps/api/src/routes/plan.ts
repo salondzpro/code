@@ -129,7 +129,7 @@ const page = (title: string, body: string) =>
   `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${esc(title)}</title><style>${CSS}</style></head><body>${body}</body></html>`;
 
 const planRoutes: FastifyPluginAsyncZod = async (app) => {
-  app.get('/moi', { schema: { querystring: z.object({ code: z.string().max(40).optional() }) } }, async (req, reply) => {
+  app.get('/moi', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } }, schema: { querystring: z.object({ code: z.string().max(40).optional() }) } }, async (req, reply) => {
     reply.removeHeader('content-security-policy');
     reply.header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'");
     reply.header('Content-Type', 'text/html; charset=utf-8');

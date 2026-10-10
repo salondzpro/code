@@ -33,7 +33,7 @@ async function loadShell(): Promise<string | null> {
 const shareRoutes: FastifyPluginAsyncZod = async (app) => {
   /** Plan du site pour les moteurs : pages fixes et salons publiés (mis en cache une heure). */
   app.get('/sitemap.xml', async (_req, reply) => {
-    const res = await db.from('salons').select('slug, updated_at').eq('is_published', true).order('updated_at', { ascending: false }).limit(5000);
+    const res = await db.from('salons').select('slug, updated_at').eq('is_visible', true).order('updated_at', { ascending: false }).limit(5000);
     if (res.error) throw res.error;
     const fixed = ['/', '/aide', '/cgu', '/confidentialite', '/mentions-legales'];
     const urls = [
@@ -65,7 +65,7 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
 
     const res = await db
       .from('salons')
-      .select('slug, name, description, city, zone, cover_url, logo_url, is_published, rating_avg, rating_count')
+      .select('slug, name, description, city, zone, cover_url, logo_url, is_visible, rating_avg, rating_count')
       .eq('slug', req.params.slug)
       .maybeSingle();
     const s = res.data;
@@ -73,7 +73,7 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.removeHeader('content-security-policy');
     reply.header('Content-Type', 'text/html; charset=utf-8');
     reply.header('Cache-Control', 'public, max-age=60, s-maxage=300');
-    if (!s || !s.is_published) return html;
+    if (!s || !s.is_visible) return html; // visible = publié ET non masqué par la plateforme
 
     const url = `${config.webUrl}/s/${s.slug}`;
     const where = [s.zone, s.city].filter(Boolean).join(', ');

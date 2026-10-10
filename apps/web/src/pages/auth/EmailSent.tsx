@@ -81,7 +81,7 @@ export function EmailSent() {
   };
 
   return (
-    <AuthShell back="/connexion" titre={txt.title} sous={<>{txt.body}</>}>
+    <AuthShell back={flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion'} titre={txt.title} sous={<>{txt.body}</>}>
       {error && <AuthError texte={error} />}
 
       <div className="flex flex-col gap-2.5">
@@ -92,7 +92,7 @@ export function EmailSent() {
         <button
           type="button"
           className="py-1 text-center text-[1rem] text-muted underline underline-offset-2 transition-colors hover:text-ink"
-          onClick={() => navigate('/connexion')}
+          onClick={() => navigate(flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion')}
         >
           {t('Changer d’adresse')}
         </button>

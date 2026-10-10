@@ -47,10 +47,16 @@ export async function clientStanding(ref: ClientRef | string, now = Date.now()):
   // Ni compte ni numéro : rien à reprocher à personne.
   if (!mine) return { cancellations: 0, noShows: 0, suspendedUntil: null };
   const [cancels, noShows] = await Promise.all([
+    // RÉSERVATIONS EN LIGNE SEULEMENT (`source = 'online'`) : un salon saisit ce qu'il veut dans son
+    // agenda — y compris, de mauvaise foi, des rendez-vous passés au numéro de quelqu'un marqués
+    // « absent ». Compter ces saisies faisait suspendre la victime sur TOUTE la place de marché.
+    // Ce qu'un client fait de ses propres réservations en ligne reste la seule mesure de sa fiabilité ;
+    // les absences de passage comptent dans la fiche du salon, pas ici.
     db
       .from('bookings')
       .select('cancelled_at')
       .or(mine)
+      .eq('source', 'online')
       .eq('status', 'cancelled')
       .eq('cancelled_by', 'client')
       .gte('cancelled_at', new Date(now - CANCEL_ABUSE_WINDOW_DAYS * DAY).toISOString())
@@ -58,6 +64,7 @@ export async function clientStanding(ref: ClientRef | string, now = Date.now()):
     db
       .from('bookings')
       .select('starts_at')
+      .eq('source', 'online')
       .or(
         `and(${identTerm(who)},status.eq.no_show),and(${identTerm(who)},status.eq.cancelled,cancellation_kind.eq.late)`,
       )

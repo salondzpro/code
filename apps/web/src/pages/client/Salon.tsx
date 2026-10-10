@@ -18,6 +18,9 @@ import {
   Star,
 } from 'lucide-react';
 import { writeDraft } from '@/lib/bookingDraft';
+import { env } from '@/lib/env';
+import { Toast } from '@/components/ui';
+import { Check } from 'lucide-react';
 import { MiniMap } from '@/components/MiniMap';
 import { SalonGallery } from '@/components/SalonGallery';
 import {
@@ -121,6 +124,24 @@ export function Salon() {
     writeDraft(slug, { serviceIds: [id] });
     navigate(`/s/${slug}/reserver/quand`);
   };
+  /**
+   * Partager : toujours l'adresse PUBLIQUE (`env.siteUrl`), jamais `window.location` — dans
+   * l'application, celle-ci est `https://localhost`, et le lien partagé ne menait nulle part. Sans
+   * feuille de partage (ordinateur), le lien est copié et on le DIT : un bouton muet semble cassé.
+   */
+  const [copied, setCopied] = useState(false);
+  const partager = async () => {
+    const url = `${env.siteUrl}/s/${slug}`;
+    const name = salon.data?.name ?? 'Salon DZ';
+    if (navigator.share) return navigator.share({ title: name, url }).catch(() => undefined);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* presse-papiers indisponible : rien à dire de plus */
+    }
+  };
 
   if (salon.isPending) return <PageLoading />;
   // Lien qui ne mène à aucun salon : une page qui le dit et ramène à la marketplace.
@@ -174,16 +195,7 @@ export function Salon() {
             </IconButton>
           </div>
           <div className="flex gap-2.5">
-            <IconButton
-              lg
-              aria-label={t("Partager")}
-              onClick={() => {
-                const url = window.location.href;
-                if (navigator.share)
-                  void navigator.share({ title: s.name, url }).catch(() => undefined);
-                else void navigator.clipboard.writeText(url);
-              }}
-            >
+            <IconButton lg aria-label={t("Partager")} onClick={() => void partager()}>
               <I icon={Share2} size={20} />
             </IconButton>
             <IconButton
@@ -268,16 +280,7 @@ export function Salon() {
                 <I icon={Phone} size={18} /> {t("Appeler")}
               </a>
             ) : (
-              <button
-                type="button"
-                className="btn g sm !py-[0.9375rem] !text-[1rem]"
-                onClick={() => {
-                  const url = window.location.href;
-                  if (navigator.share)
-                    void navigator.share({ title: s.name, url }).catch(() => undefined);
-                  else void navigator.clipboard.writeText(url);
-                }}
-              >
+              <button type="button" className="btn g sm !py-[0.9375rem] !text-[1rem]" onClick={() => void partager()}>
                 <I icon={Share2} size={18} /> {t("Partager")}
               </button>
             )}
@@ -546,6 +549,7 @@ export function Salon() {
           </div>
         )}
       </div>
+      {copied && <Toast icon={Check}>{t("Lien copié")}</Toast>}
     </div>
   );
 }

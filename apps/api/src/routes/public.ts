@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
 import { z } from 'zod';
 import { WILAYAS } from '@salondz/constants';
 import {
@@ -176,7 +177,9 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!isVisible && !isOwner) throw notFound('Salon');
       reply.header('Cache-Control', isOwner ? 'private, no-cache' : CACHE_PUBLIC_SHORT);
       // L'identifiant du propriétaire (compte auth) ne fait pas partie de la fiche publique.
-      return pub;
+      // Le NUMÉRO du salon non plus tant que le drapeau le cache : l'écran ne l'affichait pas, mais
+      // la réponse le servait à qui lisait l'API — le propriétaire, lui, voit le sien.
+      return SHOW_SALON_CONTACT_TO_CLIENTS || isOwner ? pub : { ...pub, phone: null };
     },
   );
 

@@ -19,7 +19,7 @@ import {
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
-  wilayaName,
+
   SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { Avatar, Button, I, StatusBadge } from '@/components/ui';
@@ -94,7 +94,7 @@ export function BookingConfirmed() {
         <h1 className="h1">{confirmed ? 'Rendez-vous confirmé' : 'Demande envoyée'}</h1>
         <p className="p">
           {confirmed
-            ? 'Un rappel vous sera envoyé la veille.'
+            ? t('Vous serez rappelé(e) 1 h puis 30 min avant.')
             : 'Le salon répond à votre demande. Vous recevrez une notification.'}
         </p>
       </div>
@@ -156,7 +156,6 @@ export function BookingConfirmed() {
           <I icon={Calendar} size={18} /> {t("Calendrier")}
         </a>
       </div>
-      <span className="sr-only">{wilayaName(16)}</span>
     </Screen>
   );
 }

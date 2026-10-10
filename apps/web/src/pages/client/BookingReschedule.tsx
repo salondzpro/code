@@ -36,7 +36,8 @@ export function BookingReschedule() {
 
   if (booking.isPending || (b && salon.isPending)) return <PageLoading />;
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
-  if (!b || !salon.data) return null;
+  if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
+  if (!b || !salon.data) return <PageLoading />;
   const s = salon.data;
   const maxDate = addDaysToKey(today, s.bookingHorizonDays);
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));

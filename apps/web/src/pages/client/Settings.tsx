@@ -30,8 +30,11 @@ export function Settings() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  // Erreur de l'export : affichée SOUS la ligne, pas dans la feuille de suppression (fermée), où elle disparaissait.
+  const [exportError, setExportError] = useState<string | null>(null);
   const exportData = async () => {
     setExporting(true);
+    setExportError(null);
     try {
       const data = await api.me.exportData();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -42,7 +45,7 @@ export function Settings() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5_000);
     } catch (err) {
-      setDeleting(errorText(err));
+      setExportError(errorText(err));
     } finally {
       setExporting(false);
     }
@@ -112,9 +115,11 @@ export function Settings() {
           </span>
           <Toggle
             on={reminders}
+            disabled={update.isPending}
             onChange={(v) => {
               setReminders(v);
-              update.mutate({ remindersEnabled: v });
+              // Le serveur fait foi : si l'enregistrement échoue, l'interrupteur revient à sa position.
+              update.mutate({ remindersEnabled: v }, { onError: () => setReminders(!v) });
             }}
             label={t("Rappels de rendez-vous")}
           />
@@ -207,6 +212,11 @@ export function Settings() {
         <ListRow onClick={() => void exportData()}>
           <span className="text-[1rem]">{exporting ? t('Préparation…') : t("Télécharger mes données")}</span>
         </ListRow>
+        {exportError && (
+          <p className="px-4 py-2 text-[1rem] text-danger" role="alert">
+            {exportError}
+          </p>
+        )}
         <ListRow onClick={() => setConfirmDelete(true)} chevron={false}>
           <span className="text-[1rem] text-danger">{t("Supprimer mon compte")}</span>
         </ListRow>

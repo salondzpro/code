@@ -114,7 +114,7 @@ export function ProfileSetup() {
             {error.msg}
           </p>
         )}
-        <Button type="submit" disabled={update.isPending}>
+        <Button type="submit" disabled={update.isPending || me.isPending}>
           {update.isPending ? 'Enregistrement…' : 'Terminer'}
         </Button>
       </form>

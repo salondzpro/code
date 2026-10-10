@@ -135,7 +135,7 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
    * `p_enforce_rules: false` : le professionnel saisit ce qu'il veut dans son propre agenda
    * (délai, horizon, horaires) ; seule l'exclusion de créneau reste opposable.
    */
-  app.post('/bookings', { schema: { body: createWalkInBookingSchema } }, async (req, reply) => {
+  app.post('/bookings', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } }, schema: { body: createWalkInBookingSchema } }, async (req, reply) => {
     const b = req.body;
     const serviceIds = b.serviceIds?.length ? b.serviceIds : [b.serviceId!];
     const res = await db.rpc('create_booking_multi', {

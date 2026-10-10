@@ -5,6 +5,7 @@ import { MARKET_LABELS_FR, categoriesForMarket, type Market as MarketId } from '
 import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { Screen } from '@/components/AppFrame';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
 
 const CARDS: { id: MarketId; img: { src: string; credit: string } }[] = [
@@ -22,14 +23,19 @@ export function Market() {
   if (!session) return <Navigate to="/connexion" replace />;
 
   const choose = async (market: MarketId) => {
-    await update.mutateAsync({ market });
-    navigate(next, { replace: true });
+    try {
+      await update.mutateAsync({ market });
+      navigate(next, { replace: true });
+    } catch {
+      /* affiché par `update.error` ci-dessous */
+    }
   };
 
   return (
     <Screen className="h-app" gap={16}>
       <div className="pt-4">
-        <div className="h3">{me.data?.profile.market ? 'Changer de marché' : 'Alger'}</div>
+        {/* « Alger » tenait lieu de sur-titre pour un nouveau compte : un lieu qui n'était pas le sien. */}
+        {me.data?.profile.market && <div className="h3">{t('Changer de marché')}</div>}
         <h1 className="h1 mt-2">{t("Que recherchez-vous ?")}</h1>
       </div>
       {CARDS.map((c) => (
@@ -55,6 +61,7 @@ export function Market() {
           <span className="absolute bottom-2 start-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{c.img.credit}</span>
         </button>
       ))}
+      <ErrorMessage error={update.error} />
       <p className="p text-center">{t("Modifiable à tout moment depuis le profil.")}</p>
     </Screen>
   );

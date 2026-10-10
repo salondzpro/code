@@ -46,3 +46,23 @@ export function ouvrirReglagesNotifications(): void {
     window.location.href = 'app-settings:';
   }
 }
+
+/**
+ * Ouvre la FICHE de l'application dans les réglages du téléphone (permissions comprises, dont la
+ * position). Même raison que pour les notifications : une permission de position refusée ne se
+ * redemande plus depuis l'application. Android : `APPLICATION_DETAILS_SETTINGS` avec le paquet en
+ * donnée d'intention ; iOS : `app-settings:`. Sur le web, rien n'est adressable : rend `false`,
+ * l'appelant retente ou explique.
+ */
+export function ouvrirReglagesApplication(): boolean {
+  if (!enCoque()) return false;
+  if (estAndroid()) {
+    window.location.href = `intent:package:${paquet()}#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;end`;
+    return true;
+  }
+  if (estIOS()) {
+    window.location.href = 'app-settings:';
+    return true;
+  }
+  return false;
+}

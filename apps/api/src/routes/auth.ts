@@ -143,9 +143,13 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
     let link: string;
     if (existing) {
-      // Inscription commencée mais jamais confirmée : on garde le compte, on renvoie un lien
-      // qui confirme l'adresse et connecte (le mot de passe saisi ici remplace l'ancien).
-      const upd = await db.auth.admin.updateUserById(existing.id, { password, user_metadata: { ...existing.user_metadata, role } });
+      // Inscription commencée mais jamais confirmée : on garde le compte et on renvoie un lien qui
+      // confirme l'adresse et connecte. LE MOT DE PASSE SAISI ICI N'EST PAS ENREGISTRÉ : n'importe
+      // qui peut appeler cette route avec l'adresse d'un autre, et l'ancien code posait SON mot de
+      // passe sur le compte de la victime — qui cliquait ensuite le lien reçu, confirmait l'adresse,
+      // et laissait l'attaquant se connecter. Celui qui a réellement l'accès à la boîte entre par le
+      // lien, et choisit son mot de passe dans « Mot de passe oublié » si l'ancien ne lui va plus.
+      const upd = await db.auth.admin.updateUserById(existing.id, { user_metadata: { ...existing.user_metadata, role } });
       if (upd.error) throw upd.error;
       const to = redirect('/connexion/retour', next);
       const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });

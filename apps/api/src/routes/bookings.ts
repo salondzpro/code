@@ -54,7 +54,7 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   /** Réservation en ligne (atomique côté DB via create_booking). */
-  app.post('/bookings', { schema: { body: createBookingSchema } }, async (req, reply) => {
+  app.post('/bookings', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } }, schema: { body: createBookingSchema } }, async (req, reply) => {
     const profile = req.profile!;
     const body = req.body;
     const forOther = !!body.beneficiary && body.beneficiary.phone !== profile.phone;
@@ -70,7 +70,11 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
      */
     let clientId: string | null = profile.id;
     let clientName = body.clientName ?? profile.fullName;
-    let clientPhone = body.clientPhone ?? profile.phone ?? null;
+    // Pour SOI, le numéro est celui du PROFIL dès qu'il existe : un numéro libre dans le corps
+    // permettait de réserver puis d'annuler « au nom » d'un autre numéro, et de faire suspendre
+    // son titulaire (les règles anti-abus se lisent par numéro). Le corps ne sert qu'à compléter
+    // un profil qui n'en a pas encore.
+    let clientPhone = profile.phone ?? body.clientPhone ?? null;
     if (forOther) {
       const who = body.beneficiary!;
       const found = await db.from('profiles').select('id, full_name').eq('phone', who.phone).limit(1);
@@ -168,7 +172,7 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return b;
   });
 
-  app.post('/bookings/:id/cancel', { schema: { params: z.object({ id: uuid }), body: cancelBookingSchema } }, async (req) => {
+  app.post('/bookings/:id/cancel', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } }, schema: { params: z.object({ id: uuid }), body: cancelBookingSchema } }, async (req) => {
     const b = await getBookingWithSalon(req.params.id);
     if (!mine(b, req.user!.id)) throw notFound('Réservation');
     if (b.status !== 'pending' && b.status !== 'confirmed') {
@@ -198,7 +202,7 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return getBookingWithSalon(b.id);
   });
 
-  app.post('/bookings/:id/reschedule', { schema: { params: z.object({ id: uuid }), body: rescheduleBookingSchema } }, async (req) => {
+  app.post('/bookings/:id/reschedule', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } }, schema: { params: z.object({ id: uuid }), body: rescheduleBookingSchema } }, async (req) => {
     const b = await getBookingWithSalon(req.params.id);
     if (!mine(b, req.user!.id)) throw notFound('Réservation');
     // Les règles (report autorisé, délai, délai minimum, horizon, créneau libre) sont appliquées en SQL.
@@ -227,7 +231,7 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return getBookingWithSalon(b.id);
   });
 
-  app.post('/bookings/:id/review', { schema: { params: z.object({ id: uuid }), body: createReviewSchema.omit({ bookingId: true }) } }, async (req, reply) => {
+  app.post('/bookings/:id/review', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } }, schema: { params: z.object({ id: uuid }), body: createReviewSchema.omit({ bookingId: true }) } }, async (req, reply) => {
     const b = await getBookingWithSalon(req.params.id);
     if (b.clientId !== req.user!.id) throw forbidden();
     if (b.status !== 'completed') throw conflict('BOOKING_NOT_COMPLETED', 'Vous pourrez laisser un avis après le rendez-vous.');

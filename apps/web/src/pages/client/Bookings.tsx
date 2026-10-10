@@ -13,7 +13,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   untilLabelFR,
-  SHOW_SALON_CONTACT_TO_CLIENTS, formatLocale } from '@salondz/constants';
+  SHOW_SALON_CONTACT_TO_CLIENTS, formatLocale, CLIENT_CANCEL_MIN_HOURS, MAX_CLIENT_RESCHEDULES } from '@salondz/constants';
 import {
   CalendarClock,
   CalendarX,
@@ -149,7 +149,11 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           >
             <I icon={Navigation} size={16} /> {t("Itinéraire")}
           </a>
-          {b.salon.allowClientReschedule !== false && (
+          {/* Mêmes règles que la fiche : report autorisé, délai du salon respecté, un seul report en
+              ligne. Sinon le bouton menait à un choix de créneau que le serveur refusait ensuite. */}
+          {b.salon.allowClientReschedule !== false &&
+            (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 >= (b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS) &&
+            b.clientReschedules < MAX_CLIENT_RESCHEDULES && (
             <LinkButton
               to={`/rendez-vous/${b.id}/reporter`}
               variant="g"

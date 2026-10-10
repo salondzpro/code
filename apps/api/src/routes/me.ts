@@ -148,7 +148,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   // ---- Push tokens ----
-  app.post('/me/push-tokens', { schema: { body: registerPushTokenSchema } }, async (req, reply) => {
+  app.post('/me/push-tokens', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } }, schema: { body: registerPushTokenSchema } }, async (req, reply) => {
     const res = await db
       .from('push_tokens')
       .upsert(
@@ -274,20 +274,20 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const res = await db
       .from('favorites')
       .select(
-        'salon_id, salons!inner(id, slug, name, city, zone, wilaya_code, cover_url, logo_url, gender_target, rating_avg, rating_count, is_published, salon_categories(category_id))',
+        'salon_id, salons!inner(id, slug, name, city, zone, wilaya_code, cover_url, logo_url, gender_target, rating_avg, rating_count, is_visible, salon_categories(category_id))',
       )
       .eq('user_id', req.user!.id)
       .order('created_at', { ascending: false });
     const rows = unwrap(res) as unknown as {
       salons: Record<string, unknown> & {
         salon_categories: { category_id: string }[];
-        is_published: boolean;
+        is_visible: boolean;
       };
     }[];
     const items: SalonSummary[] = rows
-      .filter((r) => r.salons.is_published)
+      .filter((r) => r.salons.is_visible)
       .map((r) => {
-        const { salon_categories, is_published: _p, ...rest } = r.salons;
+        const { salon_categories, is_visible: _v, ...rest } = r.salons;
         const s =
           camelize<
             Omit<

@@ -10,6 +10,7 @@ import { Button, Field, Input } from '@/components/ui';
 import { AuthError, AuthShell, MatchHint, PasswordField, matchState } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
+import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function ForgotPassword() {
@@ -38,7 +39,7 @@ export function ForgotPassword() {
   };
 
   return (
-    <AuthShell back="/connexion" titre="Mot de passe oublié" sous={t('Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.')}>
+    <AuthShell back={readAuthFlow()?.role === 'pro' ? '/connexion?role=pro' : '/connexion'} titre="Mot de passe oublié" sous={t('Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.')}>
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <Field label={t('E-mail')} htmlFor="fp-email">
           <Input
@@ -68,7 +69,7 @@ export function ForgotPassword() {
 
 export function NewPassword() {
   const navigate = useNavigate();
-  const { session, updatePassword } = useAuth();
+  const { session, updatePassword, loading } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const accord = matchState(password, confirmation);
@@ -92,6 +93,10 @@ export function NewPassword() {
       setBusy(false);
     }
   };
+
+  // Arrivée par le lien : la session se lit encore. Sans cette attente, l'écran disait « lien expiré »
+  // pendant une seconde avant de montrer le formulaire.
+  if (loading) return <PageLoading />;
 
   return (
     <AuthShell

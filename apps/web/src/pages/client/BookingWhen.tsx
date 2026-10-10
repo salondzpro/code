@@ -48,6 +48,7 @@ export function BookingWhen() {
   const { session } = useAuth();
   const [alertId, setAlertId] = useState<string | null>(null);
   const [alertBusy, setAlertBusy] = useState(false);
+  const [alertError, setAlertError] = useState<unknown>(null);
   useEffect(() => {
     if (!session || !s?.id) return setAlertId(null);
     let alive = true;
@@ -71,6 +72,9 @@ export function BookingWhen() {
         const created = await api.me.addSlotAlert({ salonId: s.id, day: date, serviceId: serviceIds[0] });
         setAlertId(created.id);
       }
+      setAlertError(null);
+    } catch (err) {
+      setAlertError(err);
     } finally {
       setAlertBusy(false);
     }
@@ -211,6 +215,7 @@ export function BookingWhen() {
                 {t("M'alerter si un créneau se libère")}
               </Button>
             ))}
+          <ErrorMessage error={alertError} className="mt-1" />
         </div>
       ) : (
         [...groups.entries()].map(([period, list]) => (

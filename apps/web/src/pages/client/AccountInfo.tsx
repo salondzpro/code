@@ -10,7 +10,7 @@ import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { groupLocalDigits } from '@/lib/authFlow';
-import { errorText } from '@/components/ErrorMessage';
+import { ErrorMessage, errorText } from '@/components/ErrorMessage';
 import { Badge, Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
@@ -34,6 +34,7 @@ export function AccountInfo({ backTo = '/profil' }: { backTo?: string }) {
     }
   }, [p]);
 
+  if (me.isError) return <ErrorMessage error={me.error} retry={() => me.refetch()} />;
   if (me.isPending || !p) return <PageLoading />;
   const dirty = name.trim() !== (p.fullName ?? '') || `+213${digits}` !== (p.phone ?? '');
 

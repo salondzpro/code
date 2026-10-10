@@ -12,6 +12,7 @@ import { SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import { openingStatus } from './Salon';
+import { writeDraft } from '@/lib/bookingDraft';
 import { t } from '@/i18n';
 
 export function ServiceDetail() {
@@ -39,7 +40,7 @@ export function ServiceDetail() {
           <IconButton lg aria-label={t("Retour")} onClick={back}>
             <I icon={ChevronLeft} />
           </IconButton>
-          <IconButton lg aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={isFav} onClick={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}/prestation/${sv.id}`)}`))}>
+          <IconButton lg aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={isFav} disabled={toggle.isPending} onClick={() => (session ? toggle.mutate({ salonId: s.id, on: !isFav }) : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}/prestation/${sv.id}`)}`))}>
             <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
           </IconButton>
         </div>
@@ -82,7 +83,16 @@ export function ServiceDetail() {
         </div>
       </div>
       <BottomSheet grab={false}>
-        <Button onClick={() => navigate(`/s/${s.slug}/prestations?services=${sv.id}`)}>{t("Réserver")}</Button>
+        {/* Même geste que sur la page du salon : la prestation entre dans le brouillon, puis l'horaire.
+            L'ancienne adresse (`?services=`) n'était lue par personne : il fallait la recocher. */}
+        <Button
+          onClick={() => {
+            writeDraft(s.slug, { serviceIds: [sv.id] });
+            navigate(`/s/${s.slug}/reserver/quand`);
+          }}
+        >
+          {t("Réserver")}
+        </Button>
       </BottomSheet>
     </div>
   );
