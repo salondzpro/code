@@ -395,6 +395,8 @@ export const registerPushTokenSchema = z.object({
   token: z.string().min(10).max(1000),
   platform: z.enum(['ios', 'android', 'web']),
   deviceName: z.string().max(80).optional(),
+  /** Application qui enregistre le jeton : sur iPhone, Apple exige le `apns-topic` de la bonne application. */
+  appId: z.enum(['dz.salondz.app', 'pro.salondz.app']).optional(),
 });
 
 // ---------- Auth ----------

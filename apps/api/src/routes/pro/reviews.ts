@@ -55,8 +55,12 @@ const proReviewRoutes: FastifyPluginAsyncZod = async (app) => {
       const offset = Number(req.query.cursor ?? 0) || 0;
       let q = db
         .from('reviews')
+        // `profiles!client_id` : depuis la migration 0045, `reviews` a DEUX liens vers `profiles`
+        // (l'auteur `client_id`, et `hidden_by` pour la modération). Sans dire lequel, PostgREST
+        // refuse (« more than one relationship ») et cette route répondait 500 — l'écran Avis du
+        // professionnel était vide depuis le 21 sept. 2026, et le test qui le couvre l'a montré.
         .select(
-          'id, rating, comment, created_at, reply, replied_at, booking_id, profiles(full_name), bookings(service_name, starts_at)',
+          'id, rating, comment, created_at, reply, replied_at, booking_id, profiles!client_id(full_name), bookings(service_name, starts_at)',
         )
         .eq('salon_id', req.salon!.id);
       if (unanswered) q = q.is('reply', null);

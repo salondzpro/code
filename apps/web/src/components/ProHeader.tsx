@@ -18,8 +18,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router';
-import { Menu, Plus, X } from 'lucide-react';
-import { useProPendingBookings, useProSalon } from '@salondz/api-client';
+import { Bell, Menu, Plus, X } from 'lucide-react';
+import { useProPendingBookings, useProSalon, useUnreadNotifications } from '@salondz/api-client';
 import { Avatar, I, Dim } from './ui';
 import { ProNav } from './ProNav';
 import { useDesktop } from '@/lib/breakpoint';
@@ -32,6 +32,8 @@ export function ProHeader() {
   const { pathname, key: navKey } = useLocation();
   const salon = useProSalon().data?.salon ?? null;
   const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
+  // Pastille des NON-LUES sur la cloche : la même requête que le menu et la liste des notifications.
+  const nonLues = useUnreadNotifications(!!salon);
   const desktop = useDesktop();
   useEffect(() => setOpen(false), [pathname, navKey]);
   useEffect(() => {
@@ -100,6 +102,21 @@ export function ProHeader() {
           <span className="truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
             {salon?.name ?? 'Salon DZ'}
           </span>
+        </Link>
+        {/* Cloche : la liste des notifications, avec le compte des non-lues. Rouge discret, chiffre
+            exact, même règle que les autres pastilles — il baisse quand on LIT, pas quand on traite. */}
+        <Link
+          to="/pro/notifications"
+          className="relative flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] text-text"
+          aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
+          title={t("Notifications")}
+        >
+          <I icon={Bell} size={22} strokeWidth={1.8} className="text-current" />
+          {nonLues > 0 && (
+            <span className="nvd !left-auto !right-0.5 !top-0.5" aria-hidden>
+              {nonLues > 9 ? '9+' : nonLues}
+            </span>
+          )}
         </Link>
         <Link
           to="/pro/rendez-vous/nouveau"

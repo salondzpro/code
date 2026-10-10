@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '@/lib/api';
-import { disableWebPush, enableWebPush, webPushPermission, webPushSupported } from '@/lib/webpush';
+import { disableWebPush, enableWebPush, usePushPermission, webPushPermission, webPushSupported } from '@/lib/webpush';
 import { Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
@@ -21,7 +21,8 @@ import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 export function ProAccount() {
   const navigate = useNavigate();
-  const [webPush, setWebPush] = useState<NotificationPermission | 'unsupported'>(webPushPermission());
+  // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
+  const [webPush, setWebPush] = usePushPermission();
   const { signOut } = useAuth();
   const me = useMe();
   const proSalon = useProSalon().data;

@@ -17,9 +17,9 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
-import { CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
+import { Bell, CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
 import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
-import { useMe } from '@salondz/api-client';
+import { useMe, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { I, Dim } from './ui';
 import { t } from '@/i18n';
@@ -41,6 +41,9 @@ export function PublicHeader() {
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const me = useMe(!!session);
+  // Non lues : la cloche de l'en-tête est le seul accès visible à la liste des notifications du client.
+  // Même requête que la ligne du profil — un seul chiffre, partout, sans compteur optimiste.
+  const nonLues = useUnreadNotifications(!!session);
   // Le marché du compte s'ouvre d'office : c'est celui que la cliente ou le client consulte.
   const market = me.data?.profile.market ?? MARKETS[0];
   const shown = picked === null ? market : picked === 'none' ? null : picked;
@@ -215,13 +218,32 @@ export function PublicHeader() {
             </NavLink>
           ))}
         </nav>
-        <Link
-          to={session ? '/profil' : `/connexion?next=${next}`}
-          className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] bg-ink text-white"
-          aria-label={session ? 'Mon profil' : 'Se connecter ou créer un compte'}
-        >
-          <I icon={User} size={20} className="text-current" />
-        </Link>
+        <span className="flex items-center gap-1">
+          {/* Cloche : la liste des notifications (confirmations, rappels, créneaux libérés), avec le
+              compte des non-lues. Sans elle, la liste n'était atteignable par aucun lien. */}
+          {session && (
+            <Link
+              to="/notifications"
+              className="relative flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] text-text"
+              aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
+              title={t("Notifications")}
+            >
+              <I icon={Bell} size={22} strokeWidth={1.8} className="text-current" />
+              {nonLues > 0 && (
+                <span className="nvd !left-auto !right-0.5 !top-0.5" aria-hidden>
+                  {nonLues > 9 ? '9+' : nonLues}
+                </span>
+              )}
+            </Link>
+          )}
+          <Link
+            to={session ? '/profil' : `/connexion?next=${next}`}
+            className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] bg-ink text-white"
+            aria-label={session ? 'Mon profil' : 'Se connecter ou créer un compte'}
+          >
+            <I icon={User} size={20} className="text-current" />
+          </Link>
+        </span>
       </div>
       {open && createPortal(drawer, document.body)}
     </header>

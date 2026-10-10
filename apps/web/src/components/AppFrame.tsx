@@ -9,6 +9,7 @@ import { NavLink } from 'react-router';
 import { useProPendingBookings, useProUnseenBookings } from '@salondz/api-client';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
+import { PushToast } from './PushToast';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
 
@@ -34,7 +35,11 @@ export function AppFrame({
     // donc sur absolument tout ce que l'application affiche — y compris les écrans d'erreur et de
     // chargement, qui passaient avant l'entrée dans ce cadre et s'affichaient sous la barre d'état.
     // Les valeurs restent mesurées sur l'appareil par `MainActivity`, jamais devinées.
-    <div className={`relative mx-auto h-app w-full max-w-[var(--shell-w)] bg-bg ${className}`}>{children}</div>
+    <div className={`relative mx-auto h-app w-full max-w-[var(--shell-w)] bg-bg ${className}`}>
+      {children}
+      {/* Notification reçue application ouverte : un bandeau, sur tous les écrans. */}
+      <PushToast />
+    </div>
   );
 }
 

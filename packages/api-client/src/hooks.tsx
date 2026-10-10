@@ -160,14 +160,34 @@ export function useUpdateProfile() {
   });
 }
 
+/**
+ * Marquer lues : une liste précise (`ids`), celles d'un rendez-vous (`bookingId`), ou toutes.
+ * Le compteur de l'agenda pro (« pas encore vus ») se lit sur les mêmes lignes : il est invalidé
+ * aussi, pour que les pastilles restent d'accord entre elles.
+ */
 export function useMarkNotificationsRead() {
   const { api } = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (ids?: string[]) => api.me.markNotificationsRead(ids),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.notifications }),
+    mutationFn: (scope?: { ids?: string[]; bookingId?: string }) => api.me.markNotificationsRead(scope),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.notifications });
+      qc.invalidateQueries({ queryKey: queryKeys.pro.unseen });
+    },
   });
 }
+
+/**
+ * Nombre de notifications NON LUES — la pastille rouge, partout où elle s'affiche (en-tête, menu,
+ * profil). Une seule requête en cache pour toutes les pastilles : elles ne peuvent pas diverger, et
+ * le temps réel (nouvelle notification, lecture) les met à jour ensemble. Le serveur fait foi :
+ * aucun compteur optimiste, une erreur serveur ne laisse jamais un chiffre faux.
+ */
+export const useUnreadNotifications = (enabled = true): number => {
+  const { queries } = useApi();
+  const q = useQuery({ ...queries.notifications(), enabled });
+  return q.data?.unreadCount ?? 0;
+};
 
 export function useToggleFavorite() {
   const { api } = useApi();
@@ -289,7 +309,11 @@ export function useMarkBookingSeen() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.pro.bookings.markSeen(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.pro.unseen }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.pro.unseen });
+      // « Vu » = ses notifications sont lues : le compteur de non-lues baisse d'autant.
+      qc.invalidateQueries({ queryKey: queryKeys.notifications });
+    },
   });
 }
 

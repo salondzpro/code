@@ -598,9 +598,12 @@ test('connexion de démonstration : adresse → vraie session ; ancien numéro +
     assert.ok(proSalon.json().salon.services.every((s: { photos?: unknown[] }) => (s.photos ?? []).length >= 1), 'une photo par prestation');
   }
 
-  // Idempotent : une seconde connexion réussit sur le même compte.
-  const again = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clientfemme@salondz.internal' });
+  // Idempotent : une seconde connexion réussit sur le même compte. (La cliente « femme » n'est plus
+  // un compte de connexion — `login: false` dans DEMO_ACCOUNTS — : elle doit être refusée.)
+  const again = await call('POST', '/v1/auth/dev-login', undefined, { email: 'client@salondz.com' });
   assert.equal(again.statusCode, 200, again.body);
+  const noLogin = await call('POST', '/v1/auth/dev-login', undefined, { email: 'clientfemme@salondz.internal' });
+  assert.equal(noLogin.statusCode, 401, noLogin.body);
 
   // La démonstration réelle vit dans le navigateur : ces comptes de test ne doivent rien laisser en base
   // (leurs salons seraient publiés sur la marketplace).
@@ -767,7 +770,8 @@ test('cron interne : jeton requis ; expire les demandes non traitées', async ()
   assert.equal(no.statusCode, 401);
   const ok = await call('POST', '/internal/cron/tick', config.INTERNAL_CRON_TOKEN);
   assert.equal(ok.statusCode, 200, ok.body);
-  assert.ok('reminders' in ok.json());
+  // Deux rappels client depuis la migration 0050 (1 h, 30 min) : les clés ont suivi.
+  assert.ok('reminders1h' in ok.json() && 'reminders30m' in ok.json(), ok.body);
   assert.ok(ok.json().expired >= 1, ok.body);
   const stale = await call('GET', `/v1/pro/bookings/${stalePendingId}`, pro.token);
   assert.equal(stale.statusCode, 200, stale.body);
@@ -1243,4 +1247,142 @@ test('administration : piloter l’espace d’un professionnel avec un jeton, et
     await db.from('platform_admins').delete().in('user_id', [admin.id, autreAdmin.id]);
     await db.auth.admin.deleteUser(cliente.id);
   }
+});
+
+// ---------------------------------------------------------------------------------------------
+// Notifications : compteurs exacts, lecture par rendez-vous, envoi poussé sans doublon, jeton mort
+// (10 oct. 2026). Rendez-vous dédié à J+8 : aucun autre test ne touche à ce jour.
+// ---------------------------------------------------------------------------------------------
+
+test("export des données : 200, favoris compris (la colonne s'appelle user_id)", async () => {
+  assert.equal((await call('PUT', `/v1/me/favorites/${salonId}`, clientA.token)).statusCode, 204);
+  const r = await call('GET', '/v1/me/export', clientA.token);
+  assert.equal(r.statusCode, 200, r.body);
+  const json = r.json() as { favorites: { salonId: string }[]; bookings: unknown[]; profile: { id: string } };
+  assert.equal(json.profile.id, clientA.id);
+  assert.ok(json.favorites.some((f) => f.salonId === salonId), 'le favori est dans l’export');
+  assert.equal((await call('DELETE', `/v1/me/favorites/${salonId}`, clientA.token)).statusCode, 204);
+});
+
+let notifBookingId = '';
+
+test('notifications : pastilles exactes (non-lues, agenda « pas vus »), lecture par rendez-vous', async () => {
+  const jour = addDaysToKey(toLocalDateKey(), 8);
+  const avantPro = (await call('GET', '/v1/me/notifications', pro.token)).json().unreadCount as number;
+  const avantClient = (await call('GET', '/v1/me/notifications', clientA.token)).json().unreadCount as number;
+
+  const created = await call('POST', '/v1/bookings', clientA.token, {
+    salonId,
+    serviceId,
+    startsAt: localDateTimeToISO(jour, '16:00'),
+    clientName: 'Amine Test',
+    clientPhone: '0661000099',
+  });
+  assert.equal(created.statusCode, 201, created.body);
+  notifBookingId = created.json().id as string;
+
+  // Le pro : une non-lue de plus, et le rendez-vous compte dans « pas encore vus » à sa date.
+  const proNotifs = await call('GET', '/v1/me/notifications', pro.token);
+  assert.equal(proNotifs.json().unreadCount, avantPro + 1, 'le pro a UNE notification de plus, pas deux');
+  const unseen = await call('GET', '/v1/pro/bookings/unseen', pro.token);
+  assert.equal(unseen.statusCode, 200, unseen.body);
+  assert.ok((unseen.json().bookingIds as string[]).includes(notifBookingId));
+  assert.equal(unseen.json().byDate[jour], 1);
+
+  // Le client : sa confirmation (salon en confirmation automatique) est une non-lue de plus.
+  const clientNotifs = await call('GET', '/v1/me/notifications', clientA.token);
+  assert.equal(clientNotifs.json().unreadCount, avantClient + 1);
+
+  // Lire CE rendez-vous ne touche pas aux autres : le compteur redescend d'exactement un.
+  assert.equal((await call('POST', '/v1/me/notifications/read', clientA.token, { bookingId: notifBookingId })).statusCode, 204);
+  assert.equal((await call('GET', '/v1/me/notifications', clientA.token)).json().unreadCount, avantClient);
+  // Idempotent : relire ne change rien.
+  assert.equal((await call('POST', '/v1/me/notifications/read', clientA.token, { bookingId: notifBookingId })).statusCode, 204);
+  assert.equal((await call('GET', '/v1/me/notifications', clientA.token)).json().unreadCount, avantClient);
+
+  // Côté pro, « vu » (ouverture de la fiche) sort le rendez-vous du compteur de l'agenda ET des non-lues.
+  assert.equal((await call('POST', `/v1/pro/bookings/${notifBookingId}/seen`, pro.token, {})).statusCode, 204);
+  assert.ok(!((await call('GET', '/v1/pro/bookings/unseen', pro.token)).json().bookingIds as string[]).includes(notifBookingId));
+  assert.equal((await call('GET', '/v1/me/notifications', pro.token)).json().unreadCount, avantPro);
+  // Un rendez-vous confirmé d'office n'est pas « à valider » : lire n'a rien changé à son état.
+  assert.equal((await call('GET', `/v1/pro/bookings/${notifBookingId}`, pro.token)).json().status, 'confirmed');
+});
+
+test('push : deux envois en parallèle se partagent le lot, aucune notification ne part deux fois', async () => {
+  const { claimPendingPush } = await import('../src/lib/push');
+  assert.ok(notifBookingId);
+  // L'envoi lancé par la réservation a déjà réservé ses lignes : on attend qu'il ait fini.
+  await new Promise((r) => setTimeout(r, 1500));
+  const rows = [1, 2, 3].map((i) => ({
+    user_id: clientA.id,
+    type: 'booking_reminder',
+    title: `Test lot ${i}`,
+    body: 'Rappel de test',
+    data: { bookingId: notifBookingId },
+    booking_id: notifBookingId,
+  }));
+  const ins = await db.from('notifications').insert(rows).select('id');
+  assert.equal(ins.error, null, JSON.stringify(ins.error));
+  const inserted = new Set((ins.data ?? []).map((n) => n.id as string));
+
+  const [a, b] = await Promise.all([claimPendingPush(notifBookingId), claimPendingPush(notifBookingId)]);
+  const idsA = a.map((n) => n.id);
+  const idsB = b.map((n) => n.id);
+  assert.equal(idsA.length + idsB.length, 3, `3 lignes au total, pas ${idsA.length + idsB.length}`);
+  assert.ok(idsA.every((id) => !idsB.includes(id)), 'aucune ligne rendue aux deux');
+  assert.ok([...idsA, ...idsB].every((id) => inserted.has(id)));
+  // Rien ne reste à réserver.
+  assert.equal((await claimPendingPush(notifBookingId)).length, 0);
+  // Les lignes réservées portent leur date : un troisième envoi ne les reverra pas.
+  const apres = await db.from('notifications').select('id, pushed_at').in('id', [...inserted]);
+  assert.ok((apres.data ?? []).every((n) => n.pushed_at), 'pushed_at posé par la réservation');
+});
+
+test('push : un jeton mobile invalide est retiré, et l’issue est tracée sur la notification', async (t) => {
+  const { dispatchPendingPush } = await import('../src/lib/push');
+  const { fcmEnabled } = await import('../src/lib/fcm');
+  const bogus = `salondz-test-bogus-${RUN}-${Math.random().toString(36).slice(2)}`;
+  assert.equal((await call('POST', '/v1/me/push-tokens', clientA.token, { token: bogus, platform: 'android', appId: 'dz.salondz.app' })).statusCode, 204);
+  const stored = await db.from('push_tokens').select('token, app_id').eq('token', bogus).maybeSingle();
+  assert.equal(stored.data?.app_id, 'dz.salondz.app');
+
+  const ins = await db
+    .from('notifications')
+    .insert({ user_id: clientA.id, type: 'booking_reminder', title: 'Test jeton', body: 'Rappel de test', data: { bookingId: notifBookingId }, booking_id: notifBookingId })
+    .select('id')
+    .single();
+  assert.equal(ins.error, null, JSON.stringify(ins.error));
+  await dispatchPendingPush(app.log, notifBookingId);
+
+  const after = await db.from('notifications').select('pushed_at, push_outcome, push_attempts').eq('id', ins.data!.id).single();
+  assert.ok(after.data?.pushed_at, 'la notification est passée');
+  assert.equal(after.data?.push_attempts, 1);
+  if (!fcmEnabled) {
+    t.diagnostic('FCM_SERVICE_ACCOUNT absent : le jeton ne peut pas être éprouvé auprès de Firebase ici');
+    assert.equal(after.data?.push_outcome, 'no_device');
+    await db.from('push_tokens').delete().eq('token', bogus);
+    return;
+  }
+  // Firebase refuse le jeton (INVALID_ARGUMENT) : il est retiré, et sans appareil joignable l'issue est « no_device ».
+  const gone = await db.from('push_tokens').select('token').eq('token', bogus).maybeSingle();
+  assert.equal(gone.data, null, 'le jeton invalide a été retiré');
+  assert.equal(after.data?.push_outcome, 'no_device');
+});
+
+test('push : changer de compte sur le même téléphone réattribue le jeton, se déconnecter le retire', async () => {
+  const token = `salondz-test-shared-${RUN}-${Math.random().toString(36).slice(2)}`;
+  assert.equal((await call('POST', '/v1/me/push-tokens', clientA.token, { token, platform: 'android' })).statusCode, 204);
+  assert.equal((await call('POST', '/v1/me/push-tokens', clientB.token, { token, platform: 'android' })).statusCode, 204);
+  const row = await db.from('push_tokens').select('user_id').eq('token', token).maybeSingle();
+  assert.equal(row.data?.user_id, clientB.id, 'le jeton appartient au dernier compte connecté');
+  // L'ancien compte ne peut pas retirer un jeton qui n'est plus le sien ; le nouveau, si.
+  assert.equal((await call('DELETE', `/v1/me/push-tokens/${encodeURIComponent(token)}`, clientA.token)).statusCode, 204);
+  assert.equal((await db.from('push_tokens').select('user_id').eq('token', token).maybeSingle()).data?.user_id, clientB.id);
+  assert.equal((await call('DELETE', `/v1/me/push-tokens/${encodeURIComponent(token)}`, clientB.token)).statusCode, 204);
+  assert.equal((await db.from('push_tokens').select('user_id').eq('token', token).maybeSingle()).data, null);
+});
+
+test('notifications (nettoyage) : le rendez-vous de test est annulé par le salon', async () => {
+  const r = await call('POST', `/v1/pro/bookings/${notifBookingId}/cancel`, pro.token, { reason: 'Test automatisé' });
+  assert.equal(r.statusCode, 200, r.body);
 });

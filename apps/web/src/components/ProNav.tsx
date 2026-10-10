@@ -33,7 +33,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
-import { useProReviewsUnanswered } from '@salondz/api-client';
+import { useProReviewsUnanswered, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
@@ -116,6 +116,8 @@ export function ProNav({
   const { signOut } = useAuth();
   // Un avis sans réponse attend quelque chose du professionnel : il est compté comme une demande.
   const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
+  // Non lues : même requête que la cloche de l'en-tête et la liste — un seul chiffre partout.
+  const nonLues = useUnreadNotifications(!!salon);
   const navigate = useNavigate();
   const { short } = usePublicUrl(salon?.slug ?? '');
   return (
@@ -170,7 +172,7 @@ export function ProNav({
         title={t("Compte")}
         items={[
           { to: '/pro/compte', label: t("Mon compte"), icon: UserCircle },
-          { to: '/pro/notifications', label: t("Notifications"), icon: Bell },
+          { to: '/pro/notifications', label: t("Notifications"), icon: Bell, count: nonLues },
         ]}
       />
 

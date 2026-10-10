@@ -12,6 +12,7 @@ import { errorText } from '@/components/ErrorMessage';
 import {
   disableWebPush,
   enableWebPush,
+  usePushPermission,
   webPushPermission,
 } from '@/lib/webpush';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -22,9 +23,8 @@ function since(iso: string): string {
 }
 
 export function Settings() {
-  const [webPush, setWebPush] = useState<NotificationPermission | 'unsupported'>(() =>
-    webPushPermission(),
-  );
+  // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
+  const [webPush, setWebPush] = usePushPermission();
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(false);

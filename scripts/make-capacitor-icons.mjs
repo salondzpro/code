@@ -128,11 +128,32 @@ try {
    * public. Ces visuels sont partagés — les écrire en mode `--pro` donnerait l'icône PRO à
    * l'application iPhone de tout le monde. C'est arrivé une fois ; d'où ce garde.
    */
-  const IOS = PRO ? null : path.join(ROOT, 'apps', 'web', 'ios', 'App', 'App', 'Assets.xcassets');
+  const XCASSETS = path.join(ROOT, 'apps', 'web', 'ios', 'App', 'App', 'Assets.xcassets');
+  const IOS = PRO ? null : XCASSETS;
   const iconSet = IOS ? path.join(IOS, 'AppIcon.appiconset') : null;
   if (iconSet && fs.existsSync(iconSet)) {
     await shoot(path.join(iconSet, 'AppIcon-512@2x.png'), 1024, svg(1024, `<rect width="1024" height="1024" fill="${INK}"/>${wordmark(1024, 190, 820)}`));
     console.log('✔ icône iOS 1024');
+  }
+  /**
+   * Depuis le 10 oct. 2026, l'application PROFESSIONNELLE iPhone existe (`pro.salondz.app`, voir
+   * `codemagic.yaml`, flux `ios-pro`). Son icône vit dans un jeu À PART, `AppIcon-Pro.appiconset`,
+   * que seul ce flux branche (`ASSETCATALOG_COMPILER_APPICON_NAME`) : le jeu `AppIcon` du grand
+   * public n'est jamais touché en mode `--pro` — le garde ci-dessus reste entier.
+   */
+  if (PRO && fs.existsSync(XCASSETS)) {
+    const proSet = path.join(XCASSETS, 'AppIcon-Pro.appiconset');
+    mkdirSync(proSet, { recursive: true });
+    fs.writeFileSync(
+      path.join(proSet, 'Contents.json'),
+      JSON.stringify({ images: [{ filename: 'AppIcon-512@2x.png', idiom: 'universal', platform: 'ios', size: '1024x1024' }], info: { author: 'xcode', version: 1 } }, null, 2) + '\n',
+    );
+    await shoot(
+      path.join(proSet, 'AppIcon-512@2x.png'),
+      1024,
+      svg(1024, `<rect width="1024" height="1024" fill="${INK}"/><g transform="translate(0 -102)">${wordmark(1024, 170, 738)}</g>${badgePro(1024)}`),
+    );
+    console.log('✔ icône iOS 1024 (pro, AppIcon-Pro.appiconset)');
   }
   const splashSet = IOS ? path.join(IOS, 'Splash.imageset') : null;
   if (splashSet && fs.existsSync(splashSet)) {

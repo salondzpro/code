@@ -125,17 +125,34 @@ function useWatchedChannel(
   }, [key, name, qc]);
 }
 
-/** Côté pro : tout mouvement sur les rendez-vous du salon, et ses propres notifications. */
-export function useRealtimeBookings(salonId: string | null | undefined): void {
+/**
+ * Côté pro : tout mouvement sur les rendez-vous du salon, et ses propres notifications.
+ *
+ * `userId` : les notifications du professionnel sont écoutées DIRECTEMENT, et non déduites des
+ * rendez-vous. Une relance de demande, un rappel une heure avant, un créneau libéré ailleurs
+ * naissent sans toucher à une ligne de `bookings` du salon — la pastille des non-lues n'aurait
+ * bougé qu'au prochain rendez-vous. Le filtre serveur (`user_id`) et la RLS limitent le flux à
+ * ses propres lignes.
+ */
+export function useRealtimeBookings(salonId: string | null | undefined, userId?: string | null): void {
   useWatchedChannel(
     'salon-bookings',
-    salonId,
-    (channel, onChange) =>
+    salonId ? `${salonId}:${userId ?? ''}` : null,
+    (channel, onChange) => {
       channel.on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bookings', filter: `salon_id=eq.${salonId}` },
         onChange,
-      ),
+      );
+      if (userId) {
+        channel.on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+          onChange,
+        );
+      }
+      return channel;
+    },
     (qc) => {
       void qc.invalidateQueries({ queryKey: queryKeys.pro.bookingsAll });
       void qc.invalidateQueries({ queryKey: queryKeys.pro.stats });

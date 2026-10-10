@@ -282,7 +282,9 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       const { limit, offset, sort } = req.query;
       let q = db
         .from('reviews')
-        .select('id, rating, comment, created_at, reply, replied_at, profiles(full_name)')
+        // `profiles!client_id` : `reviews` a deux liens vers `profiles` depuis la migration 0045
+        // (auteur, et `hidden_by`) ; sans le nommer, PostgREST refuse et la page répondait 500.
+        .select('id, rating, comment, created_at, reply, replied_at, profiles!client_id(full_name)')
         .eq('salon_id', req.params.id)
         // Un avis masqué par la plateforme quitte la page publique et le calcul de la note ; il
         // reste en base, parce qu'une décision doit pouvoir s'expliquer plus tard.

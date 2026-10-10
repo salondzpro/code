@@ -18,7 +18,7 @@ import {
   Settings,
   type LucideIcon,
 } from 'lucide-react';
-import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
+import { useMe, useMeStats, useUnreadNotifications, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { Avatar, Badge, Button, I } from '@/components/ui';
@@ -72,6 +72,7 @@ export function Profile() {
   const { user, signOut } = useAuth();
   const me = useMe();
   const stats = useMeStats();
+  const nonLues = useUnreadNotifications();
   const updateProfile = useUpdateProfile();
   const avatarInput = useRef<HTMLInputElement | null>(null);
   const [cropAvatar, setCropAvatar] = useState<File | null>(null);
@@ -156,7 +157,15 @@ export function Profile() {
 
       <span className="h3">{t("Mon compte")}</span>
       <div className="crd !gap-0 !py-1">
-        <Row to="/reglages#notifications" icon={Bell} label={t("Notifications")} sub={t("Rappels, confirmations, nouveautés")} />
+        {/* La LISTE des notifications (le réglage, lui, est dans Réglages) : cette ligne envoyait sur
+            le réglage, et aucune autre ne menait à la liste — elle existait sans qu'on puisse l'ouvrir. */}
+        <Row
+          to="/notifications"
+          icon={Bell}
+          label={t("Notifications")}
+          sub={t("Rappels, confirmations, nouveautés")}
+          right={nonLues ? String(nonLues) : undefined}
+        />
         <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
       </div>
 

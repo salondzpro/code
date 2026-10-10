@@ -21,12 +21,19 @@ self.addEventListener('push', (event) => {
     payload = { title: 'Salon DZ', body: event.data.text() };
   }
   const data = payload.data || {};
-  // Le tap doit mener là où la notification a du sens : le rendez-vous concerné.
-  const url = data.bookingId
-    ? `/rendez-vous/${data.bookingId}`
-    : data.salonId
-      ? '/rendez-vous'
-      : '/notifications';
+  // Le tap doit mener là où la notification a du sens : le rendez-vous concerné. Le serveur pose
+  // la destination dans `data.url` (côté PRO : `/pro/rendez-vous/…`, côté client : `/rendez-vous/…`,
+  // liste d'attente : la page de réservation du salon) ; elle fait foi. Déduire ici une adresse
+  // cliente envoyait un professionnel sur l'espace client, qui le renvoyait à son accueil — loin
+  // du rendez-vous dont on venait de le prévenir.
+  const url =
+    typeof data.url === 'string' && data.url.startsWith('/')
+      ? data.url
+      : data.bookingId
+        ? `/rendez-vous/${data.bookingId}`
+        : data.salonId
+          ? '/rendez-vous'
+          : '/notifications';
   event.waitUntil(
     self.registration.showNotification(payload.title || 'Salon DZ', {
       body: payload.body || '',

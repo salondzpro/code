@@ -52,7 +52,6 @@ export function AccountNotifications() {
   const isPro = useLocation().pathname.startsWith('/pro');
   const notifs = useNotificationsInfinite();
   const items = pagesItems(notifs.data);
-  const unreadCount = notifs.data?.pages[0]?.unreadCount ?? 0;
   const markRead = useMarkNotificationsRead();
 
   // Les points « non lu » restent visibles le temps de la visite, même une fois tout marqué lu.
@@ -61,10 +60,22 @@ export function AccountNotifications() {
     unseen.current = new Set(items.filter((n) => !n.readAt).map((n) => n.id));
   }
 
+  /**
+   * Lues = CELLES QU'ON A SOUS LES YEUX, pas « toutes ». Marquer tout lu à l'ouverture faisait
+   * tomber la pastille à zéro alors que des notifications plus anciennes, jamais affichées, restaient
+   * derrière le bouton « Voir plus » ; et une notification arrivée pendant la visite restait non lue
+   * sans que personne la marque. Ici, chaque page affichée est marquée à son arrivée, et chaque
+   * nouvelle ligne poussée en temps réel l'est aussi. Un rendez-vous qui attend une réponse garde
+   * son propre état (« à valider ») : lire, ce n'est pas traiter.
+   */
+  const marques = useRef(new Set<string>());
   useEffect(() => {
-    if (unreadCount > 0 && !markRead.isPending && !markRead.isSuccess) markRead.mutate(undefined);
+    const aMarquer = items.filter((n) => !n.readAt && !marques.current.has(n.id)).map((n) => n.id);
+    if (!aMarquer.length) return;
+    for (const id of aMarquer) marques.current.add(id);
+    markRead.mutate({ ids: aMarquer });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unreadCount]);
+  }, [items.map((n) => `${n.id}:${n.readAt ? 1 : 0}`).join(',')]);
 
   const today = toLocalDateKey();
   const days: [string, Notification[]][] = [];

@@ -157,8 +157,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
           token: req.body.token,
           platform: req.body.platform,
           device_name: req.body.deviceName ?? null,
+          // Application qui enregistre (grand public ou pro) : sur iPhone, c'est le `apns-topic`.
+          app_id: req.body.appId ?? null,
           last_seen_at: new Date().toISOString(),
         },
+        // Même jeton, autre compte (changement de compte sur le même téléphone) : la ligne passe au
+        // nouveau compte, l'ancien ne reçoit plus rien ici.
         { onConflict: 'token' },
       )
       .select('id')
@@ -218,9 +222,15 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  /**
+   * Marquer lues : une liste précise (`ids`, ce que la personne a sous les yeux), celles d'UN
+   * rendez-vous (`bookingId`, quand elle ouvre sa fiche), ou toutes. Idempotent — une notification
+   * déjà lue garde sa première date de lecture. Le compteur ne redescend que de ce qui est
+   * RÉELLEMENT lu : voir une liste n'est pas traiter un rendez-vous, qui garde son propre état.
+   */
   app.post(
     '/me/notifications/read',
-    { schema: { body: z.object({ ids: z.array(uuid).max(200).optional() }) } },
+    { schema: { body: z.object({ ids: z.array(uuid).max(200).optional(), bookingId: uuid.optional() }) } },
     async (req, reply) => {
       let q = db
         .from('notifications')
@@ -228,6 +238,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
         .eq('user_id', req.user!.id)
         .is('read_at', null);
       if (req.body.ids?.length) q = q.in('id', req.body.ids);
+      if (req.body.bookingId) q = q.eq('booking_id', req.body.bookingId);
       const { error } = await q;
       if (error) throw error;
       reply.status(204);
@@ -342,7 +353,9 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const [bookings, reviews, favorites] = await Promise.all([
       db.from('bookings').select('id, salon_id, service_name, starts_at, ends_at, status, price_da, client_name, client_phone, notes, created_at').or(`client_id.eq.${uid},booked_by.eq.${uid}`).order('starts_at', { ascending: false }),
       db.from('reviews').select('id, salon_id, booking_id, rating, comment, created_at').eq('client_id', uid),
-      db.from('favorites').select('salon_id, created_at').eq('client_id', uid),
+      // `favorites` est rattachée par `user_id` (0001), pas `client_id` : la colonne n'existe pas, et
+      // cet export répondait 500 depuis toujours — aucun test ne le couvrait, il en a un désormais.
+      db.from('favorites').select('salon_id, created_at').eq('user_id', uid),
     ]);
     if (bookings.error) throw bookings.error;
     if (reviews.error) throw reviews.error;

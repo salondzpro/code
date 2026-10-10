@@ -63,7 +63,8 @@ export function ProLayout() {
    * abonnements au même nom ne sont pas fiables).
    */
   const salon = useProSalon().data?.salon ?? null;
-  useRealtimeBookings(salon?.id);
+  const { session } = useAuth();
+  useRealtimeBookings(salon?.id, session?.user.id);
   const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
   /**
    * À partir de 1 024 px, la navigation quitte la barre d'onglets flottante pour un RAIL

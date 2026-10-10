@@ -3,7 +3,7 @@
  * (Aujourd'hui / Demain / date, heure, prix) et la liste des prestations — même lecture que la fiche pro.
  * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » (avec la règle anti-abus) ; C-F 18 — annulation confirmée.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import {
   ArrowLeft,
@@ -20,7 +20,7 @@ import {
   UserRound,
   XCircle,
 } from 'lucide-react';
-import { useBooking, useCancelBooking, useMe } from '@salondz/api-client';
+import { useBooking, useCancelBooking, useMarkNotificationsRead, useMe } from '@salondz/api-client';
 import {
   CANCEL_ABUSE_BLOCK_DAYS,
   CANCEL_ABUSE_MAX,
@@ -71,6 +71,19 @@ export function BookingDetail() {
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
   const [done, setDone] = useState(false);
+  /**
+   * OUVRIR la fiche d'un rendez-vous, c'est avoir lu ce qu'on en disait : ses notifications
+   * (confirmation, déplacement, rappel) passent lues et la pastille baisse d'autant. Une fois par
+   * rendez-vous, et seulement celles-là — ce qui concerne un autre rendez-vous reste non lu.
+   */
+  const marquerLu = useMarkNotificationsRead();
+  const dejaMarque = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id || dejaMarque.current === id) return;
+    dejaMarque.current = id;
+    marquerLu.mutate({ bookingId: id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   if (booking.isPending) return <PageLoading />;
   if (booking.isError)

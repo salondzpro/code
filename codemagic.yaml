@@ -109,3 +109,102 @@ workflows:
         # Envoi sur TestFlight uniquement : la mise en vente reste une décision humaine.
         submit_to_testflight: true
         submit_to_app_store: false
+
+  # -------------------------------------------------------------------------------------------
+  # APPLICATION PROFESSIONNELLE iPhone (`pro.salondz.app`, « Salon DZ Pro »), 10 oct. 2026.
+  #
+  # Même projet Xcode, même coque, même clé APNs : seules changent QUATRE choses, posées après
+  # `cap sync` et avant la compilation — le bundle web (variante pro : les écrans clients ne sont
+  # pas livrés), l'identifiant publié, le nom affiché et l'icône (bandeau « PRO »). L'App ID
+  # `pro.salondz.app` existe chez Apple avec Push Notifications et Associated Domains
+  # (`node scripts/asc-app-id-pro.mjs`, 10 oct. 2026) ; le profil App Store est récupéré ou créé
+  # par `fetch-signing-files --create`. Côté serveur, le `apns-topic` suit l'application qui a
+  # enregistré le jeton (`push_tokens.app_id`, migration 0051).
+  #
+  # CE QUI RESTE AU PROPRIÉTAIRE : créer l'application « Salon DZ Pro » dans App Store Connect
+  # (bundle `pro.salondz.app`, SKU `salondz-pro`) — l'API ne crée pas une fiche. Sans elle, le
+  # build compile mais l'envoi TestFlight échoue sur « app not found ».
+  #
+  # Lancer : `git tag ios-pro-1 && git push origin ios-pro-1`.
+  # -------------------------------------------------------------------------------------------
+  ios-pro:
+    name: Salon DZ Pro · iOS
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: salondz_asc
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'ios-pro-*'
+          include: true
+    environment:
+      vars:
+        BUNDLE_ID: pro.salondz.app
+        XCODE_PROJECT: apps/web/ios/App/App.xcodeproj
+        XCODE_SCHEME: App
+        # Variante PROFESSIONNELLE : lu par `capacitor.config.ts` (identifiant, nom) et par Vite
+        # (`VITE_APP_FLAVOR`, qui retire les écrans clients du bundle).
+        SALONDZ_APP_FLAVOR: pro
+        VITE_APP_FLAVOR: pro
+      node: 22
+      xcode: latest
+      groups:
+        - signing
+    scripts:
+      - name: Dépendances du dépôt
+        script: |
+          corepack enable
+          pnpm install --frozen-lockfile
+      - name: Construction du site (variante professionnelle)
+        script: |
+          pnpm --filter @salondz/web build
+          if ! grep -rq "api.salondz.com" apps/web/dist/assets; then
+            echo "Le bundle ne contient pas l'adresse de l'API : variables VITE_* manquantes."
+            exit 1
+          fi
+          # Garde-fou de la variante : l'espace client ne doit PAS être dans le bundle.
+          if grep -rlq "reserver/coordonnees" apps/web/dist/assets; then
+            echo "Le bundle contient le parcours de réservation client : VITE_APP_FLAVOR=pro n'a pas été lu."
+            exit 1
+          fi
+      - name: Synchronisation de la coque iOS
+        script: |
+          cd apps/web
+          npx cap sync ios
+      - name: Identité de l'application professionnelle
+        # `cap sync` a écrit `appId`/`appName` pro dans capacitor.config.json ; le projet Xcode, lui,
+        # garde `dz.salondz.app` en dur — on le remplace, ainsi que le nom affiché, le schéma d'URL
+        # et l'icône (jeu `AppIcon-Pro`, produit par `make-capacitor-icons.mjs --pro`).
+        script: |
+          cd apps/web/ios/App
+          sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = dz\.salondz\.app;/PRODUCT_BUNDLE_IDENTIFIER = pro.salondz.app;/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;/ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Pro";/g' App.xcodeproj/project.pbxproj
+          plutil -replace CFBundleDisplayName -string "Salon DZ Pro" App/Info.plist
+          plutil -replace CFBundleURLTypes.0.CFBundleURLName -string "pro.salondz.app" App/Info.plist
+          grep -q "pro.salondz.app" App.xcodeproj/project.pbxproj || { echo "identifiant pro non posé"; exit 1; }
+          test -d App/Assets.xcassets/AppIcon-Pro.appiconset || { echo "icône AppIcon-Pro absente : node scripts/make-capacitor-icons.mjs --pro"; exit 1; }
+      - name: Dépendances natives (Swift Package Manager)
+        script: |
+          xcodebuild -resolvePackageDependencies -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME"
+      - name: Numéro de version
+        script: |
+          cd apps/web/ios/App
+          agvtool new-version -all "$BUILD_NUMBER"
+      - name: Signature
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID"             --type IOS_APP_STORE             --certificate-key=@env:CERTIFICATE_PRIVATE_KEY             --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Compilation
+        script: |
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false

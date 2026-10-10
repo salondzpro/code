@@ -88,13 +88,13 @@ function session(hote: string): http2.ClientHttp2Session {
 
 type Reponse = { status: number; reason?: string };
 
-function poster(hote: string, token: string, corps: Buffer, autorisation: string): Promise<Reponse> {
+function poster(hote: string, token: string, corps: Buffer, autorisation: string, topic: string): Promise<Reponse> {
   return new Promise((resolve, reject) => {
     const flux = session(hote).request({
       ':method': 'POST',
       ':path': `/3/device/${token}`,
       authorization: `bearer ${autorisation}`,
-      'apns-topic': TOPIC,
+      'apns-topic': topic,
       'apns-push-type': 'alert',
       // 10 = tout de suite. Un rappel de rendez-vous arrivé une heure trop tard ne sert à rien.
       'apns-priority': '10',
@@ -135,10 +135,24 @@ const MORTS = new Set(['BadDeviceToken', 'Unregistered', 'DeviceTokenNotForTopic
  */
 export async function sendApns(
   log: FastifyBaseLogger,
-  msg: { token: string; title: string; body: string; badge?: number; data?: Record<string, unknown> },
+  msg: {
+    token: string;
+    /**
+     * Application visée (`apns-topic`) : celle qui a enregistré le jeton — `dz.salondz.app` (grand
+     * public) ou `pro.salondz.app` (professionnelle). Un jeton APNs ne dit pas d'où il vient, et
+     * Apple refuse un topic qui n'est pas celui de l'application (`TopicDisallowed`). Absent : le
+     * topic par défaut, celui des jetons enregistrés avant la migration 0051.
+     */
+    topic?: string;
+    title: string;
+    body: string;
+    badge?: number;
+    data?: Record<string, unknown>;
+  },
 ): Promise<boolean> {
   const autorisation = authToken();
   if (!autorisation) return true;
+  const topic = msg.topic || TOPIC;
 
   const corps = Buffer.from(
     JSON.stringify({
@@ -158,7 +172,7 @@ export async function sendApns(
 
   const essayer = async (hote: string): Promise<Reponse | null> => {
     try {
-      return await poster(hote, msg.token, corps, autorisation);
+      return await poster(hote, msg.token, corps, autorisation, topic);
     } catch (err) {
       log.error({ err, hote }, 'apns envoi impossible');
       return null;

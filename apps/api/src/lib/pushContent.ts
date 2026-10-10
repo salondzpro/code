@@ -20,13 +20,17 @@ type Public = 'client' | 'pro';
  * CONFIRMATION de sa réservation).
  */
 const EMOJI: Record<string, string | Record<Public, string>> = {
-  booking_created: { pro: '➕', client: '📅' },
+  // Le pro reçoit un NOUVEAU rendez-vous (📅) ; le client, l'accusé de sa DEMANDE (📨).
+  booking_created: { pro: '📅', client: '📨' },
   booking_confirmed: '✅',
   booking_cancelled: '❌',
   booking_rescheduled: '🔄',
   booking_reminder: '⏰',
   booking_completed: '⭐',
-  request_pending: '⏳',
+  // Une absence signalée pèse dans les règles anti-abus : c'est un avertissement, pas une information.
+  booking_no_show: '⚠️',
+  // Une demande attend encore une réponse : action requise.
+  request_pending: '⚠️',
   slot_freed: '✨',
 };
 

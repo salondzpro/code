@@ -50,6 +50,14 @@ const config: CapacitorConfig = {
     ...(process.env.SALONDZ_APP_MODE === 'remote' ? { url: 'https://salondz.com', errorPath: 'hors-ligne.html' } : {}),
   },
   plugins: {
+    /**
+     * iPhone, application AU PREMIER PLAN : sans ces options, iOS n'affiche RIEN quand une
+     * notification arrive pendant que l'application est ouverte — le professionnel sur son agenda
+     * n'apprend la nouvelle demande que par le rafraîchissement temps réel, sans son ni bandeau.
+     * (Sur Android, le greffon ne montre pas de notification système au premier plan : c'est le
+     * bandeau de `components/PushToast.tsx` qui prend le relais, sur les deux systèmes.)
+     */
+    PushNotifications: { presentationOptions: ['badge', 'sound', 'alert'] },
     SplashScreen: {
       // L'écran natif reste affiché jusqu'à ce que l'application prenne le relais, sur le MÊME fond
       // d'encre que l'animation d'ouverture : aucun éclair blanc entre les deux.

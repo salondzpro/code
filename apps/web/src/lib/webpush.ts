@@ -11,6 +11,7 @@
  * Le temps réel couvre déjà l'onglet ouvert ; le push ne sert qu'à l'atteindre quand il est
  * fermé.
  */
+import { useEffect, useState } from 'react';
 import type { ApiClient } from '@salondz/api-client';
 import { Capacitor } from '@capacitor/core';
 import { env } from './env';
@@ -126,4 +127,29 @@ export async function disableWebPush(api: ApiClient): Promise<void> {
   } catch (err) {
     console.warn('[push] désabonnement impossible', err);
   }
+}
+
+/**
+ * Permission de notification, RÉACTIVE, dans le vocabulaire du navigateur — et juste dans
+ * l'application mobile. `webPushPermission()` y répond toujours « default » (l'objet `Notification`
+ * n'existe pas dans une WebView) : l'interrupteur « Notifications sur cet appareil » restait donc
+ * ÉTEINT sur un téléphone où elles étaient accordées et actives. On lit l'état réel du greffon,
+ * de façon asynchrone, et l'écran suit.
+ */
+export function usePushPermission(): [NotificationPermission | 'unsupported', (p: NotificationPermission | 'unsupported') => void] {
+  const [etat, setEtat] = useState<NotificationPermission | 'unsupported'>(() => webPushPermission());
+  useEffect(() => {
+    if (!nativeShell()) return;
+    let vivant = true;
+    void import('./nativePush')
+      .then((m) => m.nativePushPermission())
+      .then((p) => {
+        if (vivant) setEtat(p);
+      })
+      .catch(() => undefined);
+    return () => {
+      vivant = false;
+    };
+  }, []);
+  return [etat, setEtat];
 }

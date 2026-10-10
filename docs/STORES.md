@@ -27,7 +27,7 @@ Salon DZ, c'est la réservation de salon en Algérie : simple, et sans avoir à 
 POUR LES CLIENTS
 • Trouvez barbiers, coiffeurs, instituts, ongles, cils et soins près de chez vous, avec les disponibilités en temps réel
 • Réservez en quelques secondes, en dinars algériens
-• Recevez la confirmation du salon et vos rappels (la veille et 2 h avant) directement par notification
+• Recevez la confirmation du salon et vos rappels (1 h puis 30 min avant) directement par notification
 • Reportez ou annulez en un geste, et retrouvez tous vos rendez-vous au même endroit
 • Réservez aussi pour un proche
 • Laissez un avis après votre rendez-vous
@@ -97,6 +97,19 @@ Cinquième volet différent selon le format : **Lien et QR code** sur téléphon
 **Sécurité des données** : la même déclaration qu'en § 2, moins la position (l'espace professionnel ne géolocalise pas) et moins les avis (le professionnel y répond, il n'en dépose pas).
 
 **Reste à faire** : `apps/web/public/.well-known/assetlinks.json` ne déclare que `dz.salondz.app`. L'empreinte de signature de `pro.salondz.app` n'est connue qu'après le premier envoi sur Play (clé de Google) — ajouter une seconde entrée alors, sinon les liens `salondz.com` n'ouvriront pas l'application professionnelle.
+
+### Salon DZ Pro sur iPhone (10 oct. 2026)
+
+La variante professionnelle existe aussi pour l'App Store : flux Codemagic **`ios-pro`** (`git tag ios-pro-1 && git push origin ios-pro-1`), même projet Xcode, identifiant **`pro.salondz.app`**, nom « Salon DZ Pro », icône `AppIcon-Pro.appiconset` (bandeau PRO, produite par `node scripts/make-capacitor-icons.mjs --pro`). Le bundle web est compilé en variante pro (les écrans clients ne sont pas livrés) et le flux refuse de continuer s'il y trouve le parcours de réservation.
+
+| Fait | Par |
+|---|---|
+| App ID `pro.salondz.app` (id `5Y3QVRSQUC`) avec Push Notifications et Associated Domains | `node scripts/asc-app-id-pro.mjs` (10 oct. 2026) |
+| `apple-app-site-association` déclare `PRB75K5S58.pro.salondz.app` | déjà en place |
+| `apns-topic` par application côté serveur (`push_tokens.app_id`, migration 0051) | API |
+| Profil App Store | récupéré ou créé par Codemagic (`fetch-signing-files --create`) à la première compilation |
+
+**Reste au propriétaire** : créer l'application « Salon DZ Pro » dans App Store Connect (bundle `pro.salondz.app`, SKU `salondz-pro`, `fr-FR`) — l'API ne crée pas une fiche ; sans elle, la compilation aboutit mais l'envoi TestFlight échoue. Puis remplir la fiche (`scripts/asc-fiche.mjs` vise `dz.salondz.app` : à paramétrer pour la pro), les étiquettes de confidentialité (mêmes que § 2 « Salon DZ Pro », sans position ni avis), un numéro de revue, et le compte de revue `relecteur-pro@salondz.com`.
 
 ## 2. Google Play — questionnaires
 
@@ -169,4 +182,4 @@ Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de 
 3. ~~Signalement d'un avis~~ — **traité le 21 sept.** : « Signaler » sous chaque avis (web : page salon, tous les avis, avis du professionnel ; application : liste des avis), un motif parmi quatre ; file `/admin/signalements` (masquer avec motif, ou sans suite) ; migration 0047 ; vérifié par `pnpm check:review-report`. Contact publié : `support@salondz.com`. **Dans le build v5 et suivants** de l'application.
 4. ~~**Captures d'écran** à prendre depuis un vrai téléphone~~ — **caduc depuis la bascule Capacitor (24 sept.)** : l'application EST le site embarqué, donc un rendu du site à la taille d'un iPhone est l'application au pixel près. `node scripts/make-ios-screenshots.mjs` ouvre la production en 430×932 à densité 3 (= 1290×2796), se connecte aux comptes de démonstration et prend six écrans ; il injecte les marges de sécurité de l'iPhone (59 pt en haut, 34 pt en bas) dans les mêmes variables CSS que le natif, sinon la mise en page serait celle d'un navigateur de bureau. Il ÉCHOUE bruyamment si la connexion ne prend pas — sans ce garde-fou, les six captures seraient six fois l'écran de connexion.
 5. **Application non essayée sur appareil** avant le premier envoi : le test interne (Play) et TestFlight (Apple) servent à ça, pas la production.
-6. **iOS** — aucun build jamais fait ; bloqué en attente de la clé App Store Connect, de la clé APNs et du Team ID.
+6. **iOS** — clés en place (App Store Connect, APNs, Team ID, certificat de distribution) et la fiche « Salon DZ » remplie ; la compilation se fait sur Codemagic à partir d'une étiquette `ios-N` (grand public) ou `ios-pro-N` (professionnelle) et part sur TestFlight. Aucune compilation ne peut être lancée depuis ce PC : il faut pousser l'étiquette, puis vérifier le build dans Codemagic et dans App Store Connect (`node scripts/asc-builds.mjs`). Pour la variante pro, la fiche App Store Connect reste à créer par le propriétaire (voir § 1 bis).

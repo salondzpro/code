@@ -344,8 +344,10 @@ on('GET', '/me/notifications', (c) => {
 on('POST', '/me/notifications/read', (c) => {
   const u = requireUser(c);
   const ids = c.body.ids as string[] | undefined;
+  const bookingId = c.body.bookingId as string | undefined;
   const now = new Date().toISOString();
-  for (const n of c.w.notifications) if (n.userId === u.id && !n.readAt && (!ids?.length || ids.includes(n.id))) n.readAt = now;
+  for (const n of c.w.notifications)
+    if (n.userId === u.id && !n.readAt && (!ids?.length || ids.includes(n.id)) && (!bookingId || n.bookingId === bookingId)) n.readAt = now;
   saveWorld();
   return none();
 });
@@ -904,6 +906,27 @@ on('GET', '/pro/bookings/pending', (c) => {
   const s = ownedSalon(c);
   const nowI = new Date(c.now).toISOString();
   return ok({ items: c.w.bookings.filter((b) => b.salonId === s.id && b.status === 'pending' && b.startsAt >= nowI).sort((a, b) => a.startsAt.localeCompare(b.startsAt)).slice(0, 100).map((b) => withStaff(c.w, b)), nextCursor: null });
+});
+// Rendez-vous PAS ENCORE VUS (pastille de l'agenda) : comme l'API, on les lit sur les notifications non
+// lues du professionnel qui portent un rendez-vous de ce salon. Déclaré AVANT `/pro/bookings/:id`.
+on('GET', '/pro/bookings/unseen', (c) => {
+  const u = requireUser(c);
+  const s = ownedSalon(c);
+  const ids = new Set(c.w.notifications.filter((n) => n.userId === u.id && !n.readAt && n.bookingId).map((n) => n.bookingId as string));
+  const rdv = c.w.bookings.filter((b) => b.salonId === s.id && ids.has(b.id));
+  const byDate: Record<string, number> = {};
+  for (const b of rdv) {
+    const jour = toLocalDateKey(new Date(b.startsAt));
+    byDate[jour] = (byDate[jour] ?? 0) + 1;
+  }
+  return ok({ total: rdv.length, byDate, bookingIds: rdv.map((b) => b.id) });
+});
+on('POST', '/pro/bookings/:id/seen', (c, p) => {
+  const u = requireUser(c);
+  const now = new Date().toISOString();
+  for (const n of c.w.notifications) if (n.userId === u.id && n.bookingId === p.id && !n.readAt) n.readAt = now;
+  saveWorld();
+  return none();
 });
 on('POST', '/pro/bookings', (c) => {
   const s = ownedSalon(c);

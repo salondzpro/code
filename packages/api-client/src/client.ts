@@ -479,11 +479,15 @@ export function createApiClient(opts: ApiClientOptions) {
         token: string;
         platform: 'ios' | 'android' | 'web';
         deviceName?: string;
+        /** Application qui enregistre (grand public ou pro) : sur iPhone, Apple exige le topic de la bonne application. */
+        appId?: 'dz.salondz.app' | 'pro.salondz.app';
       }) => post<void>('/me/push-tokens', body),
       removePushToken: (token: string) => del<void>(`/me/push-tokens/${encodeURIComponent(token)}`),
       notifications: (cursor = 0, limit = 30) =>
         get<NotificationsResponse>('/me/notifications', { cursor, limit }),
-      markNotificationsRead: (ids?: string[]) => post<void>('/me/notifications/read', { ids }),
+      /** Marquer lues : une liste précise, celles d'un rendez-vous, ou toutes (aucun argument). */
+      markNotificationsRead: (scope?: { ids?: string[]; bookingId?: string }) =>
+        post<void>('/me/notifications/read', scope ?? {}),
       favorites: () => get<{ items: SalonSummary[] }>('/me/favorites'),
       stats: () => get<MeStats>('/me/stats'),
       addFavorite: (salonId: string) => put<void>(`/me/favorites/${salonId}`),
