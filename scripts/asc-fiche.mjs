@@ -367,6 +367,20 @@ if (revueExistante) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// 4 bis. Droits sur le contenu : l'application montre des photos et des avis publiés par ses
+//    utilisateurs (contenu tiers). Sans cette déclaration, la soumission est refusée. On ne touche
+//    pas à une valeur déjà posée (la fiche grand public l'a été par le propriétaire).
+// ---------------------------------------------------------------------------------------------
+const droits = (await lire(`/v1/apps/${APP}?fields[apps]=contentRightsDeclaration`))?.attributes?.contentRightsDeclaration;
+if (droits) {
+  console.log('· droits sur le contenu déjà déclarés :', droits);
+  ok.push('droits sur le contenu (déjà déclarés)');
+} else {
+  await ecrire('droits sur le contenu (contenu tiers : photos et avis des utilisateurs)', 'PATCH', `/v1/apps/${APP}`, {
+    data: { type: 'apps', id: APP, attributes: { contentRightsDeclaration: 'USES_THIRD_PARTY_CONTENT' } },
+  });
+}
+// ---------------------------------------------------------------------------------------------
 // 5. Tarif : gratuit. Sans grille de prix, l'application ne peut pas partir en revue.
 // ---------------------------------------------------------------------------------------------
 const BASE = 'DZA'; // le marché d'origine ; le gratuit vaut ensuite pour tous les pays.
