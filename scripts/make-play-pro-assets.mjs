@@ -135,7 +135,7 @@ const ECRANS = [
   {
     nom: 'chiffre-affaires',
     url: '/pro/chiffre-affaires',
-    defile: { telephone: { px: 150 }, 'iphone-6-7': { px: 150 } },
+    defile: { telephone: { px: 150 }, 'iphone-6-7': { px: 0 } },
     surtitre: 'Chiffre d’affaires',
     titre: ['Ce que rapporte', 'votre'],
     accent: 'semaine.',

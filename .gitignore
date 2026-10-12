@@ -81,3 +81,9 @@ apps/web/ios/store/panorama.html
 
 # ecrans bruts de la variante pro iPhone (regenerables : make-play-pro-assets.mjs --format iphone-6-7)
 apps/web/ios/store/pro/captures/
+
+# Séries iPhone 6,5 et 5,5 pouces : dérivées de presentation-6-7 par scripts/make-store-derives.mjs (28 Mo, régénérables)
+apps/web/ios/store/presentation-6-5/
+apps/web/ios/store/presentation-5-5/
+apps/web/ios/store/pro/presentation-6-5/
+apps/web/ios/store/pro/presentation-5-5/

@@ -113,7 +113,7 @@ La variante professionnelle existe aussi pour l'App Store : flux Codemagic **`io
 
 **Compilation** : `node --env-file=.env scripts/codemagic.mjs --lancer --pro` (flux `ios-pro`, sans étiquette Git), ou `git tag ios-pro-N && git push origin ios-pro-N`. Puis `node scripts/asc-attendre-build.mjs --pro` et `node scripts/asc-soumettre.mjs --pro`.
 
-**Reste à la main (comme pour la grand public)** : étiquettes de confidentialité (mêmes que § 2 « Salon DZ Pro », sans position ni avis) et déclaration « dispositif médical réglementé = Non » dans la classification par âge.
+**13 oct. 2026** : build 1 (Codemagic `ios-pro`, 12 oct.) traité par Apple et rattaché à la version 1.0 ; trois séries de visuels en ligne (6,7 / 6,5 / 5,5 pouces, 18 images). La soumission en revue est OUVERTE mais refusée tant que les étiquettes de confidentialité ne sont pas **publiées** (`STATE_ERROR.APP_DATA_USAGES_REQUIRED` : « You must have published answers to your app's data usages »). Remplir ne suffit pas : dans App Store Connect → l'app → **Confidentialité de l'app**, il faut cliquer **Publier** en haut à droite après avoir répondu. Ensuite `node scripts/asc-soumettre.mjs --pro` reprend la soumission ouverte et l'envoie. La fiche grand public, elle, est **en revue depuis le 12 oct. 2026** (build 11, `WAITING_FOR_REVIEW`).
 
 ## 2. Google Play — questionnaires
 
@@ -160,7 +160,8 @@ Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de 
 |---|---|
 | `node scripts/asc-fiche.mjs` | sous-titre, confidentialité, catégories, description, mots-clés, liens, copyright, classification par âge, notes de revue, tarif gratuit, disponibilité (175 pays). Idempotent. `--telephone "+213 …"` pose le numéro de revue (sans l'option, un numéro réel déjà en place est conservé), `--lire` n'écrit rien. |
 | `node scripts/make-store-panels.mjs` | les six visuels de présentation 1290×2796 (panorama continu, `apps/web/ios/store/presentation-6-7/`) |
-| `node scripts/asc-captures.mjs` | les envoie sur la fiche (série `APP_IPHONE_67`), en quatre temps comme l'exige Apple ; `--lire` montre l'état |
+| `node scripts/make-store-derives.mjs` | dérive des volets 6,7 pouces les séries **6,5 pouces** (1242×2688) et **5,5 pouces** (1242×2208), pour les deux fiches (`--pro` / `--client` pour une seule) : Apple n'exige que la 6,7 mais réduit lui-même pour les anciens iPhone, très répandus en Algérie — on livre donc les trois séries, comme téléphone + tablettes sur Google Play |
+| `node scripts/asc-captures.mjs` | les envoie sur la fiche (série `APP_IPHONE_67`), en quatre temps comme l'exige Apple ; `--serie 6-5` / `--serie 5-5` pour les deux autres séries ; `--lire` montre l'état |
 | `node scripts/asc-builds.mjs` | les builds reçus par Apple et leur état de traitement |
 | `node scripts/asc-signature.mjs` | capacités de l'App ID et profils : dit si la signature passera |
 | `node scripts/asc-soumettre.mjs` | rattache le dernier build traité à la version et l'envoie EN REVUE ; `--verifier` ne fait que dire ce qui manque |

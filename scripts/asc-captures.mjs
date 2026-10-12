@@ -1,10 +1,13 @@
 /**
- * Envoie les visuels de présentation sur la fiche App Store (iPhone 6,7 pouces).
+ * Envoie les visuels de présentation sur la fiche App Store (iPhone 6,7 pouces par défaut).
  *
  *   node scripts/asc-captures.mjs              → remplace la série existante
  *   node scripts/asc-captures.mjs --lire       → montre seulement ce qui est en ligne
  *   node scripts/asc-captures.mjs --pro        → la série de « Salon DZ Pro » (visuels de
  *                                                 apps/web/ios/store/pro/presentation-6-7)
+ *   node scripts/asc-captures.mjs --serie 6-5  → la série 6,5 pouces (1242×2688, `presentation-6-5`),
+ *                                                 `5-5` pour 5,5 pouces (1242×2208) ; voir
+ *                                                 make-store-derives.mjs, qui les produit
  *
  * Apple n'accepte pas un simple POST de fichier : une capture s'envoie en QUATRE temps.
  *   1. on déclare le fichier (nom et taille) et Apple répond par des « opérations d'envoi » ;
@@ -26,8 +29,16 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
  */
 const PRO = process.argv.includes('--pro');
 const APP = PRO ? '6821947874' : '6817317513';
-const DOSSIER = path.join(ROOT, 'apps', 'web', 'ios', 'store', ...(PRO ? ['pro', 'presentation-6-7'] : ['presentation-6-7']));
-const TYPE = 'APP_IPHONE_67'; // 1290 × 2796 ; la seule série obligatoire depuis qu'Apple a simplifié
+/**
+ * Trois séries iPhone. Seule la 6,7 pouces est obligatoire depuis qu'Apple a simplifié ; les deux
+ * autres sont dérivées d'elle (`make-store-derives.mjs`) pour que la fiche n'ait aucun onglet vide.
+ */
+const SERIES = { '6-7': 'APP_IPHONE_67', '6-5': 'APP_IPHONE_65', '5-5': 'APP_IPHONE_55' };
+const SERIE = process.argv[process.argv.indexOf('--serie') + 1];
+if (process.argv.includes('--serie') && !SERIES[SERIE]) throw new Error(`--serie attend ${Object.keys(SERIES).join(', ')}`);
+const CLE = SERIES[SERIE] ? SERIE : '6-7';
+const DOSSIER = path.join(ROOT, 'apps', 'web', 'ios', 'store', ...(PRO ? ['pro', `presentation-${CLE}`] : [`presentation-${CLE}`]));
+const TYPE = SERIES[CLE];
 const LIRE = process.argv.includes('--lire');
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
