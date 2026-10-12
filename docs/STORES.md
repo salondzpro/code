@@ -109,7 +109,11 @@ La variante professionnelle existe aussi pour l'App Store : flux Codemagic **`io
 | `apns-topic` par application côté serveur (`push_tokens.app_id`, migration 0051) | API |
 | Profil App Store | récupéré ou créé par Codemagic (`fetch-signing-files --create`) à la première compilation |
 
-**Reste au propriétaire** : créer l'application « Salon DZ Pro » dans App Store Connect (bundle `pro.salondz.app`, SKU `salondz-pro`, `fr-FR`) — l'API ne crée pas une fiche ; sans elle, la compilation aboutit mais l'envoi TestFlight échoue. Puis remplir la fiche (`scripts/asc-fiche.mjs` vise `dz.salondz.app` : à paramétrer pour la pro), les étiquettes de confidentialité (mêmes que § 2 « Salon DZ Pro », sans position ni avis), un numéro de revue, et le compte de revue `relecteur-pro@salondz.com`.
+**12 oct. 2026 — la fiche existe et est remplie.** Le propriétaire a créé l'application dans App Store Connect : id **`6821947874`**, bundle `pro.salondz.app`, nom « Salon DZ PRO », SKU `Salon`, `fr-FR`, version 1.0. Tout le reste a été posé par l'API avec le mode `--pro` des scripts du § 3 bis : sous-titre « L'agenda de votre salon », confidentialité, catégories **Entreprise / Productivité**, description du § 1 bis, mots-clés, liens, copyright, classification 4+, notes et compte de revue `relecteur-pro@salondz.com` (numéro de revue repris de la fiche grand public), gratuit, 175 pays, et **six visuels 1290×2796** (série `APP_IPHONE_67`, produits par `node scripts/make-play-pro-assets.mjs --format iphone-6-7` → `apps/web/ios/store/pro/presentation-6-7/`, envoyés par `node scripts/asc-captures.mjs --pro`).
+
+**Compilation** : `node --env-file=.env scripts/codemagic.mjs --lancer --pro` (flux `ios-pro`, sans étiquette Git), ou `git tag ios-pro-N && git push origin ios-pro-N`. Puis `node scripts/asc-attendre-build.mjs --pro` et `node scripts/asc-soumettre.mjs --pro`.
+
+**Reste à la main (comme pour la grand public)** : étiquettes de confidentialité (mêmes que § 2 « Salon DZ Pro », sans position ni avis) et déclaration « dispositif médical réglementé = Non » dans la classification par âge.
 
 ## 2. Google Play — questionnaires
 
@@ -154,16 +158,19 @@ Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de 
 
 | Script | Ce qu'il fait |
 |---|---|
-| `node scripts/asc-fiche.mjs` | sous-titre, confidentialité, catégories, description, mots-clés, liens, copyright, classification par âge, notes de revue, tarif gratuit, disponibilité (175 pays). Idempotent. `--telephone "+213 …"` pose le numéro de revue, `--lire` n'écrit rien. |
+| `node scripts/asc-fiche.mjs` | sous-titre, confidentialité, catégories, description, mots-clés, liens, copyright, classification par âge, notes de revue, tarif gratuit, disponibilité (175 pays). Idempotent. `--telephone "+213 …"` pose le numéro de revue (sans l'option, un numéro réel déjà en place est conservé), `--lire` n'écrit rien. |
 | `node scripts/make-store-panels.mjs` | les six visuels de présentation 1290×2796 (panorama continu, `apps/web/ios/store/presentation-6-7/`) |
 | `node scripts/asc-captures.mjs` | les envoie sur la fiche (série `APP_IPHONE_67`), en quatre temps comme l'exige Apple ; `--lire` montre l'état |
 | `node scripts/asc-builds.mjs` | les builds reçus par Apple et leur état de traitement |
 | `node scripts/asc-signature.mjs` | capacités de l'App ID et profils : dit si la signature passera |
 | `node scripts/asc-soumettre.mjs` | rattache le dernier build traité à la version et l'envoie EN REVUE ; `--verifier` ne fait que dire ce qui manque |
+| `node --env-file=.env scripts/codemagic.mjs` | `--lancer` compile l'app client sur Codemagic sans étiquette Git, `--lancer --pro` l'app pro, `--suivre [id]` suit une compilation, sans option : l'état des cinq dernières |
+
+**Deux fiches, un même jeu de scripts** : `asc-fiche`, `asc-captures`, `asc-builds`, `asc-attendre-build` et `asc-soumettre` acceptent `--pro` et visent alors « Salon DZ Pro » (`6821947874`) avec ses propres textes, son compte de revue et son dossier de visuels. Sans l'option : « Salon DZ » (`6817317513`).
 | `node --env-file=.env scripts/check-review-accounts.mjs` | les deux comptes que le relecteur va utiliser s'ouvrent-ils vraiment, et leur profil est-il complet |
 | `node --env-file=.env scripts/check-apns.mjs` | la clé APNs est-elle acceptée par Apple (sans appareil) |
 
-**Lancer une compilation iOS** : `git tag ios-N && git push origin ios-N`. Le déclenchement se fait sur l'étiquette et non sur chaque poussée — une machine macOS se paie à la minute. L'intégration Codemagic doit s'appeler **`salondz_asc`**.
+**Lancer une compilation iOS** : `node --env-file=.env scripts/codemagic.mjs --lancer [--pro]` (jeton `CODEMAGIC_API_TOKEN` dans `.env`), ou `git tag ios-N && git push origin ios-N` (`ios-pro-N` pour la pro). Le déclenchement automatique se fait sur l'étiquette et non sur chaque poussée — une machine macOS se paie à la minute. L'intégration Codemagic doit s'appeler **`salondz_asc`**.
 
 **Diagnostiquer un refus de mise en revue** : Apple répond « cette ressource ne peut pas être relue, voyez les erreurs associées » — un message qui ne dit rien. Les VRAIES raisons sont dans `meta.associatedErrors` de la réponse ; `asc-soumettre.mjs` les déplie désormais systématiquement. **C'est ce qui a permis de trouver le vrai blocage** après l'avoir attribué à tort aux étiquettes de confidentialité.
 
@@ -182,4 +189,4 @@ Trois scripts remplissent la fiche sans passer par l'interface web (clé ASC de 
 3. ~~Signalement d'un avis~~ — **traité le 21 sept.** : « Signaler » sous chaque avis (web : page salon, tous les avis, avis du professionnel ; application : liste des avis), un motif parmi quatre ; file `/admin/signalements` (masquer avec motif, ou sans suite) ; migration 0047 ; vérifié par `pnpm check:review-report`. Contact publié : `support@salondz.com`. **Dans le build v5 et suivants** de l'application.
 4. ~~**Captures d'écran** à prendre depuis un vrai téléphone~~ — **caduc depuis la bascule Capacitor (24 sept.)** : l'application EST le site embarqué, donc un rendu du site à la taille d'un iPhone est l'application au pixel près. `node scripts/make-ios-screenshots.mjs` ouvre la production en 430×932 à densité 3 (= 1290×2796), se connecte aux comptes de démonstration et prend six écrans ; il injecte les marges de sécurité de l'iPhone (59 pt en haut, 34 pt en bas) dans les mêmes variables CSS que le natif, sinon la mise en page serait celle d'un navigateur de bureau. Il ÉCHOUE bruyamment si la connexion ne prend pas — sans ce garde-fou, les six captures seraient six fois l'écran de connexion.
 5. **Application non essayée sur appareil** avant le premier envoi : le test interne (Play) et TestFlight (Apple) servent à ça, pas la production.
-6. **iOS** — clés en place (App Store Connect, APNs, Team ID, certificat de distribution) et la fiche « Salon DZ » remplie ; la compilation se fait sur Codemagic à partir d'une étiquette `ios-N` (grand public) ou `ios-pro-N` (professionnelle) et part sur TestFlight. Aucune compilation ne peut être lancée depuis ce PC : il faut pousser l'étiquette, puis vérifier le build dans Codemagic et dans App Store Connect (`node scripts/asc-builds.mjs`). Pour la variante pro, la fiche App Store Connect reste à créer par le propriétaire (voir § 1 bis).
+6. **iOS** — clés en place (App Store Connect, APNs, Team ID, certificat de distribution), les deux fiches « Salon DZ » et « Salon DZ Pro » remplies ; la compilation se fait sur Codemagic (`scripts/codemagic.mjs --lancer [--pro]` depuis ce PC, ou étiquette `ios-N` / `ios-pro-N`) et part sur TestFlight ; vérifier ensuite le build dans App Store Connect (`node scripts/asc-builds.mjs [--pro]`).

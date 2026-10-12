@@ -3,6 +3,8 @@
  *
  *   node scripts/asc-captures.mjs              → remplace la série existante
  *   node scripts/asc-captures.mjs --lire       → montre seulement ce qui est en ligne
+ *   node scripts/asc-captures.mjs --pro        → la série de « Salon DZ Pro » (visuels de
+ *                                                 apps/web/ios/store/pro/presentation-6-7)
  *
  * Apple n'accepte pas un simple POST de fichier : une capture s'envoie en QUATRE temps.
  *   1. on déclare le fichier (nom et taille) et Apple répond par des « opérations d'envoi » ;
@@ -18,8 +20,13 @@ import { fileURLToPath } from 'node:url';
 import { asc } from './asc-lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DOSSIER = path.join(ROOT, 'apps', 'web', 'ios', 'store', 'presentation-6-7');
-const APP = '6817317513';
+/**
+ * Deux applications, une fiche chacune : `--pro` vise « Salon DZ Pro » (id 6821947874, bundle
+ * pro.salondz.app, créée par le propriétaire le 12 oct. 2026), sinon « Salon DZ » (6817317513).
+ */
+const PRO = process.argv.includes('--pro');
+const APP = PRO ? '6821947874' : '6817317513';
+const DOSSIER = path.join(ROOT, 'apps', 'web', 'ios', 'store', ...(PRO ? ['pro', 'presentation-6-7'] : ['presentation-6-7']));
 const TYPE = 'APP_IPHONE_67'; // 1290 × 2796 ; la seule série obligatoire depuis qu'Apple a simplifié
 const LIRE = process.argv.includes('--lire');
 

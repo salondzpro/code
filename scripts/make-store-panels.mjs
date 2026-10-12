@@ -94,7 +94,7 @@ const VOLETS = [
     surtitre: 'Rappels',
     titre: ['On vous le', ''],
     accent: 'rappelle.',
-    sous: 'Confirmation du salon, rappel la veille et 2 h avant.',
+    sous: 'Confirmation du salon, rappel 1 h puis 30 min avant.',
     capture: '4-mes-rendez-vous.png',
     penche: -4,
   },

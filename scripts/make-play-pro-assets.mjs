@@ -4,6 +4,8 @@
  *   node scripts/make-play-pro-assets.mjs
  *   node scripts/make-play-pro-assets.mjs --url http://localhost:9000
  *   node scripts/make-play-pro-assets.mjs --format tablette-10
+ *   node scripts/make-play-pro-assets.mjs --format iphone-6-7   → App Store (1290×2796), dans
+ *                                                                 apps/web/ios/store/pro/
  *
  * Produit, sous `apps/web/android/store/pro/` :
  *   telephone/     6 visuels 1080×1920   (emplacement « téléphone » de la fiche)
@@ -60,7 +62,12 @@ const FORMATS = [
   { cle: 'telephone', vue: { width: 360, height: 640 }, dsf: 3, marges: { haut: 28, bas: 16 }, paysage: false },
   { cle: 'tablette-7', vue: { width: 960, height: 600 }, dsf: 2, marges: { haut: 20, bas: 0 }, paysage: true },
   { cle: 'tablette-10', vue: { width: 1280, height: 800 }, dsf: 2, marges: { haut: 20, bas: 0 }, paysage: true },
+  // App Store : 430 × 932 points × 3 = 1290 × 2796, marges de l'iPhone (encoche 59 pt, barre 34 pt),
+  // écrit sous apps/web/ios/store/pro/ — c'est la série APP_IPHONE_67 qu'envoie `asc-captures.mjs --pro`.
+  { cle: 'iphone-6-7', vue: { width: 430, height: 932 }, dsf: 3, marges: { haut: 59, bas: 34 }, paysage: false, ios: true },
 ];
+const OUT_IOS = path.join(ROOT, 'apps', 'web', 'ios', 'store', 'pro');
+const sortieDe = (fmt) => (fmt.ios ? OUT_IOS : OUT);
 
 /**
  * Les écrans qui décident un professionnel, dans l'ordre où Play les affichera.
@@ -84,7 +91,7 @@ const ECRANS = [
     // L'agenda se place TOUT SEUL sur l'heure actuelle au chargement. Sur téléphone cela tombe
     // bien ; sur tablette la hauteur montre déjà la journée, et ce recentrage coupait l'en-tête du
     // jour et affichait le repère rouge « avant l'ouverture » à moitié sorti. On remonte en haut.
-    defile: { telephone: { part: 0.24 }, 'tablette-7': { px: 0 }, 'tablette-10': { px: 0 } },
+    defile: { telephone: { part: 0.24 }, 'iphone-6-7': { px: 0 }, 'tablette-7': { px: 0 }, 'tablette-10': { px: 0 } },
     surtitre: 'Agenda',
     titre: ['Toute l’équipe,', 'heure par'],
     accent: 'heure.',
@@ -128,7 +135,7 @@ const ECRANS = [
   {
     nom: 'chiffre-affaires',
     url: '/pro/chiffre-affaires',
-    defile: { telephone: { px: 150 } },
+    defile: { telephone: { px: 150 }, 'iphone-6-7': { px: 150 } },
     surtitre: 'Chiffre d’affaires',
     titre: ['Ce que rapporte', 'votre'],
     accent: 'semaine.',
@@ -205,7 +212,7 @@ try {
   async function capturer(fmt) {
     const L = fmt.vue.width * fmt.dsf;
     const H = fmt.vue.height * fmt.dsf;
-    const dossier = path.join(OUT, 'captures', fmt.cle);
+    const dossier = path.join(sortieDe(fmt), 'captures', fmt.cle);
     vider(dossier);
 
     const ctx = await navigateur.newContext({
@@ -216,9 +223,11 @@ try {
       locale: 'fr-FR',
       timezoneId: 'Africa/Algiers',
       storageState: SESSION,
-      userAgent: fmt.paysage
-        ? 'Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-        : 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36',
+      userAgent: fmt.ios
+        ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'
+        : fmt.paysage
+          ? 'Mozilla/5.0 (Linux; Android 14; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+          : 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36',
     });
     const page = await ctx.newPage();
     page.setDefaultTimeout(30_000);
@@ -263,8 +272,16 @@ try {
     const L = fmt.vue.width * fmt.dsf;
     const H = fmt.vue.height * fmt.dsf;
     const TOTAL = L * ECRANS.length;
-    const sortie = path.join(OUT, fmt.cle);
+    const sortie = fmt.ios ? path.join(OUT_IOS, 'presentation-6-7') : path.join(OUT, fmt.cle);
     vider(sortie);
+    // Tout est écrit en « unités 1080 » et multiplié par k : le volet iPhone (1290 de large) garde
+    // les mêmes proportions de texte. Sa hauteur en plus va à l'appareil, posé plus bas et plus grand.
+    const k = L / 1080;
+    const u = (n) => `${Math.round(n * k)}px`;
+    const APPAREIL = fmt.ios
+      ? `left:50%;transform:translateX(-50%);top:1010px;width:1000px;height:2170px;border-radius:116px;padding:13px`
+      : `left:50%;transform:translateX(-50%);top:${u(700)};width:${u(820)};height:${u(1440)};border-radius:${u(90)};padding:${u(11)}`;
+    const ECRAN_R = fmt.ios ? '104px' : u(80);
 
     const volet = (e) => `
       <section class="volet">
@@ -272,7 +289,7 @@ try {
         <div class="surtitre">${e.surtitre}</div>
         <h1>${e.titre[0]}<br />${e.titre[1]} <em>${e.accent}</em></h1>
         <p class="sous">${e.sous}</p>
-        <div class="appareil"><div class="ecran"><img src="${b64(path.join(captures, `${e.nom}.png`))}" alt="" /></div></div>
+        <div class="appareil"><div class="ecran">${fmt.ios ? '<div class="ile"></div>' : ''}<img src="${b64(path.join(captures, `${e.nom}.png`))}" alt="" /></div></div>
       </section>`;
 
     const html = `<meta charset="utf-8" /><style>
@@ -283,27 +300,28 @@ try {
       .fond{position:absolute;inset:0;background:${FOND}}
       .fil{position:absolute;inset:0}
       .volets{position:absolute;inset:0;display:flex}
-      .volet{width:${L}px;height:${H}px;position:relative;padding:104px 76px 0;display:flex;flex-direction:column;color:#fff;overflow:hidden}
-      .marque{font-size:29px;letter-spacing:-1px;margin-bottom:34px;opacity:.92}
+      .volet{width:${L}px;height:${H}px;position:relative;padding:${fmt.ios ? '250px' : u(104)} ${u(76)} 0;display:flex;flex-direction:column;color:#fff;overflow:hidden}
+      .marque{font-size:${u(29)};letter-spacing:-1px;margin-bottom:${u(34)};opacity:.92}
       .marque b{font-weight:600}
       .marque i{font-style:normal;font-weight:300;color:rgba(255,255,255,.6);margin-left:.14em}
-      .marque span{display:inline-block;margin-left:12px;background:#e8dacb;color:#111214;font-weight:700;
-        font-size:18px;letter-spacing:3px;padding:4px 11px;border-radius:6px;vertical-align:4px}
-      .surtitre{font-weight:700;font-size:26px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:20px}
-      h1{font-weight:700;font-size:80px;line-height:1.02;letter-spacing:-3px}
+      .marque span{display:inline-block;margin-left:${u(12)};background:#e8dacb;color:#111214;font-weight:700;
+        font-size:${u(18)};letter-spacing:3px;padding:${u(4)} ${u(11)};border-radius:${u(6)};vertical-align:${u(4)}}
+      .surtitre{font-weight:700;font-size:${u(26)};letter-spacing:${u(4)};text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:${u(20)}}
+      h1{font-weight:700;font-size:${u(80)};line-height:1.02;letter-spacing:${u(-3)}}
       h1 em{font-style:normal;color:#e8dacb}
-      .sous{margin-top:20px;font-size:31px;line-height:1.34;font-weight:400;color:rgba(255,255,255,.72)}
+      .sous{margin-top:${u(20)};font-size:${u(31)};line-height:1.34;font-weight:400;color:rgba(255,255,255,.72)}
       /* L'appareil déborde volontairement du bas : on montre une application en train de servir,
          pas une vignette centrée dans du vide. */
-      .appareil{position:absolute;left:50%;transform:translateX(-50%);top:700px;width:820px;height:1440px;
-        border-radius:90px;padding:11px;background:linear-gradient(160deg,#d9d6d1,#8d8a86 42%,#efece7 78%,#807d79);
+      .appareil{position:absolute;${APPAREIL};background:linear-gradient(160deg,#d9d6d1,#8d8a86 42%,#efece7 78%,#807d79);
         box-shadow:0 46px 96px rgba(0,0,0,.52)}
-      .ecran{width:100%;height:100%;border-radius:80px;overflow:hidden;background:#fff}
+      .ecran{width:100%;height:100%;border-radius:${ECRAN_R};overflow:hidden;background:#fff;position:relative}
       .ecran img{width:100%;display:block}
+      /* Dynamic Island : sans elle, le cadre ne se lit pas comme un iPhone. */
+      .ile{position:absolute;top:34px;left:50%;transform:translateX(-50%);width:264px;height:72px;border-radius:40px;background:#08070c;z-index:3}
     </style>
     <div class="fond"></div>
     <svg class="fil" viewBox="0 0 ${TOTAL} ${H}" preserveAspectRatio="none">
-      <path d="M-60 1500 C 700 1360, 1180 1700, 1900 1580 S 3100 1160, 3820 1350 S 5000 1740, 5720 1540 S 6300 1300, ${TOTAL + 60} 1390"
+      <path d="M-60 ${Math.round(1500 * H / 1920)} C ${[700, 1360, 1180, 1700, 1900, 1580].map((n, i) => Math.round(n * (i % 2 ? H / 1920 : k))).join(' ')} S ${[3100, 1160, 3820, 1350].map((n, i) => Math.round(n * (i % 2 ? H / 1920 : k))).join(' ')} S ${[5000, 1740, 5720, 1540].map((n, i) => Math.round(n * (i % 2 ? H / 1920 : k))).join(' ')} S ${[6300, 1300].map((n, i) => Math.round(n * (i % 2 ? H / 1920 : k))).join(' ')}, ${TOTAL + 60} ${Math.round(1390 * H / 1920)}"
             fill="none" stroke="rgba(232,218,203,.22)" stroke-width="8" stroke-linecap="round" stroke-dasharray="38 28" />
     </svg>
     <div class="volets">${ECRANS.map(volet).join('')}</div>`;
@@ -443,6 +461,11 @@ try {
     <h1>Votre salon se remplit pendant que vous <em>travaillez.</em></h1>
     <p>Agenda, demandes, clientèle et chiffre d’affaires.</p>
   </div>`;
+  if (SEUL && SEUL !== 'telephone') {
+    console.log('· image de présentation inchangée (format ' + SEUL + ' seul)');
+    await navigateur.close();
+    process.exit(0);
+  }
   const pageBanniere = await navigateur.newPage({ viewport: { width: 1024, height: 500 }, deviceScaleFactor: 1 });
   await pageBanniere.setContent(banniere);
   await pageBanniere.evaluate(() => document.fonts.ready);

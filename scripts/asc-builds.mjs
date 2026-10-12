@@ -1,7 +1,12 @@
 /** Les builds reçus par Apple pour Salon DZ, et l'état de la version. Lecture seule. */
 import { asc } from './asc-lib.mjs';
 
-const APP = '6817317513';
+/**
+ * Deux applications, une fiche chacune : `--pro` vise « Salon DZ Pro » (id 6821947874, bundle
+ * pro.salondz.app, créée par le propriétaire le 12 oct. 2026), sinon « Salon DZ » (6817317513).
+ */
+const PRO = process.argv.includes('--pro');
+const APP = PRO ? '6821947874' : '6817317513';
 
 const builds = (await asc('GET', `/v1/builds?filter[app]=${APP}&limit=10&sort=-uploadedDate`)).json?.data ?? [];
 console.log(`builds reçus : ${builds.length}`);

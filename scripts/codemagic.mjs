@@ -1,9 +1,10 @@
 /**
  * Pilotage de Codemagic depuis le PC : lancer une compilation iOS, la suivre, lire ses étapes.
  *
- *   node --env-file=.env scripts/codemagic.mjs --lancer     → démarre une compilation sur `main`
- *   node --env-file=.env scripts/codemagic.mjs --suivre     → suit la dernière jusqu'à la fin
- *   node --env-file=.env scripts/codemagic.mjs              → l'état des cinq dernières
+ *   node --env-file=.env scripts/codemagic.mjs --lancer              → compile l'app CLIENT (flux `ios`) sur `main`
+ *   node --env-file=.env scripts/codemagic.mjs --lancer --pro        → compile l'app PRO (flux `ios-pro`)
+ *   node --env-file=.env scripts/codemagic.mjs --suivre [id]         → suit la dernière (ou celle donnée) jusqu'à la fin
+ *   node --env-file=.env scripts/codemagic.mjs                       → l'état des cinq dernières
  *
  * UNE COMPILATION macOS SE PAIE À LA MINUTE (500 min/mois offertes, ~12 min par passage) : ne
  * lancer que lorsqu'il y a vraiment quelque chose à publier, jamais pour une retouche.
@@ -15,12 +16,13 @@ const H = { 'x-auth-token': JETON, 'Content-Type': 'application/json' };
 const api = async (p, init) => (await fetch('https://api.codemagic.io' + p, { headers: H, ...init })).json();
 
 const arg = (n) => process.argv.includes(n);
+const FLUX = arg('--pro') ? 'ios-pro' : 'ios';
 
 /** Identifiant de la compilation à suivre : celle qu'on vient de lancer, sinon la dernière. */
-let suivi = null;
+let suivi = process.argv[process.argv.indexOf('--suivre') + 1]?.match(/^[0-9a-f]{24}$/) ? process.argv[process.argv.indexOf('--suivre') + 1] : null;
 
 if (arg('--lancer')) {
-  const r = await api('/builds', { method: 'POST', body: JSON.stringify({ appId: APP, workflowId: 'ios', branch: 'main' }) });
+  const r = await api('/builds', { method: 'POST', body: JSON.stringify({ appId: APP, workflowId: FLUX, branch: 'main' }) });
   suivi = r.buildId ?? null;
   console.log('compilation lancée :', suivi ?? JSON.stringify(r));
 }
@@ -60,4 +62,4 @@ if (arg('--suivre') || arg('--lancer')) {
 }
 
 const l = await api(`/builds?appId=${APP}&limit=5`);
-for (const b of l.builds ?? []) console.log(b._id, b.status, b.startedAt ?? '');
+for (const b of l.builds ?? []) console.log(b._id, b.workflowId === '6aba963b3b35a524ae18ca5b' ? '' : (b.config?.name ?? b.workflowId ?? ''), b.status, b.startedAt ?? '');

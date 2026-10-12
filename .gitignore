@@ -78,3 +78,6 @@ apps/mobile/credentials.json
 # Panorama des visuels de boutique : 4,7 Mo de polices et d images en base64, entierement
 # regenere par scripts/make-store-panels.mjs. Ce sont les PNG decoupes qui sont la livraison.
 apps/web/ios/store/panorama.html
+
+# ecrans bruts de la variante pro iPhone (regenerables : make-play-pro-assets.mjs --format iphone-6-7)
+apps/web/ios/store/pro/captures/

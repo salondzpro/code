@@ -4,6 +4,10 @@
  *   node scripts/asc-fiche.mjs                              → écrit tout et affiche ce qui reste
  *   node scripts/asc-fiche.mjs --telephone "+213 6 …"        → avec le vrai numéro de revue
  *   node scripts/asc-fiche.mjs --lire                        → n'écrit rien, montre l'état actuel
+ *   node scripts/asc-fiche.mjs --pro [...]                   → la fiche de « Salon DZ Pro »
+ *
+ * Pour la fiche PRO, le numéro de revue est repris de la fiche grand public s'il n'est pas donné :
+ * c'est la même personne qui répond, et il n'a pas à être tapé deux fois.
  *
  * POURQUOI UN SCRIPT : la fiche compte une trentaine de champs répartis sur six ressources
  * différentes (fiche, version, classification, revue, tarif, disponibilité). Les saisir à la main,
@@ -18,7 +22,12 @@
  */
 import { asc } from './asc-lib.mjs';
 
-const APP = '6817317513';
+/**
+ * Deux applications, une fiche chacune : `--pro` vise « Salon DZ Pro » (id 6821947874, bundle
+ * pro.salondz.app, créée par le propriétaire le 12 oct. 2026), sinon « Salon DZ » (6817317513).
+ */
+const PRO = process.argv.includes('--pro');
+const APP = PRO ? '6821947874' : '6817317513';
 const LIRE = process.argv.includes('--lire');
 
 const ok = [];
@@ -64,7 +73,7 @@ if (LIRE) {
   const series = (await lire(`/v1/appStoreVersionLocalizations/${locv.id}/appScreenshotSets`)) ?? [];
 
   const dit = (nom, valeur) => console.log(` ${valeur ? '✔' : '✖'} ${nom.padEnd(28)} ${valeur ? String(valeur).replace(/\s+/g, ' ').slice(0, 72) : '— vide —'}`);
-  console.log(`\nFiche « ${infos[0].attributes ? 'Salon DZ' : ''} » · version ${v.attributes.versionString} · ${v.attributes.appStoreState}\n`);
+  console.log(`\nFiche « ${PRO ? 'Salon DZ Pro' : 'Salon DZ'} » · version ${v.attributes.versionString} · ${v.attributes.appStoreState}\n`);
   dit('nom', fiche.attributes.name);
   dit('sous-titre', fiche.attributes.subtitle);
   dit('confidentialité', fiche.attributes.privacyPolicyUrl);
@@ -92,17 +101,44 @@ if (LIRE) {
 // ---------------------------------------------------------------------------------------------
 // Les textes. Repris mot pour mot de docs/STORES.md, pour que les deux boutiques disent la même chose.
 // ---------------------------------------------------------------------------------------------
-const SOUS_TITRE = 'Coiffeur, barbier, institut';
-const PROMO =
-  'Trouvez un salon près de vous, réservez en quelques secondes et recevez vos rappels par notification. ' +
-  'Pour les professionnels : agenda, demandes et rappels en direct.';
-const MOTS_CLES = 'coiffeur,barbier,salon,beauté,rendez-vous,réservation,ongles,cils,institut,Algérie,agenda,Alger';
-const DESCRIPTION = `Salon DZ, c'est la réservation de salon en Algérie : simple, et sans avoir à appeler.
+const SOUS_TITRE = PRO ? 'L’agenda de votre salon' : 'Coiffeur, barbier, institut';
+const PROMO = PRO
+  ? 'Agenda, demandes en direct, clientèle et chiffre d’affaires : votre salon dans votre poche. ' +
+    'Réservé aux professionnels de la beauté en Algérie.'
+  : 'Trouvez un salon près de vous, réservez en quelques secondes et recevez vos rappels par notification. ' +
+    'Pour les professionnels : agenda, demandes et rappels en direct.';
+const MOTS_CLES = PRO
+  ? 'salon,coiffeur,barbier,agenda,rendez-vous,réservation,institut,ongles,beauté,gestion,Algérie,pro'
+  : 'coiffeur,barbier,salon,beauté,rendez-vous,réservation,ongles,cils,institut,Algérie,agenda,Alger';
+const DESCRIPTION_PRO = `Salon DZ Pro, c'est votre salon dans votre poche. Réservé aux professionnels de la beauté en Algérie : barbiers, coiffeurs, coiffeuses, ongleries, instituts, cils et soins.
+
+VOTRE JOURNÉE, D'UN COUP D'ŒIL
+• Les rendez-vous du jour, les demandes à confirmer et le prochain client dès l'ouverture
+• Agenda en colonnes, une par personne de l'équipe : un appui sur un creux crée le rendez-vous
+• Fermetures, congés et pauses, sans qu'un client puisse réserver dessus
+
+LES DEMANDES, EN DIRECT
+• Chaque nouvelle demande arrive en notification, à l'instant où elle est faite
+• Confirmez, reportez ou refusez d'un geste — ou laissez la confirmation automatique
+• Un rappel une heure avant chaque rendez-vous
+
+VOS CLIENTS RÉSERVENT SANS VOUS APPELER
+• Votre page, votre lien et votre QR code à mettre sur Instagram, WhatsApp, Snapchat ou en vitrine
+• Vos prestations, vos durées, vos prix en dinars, vos photos de réalisations
+• Vos avis, auxquels vous pouvez répondre publiquement
+
+VOTRE CLIENTÈLE ET VOS CHIFFRES
+• Une fiche par client : historique, notes, numéro
+• Chiffre d'affaires du jour, de la semaine et du mois, encaissé et prévisionnel
+• Export de votre clientèle et de vos chiffres
+
+Gratuit, en français, en arabe et en anglais. Vos clients réservent depuis l'application Salon DZ ou depuis votre lien.`;
+const DESCRIPTION_CLIENT = `Salon DZ, c'est la réservation de salon en Algérie : simple, et sans avoir à appeler.
 
 POUR LES CLIENTS
 • Trouvez barbiers, coiffeurs, instituts, ongles, cils et soins près de chez vous, avec les disponibilités en temps réel
 • Réservez en quelques secondes, en dinars algériens
-• Recevez la confirmation du salon et vos rappels (la veille et 2 h avant) directement par notification
+• Recevez la confirmation du salon et vos rappels (1 h puis 30 min avant) directement par notification
 • Reportez ou annulez en un geste, et retrouvez tous vos rendez-vous au même endroit
 • Réservez aussi pour un proche
 • Laissez un avis après votre rendez-vous
@@ -115,6 +151,7 @@ POUR LES PROFESSIONNELS
 • Fiche client, historique et chiffre d'affaires
 
 Les confirmations, les demandes et les rappels passent par les notifications de l'application : fini les messages à recopier.`;
+const DESCRIPTION = PRO ? DESCRIPTION_PRO : DESCRIPTION_CLIENT;
 
 const limites = {
   'sous-titre': [SOUS_TITRE, 30],
@@ -145,13 +182,14 @@ await ecrire('sous-titre + politique de confidentialité', 'PATCH', `/v1/appInfo
 
 // « Style de vie » en premier (c'est une application de réservation, pas un outil médical),
 // « Santé et remise en forme » en second : c'est là que cherchent les clientes d'instituts.
-await ecrire('catégories (Style de vie / Santé et remise en forme)', 'PATCH', `/v1/appInfos/${INFO}`, {
+// La pro est un outil de travail : « Entreprise » (comme sur Play) puis « Productivité ».
+await ecrire(PRO ? 'catégories (Entreprise / Productivité)' : 'catégories (Style de vie / Santé et remise en forme)', 'PATCH', `/v1/appInfos/${INFO}`, {
   data: {
     type: 'appInfos',
     id: INFO,
     relationships: {
-      primaryCategory: { data: { type: 'appCategories', id: 'LIFESTYLE' } },
-      secondaryCategory: { data: { type: 'appCategories', id: 'HEALTH_AND_FITNESS' } },
+      primaryCategory: { data: { type: 'appCategories', id: PRO ? 'BUSINESS' : 'LIFESTYLE' } },
+      secondaryCategory: { data: { type: 'appCategories', id: PRO ? 'PRODUCTIVITY' : 'HEALTH_AND_FITNESS' } },
     },
   },
 });
@@ -212,7 +250,7 @@ await ecrire('classification par âge (4+)', 'PATCH', `/v1/ageRatingDeclarations
       parentalControls: false,
       socialMedia: false,
       unrestrictedWebAccess: false,
-      userGeneratedContent: true, // les avis laissés par les clients
+      userGeneratedContent: true, // les avis laissés par les clients ; côté pro, les réponses publiques et les photos du salon
       alcoholTobaccoOrDrugUseOrReferences: RIEN,
       contests: RIEN,
       gamblingSimulated: RIEN,
@@ -237,9 +275,15 @@ await ecrire('classification par âge (4+)', 'PATCH', `/v1/ageRatingDeclarations
 //    démonstration, elle est refusée pour « impossible d'accéder au contenu ».
 // ---------------------------------------------------------------------------------------------
 const PLACEHOLDER = '+213 555 00 00 00';
-const TELEPHONE = (() => {
+const TELEPHONE = await (async () => {
   const i = process.argv.indexOf('--telephone');
-  return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : PLACEHOLDER;
+  if (i > 0 && process.argv[i + 1]) return process.argv[i + 1];
+  // Sans argument, on garde le numéro réel déjà en place (fiche grand public : posé par le
+  // propriétaire ; fiche pro : repris de la grand public). Le fictif ne remplace jamais un vrai.
+  const vc = (await lire('/v1/apps/6817317513/appStoreVersions?limit=5'))?.find((v) => v.attributes.platform === 'IOS');
+  const rc = vc ? await lire(`/v1/appStoreVersions/${vc.id}/appStoreReviewDetail`) : null;
+  const tel = rc?.attributes?.contactPhone;
+  return tel && tel !== PLACEHOLDER ? tel : PLACEHOLDER;
 })();
 if (TELEPHONE === PLACEHOLDER) {
   reste.push('téléphone de revue : numéro fictif, à remplacer par node scripts/asc-fiche.mjs --telephone "+213 …"');
@@ -247,7 +291,31 @@ if (TELEPHONE === PLACEHOLDER) {
 
 // Sans accent ni caractère typographique : ce texte est lu par un relecteur d'Apple qui ne parle pas
 // forcément français et le fait traduire ; les apostrophes courbes passent mal dans leurs outils.
-const NOTES = [
+const NOTES_PRO = [
+  "Salon DZ Pro est l'application des PROFESSIONNELS de la coiffure et de la beaute en Algerie",
+  "(barbiers, coiffeurs, instituts) : agenda, demandes de rendez-vous, clientele, chiffre d'affaires.",
+  'Les clients, eux, reservent depuis l\'application << Salon DZ >> ou depuis salondz.com.',
+  '',
+  'COMPTE DE TEST (deja confirme, aucun e-mail a ouvrir) :',
+  '  Professionnel : relecteur-pro@salondz.com  /  1PWysk0F3tAfAa1!',
+  'Ce compte possede le salon << Salon Demonstration >> (Alger Centre), avec des rendez-vous et des clients.',
+  '',
+  'PARCOURS CONSEILLE : se connecter, accueil (rendez-vous du jour), Agenda, Reservations (confirmer',
+  "ou refuser une demande), Clients, Chiffre d'affaires, puis Lien et partage (QR code de la page).",
+  '',
+  'AUTORISATIONS, ET POURQUOI :',
+  '  Notifications : chaque nouvelle demande de rendez-vous, et un rappel une heure avant chaque',
+  '    rendez-vous. Facultatives.',
+  '  Photos / appareil photo : uniquement pour illustrer le salon (logo, realisations).',
+  '  Aucune geolocalisation dans cette application.',
+  '',
+  "SUPPRESSION DU COMPTE : dans l'application (Mon compte > Supprimer mon compte et mon salon) et sur",
+  'https://salondz.com/supprimer.',
+  '',
+  'Aucun achat integre, aucune publicite, aucun pistage. Les prix sont en dinars algeriens et le',
+  "paiement se fait sur place, au salon : rien n'est encaisse dans l'application.",
+].join('\n');
+const NOTES_CLIENT = [
   'Salon DZ est une application de reservation de salons de coiffure et de beaute en Algerie.',
   '',
   'DEUX ESPACES, DEUX COMPTES DE TEST (deja confirmes, aucun e-mail a ouvrir) :',
@@ -271,6 +339,7 @@ const NOTES = [
   'Aucun achat integre, aucune publicite, aucun pistage. Les prix sont en dinars algeriens et le',
   "paiement se fait sur place, au salon : rien n'est encaisse dans l'application.",
 ].join('\n');
+const NOTES = PRO ? NOTES_PRO : NOTES_CLIENT;
 
 const REVUE = {
   contactFirstName: 'Salon',
@@ -278,8 +347,8 @@ const REVUE = {
   contactEmail: 'support@salondz.com',
   contactPhone: TELEPHONE,
   demoAccountRequired: true,
-  demoAccountName: 'relecteur-client@salondz.com',
-  demoAccountPassword: 'QGoZhKNjY_vyAa1!',
+  demoAccountName: PRO ? 'relecteur-pro@salondz.com' : 'relecteur-client@salondz.com',
+  demoAccountPassword: PRO ? '1PWysk0F3tAfAa1!' : 'QGoZhKNjY_vyAa1!',
   notes: NOTES,
 };
 const revueExistante = await lire(`/v1/appStoreVersions/${VER}/appStoreReviewDetail`);

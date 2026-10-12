@@ -3,6 +3,7 @@
  *
  *   node scripts/asc-soumettre.mjs --verifier   → dit ce qui manque, sans rien envoyer
  *   node scripts/asc-soumettre.mjs              → rattache le build et soumet
+ *   node scripts/asc-soumettre.mjs --pro …      → idem pour « Salon DZ Pro »
  *
  * L'envoi en revue se fait en trois temps chez Apple, et non par un simple bouton :
  *   1. la version doit pointer vers un build TRAITÉ (`VALID`) — un build encore en cours est refusé ;
@@ -13,7 +14,12 @@
  */
 import { asc } from './asc-lib.mjs';
 
-const APP = '6817317513';
+/**
+ * Deux applications, une fiche chacune : `--pro` vise « Salon DZ Pro » (id 6821947874, bundle
+ * pro.salondz.app, créée par le propriétaire le 12 oct. 2026), sinon « Salon DZ » (6817317513).
+ */
+const PRO = process.argv.includes('--pro');
+const APP = PRO ? '6821947874' : '6817317513';
 const VERIFIER = process.argv.includes('--verifier');
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
@@ -130,4 +136,4 @@ if (envoi.status >= 300) {
   console.log('✖ envoi en revue :', envoi.status, detail(envoi));
   process.exit(1);
 }
-console.log(`\n✔ Salon DZ ${version.attributes.versionString} est EN REVUE chez Apple (état : ${envoi.json?.data?.attributes?.state}).`);
+console.log(`\n✔ ${PRO ? 'Salon DZ Pro' : 'Salon DZ'} ${version.attributes.versionString} est EN REVUE chez Apple (état : ${envoi.json?.data?.attributes?.state}).`);
