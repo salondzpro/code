@@ -177,7 +177,7 @@ export function Localisation() {
         <InfoBox>{t("Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».")}</InfoBox>
         {/* Dans l'application : la fiche Salon DZ des réglages du téléphone. Sur le web, rien n'est
             adressable : on redemande, le navigateur dira si la porte est rouverte. */}
-        <Button onClick={() => ouvrirReglagesApplication() || locate()}>
+        <Button onClick={() => void ouvrirReglagesApplication().then((ok) => ok || locate())}>
           <I icon={Settings} size={18} /> {t("Ouvrir les réglages")}
         </Button>
         <Button variant="g" onClick={() => setChoice({ kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) })}>

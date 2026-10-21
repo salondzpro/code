@@ -129,11 +129,28 @@ export async function disableNativePush(api: ApiClient): Promise<void> {
   }
 }
 
-/** Permission actuelle, dans le vocabulaire du navigateur pour que les écrans n'aient rien à changer. */
+/**
+ * État actuel, dans le vocabulaire du navigateur pour que les écrans n'aient rien à changer :
+ *   - `granted` : une notification envoyée maintenant s'afficherait ;
+ *   - `default` : le système peut encore poser la question, on la pose dans l'application ;
+ *   - `denied`  : seul le téléphone peut rouvrir — on emmène dans ses réglages.
+ *
+ * La permission seule ne suffit pas : sur Android antérieur à 13 elle est TOUJOURS « accordée », et
+ * sur tout Android on peut couper les notifications (ou tous leurs canaux) dans les réglages sans y
+ * toucher. L'interrupteur réel, lu par le greffon `ReglagesNotifications`, a le dernier mot.
+ */
 export async function nativePushPermission(): Promise<NotificationPermission> {
   try {
     const { PushNotifications: Push } = await load();
     const { receive } = await Push.checkPermissions();
+    const { notificationsActivesSurLeTelephone } = await import('./pushSettings');
+    const actives = await notificationsActivesSurLeTelephone();
+    if (actives === true) return 'granted';
+    if (actives === false) {
+      // Coupées : si le système peut encore demander, on demande ; sinon, direction les réglages.
+      return receive === 'prompt' || receive === 'prompt-with-rationale' ? 'default' : 'denied';
+    }
+    // Application sans le greffon : on ne connaît que la permission.
     return receive === 'granted' ? 'granted' : receive === 'denied' ? 'denied' : 'default';
   } catch {
     return 'default';

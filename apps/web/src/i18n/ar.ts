@@ -1154,4 +1154,9 @@ export const ar: Record<string, string> = {
   'Des rendez-vous tombent dans cette fermeture': 'هناك مواعيد ضمن فترة الإغلاق هذه',
   '{n} rendez-vous sont prévus d’ici là. Les annuler préviendra leurs clients ; sinon, laissez le salon ouvert et prévenez-les vous-même.': '{n} موعدًا مقررة حتى ذلك الحين. إلغاؤها سيُبلغ عملاءها؛ وإلا فأبقِ الصالون مفتوحًا وأبلغهم بنفسك.',
   'Rester ouvert': 'البقاء مفتوحًا',
+  "Notifications coupées sur cet appareil": "الإشعارات متوقفة على هذا الجهاز",
+  "Vous ne recevrez ni demandes, ni rappels, ni confirmations application fermée. Activez « Autoriser les notifications » dans l’écran qui s’ouvre, puis revenez.": "لن تصلك الطلبات ولا التذكيرات ولا التأكيدات والتطبيق مغلق. فعّل «السماح بالإشعارات» في الشاشة التي ستفتح، ثم عد إلى التطبيق.",
+  "Activer dans les réglages du téléphone": "التفعيل من إعدادات الهاتف",
+  "Ouvrez Réglages, puis Applications, puis Salon DZ, puis Notifications. Mettez l’application à jour pour y aller en un geste.": "افتح الإعدادات، ثم التطبيقات، ثم Salon DZ، ثم الإشعارات. حدّث التطبيق للوصول إليها بلمسة واحدة.",
+  "Sur ordinateur, l’autorisation se change dans les réglages du navigateur, à côté de la barre d’adresse.": "على الحاسوب، يُغيَّر الإذن من إعدادات المتصفح، بجانب شريط العنوان.",
 };

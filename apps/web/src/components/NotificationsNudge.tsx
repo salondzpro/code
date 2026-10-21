@@ -15,10 +15,10 @@
  *   - refusé → on ne peut plus demander : seul le système peut rouvrir le robinet, on y emmène ;
  *   - accordé → rien, le bandeau n'existe pas.
  */
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BellRing, ExternalLink, X } from 'lucide-react';
 import { api } from '@/lib/api';
-import { enableWebPush, webPushPermission } from '@/lib/webpush';
+import { enableWebPush, usePushPermission } from '@/lib/webpush';
 import { ouvrirReglagesNotifications, surMobile } from '@/lib/pushSettings';
 import { Button, I } from './ui';
 import { t } from '@/i18n';
@@ -33,29 +33,17 @@ function enRepos(): boolean {
 }
 
 export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
-  const [etat, setEtat] = useState<NotificationPermission | 'unsupported' | null>(null);
+  // État RÉEL du téléphone, relu à chaque retour dans l'application : revenu des réglages avec les
+  // notifications rallumées, le bandeau disparaît de lui-même.
+  const [etat, setEtat, pret] = usePushPermission();
   const [occupe, setOccupe] = useState(false);
   const [masque, setMasque] = useState(() => enRepos());
+  /** Le téléphone n'a pas su ouvrir ses réglages (application trop ancienne) : on explique. */
+  const [aLaMain, setALaMain] = useState(false);
 
-  useEffect(() => {
-    let vivant = true;
-    void (async () => {
-      // Dans l'application, l'état réel se lit de façon asynchrone ; sur le web il est immédiat.
-      const web = webPushPermission();
-      if (web !== 'default') {
-        if (vivant) setEtat(web);
-        return;
-      }
-      const { nativePushPermission } = await import('@/lib/nativePush').catch(() => ({ nativePushPermission: null }) as never);
-      const reel = nativePushPermission ? await nativePushPermission() : 'default';
-      if (vivant) setEtat(reel);
-    })();
-    return () => {
-      vivant = false;
-    };
-  }, []);
-
-  if (masque || etat === null || etat === 'granted' || etat === 'unsupported') return null;
+  // Rien tant que le téléphone n'a pas répondu : le bandeau clignoterait chez quelqu'un dont tout
+  // est en ordre.
+  if (masque || !pret || etat === 'granted' || etat === 'unsupported') return null;
 
   const refuse = etat === 'denied';
 
@@ -67,7 +55,10 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
   const agir = async () => {
     // Refusé : la demande ne s'affichera plus jamais, c'est une décision du système. On emmène donc
     // directement au bon écran de réglages plutôt que d'expliquer où cliquer.
-    if (refuse) return ouvrirReglagesNotifications();
+    if (refuse) {
+      setALaMain(!(await ouvrirReglagesNotifications()));
+      return;
+    }
     setOccupe(true);
     try {
       const ok = await enableWebPush(api);
@@ -107,6 +98,9 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
         </div>
         {refuse && !surMobile() && (
           <p className="t3 mt-2">{t('Sur ordinateur, l’autorisation se change dans les réglages du navigateur, à côté de la barre d’adresse.')}</p>
+        )}
+        {refuse && aLaMain && (
+          <p className="t3 mt-2">{t('Ouvrez Réglages, puis Applications, puis Salon DZ, puis Notifications. Mettez l’application à jour pour y aller en un geste.')}</p>
         )}
       </div>
       <button type="button" aria-label={t('Masquer')} className="-mt-1 -me-1 flex-none self-start p-1 text-subtle" onClick={plusTard}>

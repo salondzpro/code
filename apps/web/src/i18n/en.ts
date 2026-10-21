@@ -1173,4 +1173,9 @@ export const en: Record<string, string> = {
   'Des rendez-vous tombent dans cette fermeture': 'Appointments fall within this closure',
   '{n} rendez-vous sont prévus d’ici là. Les annuler préviendra leurs clients ; sinon, laissez le salon ouvert et prévenez-les vous-même.': '{n} appointments are scheduled until then. Cancelling them will notify their clients; otherwise keep the salon open and contact them yourself.',
   'Rester ouvert': 'Stay open',
+  "Notifications coupées sur cet appareil": "Notifications are off on this device",
+  "Vous ne recevrez ni demandes, ni rappels, ni confirmations application fermée. Activez « Autoriser les notifications » dans l’écran qui s’ouvre, puis revenez.": "You won’t get requests, reminders or confirmations while the app is closed. Turn on “Allow notifications” on the screen that opens, then come back.",
+  "Activer dans les réglages du téléphone": "Turn on in phone settings",
+  "Ouvrez Réglages, puis Applications, puis Salon DZ, puis Notifications. Mettez l’application à jour pour y aller en un geste.": "Open Settings, then Apps, then Salon DZ, then Notifications. Update the app to get there in one tap.",
+  "Sur ordinateur, l’autorisation se change dans les réglages du navigateur, à côté de la barre d’adresse.": "On a computer, the permission is changed in the browser settings, next to the address bar.",
 };

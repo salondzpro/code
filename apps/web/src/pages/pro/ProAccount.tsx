@@ -5,7 +5,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '@/lib/api';
-import { disableWebPush, enableWebPush, usePushPermission, webPushPermission, webPushSupported } from '@/lib/webpush';
+import { disableWebPush, enableWebPush, pushPermissionNow, usePushPermission, webPushSupported } from '@/lib/webpush';
+import { PushBlocked } from '@/components/PushBlocked';
 import { Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
@@ -71,28 +72,27 @@ export function ProAccount() {
         <ListRow to="/pro/notifications">
           <RowText icon={Bell} title={t("Notifications")} sub={t("Demandes, confirmations, annulations")} />
         </ListRow>
-        {webPushSupported() && !owner && (
+        {webPushSupported() && !owner && webPush === 'denied' && <PushBlocked />}
+        {webPushSupported() && !owner && webPush !== 'denied' && (
           <div className="li">
             <RowText
               icon={BellRing}
               title={t("Notifications sur cet appareil")}
-              sub={webPush === 'denied' ? t("Bloquées par le navigateur") : t("Demandes, annulations, rappels · application mobile si installée, sinon ce navigateur")}
+              sub={t("Demandes, annulations, rappels · application mobile si installée, sinon ce navigateur")}
             />
-            {webPush !== 'denied' && (
-              <Toggle
-                on={webPush === 'granted'}
-                onChange={async (v) => {
-                  if (v) {
-                    const ok = await enableWebPush(api);
-                    setWebPush(ok ? 'granted' : webPushPermission());
-                  } else {
-                    await disableWebPush(api);
-                    setWebPush('default');
-                  }
-                }}
-                label={t("Notifications sur cet appareil")}
-              />
-            )}
+            <Toggle
+              on={webPush === 'granted'}
+              onChange={async (v) => {
+                if (v) {
+                  const ok = await enableWebPush(api);
+                  setWebPush(ok ? 'granted' : await pushPermissionNow());
+                } else {
+                  await disableWebPush(api);
+                  setWebPush('default');
+                }
+              }}
+              label={t("Notifications sur cet appareil")}
+            />
           </div>
         )}
       </div>

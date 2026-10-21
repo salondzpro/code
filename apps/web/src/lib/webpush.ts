@@ -40,6 +40,17 @@ export function webPushPermission(): NotificationPermission | 'unsupported' {
   return webPushSupported() ? Notification.permission : 'unsupported';
 }
 
+/**
+ * État RÉEL, lu maintenant : dans l'application, celui du téléphone (`webPushPermission()` y répond
+ * toujours « default »). À relire après une demande refusée — sinon l'écran remontre un
+ * interrupteur au lieu du chemin vers les réglages.
+ */
+export async function pushPermissionNow(): Promise<NotificationPermission | 'unsupported'> {
+  if (!nativeShell()) return webPushPermission();
+  const { nativePushPermission } = await import('./nativePush');
+  return nativePushPermission();
+}
+
 /** La clé VAPID voyage en base64url ; `applicationServerKey` veut des octets. */
 function urlBase64ToUint8Array(base64: string): Uint8Array {
   const padding = '='.repeat((4 - (base64.length % 4)) % 4);
@@ -133,23 +144,61 @@ export async function disableWebPush(api: ApiClient): Promise<void> {
  * Permission de notification, RÉACTIVE, dans le vocabulaire du navigateur — et juste dans
  * l'application mobile. `webPushPermission()` y répond toujours « default » (l'objet `Notification`
  * n'existe pas dans une WebView) : l'interrupteur « Notifications sur cet appareil » restait donc
- * ÉTEINT sur un téléphone où elles étaient accordées et actives. On lit l'état réel du greffon,
+ * ÉTEINT sur un téléphone où elles étaient accordées et actives. On lit l'état réel du téléphone,
  * de façon asynchrone, et l'écran suit.
+ *
+ * L'état est RELU À CHAQUE RETOUR dans l'application : la personne envoyée dans les réglages du
+ * téléphone revient par le bouton retour, et l'écran doit refléter ce qu'elle vient d'y faire sans
+ * qu'elle ait à recharger. Si elle vient de les rallumer, l'appareil est réinscrit dans la foulée —
+ * sans jeton enregistré, la permission retrouvée ne servirait à rien.
  */
-export function usePushPermission(): [NotificationPermission | 'unsupported', (p: NotificationPermission | 'unsupported') => void] {
+export function usePushPermission(): [
+  NotificationPermission | 'unsupported',
+  (p: NotificationPermission | 'unsupported') => void,
+  /** Faux tant que le téléphone n'a pas répondu : l'état affiché n'est alors qu'une supposition. */
+  boolean,
+] {
   const [etat, setEtat] = useState<NotificationPermission | 'unsupported'>(() => webPushPermission());
+  const [pret, setPret] = useState(() => !nativeShell());
   useEffect(() => {
     if (!nativeShell()) return;
     let vivant = true;
-    void import('./nativePush')
-      .then((m) => m.nativePushPermission())
-      .then((p) => {
-        if (vivant) setEtat(p);
+    let precedent: NotificationPermission | null = null;
+    const lire = async () => {
+      try {
+        const m = await import('./nativePush');
+        const p = await m.nativePushPermission();
+        if (!vivant) return;
+        if (p === 'granted' && precedent !== null && precedent !== 'granted') {
+          const { api } = await import('./api');
+          void m.refreshNativePushIfGranted(api);
+        }
+        precedent = p;
+        setEtat(p);
+      } catch {
+        /* l'écran garde son dernier état */
+      } finally {
+        if (vivant) setPret(true);
+      }
+    };
+    void lire();
+    const auRetour = () => {
+      if (document.visibilityState === 'visible') void lire();
+    };
+    document.addEventListener('visibilitychange', auRetour);
+    let retrait: (() => void) | null = null;
+    void import('@capacitor/app')
+      .then(({ App }) => App.addListener('resume', () => void lire()))
+      .then((h) => {
+        if (vivant) retrait = () => void h.remove();
+        else void h.remove();
       })
       .catch(() => undefined);
     return () => {
       vivant = false;
+      document.removeEventListener('visibilitychange', auRetour);
+      retrait?.();
     };
   }, []);
-  return [etat, setEtat];
+  return [etat, setEtat, pret];
 }

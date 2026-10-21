@@ -1,68 +1,97 @@
 /**
- * Emmener la personne AU BON ÉCRAN de réglages de son téléphone.
+ * Emmener la personne AU BON ÉCRAN de réglages de son téléphone, et savoir si elle doit y aller.
  *
  * Une permission de notification refusée ne peut plus être redemandée par l'application : c'est une
  * décision du système, et seule une visite dans les réglages la change. Expliquer « allez dans
  * Réglages, puis Applications, puis Salon DZ, puis Notifications » ne fonctionne pas — chaque
  * constructeur range ces écrans ailleurs. On y va directement.
  *
- * Chaque système a son chemin, et aucun n'est une URL web :
- *   - Android : une adresse `intent:` qui vise l'écran de notifications de CETTE application ;
- *     l'identifiant du paquet est passé en extra, sinon on atterrit sur les réglages généraux.
- *   - iOS : le schéma `app-settings:`, qui ouvre la fiche de l'application dans Réglages.
- *   - navigateur : il n'existe aucun moyen d'ouvrir les réglages de site depuis la page. On le dit
- *     plutôt que de faire semblant.
+ * TOUT PASSE PAR LE GREFFON NATIF `ReglagesNotifications` (`ReglagesNotificationsPlugin.java`,
+ * `SceneDelegate.swift`). Jusqu'au 21 oct. 2026 on lançait une adresse `intent:` (Android) ou
+ * `app-settings:` (iOS) depuis la page : Capacitor transmet une adresse externe par une simple
+ * intention « voir », qu'aucune application Android ne sait traiter — le bouton ne faisait RIEN.
+ * Le greffon ouvre l'écran « Notifications » de l'application elle-même (Android 8+, iOS 16+),
+ * à défaut sa fiche dans les réglages.
+ *
+ * Il dit aussi l'état RÉEL : sur Android antérieur à 13, le greffon de notifications de Capacitor
+ * répond « accordé » même quand la personne a coupé les notifications de l'application.
+ *
+ * Une application installée AVANT ce greffon ne l'a pas (la page, elle, est déjà à jour) : on retombe
+ * alors sur l'ancien chemin iOS, et sur Android l'appelant affiche l'explication écrite.
  */
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
 const ua = (): string => (typeof navigator === 'undefined' ? '' : navigator.userAgent);
 
 export const estAndroid = (): boolean => /android/i.test(ua());
 export const estIOS = (): boolean => /iphone|ipad|ipod/i.test(ua());
 export const surMobile = (): boolean => estAndroid() || estIOS();
 
-const enCoque = (): boolean =>
-  Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
+/** Vrai dans l'application mobile (coque Capacitor). */
+export const enCoque = (): boolean => Capacitor.isNativePlatform();
 
-/** Identifiant publié : la variante professionnelle est une AUTRE application pour le système. */
-const paquet = (): string => (import.meta.env.VITE_APP_FLAVOR === 'pro' ? 'pro.salondz.app' : 'dz.salondz.app');
+interface ReglagesNotificationsPlugin {
+  etat(): Promise<{ actives: boolean }>;
+  ouvrir(): Promise<{ ouvert: boolean }>;
+  ouvrirApplication(): Promise<{ ouvert: boolean }>;
+}
+
+const Reglages = registerPlugin<ReglagesNotificationsPlugin>('ReglagesNotifications');
+
+/** Le greffon est-il dans CETTE installation ? Faux sur le web et dans une application trop ancienne. */
+export const greffonReglages = (): boolean => enCoque() && Capacitor.isPluginAvailable('ReglagesNotifications');
 
 /**
- * Ouvre les réglages de notification de l'application. Ne rend rien : si le système ne sait pas
- * ouvrir l'écran demandé, la page reste en place — c'est pourquoi l'appelant garde une explication
- * de secours à l'écran.
+ * Le téléphone afficherait-il une notification de cette application, là, maintenant ?
+ * `null` quand on ne peut pas le savoir (web, application sans le greffon) : l'appelant se fie alors
+ * à la permission seule.
  */
-export function ouvrirReglagesNotifications(): void {
-  if (!enCoque()) {
-    // Sur le web, le réglage appartient au navigateur et n'est pas adressable.
-    return;
+export async function notificationsActivesSurLeTelephone(): Promise<boolean | null> {
+  if (!greffonReglages()) return null;
+  try {
+    return (await Reglages.etat()).actives;
+  } catch {
+    return null;
   }
-  if (estAndroid()) {
-    window.location.href =
-      `intent:#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;` +
-      `S.android.provider.extra.APP_PACKAGE=${paquet()};end`;
-    return;
+}
+
+/**
+ * Ouvre l'écran « Notifications » de l'application dans les réglages du téléphone.
+ * Rend `false` quand rien n'a pu s'ouvrir (web, application trop ancienne) : l'appelant garde
+ * alors une explication écrite à l'écran.
+ */
+export async function ouvrirReglagesNotifications(): Promise<boolean> {
+  if (!enCoque()) return false; // Sur le web, le réglage appartient au navigateur et n'est pas adressable.
+  if (greffonReglages()) {
+    try {
+      return (await Reglages.ouvrir()).ouvert;
+    } catch {
+      return false;
+    }
   }
-  if (estIOS()) {
-    // `app-settings:` ouvre la fiche de l'application dans Réglages, notifications comprises.
-    window.location.href = 'app-settings:';
-  }
+  return ancienCheminIOS();
 }
 
 /**
  * Ouvre la FICHE de l'application dans les réglages du téléphone (permissions comprises, dont la
  * position). Même raison que pour les notifications : une permission de position refusée ne se
- * redemande plus depuis l'application. Android : `APPLICATION_DETAILS_SETTINGS` avec le paquet en
- * donnée d'intention ; iOS : `app-settings:`. Sur le web, rien n'est adressable : rend `false`,
- * l'appelant retente ou explique.
+ * redemande plus depuis l'application. Rend `false` si rien n'a pu s'ouvrir.
  */
-export function ouvrirReglagesApplication(): boolean {
+export async function ouvrirReglagesApplication(): Promise<boolean> {
   if (!enCoque()) return false;
-  if (estAndroid()) {
-    window.location.href = `intent:package:${paquet()}#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;end`;
-    return true;
+  if (greffonReglages()) {
+    try {
+      return (await Reglages.ouvrirApplication()).ouvert;
+    } catch {
+      return false;
+    }
   }
-  if (estIOS()) {
-    window.location.href = 'app-settings:';
-    return true;
-  }
-  return false;
+  return ancienCheminIOS();
+}
+
+/** Application iPhone sans le greffon : WebKit confie `app-settings:` au système, qui ouvre la fiche. */
+function ancienCheminIOS(): boolean {
+  if (Capacitor.getPlatform() !== 'ios') return false;
+  window.location.href = 'app-settings:';
+  return true;
 }

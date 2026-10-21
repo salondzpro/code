@@ -13,8 +13,9 @@ import {
   disableWebPush,
   enableWebPush,
   usePushPermission,
-  webPushPermission,
+  pushPermissionNow,
 } from '@/lib/webpush';
+import { PushBlocked } from '@/components/PushBlocked';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
@@ -86,26 +87,23 @@ export function Settings() {
             lorsqu'elle est ouverte. C'est le seul réglage qui dépend d'une permission
             système, d'où l'état « refusé » explicite plutôt qu'un interrupteur qui ne
             bougerait pas. */}
-        {webPush !== 'unsupported' && (
+        {webPush === 'denied' && <PushBlocked />}
+        {webPush !== 'unsupported' && webPush !== 'denied' && (
           <div className="li">
             <span className="text-[1rem] font-semibold">{t("Notifications sur cet appareil")}</span>
-            {webPush === 'denied' ? (
-              <span className="text-[0.857rem] text-muted">{t("Bloquées par le navigateur")}</span>
-            ) : (
-              <Toggle
-                on={webPush === 'granted'}
-                onChange={async (v) => {
-                  if (v) {
-                    const ok = await enableWebPush(api);
-                    setWebPush(ok ? 'granted' : webPushPermission());
-                  } else {
-                    await disableWebPush(api);
-                    setWebPush('default');
-                  }
-                }}
-                label={t("Notifications sur cet appareil")}
-              />
-            )}
+            <Toggle
+              on={webPush === 'granted'}
+              onChange={async (v) => {
+                if (v) {
+                  const ok = await enableWebPush(api);
+                  setWebPush(ok ? 'granted' : await pushPermissionNow());
+                } else {
+                  await disableWebPush(api);
+                  setWebPush('default');
+                }
+              }}
+              label={t("Notifications sur cet appareil")}
+            />
           </div>
         )}
         <div className="li">
@@ -141,7 +139,7 @@ export function Settings() {
         </div>
       </div>
 
-      {webPush !== 'granted' && (
+      {webPush !== 'granted' && webPush !== 'denied' && (
         <p className="p -mt-2 text-[0.857rem]">
           {t("Les rappels et confirmations arrivent sur l'application Salon DZ si elle est installée, sinon par ce navigateur : activez « Notifications sur cet appareil » pour les recevoir même application fermée.")}
         </p>
