@@ -1,5 +1,5 @@
 /**
- * Rattache le dernier build à la version 1.0 et l'envoie en REVUE chez Apple.
+ * Rattache le dernier build de la version EN PRÉPARATION (1.0, puis 1.0.1…) et l'envoie en REVUE chez Apple.
  *
  *   node scripts/asc-soumettre.mjs --verifier   → dit ce qui manque, sans rien envoyer
  *   node scripts/asc-soumettre.mjs              → rattache le build et soumet
@@ -45,11 +45,29 @@ const detail = (r) => {
 };
 
 // ---------------------------------------------------------------------------------------------
-// 1. Le build
+// 1. La version : celle qu'on prépare, jamais celle déjà en vente
 // ---------------------------------------------------------------------------------------------
-const builds = (await lire(`/v1/builds?filter[app]=${APP}&limit=10&sort=-uploadedDate`)) ?? [];
+/**
+ * Apple liste la plus récente d'abord. Une fois la 1.0 en vente, la fiche porte DEUX versions :
+ * la 1.0 (`READY_FOR_SALE`) et la 1.0.1 en préparation. Prendre « la première » sans regarder son
+ * état aurait tenté de rattacher un build à une version déjà publiée.
+ */
+const FIGEES = new Set(['READY_FOR_SALE', 'REPLACED_WITH_NEW_VERSION', 'REMOVED_FROM_SALE', 'DEVELOPER_REMOVED_FROM_SALE']);
+const versions = (await lire(`/v1/apps/${APP}/appStoreVersions?limit=5`)) ?? [];
+const version = versions.find((v) => v.attributes.platform === 'IOS' && !FIGEES.has(v.attributes.appStoreState));
+if (!version) {
+  console.log('✖ aucune version en préparation : créer la suivante (node scripts/asc-version.mjs <numéro>)');
+  process.exit(2);
+}
+console.log(`  version ${version.attributes.versionString} · ${version.attributes.appStoreState}`);
+
+// ---------------------------------------------------------------------------------------------
+// 2. Le build : un build DE CETTE VERSION (le numéro marketing du projet Xcode doit correspondre)
+// ---------------------------------------------------------------------------------------------
+const VS = encodeURIComponent(version.attributes.versionString);
+const builds = (await lire(`/v1/builds?filter[app]=${APP}&filter[preReleaseVersion.version]=${VS}&limit=10&sort=-uploadedDate`)) ?? [];
 if (!builds.length) {
-  console.log('✖ aucun build reçu par Apple — lancer la compilation avant de soumettre');
+  console.log(`✖ aucun build ${version.attributes.versionString} reçu par Apple — lancer la compilation avant de soumettre`);
   process.exit(2);
 }
 for (const b of builds.slice(0, 3)) {
@@ -60,13 +78,6 @@ if (!build) {
   console.log('✖ aucun build TRAITÉ : Apple met quelques minutes après l’envoi. Réessayer plus tard.');
   process.exit(2);
 }
-
-// ---------------------------------------------------------------------------------------------
-// 2. La version
-// ---------------------------------------------------------------------------------------------
-const versions = await lire(`/v1/apps/${APP}/appStoreVersions?limit=5`);
-const version = versions.find((v) => v.attributes.platform === 'IOS');
-console.log(`  version ${version.attributes.versionString} · ${version.attributes.appStoreState}`);
 
 if (VERIFIER) {
   const rattache = await lire(`/v1/appStoreVersions/${version.id}/build`);

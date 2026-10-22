@@ -8,14 +8,18 @@ import { asc } from './asc-lib.mjs';
 const PRO = process.argv.includes('--pro');
 const APP = PRO ? '6821947874' : '6817317513';
 
-const builds = (await asc('GET', `/v1/builds?filter[app]=${APP}&limit=10&sort=-uploadedDate`)).json?.data ?? [];
+const rep = (await asc('GET', `/v1/builds?filter[app]=${APP}&limit=10&sort=-uploadedDate&include=preReleaseVersion`)).json;
+const builds = rep?.data ?? [];
+const numeros = new Map((rep?.included ?? []).map((x) => [x.id, x.attributes?.version]));
 console.log(`builds reçus : ${builds.length}`);
 for (const b of builds) {
   const a = b.attributes;
-  console.log(` ${a.version}  ${a.processingState}  ${a.uploadedDate}  expiré: ${a.expired}`);
+  const v = numeros.get(b.relationships?.preReleaseVersion?.data?.id) ?? '?';
+  console.log(` ${v} (${a.version})  ${a.processingState}  ${a.uploadedDate}  expiré: ${a.expired}`);
 }
 
 // Apple rend parfois une réponse vide sur une lecture parfaitement valable. On le dit plutôt que
 // de s'arrêter sur un accès à `undefined` — le script sert à RENSEIGNER, pas à planter.
-const v = (await asc('GET', `/v1/apps/${APP}/appStoreVersions?limit=5`)).json?.data?.find((x) => x.attributes.platform === 'IOS');
-console.log(v ? `version ${v.attributes.versionString} : ${v.attributes.appStoreState}` : 'version : lecture indisponible, réessayer');
+const vs = (await asc('GET', `/v1/apps/${APP}/appStoreVersions?limit=5`)).json?.data?.filter((x) => x.attributes.platform === 'IOS') ?? [];
+if (!vs.length) console.log('version : lecture indisponible, réessayer');
+for (const v of vs) console.log(`version ${v.attributes.versionString} : ${v.attributes.appStoreState}`);
