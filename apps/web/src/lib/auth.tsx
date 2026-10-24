@@ -205,8 +205,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         qc.clear();
         setSession(null);
       } finally {
-        setSigningOut(false);
         enCours.current = null;
+        // Le voile reste le temps que l'écran suivant (le portail) s'affiche : retiré tout de
+        // suite, il laissait voir un écran vide entre la page quittée et le portail.
+        setTimeout(() => setSigningOut(false), 450);
       }
     })();
     enCours.current = run;
