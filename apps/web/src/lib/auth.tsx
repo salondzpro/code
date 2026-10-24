@@ -246,8 +246,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 function SigningOutVeil() {
   return (
     <div className="signout-veil" role="status" aria-live="polite">
-      <span className="btn-spin" aria-hidden />
-      <span>{t('Déconnexion…')}</span>
+      <div>
+        <span className="btn-spin" aria-hidden />
+        <span>{t('Déconnexion…')}</span>
+      </div>
     </div>
   );
 }
