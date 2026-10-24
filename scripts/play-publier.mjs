@@ -5,6 +5,7 @@
  *   node scripts/play-publier.mjs --pro                   → « Salon DZ Pro » (pro.salondz.app)
  *   node scripts/play-publier.mjs --piste internal        → test interne au lieu de la production
  *   node scripts/play-publier.mjs --verifier              → teste l'accès, n'envoie rien
+ *   node scripts/play-publier.mjs --piste internal --version 216 → place un bundle DÉJÀ envoyé sur une autre piste
  *
  * Le fichier envoyé est le .aab au plus grand numéro de version dans Desktop/salondz-play, là où
  * `build-android.mjs` le dépose. Google refuse un numéro déjà envoyé : rien n'est renvoyé deux fois.
@@ -29,6 +30,8 @@ const PRO = arg('--pro');
 const PAQUET = PRO ? 'pro.salondz.app' : 'dz.salondz.app';
 const PISTE = val('--piste', 'production');
 const VERIFIER = arg('--verifier');
+/** Bundle déjà chez Google : on ne renvoie rien (Google refuserait le même numéro), on le place seulement. */
+const DEJA = val('--version', null);
 const NOTES = PRO
   ? 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. Corrections et améliorations de stabilité.'
   : 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. Vos rappels reprennent dès votre retour.';
@@ -75,13 +78,16 @@ try {
     for (const p of pistes.tracks ?? []) for (const rel of p.releases ?? []) console.log(`  ${p.track} · ${rel.status} · ${(rel.versionCodes ?? []).join(',')}`);
     console.log('✔ accès en écriture confirmé (rien envoyé)');
   } else {
-    const dossier = path.join(os.homedir(), 'Desktop', 'salondz-play');
-    const motif = PRO ? /^salon-dz-pro-.*versionCode(\d+)\.aab$/ : /^salon-dz-\d.*versionCode(\d+)\.aab$/;
-    const aab = fs.readdirSync(dossier).map((f) => [f, f.match(motif)?.[1]]).filter(([, n]) => n).sort((a, b) => b[1] - a[1])[0];
-    if (!aab) throw new Error('aucun .aab dans ' + dossier);
-    console.log(`  envoi de ${aab[0]}…`);
-    const up = await g('POST', `https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/${PAQUET}/edits/${edit.id}/bundles?uploadType=media`, fs.readFileSync(path.join(dossier, aab[0])), { 'Content-Type': 'application/octet-stream' });
-    console.log(`✔ bundle reçu : versionCode ${up.versionCode}`);
+    let up = { versionCode: DEJA };
+    if (!DEJA) {
+      const dossier = path.join(os.homedir(), 'Desktop', 'salondz-play');
+      const motif = PRO ? /^salon-dz-pro-.*versionCode(\d+)\.aab$/ : /^salon-dz-\d.*versionCode(\d+)\.aab$/;
+      const aab = fs.readdirSync(dossier).map((f) => [f, f.match(motif)?.[1]]).filter(([, n]) => n).sort((a, b) => b[1] - a[1])[0];
+      if (!aab) throw new Error('aucun .aab dans ' + dossier);
+      console.log(`  envoi de ${aab[0]}…`);
+      up = await g('POST', `https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/${PAQUET}/edits/${edit.id}/bundles?uploadType=media`, fs.readFileSync(path.join(dossier, aab[0])), { 'Content-Type': 'application/octet-stream' });
+      console.log(`✔ bundle reçu : versionCode ${up.versionCode}`);
+    }
     await g('PUT', `${BASE}/edits/${edit.id}/tracks/${PISTE}`, {
       track: PISTE,
       releases: [{ versionCodes: [String(up.versionCode)], status: 'completed', releaseNotes: [{ language: 'fr-FR', text: NOTES }] }],
