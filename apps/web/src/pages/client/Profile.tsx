@@ -5,7 +5,7 @@
  * pro, et la déconnexion tout en bas, seule.
  */
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import {
   Bell,
   Camera,
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useMe, useMeStats, useUnreadNotifications, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useSignOut } from '@/lib/auth';
 import { Avatar, Badge, Button, I } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -68,8 +68,8 @@ function Stat({ value, label, to }: { value: string; label: string; to: string }
 }
 
 export function Profile() {
-  const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { seDeconnecter, enCours } = useSignOut();
   const me = useMe();
   const stats = useMeStats();
   const nonLues = useUnreadNotifications();
@@ -179,15 +179,8 @@ export function Profile() {
         </p>
       )}
 
-      <Button
-        variant="g"
-        className="mt-2 !text-danger"
-        onClick={async () => {
-          await signOut();
-          navigate('/intro', { replace: true });
-        }}
-      >
-        <I icon={LogOut} size={18} /> {t("Se déconnecter")}
+      <Button variant="g" className="mt-2 !text-danger" loading={enCours} onClick={() => void seDeconnecter()}>
+        {!enCours && <I icon={LogOut} size={18} />} {enCours ? t('Déconnexion…') : t('Se déconnecter')}
       </Button>
 
       {cropAvatar && user && (

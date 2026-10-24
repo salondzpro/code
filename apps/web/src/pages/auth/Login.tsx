@@ -118,7 +118,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
     try {
       const { profile } = await api.me.get();
       if (profile.role === role) return true;
-      await signOut();
+      await signOut({ voile: false });
       setError({
         kind: 'wrong_portal',
         text:

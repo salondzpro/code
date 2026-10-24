@@ -3,7 +3,6 @@
  * déconnexion.
  */
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
 import { api } from '@/lib/api';
 import { disableWebPush, enableWebPush, pushPermissionNow, usePushPermission, webPushSupported } from '@/lib/webpush';
 import { PushBlocked } from '@/components/PushBlocked';
@@ -11,7 +10,7 @@ import { Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, Be
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
-import { useAuth } from '@/lib/auth';
+import { useSignOut } from '@/lib/auth';
 import { errorText } from '@/components/ErrorMessage';
 import { Badge, BottomSheet, Button, Dim, I, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
@@ -21,10 +20,9 @@ import { RowText } from './MonSalon';
 import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 export function ProAccount() {
-  const navigate = useNavigate();
   // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
   const [webPush, setWebPush] = usePushPermission();
-  const { signOut } = useAuth();
+  const { seDeconnecter, enCours } = useSignOut();
   const me = useMe();
   const proSalon = useProSalon().data;
   const salon = proSalon?.salon ?? null;
@@ -46,8 +44,7 @@ export function ProAccount() {
     setDeleting('…');
     try {
       await api.me.deleteAccount({ withSalon: true });
-      await signOut();
-      navigate('/intro', { replace: true });
+      await seDeconnecter();
     } catch (err) {
       setDeleting(errorText(err));
     }
@@ -141,17 +138,16 @@ export function ProAccount() {
       <div className="crd !gap-0 !py-1">
         <button
           type="button"
-          className="li w-full text-start"
-          onClick={async () => {
-            await signOut();
-            navigate('/intro', { replace: true });
-          }}
+          className="li w-full text-start disabled:opacity-70"
+          disabled={enCours}
+          aria-busy={enCours || undefined}
+          onClick={() => void seDeconnecter()}
         >
           <span className="flex items-center gap-3.5 text-danger">
             <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-cancel-bg">
-              <I icon={LogOut} size={18} />
+              {enCours ? <span className="btn-spin" aria-hidden /> : <I icon={LogOut} size={18} />}
             </span>
-            <span className="text-[1rem] font-semibold">{t("Se déconnecter")}</span>
+            <span className="text-[1rem] font-semibold">{enCours ? t('Déconnexion…') : t('Se déconnecter')}</span>
           </span>
         </button>
         {/* Jamais en pilotage : `/me` serait le compte de l'administrateur, pas celui du professionnel. */}

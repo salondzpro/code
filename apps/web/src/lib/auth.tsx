@@ -8,7 +8,8 @@
  * Les comptes de démonstration vivent ENTIÈREMENT dans le navigateur (`@/demo`) : une session
  * factice est posée ici, et l'API client répond depuis le monde local. Aucun serveur sollicité.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, queryKeys } from '@salondz/api-client';
@@ -17,6 +18,7 @@ import { api } from './api';
 import { env } from './env';
 import { supabase } from './supabase';
 import { currentDemo, startDemo, stopDemo, DEMO_USER_IDS } from '@/demo/session';
+import { stopActingAs } from './actingAs';
 import { t } from '@/i18n';
 
 /** Session factice d'un compte de démonstration : même forme qu'une session Supabase pour le reste de l'app. */
@@ -29,6 +31,23 @@ function demoSession(): Session | null {
 }
 
 /** Page qui reçoit les liens envoyés par e-mail (confirmation, connexion, mot de passe). */
+/** Attend au plus `ms` : rend la valeur, ou `null` si le délai est passé (ou en cas d'échec). */
+function borne<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise((resolve) => {
+    const minuterie = setTimeout(() => resolve(null), ms);
+    p.then(
+      (v) => {
+        clearTimeout(minuterie);
+        resolve(v);
+      },
+      () => {
+        clearTimeout(minuterie);
+        resolve(null);
+      },
+    );
+  });
+}
+
 export function authRedirectUrl(path: string, next?: string): string {
   // Les liens e-mail reviennent sur le domaine officiel (en dev : l'origine locale).
   const url = new URL(path, env.siteUrl);
@@ -59,7 +78,10 @@ interface AuthContextValue {
   /** Comptes de démonstration : numéro + code fixe → vraie session par l'API. */
   /** Compte de démonstration : adresse e-mail (accès direct) ou ancien numéro. */
   demoLogin: (identifier: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  /** `voile: false` : déconnexion technique (contrôle de portail), sans voile « Déconnexion… ». */
+  signOut: (options?: { voile?: boolean }) => Promise<void>;
+  /** Une déconnexion est en cours : les boutons « Se déconnecter » affichent leur indicateur. */
+  signingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -133,28 +155,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [qc],
   );
 
-  const signOut = useCallback(async () => {
-    if (currentDemo()) {
-      stopDemo();
-      qc.clear();
-      setSession(null);
-      return;
-    }
-    /**
-     * DÉTACHER LES NOTIFICATIONS AVANT DE FERMER LA SESSION. Sans cela, le jeton de cet appareil
-     * reste rattaché au compte : la personne se déconnecte et continue de recevoir les rendez-vous
-     * de quelqu'un qui n'est plus connecté là — sur un téléphone partagé, elle voit les rendez-vous
-     * d'un autre. L'ordre compte : une fois la session fermée, l'API refuserait le retrait.
-     *
-     * Jamais bloquant : un réseau coupé ne doit pas empêcher quelqu'un de se déconnecter.
-     */
-    try {
-      const [{ disableWebPush }, { api }] = await Promise.all([import('./webpush'), import('./api')]);
-      await disableWebPush(api);
-    } catch {
-      /* sans conséquence : la déconnexion prime */
-    }
-    await supabase.auth.signOut();
+  /**
+   * DÉCONNEXION FIABLE (24 oct. 2026). Le bouton « Se déconnecter » semblait ne rien faire :
+   *   - `supabase.auth.signOut()` (portée globale) appelle le serveur, et sur une erreur réseau il
+   *     rend une erreur SANS effacer la session locale. On restait connecté, la navigation vers
+   *     `/intro` voyait la session et renvoyait aussitôt dans l'application ;
+   *   - le retrait du jeton de notification attendait jusqu'à plusieurs secondes, sans rien à
+   *     l'écran, et les menus se refermaient avant la fin : on croyait le geste perdu ;
+   *   - rien n'empêchait un second appui.
+   * Désormais : une seule déconnexion à la fois (les appuis suivants attendent la même), chaque
+   * étape réseau est BORNÉE dans le temps, et la session locale est TOUJOURS effacée à la fin,
+   * réseau ou pas. `signingOut` est publié pour que chaque bouton affiche son indicateur, et un
+   * voile plein écran couvre la transition.
+   */
+  const [signingOut, setSigningOut] = useState(false);
+  const enCours = useRef<Promise<void> | null>(null);
+
+  const signOut = useCallback((options?: { voile?: boolean }): Promise<void> => {
+    if (enCours.current) return enCours.current;
+    const run = (async () => {
+      if (options?.voile !== false) setSigningOut(true);
+      try {
+        // Un administrateur qui pilotait un salon : le jeton de pilotage ne doit pas survivre à sa
+        // session — il partirait avec les requêtes de la personne suivante.
+        stopActingAs();
+        if (currentDemo()) {
+          stopDemo();
+          qc.clear();
+          setSession(null);
+          return;
+        }
+        /**
+         * DÉTACHER LES NOTIFICATIONS AVANT DE FERMER LA SESSION. Sans cela, le jeton de cet appareil
+         * reste rattaché au compte : sur un téléphone partagé, la personne suivante recevrait les
+         * rendez-vous d'un autre. L'ordre compte : une fois la session fermée, l'API refuserait le
+         * retrait. Jamais bloquant, et borné : un réseau lent n'empêche pas de se déconnecter.
+         */
+        await borne(
+          (async () => {
+            const [{ disableWebPush }, { api }] = await Promise.all([import('./webpush'), import('./api')]);
+            await disableWebPush(api);
+          })(),
+          4000,
+        );
+        // Révoque la session côté serveur (tous les jetons de rafraîchissement) quand le réseau le
+        // permet, puis efface TOUJOURS la session de cet appareil.
+        const global = await borne(supabase.auth.signOut(), 4000);
+        if (!global || global.error) await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        qc.clear();
+        setSession(null);
+      } finally {
+        setSigningOut(false);
+        enCours.current = null;
+      }
+    })();
+    enCours.current = run;
+    return run;
   }, [qc]);
 
   const value = useMemo<AuthContextValue>(
@@ -170,11 +226,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePassword,
       demoLogin,
       signOut,
+      signingOut,
     }),
-    [session, loading, signInWithPassword, signUpWithPassword, sendMagicLink, resendConfirmation, sendPasswordReset, updatePassword, demoLogin, signOut],
+    [session, loading, signInWithPassword, signUpWithPassword, sendMagicLink, resendConfirmation, sendPasswordReset, updatePassword, demoLogin, signOut, signingOut],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {signingOut && <SigningOutVeil />}
+    </AuthContext.Provider>
+  );
+}
+
+/**
+ * Voile pendant la déconnexion : l'écran ne doit ni rester interactif (on agirait sur un compte qui
+ * s'en va), ni sembler figé. Un indicateur et un mot, rien d'autre.
+ */
+function SigningOutVeil() {
+  return (
+    <div className="signout-veil" role="status" aria-live="polite">
+      <span className="btn-spin" aria-hidden />
+      <span>{t('Déconnexion…')}</span>
+    </div>
+  );
+}
+
+/**
+ * Le geste complet « Se déconnecter » : déconnexion, puis retour au portail. Tous les boutons de
+ * déconnexion passent par ici — une seule destination (`/intro`, la porte d'entrée unique), un
+ * seul état d'attente (`enCours`).
+ *
+ * `avant` : à faire une fois la déconnexion TERMINÉE, juste avant de partir (refermer un menu).
+ * Le menu restait auparavant fermé dès l'appui, et la déconnexion se poursuivait sans rien montrer.
+ */
+export function useSignOut(): { seDeconnecter: (avant?: () => void) => Promise<void>; enCours: boolean } {
+  const { signOut, signingOut } = useAuth();
+  const navigate = useNavigate();
+  const seDeconnecter = useCallback(
+    async (avant?: () => void) => {
+      await signOut();
+      avant?.();
+      navigate('/intro', { replace: true });
+    },
+    [signOut, navigate],
+  );
+  return { seDeconnecter, enCours: signingOut };
 }
 
 export function useAuth(): AuthContextValue {

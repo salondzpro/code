@@ -1863,3 +1863,31 @@ body::before {
 html[data-native='true'] {
   touch-action: manipulation;
 }
+
+/* Voile de déconnexion (`SigningOutVeil`, lib/auth.tsx) : l'écran ne reste ni interactif ni figé. */
+.signout-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgb(248 249 250 / 0.82);
+  backdrop-filter: blur(2px);
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 600;
+  animation: veil-in 0.18s ease-out;
+}
+.signout-veil .btn-spin {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-width: 2.5px;
+}
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}

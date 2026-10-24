@@ -1210,4 +1210,5 @@ export const ar: Record<string, string> = {
   "Votre salon tient dans votre poche.": "صالونك في جيبك.",
   "Votre salon, en deux gestes.": "صالونك، في لمستين.",
   "vous@exemple.dz": "vous@exemple.dz",
+  "Déconnexion…": "جارٍ تسجيل الخروج…",
 };

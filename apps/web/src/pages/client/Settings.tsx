@@ -1,10 +1,10 @@
 /** C-F 23 — Réglages client : notifications, préférences (langue, catalogue, ville), compte (session, confidentialité, données, déconnexion). */
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { PickerField } from '@/components/Picker';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { MARKET_LABELS_FR, formatLocale } from '@salondz/constants';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useSignOut } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
 import { Badge, BottomSheet, Button, ListRow, SectionLabel, Toggle, TopBar, Dim } from '@/components/ui';
 import { api } from '@/lib/api';
@@ -26,8 +26,8 @@ function since(iso: string): string {
 export function Settings() {
   // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
   const [webPush, setWebPush] = usePushPermission();
-  const navigate = useNavigate();
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
+  const { seDeconnecter } = useSignOut();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -55,8 +55,7 @@ export function Settings() {
     setDeleting('…');
     try {
       await api.me.deleteAccount();
-      await signOut();
-      navigate('/intro', { replace: true });
+      await seDeconnecter();
     } catch (err) {
       setDeleting(errorText(err));
     }

@@ -1229,4 +1229,5 @@ export const en: Record<string, string> = {
   "Votre salon tient dans votre poche.": "Your salon fits in your pocket.",
   "Votre salon, en deux gestes.": "Your salon, in two taps.",
   "vous@exemple.dz": "you@example.dz",
+  "Déconnexion…": "Signing out…",
 };

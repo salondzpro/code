@@ -10,7 +10,7 @@
  * Les libellés, l'ordre, les groupes et la pastille des demandes sont les mêmes des deux
  * côtés : passer d'un téléphone à un ordinateur ne demande rien à réapprendre.
  */
-import { Link, NavLink, useNavigate } from 'react-router';
+import { Link, NavLink } from 'react-router';
 import {
   Bell,
   CalendarCog,
@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
 import { useProReviewsUnanswered, useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
-import { useAuth } from '@/lib/auth';
+import { useSignOut } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
 import { env } from '@/lib/env';
@@ -113,13 +113,12 @@ export function ProNav({
   /** Fin de la navigation : le tiroir se referme, le rail n'a rien à fermer. */
   after?: () => void;
 }) {
-  const { signOut } = useAuth();
+  const { seDeconnecter, enCours } = useSignOut();
   // Un avis sans réponse attend quelque chose du professionnel : il est compté comme une demande.
   const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
   // Non lues : même requête que la cloche de l'en-tête et la liste — un seul chiffre partout.
   const nonLues = useUnreadNotifications(!!salon);
   const pasVus = useProUnseenBookings(!!salon).data?.total ?? 0;
-  const navigate = useNavigate();
   const { short } = usePublicUrl(salon?.slug ?? '');
   return (
     <>
@@ -178,18 +177,17 @@ export function ProNav({
       />
 
       <div className="mt-auto flex flex-col pt-2">
+        {/* Le menu reste ouvert, indicateur compris, jusqu'à la fin de la déconnexion : il se
+            refermait dès l'appui et l'on croyait le geste perdu. */}
         <button
           type="button"
-          className="flex items-center gap-3 py-2.5 text-danger"
-          onClick={async () => {
-            after?.();
-            await signOut();
-            // Une seule porte d'entrée : la déconnexion ramène au portail, pro comme client.
-            navigate('/intro');
-          }}
+          className="flex items-center gap-3 py-2.5 text-danger disabled:opacity-70"
+          disabled={enCours}
+          aria-busy={enCours || undefined}
+          onClick={() => void seDeconnecter(after)}
         >
-          <I icon={LogOut} size={20} className="flex-none text-current" />
-          <span className="text-[1.143rem]">{t("Se déconnecter")}</span>
+          {enCours ? <span className="btn-spin flex-none" aria-hidden /> : <I icon={LogOut} size={20} className="flex-none text-current" />}
+          <span className="text-[1.143rem]">{enCours ? t('Déconnexion…') : t('Se déconnecter')}</span>
         </button>
       </div>
     </>

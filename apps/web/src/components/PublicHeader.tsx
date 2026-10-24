@@ -16,11 +16,11 @@
  */
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, useLocation } from 'react-router';
 import { Bell, CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
 import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
 import { useMe, useUnreadNotifications } from '@salondz/api-client';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useSignOut } from '@/lib/auth';
 import { I, Dim } from './ui';
 import { t } from '@/i18n';
 
@@ -38,8 +38,8 @@ export function PublicHeader() {
   // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
-  const navigate = useNavigate();
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
+  const { seDeconnecter, enCours } = useSignOut();
   const me = useMe(!!session);
   // Non lues : la cloche de l'en-tête est le seul accès visible à la liste des notifications du client.
   // Même requête que la ligne du profil — un seul chiffre, partout, sans compteur optimiste.
@@ -156,15 +156,13 @@ export function PublicHeader() {
           {session ? (
             <button
               type="button"
-              className="flex items-center gap-3 py-2.5 text-danger"
-              onClick={async () => {
-                setOpen(false);
-                await signOut();
-                navigate('/intro');
-              }}
+              className="flex items-center gap-3 py-2.5 text-danger disabled:opacity-70"
+              disabled={enCours}
+              aria-busy={enCours || undefined}
+              onClick={() => void seDeconnecter(() => setOpen(false))}
             >
-              <I icon={LogOut} size={20} className="flex-none text-current" />
-              <span className="text-[1.143rem]">{t("Se déconnecter")}</span>
+              {enCours ? <span className="btn-spin flex-none" aria-hidden /> : <I icon={LogOut} size={20} className="flex-none text-current" />}
+              <span className="text-[1.143rem]">{enCours ? t('Déconnexion…') : t('Se déconnecter')}</span>
             </button>
           ) : (
             <Link to="/pro" className="flex items-center gap-3 py-2.5">
