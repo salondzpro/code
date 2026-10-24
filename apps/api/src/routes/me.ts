@@ -172,6 +172,22 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     return null;
   });
 
+  /**
+   * Où ce compte reçoit-il ses notifications ? `app` = appareils de l'application mobile (Android,
+   * iPhone), `web` = navigateurs. Le serveur pousse vers l'application quand elle existe, SINON vers
+   * le navigateur, jamais les deux (`lib/push.ts`) : un compte qui a l'application n'a donc rien à
+   * activer dans son navigateur, et le site ne doit pas le lui demander.
+   */
+  app.get('/me/push-devices', async (req, reply) => {
+    const res = await db.from('push_tokens').select('platform').eq('user_id', req.user!.id);
+    const rows = (unwrap(res) ?? []) as { platform: string }[];
+    reply.header('Cache-Control', 'private, no-store');
+    return {
+      app: rows.filter((r) => r.platform === 'android' || r.platform === 'ios').length,
+      web: rows.filter((r) => r.platform === 'web').length,
+    };
+  });
+
   app.delete(
     '/me/push-tokens/:token',
     { schema: { params: z.object({ token: z.string().min(1) }) } },

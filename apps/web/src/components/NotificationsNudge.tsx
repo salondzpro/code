@@ -12,14 +12,13 @@
  *
  * Trois états, trois actions différentes :
  *   - jamais demandé → on demande, dans l'application ;
- *   - refusé → on ne peut plus demander : seul le système peut rouvrir le robinet, on y emmène ;
+ *   - refusé → on ne peut plus demander : seul le système peut rouvrir le robinet, on y emmène
+ *     (application) ou l'on dit exactement où aller (navigateur) ;
  *   - accordé → rien, le bandeau n'existe pas.
  */
 import { useState } from 'react';
 import { BellRing, ExternalLink, X } from 'lucide-react';
-import { api } from '@/lib/api';
-import { enableWebPush, usePushPermission } from '@/lib/webpush';
-import { ouvrirReglagesNotifications, surMobile } from '@/lib/pushSettings';
+import { useNotificationStatus } from '@/lib/useNotificationStatus';
 import { Button, I } from './ui';
 import { t } from '@/i18n';
 
@@ -33,19 +32,19 @@ function enRepos(): boolean {
 }
 
 export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
-  // État RÉEL du téléphone, relu à chaque retour dans l'application : revenu des réglages avec les
-  // notifications rallumées, le bandeau disparaît de lui-même.
-  const [etat, setEtat, pret] = usePushPermission();
-  const [occupe, setOccupe] = useState(false);
+  // État RÉEL, relu à chaque retour dans l'application : revenu des réglages avec les notifications
+  // rallumées, le bandeau disparaît de lui-même. Sur le site, un compte qui a l'application n'est
+  // jamais relancé : ses notifications arrivent sur l'application.
+  const n = useNotificationStatus();
   const [masque, setMasque] = useState(() => enRepos());
-  /** Le téléphone n'a pas su ouvrir ses réglages (application trop ancienne) : on explique. */
-  const [aLaMain, setALaMain] = useState(false);
+  /** Chemin écrit, affiché quand l'écran de réglage ne peut pas s'ouvrir d'un geste. */
+  const [chemin, setChemin] = useState(false);
 
-  // Rien tant que le téléphone n'a pas répondu : le bandeau clignoterait chez quelqu'un dont tout
-  // est en ordre.
-  if (masque || !pret || etat === 'granted' || etat === 'unsupported') return null;
+  // Rien tant que l'état réel n'est pas connu : le bandeau clignoterait chez quelqu'un dont tout est
+  // en ordre.
+  if (masque || !n.pret || n.situation === 'actives' || n.situation === 'impossibles') return null;
 
-  const refuse = etat === 'denied';
+  const bloquees = n.situation === 'bloquees';
 
   const plusTard = () => {
     localStorage.setItem(CLE, String(Date.now() + REPOS[role] * 86_400_000));
@@ -53,19 +52,14 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
   };
 
   const agir = async () => {
-    // Refusé : la demande ne s'affichera plus jamais, c'est une décision du système. On emmène donc
-    // directement au bon écran de réglages plutôt que d'expliquer où cliquer.
-    if (refuse) {
-      setALaMain(!(await ouvrirReglagesNotifications()));
+    // Bloquées : la demande ne s'affichera plus jamais, c'est une décision du système. Dans
+    // l'application, on emmène DIRECTEMENT au bon écran ; ailleurs, on dit exactement où aller.
+    if (bloquees) {
+      if (n.ouvrable && (await n.ouvrir())) return;
+      setChemin(true);
       return;
     }
-    setOccupe(true);
-    try {
-      const ok = await enableWebPush(api);
-      setEtat(ok ? 'granted' : 'denied');
-    } finally {
-      setOccupe(false);
-    }
+    await n.activer();
   };
 
   return (
@@ -78,30 +72,31 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
           {role === 'pro' ? t('Ne manquez plus une réservation') : t('Ne manquez plus votre rendez-vous')}
         </p>
         <p className="p mt-1 text-[0.938rem]">
-          {role === 'pro'
-            ? t('Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.')
-            : t('Rappel 1 h puis 30 min avant, et un mot dès que le salon confirme.')}
+          {bloquees
+            ? t('Les notifications de Salon DZ sont coupées sur cet appareil.')
+            : role === 'pro'
+              ? t('Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.')
+              : t('Rappel 1 h puis 30 min avant, et un mot dès que le salon confirme.')}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button sm auto loading={occupe} onClick={() => void agir()}>
-            {refuse ? (
-              <>
-                {t('Ouvrir les réglages')} <I icon={ExternalLink} size={15} />
-              </>
-            ) : (
-              t('Activer les notifications')
-            )}
-          </Button>
+          {!(bloquees && chemin) && (
+            <Button sm auto loading={n.occupe} onClick={() => void agir()}>
+              {!bloquees ? (
+                t('Activer les notifications')
+              ) : n.ouvrable ? (
+                <>
+                  {t('Ouvrir les réglages')} <I icon={ExternalLink} size={15} />
+                </>
+              ) : (
+                t('Comment les réactiver')
+              )}
+            </Button>
+          )}
           <Button sm auto variant="g" onClick={plusTard}>
             {t('Plus tard')}
           </Button>
         </div>
-        {refuse && !surMobile() && (
-          <p className="t3 mt-2">{t('Sur ordinateur, l’autorisation se change dans les réglages du navigateur, à côté de la barre d’adresse.')}</p>
-        )}
-        {refuse && aLaMain && (
-          <p className="t3 mt-2">{t('Ouvrez Réglages, puis Applications, puis Salon DZ, puis Notifications. Mettez l’application à jour pour y aller en un geste.')}</p>
-        )}
+        {bloquees && chemin && <p className="t3 mt-2">{n.consigne}</p>}
       </div>
       <button type="button" aria-label={t('Masquer')} className="-mt-1 -me-1 flex-none self-start p-1 text-subtle" onClick={plusTard}>
         <I icon={X} size={18} />

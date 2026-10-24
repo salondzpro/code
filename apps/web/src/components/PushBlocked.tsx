@@ -1,22 +1,25 @@
 /**
- * NOTIFICATIONS COUPÉES SUR CE TÉLÉPHONE : la ligne des réglages devient une action.
+ * NOTIFICATIONS COUPÉES SUR CET APPAREIL : la ligne des réglages devient une action.
  *
  * Écrire « Bloquées » à côté d'un interrupteur absent laissait la personne chercher seule où les
- * rallumer. Dans l'application, le bouton ouvre DIRECTEMENT l'écran « Notifications » de Salon DZ
+ * rallumer. Dans l'application, le bouton ouvre DIRECTEMENT l'écran « Notifications » de l'application
  * dans les réglages du téléphone (greffon `ReglagesNotifications`). Au retour, l'écran relit l'état
- * réel (`usePushPermission`) : la ligne redevient un interrupteur allumé sans rien recharger.
+ * réel : la ligne redevient un interrupteur allumé sans rien recharger.
  *
- * Sur le web, aucune page ne peut ouvrir les réglages du navigateur : on dit où ils sont.
+ * Ailleurs (navigateur du téléphone, ordinateur, application trop ancienne), aucune page ne peut
+ * ouvrir ce réglage : on dit EXACTEMENT où il est, selon l'endroit où l'on se trouve
+ * (`useNotificationStatus`), au lieu de parler des réglages d'une application qu'on n'utilise pas.
  */
 import { useState } from 'react';
 import { BellOff, Settings } from 'lucide-react';
-import { enCoque, ouvrirReglagesNotifications } from '@/lib/pushSettings';
+import { useNotificationStatus } from '@/lib/useNotificationStatus';
 import { Button, I } from './ui';
 import { t } from '@/i18n';
 
 export function PushBlocked() {
-  const [aLaMain, setALaMain] = useState(false);
-  const app = enCoque();
+  const n = useNotificationStatus();
+  const [chemin, setChemin] = useState(false);
+  const dansLApplication = n.contexte === 'app-android' || n.contexte === 'app-ios';
   return (
     <div className="li !flex-col !items-stretch !gap-2" role="status">
       <div className="flex items-start gap-3">
@@ -26,20 +29,18 @@ export function PushBlocked() {
         <span className="min-w-0">
           <span className="block text-[1rem] font-semibold">{t('Notifications coupées sur cet appareil')}</span>
           <span className="p block text-[0.857rem]">
-            {app
+            {dansLApplication && n.ouvrable
               ? t('Vous ne recevrez ni demandes, ni rappels, ni confirmations application fermée. Activez « Autoriser les notifications » dans l’écran qui s’ouvre, puis revenez.')
-              : t('Sur ordinateur, l’autorisation se change dans les réglages du navigateur, à côté de la barre d’adresse.')}
+              : n.consigne}
           </span>
         </span>
       </div>
-      {app && (
-        <Button onClick={() => void ouvrirReglagesNotifications().then((ok) => setALaMain(!ok))}>
+      {n.ouvrable && (
+        <Button onClick={() => void n.ouvrir().then((ok) => setChemin(!ok))}>
           <I icon={Settings} size={18} /> {t('Activer dans les réglages du téléphone')}
         </Button>
       )}
-      {aLaMain && (
-        <p className="t3">{t('Ouvrez Réglages, puis Applications, puis Salon DZ, puis Notifications. Mettez l’application à jour pour y aller en un geste.')}</p>
-      )}
+      {n.ouvrable && chemin && <p className="t3">{n.consigne}</p>}
     </div>
   );
 }

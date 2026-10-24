@@ -483,6 +483,8 @@ export function createApiClient(opts: ApiClientOptions) {
         appId?: 'dz.salondz.app' | 'pro.salondz.app';
       }) => post<void>('/me/push-tokens', body),
       removePushToken: (token: string) => del<void>(`/me/push-tokens/${encodeURIComponent(token)}`),
+      /** Appareils qui reçoivent les notifications de ce compte : application mobile et navigateurs. */
+      pushDevices: () => get<{ app: number; web: number }>('/me/push-devices'),
       notifications: (cursor = 0, limit = 30) =>
         get<NotificationsResponse>('/me/notifications', { cursor, limit }),
       /** Marquer lues : une liste précise, celles d'un rendez-vous, ou toutes (aucun argument). */
