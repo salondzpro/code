@@ -1222,4 +1222,6 @@ export const ar: Record<string, string> = {
   "Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.": "دون إشعارات، تكتشف الطلبات عند فتح التطبيق. ومعها، تصلك لحظة وصولها.",
   "Activer les notifications": "تفعيل الإشعارات",
   "Plus tard": "لاحقًا",
+  "Inscription": "إنشاء حساب",
+  "Connexion ou inscription": "تسجيل الدخول أو إنشاء حساب",
 };

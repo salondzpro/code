@@ -1896,3 +1896,88 @@ html[data-native='true'] {
     opacity: 0;
   }
 }
+
+/* Onglets du portail (Connexion ⇄ Inscription) : une pastille d'encre qui glisse sous l'onglet
+   ouvert. Même hauteur tactile qu'un champ, arrondis des petits éléments. */
+.auth-onglets {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 0.75rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-btn);
+  background: var(--color-fill);
+}
+.auth-onglets button {
+  position: relative;
+  z-index: 1;
+  min-height: 2.857rem;
+  border-radius: calc(var(--radius-btn) - 2px);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  transition: color 0.2s ease;
+}
+.auth-onglets button.on {
+  color: var(--color-on-ink, #fff);
+}
+.auth-onglets-pastille {
+  position: absolute;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  inset-inline-start: 0.25rem;
+  width: calc(50% - 0.25rem);
+  border-radius: calc(var(--radius-btn) - 2px);
+  background: var(--color-ink);
+  box-shadow: 0 1px 3px rgb(17 18 20 / 0.18);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.auth-onglets[data-pos='inscription'] .auth-onglets-pastille {
+  transform: translateX(100%);
+}
+[dir='rtl'] .auth-onglets[data-pos='inscription'] .auth-onglets-pastille {
+  transform: translateX(-100%);
+}
+.auth-onglets ~ .auth-glisse,
+.auth-col:has(.auth-onglets) {
+  touch-action: pan-y;
+}
+/* Le glissement horizontal appartient aux onglets : pas de « page précédente » du navigateur. */
+html:has(.auth-onglets),
+html:has(.auth-onglets) body {
+  overscroll-behavior-x: none;
+}
+/* L'onglet suivant arrive de la droite (de la gauche en arabe), le précédent de l'autre côté. */
+.auth-entre-suivant {
+  animation: auth-entre-droite 0.26s ease-out;
+}
+.auth-entre-precedent {
+  animation: auth-entre-gauche 0.26s ease-out;
+}
+[dir='rtl'] .auth-entre-suivant {
+  animation-name: auth-entre-gauche;
+}
+[dir='rtl'] .auth-entre-precedent {
+  animation-name: auth-entre-droite;
+}
+@keyframes auth-entre-droite {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes auth-entre-gauche {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-entre-suivant,
+  .auth-entre-precedent {
+    animation: none;
+  }
+  .auth-onglets-pastille {
+    transition: none;
+  }
+}

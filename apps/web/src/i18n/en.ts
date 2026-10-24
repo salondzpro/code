@@ -1241,4 +1241,6 @@ export const en: Record<string, string> = {
   "Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.": "Without notifications, you find requests when you open the app. With them, you get them the moment they arrive.",
   "Activer les notifications": "Turn on notifications",
   "Plus tard": "Later",
+  "Inscription": "Sign up",
+  "Connexion ou inscription": "Sign in or sign up",
 };

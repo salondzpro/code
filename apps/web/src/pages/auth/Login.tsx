@@ -171,11 +171,13 @@ export function Login({ landing }: { landing?: boolean } = {}) {
 
   const lienEmail = `/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`;
   const inscription = `/inscription?role=${role}&next=${encodeURIComponent(next)}`;
+  const connexion = role === 'pro' ? `/connexion?role=pro&next=${encodeURIComponent(next)}` : `/intro?next=${encodeURIComponent(next)}`;
 
   return (
     <AuthShell
       role={role}
       back={landing ? undefined : role === 'pro' ? '/pro/bienvenue' : '/home'}
+      onglets={{ actif: 'connexion', liens: { connexion, inscription } }}
       titre={role === 'pro' ? 'Connexion à votre espace' : 'Connexion'}
       sous={
         role === 'pro'
@@ -183,18 +185,12 @@ export function Login({ landing }: { landing?: boolean } = {}) {
           : t('Vos rendez-vous et vos salons favoris, en quelques secondes.')
       }
       pied={
-        <>
-          {/* Créer un compte : une VRAIE action, pleine largeur — c'est la porte de la moitié des
-              visiteurs. */}
-          <Link to={inscription} className="btn g">
-            <I icon={UserPlus} size={18} /> {role === 'pro' ? t('Créer mon espace pro') : t('Créer un compte')}
+        // Créer un compte : c'est l'onglet « Inscription », en tête (toucher ou glisser).
+        landing && !PRO_ONLY ? (
+          <Link to="/pro/bienvenue" className="auth-lien discret">
+            <I icon={Store} size={17} /> {t('Portail des professionnels')}
           </Link>
-          {landing && !PRO_ONLY && (
-            <Link to="/pro/bienvenue" className="auth-lien discret">
-              <I icon={Store} size={17} /> {t('Portail des professionnels')}
-            </Link>
-          )}
-        </>
+        ) : undefined
       }
     >
       <form onSubmit={submit} noValidate>

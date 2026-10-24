@@ -42,7 +42,8 @@ export function SignUp() {
 
   const id = () => email.trim().toLowerCase();
   const accord = matchState(password, confirmation);
-  const connexion = `/connexion?role=${role}&next=${encodeURIComponent(next)}`;
+  const connexion = role === 'pro' ? `/connexion?role=pro&next=${encodeURIComponent(next)}` : `/intro?next=${encodeURIComponent(next)}`;
+  const inscription = `/inscription?role=${role}&next=${encodeURIComponent(next)}`;
 
   const creer = async (e: FormEvent) => {
     e.preventDefault();
@@ -69,17 +70,13 @@ export function SignUp() {
   return (
     <AuthShell
       role={role}
-      back={role === 'pro' ? '/pro/bienvenue' : connexion}
+      back={role === 'pro' ? '/pro/bienvenue' : undefined}
+      onglets={{ actif: 'inscription', liens: { connexion, inscription } }}
       titre={role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
       sous={
         role === 'pro'
           ? t('Votre agenda, vos réservations et votre page en ligne. Gratuit.')
           : t('Réservez dans les salons de votre choix, sans appeler.')
-      }
-      pied={
-        <Link to={connexion} className="btn g">
-          {t('J’ai déjà un compte')}
-        </Link>
       }
     >
       <form onSubmit={creer} noValidate>

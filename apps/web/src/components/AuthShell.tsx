@@ -23,8 +23,8 @@
  * IDENTITÉ : noir, blanc, gris. La seule couleur est le ROSE de l'espace féminin (`--color-women`),
  * en touche discrète côté client (pastille du surtitre) ; l'espace professionnel reste monochrome.
  */
-import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type TouchEvent as ReactTouchEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { AlertCircle, CalendarDays, CalendarCheck, CheckCircle2, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, XCircle, type LucideIcon } from 'lucide-react';
 import { BackButton, Field, I, Input } from './ui';
 import { Wordmark } from './Wordmark';
@@ -64,6 +64,7 @@ export function AuthShell({
   etapes,
   surtitre,
   icone,
+  onglets,
   titre,
   sous,
   children,
@@ -81,6 +82,8 @@ export function AuthShell({
   surtitre?: string;
   /** Pictogramme posé au-dessus du titre (écrans de confirmation : « vérifiez vos e-mails »). */
   icone?: LucideIcon;
+  /** Portail : onglets Connexion ⇄ Inscription (toucher ou glisser), avec l'adresse de chacun. */
+  onglets?: { actif: OngletAuth; liens: Record<OngletAuth, string> };
   titre: string;
   sous?: ReactNode;
   children: ReactNode;
@@ -88,6 +91,10 @@ export function AuthShell({
   pied?: ReactNode;
 }) {
   const v = VITRINE[role];
+  const etat = useLocation().state as { authSens?: 'suivant' | 'precedent'; authDe?: OngletAuth } | null;
+  const glisse = useGlissement(onglets);
+  // Arrivée par un changement d'onglet : le contenu entre du côté d'où l'on a tiré.
+  const entree = onglets && etat?.authSens ? `auth-entre-${etat.authSens}` : '';
 
   return (
     <div className="auth-shell" data-role={role}>
@@ -115,7 +122,9 @@ export function AuthShell({
       </aside>
 
       {/* ---------------------------------------------------------------- Colonne du formulaire */}
-      <div className="auth-col">
+      {/* Le geste se fait n'importe où dans la colonne, y compris sous le formulaire : seul le
+          contenu bouge. */}
+      <div className="auth-col" {...glisse.handlers}>
         {/* Bandeau de marque : sur téléphone et tablette. Sur grand écran, le volet de gauche le
             porte déjà — le répéter ferait deux marques dans le même regard. */}
         {(marque || back) && (
@@ -161,14 +170,154 @@ export function AuthShell({
           <p className="auth-surtitre">
             <span className="auth-point" aria-hidden /> {t(surtitre ?? ESPACE[role])}
           </p>
-          <h1 className="auth-titre">{t(titre)}</h1>
-          {sous && <p className="auth-sous">{sous}</p>}
-          <div className="auth-corps">{children}</div>
-          {pied && <div className="auth-pied">{pied}</div>}
+          {onglets && <AuthOnglets actif={onglets.actif} liens={onglets.liens} de={etat?.authDe} />}
+          <div ref={glisse.corps} className={`auth-glisse ${entree}`}>
+            {/* Avec les onglets, le titre visible est l'onglet lui-même : le répéter en grand
+                ferait deux fois « Connexion » l'un sous l'autre. Il reste pour les lecteurs d'écran. */}
+            <h1 className={onglets ? 'sr-only' : 'auth-titre'}>{t(titre)}</h1>
+            {sous && <p className={onglets ? 'auth-sous !mt-3' : 'auth-sous'}>{sous}</p>}
+            <div className="auth-corps">{children}</div>
+            {pied && <div className="auth-pied">{pied}</div>}
+          </div>
         </main>
       </div>
     </div>
   );
+}
+
+/**
+ * CONNEXION ⇄ INSCRIPTION : deux onglets d'un même portail, et non deux portes reliées par un bouton
+ * en bas de page (24 oct. 2026). Un sélecteur en tête dit d'emblée qu'il y a deux chemins et lequel
+ * est ouvert ; on change d'un toucher, ou d'un GLISSEMENT du doigt sur le formulaire — le contenu
+ * suit le doigt, puis l'autre onglet arrive du côté d'où l'on a tiré.
+ *
+ * Les deux restent des PAGES distinctes (`/intro` ou `/connexion?role=pro`, et `/inscription`) :
+ * liens partagés, retour arrière et rechargement continuent de marcher. Le passage se fait en
+ * remplaçant l'entrée d'historique, pour que « retour » ne fasse pas l'aller-retour entre onglets.
+ *
+ * En arabe, le sens de lecture s'inverse : « suivant » est à gauche, le glissement aussi.
+ */
+export type OngletAuth = 'connexion' | 'inscription';
+type Sens = 'suivant' | 'precedent';
+
+const ORDRE: OngletAuth[] = ['connexion', 'inscription'];
+
+function useAllerA(onglets: { actif: OngletAuth; liens: Record<OngletAuth, string> }) {
+  const navigate = useNavigate();
+  return useCallback(
+    (cible: OngletAuth) => {
+      if (cible === onglets.actif) return;
+      const sens: Sens = ORDRE.indexOf(cible) > ORDRE.indexOf(onglets.actif) ? 'suivant' : 'precedent';
+      navigate(onglets.liens[cible], { replace: true, state: { authSens: sens, authDe: onglets.actif } });
+    },
+    [navigate, onglets],
+  );
+}
+
+function AuthOnglets({ actif, liens, de }: { actif: OngletAuth; liens: Record<OngletAuth, string>; de?: OngletAuth }) {
+  const allerA = useAllerA({ actif, liens });
+  // La pastille part de l'onglet quitté et glisse jusqu'au nouveau : le changement se VOIT.
+  const [pos, setPos] = useState<OngletAuth>(de ?? actif);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setPos(actif));
+    return () => cancelAnimationFrame(id);
+  }, [actif]);
+  return (
+    <div className="auth-onglets" role="tablist" aria-label={t('Connexion ou inscription')} data-pos={pos}>
+      <span className="auth-onglets-pastille" aria-hidden />
+      {ORDRE.map((o) => (
+        <button
+          key={o}
+          type="button"
+          role="tab"
+          aria-selected={o === actif}
+          className={o === actif ? 'on' : ''}
+          onClick={() => allerA(o)}
+        >
+          {o === 'connexion' ? t('Connexion') : t('Inscription')}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Glissement horizontal sur le formulaire. Le contenu suit le doigt (avec résistance), et au-delà
+ * d'un quart de largeur — ou d'un geste vif — on passe à l'autre onglet ; sinon il revient en place.
+ * Ignoré quand le geste part du champ en cours de saisie (on y déplace le curseur) ou qu'il est
+ * surtout vertical (on fait défiler la page).
+ */
+function useGlissement(onglets: { actif: OngletAuth; liens: Record<OngletAuth, string> } | undefined) {
+  const corps = useRef<HTMLDivElement>(null);
+  const allerA = useAllerA(onglets ?? { actif: 'connexion', liens: { connexion: '', inscription: '' } });
+  const geste = useRef<{ x: number; y: number; t: number; horizontal: boolean | null } | null>(null);
+
+  const poser = (dx: number, anime: boolean) => {
+    const el = corps.current;
+    if (!el) return;
+    el.style.transition = anime ? 'transform 0.22s ease, opacity 0.22s ease' : 'none';
+    el.style.transform = dx ? `translateX(${dx}px)` : '';
+    el.style.opacity = dx ? String(Math.max(0.55, 1 - Math.abs(dx) / 600)) : '';
+  };
+
+  if (!onglets) return { corps, handlers: {} };
+
+  const rtl = () => document.documentElement.dir === 'rtl';
+  /** Onglet atteint en tirant vers la gauche (dx < 0) ou la droite. */
+  const cibleDe = (dx: number): OngletAuth | null => {
+    const versSuivant = rtl() ? dx > 0 : dx < 0;
+    const i = ORDRE.indexOf(onglets.actif) + (versSuivant ? 1 : -1);
+    return ORDRE[i] ?? null;
+  };
+
+  return {
+    corps,
+    handlers: {
+      onTouchStart: (e: ReactTouchEvent) => {
+        const cible = e.target as HTMLElement;
+        // Un champ EN COURS de saisie garde ses gestes (sélection, curseur) ; un champ simplement
+        // survolé par le doigt n'empêche pas de glisser — le formulaire d'inscription en est couvert.
+        if (cible.closest('[role=tablist]')) return;
+        if (cible.matches('input, textarea, select') && cible === document.activeElement) return;
+        const p = e.touches[0]!;
+        geste.current = { x: p.clientX, y: p.clientY, t: Date.now(), horizontal: null };
+      },
+      onTouchMove: (e: ReactTouchEvent) => {
+        const g = geste.current;
+        if (!g) return;
+        const p = e.touches[0]!;
+        const dx = p.clientX - g.x;
+        const dy = p.clientY - g.y;
+        if (g.horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) g.horizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+        if (!g.horizontal) return;
+        // Pas d'onglet de ce côté : forte résistance, le geste « bute ».
+        const amorti = cibleDe(dx) ? dx * 0.6 : dx * 0.15;
+        poser(amorti, false);
+      },
+      onTouchEnd: (e: ReactTouchEvent) => {
+        const g = geste.current;
+        geste.current = null;
+        if (!g?.horizontal) return;
+        // Un glissement n'est pas un toucher : le bouton ou le lien sous le doigt ne s'active pas.
+        if (e.cancelable) e.preventDefault();
+        const p = e.changedTouches[0]!;
+        const dx = p.clientX - g.x;
+        const vif = Math.abs(dx) > 40 && Date.now() - g.t < 250;
+        const largeur = corps.current?.offsetWidth ?? 360;
+        const cible = cibleDe(dx);
+        if (cible && (Math.abs(dx) > largeur / 4 || vif)) {
+          poser(dx < 0 ? -largeur / 3 : largeur / 3, true);
+          window.setTimeout(() => allerA(cible), 120);
+        } else {
+          poser(0, true);
+        }
+      },
+      onTouchCancel: () => {
+        geste.current = null;
+        poser(0, true);
+      },
+    },
+  };
 }
 
 /** « ou » entre deux façons de faire la même chose (se connecter par mot de passe ou par lien). */
