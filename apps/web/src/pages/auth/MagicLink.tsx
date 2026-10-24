@@ -13,7 +13,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { MailOpen } from 'lucide-react';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, Field, I, Input } from '@/components/ui';
+import { Button, Field, Input } from '@/components/ui';
 import { AuthError, AuthShell } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
 import { t } from '@/i18n';
@@ -49,17 +49,20 @@ export function MagicLink() {
     <AuthShell
       role={role}
       back={`/connexion?role=${role}`}
+      icone={MailOpen}
       titre="Recevoir un lien de connexion"
       sous={t('Indiquez votre adresse : vous recevrez un lien qui vous connecte directement, sans mot de passe.')}
     >
-      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+      <form onSubmit={submit} noValidate>
         <Field label={t('E-mail')} htmlFor="ml-email">
           <Input
             id="ml-email"
-            lg
             type="email"
             inputMode="email"
             autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             placeholder={t('vous@exemple.dz')}
             value={email}
             onChange={(e) => {
@@ -72,7 +75,7 @@ export function MagicLink() {
         </Field>
         {error && <AuthError texte={error} />}
         <Button type="submit" loading={busy}>
-          <I icon={MailOpen} size={18} /> {t('Recevoir le lien')}
+          {t('Recevoir le lien')}
         </Button>
       </form>
     </AuthShell>

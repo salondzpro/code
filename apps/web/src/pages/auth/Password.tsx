@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
+import { KeyRound, LockKeyhole } from 'lucide-react';
 import { Button, Field, Input } from '@/components/ui';
 import { AuthError, AuthShell, MatchHint, PasswordField, matchState } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
@@ -39,15 +40,23 @@ export function ForgotPassword() {
   };
 
   return (
-    <AuthShell back={readAuthFlow()?.role === 'pro' ? '/connexion?role=pro' : '/connexion'} titre="Mot de passe oublié" sous={t('Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.')}>
-      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+    <AuthShell
+      role={readAuthFlow()?.role === 'pro' ? 'pro' : 'client'}
+      back={readAuthFlow()?.role === 'pro' ? '/connexion?role=pro' : '/connexion'}
+      icone={KeyRound}
+      titre="Mot de passe oublié"
+      sous={t('Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.')}
+    >
+      <form onSubmit={submit} noValidate>
         <Field label={t('E-mail')} htmlFor="fp-email">
           <Input
             id="fp-email"
-            lg
             type="email"
             inputMode="email"
             autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             placeholder={t('vous@exemple.dz')}
             value={email}
             onChange={(e) => {
@@ -79,7 +88,7 @@ export function NewPassword() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password.length < PASSWORD_MIN) return setError(`Mot de passe trop court : ${PASSWORD_MIN} caractères au minimum.`);
+    if (password.length < PASSWORD_MIN) return setError(t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }));
     // Garde-fou : le bouton est désactivé, mais la touche Entrée ne passe pas par lui.
     if (password !== confirmation) return setError(t('Les deux mots de passe ne correspondent pas.'));
     setBusy(true);
@@ -100,6 +109,8 @@ export function NewPassword() {
 
   return (
     <AuthShell
+      role={readAuthFlow()?.role === 'pro' ? 'pro' : 'client'}
+      icone={LockKeyhole}
       titre="Nouveau mot de passe"
       sous={
         session
@@ -108,12 +119,12 @@ export function NewPassword() {
       }
     >
       {session ? (
-        <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+        <form onSubmit={submit} noValidate>
           <PasswordField
             id="np-password"
             label={t('Nouveau mot de passe')}
             autoComplete="new-password"
-            hint={`${PASSWORD_MIN} caractères au minimum.`}
+            hint={t('{n} caractères au minimum.', { n: PASSWORD_MIN })}
             value={password}
             onChange={(v) => {
               setPassword(v);

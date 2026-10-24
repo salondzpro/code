@@ -140,10 +140,23 @@ async function setupChrome(): Promise<void> {
   await SplashScreen.hide().catch(() => undefined);
 }
 
+/**
+ * ÉCHELLE FIGÉE DANS L'APPLICATION. Une application ne se zoome pas : ni au toucher d'un champ
+ * (iOS agrandit la page sous 16 px et la laisse souvent agrandie), ni au pincement, ni au double
+ * toucher. Sur le SITE, on laisse le pincement aux personnes qui en ont besoin — c'est la raison
+ * pour laquelle ce verrou n'est posé qu'ici et pas dans `index.html`.
+ */
+function lockViewport(): void {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  if (!meta) return;
+  meta.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+}
+
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */
 export async function initNative(navigate: (path: string) => void): Promise<void> {
   if (!isNative()) return;
   document.documentElement.dataset.native = 'true';
+  lockViewport();
   await Promise.all([
     patchGeolocation(),
     patchShare(),

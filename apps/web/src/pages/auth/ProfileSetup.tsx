@@ -62,14 +62,14 @@ export function ProfileSetup() {
     <AuthShell
       role={isPro ? 'pro' : 'client'}
       marque={false}
+      surtitre="Dernière étape"
       titre="Vos coordonnées"
+      sous={isPro ? t('Pour que Salon DZ puisse vous joindre au sujet de votre espace.') : t('Le salon s’en sert pour vous joindre au sujet de votre rendez-vous.')}
     >
-      <p className="-mt-2 text-[0.875rem] font-semibold uppercase tracking-[0.08em] text-muted">{t('Dernière étape')}</p>
-      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+      <form onSubmit={submit} noValidate>
         <Field label={t("Prénom et nom")} htmlFor="full-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
             id="full-name"
-            lg
             className={name ? 'f' : ''}
             value={name}
             onChange={(e) => {
@@ -86,12 +86,11 @@ export function ProfileSetup() {
             {t("Numéro de téléphone")}
           </label>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[var(--radius-input)] bg-fill px-4 text-[0.857rem] font-medium" aria-label={t("Indicatif +213")}>
-              +213 <I icon={ChevronDown} size={16} className="text-subtle" />
+            <div className="flex flex-none items-center gap-1.5 rounded-[var(--radius-input)] border border-line bg-fill px-3 text-[1rem] font-medium" dir="ltr" aria-label={t("Indicatif +213")}>
+              +213 <I icon={ChevronDown} size={15} className="text-subtle" />
             </div>
             <Input
               id="profile-phone"
-              lg
               type="tel"
               inputMode="numeric"
               autoComplete="tel-national"
@@ -105,8 +104,8 @@ export function ProfileSetup() {
               aria-required
             />
           </div>
-          <p className={`mt-1.5 text-[0.857rem] ${error?.field === 'phone' ? 'text-danger' : 'text-subtle'}`}>
-            {error?.field === 'phone' ? error.msg : 'Format algérien · aucun SMS envoyé.'}
+          <p className={`mt-1 text-[0.857rem] ${error?.field === 'phone' ? 'text-danger' : 'text-subtle'}`}>
+            {error?.field === 'phone' ? error.msg : t('Format algérien · aucun SMS envoyé.')}
           </p>
         </div>
         {error?.field === 'form' && (
@@ -114,8 +113,8 @@ export function ProfileSetup() {
             {error.msg}
           </p>
         )}
-        <Button type="submit" disabled={update.isPending || me.isPending}>
-          {update.isPending ? 'Enregistrement…' : 'Terminer'}
+        <Button type="submit" loading={update.isPending} disabled={me.isPending}>
+          {t('Terminer')}
         </Button>
       </form>
     </AuthShell>

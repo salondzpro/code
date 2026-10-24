@@ -12,8 +12,9 @@
  * toute déconnexion y ramène. Seule exception, la porte PROFESSIONNELLE (`?role=pro`), qui vient de
  * `/pro/bienvenue` et garde son bouton retour vers cette page.
  *
- * L'écran tient SANS DÉFILEMENT, y compris sur un petit téléphone (360×740) : c'est une contrainte,
- * pas un constat. Toute addition ici doit être mesurée — le portail est la première chose que voit
+ * L'écran tient SANS DÉFILEMENT, y compris sur un petit téléphone (360×740) et clavier ouvert pour
+ * le formulaire : c'est une contrainte, pas un constat. Plus de focus automatique sur le premier
+ * champ : le clavier recouvrait la moitié de l'écran avant même qu'on ait lu le titre. Toute addition ici doit être mesurée — le portail est la première chose que voit
  * quelqu'un qui installe l'application, et il ne doit rien cacher sous la ligne de flottaison.
  * Le lien de connexion par e-mail a SA page (`/connexion/lien`) : il a besoin de son propre champ.
  */
@@ -24,7 +25,7 @@ import { demoAccountFor, demoAccountForCredentials } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { Button, Field, I, Input } from '@/components/ui';
-import { AuthError, AuthShell, PasswordField } from '@/components/AuthShell';
+import { AuthError, AuthOu, AuthShell, PasswordField } from '@/components/AuthShell';
 import { HOME, PRO_ONLY } from '@/lib/flavor';
 import { api } from '@/lib/api';
 import { t } from '@/i18n';
@@ -51,7 +52,6 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   const linkErr = params.get('erreur');
   const [email, setEmail] = useState(() => (landing ? '' : (readAuthFlow()?.identifier ?? '')));
   const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
   const [busy, setBusy] = useState<'password' | 'resend' | 'demo' | null>(null);
   /**
    * Connexion en cours. UNE RÉFÉRENCE, pas un état : React regroupe les mises à jour, et l'état
@@ -169,11 +169,14 @@ export function Login({ landing }: { landing?: boolean } = {}) {
     }
   };
 
+  const lienEmail = `/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`;
+  const inscription = `/inscription?role=${role}&next=${encodeURIComponent(next)}`;
+
   return (
     <AuthShell
       role={role}
       back={landing ? undefined : role === 'pro' ? '/pro/bienvenue' : '/home'}
-      titre={role === 'pro' ? 'Espace professionnel' : 'Connexion'}
+      titre={role === 'pro' ? 'Connexion à votre espace' : 'Connexion'}
       sous={
         role === 'pro'
           ? t('Retrouvez votre agenda, vos réservations et votre page.')
@@ -181,36 +184,30 @@ export function Login({ landing }: { landing?: boolean } = {}) {
       }
       pied={
         <>
-          <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn g !border-ink">
+          {/* Créer un compte : une VRAIE action, pleine largeur — c'est la porte de la moitié des
+              visiteurs. */}
+          <Link to={inscription} className="btn g">
             <I icon={UserPlus} size={18} /> {role === 'pro' ? t('Créer mon espace pro') : t('Créer un compte')}
           </Link>
-          {/* Vers sa PAGE, avec son champ : quelqu'un qui vient ici pour éviter le mot de passe
-              n'a pas forcément rempli le formulaire au-dessus. L'adresse déjà tapée est emportée. */}
-          <Link
-            to={`/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`}
-            className="btn g"
-          >
-            <I icon={MailOpen} size={18} /> {t('Recevoir un lien par e-mail')}
-          </Link>
           {landing && !PRO_ONLY && (
-            <Link
-              to="/pro/bienvenue"
-              className="flex items-center justify-center gap-2 pt-2 text-[1rem] font-semibold underline underline-offset-2"
-            >
-              <I icon={Store} size={18} /> {t('Portail des professionnels')}
+            <Link to="/pro/bienvenue" className="auth-lien discret">
+              <I icon={Store} size={17} /> {t('Portail des professionnels')}
             </Link>
           )}
         </>
       }
     >
-      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+      <form onSubmit={submit} noValidate>
         <Field label={t('E-mail')} htmlFor="login-email">
           <Input
             id="login-email"
-            lg
             type="email"
             inputMode="email"
             autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
             placeholder={t('vous@exemple.dz')}
             value={email}
             onChange={(e) => {
@@ -218,7 +215,6 @@ export function Login({ landing }: { landing?: boolean } = {}) {
               setError(null);
             }}
             err={error?.kind === 'email' || error?.kind === 'no_account'}
-            autoFocus
           />
         </Field>
         <PasswordField
@@ -235,7 +231,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
           action={
             <Link
               to={`/connexion/oubli${email ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
-              className="text-[0.875rem] font-semibold underline underline-offset-2"
+              className="text-[0.857rem] font-semibold underline underline-offset-2"
             >
               {t('Mot de passe oublié ?')}
             </Link>
@@ -245,7 +241,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
           <AuthError texte={error.text}>
             {/* La suite logique de l'erreur, à portée de pouce. */}
             {error.kind === 'no_account' && (
-              <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
+              <Link to={inscription} className="btn sm">
                 <I icon={UserPlus} size={16} /> {t('Créer un compte avec cette adresse')}
               </Link>
             )}
@@ -255,7 +251,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
               </Button>
             )}
             {error.kind === 'wrong_portal' && (
-              <Link to={`/inscription?role=${role}&next=${encodeURIComponent(next)}`} className="btn sm">
+              <Link to={inscription} className="btn sm">
                 <I icon={UserPlus} size={16} /> {role === 'pro' ? t('Créer un espace professionnel') : t('Créer un compte client')}
               </Link>
             )}
@@ -270,6 +266,11 @@ export function Login({ landing }: { landing?: boolean } = {}) {
           {t('Se connecter')}
         </Button>
       </form>
+      {/* Sans mot de passe : la seconde façon d'entrer, juste sous la première. */}
+      <AuthOu />
+      <Link to={lienEmail} className="btn g">
+        <I icon={MailOpen} size={18} /> {t('Recevoir un lien de connexion')}
+      </Link>
     </AuthShell>
   );
 }

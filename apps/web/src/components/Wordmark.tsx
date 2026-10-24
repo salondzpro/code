@@ -17,7 +17,9 @@ export function Wordmark({
   light?: boolean;
 }) {
   return (
-    <span className={`leading-none tracking-[-0.6px] ${light ? 'text-white' : ''} ${className}`} style={{ fontSize: `${size}rem` }}>
+    // La marque s'écrit de gauche à droite dans toutes les langues : en arabe, la marge « de début »
+    // passait à droite de « DZ » et collait les deux mots (« SalonDZ »).
+    <span dir="ltr" className={`leading-none tracking-[-0.6px] ${light ? 'text-white' : ''} ${className}`} style={{ fontSize: `${size}rem` }}>
       <span className="font-semibold">Salon</span>
       <span className={`ms-[0.16em] font-light ${light ? 'text-white/70' : 'text-muted'}`}>DZ</span>
     </span>

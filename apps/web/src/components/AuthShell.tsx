@@ -3,16 +3,25 @@
  * mot de passe oublié, nouveau mot de passe, vérification, coordonnées.
  *
  * POURQUOI UNE COQUE : ces écrans partageaient une structure recopiée sept fois, qui divergeait à
- * chaque retouche — un bandeau ici, un bouton retour là, des marges différentes. Ici, une seule
- * définition : la marque, le retour, le titre, la colonne de formulaire et le pied.
+ * chaque retouche. Ici, une seule définition : la marque, le retour, le titre, la colonne de
+ * formulaire et le pied. TOUTE la densité de ces écrans se règle ici et dans `.auth-*`
+ * (`styles/index.css`), jamais écran par écran.
  *
- * DEUX VOLETS À PARTIR DE 1024 px. Le volet de gauche n'est pas décoratif : il dit à QUI l'écran
- * s'adresse. Une cliente qui réserve et un salon qui s'équipe n'ont pas les mêmes attentes, et un
- * formulaire seul au milieu d'une page blanche ne le dit jamais. En dessous de 1024 px — donc dans
- * l'application mobile, toujours — c'est une colonne unique, avec un bandeau de marque compact.
+ * COMPACT ET IMMOBILE (refonte du 24 oct. 2026) :
+ *   - le contenu est calé EN HAUT sur téléphone et tablette, plus centré verticalement. Centré, il
+ *     sautait vers le haut à chaque ouverture du clavier (la zone visible rétrécit, le centre
+ *     bouge) ; calé en haut, le champ touché ne bouge pas ;
+ *   - un rythme vertical serré et unique : 4 px entre une étiquette et son champ, 12 px entre deux
+ *     champs, 20 px entre le titre et le formulaire. L'écran de connexion tient avec le clavier
+ *     ouvert sur un téléphone de 360 × 740 ;
+ *   - les champs sont à 16 px : sous 16 px, iOS zoome la page au toucher d'un champ.
  *
- * Le contenu du volet change selon `role`, mais la mise en page ne change pas : même écran, deux
- * identités, pas deux produits.
+ * DEUX VOLETS À PARTIR DE 1024 px. Le volet de gauche dit à QUI l'écran s'adresse : une cliente
+ * qui réserve et un salon qui s'équipe n'ont pas les mêmes attentes. En dessous — donc dans
+ * l'application mobile, toujours — une colonne unique avec un bandeau de marque compact.
+ *
+ * IDENTITÉ : noir, blanc, gris. La seule couleur est le ROSE de l'espace féminin (`--color-women`),
+ * en touche discrète côté client (pastille du surtitre) ; l'espace professionnel reste monochrome.
  */
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -45,12 +54,16 @@ const VITRINE: Record<AuthRole, { photo: string; titre: string; points: { icone:
   },
 };
 
+const ESPACE: Record<AuthRole, string> = { client: 'Espace client', pro: 'Espace professionnel' };
+
 export function AuthShell({
   role = 'client',
   back,
   marque = true,
   etape,
   etapes,
+  surtitre,
+  icone,
   titre,
   sous,
   children,
@@ -64,6 +77,10 @@ export function AuthShell({
   /** Parcours en plusieurs temps : où l'on en est, sur combien. */
   etape?: number;
   etapes?: number;
+  /** Petite ligne au-dessus du titre. Par défaut, l'espace visé (« Espace client »). */
+  surtitre?: string;
+  /** Pictogramme posé au-dessus du titre (écrans de confirmation : « vérifiez vos e-mails »). */
+  icone?: LucideIcon;
   titre: string;
   sous?: ReactNode;
   children: ReactNode;
@@ -73,84 +90,92 @@ export function AuthShell({
   const v = VITRINE[role];
 
   return (
-    <div className="auth-shell">
+    <div className="auth-shell" data-role={role}>
       {/* ---------------------------------------------------------------- Volet de gauche (≥1024) */}
       <aside className="auth-vitrine" aria-hidden>
         <img src={v.photo} alt="" />
-        <Wordmark size={1.571} light />
+        <Wordmark size={1.429} light />
         <div>
-          <p className="max-w-[16ch] text-[2.571rem] font-semibold leading-[1.08] tracking-[-1.2px]">{t(v.titre)}</p>
-          <ul className="mt-9 flex flex-col gap-4">
+          <p className="auth-surtitre !text-white/70">
+            <span className="auth-point" /> {t(ESPACE[role])}
+          </p>
+          <p className="mt-3 max-w-[16ch] text-[2.286rem] font-semibold leading-[1.1] tracking-[-1px]">{t(v.titre)}</p>
+          <ul className="mt-6 flex flex-col gap-3">
             {v.points.map((p) => (
-              <li key={p.texte} className="flex items-start gap-3 text-[1.071rem] leading-[1.45] text-white/75">
-                <span className="mt-0.5 flex size-8 flex-none items-center justify-center rounded-[var(--radius-card-sm)] bg-white/10">
-                  <I icon={p.icone} size={18} strokeWidth={1.7} />
+              <li key={p.texte} className="flex items-center gap-3 text-[1rem] leading-[1.4] text-white/80">
+                <span className="flex size-8 flex-none items-center justify-center rounded-[var(--radius-card-sm)] bg-white/10">
+                  <I icon={p.icone} size={17} strokeWidth={1.7} />
                 </span>
                 {t(p.texte)}
               </li>
             ))}
           </ul>
         </div>
-        <p className="text-[0.875rem] text-white/40">{t('La réservation beauté en Algérie.')}</p>
+        <p className="text-[0.857rem] text-white/45">{t('La réservation beauté en Algérie.')}</p>
       </aside>
 
       {/* ---------------------------------------------------------------- Colonne du formulaire */}
       <div className="auth-col">
-        {/* Bandeau de marque : sur téléphone seulement. Sur grand écran, le volet de gauche le porte
-            déjà — le répéter ferait deux marques dans le même regard. */}
-        {marque && (
-          <div className="flex items-center justify-between gap-3 px-4 pt-3 lg:hidden">
-            <div className="flex items-center gap-2">
+        {/* Bandeau de marque : sur téléphone et tablette. Sur grand écran, le volet de gauche le
+            porte déjà — le répéter ferait deux marques dans le même regard. */}
+        {(marque || back) && (
+          <header className="auth-top">
+            <div className="flex min-w-0 items-center gap-1">
               {back && <BackButton to={back} />}
-              <Link to="/home" aria-label="Salon DZ">
-                <Wordmark size={1.429} />
-              </Link>
+              {marque && (
+                <Link to="/home" aria-label="Salon DZ" className={back ? '' : 'ps-1'}>
+                  <Wordmark size={1.286} />
+                </Link>
+              )}
             </div>
-            <LangSwitch />
-          </div>
-        )}
-        {!marque && back && (
-          <div className="px-4 pt-3 lg:hidden">
-            <BackButton to={back} />
-          </div>
+            {marque && <LangSwitch tone="light" />}
+          </header>
         )}
 
-        <div className="auth-form flex flex-1 flex-col justify-center px-4 py-6 lg:px-0 lg:py-0">
+        <main className="auth-form">
           {back && (
-            <Link to={back} className="mb-6 hidden text-[0.938rem] font-medium text-muted transition-colors hover:text-ink lg:inline-block">
+            <Link to={back} className="auth-retour">
               ← {t('Retour')}
             </Link>
           )}
-          {/* Progression : on sait combien il reste AVANT de commencer à taper. Un formulaire qui
-              ne dit pas où il s'arrête se fait abandonner au deuxième champ. */}
+          {/* Progression : on sait combien il reste AVANT de commencer à taper. */}
           {etape !== undefined && etapes !== undefined && (
-            <div className="mb-5">
-              <div className="mb-2 flex items-center justify-between text-[0.875rem] text-muted">
-                <span>{t('Étape {n} sur {total}', { n: etape, total: etapes })}</span>
-              </div>
-              <div
-                className="flex gap-1"
-                role="progressbar"
-                aria-valuemin={1}
-                aria-valuemax={etapes}
-                aria-valuenow={etape}
-                aria-label={t('Progression')}
-              >
-                {Array.from({ length: etapes }, (_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < etape ? 'bg-ink' : 'bg-line'}`}
-                  />
-                ))}
-              </div>
+            <div
+              className="mb-4 flex gap-1"
+              role="progressbar"
+              aria-valuemin={1}
+              aria-valuemax={etapes}
+              aria-valuenow={etape}
+              aria-label={t('Étape {n} sur {total}', { n: etape, total: etapes })}
+            >
+              {Array.from({ length: etapes }, (_, i) => (
+                <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < etape ? 'bg-ink' : 'bg-line'}`} />
+              ))}
             </div>
           )}
-          <h1 className="text-[1.714rem] font-semibold leading-[1.15] tracking-[-0.8px] lg:text-[2rem]">{t(titre)}</h1>
-          {sous && <p className="p mt-2">{sous}</p>}
-          <div className="mt-7 flex flex-col gap-5">{children}</div>
-          {pied && <div className="mt-7 flex flex-col gap-2.5 border-t border-line pt-6">{pied}</div>}
-        </div>
+          {icone && (
+            <span className="auth-icone" aria-hidden>
+              <I icon={icone} size={22} strokeWidth={1.7} />
+            </span>
+          )}
+          <p className="auth-surtitre">
+            <span className="auth-point" aria-hidden /> {t(surtitre ?? ESPACE[role])}
+          </p>
+          <h1 className="auth-titre">{t(titre)}</h1>
+          {sous && <p className="auth-sous">{sous}</p>}
+          <div className="auth-corps">{children}</div>
+          {pied && <div className="auth-pied">{pied}</div>}
+        </main>
       </div>
+    </div>
+  );
+}
+
+/** « ou » entre deux façons de faire la même chose (se connecter par mot de passe ou par lien). */
+export function AuthOu() {
+  return (
+    <div className="auth-ou" role="separator">
+      <span>{t('ou')}</span>
     </div>
   );
 }
@@ -188,7 +213,6 @@ export function PasswordField({
       <div className="relative">
         <Input
           id={id}
-          lg
           type={montre ? 'text' : 'password'}
           autoComplete={autoComplete}
           placeholder={placeholder}
@@ -200,11 +224,11 @@ export function PasswordField({
         />
         <button
           type="button"
-          className="absolute end-3 top-1/2 -translate-y-1/2 rounded-[var(--radius-btn)] p-1 text-muted transition-colors hover:text-ink"
+          className="absolute end-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-[var(--radius-btn)] text-muted transition-colors hover:text-ink"
           aria-label={montre ? t('Masquer le mot de passe') : t('Afficher le mot de passe')}
           onClick={() => setMontre((v) => !v)}
         >
-          <I icon={montre ? EyeOff : Eye} size={20} />
+          <I icon={montre ? EyeOff : Eye} size={19} />
         </button>
       </div>
     </Field>
@@ -229,11 +253,11 @@ export function MatchHint({ etat }: { etat: ReturnType<typeof matchState> }) {
   const ok = etat === 'ok';
   return (
     <p
-      className={`flex items-center gap-2 text-[0.938rem] font-medium ${ok ? 'text-ok-fg' : 'text-danger'}`}
+      className={`-mt-1 flex items-center gap-1.5 text-[0.857rem] font-medium ${ok ? 'text-ok-fg' : 'text-danger'}`}
       role={ok ? undefined : 'alert'}
       aria-live="polite"
     >
-      <I icon={ok ? CheckCircle2 : XCircle} size={17} />
+      <I icon={ok ? CheckCircle2 : XCircle} size={15} />
       {ok ? t('Les mots de passe correspondent.') : t('Les deux mots de passe ne correspondent pas.')}
     </p>
   );
@@ -248,10 +272,10 @@ export function AuthError({ texte, children }: { texte: string; children?: React
   return (
     <div
       role="alert"
-      className="flex animate-[hm-monte_0.28s_ease-out] flex-col gap-3 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg p-3.5"
+      className="flex animate-[hm-monte_0.28s_ease-out] flex-col gap-2.5 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg px-3 py-2.5"
     >
-      <p className="flex items-start gap-2.5 text-[1rem] leading-[1.45] text-cancel-fg">
-        <I icon={AlertCircle} size={18} className="mt-0.5 flex-none" />
+      <p className="flex items-start gap-2 text-[0.938rem] leading-[1.4] text-cancel-fg">
+        <I icon={AlertCircle} size={17} className="mt-px flex-none" />
         {texte}
       </p>
       {children}

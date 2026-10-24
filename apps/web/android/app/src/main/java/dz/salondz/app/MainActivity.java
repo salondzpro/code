@@ -46,10 +46,19 @@ public class MainActivity extends BridgeActivity {
       Insets bars = windowInsets.getInsets(
         WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
       );
+      // CLAVIER. De bord à bord, Android ne réduit plus la fenêtre quand le clavier s'ouvre : il la
+      // RECOUVRE, et la WebView fait défiler la page d'un coup pour dégager le champ touché — c'est
+      // le saut constaté sur les écrans de connexion. On rend donc à la page exactement la place
+      // au-dessus du clavier : la vue racine prend la hauteur du clavier en marge basse. Pendant ce
+      // temps la barre de navigation est sous le clavier : la marge basse du CSS tombe à zéro, sans
+      // quoi elle s'ajouterait à celle du clavier.
+      int clavier = windowInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+      boolean clavierOuvert = clavier > 0;
+      view.setPadding(0, 0, 0, clavierOuvert ? clavier : 0);
       float density = getResources().getDisplayMetrics().density;
       applyInsets(
         Math.round(bars.top / density),
-        Math.round(bars.bottom / density),
+        clavierOuvert ? 0 : Math.round(bars.bottom / density),
         Math.round(bars.left / density),
         Math.round(bars.right / density)
       );

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
+import { MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { AuthError, AuthShell } from '@/components/AuthShell';
 import { t } from '@/i18n';
@@ -22,17 +23,17 @@ type Mode = 'confirm' | 'link' | 'reset';
  */
 const TEXT: Record<Mode, { title: string; body: string; resend: string }> = {
   confirm: {
-    title: t("Confirmez votre adresse mail"),
+    title: "Confirmez votre adresse mail",
     body: 'Cliquez sur le lien reçu dans votre boîte mail.',
     resend: 'Renvoyer le lien',
   },
   link: {
-    title: t("Lien de connexion envoyé"),
+    title: "Lien de connexion envoyé",
     body: 'Cliquez sur le lien reçu dans votre boîte mail.',
     resend: 'Renvoyer le lien',
   },
   reset: {
-    title: t("E-mail envoyé"),
+    title: "E-mail envoyé",
     body: 'Cliquez sur le lien reçu pour choisir un mot de passe.',
     resend: 'Renvoyer l’e-mail',
   },
@@ -81,17 +82,31 @@ export function EmailSent() {
   };
 
   return (
-    <AuthShell back={flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion'} titre={txt.title} sous={<>{txt.body}</>}>
+    <AuthShell
+      role={flow?.role === 'pro' ? 'pro' : 'client'}
+      back={flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion'}
+      icone={MailCheck}
+      titre={txt.title}
+      sous={
+        <>
+          {t(txt.body)}{' '}
+          {/* L'adresse, en clair : c'est la seule façon de voir qu'on l'a mal tapée. */}
+          <span className="font-semibold text-text" dir="ltr">
+            {email}
+          </span>
+        </>
+      }
+    >
       {error && <AuthError texte={error} />}
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-1">
         <Button variant="g" loading={busy} onClick={() => void resend()} disabled={busy || resendIn > 0}>
-          {resendIn > 0 ? `${txt.resend} (${resendIn} s)` : sent ? t('Renvoyé') : txt.resend}
+          {resendIn > 0 ? `${t(txt.resend)} (${resendIn} s)` : sent ? t('Renvoyé') : t(txt.resend)}
         </Button>
         {/* La seule porte de sortie quand l'adresse a été mal tapée : deux mots, mais indispensables. */}
         <button
           type="button"
-          className="py-1 text-center text-[1rem] text-muted underline underline-offset-2 transition-colors hover:text-ink"
+          className="auth-lien discret"
           onClick={() => navigate(flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion')}
         >
           {t('Changer d’adresse')}

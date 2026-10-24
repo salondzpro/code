@@ -133,7 +133,8 @@ export function BackButton({ to, close, label }: { to?: string; close?: boolean;
   const back = useBack(to ?? '/');
   return (
     <IconButton lg aria-label={label ?? (close ? 'Fermer' : 'Retour')} onClick={back}>
-      <I icon={close ? X : ChevronLeft} />
+      {/* En arabe, « retour » pointe vers la droite : la flèche suit le sens de lecture. */}
+      <I icon={close ? X : ChevronLeft} className={close ? '' : 'rtl:-scale-x-100'} />
     </IconButton>
   );
 }
