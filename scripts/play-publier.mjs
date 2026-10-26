@@ -34,7 +34,7 @@ const VERIFIER = arg('--verifier');
 const DEJA = val('--version', null);
 const NOTES = PRO
   ? 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. Corrections et améliorations de stabilité.'
-  : 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. Vos rappels reprennent dès votre retour.';
+  : 'Connexion et inscription réunies sur un seul écran, à onglets. Déconnexion plus fiable. L’état de vos notifications est toujours exact, avec un bouton vers leur réglage s’il le faut.';
 
 const SECRETS = path.resolve(import.meta.dirname, '..', 'secrets');
 const fichierCompte = ['play-service-account.json', 'fcm-service-account.json'].map((f) => path.join(SECRETS, f)).find((f) => fs.existsSync(f));

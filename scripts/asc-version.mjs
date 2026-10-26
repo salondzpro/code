@@ -29,8 +29,8 @@ if (!NUMERO) {
 /** Texte des nouveautés, par langue de fiche. Une langue absente d'ici reçoit le texte français. */
 const NOUVEAUTES = {
   'fr-FR': PRO
-    ? 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. À votre retour, tout se remet en place sans rien recharger.\nCorrections et améliorations de stabilité.'
-    : 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. Vos rappels de rendez-vous reprennent dès votre retour.\nCorrections et améliorations de stabilité.',
+    ? 'Connexion et inscription réunies sur un seul écran, à onglets. Déconnexion plus fiable, avec un indicateur clair. L’état de vos notifications est toujours exact, avec un bouton vers leur réglage s’il le faut.\nCorrections et améliorations de stabilité.'
+    : 'Connexion et inscription réunies sur un seul écran, à onglets, sans zoom ni saut au clavier. Déconnexion plus fiable. L’état de vos notifications est toujours exact, avec un bouton vers leur réglage s’il le faut.\nCorrections et améliorations de stabilité.',
 };
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
