@@ -7,6 +7,7 @@ import {
   addDaysToKey,
   dayOfWeekFromKey,
   formatDA,
+  formatLocale,
   toLocalDateKey,
   weekKeys,
 } from '@salondz/constants';
@@ -125,10 +126,15 @@ export function Revenue() {
                 </div>
               </div>
               {delta != null && (
-                <Badge tone={delta >= 0 ? 'ok' : 'cn'} md>
-                  {delta >= 0 ? '+' : ''}
-                  {delta} %
-                </Badge>
+                /* Au-delà de +300 %, un pourcentage ne veut plus rien dire (« +4263 % » après une
+                   semaine presque vide) : on dit combien de fois plus, en multiple. */
+                <span title={t('Par rapport à la période précédente')} aria-label={t('Par rapport à la période précédente')}>
+                  <Badge tone={delta >= 0 ? 'ok' : 'cn'} md>
+                    {delta > 300
+                      ? `× ${Math.round(delta / 100 + 1).toLocaleString(formatLocale())}`
+                      : `${delta >= 0 ? '+' : ''}${delta} %`}
+                  </Badge>
+                </span>
               )}
             </div>
             {period !== 'day' && (

@@ -181,11 +181,8 @@ export function ProLink() {
   return (
     <Screen bottom={24} gap={16}>
       <TopBar backTo="/pro" />
-      <h1 className="h1">
-        {t("Votre page de")}
-        <br />
-        {t("réservation")}
-      </h1>
+      {/* Une phrase, une clé : coupée en deux morceaux, l'arabe les remettait dans le désordre. */}
+      <h1 className="h1 max-w-[14ch]">{t('Votre page de réservation')}</h1>
       <div className="crd items-center !gap-3 !py-4">
         <button
           type="button"
