@@ -18,8 +18,11 @@ export function DayScroller({
   onSelect,
   disabledDays,
   minDate,
+  marks,
 }: {
   selected: string;
+  /** Jours qui portent du NOUVEAU (rendez-vous pas encore vus) : une pastille rouge les signale. */
+  marks?: Record<string, number>;
   onSelect: (dateKey: string) => void;
   disabledDays?: readonly number[];
   /** Jours avant cette clé grisés et non sélectionnables (création : jamais le passé). */ minDate?:
@@ -71,10 +74,13 @@ export function DayScroller({
             disabled={past}
             data-day={d}
             onClick={() => onSelect(d)}
-            className={`flex w-[3.25rem] flex-none flex-col items-center gap-1 rounded-[var(--radius-card-sm)] py-2 ${on ? 'bg-ink text-white' : out ? 'text-disabled' : 'text-text'}`}
+            className={`relative flex w-[3.25rem] flex-none flex-col items-center gap-1 rounded-[var(--radius-card-sm)] py-2 ${on ? 'bg-ink text-white' : out ? 'text-disabled' : 'text-text'}`}
             style={{ scrollSnapAlign: 'center' }}
-            aria-label={`${t(DAY_LABELS_SHORT_FR[dow])} ${dayNumber(d)}`}
+            aria-label={`${t(DAY_LABELS_SHORT_FR[dow])} ${dayNumber(d)}${marks?.[d] ? ` · ${t('{n} nouveau(x)', { n: marks[d] })}` : ''}`}
           >
+            {!!marks?.[d] && (
+              <span aria-hidden className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-[var(--color-bg)]" />
+            )}
             <span
               className={`text-[0.857rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
             >

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { useMe, useProPendingBookings, useProSalon } from '@salondz/api-client';
+import { useMe, useProPendingUnseenCount, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { PublicHeader } from '@/components/PublicHeader';
 import { ProHeader } from '@/components/ProHeader';
@@ -65,7 +65,7 @@ export function ProLayout() {
   const salon = useProSalon().data?.salon ?? null;
   const { session } = useAuth();
   useRealtimeBookings(salon?.id, session?.user.id);
-  const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
+  const pending = useProPendingUnseenCount(!!salon);
   /**
    * À partir de 1 024 px, la navigation quitte la barre d'onglets flottante pour un RAIL
    * permanent à gauche, comme les outils du métier : on voit où l'on est et où aller sans

@@ -1,4 +1,4 @@
-import { createContext, createElement, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, createElement, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import {
   useInfiniteQuery,
   useMutation,
@@ -301,6 +301,18 @@ export const useProUnseenBookings = (enabled = true) => {
 };
 
 /**
+ * Pastille « Réservations » : les demandes à valider PAS ENCORE VUES. Une demande vue (affichée dans
+ * l'agenda, la liste des réservations ou l'accueil) ne fait plus clignoter l'onglet : elle reste
+ * en tête de la liste « À valider » et sur l'accueil, et la relance du serveur (`request_pending`)
+ * crée une notification nouvelle qui la rallume si elle traîne.
+ */
+export const useProPendingUnseenCount = (enabled = true) => {
+  const pending = useProPendingBookings(enabled).data?.items ?? [];
+  const unseen = new Set(useProUnseenBookings(enabled).data?.bookingIds ?? []);
+  return pending.filter((b) => unseen.has(b.id)).length;
+};
+
+/**
  * « J'ai vu ce rendez-vous. » À appeler à l'OUVERTURE de sa fiche : le compteur du jour et celui
  * de l'onglet baissent d'autant. Les listes ne sont pas rechargées — seuls les compteurs changent.
  */
@@ -315,6 +327,34 @@ export function useMarkBookingSeen() {
       qc.invalidateQueries({ queryKey: queryKeys.notifications });
     },
   });
+}
+
+/**
+ * VOIR, c'est prendre connaissance : les rendez-vous qu'un écran AFFICHE (un jour de l'agenda, une
+ * semaine, la liste des réservations, l'accueil) sont marqués vus, sans ouvrir leur fiche. Seuls ceux
+ * qui sont encore « non vus » partent, après un court temps de présence à l'écran — faire défiler
+ * les jours d'un trait ne marque pas tout au passage. Pas de compteur optimiste : on invalide.
+ */
+export function useSeenOnDisplay(displayedIds: readonly string[], enabled = true, delayMs = 1200) {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  const unseen = useProUnseenBookings(enabled);
+  const pending = new Set(unseen.data?.bookingIds ?? []);
+  const toMark = enabled ? [...new Set(displayedIds)].filter((id) => pending.has(id)).slice(0, 200) : [];
+  const key = toMark.sort().join(',');
+  const mark = useMutation({
+    mutationFn: (ids: string[]) => api.pro.bookings.markSeenMany(ids),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.pro.unseen });
+      qc.invalidateQueries({ queryKey: queryKeys.notifications });
+    },
+  });
+  const { mutate } = mark;
+  useEffect(() => {
+    if (!key) return;
+    const timer = setTimeout(() => mutate(key.split(',')), delayMs);
+    return () => clearTimeout(timer);
+  }, [key, delayMs, mutate]);
 }
 
 export const useProBooking = (id: string) => useQuery(useApi().queries.pro.booking(id));

@@ -923,6 +923,16 @@ on('GET', '/pro/bookings/unseen', (c) => {
   }
   return ok({ total: rdv.length, byDate, bookingIds: rdv.map((b) => b.id) });
 });
+// Déclaré AVANT `/pro/bookings/:id/seen` et `/pro/bookings/:id`, comme l'API : seuls les rendez-vous du salon.
+on('POST', '/pro/bookings/seen', (c) => {
+  const u = requireUser(c);
+  const s = ownedSalon(c);
+  const ids = new Set(((c.body as { ids?: string[] })?.ids ?? []).filter((id) => c.w.bookings.some((b) => b.id === id && b.salonId === s.id)));
+  const now = new Date().toISOString();
+  for (const n of c.w.notifications) if (n.userId === u.id && n.bookingId && ids.has(n.bookingId) && !n.readAt) n.readAt = now;
+  saveWorld();
+  return none();
+});
 on('POST', '/pro/bookings/:id/seen', (c, p) => {
   const u = requireUser(c);
   const now = new Date().toISOString();

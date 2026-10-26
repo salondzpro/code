@@ -10,7 +10,13 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useProBlocks, useProBookings, useProSalon } from '@salondz/api-client';
+import {
+  useProBlocks,
+  useProBookings,
+  useProSalon,
+  useProUnseenBookings,
+  useSeenOnDisplay,
+} from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
   DAY_LABELS_SHORT_FR,
@@ -144,6 +150,21 @@ export function AgendaPro() {
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
     return m;
   }, [items]);
+  /**
+   * Ce que l'écran MONTRE est vu : le jour affiché, la semaine affichée, ou la journée touchée dans
+   * le mois (sa liste s'ouvre sous la grille). Les pastilles « Agenda » et « Réservations » baissent
+   * sans qu'il faille ouvrir chaque rendez-vous. Les annulations du jour comptent aussi, même
+   * masquées : la pastille « N annulé(s) » les annonce, et elles n'ont rien à traiter.
+   */
+  const shownIds = useMemo(() => {
+    const days = new Set(view === 'week' ? week : [date]);
+    return (bookings.data?.items ?? [])
+      .filter((b) => days.has(localKey(b.startsAt)) && (!staffId || b.staffId === staffId))
+      .map((b) => b.id);
+  }, [view, week, date, bookings.data, staffId]);
+  useSeenOnDisplay(shownIds, !!salon && !bookings.isFetching);
+  // Jours qui portent un rendez-vous pas encore vu : la frise des jours les signale.
+  const unseenByDate = useProUnseenBookings(!!salon).data?.byDate;
 
   if (!salon) return <PageLoading />;
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter(
@@ -232,7 +253,7 @@ export function AgendaPro() {
 
       {view === 'day' && (
         <>
-          <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} />
+          <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} marks={unseenByDate} />
           {team.length >= 2 && (
             <StaffColumnsHead
               columns={columns}
@@ -344,6 +365,7 @@ export function AgendaPro() {
                 setView('day');
               }}
               onOpen={setPeek}
+              marks={unseenByDate}
             />
           )}
         />
@@ -817,9 +839,12 @@ function MonthGrid({
   onSelect,
   onOpenDay,
   onOpen,
+  marks,
 }: {
   date: string;
   gridStart: string;
+  /** Jours qui portent un rendez-vous pas encore vu (pastille rouge). */
+  marks?: Record<string, number>;
   byDay: Map<string, BookingWithStaff[]>;
   closedDays: number[];
   toneOf: (b: BookingWithStaff) => string;
@@ -856,7 +881,7 @@ function MonthGrid({
               key={d}
               type="button"
               onClick={() => (on ? onOpenDay(d) : onSelect(d))}
-              className={`flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[var(--radius-card-sm)] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`}
+              className={`relative flex h-[4.625rem] flex-col items-center justify-center gap-1.5 rounded-[var(--radius-card-sm)] border ${on ? 'border-ink bg-ink text-white' : inMonth ? 'border-line-soft bg-surface' : 'border-transparent'} ${!inMonth ? 'text-disabled' : closed ? 'text-disabled' : ''}`}
               style={
                 closed && !on
                   ? {
@@ -865,8 +890,13 @@ function MonthGrid({
                     }
                   : undefined
               }
-              aria-label={d}
+              data-day={d}
+              aria-pressed={on}
+              aria-label={`${Number(d.slice(8, 10))} ${t(MONTHS[Number(d.slice(5, 7)) - 1]!)} · ${t('{n} rendez-vous', { n: (byDay.get(d) ?? []).length })}${marks?.[d] ? ` · ${t('{n} nouveau(x)', { n: marks[d] })}` : ''}`}
             >
+              {!!marks?.[d] && (
+                <span aria-hidden className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-[var(--color-surface)]" />
+              )}
               <span
                 className={`text-[1rem] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}
               >

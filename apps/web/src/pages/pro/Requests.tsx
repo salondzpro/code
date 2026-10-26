@@ -6,7 +6,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Inbox, Plus } from 'lucide-react';
-import { useProBookingMutations, useProBookings, useProPendingBookings } from '@salondz/api-client';
+import {
+  useProBookingMutations,
+  useProBookings,
+  useProPendingBookings,
+  useSeenOnDisplay,
+} from '@salondz/api-client';
 import {
   addDaysToKey,
   formatDA,
@@ -60,6 +65,12 @@ export function Requests() {
     if (last && last[0] === key) last[1].push(b);
     else days.push([key, [b]]);
   }
+  // La liste affichée vaut lecture : demandes et rendez-vous à venir sont marqués vus, et les
+  // pastilles « Réservations » et « Agenda » baissent sans ouvrir chaque fiche.
+  useSeenOnDisplay(
+    [...items, ...upcoming].map((b) => b.id),
+    !pending.isFetching && !next.isFetching,
+  );
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>

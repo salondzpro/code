@@ -606,6 +606,8 @@ export function createApiClient(opts: ApiClientOptions) {
         unseen: () => get<{ total: number; byDate: Record<string, number>; bookingIds: string[] }>('/pro/bookings/unseen'),
         /** « J'ai vu ce rendez-vous » : fait baisser le compteur du jour et de l'onglet. */
         markSeen: (id: string) => post<void>(`/pro/bookings/${id}/seen`, {}),
+        /** « J'ai vu ces rendez-vous » : ceux qu'un écran vient d'afficher (au plus 200). */
+        markSeenMany: (ids: string[]) => post<void>('/pro/bookings/seen', { ids }),
         get: (id: string) => get<BookingWithStaff>(`/pro/bookings/${id}`),
         createWalkIn: (body: CreateWalkInBookingInput) =>
           post<BookingWithStaff>('/pro/bookings', body),

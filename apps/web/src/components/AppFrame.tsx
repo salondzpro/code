@@ -6,7 +6,7 @@
  */
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { NavLink } from 'react-router';
-import { useProPendingBookings, useProUnseenBookings } from '@salondz/api-client';
+import { useProPendingUnseenCount, useProUnseenBookings } from '@salondz/api-client';
 import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 import { PushToast } from './PushToast';
@@ -124,7 +124,7 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
    * donc aucune requête de plus, et l'invalidation du temps réel met la pastille à jour
    * sans rien actualiser.
    */
-  const pending = useProPendingBookings(kind === 'pro');
+  const pending = useProPendingUnseenCount(kind === 'pro');
   /**
    * Rendez-vous PAS ENCORE VUS, quelle que soit leur date. Un rendez-vous pris pour la semaine
    * prochaine n'apparaissait nulle part tant qu'on ne descendait pas jusqu'à ce jour-là : on
@@ -134,7 +134,7 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
   const badges: Record<string, number> =
     kind === 'pro'
       ? {
-          '/pro/reservations': pending.data?.items.length ?? 0,
+          '/pro/reservations': pending,
           '/pro/agenda': unseen.data?.total ?? 0,
         }
       : {};

@@ -88,6 +88,38 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return null;
   });
 
+  /**
+   * « J'ai vu ces rendez-vous », en un appel : ceux qu'un écran vient d'AFFICHER (un jour de
+   * l'agenda, une semaine, la liste des réservations). Voir sa journée suffit à prendre
+   * connaissance d'un rendez-vous : obliger à ouvrir chaque fiche pour faire baisser les
+   * compteurs, c'était les laisser allumés en permanence. Seuls les rendez-vous de CE salon
+   * sont concernés, et seules les notifications de l'appelant sont touchées.
+   */
+  app.post(
+    '/bookings/seen',
+    { schema: { body: z.object({ ids: z.array(uuid).min(1).max(200) }) } },
+    async (req, reply) => {
+      const { data: rdv, error: e1 } = await db
+        .from('bookings')
+        .select('id')
+        .eq('salon_id', req.salon!.id)
+        .in('id', [...new Set(req.body.ids)]);
+      if (e1) throw e1;
+      const ids = (rdv ?? []).map((b) => b.id as string);
+      if (ids.length) {
+        const { error } = await db
+          .from('notifications')
+          .update({ read_at: new Date().toISOString() })
+          .eq('user_id', req.user!.id)
+          .in('booking_id', ids)
+          .is('read_at', null);
+        if (error) throw error;
+      }
+      reply.status(204);
+      return null;
+    },
+  );
+
   /** Agenda : réservations sur une plage de dates locales (défaut : 7 jours). */
   app.get('/bookings', { schema: { querystring: listBookingsQuerySchema } }, async (req, reply) => {
     const { from = toLocalDateKey(), status, staffId, limit } = req.query;

@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router';
 import { Bell, Menu, Plus, X } from 'lucide-react';
-import { useProPendingBookings, useProSalon, useUnreadNotifications } from '@salondz/api-client';
+import { useProPendingUnseenCount, useProSalon, useUnreadNotifications } from '@salondz/api-client';
 import { Avatar, I, Dim } from './ui';
 import { ProNav } from './ProNav';
 import { useDesktop } from '@/lib/breakpoint';
@@ -31,7 +31,7 @@ export function ProHeader() {
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
   const salon = useProSalon().data?.salon ?? null;
-  const pending = useProPendingBookings(!!salon).data?.items.length ?? 0;
+  const pending = useProPendingUnseenCount(!!salon);
   // Pastille des NON-LUES sur la cloche : la même requête que le menu et la liste des notifications.
   const nonLues = useUnreadNotifications(!!salon);
   const desktop = useDesktop();
