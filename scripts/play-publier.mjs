@@ -33,8 +33,8 @@ const VERIFIER = arg('--verifier');
 /** Bundle déjà chez Google : on ne renvoie rien (Google refuserait le même numéro), on le place seulement. */
 const DEJA = val('--version', null);
 const NOTES = PRO
-  ? 'Notifications : si elles sont coupées sur votre téléphone, l’application le détecte et un bouton vous emmène directement à leur réglage. Corrections et améliorations de stabilité.'
-  : 'Connexion et inscription réunies sur un seul écran, à onglets. Déconnexion plus fiable. L’état de vos notifications est toujours exact, avec un bouton vers leur réglage s’il le faut.';
+  ? 'Nouvel accueil : votre journée, les demandes à valider et le chiffre d’affaires de la semaine en un coup d’œil. Voir un jour dans l’agenda suffit à marquer ses rendez-vous comme vus : les pastilles baissent sans ouvrir chaque fiche.'
+  : 'Espace professionnel : nouvel accueil et pastilles qui baissent dès qu’on regarde sa journée dans l’agenda. Corrections et améliorations.';
 
 const SECRETS = path.resolve(import.meta.dirname, '..', 'secrets');
 const fichierCompte = ['play-service-account.json', 'fcm-service-account.json'].map((f) => path.join(SECRETS, f)).find((f) => fs.existsSync(f));
