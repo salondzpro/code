@@ -29,8 +29,8 @@ if (!NUMERO) {
 /** Texte des nouveautés, par langue de fiche. Une langue absente d'ici reçoit le texte français. */
 const NOUVEAUTES = {
   'fr-FR': PRO
-    ? 'Connexion et inscription réunies sur un seul écran, à onglets. Déconnexion plus fiable, avec un indicateur clair. L’état de vos notifications est toujours exact, avec un bouton vers leur réglage s’il le faut.\nCorrections et améliorations de stabilité.'
-    : 'Connexion et inscription réunies sur un seul écran, à onglets, sans zoom ni saut au clavier. Déconnexion plus fiable. L’état de vos notifications est toujours exact, avec un bouton vers leur réglage s’il le faut.\nCorrections et améliorations de stabilité.',
+    ? 'Nouvel accueil : votre journée, les demandes à valider et le chiffre d’affaires de la semaine en un coup d’œil.\nRegarder un jour dans l’agenda suffit à marquer ses rendez-vous comme vus : les pastilles baissent sans ouvrir chaque fiche, et les jours qui ont du nouveau sont signalés.\nCorrections et améliorations.'
+    : 'Espace professionnel : nouvel accueil, et les pastilles baissent dès qu’on regarde sa journée dans l’agenda.\nCorrections et améliorations.',
 };
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
