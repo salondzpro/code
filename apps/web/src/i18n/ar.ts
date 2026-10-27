@@ -1245,4 +1245,9 @@ export const ar: Record<string, string> = {
   "{n} nouveau(x)": "{n} جديد",
   "Semaine : {n}": "الأسبوع: {n}",
   "Par rapport à la période précédente": "مقارنة بالفترة السابقة",
+  "Complet ce jour": "محجوز بالكامل في هذا اليوم",
+  "Le dernier créneau du jour était à {time}.": "كان آخر موعد في اليوم على الساعة {time}.",
+  "Le dernier créneau ({time}) est déjà pris : toutes les disponibilités de ce jour sont réservées.": "آخر موعد ({time}) محجوز: كل المواعيد المتاحة في هذا اليوم محجوزة.",
+  "Aucune disponibilité ce jour.": "لا توجد مواعيد متاحة في هذا اليوم.",
+  "Plus aucun créneau aujourd’hui : voici le prochain jour disponible.": "لم يعد هناك موعد اليوم: إليك أقرب يوم متاح.",
 };

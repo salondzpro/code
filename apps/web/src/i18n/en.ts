@@ -1264,4 +1264,9 @@ export const en: Record<string, string> = {
   "{n} nouveau(x)": "{n} new",
   "Semaine : {n}": "Week: {n}",
   "Par rapport à la période précédente": "Compared with the previous period",
+  "Complet ce jour": "Fully booked that day",
+  "Le dernier créneau du jour était à {time}.": "The last slot of the day was at {time}.",
+  "Le dernier créneau ({time}) est déjà pris : toutes les disponibilités de ce jour sont réservées.": "The last slot ({time}) is already taken: every opening that day is booked.",
+  "Aucune disponibilité ce jour.": "No availability that day.",
+  "Plus aucun créneau aujourd’hui : voici le prochain jour disponible.": "No slots left today: here is the next available day.",
 };

@@ -19,6 +19,7 @@ import {
   useProSalon,
 } from '@salondz/api-client';
 import {
+  addDaysToKey,
   dayOfWeekFromKey,
   formatDA,
   formatDateShortDZ,
@@ -330,6 +331,27 @@ export function ProBookingNew() {
     else if (slots.length === 0 && isPastSlot(date, time)) setTime(ceilToStep(nowTimeDZ(), 5));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, slots.length, firstFree]);
+
+  /**
+   * Ouvert sans date imposée (bouton « + »), un soir ou un jour de fermeture : on partait sur
+   * « 23:00 · Salon fermé ce jour — heure libre ». On saute UNE fois au prochain jour d'ouverture,
+   * où le premier créneau libre est pris par l'effet ci-dessus. Une date venue de l'agenda
+   * (toucher un vide) est respectée telle quelle.
+   */
+  const sauteAuProchainJour = useRef(!params.get('date'));
+  useEffect(() => {
+    if (!salon || !sauteAuProchainJour.current || dayBookings.isPending) return;
+    sauteAuProchainJour.current = false;
+    if (date !== toLocalDateKey() || slots.length > 0) return;
+    for (let i = 1; i <= 14; i++) {
+      const d = addDaysToKey(date, i);
+      if (salon.openingHours.some((h) => h.dayOfWeek === dayOfWeekFromKey(d) && !h.isClosed)) {
+        setDate(d);
+        return;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [salon, dayBookings.isPending]);
 
   useEffect(() => {
     const el = timeStrip.current?.querySelector<HTMLElement>(`[data-time="${time}"]`);

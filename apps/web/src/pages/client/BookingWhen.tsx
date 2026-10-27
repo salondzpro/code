@@ -115,6 +115,27 @@ export function BookingWhen() {
     return out;
   }, [s, availability.data, date, minutes]);
 
+  /**
+   * Arrivé sans jour choisi, le soir, après le dernier créneau : l'écran annonçait « Journée
+   * terminée » et il fallait toucher « Prochaine disponibilité ». On y va tout seul, UNE fois, et on
+   * le dit (`sauteDe`). Un jour COMPLET n'est pas sauté : la liste d'attente y a son sens.
+   */
+  const [sauteDe, setSauteDe] = useState<string | null>(null);
+  const [sautPossible, setSautPossible] = useState(!draft.date);
+  useEffect(() => {
+    if (!sautPossible || !availability.data || date !== today) return;
+    setSautPossible(false);
+    const dernier = grid[grid.length - 1];
+    const fini = !!dernier && new Date(dernier.iso).getTime() <= Date.now();
+    const prochain = availability.data.nextAvailable;
+    if (fini && !grid.some((g) => g.free) && prochain) {
+      setSauteDe(today);
+      setWeekOf(prochain.date);
+      setDate(prochain.date);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availability.data, sautPossible]);
+
   // Un créneau pré-rempli (carte marketplace) n'est gardé que s'il est réellement libre pour la durée choisie.
   useEffect(() => {
     if (!availability.data || !slot) return;
@@ -169,6 +190,11 @@ export function BookingWhen() {
         maxDate={maxDate}
         disabledDays={closedDays}
       />
+      {sauteDe && date !== sauteDe && (
+        <p className="s -mt-2" role="status">
+          {t('Plus aucun créneau aujourd’hui : voici le prochain jour disponible.')}
+        </p>
+      )}
 
       {closedDays.includes(dayOfWeekFromKey(date)) ? (
         <p className="p">{t("Le salon est fermé ce jour-là.")}</p>
@@ -183,14 +209,14 @@ export function BookingWhen() {
       ) : freeGrid.length === 0 ? (
         <div className="crd !gap-2" role="status">
           <span className="text-[1rem] font-bold tracking-[-0.3px]">
-            {dayOver ? 'Journée terminée' : 'Complet ce jour'}
+            {dayOver ? t('Journée terminée') : t('Complet ce jour')}
           </span>
           <span className="p text-[1rem]">
             {lastSlot
               ? dayOver
-                ? `Le dernier créneau du jour était à ${lastSlot.time}.`
-                : `Le dernier créneau (${lastSlot.time}) est déjà pris : toutes les disponibilités de ce jour sont réservées.`
-              : 'Aucune disponibilité ce jour.'}
+                ? t('Le dernier créneau du jour était à {time}.', { time: lastSlot.time })
+                : t('Le dernier créneau ({time}) est déjà pris : toutes les disponibilités de ce jour sont réservées.', { time: lastSlot.time })
+              : t('Aucune disponibilité ce jour.')}
           </span>
           {next ? (
             <Button auto sm onClick={goNext} className="mt-1">

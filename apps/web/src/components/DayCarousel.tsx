@@ -7,10 +7,17 @@ import {
   DAY_LABELS_SHORT_FR,
   addDaysToKey,
   dayOfWeekFromKey,
+  formatLocale,
   toLocalDateKey,
 } from '@salondz/constants';
-import { dayNumber, monthLabel } from './DaySelector';
+import { dayNumber } from './DaySelector';
 import { t } from '@/i18n';
+
+/** Abréviation du mois dans la langue de l'écran : « oct. », « Nov », « نوفمبر ». */
+const shortMonth = (key: string) =>
+  new Intl.DateTimeFormat(formatLocale(), { month: 'short', timeZone: 'UTC' }).format(
+    new Date(`${key}T12:00:00Z`),
+  );
 
 /** Bande de jours défilable (± 3 semaines autour du jour choisi), jour sélectionné centré. */
 export function DayScroller({
@@ -84,7 +91,9 @@ export function DayScroller({
             <span
               className={`text-[0.857rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
             >
-              {showMonth ? monthLabel(d).split(' ')[0]?.slice(0, 4) : t(DAY_LABELS_SHORT_FR[dow])}
+              {/* Premier jour d'un mois : son abréviation réelle (« oct. », « nov. »), pas les quatre
+                  premières lettres du nom (« OCTO », « NOVE »). */}
+              {showMonth ? shortMonth(d) : t(DAY_LABELS_SHORT_FR[dow])}
             </span>
             <span
               className={`text-[1rem] font-semibold ${d === today && !on ? 'underline decoration-2 underline-offset-4' : ''}`}

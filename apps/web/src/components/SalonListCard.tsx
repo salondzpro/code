@@ -276,16 +276,18 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
           </span>
         </div>
-        {/* Gauche : lieu (distance) · Droite : catégories — une seule ligne */}
+        {/* Gauche : lieu (distance) · Droite : catégories — une seule ligne. Le LIEU a la priorité
+            (« est-ce près de chez moi ? ») : ce sont les catégories qui se raccourcissent, pas
+            « Alge… » ou « Kouba (… ». */}
         <div className="flex items-center justify-between gap-3 text-[1rem] text-muted">
-          <span className="flex min-w-0 items-center gap-1">
+          <span className="flex min-w-0 max-w-[70%] flex-none items-center gap-1">
             <I icon={MapPin} size={16} className="flex-none" />
             <span className="truncate">
               {place}
               {km ? ` (${km})` : ''}
             </span>
           </span>
-          {cats && <span className="min-w-0 flex-none truncate text-end">{cats}</span>}
+          {cats && <span className="min-w-0 flex-1 truncate text-end">{cats}</span>}
         </div>
         <div className="mt-1">
           <NextSlots
