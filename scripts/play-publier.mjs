@@ -33,8 +33,8 @@ const VERIFIER = arg('--verifier');
 /** Bundle déjà chez Google : on ne renvoie rien (Google refuserait le même numéro), on le place seulement. */
 const DEJA = val('--version', null);
 const NOTES = PRO
-  ? 'Nouvel accueil : votre journée, les demandes à valider et le chiffre d’affaires de la semaine en un coup d’œil. Voir un jour dans l’agenda suffit à marquer ses rendez-vous comme vus : les pastilles baissent sans ouvrir chaque fiche.'
-  : 'Espace professionnel : nouvel accueil et pastilles qui baissent dès qu’on regarde sa journée dans l’agenda. Corrections et améliorations.';
+  ? 'Nouveau rendez-vous : le soir ou un jour de fermeture, le formulaire s’ouvre directement sur le prochain jour d’ouverture, au premier créneau libre. Nouvel accueil et pastilles qui baissent dès qu’on regarde sa journée.'
+  : 'Réservation plus rapide : le soir, l’écran passe directement au prochain jour disponible. Le quartier des salons reste lisible dans la liste. Corrections et améliorations.';
 
 const SECRETS = path.resolve(import.meta.dirname, '..', 'secrets');
 const fichierCompte = ['play-service-account.json', 'fcm-service-account.json'].map((f) => path.join(SECRETS, f)).find((f) => fs.existsSync(f));
