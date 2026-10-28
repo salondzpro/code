@@ -56,8 +56,7 @@ import { Button, EmptyState, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
-import { RequestCard, TimelineList, TimelineNow, TimelineRow, toneVar } from '@/components/ProBookingCards';
+import { TimelineList, TimelineNow, TimelineRow, toneVar } from '@/components/ProBookingCards';
 import { StaffFilter } from '@/components/StaffFilter';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner, QuickCloseButton } from '@/components/QuickClose';
@@ -75,8 +74,6 @@ function useNow(): number {
   return now;
 }
 
-/** Nombre de demandes montrées sur l'accueil ; la suite est dans « Réservations ». */
-const PENDING_SHOWN = 2;
 /** Rendez-vous passés montrés avant de replier la suite (« 4 passés »). */
 const PAST_SHOWN = 0;
 
@@ -93,7 +90,6 @@ export function ProHome() {
   const week = weekKeys(today);
   const weekStats = useProStatsRange(week[0]!, week[6]!, !!salon);
   const todayList = useProBookings({ from: today, to: today, limit: 50 }, !!salon);
-  const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
   const [peek, setPeek] = useState<string | null>(null);
   const [showPast, setShowPast] = useState(false);
   const [staffId, setStaffId] = useStaffFilter();
@@ -120,7 +116,9 @@ export function ProHome() {
 
   // Ce que l'accueil MONTRE vaut lecture : la journée et les demandes affichées.
   useSeenOnDisplay(
-    [...todays, ...pendingItems.slice(0, PENDING_SHOWN)].map((b) => b.id),
+    // Les demandes ne sont plus listées ici : on ne les marque pas vues, sinon l'onglet
+    // « Réservations » s'éteindrait avant que le professionnel les ait regardées.
+    todays.map((b) => b.id),
     !!salon && !todayList.isFetching && !pending.isFetching,
   );
 
@@ -186,7 +184,9 @@ export function ProHome() {
             <span className="phx-s">{todayList.data ? (left + live ? t('{n} à venir', { n: left + live }) : total ? t('Terminé') : t('Libre')) : '\u00a0'}</span>
           </span>
         </Link>
-        <Link to="/pro/reservations" className="phx-c" aria-label={t('Demandes à valider')}>
+        {/* Les demandes se traitent dans « Réservations » (l'onglet s'allume quand il y en a de
+            nouvelles) : l'accueil n'en garde que le nombre, qui y mène. */}
+        <Link to="/pro/reservations" className={`phx-c ${pendingCount ? 'phx-pd' : ''}`} aria-label={t('Demandes à valider')}>
           <span className={`phx-v ${pendingCount ? 'warn' : ''}`}>{stats.isPending ? '–' : pendingCount}</span>
           <span className="phx-l">{t('À valider')}</span>
         </Link>
@@ -255,20 +255,6 @@ export function ProHome() {
   );
 
   /* ---------------------------------------------------------------- demandes */
-
-  const requests = pendingItems.length > 0 && (
-    <section className="flex flex-col gap-2.5" aria-label={t('À valider')}>
-      <SectionHead
-        title={t('À valider')}
-        count={pendingItems.length}
-        to="/pro/reservations"
-        more={pendingItems.length > PENDING_SHOWN ? t('Tout voir') : undefined}
-      />
-      {pendingItems.slice(0, PENDING_SHOWN).map((b) => (
-        <RequestCard key={b.id} b={b} today={today} showStaff={!staffId} onOpen={setPeek} onRefuse={setRefusing} />
-      ))}
-    </section>
-  );
 
   /* ---------------------------------------------------------------- journée */
 
@@ -387,7 +373,6 @@ export function ProHome() {
             <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
           )}
           {nowCard}
-          {requests}
           {(later.length > 0 || past.length > 0 || !next) && day}
         </div>
         <div className="phg-s">
@@ -400,7 +385,6 @@ export function ProHome() {
         <ShareSheet name={salon.name} url={link.url} short={link.short} logo={salon.logoUrl} onClose={() => setShare(false)} />
       )}
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
-      {refusing && <RefuseRequestSheet request={refusing} onClose={() => setRefusing(null)} />}
     </Screen>
   );
 }

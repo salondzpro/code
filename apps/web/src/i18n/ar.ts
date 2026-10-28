@@ -1309,4 +1309,8 @@ export const ar: Record<string, string> = {
   "Votre wilaya": "ولايتك",
   "Vérification de l’adresse…": "جارٍ التحقق من البريد…",
   "Zoomer": "تكبير",
+  "1 nouvelle": "1 جديد",
+  "{n} nouvelles": "{n} جديدة",
+  "nouveau(x)": "جديد",
+  "nouvelle(s) demande(s) à confirmer": "طلبات جديدة للتأكيد",
 };

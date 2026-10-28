@@ -172,11 +172,17 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
             key={it.to}
             to={it.to}
             end={it.end}
-            className={({ isActive }) => `nvi${isActive ? ' on' : ''}`}
+            // NOUVELLES DEMANDES (28 oct. 2026) : l'onglet Réservations prend la couleur des demandes
+            // en attente (ambre) et son libellé devient « 2 nouvelles » — une pastille rouge seule
+            // sur une icône grise passait inaperçue. Le compte : demandes PAS ENCORE VUES et PAS
+            // ENCORE CONFIRMÉES ; il retombe dès que la liste les a affichées.
+            className={({ isActive }) =>
+              `nvi${isActive ? ' on' : ''}${!isActive && it.to === '/pro/reservations' && badges[it.to] ? ' nw' : ''}`
+            }
             title={it.label}
             aria-label={
               badges[it.to]
-                ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? 'nouveau(x)' : 'à confirmer'}`
+                ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? t('nouveau(x)') : t('nouvelle(s) demande(s) à confirmer')}`
                 : undefined
             }
           >
@@ -195,7 +201,13 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
                     </span>
                   )}
                 </span>
-                <span className="nvl">{it.label}</span>
+                <span className="nvl">
+                  {!isActive && it.to === '/pro/reservations' && badges[it.to]
+                    ? badges[it.to] === 1
+                      ? t('1 nouvelle')
+                      : t('{n} nouvelles', { n: badges[it.to]! > 9 ? '9+' : badges[it.to]! })
+                    : it.label}
+                </span>
               </>
             )}
           </NavLink>

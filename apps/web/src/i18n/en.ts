@@ -1328,4 +1328,8 @@ export const en: Record<string, string> = {
   "Votre wilaya": "Your wilaya",
   "Vérification de l’adresse…": "Checking the address…",
   "Zoomer": "Zoom in",
+  "1 nouvelle": "1 new",
+  "{n} nouvelles": "{n} new",
+  "nouveau(x)": "new",
+  "nouvelle(s) demande(s) à confirmer": "new request(s) to confirm",
 };

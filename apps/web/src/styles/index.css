@@ -3817,3 +3817,45 @@ html:has(.auth-onglets) body {
     height: 22rem;
   }
 }
+
+/* Onglet Réservations quand de NOUVELLES demandes attendent (28 oct. 2026) : il prend la couleur
+   des demandes en attente, son libellé dit combien, et sa pastille bat doucement. On le voit
+   depuis n'importe quel écran, sans avoir à ouvrir l'accueil. */
+@layer components {
+  .nvi.nw {
+    color: var(--color-pending-fg);
+    background: var(--color-pending-bg);
+  }
+  .nvi.nw .nvl {
+    font-weight: 700;
+  }
+  .nvi.nw .nvd {
+    background: #e8590c;
+    border-color: var(--color-pending-bg);
+    animation: nvd-pouls 1.8s ease-out infinite;
+  }
+  /* Barre réduite pendant le défilement : la couleur reste, c'est elle qui alerte. */
+  .nvb.cmp .nvi.nw {
+    background: var(--color-pending-bg);
+  }
+}
+@keyframes nvd-pouls {
+  0% {
+    box-shadow: 0 0 0 0 rgb(232 89 12 / 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px rgb(232 89 12 / 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nvi.nw .nvd {
+    animation: none;
+  }
+}
+@layer components {
+  /* « À valider » du bandeau : fond ambre tant qu'une demande attend. */
+  .phx-c.phx-pd {
+    background: rgb(255 184 119 / 0.12);
+  }
+}
