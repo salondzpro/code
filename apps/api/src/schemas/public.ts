@@ -251,10 +251,14 @@ export const reviewsResponse = z.object({
       authorName: z.string(),
       reply: z.string().nullable(),
       repliedAt: z.string().nullable(),
+      serviceId: z.string().nullable(),
+      serviceName: z.string().nullable(),
     }),
   ),
   nextCursor: z.string().nullable(),
 });
+
+export const reviewSummaryResponse = z.object({ summary: z.string().nullable() });
 
 // ---------- Garde-fou de compilation ----------
 

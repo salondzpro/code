@@ -23,6 +23,7 @@ import {
   isLate,
   localDateTimeToISO,
   toLocalDateKey,
+  REVIEW_SUMMARY_MIN_REVIEWS,
 } from '@salondz/constants';
 import type { Booking, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
 import { availableSlots, clientKeyOf, clientStanding, concerns, dashboardStats, daysUntilMax, hm, nextAvailability, proClients, statsRange, summary, unaccent } from './engine';
@@ -299,8 +300,32 @@ on('GET', '/salons/:id/reviews', (c, p) => {
   const rows = c.w.reviews
     .filter((r) => r.salonId === p.id)
     .sort((a, b) => (sort === 'best' ? b.rating - a.rating : 0) || b.createdAt.localeCompare(a.createdAt))
-    .map((r) => ({ id: r.id, rating: r.rating, comment: r.comment, createdAt: r.createdAt, authorName: r.authorName, reply: r.reply ?? null, repliedAt: r.repliedAt ?? null }));
+    .map((r) => {
+      const b = c.w.bookings.find((x) => x.id === r.bookingId);
+      return { id: r.id, rating: r.rating, comment: r.comment, createdAt: r.createdAt, authorName: r.authorName, reply: r.reply ?? null, repliedAt: r.repliedAt ?? null, serviceId: b?.serviceId ?? null, serviceName: b?.serviceName ?? null };
+    });
   return ok(page(rows, offset, limit));
+});
+// Synthèse des avis : pas d'IA en démonstration, une phrase composée d'après les prestations les plus
+// notées, sous le même seuil que le serveur.
+on('GET', '/salons/:id/reviews/summary', (c, p) => {
+  const commentes = c.w.reviews.filter((r) => r.salonId === p.id && r.comment?.trim());
+  if (commentes.length < REVIEW_SUMMARY_MIN_REVIEWS) return ok({ summary: null });
+  const parService = new Map<string, number>();
+  for (const r of commentes) {
+    const name = c.w.bookings.find((x) => x.id === r.bookingId)?.serviceName;
+    if (name) parService.set(name, (parService.get(name) ?? 0) + 1);
+  }
+  const top = [...parService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([n]) => n);
+  const locale = c.query.get('locale') ?? 'fr';
+  const quoi = top.join(locale === 'ar' ? ' و' : locale === 'en' ? ' and ' : ' et ');
+  const summary =
+    locale === 'ar'
+      ? `يُشاد به خاصةً في ${quoi}: عمل متقن واستقبال ودود والتزام بالمواعيد.`
+      : locale === 'en'
+        ? `Praised above all for ${quoi}: careful work, warm welcome, on time.`
+        : `Salué surtout pour ${quoi} : travail soigné, accueil chaleureux, ponctuel.`;
+  return ok({ summary });
 });
 
 // ---------------------------------------------------------------------------------------------

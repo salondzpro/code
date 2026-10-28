@@ -102,10 +102,13 @@ export interface ReviewItem {
   /** Réponse publique du salon, nulle tant qu'il n'a pas répondu. */
   reply: string | null;
   repliedAt: string | null;
+  /** Prestation notée (celle du rendez-vous) ; `serviceId` nul si elle a été retirée du catalogue. */
+  serviceId: string | null;
+  serviceName: string | null;
 }
 
 /** Avis vu par le professionnel : le même, plus le rendez-vous d'où il vient. */
-export interface ProReviewItem extends ReviewItem {
+export interface ProReviewItem extends Omit<ReviewItem, 'serviceId' | 'serviceName'> {
   bookingId: string;
   serviceName: string;
   startsAt: string;
@@ -464,6 +467,9 @@ export function createApiClient(opts: ApiClientOptions) {
         get<AvailabilityResponse>(`/salons/${salonId}/availability`, q as Query, false),
       reviews: (salonId: string, offset = 0, limit = 20, sort: ReviewSort = 'best') =>
         get<Paginated<ReviewItem>>(`/salons/${salonId}/reviews`, { offset, limit, sort }, false),
+      /** Synthèse IA des avis (`null` sous le seuil ou tant qu'elle n'est pas calculée). */
+      reviewSummary: (salonId: string, locale: string) =>
+        get<{ summary: string | null }>(`/salons/${salonId}/reviews/summary`, { locale }, false),
     },
     me: {
       get: () => get<MeResponse>('/me'),

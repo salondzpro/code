@@ -46,6 +46,15 @@ export function BookingServices() {
 
   const s = salon.data;
 
+  // Lien « prestation » d'un avis (?service=<id>) : cette prestation est choisie d'office et l'on
+  // passe à l'horaire. Une prestation qui n'est plus au catalogue laisse simplement la liste.
+  const pre = params.get('service');
+  useEffect(() => {
+    if (!pre || !s || !s.services.some((sv) => sv.id === pre)) return;
+    writeDraft(slug, { serviceIds: [pre] });
+    navigate(`/s/${slug}/reserver/quand`, { replace: true });
+  }, [pre, s, slug, navigate]);
+
   if (salon.isPending) return <PageLoading />;
   if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;

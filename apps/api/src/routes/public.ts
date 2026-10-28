@@ -20,11 +20,13 @@ import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
 import { loadPublicBySlug } from '../lib/queries';
+import { getReviewSummary } from '../lib/reviewSummary';
 import {
   availabilityResponse,
   categoriesResponse,
   citiesResponse,
   reviewsResponse,
+  reviewSummaryResponse,
   salonPublicResponse,
   searchSalonsResponse,
   suggestResponse,
@@ -287,7 +289,9 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         .from('reviews')
         // `profiles!client_id` : `reviews` a deux liens vers `profiles` depuis la migration 0045
         // (auteur, et `hidden_by`) ; sans le nommer, PostgREST refuse et la page répondait 500.
-        .select('id, rating, comment, created_at, reply, replied_at, profiles!client_id(full_name)')
+        .select(
+          'id, rating, comment, created_at, reply, replied_at, profiles!client_id(full_name), bookings(service_id, service_name)',
+        )
         .eq('salon_id', req.params.id)
         // Un avis masqué par la plateforme quitte la page publique et le calcul de la note ; il
         // reste en base, parce qu'une décision doit pouvoir s'expliquer plus tard.
@@ -304,6 +308,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         reply: string | null;
         replied_at: string | null;
         profiles: { full_name: string | null } | null;
+        bookings: { service_id: string | null; service_name: string | null } | null;
       }[];
       const items = rows.map((r) => ({
         id: r.id,
@@ -314,9 +319,36 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         // La réponse du salon est publique : elle se lit sous l'avis, par tout le monde.
         reply: r.reply,
         repliedAt: r.replied_at,
+        // La prestation notée : le client voit sur QUOI porte l'avis, et peut la réserver d'un geste.
+        serviceId: r.bookings?.service_id ?? null,
+        serviceName: r.bookings?.service_name ?? null,
       }));
       reply.header('Cache-Control', CACHE_PUBLIC_REVALIDATE);
       return { items, nextCursor: items.length === limit ? String(offset + limit) : null };
+    },
+  );
+
+  /**
+   * Synthèse des avis par IA (`lib/reviewSummary.ts`) : `null` sous le seuil d'avis commentés, sans
+   * clé configurée, ou tant que le premier calcul tourne en arrière-plan. Jamais d'attente côté page.
+   */
+  app.get(
+    '/salons/:id/reviews/summary',
+    {
+      schema: {
+        params: z.object({ id: uuid }),
+        querystring: z.object({ locale: z.enum(['fr', 'ar', 'en']).default('fr') }),
+        response: { 200: reviewSummaryResponse },
+      },
+    },
+    async (req, reply) => {
+      const summary = await getReviewSummary(req.params.id, req.query.locale, req.log);
+      // Une synthèse change rarement ; « rien » peut changer dès le calcul terminé.
+      reply.header(
+        'Cache-Control',
+        summary ? 'public, max-age=600, stale-while-revalidate=3600' : 'public, max-age=60',
+      );
+      return { summary };
     },
   );
 };

@@ -139,6 +139,16 @@ export const useNotificationsInfinite = (enabled = true) => {
     enabled,
   });
 };
+/** Synthèse IA des avis : demandée seulement quand le salon a assez d'avis (`enabled`). */
+export const useReviewSummary = (salonId: string, locale: string, enabled: boolean) => {
+  const { api } = useApi();
+  return useQuery({
+    queryKey: [...queryKeys.reviews(salonId), 'summary', locale] as const,
+    queryFn: () => api.public.reviewSummary(salonId, locale),
+    staleTime: 10 * 60_000,
+    enabled: enabled && !!salonId,
+  });
+};
 export const useSalonReviewsInfinite = (salonId: string, size = 10, sort: ReviewSort = 'best') => {
   const { api } = useApi();
   return useInfiniteQuery({

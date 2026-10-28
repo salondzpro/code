@@ -1421,4 +1421,6 @@ export const en: Record<string, string> = {
   "Elles disparaissent de la liste. Vos rendez-vous ne changent pas.": "They disappear from the list. Your appointments don't change.",
   "Effacer celles déjà lues": "Clear the ones already read",
   "Tout effacer": "Clear all",
+  "Réserver {service}": "Book {service}",
+  "· Résumé IA des avis": "· AI summary of reviews",
 };

@@ -66,6 +66,7 @@ import { SHEET_PAD } from '@/components/AppFrame';
 import { SalonNotFound } from '@/pages/NotFound';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
+import { ReviewService, ReviewSummary } from '@/components/ReviewExtras';
 import { ReportReviewButton } from '@/components/ReportReview';
 import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
@@ -413,6 +414,7 @@ export function Salon() {
             ) : (
               <p className="p py-2">{t("Pas encore d'avis : soyez le premier après votre rendez-vous.")}</p>
             )}
+            {s.ratingCount > 0 && <ReviewSummary salon={s} />}
             {s.ratingCount > 0 && (
               <div className="pills -mx-4 px-4" role="group" aria-label={t("Trier les avis")}>
                 <Pill lg on={reviewSort === 'best'} onClick={() => setReviewSort('best')}>
@@ -438,6 +440,7 @@ export function Salon() {
                   </span>
                 </div>
                 {r.comment && <p className="p">{r.comment}</p>}
+                <ReviewService salon={s} serviceId={r.serviceId} serviceName={r.serviceName} />
                 <ReviewReply reply={r.reply} salonName={s.name} />
                 <ReportReviewButton reviewId={r.id} />
               </div>

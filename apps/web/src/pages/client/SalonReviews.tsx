@@ -19,6 +19,7 @@ import { SalonNotFound } from '@/pages/NotFound';
 import { ErrorMessage, isNotFound } from '@/components/ErrorMessage';
 import { ReviewReply } from '@/components/ReviewReply';
 import { ReportReviewButton } from '@/components/ReportReview';
+import { ReviewService, ReviewSummary } from '@/components/ReviewExtras';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
@@ -65,6 +66,7 @@ export function SalonReviews() {
           {t("Pas encore d'avis : soyez le premier après votre rendez-vous.")}
         </p>
       )}
+      {has && <ReviewSummary salon={s} />}
       {has && (
         <div className="pills -mx-5 px-5" role="group" aria-label={t("Trier les avis")}>
           <Pill lg on={sort === 'best'} onClick={() => setSort('best')}>
@@ -87,6 +89,7 @@ export function SalonReviews() {
           </div>
           <span className="text-[1rem] font-semibold">{r.authorName}</span>
           {r.comment && <span className="p text-[1rem]">{r.comment}</span>}
+          <ReviewService salon={s} serviceId={r.serviceId} serviceName={r.serviceName} />
           <ReviewReply reply={r.reply} salonName={salon.data?.name} />
           <ReportReviewButton reviewId={r.id} />
         </div>

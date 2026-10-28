@@ -1405,4 +1405,6 @@ export const ar: Record<string, string> = {
   "Elles disparaissent de la liste. Vos rendez-vous ne changent pas.": "تختفي من القائمة. مواعيدك لا تتغير.",
   "Effacer celles déjà lues": "مسح المقروءة",
   "Tout effacer": "مسح الكل",
+  "Réserver {service}": "احجز {service}",
+  "· Résumé IA des avis": "· ملخص الآراء بالذكاء الاصطناعي",
 };

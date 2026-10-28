@@ -1028,6 +1028,10 @@ test('pro : lire ses avis et y répondre (la réponse est publique, jamais l’a
   assert.equal(vu.reply, 'Merci, nous avons ajusté nos créneaux depuis.');
   assert.equal(vu.rating, 4, 'la note n’est pas touchée');
   assert.equal(vu.comment, 'Correct, un peu d’attente.', 'le texte de l’avis n’est pas touché');
+  // La prestation notée accompagne l'avis public (lien discret vers sa réservation).
+  const vuSvc = vu as unknown as { serviceId: string | null; serviceName: string | null };
+  assert.equal(vuSvc.serviceName, mien.serviceName, 'l’avis public nomme la prestation');
+  assert.ok(vuSvc.serviceId, 'et la relie au catalogue');
 
   // Une réponse vide l'efface.
   assert.equal((await call('PUT', `/v1/pro/reviews/${mien.id}/reply`, pro.token, { reply: '  ' })).json().reply, null);

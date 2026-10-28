@@ -30,6 +30,8 @@ const schema = z.object({
   VAPID_SUBJECT: z.string().default('mailto:contact@salondz.com'),
   /** E-mails transactionnels via Resend (confirmation, lien de connexion, mot de passe). Absente : envoi refusé proprement. */
   RESEND_API_KEY: z.string().optional(),
+  /** Synthèse des avis par IA (`lib/reviewSummary.ts`). Absente : pas de synthèse, rien d'autre ne change. */
+  ANTHROPIC_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('Salon DZ <noreply@salondz.com>'),
   /** Adresse de réponse des e-mails transactionnels (boîte lue par l'équipe). */
   EMAIL_REPLY_TO: z.string().default('support@salondz.com'),
