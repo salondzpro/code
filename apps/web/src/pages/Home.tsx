@@ -19,13 +19,14 @@
  * et des transitions CSS sur `opacity` / `transform`, les deux seules propriétés qu'un navigateur
  * anime sans refaire la mise en page. `prefers-reduced-motion` est respecté.
  */
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import {
   ArrowRight,
   BellRing,
   CalendarCheck,
   CalendarDays,
+  CheckCheck,
   MapPin,
   Share2,
   Store,
@@ -37,6 +38,7 @@ import { InstagramLogo, SnapchatLogo, TikTokLogo, WhatsAppLogo } from '@/compone
 import { useReveal } from '@/lib/reveal';
 import { Wordmark } from '@/components/Wordmark';
 import { ProPreview } from '@/components/AuthShell';
+import { LangSwitch } from '@/components/LangSwitch';
 import { I } from '@/components/ui';
 import { t } from '@/i18n';
 
@@ -148,8 +150,22 @@ function Tuile({
   );
 }
 
+/** Le mot qui tourne dans le titre : les métiers qu'on réserve ici. */
+const MOTS = ['Votre coiffeur', 'Votre barbier', 'Votre onglerie', 'Votre esthéticienne', 'Votre salon'];
+
+function useMotTournant(): number {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const id = window.setInterval(() => setI((x) => (x + 1) % MOTS.length), 2200);
+    return () => window.clearInterval(id);
+  }, []);
+  return i;
+}
+
 export function Home() {
   useReveal();
+  const mot = useMotTournant();
 
   return (
     <div className="bg-bg">
@@ -164,15 +180,40 @@ export function Home() {
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/70 to-ink/30" />
 
-        <div className="mx-auto w-full max-w-[72rem] px-5 pb-14 pt-24 sm:px-8 sm:pb-16">
-          <div className="hm-in mb-8" style={{ ['--d' as string]: '80ms' }}>
-            <Wordmark size={1.714} light />
+        {/* Barre du haut : la marque, la langue, l'accès à son compte. */}
+        <div className="hm-bar">
+          <Wordmark size={1.429} light />
+          <div className="flex items-center gap-2">
+            <LangSwitch />
+            <Link to="/intro" className="hm-bar-a">
+              {t('Connexion')}
+            </Link>
           </div>
+        </div>
+        {/* Deux pastilles qui flottent : ce que l'on reçoit après avoir réservé. */}
+        <div className="hm-float" aria-hidden>
+          <span className="hm-chip">
+            <I icon={CheckCheck} size={16} className="text-[#3ddc97]" /> {t('Rendez-vous confirmé')}
+          </span>
+          <span className="hm-chip b">
+            <I icon={BellRing} size={16} className="text-[#ffb877]" /> {t('Rappel 1 h avant')}
+          </span>
+        </div>
+
+        <div className="mx-auto w-full max-w-[72rem] px-5 pb-14 pt-28 sm:px-8 sm:pb-16">
           <h1
-            className="hm-in max-w-[14ch] text-[2.286rem] font-bold leading-[1.05] tracking-[-1.4px] sm:text-[3.4rem]"
+            className="hm-in max-w-[16ch] text-[2.286rem] font-bold leading-[1.05] tracking-[-1.4px] sm:text-[3.4rem]"
             style={{ ['--d' as string]: '200ms' }}
           >
-            {t('Votre salon,')} <span className="text-[#e8dacb]">{t('en 3 taps.')}</span>
+            {/* La phrase entière tourne (« Votre barbier ») : traduite d'un bloc, l'ordre des mots
+                reste juste en arabe (« حلاقك »). */}
+            <span className="hm-mot">
+              <span key={mot} className="hm-mot-i">
+                {t(MOTS[mot]!)}
+              </span>
+            </span>
+            <br />
+            <span className="text-[#e8dacb]">{t('en 3 taps.')}</span>
           </h1>
           <p className="hm-in mt-4 text-[1.143rem] text-white/75 sm:text-[1.286rem]" style={{ ['--d' as string]: '320ms' }}>
             {t('Partout en Algérie. Sans appeler.')}

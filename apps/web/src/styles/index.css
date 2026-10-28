@@ -3958,3 +3958,525 @@ html:has(.auth-onglets) body {
     color: var(--color-muted);
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Sélecteur de langue en liste déroulante (28 oct. 2026)               */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .lng {
+    position: relative;
+    flex: none;
+  }
+  .lng-b {
+    display: flex;
+    align-items: center;
+    gap: 0.4375rem;
+    height: 2.375rem;
+    padding: 0 0.625rem 0 0.5rem;
+    border-radius: var(--radius-pill);
+    background: rgb(0 0 0 / 0.42);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    color: #fff;
+    font-size: 0.857rem;
+    font-weight: 600;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transition: background 0.15s;
+  }
+  .lng.light .lng-b {
+    background: var(--color-surface);
+    border-color: var(--color-line);
+    color: var(--color-text);
+  }
+  .lng-f {
+    flex: none;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12);
+  }
+  .lng-c {
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+  }
+  .lng-c.on {
+    transform: rotate(180deg);
+  }
+  /* La liste : élévation FONCTIONNELLE (elle doit se détacher), ancrée au bord fin du bouton. */
+  .lng-m {
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    inset-inline-end: 0;
+    z-index: 600;
+    min-width: 11rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.3125rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    box-shadow: 0 12px 32px -12px rgb(17 18 20 / 0.35);
+    color: var(--color-text);
+    transform-origin: top right;
+    animation: lng-in 0.16s ease-out;
+  }
+  [dir='rtl'] .lng-m {
+    transform-origin: top left;
+  }
+  .lng-m button {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 0.625rem;
+    border-radius: var(--radius-btn);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .lng-m button:hover,
+  .lng-m button:focus-visible {
+    background: var(--color-fill);
+  }
+  .lng-m button.on {
+    font-weight: 600;
+  }
+}
+@keyframes lng-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Bienvenue pro — version « accès d'abord » (28 oct. 2026)             */
+/* ------------------------------------------------------------------ */
+@property --pwl-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@layer components {
+  /* Aurore : deux halos qui dérivent lentement derrière le titre. */
+  .pwl-aurore {
+    position: absolute;
+    inset: -20% -30% 30%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(35% 40% at 25% 35%, rgb(61 220 151 / 0.22), transparent 70%),
+      radial-gradient(30% 35% at 75% 25%, rgb(255 184 119 / 0.18), transparent 70%);
+    filter: blur(10px);
+    animation: pwl-aurore 14s ease-in-out infinite alternate;
+  }
+  /* Le mot qui tourne : il monte, s'efface, le suivant arrive d'en bas. */
+  .pwl-mot {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    color: #3ddc97;
+  }
+  .pwl-mot-i {
+    display: inline-block;
+    animation: pwl-mot 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pwl-t {
+    font-size: 2.286rem;
+  }
+
+  /* Aperçu vivant : la notification descend sur l'agenda, puis la ligne nouvelle s'allume. */
+  .pwl-mock {
+    position: relative;
+    overflow: visible;
+  }
+  .pwl-notif {
+    position: absolute;
+    inset-inline: 0.5rem;
+    top: -1.25rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-card);
+    background: #27292c;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    color: #fff;
+    animation: pwl-notif 7s cubic-bezier(0.22, 1, 0.36, 1) 1.2s infinite;
+    opacity: 0;
+  }
+  .pwl-notif-i {
+    display: grid;
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .pwl-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 600;
+    color: var(--color-ok-fg);
+  }
+  .pwl-live-d {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 999px;
+    background: var(--color-ok-fg);
+    animation: ph-pulse 1.6s ease-out infinite;
+  }
+  .pwl-mock-new {
+    animation: pwl-new 7s ease 1.2s infinite;
+  }
+  .pwl-mock-new .pwl-mock-badge {
+    animation: pwl-badge 7s ease 1.2s infinite;
+  }
+
+  /* LA carte d'accès : bordure en dégradé qui tourne, deux portes. Elle chevauche le bandeau. */
+  .pwl-main {
+    gap: 1.5rem;
+    margin-top: -2.25rem;
+    padding-top: 0;
+    background: transparent;
+  }
+  .pwl-hero {
+    padding-bottom: 3.5rem;
+  }
+  .pwl-acces {
+    position: relative;
+    z-index: 2;
+    padding: 2px;
+    border-radius: calc(var(--radius-card) + 2px);
+    background: conic-gradient(from var(--pwl-angle), #3ddc97, #111214 25%, #ffb877 50%, #111214 75%, #3ddc97);
+    animation: pwl-tour 6s linear infinite, ph-in 0.6s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pwl-acces-in {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 1rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  .pwl-acces-t {
+    font-size: 0.857rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .pwl-porte {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    min-height: 4.25rem;
+    padding: 0.75rem 0.875rem;
+    overflow: hidden;
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-line);
+    color: var(--color-text);
+    transition:
+      transform 0.15s ease,
+      border-color 0.15s;
+  }
+  .pwl-porte:active {
+    transform: scale(0.985);
+  }
+  .pwl-porte.ink {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  /* Reflet qui passe sur la porte principale : l'œil y va d'abord. */
+  .pwl-porte.ink::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.16) 50%, transparent 65%);
+    transform: translateX(-120%);
+    animation: pwl-reflet 3.6s ease-in-out 1s infinite;
+    pointer-events: none;
+  }
+  .pwl-porte-i {
+    display: grid;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+    color: var(--color-ink);
+  }
+  .pwl-porte.ink .pwl-porte-i {
+    background: #3ddc97;
+    color: var(--color-ink);
+  }
+  .pwl-porte-a {
+    flex: none;
+    transition: transform 0.2s ease;
+  }
+  .pwl-porte:hover .pwl-porte-a {
+    transform: translateX(3px);
+  }
+  [dir='rtl'] .pwl-porte:hover .pwl-porte-a {
+    transform: translateX(-3px) scaleX(-1);
+  }
+
+  /* Barre d'accès collante : elle monte quand la carte sort de l'écran. */
+  .pwl-dock {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 40;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 0.5rem;
+    max-width: var(--read-w, 36rem);
+    margin-inline: auto;
+    padding: 0.625rem 1rem calc(0.625rem + var(--safe-bottom));
+    background: rgb(248 249 250 / 0.92);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--color-line);
+    transform: translateY(110%);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pwl-dock.on {
+    transform: none;
+  }
+  .pwl-dock .btn {
+    padding-block: 0.8125rem;
+  }
+  .pwl.rd {
+    padding-bottom: calc(5.5rem + var(--safe-bottom));
+  }
+}
+@keyframes pwl-tour {
+  to {
+    --pwl-angle: 360deg;
+  }
+}
+@keyframes pwl-aurore {
+  to {
+    transform: translate3d(8%, 6%, 0) scale(1.08);
+  }
+}
+@keyframes pwl-mot {
+  from {
+    opacity: 0;
+    transform: translateY(60%);
+  }
+}
+@keyframes pwl-notif {
+  0%,
+  4% {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.96);
+  }
+  10%,
+  42% {
+    opacity: 1;
+    transform: none;
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: translateY(26px) scale(0.92);
+  }
+}
+@keyframes pwl-new {
+  0%,
+  44% {
+    background: transparent;
+  }
+  52% {
+    background: var(--color-pending-bg);
+  }
+  80%,
+  100% {
+    background: transparent;
+  }
+}
+@keyframes pwl-badge {
+  0%,
+  44% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+  58%,
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes pwl-reflet {
+  0% {
+    transform: translateX(-120%);
+  }
+  45%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pwl-aurore,
+  .pwl-mot-i,
+  .pwl-acces,
+  .pwl-porte.ink::after,
+  .pwl-mock-new,
+  .pwl-mock-new .pwl-mock-badge,
+  .pwl-live-d {
+    animation: none !important;
+  }
+  .pwl-notif {
+    animation: none;
+    opacity: 1;
+  }
+}
+@layer components {
+  /* L'aurore passe AU-DESSUS du voile sombre de la photo, mais sous le contenu. */
+  .pwl-hero .pwl-aurore {
+    z-index: 0;
+  }
+  .pwl-hero .pwl-bar,
+  .pwl-hero .pwl-copy,
+  .pwl-hero .pwl-mock {
+    position: relative;
+    z-index: 1;
+  }
+  .pwl-hero .pwl-bar {
+    z-index: 5;
+  }
+}
+@layer components {
+  /* L'aperçu vivant, sous la carte d'accès, sur son propre panneau d'encre. */
+  .pwl-show {
+    position: relative;
+    padding: 2rem 1rem 1rem;
+    border-radius: var(--radius-card);
+    background:
+      radial-gradient(90% 120% at 100% 0%, rgb(61 220 151 / 0.14) 0%, transparent 60%),
+      var(--color-ink);
+  }
+  .pwl-show .pwl-mock {
+    margin-inline: 0;
+  }
+  .pwl-hero {
+    gap: 1rem;
+    padding-bottom: 3.25rem;
+  }
+  .pwl-photo {
+    height: 100%;
+  }
+}
+@media (min-width: 1024px) {
+  .pwl-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    column-gap: 1.25rem;
+  }
+  .pwl-main > .pwl-grid,
+  .pwl-main > .pwl-steps {
+    grid-column: 1 / -1;
+  }
+  .pwl-show {
+    margin-top: 2.25rem;
+  }
+}
+
+/* salondz.com — première page vivante (28 oct. 2026) */
+@layer components {
+  .hm-bar {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 0.875rem 1.25rem;
+  }
+  .hm-bar-a {
+    display: inline-flex;
+    align-items: center;
+    height: 2.375rem;
+    padding: 0 0.875rem;
+    border-radius: var(--radius-pill);
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 0.857rem;
+    font-weight: 600;
+  }
+  .hm-mot {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    color: #fff;
+  }
+  .hm-mot-i {
+    display: inline-block;
+    animation: pwl-mot 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hm-float {
+    position: absolute;
+    top: 6rem;
+    inset-inline-end: 1.25rem;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.625rem;
+    pointer-events: none;
+  }
+  .hm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-pill);
+    background: rgb(17 18 20 / 0.6);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 0.857rem;
+    font-weight: 600;
+    white-space: nowrap;
+    animation:
+      hm-flotte 5s ease-in-out infinite,
+      ph-in 0.7s 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hm-chip.b {
+    margin-inline-end: 1.5rem;
+    animation-delay: -2.5s, 0.9s;
+  }
+}
+@keyframes hm-flotte {
+  50% {
+    transform: translateY(-7px);
+  }
+}
+/* Sur un petit téléphone, les pastilles laissent la place au titre. */
+@media (max-width: 380px) {
+  .hm-float {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-chip,
+  .hm-mot-i {
+    animation: none;
+  }
+}
