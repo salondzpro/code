@@ -38,18 +38,18 @@ const VITRINE: Record<AuthRole, { photo: string; titre: string; points: { icone:
     photo: '/demo/cover-femmes.webp',
     titre: 'Votre salon, en deux gestes.',
     points: [
-      { icone: MapPin, texte: 'Les salons autour de vous, avec leurs disponibilités du jour' },
-      { icone: CalendarCheck, texte: 'Réservation en quelques secondes, prix en dinars' },
-      { icone: Sparkles, texte: 'Rappel 1 h puis 30 min avant chaque rendez-vous' },
+      { icone: MapPin, texte: 'Les salons autour de vous' },
+      { icone: CalendarCheck, texte: 'Réservé en 3 taps' },
+      { icone: Sparkles, texte: 'Rappel avant le rendez-vous' },
     ],
   },
   pro: {
     photo: '/demo/cover-hommes.webp',
     titre: 'Votre salon tient dans votre poche.',
     points: [
-      { icone: CalendarDays, texte: 'Votre agenda par membre d’équipe, heure par heure' },
-      { icone: Store, texte: 'Votre page publique, votre lien et votre QR code' },
-      { icone: Wallet, texte: 'Fiche client, historique et chiffre d’affaires' },
+      { icone: CalendarDays, texte: 'Agenda d’équipe' },
+      { icone: Store, texte: 'Votre page, votre lien' },
+      { icone: Wallet, texte: 'Clients et chiffre d’affaires' },
     ],
   },
 };

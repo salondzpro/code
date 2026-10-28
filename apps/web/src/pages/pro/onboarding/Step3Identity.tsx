@@ -37,8 +37,8 @@ export function Step3Identity() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={3} backTo={stepPath(2)} />
-      <StepTitle sub={t("Une couverture et un logo : c'est la première chose que voient vos clients.")}>
-        {t("Votre identité visuelle")}
+      <StepTitle icon={Camera} sub={t('Couverture et logo.')}>
+        {t('Vos photos')}
       </StepTitle>
 
       {/* Aperçu de la page publique : couverture, logo, nom. */}

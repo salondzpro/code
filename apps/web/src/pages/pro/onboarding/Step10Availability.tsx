@@ -12,6 +12,7 @@ import { SectionLabel, Slot, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
+import { ShieldCheck, Timer } from 'lucide-react';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -168,7 +169,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     return (
       <Screen bottom={SHEET_PAD} gap={16}>
         <StepBar step={10} backTo={backTo} right={t("Disponibilités")} />
-        <StepTitle sub={t("Le temps entre deux rendez-vous et jusqu'à quand on peut réserver avant l'heure.")}>{t("Vos créneaux")}</StepTitle>
+        <StepTitle icon={Timer} sub={t('Durée des créneaux, délai minimum.')}>{t("Vos créneaux")}</StepTitle>
         {slots}
         <StepSheet onClick={() => setPhase('rules')} />
       </Screen>
@@ -178,7 +179,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={10} right={t("Réservation")} backTo={undefined} />
-      <StepTitle sub={t("Jusqu'à combien de jours à l'avance vos clients réservent, et ce qu'ils peuvent annuler ou déplacer.")}>{t("Règles de réservation")}</StepTitle>
+      <StepTitle icon={ShieldCheck} sub={t('Réservation, annulation, report.')}>{t("Règles de réservation")}</StepTitle>
       {rules}
       {alert}
       <StepSheet label={t('Continuer')} onClick={() => void save()} busy={updateSalon.isPending} />

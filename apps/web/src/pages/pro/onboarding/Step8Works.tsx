@@ -5,7 +5,7 @@
  */
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus, X } from 'lucide-react';
+import { Images, Plus, X } from 'lucide-react';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { SALON_MAX_WORKS } from '@salondz/constants';
 import { uploadSalonPhoto } from '@/lib/upload';
@@ -62,7 +62,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         backTo={settings ? '/pro/mon-salon' : stepPath(6)}
         right={settings ? 'Mon salon' : undefined}
       />
-      <StepTitle sub={settings ? t("Vos photos de travail, visibles dans l'onglet « Réalisations ».") : (salon.genderTarget === 'men' ? t("Coupes, dégradés, barbes, lissages… plusieurs photos à la fois. C'est votre vitrine.") : t("Ongles, cils, coiffures, sourcils… plusieurs photos à la fois. C'est votre vitrine."))}>
+      <StepTitle icon={settings ? undefined : Images} sub={settings ? t("Vos photos de travail, visibles dans l'onglet « Réalisations ».") : t('C’est votre vitrine.')}>
         {settings ? t('Réalisations') : t('Montrez votre travail')}
       </StepTitle>
       <div className="g3">

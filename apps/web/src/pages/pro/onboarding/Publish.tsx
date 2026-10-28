@@ -1,6 +1,6 @@
 /** PRO-F 16 — « Tout est prêt » : liste de contrôle, lien public, prévisualiser, publier. */
 import { useNavigate } from 'react-router';
-import { Check } from 'lucide-react';
+import { Check, Rocket } from 'lucide-react';
 import { ApiError, useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { errorText } from '@/components/ErrorMessage';
 import { Badge, Button, I } from '@/components/ui';
@@ -47,7 +47,7 @@ export function Publish() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={10} backTo={stepPath(10)} />
-      <StepTitle sub={t("{done} sur {total} éléments en place. Publiez votre page, puis partagez votre lien.", { done: items.filter((i) => i.ok).length, total: items.length })}>
+      <StepTitle icon={Rocket} sub={t('{done} sur {total} en place', { done: items.filter((i) => i.ok).length, total: items.length })}>
         {done === items.length ? t("Tout est prêt") : t("Presque prêt")}
       </StepTitle>
       <div className="crd !gap-0 !py-1">

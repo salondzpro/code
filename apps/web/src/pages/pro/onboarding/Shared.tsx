@@ -4,7 +4,8 @@
  */
 import type { ReactNode } from 'react';
 import { ONBOARDING_STEPS } from '@/lib/proDraft';
-import { BottomSheet, Button, TopBar } from '@/components/ui';
+import type { LucideIcon } from 'lucide-react';
+import { BottomSheet, Button, I, TopBar } from '@/components/ui';
 import { t } from '@/i18n';
 
 export function StepBar({
@@ -43,12 +44,20 @@ export function StepBar({
   );
 }
 
-/** Titre de l'étape (une question courte) et, dessous, ce que ça change pour le pro. */
-export function StepTitle({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
+/**
+ * Titre de l'étape : une ICÔNE qui dit le sujet d'un coup d'œil, une question courte, et au plus
+ * une ligne dessous (28 oct. 2026 : « montrer plutôt qu'expliquer » — consignes de quelques mots).
+ */
+export function StepTitle({ children, sub, icon }: { children: ReactNode; sub?: ReactNode; icon?: LucideIcon }) {
   return (
-    <div>
+    <div className="stp-t">
+      {icon && (
+        <span className="stp-i" aria-hidden>
+          <I icon={icon} size={22} strokeWidth={1.8} />
+        </span>
+      )}
       <h1 className="h1">{children}</h1>
-      {sub && <p className="p mt-2">{sub}</p>}
+      {sub && <p className="stp-sub">{sub}</p>}
     </div>
   );
 }

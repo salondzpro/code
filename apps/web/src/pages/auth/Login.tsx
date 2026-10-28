@@ -182,8 +182,8 @@ export function Login({ landing }: { landing?: boolean } = {}) {
       titre={role === 'pro' ? 'Connexion à votre espace' : 'Connexion'}
       sous={
         role === 'pro'
-          ? t('Retrouvez votre agenda, vos réservations et votre page.')
-          : t('Vos rendez-vous et vos salons favoris, en quelques secondes.')
+          ? t('Votre agenda vous attend.')
+          : t('Vos rendez-vous, en un instant.')
       }
       pied={
         // Créer un compte : c'est l'onglet « Inscription », en tête (toucher ou glisser).

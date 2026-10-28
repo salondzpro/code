@@ -10,6 +10,7 @@ import { Field, Input, Pill, Textarea } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
+import { Tag } from 'lucide-react';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
@@ -67,7 +68,7 @@ export function Step6Service() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={6} backTo={first ? stepPath(4) : '/pro/catalogue'} />
-      <StepTitle sub={existing ? undefined : t("Nom, prix, durée. Vous pourrez en ajouter d'autres ensuite depuis le catalogue.")}>
+      <StepTitle icon={existing ? undefined : Tag} sub={existing ? undefined : t('Nom, prix, durée.')}>
         {existing ? t('Modifier la prestation') : first ? t('Votre première prestation') : t('Nouvelle prestation')}
       </StepTitle>
       {templates.length > 0 && (
@@ -107,7 +108,7 @@ export function Step6Service() {
             </Pill>
           ))}
         </div>
-        <Field label={t("Catégorie")} htmlFor="svc-cat" hint={t("Choisissez une catégorie Salon DZ ou créez la vôtre : elle classe la prestation sur votre profil.")}>
+        <Field label={t("Catégorie")} htmlFor="svc-cat" hint={t('Classe la prestation sur votre page.')}>
           <PickerField
             label={t("Catégorie")}
             value={pick}

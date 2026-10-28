@@ -238,7 +238,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={4} backTo={settings ? '/pro/mon-salon' : stepPath(3)} right={settings ? t('Adresse') : undefined} />
-      <StepTitle sub={settings ? undefined : t('La wilaya, l’adresse, puis l’emplacement exact : vos clients vous trouvent sans appeler.')}>
+      <StepTitle icon={settings ? undefined : MapPin} sub={settings ? undefined : t('Wilaya, adresse, emplacement.')}>
         {t('Où se trouve votre salon ?')}
       </StepTitle>
 
@@ -256,7 +256,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           active={step === 2}
           locked={!wilaya}
           error={errors.address}
-          hint={wilaya ? t('Rue, numéro, quartier ou lieu connu — à {w}.', { w: wName }) : t('Choisissez d’abord la wilaya.')}
+          hint={wilaya ? undefined : t('Choisissez d’abord la wilaya.')}
         >
           <div className="relative">
             <label className={`adr-in ${errors.address ? 'err' : ''}`}>
@@ -317,7 +317,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           {wilaya && (
             <button type="button" className="adr-gps" onClick={fromGps} disabled={gps === 'asking'}>
               <I icon={LocateFixed} size={17} />
-              {gps === 'asking' ? t('Recherche de votre position…') : t('Je suis au salon : utiliser ma position')}
+              {gps === 'asking' ? t('Recherche de votre position…') : t('Utiliser ma position')}
             </button>
           )}
           {gps === 'denied' && (
@@ -335,7 +335,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
           active={step === 3}
           locked={!wilaya}
           error={errors.pos}
-          hint={confirmed ? undefined : t('Glissez la carte pour mettre l’épingle sur la devanture, puis confirmez.')}
+          hint={undefined}
         >
           <PlacePicker value={pos} onChange={onMap} zone={box} confirmed={confirmed} />
           {/* Récapitulatif : ce qui sera enregistré, et la confirmation. */}

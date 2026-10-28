@@ -6,7 +6,7 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Check } from 'lucide-react';
+import { Check, Sparkles, Users } from 'lucide-react';
 import { MARKET_LABELS_FR, categoriesForMarket, type Market } from '@salondz/constants';
 import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { readProDraft, writeProDraft } from '@/lib/proDraft';
@@ -33,7 +33,7 @@ export function Step1Market() {
     return (
       <Screen bottom={SHEET_PAD_2} gap={16}>
         <StepBar step={1} backTo={undefined} />
-        <StepTitle sub={t("Vos clients vous trouvent par spécialité. Choisissez-en une ou plusieurs : la suite de l'inscription s'adapte.")}>
+        <StepTitle icon={Sparkles} sub={t('Une ou plusieurs.')}>
           {t("Que proposez-vous ?")}
         </StepTitle>
         <SpecialtiesGrid items={cats} chosen={chosen} onChange={setChosen} />
@@ -57,7 +57,7 @@ export function Step1Market() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={1} backTo="/pro/bienvenue" />
-      <StepTitle sub={t("Ce choix définit votre catalogue de prestations et la marketplace dans laquelle vous apparaissez.")}>
+      <StepTitle icon={Users} sub={t('Votre clientèle.')}>
         {t("Pour qui travaillez-vous ?")}
       </StepTitle>
       {CARDS.map((c) => {

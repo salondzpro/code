@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { ChevronDown, Copy, Plus, X } from 'lucide-react';
+import { ChevronDown, Clock, Copy, Plus, X } from 'lucide-react';
 import { DAY_LABELS_FR, MAX_BREAKS_PER_DAY, formatDayRanges, nextBreakSuggestion, rangesFromRows, rowError, rowsFromRanges, type DayBreak, type DayHoursRow, type DayOfWeek } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
 import { HoursConflictSheet } from '@/components/HoursConflictSheet';
@@ -15,7 +15,7 @@ import type { OutsideBooking } from '@salondz/types';
 import { I, Toggle } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
-import { StepBar, StepSheet, stepPath } from './Shared';
+import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
 import { t } from '@/i18n';
 
 /** Case horaire : petit libellé + heure en grand, champ natif (sélecteur du téléphone) sur toute la case. */
@@ -147,8 +147,9 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={9} backTo={settings ? '/pro/profil' : stepPath(8)} right={settings ? t('Horaires') : undefined} />
-      <h1 className="h1">{t("Horaires")}</h1>
-      <p className="p -mt-2">{t("Touchez un jour pour régler ses heures ou ajouter une pause, par exemple 12:00 – 14:00.")}</p>
+      <StepTitle icon={settings ? undefined : Clock} sub={t('Touchez un jour pour le régler.')}>
+        {t('Horaires')}
+      </StepTitle>
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <p className="text-[0.857rem] text-muted">{t("Semaine commençant")} {t("Dimanche").toLowerCase()} · {t("heure d'Alger")}</p>
       {error && (

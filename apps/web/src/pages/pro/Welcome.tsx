@@ -13,7 +13,7 @@
  * ce que le produit fait.
  */
 import { useNavigate } from 'react-router';
-import { ArrowRight, BellRing, CalendarCheck, ChevronLeft, Link2, Users, type LucideIcon } from 'lucide-react';
+import { ArrowRight, BellRing, CalendarCheck, ChevronLeft, Clock, QrCode, Rocket, Store, Tag, Users, type LucideIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES, writeAuthFlow } from '@/lib/authFlow';
 import { useBack } from '@/lib/useBack';
@@ -21,15 +21,23 @@ import { Button, I, IconButton, LinkButton } from '@/components/ui';
 import { Wordmark } from '@/components/Wordmark';
 import { LangSwitch } from '@/components/LangSwitch';
 import { t } from '@/i18n';
+// Textes resserrés le 28 oct. 2026 : un titre, des icônes, un mot par étape.
 
-const PROMISES: { icon: LucideIcon; title: string; sub: string }[] = [
-  { icon: CalendarCheck, title: 'Réservations en ligne 24 h/24', sub: 'Vos clients réservent seuls, même quand le salon est fermé.' },
-  { icon: Link2, title: 'Votre page et votre lien', sub: 'À partager sur WhatsApp, Instagram et en vitrine avec le QR code.' },
-  { icon: BellRing, title: 'Rappels automatiques', sub: 'Moins d’oublis, moins de créneaux perdus.' },
-  { icon: Users, title: 'Votre clientèle en main', sub: 'Agenda par membre, fiches clients, historique et chiffre d’affaires.' },
+/** Quatre promesses, deux à trois mots chacune : l'icône dit le reste (28 oct. 2026). */
+const PROMISES: { icon: LucideIcon; title: string }[] = [
+  { icon: CalendarCheck, title: 'Réservations 24 h/24' },
+  { icon: QrCode, title: 'Lien et QR code' },
+  { icon: BellRing, title: 'Rappels automatiques' },
+  { icon: Users, title: 'Fichier clients' },
 ];
 
-const STEPS = ['Votre salon : nom, photo, adresse', 'Vos prestations et vos prix', 'Vos horaires et vos règles', 'Publiez et partagez votre lien'];
+/** Les quatre étapes, en un mot et une icône. */
+const STEPS: { icon: LucideIcon; label: string }[] = [
+  { icon: Store, label: 'Votre salon' },
+  { icon: Tag, label: 'Vos prix' },
+  { icon: Clock, label: 'Vos horaires' },
+  { icon: Rocket, label: 'En ligne !' },
+];
 
 /** L'aperçu de l'agenda : trois rendez-vous d'une journée type, couleurs des catégories. */
 const PREVIEW: { time: string; name: string; service: string; tone: string; pending?: boolean }[] = [
@@ -77,7 +85,7 @@ export function ProWelcome() {
             <br />
             {t('votre page, votre lien.')}
           </h1>
-          <p className="pwl-sub">{t('Gratuit · Sans engagement · Votre page prête en 5 minutes')}</p>
+          <p className="pwl-sub">{t('Gratuit · Prêt en 5 min')}</p>
         </div>
 
         {/* Aperçu du produit : la journée telle qu'elle s'affiche dans l'application. */}
@@ -118,37 +126,33 @@ export function ProWelcome() {
           )}
         </div>
 
-        <section className="flex flex-col gap-3" aria-labelledby="pwl-why">
-          <h2 id="pwl-why" className="h3">{t('Pourquoi Salon DZ')}</h2>
-          <ul className="pwl-grid">
-            {PROMISES.map((p, i) => (
-              <li key={p.title} className={`pwl-card ${i === 0 ? 'ink' : ''}`}>
-                <span className="pwl-card-i">
-                  <I icon={p.icon} size={20} />
-                </span>
-                <span className="block text-[1.143rem] font-semibold leading-[1.25] tracking-[-0.2px]">{t(p.title)}</span>
-                <span className="pwl-card-s">{t(p.sub)}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <ul className="pwl-grid" aria-label={t('Pourquoi Salon DZ')}>
+          {PROMISES.map((p) => (
+            <li key={p.title} className="pwl-card">
+              <span className="pwl-card-i">
+                <I icon={p.icon} size={20} />
+              </span>
+              <span className="text-[1rem] font-semibold leading-[1.25]">{t(p.title)}</span>
+            </li>
+          ))}
+        </ul>
 
-        <section className="flex flex-col gap-3" aria-labelledby="pwl-how">
-          <h2 id="pwl-how" className="h3">{t('Comment ça marche')}</h2>
-          <ol className="pwl-steps">
-            {STEPS.map((s, i) => (
-              <li key={s}>
-                <span className="pwl-step-n mono">{i + 1}</span>
-                <span className="text-[1.143rem] font-medium">{t(s)}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+        {/* Les étapes : quatre icônes reliées, un mot sous chacune. */}
+        <ol className="pwl-steps" aria-label={t('Comment ça marche')}>
+          {STEPS.map((st, i) => (
+            <li key={st.label}>
+              <span className="pwl-step-n">
+                <I icon={st.icon} size={18} />
+              </span>
+              <span className="pwl-step-l">{t(st.label)}</span>
+              <span className="sr-only">{i + 1}</span>
+            </li>
+          ))}
+        </ol>
 
         {/* Pour qui a tout lu : la décision, sans remonter. */}
         <section className="pwl-end">
           <p className="text-[1.429rem] font-semibold leading-[1.2] tracking-[-0.4px]">{t('Prêt à remplir votre agenda ?')}</p>
-          <p className="text-[1rem] text-white/65">{t('Votre page est en ligne dès la dernière étape.')}</p>
           <button type="button" className="btn pwl-end-btn" onClick={start}>
             {cta} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
           </button>

@@ -128,8 +128,8 @@ export function SignUp() {
       titre={role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
       sous={
         role === 'pro'
-          ? t('Votre agenda, vos réservations et votre page en ligne. Gratuit.')
-          : t('Réservez dans les salons de votre choix, sans appeler.')
+          ? t('Gratuit · Prêt en 5 min')
+          : t('Réservez sans appeler.')
       }
     >
       <form onSubmit={creer} noValidate>

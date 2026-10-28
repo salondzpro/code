@@ -1,7 +1,7 @@
 /** PRO-F 04 — Étape 2 : « Comment s'appelle votre salon ? » — nom public et lien de réservation (unique et définitif). */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Link2 } from 'lucide-react';
+import { Link2, Store } from 'lucide-react';
 import { useApi } from '@salondz/api-client';
 import { readProDraft, writeProDraft } from '@/lib/proDraft';
 import { Badge, Field, I, Input } from '@/components/ui';
@@ -38,7 +38,7 @@ export function Step2Name() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={2} backTo={stepPath(1)} />
-      <StepTitle sub={t("C'est le nom que vos clients verront sur Salon DZ et sur votre page.")}>
+      <StepTitle icon={Store} sub={t('Celui que vos clients verront.')}>
         {t("Comment s'appelle votre salon ?")}
       </StepTitle>
       <Field label={t("Nom du salon")} htmlFor="salon-name">
@@ -61,7 +61,7 @@ export function Step2Name() {
             </Badge>
           )}
         </div>
-        <p className="p text-[0.857rem]">{t("Ce lien est unique et définitif. C'est lui que vous partagerez sur WhatsApp et Instagram.")}</p>
+        <p className="p text-[0.857rem]">{t('Votre lien, définitif.')}</p>
       </div>
       <StepSheet
         disabled={name.trim().length < 2 || taken}
