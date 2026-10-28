@@ -219,24 +219,24 @@ export function AgendaPro() {
       style={{ ['--ag-max' as string]: `${Math.max(46, columns.length * 20)}rem` }}
     >
       {loadError && <ErrorMessage error={loadError.error} retry={() => void loadError.refetch()} />}
-      <div className="flex items-center justify-between gap-2">
+      <div className="agh">
         <div className="min-w-0">
-          <div className="truncate text-[0.857rem] text-muted">{sub}</div>
+          <div className="agh-sub">{sub}</div>
           <h1 className="h1 whitespace-nowrap">{title}</h1>
         </div>
-        <div className="flex flex-none gap-2">
-          <IconButton aria-label={t("Précédent")} onClick={() => shift(-1)}>
-            <I icon={ChevronLeft} size={20} />
-          </IconButton>
-          <IconButton aria-label={t("Suivant")} onClick={() => shift(1)}>
-            <I icon={ChevronRight} size={20} />
-          </IconButton>
+        <div className="flex flex-none items-center gap-1.5">
           {/* Retour à aujourd'hui : n'apparaît que lorsqu'on s'en est éloigné. */}
           {date !== today && (
-            <IconButton ink aria-label={t("Aujourd'hui")} title={t("Aujourd'hui")} onClick={() => setDate(today)}>
-              <I icon={CalendarCheck} size={20} />
-            </IconButton>
+            <button type="button" className="agh-today" onClick={() => setDate(today)}>
+              <I icon={CalendarCheck} size={16} /> {t("Aujourd'hui")}
+            </button>
           )}
+          <IconButton aria-label={t("Précédent")} onClick={() => shift(-1)}>
+            <I icon={ChevronLeft} size={20} className="rtl:-scale-x-100" />
+          </IconButton>
+          <IconButton aria-label={t("Suivant")} onClick={() => shift(1)}>
+            <I icon={ChevronRight} size={20} className="rtl:-scale-x-100" />
+          </IconButton>
         </div>
       </div>
       <Segmented
@@ -276,23 +276,24 @@ export function AgendaPro() {
               const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
               return (
                 <div className="flex flex-col gap-2.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[1rem]">
-                      <b>{t('{n} rendez-vous', { n: live.length })}</b>{' '}
-                      <span className="text-muted">· {formatDA(revenue)}</span>
+                  {/* Le jour en trois pastilles : combien, combien ça rapporte, ce qui attend. */}
+                  <div className="ags">
+                    <span className="ags-c">
+                      <b className="mono">{live.length}</b> {t('rendez-vous')}
                     </span>
-                    <span className="flex items-center gap-2">
-                      {pending > 0 && (
-                        <Badge tone="pd" md>
-                          {pending} {t("en attente")}
-                        </Badge>
-                      )}
-                      {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
-                        <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
-                          {t('{n} annulé(s)', { n: showCancelled ? cancelled.length : cancelledOn(d) })}
-                        </Pill>
-                      )}
+                    <span className="ags-c">
+                      <b className="mono" dir="ltr">{formatDA(revenue)}</b>
                     </span>
+                    {pending > 0 && (
+                      <span className="ags-c pd">
+                        <b className="mono">{pending}</b> {t("en attente")}
+                      </span>
+                    )}
+                    {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
+                      <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
+                        {t('{n} annulé(s)', { n: showCancelled ? cancelled.length : cancelledOn(d) })}
+                      </Pill>
+                    )}
                   </div>
                   <DayColumns
                     date={d}
@@ -545,7 +546,7 @@ function DayColumns({
           </span>
         ))}
       </div>
-      <div className="relative flex flex-1">
+      <div className="agz relative flex flex-1">
         <div className="pointer-events-none absolute inset-0">
           {hourMarks.map((m) => (
             <div key={m} className="absolute start-0 end-0 border-t border-line" style={{ top: top(m) }} />
@@ -624,7 +625,7 @@ function DayColumns({
                       ev.stopPropagation();
                       onOpen(b.id);
                     }}
-                    className={`agb ${TONE[toneOf(b)]}`}
+                    className={`agb ${TONE[toneOf(b)]} ${isToday && e <= now ? 'past' : ''}`}
                     style={{
                       top: top(s) + 1,
                       height: h,
@@ -637,20 +638,21 @@ function DayColumns({
                   >
                     {h < 32 ? (
                       <span className="block truncate text-[0.857rem] font-semibold">
-                        {b.clientName}
+                        <span className="mono agb-t">{formatTimeDZ(b.startsAt)}</span> {b.clientName}
                         {!narrow && ` · ${b.serviceName}`}
                       </span>
                     ) : (
                       <>
+                        <span className="mono agb-t block">
+                          {formatTimeDZ(b.startsAt)}
+                          {h >= 50 && !narrow && <span className="opacity-70"> – {formatTimeDZ(b.endsAt)}</span>}
+                        </span>
                         <span className={`block truncate font-semibold ${narrow ? 'text-[0.857rem]' : 'text-[1rem]'}`}>
                           {b.clientName}
                         </span>
-                        <span className="block truncate text-[0.857rem] opacity-90">
-                          {b.serviceName}
-                        </span>
                         {h >= 50 && (
-                          <span className="mono block truncate text-[0.857rem] opacity-80">
-                            {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
+                          <span className="block truncate text-[0.857rem] opacity-90">
+                            {b.serviceName}
                             {!narrow && ` · ${formatDA(b.priceDa)}`}
                           </span>
                         )}
@@ -731,12 +733,16 @@ function WeekGrid({
   for (let m = startMin; m <= endMin; m += 120) hours.push(m);
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 text-[0.857rem]">
-        <span className="pill soft !py-2 !font-semibold">{t('{n} rendez-vous', { n: total })}</span>
-        <Badge tone="ok" md>
-          {formatDA(revenue)}
-        </Badge>
-        <span className="text-muted">{occupancy} {t("% occupé")}</span>
+      <div className="ags">
+        <span className="ags-c">
+          <b className="mono">{total}</b> {t('rendez-vous')}
+        </span>
+        <span className="ags-c">
+          <b className="mono" dir="ltr">{formatDA(revenue)}</b>
+        </span>
+        <span className="ags-c">
+          <b className="mono">{occupancy}</b> {t("% occupé")}
+        </span>
       </div>
       <div className="flex gap-1.5">
         <div className="relative w-[1.625rem] flex-none" style={{ height: H + 56 }}>

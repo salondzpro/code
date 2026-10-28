@@ -37,7 +37,6 @@ import {
 } from 'lucide-react';
 import {
   useMe,
-  useProBookingMutations,
   useProBookings,
   useProPendingBookings,
   useProSalon,
@@ -50,7 +49,6 @@ import {
   formatDA,
   formatLocale,
   formatTimeDZ,
-  relativeDayLabelDZ,
   toLocalDateKey,
   untilLabelFR,
   weekKeys,
@@ -62,6 +60,7 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
+import { RequestCard, TimelineList, TimelineNow, TimelineRow, toneVar } from '@/components/ProBookingCards';
 import { StaffFilter } from '@/components/StaffFilter';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner, QuickCloseButton } from '@/components/QuickClose';
@@ -84,9 +83,6 @@ const PENDING_SHOWN = 3;
 /** Rendez-vous passés montrés avant de replier la suite (« 4 passés »). */
 const PAST_SHOWN = 1;
 
-const localKey = (iso: string) => toLocalDateKey(new Date(iso));
-const toneVar = (tone: string | null | undefined) =>
-  tone ? `var(--color-cat-${tone}-line)` : 'var(--color-disabled)';
 /** Montant sans devise, espaces insécables (le séparateur de milliers ne coupe jamais la ligne). */
 const amount = (v: number) => v.toLocaleString(formatLocale()).replace(/ /g, ' ');
 
@@ -101,7 +97,6 @@ export function ProHome() {
   const week = weekKeys(today);
   const weekStats = useProStatsRange(week[0]!, week[6]!, !!salon);
   const todayList = useProBookings({ from: today, to: today, limit: 50 }, !!salon);
-  const { setStatus } = useProBookingMutations();
   const [refusing, setRefusing] = useState<RefusedRequest | null>(null);
   const [peek, setPeek] = useState<string | null>(null);
   const [showPast, setShowPast] = useState(false);
@@ -304,9 +299,6 @@ export function ProHome() {
 
   /* ---------------------------------------------------------------- demandes */
 
-  // L'état d'envoi est celui de LA demande touchée : les autres restent utilisables.
-  const confirming = (id: string) => setStatus.isPending && setStatus.variables?.id === id;
-
   const requests = pendingItems.length > 0 && (
     <section className="flex flex-col gap-2.5" aria-label={t('À valider')}>
       <SectionHead
@@ -315,46 +307,9 @@ export function ProHome() {
         to="/pro/reservations"
         more={pendingItems.length > PENDING_SHOWN ? t('Tout voir') : undefined}
       />
-      {pendingItems.slice(0, PENDING_SHOWN).map((b) => {
-        const day = localKey(b.startsAt);
-        const isToday = day === today;
-        return (
-          <div key={b.id} className="phr">
-            <button type="button" className="flex items-center gap-3 text-start" onClick={() => setPeek(b.id)}>
-              <span className={`phr-d ${isToday ? 'on' : ''}`}>
-                <span className="mono" dir="ltr">{formatTimeDZ(b.startsAt)}</span>
-                <span>{relativeDayLabelDZ(day, today)}</span>
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[1.143rem] font-semibold">{b.clientName}</span>
-                <span className="block truncate text-[1rem] text-muted">
-                  {b.serviceName}
-                  {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
-                </span>
-              </span>
-              <span className="flex-none text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
-            </button>
-            <div className="phr-a">
-              <Button
-                variant="ok"
-                sm
-                loading={confirming(b.id)}
-                disabled={confirming(b.id)}
-                onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
-              >
-                {t('Confirmer')}
-              </Button>
-              <Button variant="g" sm onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-                {t('Reporter')}
-              </Button>
-              <Button variant="d" sm onClick={() => setRefusing({ id: b.id, clientName: b.clientName })}>
-                {t('Refuser')}
-              </Button>
-            </div>
-            {setStatus.isError && setStatus.variables?.id === b.id && <ErrorMessage error={setStatus.error} />}
-          </div>
-        );
-      })}
+      {pendingItems.slice(0, PENDING_SHOWN).map((b) => (
+        <RequestCard key={b.id} b={b} today={today} showStaff={!staffId} onOpen={setPeek} onRefuse={setRefusing} />
+      ))}
     </section>
   );
 
@@ -375,7 +330,7 @@ export function ProHome() {
         />
       )}
       {todays.length > 0 && (
-        <ol className="phd">
+        <TimelineList>
           {past.length > PAST_SHOWN && !showPast && (
             <li>
               <button type="button" className="phd-more" onClick={() => setShowPast(true)}>
@@ -385,26 +340,24 @@ export function ProHome() {
             </li>
           )}
           {shownPast.map((b) => (
-            <DayRow key={b.id} b={b} state="done" tone={toneVar(toneOf(b))} staff={!staffId} onOpen={setPeek} />
+            <TimelineRow key={b.id} b={b} state="done" tone={toneVar(toneOf(b))} showStaff={!staffId} onOpen={setPeek} />
           ))}
           {/* Le repère du moment : entre ce qui est fait et ce qui vient, sauf pendant un
               rendez-vous en cours — sa ligne verte le dit déjà. */}
           {!inProgress && upcoming.length > 0 && past.length > 0 && (
-            <li className="phd-now" aria-label={t('Maintenant')}>
-              <span className="mono" dir="ltr">{nowLabel}</span>
-            </li>
+            <TimelineNow time={nowLabel} />
           )}
           {upcoming.map((b) => (
-            <DayRow
+            <TimelineRow
               key={b.id}
               b={b}
               state={b === next && inProgress ? 'live' : 'next'}
               tone={toneVar(toneOf(b))}
-              staff={!staffId}
+              showStaff={!staffId}
               onOpen={setPeek}
             />
           ))}
-        </ol>
+        </TimelineList>
       )}
     </section>
   );
@@ -518,51 +471,6 @@ function Ring({ ratio, live, children }: { ratio: number; live?: boolean; childr
       </svg>
       <span className="phx-ring-n mono">{children}</span>
     </span>
-  );
-}
-
-/** Une ligne de la frise : heure, point sur le rail, client et prestation, prix. */
-function DayRow({
-  b,
-  state,
-  tone,
-  staff,
-  onOpen,
-}: {
-  b: BookingWithStaff;
-  state: 'done' | 'live' | 'next';
-  tone: string;
-  staff: boolean;
-  onOpen: (id: string) => void;
-}) {
-  return (
-    <li>
-      <button
-        type="button"
-        className={`phd-r ${state}`}
-        style={{ ['--tone' as string]: tone }}
-        onClick={() => onOpen(b.id)}
-      >
-        <span className="phd-h mono" dir="ltr">
-          {formatTimeDZ(b.startsAt)}
-          <span>{formatTimeDZ(b.endsAt)}</span>
-        </span>
-        <span className="phd-p" aria-hidden />
-        <span className="phd-c">
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
-            <span className="block truncate text-[0.857rem] text-muted">
-              {b.serviceName}
-              {staff && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
-            </span>
-          </span>
-          <span className="flex flex-none flex-col items-end gap-1">
-            <span className="text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
-            {(b.status !== 'confirmed' || state === 'done') && <StatusBadge status={b.status} />}
-          </span>
-        </span>
-      </button>
-    </li>
   );
 }
 

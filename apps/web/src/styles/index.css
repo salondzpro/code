@@ -727,23 +727,43 @@ body::before {
     position: relative;
     flex: 1 1 0;
     min-width: 0;
-    border-left: 1px solid var(--color-line-soft);
+    border-inline-start: 1px solid var(--color-line-soft);
   }
   .agcol:first-child {
-    border-left: 0;
+    border-inline-start: 0;
   }
   /* Bloc de rendez-vous : teinte de la catégorie, liseré à gauche, coins du petit mobilier. */
   .agb {
     position: absolute;
-    left: 2px;
-    right: 2px;
+    inset-inline: 3px;
     overflow: hidden;
-    border-left: 3px solid;
+    border: 0 solid;
+    border-inline-start-width: 3px;
     border-radius: var(--radius-card-sm);
-    padding: 0.125rem 0.375rem;
-    text-align: left;
-    line-height: 1.2;
+    padding: 0.25rem 0.4375rem;
+    text-align: start;
+    line-height: 1.25;
     cursor: pointer;
+    transition:
+      filter 0.15s ease,
+      opacity 0.2s ease;
+  }
+  .agb:hover {
+    filter: brightness(0.97);
+  }
+  .agb:active {
+    filter: brightness(0.93);
+  }
+  /* Heure en tête du bloc : on lit QUAND avant QUI, comme dans les outils du métier. */
+  .agb-t {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
+  }
+  /* Rendez-vous terminés aujourd'hui : estompés, la suite de la journée ressort. */
+  .agb.past {
+    opacity: 0.55;
   }
   .agb.cn {
     border: 1px dashed var(--color-line);
@@ -3197,5 +3217,154 @@ html:has(.auth-onglets) body {
   }
   .pwl-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Réservations (28 oct. 2026) — `pages/pro/Requests.tsx`               */
+/* ------------------------------------------------------------------ */
+@layer components {
+  /* Compteur d'un onglet (« À valider 2 ») : pastille d'encre sur l'onglet ouvert, grise sinon. */
+  .tabs-n {
+    display: inline-grid;
+    min-width: 1.375rem;
+    height: 1.375rem;
+    margin-inline-start: 0.4375rem;
+    padding: 0 0.375rem;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-fill);
+    color: var(--color-muted);
+    font-size: 0.786rem;
+    font-weight: 700;
+    vertical-align: 0.0625rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .tabs > button.on .tabs-n {
+    background: var(--color-ink);
+    color: var(--color-on-ink);
+  }
+  .rsv-tabs {
+    position: sticky;
+    top: 3.5rem;
+    z-index: 15;
+    margin-inline: calc(-1rem - var(--shell-px));
+    padding-inline: calc(1rem + var(--shell-px));
+    background: var(--color-bg);
+  }
+  /* Le panneau qui (ré)apparaît arrive en fondu : on voit que le contenu a changé. */
+  .rsv-panel:not(.hidden) {
+    animation: rsv-in 0.22s ease-out;
+  }
+  .rsv-day {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-inline: 0.125rem;
+  }
+  .rsv-day-t {
+    font-size: 1.143rem;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+  .rsv-day-t::first-letter {
+    text-transform: uppercase;
+  }
+  .rsv-day-d {
+    margin-inline-start: 0.5rem;
+    font-size: 0.857rem;
+    color: var(--color-muted);
+  }
+  .rsv-day-s {
+    flex: none;
+    font-size: 0.857rem;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+}
+@keyframes rsv-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rsv-panel:not(.hidden) {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Agenda (28 oct. 2026) — en-tête et résumé du jour, `AgendaPro.tsx`   */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .agh {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .agh-sub {
+    overflow: hidden;
+    font-size: 0.857rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-muted);
+  }
+  /* « Aujourd'hui » : une pilule d'encre, visible seulement quand on s'en est éloigné. */
+  .agh-today {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.5rem;
+    padding: 0 0.875rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: var(--color-on-ink);
+    font-size: 0.857rem;
+    font-weight: 600;
+    animation: rsv-in 0.2s ease-out;
+  }
+  .ags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .ags-c {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    height: 2rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    font-size: 0.857rem;
+    color: var(--color-muted);
+  }
+  .ags-c b {
+    font-size: 0.929rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .ags-c.pd {
+    background: var(--color-pending-bg);
+    border-color: transparent;
+    color: var(--color-pending-fg);
+  }
+  .ags-c.pd b {
+    color: var(--color-pending-fg);
+  }
+}
+@layer components {
+  /* La grille du jour posée sur une surface blanche : les blocs ressortent du fond de l'écran. */
+  .agz {
+    background: var(--color-surface);
+    border-inline: 1px solid var(--color-line-soft);
   }
 }

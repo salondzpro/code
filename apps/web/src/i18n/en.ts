@@ -1288,4 +1288,7 @@ export const en: Record<string, string> = {
   "Coupe + barbe · 45 min": "Cut + beard · 45 min",
   "Prêt à remplir votre agenda ?": "Ready to fill your schedule?",
   "Votre page est en ligne dès la dernière étape.": "Your page goes live at the last step.",
+  // Réservations et agenda (28 oct. 2026)
+  "Les nouvelles demandes de vos clients apparaîtront ici.": "New requests from your clients will appear here.",
+  "Les rendez-vous des 30 prochains jours apparaîtront ici.": "Appointments for the next 30 days will appear here.",
 };

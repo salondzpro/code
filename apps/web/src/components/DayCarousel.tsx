@@ -95,11 +95,12 @@ export function DayScroller({
                   premières lettres du nom (« OCTO », « NOVE »). */}
               {showMonth ? shortMonth(d) : t(DAY_LABELS_SHORT_FR[dow])}
             </span>
+            <span className="text-[1rem] font-semibold">{dayNumber(d)}</span>
+            {/* Aujourd'hui : un point sous le chiffre (blanc sur le jour choisi). */}
             <span
-              className={`text-[1rem] font-semibold ${d === today && !on ? 'underline decoration-2 underline-offset-4' : ''}`}
-            >
-              {dayNumber(d)}
-            </span>
+              aria-hidden
+              className={`h-1 w-1 rounded-full ${d === today ? (on ? 'bg-white' : 'bg-ink') : 'bg-transparent'}`}
+            />
           </button>
         );
       })}

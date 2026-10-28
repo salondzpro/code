@@ -459,7 +459,8 @@ export function Tabs<T extends string>({
   label,
   className = '',
 }: {
-  options: { value: T; label: string }[];
+  /** `count` : un compteur à côté du libellé (« À valider 2 ») ; absent ou 0, rien ne s'affiche. */
+  options: { value: T; label: string; count?: number }[];
   value: T;
   onChange: (v: T) => void;
   label: string;
@@ -477,6 +478,7 @@ export function Tabs<T extends string>({
           onClick={() => onChange(o.value)}
         >
           {o.label}
+          {!!o.count && <span className="tabs-n">{o.count}</span>}
         </button>
       ))}
     </div>

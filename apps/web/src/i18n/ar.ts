@@ -1269,4 +1269,7 @@ export const ar: Record<string, string> = {
   "Coupe + barbe · 45 min": "قص + لحية · 45 د",
   "Prêt à remplir votre agenda ?": "مستعد لملء جدول مواعيدك؟",
   "Votre page est en ligne dès la dernière étape.": "صفحتك تصبح متاحة على الإنترنت من الخطوة الأخيرة.",
+  // Réservations et agenda (28 oct. 2026)
+  "Les nouvelles demandes de vos clients apparaîtront ici.": "ستظهر هنا طلبات الحجز الجديدة من زبائنك.",
+  "Les rendez-vous des 30 prochains jours apparaîtront ici.": "ستظهر هنا مواعيد الأيام الثلاثين القادمة.",
 };
