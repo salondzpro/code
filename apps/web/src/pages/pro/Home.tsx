@@ -1,15 +1,26 @@
 /**
- * PRO-F 22 — Accueil professionnel, refait le 26 oct. 2026 : un tableau de bord de salon.
+ * PRO-F 22 — Accueil professionnel. Refonte du 28 oct. 2026 : un cockpit de salon.
  *
- * Ordre de lecture (téléphone) : la date et le bonjour, trois chiffres sur UNE carte, les gestes du
- * jour, ce qui se passe MAINTENANT, les demandes à valider (avec leur jour : une demande pour demain
- * affichait seulement « 09:00 », comme si c'était aujourd'hui), la journée entière en frise, puis le
- * chiffre d'affaires et la semaine en barres. À partir de 1 024 px, deux colonnes : le travail du
- * jour à gauche, les chiffres et le partage à droite.
+ * Ordre de lecture (téléphone) :
+ *   1. le BANDEAU DU JOUR, en encre : date, bonjour, l'anneau de la journée (rendez-vous passés sur
+ *      le total, au centre le nombre du jour), puis deux chiffres qui appellent un geste — les
+ *      demandes à valider et le chiffre d'affaires du jour ;
+ *   2. quatre gestes en tuiles (nouveau, agenda, bloquer, partager) ;
+ *   3. ce qui se passe MAINTENANT, avec sa barre d'avancement quand le rendez-vous est en cours ;
+ *   4. les demandes à valider (avec leur jour : une demande pour demain affichait seulement
+ *      « 09:00 », comme si c'était aujourd'hui) ;
+ *   5. la journée en FRISE VERTICALE, avec le repère « maintenant » entre le passé et la suite ;
+ *   6. la semaine en barres (le jour est déjà dans le bandeau : il n'est pas répété) et le lien.
+ * À partir de 1 024 px, deux colonnes : le travail du jour à gauche, les chiffres et le partage à droite.
+ *
+ * Une information ne s'écrit qu'UNE fois : le nombre de rendez-vous du jour est au centre de
+ * l'anneau, pas aussi dans une case de chiffres ; le chiffre d'affaires du jour est dans le bandeau,
+ * la carte « Chiffre d'affaires » montre la semaine et le mois.
  *
  * Un rendez-vous s'ouvre en FENÊTRE (`BookingPeekSheet`), comme dans l'agenda : on garde l'accueil
  * derrière. Ce que l'écran montre est marqué VU (`useSeenOnDisplay`) : les pastilles baissent sans
- * qu'il faille ouvrir chaque fiche.
+ * qu'il faille ouvrir chaque fiche. Chaque demande a son PROPRE état d'envoi : confirmer l'une ne
+ * fige pas les autres.
  */
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -21,6 +32,7 @@ import {
   MessageCircle,
   Phone,
   Plus,
+  QrCode,
   Share2,
 } from 'lucide-react';
 import {
@@ -75,6 +87,8 @@ const PAST_SHOWN = 1;
 const localKey = (iso: string) => toLocalDateKey(new Date(iso));
 const toneVar = (tone: string | null | undefined) =>
   tone ? `var(--color-cat-${tone}-line)` : 'var(--color-disabled)';
+/** Montant sans devise, espaces insécables (le séparateur de milliers ne coupe jamais la ligne). */
+const amount = (v: number) => v.toLocaleString(formatLocale()).replace(/ /g, ' ');
 
 export function ProHome() {
   const navigate = useNavigate();
@@ -125,99 +139,150 @@ export function ProHome() {
     month: 'long',
     timeZone: 'Africa/Algiers',
   }).format(new Date());
-  const remaining = upcoming.length;
 
-  /* ---------------------------------------------------------------- blocs */
+  /* ---------------------------------------------------------------- bandeau du jour */
 
-  const kpis = stats.isPending ? (
-    <Skeleton className="h-[5.5rem] w-full !rounded-[var(--radius-card)]" />
-  ) : stats.isError ? (
-    <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
-  ) : (
-    <div className="phk">
-      <Link to="/pro/agenda" className="phk-c">
-        <span className="phk-v">{stats.data.todayCount}</span>
-        <span className="phk-l">{t("Rendez-vous aujourd'hui")}</span>
-        <span className="phk-s">
-          {remaining ? t('{n} à venir', { n: remaining }) : t('Journée terminée')}
+  const total = todays.length;
+  const live = inProgress ? 1 : 0;
+  const left = upcoming.length - live;
+  const elapsed =
+    next && inProgress
+      ? Math.min(
+          1,
+          Math.max(
+            0,
+            (now - new Date(next.startsAt).getTime()) /
+              Math.max(1, new Date(next.endsAt).getTime() - new Date(next.startsAt).getTime()),
+          ),
+        )
+      : 0;
+  // L'anneau avance AVEC le rendez-vous en cours : sa part écoulée compte déjà.
+  const ratio = total ? (past.length + elapsed) / total : 0;
+  const dayLine = !todayList.data
+    ? '\u00a0'
+    : !total
+      ? t('Aucun rendez-vous pour l’instant')
+      : !upcoming.length
+        ? t('Journée terminée')
+        : [
+            past.length ? t('{n} terminé(s)', { n: past.length }) : null,
+            live ? t('1 en cours') : null,
+            left ? t('{n} à venir', { n: left }) : null,
+          ]
+            .filter(Boolean)
+            .join(' · ');
+
+  const hero = (
+    <section className="phx" aria-label={t('Votre journée')}>
+      <div className="phx-top">
+        <div className="min-w-0">
+          <p className="phx-date">{dateLine}</p>
+          <h1 className="phx-hi">{firstName ? t('Bonjour, {name}', { name: firstName }) : t('Votre journée')}</h1>
+        </div>
+        {/* « Arrêt / Pause » à droite du bonjour ; l'identité du salon est dans l'en-tête. */}
+        {salon && <QuickCloseButton openingHours={salon.openingHours} />}
+      </div>
+
+      <Link to="/pro/agenda" className="phx-day">
+        <Ring ratio={ratio} live={inProgress}>
+          {todayList.data ? total : '–'}
+        </Ring>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[1.143rem] font-semibold">
+            {t("Rendez-vous aujourd'hui")}
+          </span>
+          <span className="block truncate text-[1rem] text-white/60">{dayLine}</span>
         </span>
+        <I icon={ChevronRight} size={18} className="flex-none text-white/40 rtl:rotate-180" />
       </Link>
-      <Link to="/pro/reservations" className="phk-c" aria-label={t('Demandes à valider')}>
-        <span className={`phk-v ${stats.data.pendingCount ? 'text-pending-fg' : ''}`}>
-          {stats.data.pendingCount}
-        </span>
-        <span className="phk-l">{t('À valider')}</span>
-        <span className="phk-s">{stats.data.pendingCount ? t('Réponse attendue') : t('Tout est traité')}</span>
-      </Link>
-      <Link to="/pro/chiffre-affaires" className="phk-c">
-        <span className="phk-v amt whitespace-nowrap">
-          <bdi dir="ltr">
-            {(stats.data.todayRevenueDa ?? 0).toLocaleString(formatLocale()).replace(/ /g, ' ')}
-            <span className="phk-u">DA</span>
-          </bdi>
-        </span>
-        <span className="phk-l">{t("Chiffre d'affaires du jour")}</span>
-        <span className="phk-s">
-          {t('Semaine : {n}', { n: stats.data.weekRevenueDa.toLocaleString(formatLocale()).replace(/ /g, ' ') })}
-        </span>
-      </Link>
-    </div>
+
+      {stats.isError ? (
+        <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
+      ) : (
+        <div className="phx-k">
+          <Link to="/pro/reservations" className="phx-c" aria-label={t('Demandes à valider')}>
+            <span className="phx-l">{t('À valider')}</span>
+            <span className={`phx-v ${stats.data?.pendingCount ? 'warn' : ''}`}>
+              {stats.isPending ? '–' : stats.data.pendingCount}
+            </span>
+            <span className="phx-s">
+              {stats.isPending ? ' ' : stats.data.pendingCount ? t('Réponse attendue') : t('Tout est traité')}
+            </span>
+          </Link>
+          <Link to="/pro/chiffre-affaires" className="phx-c">
+            <span className="phx-l">{t("Chiffre d'affaires du jour")}</span>
+            <span className="phx-v whitespace-nowrap">
+              <bdi dir="ltr">
+                {stats.isPending ? '–' : amount(stats.data.todayRevenueDa ?? 0)}
+                <span className="phx-u">DA</span>
+              </bdi>
+            </span>
+            <span className="phx-s">{t('Voir le détail')}</span>
+          </Link>
+        </div>
+      )}
+    </section>
   );
 
   const actions = (
-    <div className="phq">
+    <nav className="phq" aria-label={t('Raccourcis')}>
       <button type="button" className="phq-a on" onClick={() => navigate('/pro/rendez-vous/nouveau')}>
-        <I icon={Plus} size={20} />
-        <span>{t('Nouveau')}</span>
+        <span className="phq-i"><I icon={Plus} size={22} /></span>
+        <span className="phq-t">{t('Nouveau')}</span>
       </button>
       <Link to="/pro/agenda" className="phq-a">
-        <I icon={CalendarDays} size={20} />
-        <span>{t('Agenda')}</span>
+        <span className="phq-i"><I icon={CalendarDays} size={21} /></span>
+        <span className="phq-t">{t('Agenda')}</span>
       </Link>
       <Link to="/pro/blocages" className="phq-a">
-        <I icon={CalendarOff} size={20} />
-        <span>{t('Bloquer')}</span>
+        <span className="phq-i"><I icon={CalendarOff} size={21} /></span>
+        <span className="phq-t">{t('Bloquer')}</span>
       </Link>
       <button type="button" className="phq-a" onClick={() => setShare(true)} disabled={!salon}>
-        <I icon={Share2} size={20} />
-        <span>{t('Partager')}</span>
+        <span className="phq-i"><I icon={Share2} size={21} /></span>
+        <span className="phq-t">{t('Partager')}</span>
       </button>
-    </div>
+    </nav>
   );
+
+  /* ---------------------------------------------------------------- maintenant */
 
   const nowCard = next && (
     /* Le prochain (ou celui en cours) en grand : heure, client, prestation, prix, membre. */
-    <div className={`crd phn ${inProgress ? 'live' : ''}`} style={{ ['--tone' as string]: toneVar(toneOf(next)) }}>
+    <div className={`phn ${inProgress ? 'live' : ''}`} style={{ ['--tone' as string]: toneVar(toneOf(next)) }}>
       <div className="flex items-center justify-between gap-3">
         <span className="phn-k">
-          {inProgress && <span className="phn-dot" aria-hidden />}
+          <span className="phn-dot" aria-hidden />
           {inProgress
             ? t('En cours · fin à {time}', { time: formatTimeDZ(next.endsAt) })
             : `${t('Prochain')} · ${untilLabelFR(next.startsAt, now)}`}
         </span>
-        <StatusBadge status={next.status} md />
+        {next.status !== 'confirmed' && <StatusBadge status={next.status} md />}
       </div>
       <button
         type="button"
-        className="flex items-center gap-3 text-start"
+        className="flex items-center gap-3.5 text-start"
         onClick={() => setPeek(next.id)}
         aria-label={t('Ouvrir le rendez-vous de {name}', { name: next.clientName })}
       >
-        <span className="phn-t mono">
-          {formatTimeDZ(next.startsAt)}
-          <span className="phn-e" dir="ltr">– {formatTimeDZ(next.endsAt)}</span>
-        </span>
+        <Avatar name={next.clientName} size={48} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
-            {next.clientName}
-          </span>
-          <span className="block truncate text-[0.929rem] text-muted">
+          <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.2px]">{next.clientName}</span>
+          <span className="block truncate text-[1rem] text-muted">
             {next.serviceName} · {formatDuration(next.durationMinutes)}
             {next.staff?.displayName ? ` · ${next.staff.displayName}` : ''}
           </span>
         </span>
-        <span className="flex-none text-[1.143rem] font-semibold">{formatDA(next.priceDa)}</span>
+        <span className="flex flex-none flex-col items-end">
+          <span className="phn-t mono" dir="ltr">{formatTimeDZ(next.startsAt)}</span>
+          <span className="text-[0.857rem] font-semibold text-muted">{formatDA(next.priceDa)}</span>
+        </span>
       </button>
+      {inProgress && (
+        <div className="phn-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(elapsed * 100)}>
+          <span style={{ width: `${elapsed * 100}%` }} />
+        </div>
+      )}
       {next.clientPhone && (
         <div className="g2">
           <a href={`tel:${next.clientPhone}`} className="btn g sm" aria-label={t('Appeler {name}', { name: next.clientName })}>
@@ -237,6 +302,11 @@ export function ProHome() {
     </div>
   );
 
+  /* ---------------------------------------------------------------- demandes */
+
+  // L'état d'envoi est celui de LA demande touchée : les autres restent utilisables.
+  const confirming = (id: string) => setStatus.isPending && setStatus.variables?.id === id;
+
   const requests = pendingItems.length > 0 && (
     <section className="flex flex-col gap-2.5" aria-label={t('À valider')}>
       <SectionHead
@@ -247,29 +317,29 @@ export function ProHome() {
       />
       {pendingItems.slice(0, PENDING_SHOWN).map((b) => {
         const day = localKey(b.startsAt);
+        const isToday = day === today;
         return (
-          <div key={b.id} className="crd phr">
+          <div key={b.id} className="phr">
             <button type="button" className="flex items-center gap-3 text-start" onClick={() => setPeek(b.id)}>
-              <Avatar name={b.clientName} size={40} />
+              <span className={`phr-d ${isToday ? 'on' : ''}`}>
+                <span className="mono" dir="ltr">{formatTimeDZ(b.startsAt)}</span>
+                <span>{relativeDayLabelDZ(day, today)}</span>
+              </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
-                <span className="block truncate text-[0.857rem] text-muted">
-                  {b.serviceName} · {formatDA(b.priceDa)}
+                <span className="block truncate text-[1.143rem] font-semibold">{b.clientName}</span>
+                <span className="block truncate text-[1rem] text-muted">
+                  {b.serviceName}
                   {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
                 </span>
               </span>
-              <span className="flex-none text-end">
-                <span className="block text-[1rem] font-semibold mono">{formatTimeDZ(b.startsAt)}</span>
-                <span className={`block text-[0.857rem] ${day === today ? 'font-semibold text-pending-fg' : 'text-muted'}`}>
-                  {relativeDayLabelDZ(day, today)}
-                </span>
-              </span>
+              <span className="flex-none text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
             </button>
-            <div className="g3">
+            <div className="phr-a">
               <Button
                 variant="ok"
                 sm
-                disabled={setStatus.isPending}
+                loading={confirming(b.id)}
+                disabled={confirming(b.id)}
                 onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
               >
                 {t('Confirmer')}
@@ -281,14 +351,17 @@ export function ProHome() {
                 {t('Refuser')}
               </Button>
             </div>
+            {setStatus.isError && setStatus.variables?.id === b.id && <ErrorMessage error={setStatus.error} />}
           </div>
         );
       })}
-      <ErrorMessage error={setStatus.error} />
     </section>
   );
 
+  /* ---------------------------------------------------------------- journée */
+
   const shownPast = showPast ? past : past.slice(-PAST_SHOWN);
+  const nowLabel = formatTimeDZ(new Date(now).toISOString());
   const day = (
     <section className="flex flex-col gap-2.5" aria-label={t('Ma journée')}>
       <SectionHead title={t('Ma journée')} count={todays.length || undefined} to="/pro/agenda" more={t('Agenda')} />
@@ -302,78 +375,65 @@ export function ProHome() {
         />
       )}
       {todays.length > 0 && (
-        <div className="crd phd">
+        <ol className="phd">
           {past.length > PAST_SHOWN && !showPast && (
-            <button type="button" className="phd-more" onClick={() => setShowPast(true)}>
-              <I icon={ChevronDown} size={16} />
-              {t('{n} rendez-vous passé(s)', { n: past.length - PAST_SHOWN })}
-            </button>
-          )}
-          {[...shownPast, ...upcoming].map((b) => {
-            const done = past.includes(b);
-            const live = b === next && inProgress;
-            return (
-              <button
-                key={b.id}
-                type="button"
-                className={`phd-r ${done ? 'done' : ''} ${live ? 'live' : ''}`}
-                style={{ ['--tone' as string]: toneVar(toneOf(b)) }}
-                onClick={() => setPeek(b.id)}
-              >
-                <span className="phd-h mono">
-                  {formatTimeDZ(b.startsAt)}
-                  <span>{formatTimeDZ(b.endsAt)}</span>
-                </span>
-                <span className="phd-b" aria-hidden />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
-                  <span className="block truncate text-[0.857rem] text-muted">
-                    {b.serviceName}
-                    {!staffId && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
-                  </span>
-                </span>
-                <span className="flex flex-none flex-col items-end gap-1">
-                  <span className="text-[0.929rem] font-semibold">{formatDA(b.priceDa)}</span>
-                  {(b.status !== 'confirmed' || done) && <StatusBadge status={b.status} />}
-                </span>
+            <li>
+              <button type="button" className="phd-more" onClick={() => setShowPast(true)}>
+                <I icon={ChevronDown} size={16} />
+                {t('{n} rendez-vous passé(s)', { n: past.length - PAST_SHOWN })}
               </button>
-            );
-          })}
-        </div>
+            </li>
+          )}
+          {shownPast.map((b) => (
+            <DayRow key={b.id} b={b} state="done" tone={toneVar(toneOf(b))} staff={!staffId} onOpen={setPeek} />
+          ))}
+          {/* Le repère du moment : entre ce qui est fait et ce qui vient, sauf pendant un
+              rendez-vous en cours — sa ligne verte le dit déjà. */}
+          {!inProgress && upcoming.length > 0 && past.length > 0 && (
+            <li className="phd-now" aria-label={t('Maintenant')}>
+              <span className="mono" dir="ltr">{nowLabel}</span>
+            </li>
+          )}
+          {upcoming.map((b) => (
+            <DayRow
+              key={b.id}
+              b={b}
+              state={b === next && inProgress ? 'live' : 'next'}
+              tone={toneVar(toneOf(b))}
+              staff={!staffId}
+              onOpen={setPeek}
+            />
+          ))}
+        </ol>
       )}
     </section>
   );
+
+  /* ---------------------------------------------------------------- chiffres */
 
   const bars = weekStats.data?.byDay ?? [];
   const top = Math.max(1, ...bars.map((d) => d.revenueDa));
   const revenue = (
     <Link to="/pro/chiffre-affaires" className="crd phc">
-      <span className="flex items-center justify-between">
-        <span className="h3">{t("Chiffre d'affaires")}</span>
-        <I icon={ChevronRight} size={18} className="text-disabled" />
-      </span>
-      <span className="grid grid-cols-3 divide-x divide-line rtl:divide-x-reverse">
-        {[
-          { v: stats.data?.todayRevenueDa ?? 0, l: t("aujourd'hui") },
-          { v: stats.data?.weekRevenueDa ?? 0, l: t('cette semaine') },
-          { v: stats.data?.monthRevenueDa ?? 0, l: t('ce mois') },
-        ].map((x, i) => (
-          <span key={x.l} className={`flex min-w-0 flex-col ${i ? 'ps-3' : ''}`}>
-            <span className="truncate whitespace-nowrap text-[1.071rem] font-semibold tracking-[-0.3px]">
-              <bdi dir="ltr">
-                {x.v.toLocaleString(formatLocale()).replace(/ /g, ' ')}{' '}
-                <span className="text-[0.857rem] font-medium text-muted">DA</span>
-              </bdi>
-            </span>
-            <span className="text-[0.857rem] text-muted">{x.l}</span>
+      <span className="flex items-start justify-between gap-3">
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="h3">{t('Cette semaine')}</span>
+          <span className="phc-v whitespace-nowrap">
+            <bdi dir="ltr">
+              {amount(stats.data?.weekRevenueDa ?? 0)} <span className="phc-u">DA</span>
+            </bdi>
           </span>
-        ))}
+          <span className="text-[0.857rem] text-muted">
+            {t('Ce mois : {n} DA', { n: amount(stats.data?.monthRevenueDa ?? 0) })}
+          </span>
+        </span>
+        <I icon={ChevronRight} size={18} className="mt-0.5 flex-none text-disabled rtl:rotate-180" />
       </span>
       {bars.length === 7 && (
         <span className="phc-g" aria-label={t('Chiffre d’affaires de la semaine, jour par jour')}>
           {bars.map((d) => (
             <span key={d.date} className={`phc-b ${d.date === today ? 'on' : ''} ${d.date > today ? 'fut' : ''}`}>
-              <span className="phc-f" style={{ height: `${Math.max(4, Math.round((d.revenueDa / top) * 100))}%` }} />
+              <span className="phc-f" style={{ height: `${Math.max(6, Math.round((d.revenueDa / top) * 100))}%` }} />
               <span className="phc-d">
                 {new Intl.DateTimeFormat(formatLocale(), { weekday: 'narrow', timeZone: 'UTC' }).format(
                   new Date(`${d.date}T12:00:00Z`),
@@ -388,12 +448,17 @@ export function ProHome() {
 
   const shareCard = salon && (
     <div className="crd phs">
-      <span className="h3">{t('Votre page de réservation')}</span>
-      <span className="truncate text-[0.929rem] text-muted" dir="ltr">
-        {link.short}
+      <span className="phs-i" aria-hidden>
+        <I icon={QrCode} size={22} />
       </span>
-      <Button variant="g" sm onClick={() => setShare(true)}>
-        <I icon={Share2} size={16} /> {t('Partager mon lien')}
+      <span className="min-w-0 flex-1">
+        <span className="block text-[1rem] font-semibold">{t('Votre page de réservation')}</span>
+        <span className="block truncate text-[0.857rem] text-muted" dir="ltr">
+          {link.short}
+        </span>
+      </span>
+      <Button variant="g" sm auto onClick={() => setShare(true)} aria-label={t('Partager mon lien')}>
+        <I icon={Share2} size={16} /> {t('Partager')}
       </Button>
     </div>
   );
@@ -403,21 +468,11 @@ export function ProHome() {
       {/* Les notifications décident si l'application sert à quelque chose quand elle est fermée :
           une demande manquée est un client perdu. Le bandeau ne revient qu'à intervalle. */}
       <NotificationsNudge role="pro" />
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">{dateLine}</div>
-          <h1 className="h1 truncate">
-            {firstName ? t('Bonjour, {name}', { name: firstName }) : t('Votre journée')}
-          </h1>
-        </div>
-        {/* « Arrêt / Pause » à droite du titre ; l'identité du salon est dans l'en-tête. */}
-        {salon && <QuickCloseButton openingHours={salon.openingHours} />}
-      </div>
       {salon && <QuickCloseBanner />}
 
       <div className="phg">
         <div className="phg-m">
-          {kpis}
+          {hero}
           {actions}
           {salon && salon.staff.filter((m) => m.isActive).length > 1 && (
             <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
@@ -438,6 +493,76 @@ export function ProHome() {
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
       {refusing && <RefuseRequestSheet request={refusing} onClose={() => setRefusing(null)} />}
     </Screen>
+  );
+}
+
+/**
+ * Anneau de la journée : la part des rendez-vous déjà passés. Le chiffre du centre est le nombre du
+ * jour. Pendant un rendez-vous en cours, l'anneau passe au vert.
+ */
+function Ring({ ratio, live, children }: { ratio: number; live?: boolean; children: ReactNode }) {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  return (
+    <span className={`phx-ring ${live ? 'live' : ''}`} aria-hidden>
+      <svg viewBox="0 0 64 64" width="64" height="64">
+        <circle cx="32" cy="32" r={r} className="phx-ring-bg" />
+        <circle
+          cx="32"
+          cy="32"
+          r={r}
+          className="phx-ring-fg"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - Math.min(1, Math.max(0, ratio)))}
+        />
+      </svg>
+      <span className="phx-ring-n mono">{children}</span>
+    </span>
+  );
+}
+
+/** Une ligne de la frise : heure, point sur le rail, client et prestation, prix. */
+function DayRow({
+  b,
+  state,
+  tone,
+  staff,
+  onOpen,
+}: {
+  b: BookingWithStaff;
+  state: 'done' | 'live' | 'next';
+  tone: string;
+  staff: boolean;
+  onOpen: (id: string) => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        className={`phd-r ${state}`}
+        style={{ ['--tone' as string]: tone }}
+        onClick={() => onOpen(b.id)}
+      >
+        <span className="phd-h mono" dir="ltr">
+          {formatTimeDZ(b.startsAt)}
+          <span>{formatTimeDZ(b.endsAt)}</span>
+        </span>
+        <span className="phd-p" aria-hidden />
+        <span className="phd-c">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[1rem] font-semibold">{b.clientName}</span>
+            <span className="block truncate text-[0.857rem] text-muted">
+              {b.serviceName}
+              {staff && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
+            </span>
+          </span>
+          <span className="flex flex-none flex-col items-end gap-1">
+            <span className="text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
+            {(b.status !== 'confirmed' || state === 'done') && <StatusBadge status={b.status} />}
+          </span>
+        </span>
+      </button>
+    </li>
   );
 }
 

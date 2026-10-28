@@ -25,7 +25,7 @@
  */
 import { useCallback, useEffect, useRef, useState, type ReactNode, type TouchEvent as ReactTouchEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { AlertCircle, CalendarDays, CalendarCheck, CheckCircle2, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, XCircle, type LucideIcon } from 'lucide-react';
+import { AlertCircle, BellRing, CalendarDays, CalendarCheck, Check, CheckCircle2, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, XCircle, type LucideIcon } from 'lucide-react';
 import { BackButton, Field, I, Input } from './ui';
 import { Wordmark } from './Wordmark';
 import { LangSwitch } from './LangSwitch';
@@ -95,9 +95,12 @@ export function AuthShell({
   const glisse = useGlissement(onglets);
   // Arrivée par un changement d'onglet : le contenu entre du côté d'où l'on a tiré.
   const entree = onglets && etat?.authSens ? `auth-entre-${etat.authSens}` : '';
+  // Espace PRO : la porte d'entrée a son bandeau d'encre (téléphone et tablette). Les écrans
+  // d'étape (`marque={false}`) gardent la barre claire : on y est déjà entré.
+  const heroPro = role === 'pro' && marque;
 
   return (
-    <div className="auth-shell" data-role={role}>
+    <div className={`auth-shell ${heroPro ? 'auth-pro' : ''}`} data-role={role}>
       {/* ---------------------------------------------------------------- Volet de gauche (≥1024) */}
       <aside className="auth-vitrine" aria-hidden>
         <img src={v.photo} alt="" />
@@ -107,6 +110,7 @@ export function AuthShell({
             <span className="auth-point" /> {t(ESPACE[role])}
           </p>
           <p className="mt-3 max-w-[16ch] text-[2.286rem] font-semibold leading-[1.1] tracking-[-1px]">{t(v.titre)}</p>
+          {role === 'pro' && <ProPreview className="mt-6" />}
           <ul className="mt-6 flex flex-col gap-3">
             {v.points.map((p) => (
               <li key={p.texte} className="flex items-center gap-3 text-[1rem] leading-[1.4] text-white/80">
@@ -127,7 +131,8 @@ export function AuthShell({
       <div className="auth-col" {...glisse.handlers}>
         {/* Bandeau de marque : sur téléphone et tablette. Sur grand écran, le volet de gauche le
             porte déjà — le répéter ferait deux marques dans le même regard. */}
-        {(marque || back) && (
+        {heroPro && <ProHero back={back} />}
+        {!heroPro && (marque || back) && (
           <header className="auth-top">
             <div className="flex min-w-0 items-center gap-1">
               {back && <BackButton to={back} />}
@@ -167,7 +172,8 @@ export function AuthShell({
               <I icon={icone} size={22} strokeWidth={1.7} />
             </span>
           )}
-          <p className="auth-surtitre">
+          {/* Avec le bandeau pro, l'espace est déjà nommé au-dessus : on ne le répète pas. */}
+          <p className={`auth-surtitre ${heroPro && !surtitre ? 'auth-surtitre-hero' : ''}`}>
             <span className="auth-point" aria-hidden /> {t(surtitre ?? ESPACE[role])}
           </p>
           {onglets && <AuthOnglets actif={onglets.actif} liens={onglets.liens} de={etat?.authDe} />}
@@ -180,6 +186,75 @@ export function AuthShell({
             {pied && <div className="auth-pied">{pied}</div>}
           </div>
         </main>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * BANDEAU DE LA PORTE PRO (28 oct. 2026). Sur téléphone, l'espace professionnel s'ouvrait sur le
+ * même écran gris que l'espace client : rien ne disait « ici, on gère un salon ». Le bandeau d'encre
+ * porte la marque, la promesse et un APERÇU du produit — la notification qu'un professionnel
+ * reçoit quand on réserve chez lui. Le formulaire monte par-dessus comme une feuille.
+ * Compact (≈ 15 rem) : l'écran de connexion tient toujours sur 360 × 740.
+ */
+function ProHero({ back }: { back?: string }) {
+  return (
+    <header className="aph">
+      <div className="aph-bar">
+        <div className="flex min-w-0 items-center gap-1">
+          {back && (
+            <span className="aph-back">
+              <BackButton to={back} />
+            </span>
+          )}
+          <Link to={PRO_HOME_LINK} aria-label="Salon DZ Pro" className={`flex items-center gap-2 ${back ? '' : 'ps-1'}`}>
+            <Wordmark size={1.286} light />
+            <span className="aph-pro">PRO</span>
+          </Link>
+        </div>
+        <LangSwitch />
+      </div>
+      <div className="aph-body">
+        <p className="aph-k">
+          <span className="aph-dot" aria-hidden /> {t(ESPACE.pro)}
+        </p>
+        <p className="aph-t">{t(VITRINE.pro.titre)}</p>
+      </div>
+      <ProPreview compact />
+    </header>
+  );
+}
+
+const PRO_HOME_LINK = '/pro/bienvenue';
+
+/**
+ * Aperçu du produit : deux notifications empilées, telles que le professionnel les reçoit. Pas de
+ * capture d'écran (elle vieillirait au premier changement d'interface) : des éléments dessinés avec
+ * les mêmes jetons que l'application. Décoratif, donc masqué aux lecteurs d'écran.
+ */
+export function ProPreview({ compact, className = '' }: { compact?: boolean; className?: string }) {
+  return (
+    <div className={`apv ${compact ? 'compact' : ''} ${className}`} aria-hidden>
+      <div className="apv-n">
+        <span className="apv-i">
+          <I icon={BellRing} size={16} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="apv-h">{t('Nouvelle réservation')}</span>
+          <span className="apv-s">{t('Yacine · Coupe + barbe · demain')}</span>
+        </span>
+        <span className="apv-t" dir="ltr">15:30</span>
+      </div>
+      <div className="apv-n apv-2">
+        <span className="apv-i ok">
+          <I icon={Check} size={16} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="apv-h">{t('Rendez-vous confirmé')}</span>
+          <span className="apv-s">{t('Riad · Défrisage · 1 h')}</span>
+        </span>
+        <span className="apv-t" dir="ltr">09:30</span>
       </div>
     </div>
   );

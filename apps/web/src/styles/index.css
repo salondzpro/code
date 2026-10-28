@@ -1983,13 +1983,12 @@ html:has(.auth-onglets) body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Accueil professionnel (26 oct. 2026) — `pages/pro/Home.tsx`          */
+/* Accueil professionnel (refonte du 28 oct. 2026) — `pages/pro/Home.tsx` */
 /* ------------------------------------------------------------------ */
-/* Un tableau de bord de salon : trois chiffres sur une carte, quatre gestes, la carte
-   « maintenant », les demandes, la journée en frise, le chiffre d'affaires en barres.
-   Préfixe `ph` (pro home). Arrondis par les jetons uniquement. */
+/* Un cockpit de salon : le bandeau du jour en encre (anneau + deux chiffres), quatre tuiles de
+   gestes, la carte « maintenant », les demandes, la journée en frise verticale, la semaine en
+   barres. Préfixe `ph` (pro home). Arrondis par les jetons uniquement, surfaces plates. */
 @layer components {
-  /* Deux colonnes à partir de 1 024 px : le travail du jour, puis les chiffres. */
   .phg {
     display: flex;
     flex-direction: column;
@@ -2003,65 +2002,172 @@ html:has(.auth-onglets) body {
     min-width: 0;
   }
 
-  /* Trois chiffres, une carte, des séparateurs : moins haut que trois carreaux. */
-  .phk {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
+  /* --- Bandeau du jour --------------------------------------------------- */
+  .phx {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.125rem 1rem 1rem;
     border-radius: var(--radius-card);
+    color: #fff;
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.09) 0%, transparent 55%),
+      radial-gradient(80% 70% at 0% 100%, rgb(255 255 255 / 0.05) 0%, transparent 60%),
+      var(--color-ink);
     overflow: hidden;
+    isolation: isolate;
+    animation: ph-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  .phk-c {
+  /* Trame fine : la profondeur d'un écran de produit, sans ombre ni relief. */
+  .phx::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(200deg, #000 0%, transparent 70%);
+  }
+  .phx-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .phx-date {
+    font-size: 0.857rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.55);
+  }
+  .phx-hi {
+    margin-top: 0.25rem;
+    font-size: 1.714rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Le bouton Arrêt/Pause garde sa forme ; sur l'encre il devient une pilule translucide. */
+  .phx-top .btn.g:not(.\!bg-danger) {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.14);
+    color: #fff;
+  }
+  .phx-day {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.75rem;
+    margin-inline: -0.25rem;
+    border-radius: var(--radius-card-sm);
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    transition: background 0.15s;
+  }
+  .phx-day:active {
+    background: rgb(255 255 255 / 0.1);
+  }
+  .phx-ring {
+    position: relative;
+    display: grid;
+    flex: none;
+    width: 4rem;
+    height: 4rem;
+    place-items: center;
+  }
+  .phx-ring svg {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  [dir='rtl'] .phx-ring svg {
+    transform: rotate(-90deg) scaleY(-1);
+  }
+  .phx-ring circle {
+    fill: none;
+    stroke-width: 5;
+  }
+  .phx-ring-bg {
+    stroke: rgb(255 255 255 / 0.12);
+  }
+  .phx-ring-fg {
+    stroke: #fff;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .phx-ring.live .phx-ring-fg {
+    stroke: #3ddc97;
+  }
+  .phx-ring-n {
+    font-size: 1.429rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+  .phx-k {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+    margin-inline: -1rem;
+    margin-bottom: -1rem;
+  }
+  .phx-c {
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
     min-width: 0;
-    padding: 0.75rem 0.75rem 0.8125rem;
+    padding: 0.875rem 1rem 1rem;
     transition: background 0.15s;
   }
-  .phk-c + .phk-c {
-    border-inline-start: 1px solid var(--color-line-soft);
+  .phx-c + .phx-c {
+    border-inline-start: 1px solid rgb(255 255 255 / 0.1);
   }
-  .phk-c:active {
-    background: var(--color-fill);
+  .phx-c:active {
+    background: rgb(255 255 255 / 0.06);
   }
-  .phk-v {
+  .phx-l {
+    font-size: 0.857rem;
+    font-weight: 500;
+    color: rgb(255 255 255 / 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .phx-v {
     font-size: 1.714rem;
     font-weight: 600;
-    line-height: 1.1;
+    line-height: 1.2;
     letter-spacing: -0.6px;
     font-variant-numeric: tabular-nums;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* Un montant est plus long qu'un compte : un cran plus petit, pour tenir dans un tiers d'écran
-     dans les trois langues (les chiffres de la police arabe sont plus larges). */
-  .phk-v.amt {
-    font-size: 1.429rem;
-    line-height: 1.32;
+  /* Une demande attend : le chiffre passe à l'ambre, la seule couleur chaude du bandeau. */
+  .phx-v.warn {
+    color: #ffb877;
   }
-  .phk-u {
-    margin-inline-start: 0.2em;
+  .phx-u {
+    margin-inline-start: 0.25em;
     font-size: 0.857rem;
     font-weight: 600;
-    color: var(--color-muted);
     letter-spacing: 0;
+    color: rgb(255 255 255 / 0.55);
   }
-  .phk-l {
+  .phx-s {
     font-size: 0.857rem;
-    font-weight: 600;
-    line-height: 1.25;
-  }
-  .phk-s {
-    font-size: 0.786rem;
-    color: var(--color-muted);
+    color: rgb(255 255 255 / 0.45);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  /* Quatre gestes du jour : icône au-dessus du mot, le premier en encre. */
+  /* --- Tuiles de gestes -------------------------------------------------- */
   .phq {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2071,57 +2177,81 @@ html:has(.auth-onglets) body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.3125rem;
-    min-height: 4.25rem;
-    padding: 0.5rem 0.25rem;
+    gap: 0.4375rem;
+    min-width: 0;
+    padding: 0.25rem 0;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .phq-i {
+    display: grid;
+    width: 100%;
+    max-width: 3.857rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: var(--radius-card);
     background: var(--color-surface);
     border: 1px solid var(--color-line);
-    border-radius: var(--radius-btn);
-    font-size: 0.857rem;
-    font-weight: 600;
-    text-align: center;
+    color: var(--color-ink);
     transition:
-      background 0.15s,
-      transform 0.1s;
+      transform 0.12s ease,
+      background 0.15s;
   }
-  .phq-a span {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .phq-a:active {
-    transform: scale(0.97);
+  .phq-a:active .phq-i {
+    transform: scale(0.94);
     background: var(--color-fill);
   }
-  .phq-a.on {
+  .phq-a.on .phq-i {
     background: var(--color-ink);
     border-color: var(--color-ink);
     color: var(--color-on-ink);
+  }
+  .phq-t {
+    max-width: 100%;
+    font-size: 0.857rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .phq-a:disabled {
     opacity: 0.5;
   }
 
-  /* Maintenant / prochain : un liseré de la couleur de la prestation. */
+  /* --- Maintenant / prochain -------------------------------------------- */
   .phn {
     position: relative;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
-    border-inline-start: 4px solid var(--tone);
+    padding: 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    overflow: hidden;
+  }
+  .phn::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 4px;
+    background: var(--tone);
   }
   .phn.live {
     background: var(--color-ok-bg);
-    border-color: var(--color-ok-fg);
-    border-inline-start-color: var(--color-ok-fg);
+    border-color: color-mix(in srgb, var(--color-ok-fg) 35%, transparent);
+  }
+  .phn.live::before {
+    background: var(--color-ok-fg);
   }
   .phn-k {
     display: inline-flex;
     align-items: center;
     gap: 0.4375rem;
-    font-size: 0.786rem;
+    font-size: 0.857rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
@@ -2132,81 +2262,225 @@ html:has(.auth-onglets) body {
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 999px;
+    background: var(--tone);
+  }
+  .phn.live .phn-dot {
     background: var(--color-ok-fg);
     animation: ph-pulse 1.6s ease-out infinite;
   }
   .phn-t {
+    font-size: 1.429rem;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  .phn-bar {
+    height: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-ok-fg) 16%, transparent);
+    overflow: hidden;
+  }
+  .phn-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-ok-fg);
+    transition: width 0.6s ease;
+  }
+
+  /* --- Demandes à valider ------------------------------------------------ */
+  .phr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  /* L'heure et le jour en pavé : on lit QUAND avant QUI. Aujourd'hui = ambre. */
+  .phr-d {
     display: flex;
     flex: none;
     flex-direction: column;
-    font-size: 1.714rem;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.75rem;
+    padding: 0.4375rem 0.375rem;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+    line-height: 1.15;
+  }
+  .phr-d > span:first-child {
+    font-size: 1.143rem;
     font-weight: 600;
-    line-height: 1;
-    letter-spacing: -0.8px;
   }
-  .phn-e {
-    margin-top: 0.25rem;
-    font-size: 0.857rem;
-    font-weight: 500;
-    letter-spacing: 0;
+  .phr-d > span:last-child {
+    max-width: 4.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--color-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .phr-d.on {
+    background: var(--color-pending-bg);
+    color: var(--color-pending-fg);
+  }
+  .phr-d.on > span:last-child {
+    color: var(--color-pending-fg);
+  }
+  .phr-a {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 0.5rem;
   }
 
-  .phr {
-    gap: 0.625rem;
-  }
-
-  /* La journée en frise : heure, liseré coloré, client, prix. Le passé est estompé. */
+  /* --- La journée en frise verticale ------------------------------------ */
   .phd {
-    gap: 0;
-    padding-block: 0.25rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
   }
   .phd-r {
+    position: relative;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 0.75rem;
     width: 100%;
-    padding: 0.625rem 0;
     text-align: start;
-    border-bottom: 1px solid var(--color-line-soft);
-  }
-  .phd-r:last-child {
-    border-bottom: 0;
-  }
-  .phd-r.done {
-    opacity: 0.55;
-  }
-  .phd-r.live {
-    margin-inline: -0.875rem;
-    padding-inline: 0.875rem;
-    width: calc(100% + 1.75rem);
-    background: var(--color-ok-bg);
   }
   .phd-h {
     display: flex;
     flex: none;
     flex-direction: column;
-    width: 3.25rem;
+    width: 3.1rem;
+    padding-block: 0.75rem;
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.2;
   }
   .phd-h span {
-    font-size: 0.786rem;
+    font-size: 0.857rem;
     font-weight: 500;
     color: var(--color-muted);
   }
-  .phd-b {
+  /* Le rail : un trait continu, un point par rendez-vous, de la couleur de la prestation. */
+  .phd-p {
+    position: relative;
     flex: none;
-    align-self: stretch;
-    width: 3px;
-    border-radius: 2px;
-    background: var(--tone);
+    width: 0.75rem;
+  }
+  .phd-p::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--color-line-soft);
+  }
+  .phd li:first-child .phd-p::before {
+    top: 1.15rem;
+  }
+  .phd li:last-child .phd-p::before {
+    bottom: calc(100% - 1.15rem);
+  }
+  .phd-p::after {
+    content: '';
+    position: absolute;
+    top: 0.95rem;
+    left: 50%;
+    width: 0.75rem;
+    height: 0.75rem;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: var(--color-surface);
+    border: 2.5px solid var(--tone);
+  }
+  .phd-r.done .phd-p::after {
+    background: var(--color-disabled);
+    border-color: var(--color-disabled);
+  }
+  .phd-r.live .phd-p::after {
+    background: var(--color-ok-fg);
+    border-color: var(--color-ok-fg);
+    animation: ph-pulse 1.6s ease-out infinite;
+  }
+  .phd-c {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--color-line-soft);
+  }
+  .phd li:last-child .phd-c {
+    border-bottom: 0;
+  }
+  .phd-r.done .phd-h,
+  .phd-r.done .phd-c {
+    opacity: 0.5;
+  }
+  .phd-r.live .phd-c {
+    margin-block: 0.25rem;
+    padding-inline: 0.625rem;
+    margin-inline-end: -0.375rem;
+    border-bottom-color: transparent;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-ok-bg);
+  }
+  /* Le repère « maintenant » : une ligne rouge fine et l'heure, comme dans l'agenda. */
+  .phd-now {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 1.5rem;
+    margin-inline-start: 3.1rem;
+    padding-inline-start: 0.375rem;
+  }
+  .phd-now::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0.375rem 0;
+    top: 50%;
+    height: 1.5px;
+    background: var(--color-danger);
+  }
+  .phd-now::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.125rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: var(--color-danger);
+  }
+  .phd-now span {
+    position: relative;
+    z-index: 1;
+    margin-inline-start: auto;
+    padding: 0 0.375rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-danger);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.25rem;
   }
   .phd-more {
     display: flex;
     align-items: center;
     gap: 0.375rem;
+    width: 100%;
     padding: 0.625rem 0;
     font-size: 0.857rem;
     font-weight: 600;
@@ -2214,15 +2488,28 @@ html:has(.auth-onglets) body {
     border-bottom: 1px solid var(--color-line-soft);
   }
 
-  /* Chiffre d'affaires et semaine en barres (le jour en encre, l'avenir en pointillés). */
+  /* --- Semaine en barres ------------------------------------------------- */
   .phc {
-    gap: 0.875rem;
+    gap: 1rem;
+  }
+  .phc-v {
+    font-size: 1.714rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .phc-u {
+    font-size: 0.857rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--color-muted);
   }
   .phc-g {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 0.375rem;
-    height: 5.5rem;
+    gap: 0.5rem;
+    height: 6rem;
     align-items: end;
   }
   .phc-b {
@@ -2230,22 +2517,31 @@ html:has(.auth-onglets) body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.25rem;
+    gap: 0.375rem;
     height: 100%;
   }
   .phc-f {
     width: 100%;
-    max-width: 1.75rem;
-    border-radius: 3px 3px 1px 1px;
-    background: var(--color-line);
-    transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    max-width: 2rem;
+    border-radius: 4px 4px 2px 2px;
+    background: var(--color-fill);
+    border: 1px solid var(--color-line);
+    transform-origin: bottom;
+    animation: ph-bar 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
+  .phc-b:nth-child(2) .phc-f { animation-delay: 0.04s; }
+  .phc-b:nth-child(3) .phc-f { animation-delay: 0.08s; }
+  .phc-b:nth-child(4) .phc-f { animation-delay: 0.12s; }
+  .phc-b:nth-child(5) .phc-f { animation-delay: 0.16s; }
+  .phc-b:nth-child(6) .phc-f { animation-delay: 0.2s; }
+  .phc-b:nth-child(7) .phc-f { animation-delay: 0.24s; }
   .phc-b.on .phc-f {
     background: var(--color-ink);
+    border-color: var(--color-ink);
   }
   .phc-b.fut .phc-f {
     background: transparent;
-    border: 1px dashed var(--color-line);
+    border-style: dashed;
   }
   .phc-d {
     font-size: 0.75rem;
@@ -2257,8 +2553,32 @@ html:has(.auth-onglets) body {
     color: var(--color-text);
   }
 
+  /* --- Lien de réservation ---------------------------------------------- */
   .phs {
-    gap: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .phs-i {
+    display: grid;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+    color: var(--color-ink);
+  }
+}
+@keyframes ph-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes ph-bar {
+  from {
+    transform: scaleY(0);
   }
 }
 @keyframes ph-pulse {
@@ -2270,8 +2590,11 @@ html:has(.auth-onglets) body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .phn-dot {
-    animation: none;
+  .phx,
+  .phc-f,
+  .phn-dot,
+  .phd-r.live .phd-p::after {
+    animation: none !important;
   }
 }
 @media (min-width: 1024px) {
@@ -2285,9 +2608,594 @@ html:has(.auth-onglets) body {
     position: sticky;
     top: calc(var(--hdr-h, 4rem) + 0.75rem);
   }
-  .phk-c:hover,
-  .phq-a:not(.on):hover,
-  .phd-r:not(.live):hover {
+  .phx {
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+  .phx-k {
+    margin-inline: -1.5rem;
+    margin-bottom: -1.25rem;
+  }
+  .phx-c {
+    padding-inline: 1.5rem;
+  }
+  .phx-c:hover,
+  .phx-day:hover {
+    background: rgb(255 255 255 / 0.09);
+  }
+  .phq-a:not(.on):hover .phq-i {
     background: var(--color-fill);
+  }
+  .phd-r:not(.live):hover .phd-c {
+    background: var(--color-fill);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Porte d'entrée PRO (28 oct. 2026) — `ProHero` / `ProPreview`,       */
+/* `components/AuthShell.tsx`                                          */
+/* ------------------------------------------------------------------ */
+/* Sous 1 024 px : un bandeau d'encre (marque, promesse, aperçu du produit) et le formulaire qui
+   monte par-dessus comme une feuille. Au-delà, le volet de gauche fait ce travail : le bandeau
+   disparaît. Plat : trame et dégradés doux, aucune ombre. */
+@layer components {
+  .aph {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 0.375rem 0 2.75rem;
+    color: #fff;
+    background:
+      radial-gradient(90% 120% at 100% 0%, rgb(255 255 255 / 0.1) 0%, transparent 60%),
+      radial-gradient(70% 90% at 0% 100%, rgb(255 255 255 / 0.06) 0%, transparent 65%),
+      var(--color-ink);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .aph::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(195deg, #000 0%, transparent 75%);
+  }
+  .aph-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 3.5rem;
+    padding: 0 0.75rem 0 0.5rem;
+  }
+  .aph-back .icb,
+  .aph-back button {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.14);
+    color: #fff;
+  }
+  .aph-pro {
+    padding: 0.125rem 0.4375rem;
+    border-radius: var(--radius-card-sm);
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+  }
+  .aph-body {
+    padding-inline: 1.25rem;
+    animation: ph-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .aph-k {
+    display: flex;
+    align-items: center;
+    gap: 0.4375rem;
+    font-size: 0.786rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.6);
+  }
+  .aph-dot {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 999px;
+    background: #3ddc97;
+  }
+  .aph-t {
+    margin-top: 0.375rem;
+    max-width: 18ch;
+    font-size: 1.714rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.7px;
+  }
+
+  /* Aperçu : deux notifications empilées, la seconde dépasse derrière la première. */
+  .apv {
+    position: relative;
+    display: grid;
+  }
+  .apv-n {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-card);
+    /* Opaque : la notification de derrière ne doit pas transparaître. */
+    background: #27292c;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    color: #fff;
+    animation: apv-in 0.6s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  /* La seconde, en retrait : plus étroite, plus pâle, décalée vers le bas. */
+  .apv-2 {
+    z-index: -1;
+    pointer-events: none;
+    margin-inline: 0.75rem;
+    transform: translateY(0.875rem);
+    background: #1d1e21;
+    border-color: rgb(255 255 255 / 0.08);
+    opacity: 0.8;
+    animation-name: apv-in-2;
+    animation-delay: 0.3s;
+  }
+  .apv.compact {
+    margin-inline: 1.25rem;
+  }
+  /* En bandeau, la seconde n'est qu'un bord qui dépasse : son texte serait illisible à moitié. */
+  .apv.compact .apv-2 > * {
+    visibility: hidden;
+  }
+  /* Dans le volet de grand écran, il y a la place : les deux se lisent, l'une sous l'autre. */
+  .apv:not(.compact) {
+    gap: 0.5rem;
+  }
+  .apv:not(.compact) .apv-n {
+    grid-area: auto;
+    background: rgb(17 18 20 / 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .apv:not(.compact) .apv-2 {
+    z-index: auto;
+    margin-inline: 0;
+    transform: none;
+    opacity: 1;
+    animation-name: apv-in;
+  }
+  .apv.compact .apv-2 {
+    margin-inline: 1rem;
+    transform: translateY(0.75rem);
+  }
+  .apv-i {
+    display: grid;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .apv-i.ok {
+    background: #3ddc97;
+    color: var(--color-ink);
+  }
+  .apv-h {
+    display: block;
+    font-size: 0.929rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .apv-s {
+    display: block;
+    overflow: hidden;
+    font-size: 0.857rem;
+    line-height: 1.3;
+    color: rgb(255 255 255 / 0.65);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .apv-t {
+    flex: none;
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Le formulaire monte sur le bandeau : une feuille aux coins de feuille. */
+  .auth-pro .auth-form {
+    position: relative;
+    z-index: 1;
+    max-width: none;
+    margin-top: -1.25rem;
+    padding-top: 1.25rem;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    background: var(--color-bg);
+  }
+  .auth-pro .auth-form > * {
+    max-width: calc(26rem - 2.5rem);
+    margin-inline: auto;
+  }
+  .auth-pro .auth-onglets {
+    margin-top: 0;
+  }
+  .auth-surtitre-hero {
+    display: none;
+  }
+}
+@keyframes apv-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+@keyframes apv-in-2 {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aph-body,
+  .apv-n {
+    animation: none;
+  }
+}
+/* Tablette : la colonne reste en haut (le bandeau la coiffe), pas au centre. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .auth-pro .auth-col {
+    justify-content: flex-start;
+  }
+  .auth-pro .auth-form {
+    padding-block: 2rem 3rem;
+  }
+  .aph-body,
+  .apv.compact {
+    width: 100%;
+    max-width: 26rem;
+    margin-inline: auto;
+    padding-inline: 0;
+  }
+}
+@media (min-width: 1024px) {
+  .aph {
+    display: none;
+  }
+  .auth-pro .auth-form {
+    max-width: 24rem;
+    margin-top: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .auth-pro .auth-form > * {
+    max-width: none;
+  }
+  .auth-pro .auth-onglets {
+    margin-top: 0.75rem;
+  }
+  .auth-surtitre-hero {
+    display: flex;
+  }
+  .auth-vitrine .apv {
+    max-width: 24rem;
+  }
+}
+/* Sous la barre d'état, le bandeau opaque prend l'encre quand l'écran commence par de l'encre :
+   sinon une bande claire coupe le haut du bandeau pro (comme pour l'écran d'ouverture). */
+@media (max-width: 1023.98px) {
+  html:has(.aph),
+  html:has(.pwl-hero) {
+    --bar-top-bg: var(--color-ink);
+  }
+}
+.auth-pro .auth-vitrine .auth-point {
+  background: #3ddc97;
+}
+
+/* ------------------------------------------------------------------ */
+/* Bienvenue professionnel (28 oct. 2026) — `pages/pro/Welcome.tsx`     */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .pwl {
+    background: var(--color-bg);
+  }
+  .pwl-hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0.375rem 0 3rem;
+    color: #fff;
+    background: var(--color-ink);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  /* La photo du métier, en fond, fondue dans l'encre : l'émotion sans gêner la lecture. */
+  .pwl-photo {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -2;
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    opacity: 0.45;
+  }
+  .pwl-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgb(17 18 20 / 0.35) 0%, rgb(17 18 20 / 0.8) 38%, var(--color-ink) 62%);
+  }
+  .pwl-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 3.5rem;
+    padding: 0 0.75rem 0 0.5rem;
+  }
+  .pwl-ib {
+    background: rgb(255 255 255 / 0.12) !important;
+    border-color: rgb(255 255 255 / 0.16) !important;
+    color: #fff !important;
+  }
+  .pwl-copy {
+    padding-inline: 1.25rem;
+    animation: ph-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pwl-t {
+    margin-top: 0.5rem;
+    font-size: 2.286rem;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -1.2px;
+  }
+  .pwl-sub {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    color: rgb(255 255 255 / 0.65);
+  }
+
+  /* Aperçu de l'agenda : une carte claire posée sur l'encre, comme l'écran du téléphone. */
+  .pwl-mock {
+    display: flex;
+    flex-direction: column;
+    margin-inline: 1.25rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+    animation: apv-in 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pwl-mock-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0 0.625rem;
+    border-bottom: 1px solid var(--color-line-soft);
+    font-size: 0.857rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .pwl-mock-n {
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .pwl-mock-r {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--color-line-soft);
+    animation: apv-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pwl-mock-r:nth-child(2) { animation-delay: 0.3s; }
+  .pwl-mock-r:nth-child(3) { animation-delay: 0.4s; }
+  .pwl-mock-r:nth-child(4) { animation-delay: 0.5s; }
+  .pwl-mock-r:last-child {
+    border-bottom: 0;
+  }
+  .pwl-mock-time {
+    width: 2.75rem;
+    flex: none;
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .pwl-mock-bar {
+    flex: none;
+    align-self: stretch;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--tone);
+  }
+  .pwl-mock-badge {
+    flex: none;
+    padding: 0.1875rem 0.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-pending-bg);
+    color: var(--color-pending-fg);
+    font-size: 0.786rem;
+    font-weight: 600;
+  }
+  .pwl-mock-ok {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--color-ok-fg);
+  }
+  .pwl-credit {
+    position: absolute;
+    top: calc(3.5rem + 0.25rem);
+    inset-inline-end: 0.75rem;
+    font-size: 0.75rem;
+    color: rgb(255 255 255 / 0.45);
+  }
+
+  /* Le reste monte sur le bandeau comme une feuille. */
+  .pwl-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-top: -1.25rem;
+    padding: 1.25rem 1.25rem calc(2rem + var(--safe-bottom));
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    background: var(--color-bg);
+  }
+
+  /* Avantages en mosaïque : le premier en encre, les autres en blanc. */
+  .pwl-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.625rem;
+  }
+  /* Sur téléphone, les trois autres avantages sont des lignes : icône à gauche, texte à droite. */
+  .pwl-card:not(.ink) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.875rem;
+    row-gap: 0.125rem;
+    align-items: start;
+  }
+  .pwl-card:not(.ink) .pwl-card-i {
+    grid-row: span 2;
+    margin-bottom: 0;
+  }
+  .pwl-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  .pwl-card.ink {
+    grid-column: 1 / -1;
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  .pwl-card-i {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.375rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+    color: var(--color-ink);
+  }
+  .pwl-card.ink .pwl-card-i {
+    background: #3ddc97;
+    color: var(--color-ink);
+  }
+  .pwl-card-s {
+    font-size: 0.857rem;
+    line-height: 1.45;
+    color: var(--color-muted);
+  }
+  .pwl-card.ink .pwl-card-s {
+    color: rgb(255 255 255 / 0.65);
+  }
+
+  /* Étapes : une frise numérotée reliée par un trait. */
+  .pwl-steps {
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  .pwl-steps li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.75rem 0;
+  }
+  .pwl-steps li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: calc(50% + 1rem);
+    bottom: calc(-50% + 1rem);
+    inset-inline-start: 1rem;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--color-line);
+  }
+  [dir='rtl'] .pwl-steps li:not(:last-child)::after {
+    transform: translateX(50%);
+  }
+  .pwl-step-n {
+    display: grid;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--color-fill);
+    border: 1px solid var(--color-line);
+    font-size: 0.857rem;
+    font-weight: 700;
+  }
+  .pwl-steps li:last-child .pwl-step-n {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+
+  .pwl-end {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-card);
+    color: #fff;
+    background:
+      radial-gradient(100% 120% at 100% 0%, rgb(255 255 255 / 0.1) 0%, transparent 60%),
+      var(--color-ink);
+  }
+  .pwl-end-btn {
+    margin-top: 0.5rem;
+    background: #fff;
+    color: var(--color-ink);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pwl-copy,
+  .pwl-mock,
+  .pwl-mock-r {
+    animation: none;
+  }
+}
+/* Grand écran : le bandeau garde la colonne de lecture, l'aperçu se pose à côté du texte. */
+@media (min-width: 768px) {
+  .pwl-hero {
+    border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
+  }
+  .pwl-card.ink {
+    grid-column: auto;
+    grid-row: span 3;
+  }
+  .pwl-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   }
 }
