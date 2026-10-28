@@ -1,16 +1,19 @@
 /**
- * Espace pro — Nouveau rendez-vous, sur le modèle des outils du métier (Planity Pro) :
- * d'abord QUAND (jours à faire défiler, heure en grand, créneaux du jour en un tap — ceux
- * déjà pris par le membre sont grisés, membre en pastilles), puis un formulaire en LIGNES
- * qui s'ouvrent en feuille : le client (recherche parmi la clientèle, ou client de passage),
- * les prestations (cochées dans une liste), une note. « Enregistrer » en bas, avec le total.
+ * Espace pro — Nouveau rendez-vous. Refonte du 28 oct. 2026 : TROIS étapes numérotées, sur une
+ * seule page, dans l'ordre d'un appel téléphonique — QUI (le client), QUOI (les prestations,
+ * en tuiles touchées directement sur la page, sans feuille à ouvrir), QUAND (membre, jour, puis
+ * créneaux en GRILLE par période : matin, après-midi, soir — tout est visible, rien ne défile
+ * de côté). Chaque étape faite prend une coche. La barre du bas récapitule (total, jour, plage
+ * horaire) : l'heure n'est écrite qu'à cet endroit, jamais répétée dans la page.
+ *
+ * Les prestations précèdent l'heure parce que la durée décide des créneaux possibles.
  *
  * Le client se cherche AVANT de se saisir : la moitié des rendez-vous pris au téléphone
  * sont ceux d'habitués, et retaper leur nom crée des doublons dans la clientèle.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Check, ChevronRight, ContactRound, Scissors, StickyNote } from 'lucide-react';
+import { Check, Search, StickyNote, UserPlus } from 'lucide-react';
 import {
   pagesItems,
   useProBookingMutations,
@@ -22,7 +25,6 @@ import {
   addDaysToKey,
   dayOfWeekFromKey,
   formatDA,
-  formatDateShortDZ,
   formatDZPhone,
   localDateTimeToISO,
   minutesToTime,
@@ -44,6 +46,7 @@ import {
   I,
   Input,
   SearchBox,
+  Segmented,
   Skeleton,
   TopBar, Dim } from '@/components/ui';
 import { DayScroller } from '@/components/DayCarousel';
@@ -51,50 +54,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
-import type { LucideIcon } from 'lucide-react';
 import { t } from '@/i18n';
-
-/** Ligne du formulaire : icône, libellé, valeur choisie (ou invitation), chevron. */
-function FormRow({
-  icon,
-  label,
-  value,
-  placeholder,
-  error,
-  onClick,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value?: string | null;
-  placeholder: string;
-  error?: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="li w-full text-start"
-      onClick={onClick}
-      aria-invalid={!!error || undefined}
-    >
-      <span className="flex min-w-0 flex-1 items-center gap-3">
-        <span
-          className={`flex h-9 w-9 flex-none items-center justify-center rounded-full ${error ? 'bg-cancel-bg text-danger' : 'bg-fill text-muted'}`}
-        >
-          <I icon={icon} size={18} />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-[0.857rem] text-muted">{label}</span>
-          <span className={`block truncate text-[1rem] font-semibold ${value ? '' : 'text-subtle'}`}>
-            {value || placeholder}
-          </span>
-          {error && <span className="block text-[0.857rem] text-danger">{error}</span>}
-        </span>
-      </span>
-      <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
-    </button>
-  );
-}
 
 /** Feuille « Client » : la clientèle d'abord (recherche serveur), sinon un client de passage. */
 function ClientSheet({
@@ -151,8 +111,7 @@ function ClientSheet({
                   <span className="min-w-0">
                     <span className="block truncate text-[1rem] font-semibold">{c.name}</span>
                     <span className="block text-[0.857rem] text-muted">
-                      {c.phone ? formatDZPhone(c.phone) : 'Sans numéro'} · {c.bookingsCount}{' '}
-                      {t("rendez-vous")}
+                      {c.phone ? formatDZPhone(c.phone) : t('Sans numéro')} · {t('{n} rendez-vous', { n: c.bookingsCount })}
                     </span>
                   </span>
                 </span>
@@ -162,7 +121,7 @@ function ClientSheet({
           </div>
         ) : (
           <p className="p">
-            {needle ? `Aucun client pour « ${needle} ».` : 'Votre clientèle apparaîtra ici.'}
+            {needle ? t('Aucun client pour « {q} ».', { q: needle }) : t('Votre clientèle apparaîtra ici.')}
           </p>
         )}
         <span className="h3">{t("Client de passage")}</span>
@@ -204,69 +163,6 @@ function ClientSheet({
   );
 }
 
-/** Feuille « Prestations » : cases à cocher, plusieurs prestations s'enchaînent. */
-function ServicesSheet({
-  services,
-  value,
-  onChange,
-  onClose,
-}: {
-  services: { id: string; name: string; durationMinutes: number; priceDa: number }[];
-  value: string[];
-  onChange: (ids: string[]) => void;
-  onClose: () => void;
-}) {
-  const [ids, setIds] = useState(value);
-  const chosen = ids.map((id) => services.find((s) => s.id === id)).filter(Boolean);
-  const total = chosen.reduce((a, s) => a + (s?.priceDa ?? 0), 0);
-  const minutes = chosen.reduce((a, s) => a + (s?.durationMinutes ?? 0), 0);
-  return (
-    <>
-      <Dim onClose={onClose} className="!z-[45]" />
-      <BottomSheet modal className="!z-50 max-h-[90vh] overflow-y-auto">
-        <div className="h2 text-center !text-[1.143rem]">{t("Prestations")}</div>
-        <div className="crd !gap-0 !py-1">
-          {services.map((s) => {
-            const on = ids.includes(s.id);
-            return (
-              <button
-                key={s.id}
-                type="button"
-                className="li w-full text-start"
-                aria-pressed={on}
-                onClick={() =>
-                  setIds((prev) => (on ? prev.filter((x) => x !== s.id) : [...prev, s.id]))
-                }
-              >
-                <span className="min-w-0">
-                  <span className="block truncate text-[1rem] font-semibold">{s.name}</span>
-                  <span className="block text-[0.857rem] text-muted">
-                    {formatDuration(s.durationMinutes)} · {formatDA(s.priceDa)}
-                  </span>
-                </span>
-                <span className={`chk${on ? ' on' : ''}`} aria-hidden>
-                  {on && <I icon={Check} size={16} />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <Button
-          disabled={ids.length === 0}
-          onClick={() => {
-            onChange(ids);
-            onClose();
-          }}
-        >
-          {ids.length
-            ? `Valider · ${formatDuration(minutes)} · ${formatDA(total)}`
-            : 'Choisissez une prestation'}
-        </Button>
-      </BottomSheet>
-    </>
-  );
-}
-
 export function ProBookingNew() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -284,12 +180,11 @@ export function ProBookingNew() {
   const [error, setError] = useState<string | null>(null);
   // Erreurs affichées sur la ligne concernée (client obligatoire, prestation).
   const [fieldErr, setFieldErr] = useState<{ name?: string; services?: string }>({});
-  const [sheet, setSheet] = useState<'client' | 'services' | null>(null);
+  const [sheet, setSheet] = useState<'client' | null>(null);
   // Rendez-vous créé : validation animée, puis fiche du rendez-vous.
   const [done, setDone] = useState<{ id: string } | null | false>(false);
   // Rendez-vous déjà pris ce jour-là (pour griser les créneaux du membre choisi).
   const dayBookings = useProBookings({ from: date, to: date, limit: 200 }, !!salon);
-  const timeStrip = useRef<HTMLDivElement | null>(null);
   const active = useMemo(() => salon?.services.filter((s) => s.isActive) ?? [], [salon]);
   const staff = useMemo(() => salon?.staff.filter((s) => s.isActive) ?? [], [salon]);
   const chosen = services.map((id) => active.find((s) => s.id === id)).filter(Boolean);
@@ -353,10 +248,15 @@ export function ProBookingNew() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [salon, dayBookings.isPending]);
 
-  useEffect(() => {
-    const el = timeStrip.current?.querySelector<HTMLElement>(`[data-time="${time}"]`);
-    el?.scrollIntoView({ block: 'nearest', inline: 'center' });
-  }, [time, date]);
+  // Période affichée (matin, après-midi, soir) : celle de l'heure choisie, sauf si l'on en
+  // touche une autre pour regarder.
+  const periods = PERIODS.filter((pd) => slots.some((x) => periodOf(x.t) === pd.value));
+  const [period, setPeriod] = useState<Period>(periodOf(time));
+  useEffect(() => setPeriod(periodOf(time)), [time, date]);
+  const shownPeriod = periods.some((pd) => pd.value === period) ? period : periods[0]?.value;
+  const [serviceQ, setServiceQ] = useState('');
+  const [allServices, setAllServices] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   if (!salon) return <PageLoading />;
 
@@ -366,7 +266,8 @@ export function ProBookingNew() {
     if (services.length === 0) errs.services = 'Choisissez au moins une prestation.';
     setFieldErr(errs);
     if (errs.name) return setSheet('client');
-    if (errs.services) return setSheet('services');
+    if (errs.services)
+      return document.getElementById('nb-services')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setError(null);
     try {
       // Plusieurs prestations = UN rendez-vous, comme côté client : un seul bloc dans l'agenda,
@@ -386,86 +287,131 @@ export function ProBookingNew() {
     }
   };
 
+  const q = serviceQ.trim().toLowerCase();
+  const filtered = q ? active.filter((sv) => sv.name.toLowerCase().includes(q)) : active;
+  // Au-delà de huit prestations, on montre les huit premières (et toutes celles déjà cochées).
+  const visible =
+    allServices || q || filtered.length <= SERVICES_PREVIEW
+      ? filtered
+      : filtered.filter((sv, i) => i < SERVICES_PREVIEW || services.includes(sv.id));
+  const hidden = filtered.length - visible.length;
+  const toggleService = (id: string) => {
+    setServices((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setFieldErr((f) => ({ ...f, services: undefined }));
+  };
+  const clientDone = name.trim().length >= 2;
+
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/agenda" close right={t('Nouveau rendez-vous')} />
-      <h1 className="h1">{t("Ajouter un rendez-vous")}</h1>
+      <TopBar backTo="/pro/agenda" close />
+      <h1 className="h1 !text-[1.714rem]">{t('Nouveau rendez-vous')}</h1>
 
-      {/* 1. QUAND — jours à faire défiler, heure en grand, créneaux du jour en un tap */}
-      <div className="crd !gap-3">
-        <DayScroller selected={date} onSelect={setDate} minDate={toLocalDateKey()} />
-        <div className="flex items-end justify-between gap-3">
-          <span className="mono text-[2.286rem] font-semibold leading-none tracking-[-0.9px]">
-            {time}{' '}
-            <span className="text-[1rem] font-medium text-muted">
-              {minutes ? `→ ${endTime}` : ''}
-            </span>
-          </span>
-          <span className="text-end text-[1rem] font-semibold">
-            {relativeDayLabelDZ(date)}
-            {/* « Aujourd'hui » / « Demain » : on rappelle la date ; sinon le libellé est déjà la date. */}
-            {!/^\p{L}+\. \d/u.test(relativeDayLabelDZ(date)) && (
-              <span className="block text-[0.857rem] font-normal text-muted">
-                {formatDateShortDZ(localDateTimeToISO(date, '12:00')).replace(/^\w/, (c) =>
-                  c.toUpperCase(),
-                )}
+      {/* 1. QUI */}
+      <section className="crd !gap-2.5" aria-labelledby="nb-s1">
+        <StepHead n={1} id="nb-s1" title={t('Client')} done={clientDone} />
+        <button
+          type="button"
+          className={`nb-pick ${fieldErr.name ? 'err' : ''}`}
+          onClick={() => setSheet('client')}
+          aria-invalid={!!fieldErr.name || undefined}
+        >
+          {clientDone ? (
+            <>
+              <Avatar name={name} size={36} />
+              <span className="min-w-0 flex-1 text-start">
+                <span className="block truncate text-[1rem] font-semibold">{name}</span>
+                <span className="block text-[0.857rem] text-muted" dir="ltr">
+                  {phone ? formatDZPhone(phone) : t('Sans numéro')}
+                </span>
               </span>
-            )}
-          </span>
-        </div>
-        {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
-        {!isDeviceOnDZTime() && (
-          <p className="text-[0.857rem] text-muted">
-            {t("Heures en heure d'Alger · il est")}{' '}{nowTimeDZ()} {t("à Alger.")}
+              <span className="text-[0.857rem] font-semibold text-muted">{t('Changer')}</span>
+            </>
+          ) : (
+            <>
+              <span className="nb-pick-i">
+                <I icon={Search} size={18} />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-start text-[1rem] text-subtle">
+                {t('Rechercher ou ajouter un client')}
+              </span>
+              <I icon={UserPlus} size={18} className="shrink-0 text-muted" />
+            </>
+          )}
+        </button>
+        {fieldErr.name && (
+          <p className="text-[0.857rem] text-danger" role="alert">
+            {fieldErr.name}
           </p>
         )}
-        {slots.length === 0 ? (
-          <label className="flex items-center justify-between gap-3 text-[1rem]">
-            <span className="text-muted">{t("Salon fermé ce jour — heure libre")}</span>
-            <input
-              type="time"
-              step={300}
-              min={date === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
-              className="bg-transparent text-end outline-none"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              aria-label={t("Heure")}
-            />
-          </label>
-        ) : (
-          <div
-            ref={timeStrip}
-            className="-mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5"
-            style={{ scrollbarWidth: 'none' }}
-            role="listbox"
-            aria-label={t("Heure")}
-          >
-            {slots.map((sl) => (
-              <button
-                key={sl.t}
-                type="button"
-                role="option"
-                aria-selected={sl.t === time}
-                aria-label={sl.t}
-                data-time={sl.t}
-                disabled={sl.taken}
-                className={`slot mono flex-none !px-3.5 !py-2.5 !text-[1rem] font-semibold ${sl.t === time ? 'on' : sl.taken ? 'off line-through' : ''}`}
-                onClick={() => setTime(sl.t)}
-              >
-                {sl.t}
-              </button>
-            ))}
-          </div>
+      </section>
+
+      {/* 2. QUOI — tuiles touchées directement ; plusieurs = UN rendez-vous */}
+      <section id="nb-services" className="crd !gap-2.5" aria-labelledby="nb-s2">
+        <StepHead
+          n={2}
+          id="nb-s2"
+          title={t('Prestations')}
+          done={chosen.length > 0}
+        />
+        {active.length > SERVICES_PREVIEW && (
+          <SearchBox value={serviceQ} onChange={setServiceQ} placeholder={t('Rechercher une prestation')} />
         )}
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label={t('Prestations')}>
+          {visible.map((sv) => {
+            const on = services.includes(sv.id);
+            return (
+              <button
+                key={sv.id}
+                type="button"
+                aria-pressed={on}
+                className={`nb-svc ${on ? 'on' : ''}`}
+                onClick={() => toggleService(sv.id)}
+              >
+                <span className="nb-svc-n">{sv.name}</span>
+                <span className="nb-svc-m">
+                  <span dir="ltr">{formatDuration(sv.durationMinutes)}</span> ·{' '}
+                  <span dir="ltr">{formatDA(sv.priceDa)}</span>
+                </span>
+                {on && (
+                  <span className="nb-svc-c" aria-hidden>
+                    <I icon={Check} size={13} />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {q && filtered.length === 0 && (
+          <p className="text-[0.857rem] text-muted">{t('Aucune prestation ne correspond.')}</p>
+        )}
+        {(hidden > 0 || (allServices && !q && active.length > SERVICES_PREVIEW)) && (
+          <button
+            type="button"
+            className="self-start text-[0.857rem] font-semibold text-muted underline-offset-2 hover:underline"
+            onClick={() => setAllServices((v) => !v)}
+          >
+            {hidden > 0 ? t('Voir les {n} autres', { n: hidden }) : t('Réduire')}
+          </button>
+        )}
+        {fieldErr.services && (
+          <p className="text-[0.857rem] text-danger" role="alert">
+            {fieldErr.services}
+          </p>
+        )}
+      </section>
+
+      {/* 3. QUAND — membre, jour, puis la grille des créneaux de la période */}
+      <section className="crd !gap-3" aria-labelledby="nb-s3">
+        <StepHead n={3} id="nb-s3" title={t('Quand')} done={chosen.length > 0 && (slots.length === 0 || slots.some((x) => x.t === time && !x.taken))} />
         {staff.length > 1 && (
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("Membre")}>
+          <div className="pills -mx-4 !gap-1.5 px-4" role="radiogroup" aria-label={t('Membre')}>
             {staff.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 role="radio"
                 aria-checked={m.id === sid}
-                className={`pill !gap-2 !py-1.5 !ps-1.5 !pe-3.5 !text-[1rem] font-semibold ${m.id === sid ? 'on' : 'soft'}`}
+                className={`pill flex-none !gap-2 !py-1 !ps-1 !pe-3 !text-[1rem] font-semibold ${m.id === sid ? 'on' : 'soft'}`}
                 onClick={() => setStaffId(m.id)}
               >
                 <Avatar src={m.avatarUrl} name={m.displayName} size={24} /> {m.displayName}
@@ -473,55 +419,80 @@ export function ProBookingNew() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* 2. Qui et quoi — des lignes qui s'ouvrent en feuille, comme un formulaire de caisse. */}
-      <div className="crd !gap-0 !py-1">
-        <FormRow
-          icon={ContactRound}
-          label={t("Client")}
-          value={name ? `${name}${phone ? ` · ${formatDZPhone(phone)}` : ''}` : null}
-          placeholder={t("Choisir ou saisir un client")}
-          error={fieldErr.name}
-          onClick={() => setSheet('client')}
-        />
-        <FormRow
-          icon={Scissors}
-          label={t("Prestations")}
-          value={
-            chosen.length
-              ? `${chosen.map((s) => s!.name).join(', ')} · ${formatDuration(minutes)} · ${formatDA(total)}`
-              : null
-          }
-          placeholder={t("Choisir une ou plusieurs prestations")}
-          error={fieldErr.services}
-          onClick={() => setSheet('services')}
-        />
-        <div className="li !items-start">
-          <span className="flex min-w-0 flex-1 items-start gap-3">
-            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-fill text-muted">
-              <I icon={StickyNote} size={18} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[0.857rem] text-muted">{t("Note (facultatif)")}</span>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                maxLength={300}
-                rows={2}
-                placeholder={t("Coloration à préparer, cliente pressée…")}
-                className="inp mt-1 !p-2.5 !text-[1rem]"
-                style={{ resize: 'none' }}
-                aria-label={t("Note")}
+        <DayScroller selected={date} onSelect={setDate} minDate={toLocalDateKey()} />
+        {/* Appareil sur un autre fuseau : les créneaux restent en heure d'Alger, on le dit. */}
+        {!isDeviceOnDZTime() && (
+          <p className="text-[0.857rem] text-muted">
+            {t("Heures en heure d'Alger · il est")} {nowTimeDZ()} {t('à Alger.')}
+          </p>
+        )}
+        {slots.length === 0 ? (
+          <label className="nb-free">
+            <span className="min-w-0 text-[1rem] text-muted">{t('Salon fermé ce jour — heure libre')}</span>
+            <input
+              type="time"
+              step={300}
+              min={date === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
+              className="inp mono !w-auto !py-2 text-center"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              aria-label={t('Heure')}
+            />
+          </label>
+        ) : (
+          <>
+            {periods.length > 1 && shownPeriod && (
+              <Segmented
+                sm
+                label={t('Moment de la journée')}
+                value={shownPeriod}
+                onChange={setPeriod}
+                options={periods.map((pd) => ({ value: pd.value, label: t(pd.label) }))}
               />
-            </span>
-          </span>
+            )}
+            <div className="grid grid-cols-4 gap-1.5" role="listbox" aria-label={t('Heure')}>
+              {slots
+                .filter((sl) => periodOf(sl.t) === shownPeriod)
+                .map((sl) => (
+                  <button
+                    key={sl.t}
+                    type="button"
+                    role="option"
+                    aria-selected={sl.t === time}
+                    disabled={sl.taken}
+                    className={`slot mono !py-2.5 !text-[1rem] font-semibold ${sl.t === time ? 'on' : sl.taken ? 'off line-through' : ''}`}
+                    onClick={() => setTime(sl.t)}
+                  >
+                    {sl.t}
+                  </button>
+                ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Note : repliée tant qu'on n'en a pas besoin — la plupart des rendez-vous n'en ont pas. */}
+      {noteOpen ? (
+        <div className="crd !gap-1.5">
+          <label htmlFor="nb-note" className="text-[0.857rem] font-semibold text-muted">
+            {t('Note (facultatif)')}
+          </label>
+          <textarea
+            id="nb-note"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            maxLength={300}
+            rows={2}
+            autoFocus
+            placeholder={t('Coloration à préparer, cliente pressée…')}
+            className="inp !p-2.5 !text-[1rem]"
+            style={{ resize: 'none' }}
+          />
         </div>
-      </div>
-      {error && (
-        <p className="text-[1rem] text-danger" role="alert">
-          {error}
-        </p>
+      ) : (
+        <button type="button" className="nb-add" onClick={() => setNoteOpen(true)}>
+          <I icon={StickyNote} size={16} /> {t('Ajouter une note')}
+        </button>
       )}
 
       {sheet === 'client' && (
@@ -537,47 +508,86 @@ export function ProBookingNew() {
           onClose={() => setSheet(null)}
         />
       )}
-      {sheet === 'services' && (
-        <ServicesSheet
-          services={active}
-          value={services}
-          onChange={(ids) => {
-            setServices(ids);
-            setFieldErr((f) => ({ ...f, services: undefined }));
-          }}
-          onClose={() => setSheet(null)}
-        />
-      )}
       {done !== false && (
         <SuccessSplash
-          title={t("Rendez-vous ajouté")}
+          title={t('Rendez-vous ajouté')}
           subtitle={`${name.trim()} · ${relativeDayLabelDZ(date)} · ${time}`}
           onDone={() =>
             navigate(done ? `/pro/rendez-vous/${done.id}` : '/pro/agenda', { replace: true })
           }
         />
       )}
+      {/* Récapitulatif : le seul endroit où l'heure est écrite. */}
       <BottomSheet>
+        {error && (
+          <p className="mb-2 text-[0.857rem] text-danger" role="alert">
+            {error}
+          </p>
+        )}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-[1.429rem] font-semibold tracking-[-0.4px]">{formatDA(total)}</div>
-            <div className="p truncate">
-              {relativeDayLabelDZ(date)} · {time}
-              {chosen.length
-                ? ` · ${t('{n} prestation(s)', { n: chosen.length })} · ${formatDuration(minutes)}`
-                : ` · ${t('choisissez une prestation')}`}
+            <div className="text-[1.429rem] font-semibold leading-tight tracking-[-0.4px]" dir="ltr">
+              {formatDA(total)}
+            </div>
+            <div className="truncate text-[0.857rem] text-muted">
+              {relativeDayLabelDZ(date)} ·{' '}
+              <span className="mono" dir="ltr">
+                {time}
+                {minutes ? `–${endTime}` : ''}
+              </span>
+              {minutes ? (
+                <>
+                  {' · '}
+                  <span dir="ltr">{formatDuration(minutes)}</span>
+                </>
+              ) : null}
             </div>
           </div>
-          <Button
-            auto
-            className="!px-6"
-            onClick={() => void submit()}
-            disabled={createWalkIn.isPending}
-          >
-            {createWalkIn.isPending ? t('Enregistrement…') : t('Enregistrer')}
+          <Button auto className="!px-6" onClick={() => void submit()} loading={createWalkIn.isPending}>
+            {t('Enregistrer')}
           </Button>
         </div>
       </BottomSheet>
     </Screen>
+  );
+}
+
+const SERVICES_PREVIEW = 8;
+
+type Period = 'morning' | 'afternoon' | 'evening';
+const PERIODS: { value: Period; label: string }[] = [
+  { value: 'morning', label: 'Matin' },
+  { value: 'afternoon', label: 'Après-midi' },
+  { value: 'evening', label: 'Soir' },
+];
+const periodOf = (hhmm: string): Period => {
+  const m = timeToMinutes(hhmm);
+  return m < 12 * 60 ? 'morning' : m < 17 * 60 ? 'afternoon' : 'evening';
+};
+
+/** En-tête d'étape : numéro (coche une fois faite), titre, et une précision à droite. */
+function StepHead({
+  n,
+  id,
+  title,
+  done,
+  right,
+}: {
+  n: number;
+  id: string;
+  title: string;
+  done: boolean;
+  right?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className={`nb-n ${done ? 'on' : ''}`} aria-hidden>
+        {done ? <I icon={Check} size={14} /> : n}
+      </span>
+      <h2 id={id} className="min-w-0 flex-1 text-[1.143rem] font-semibold">
+        {title}
+      </h2>
+      {right && <span className="text-[0.857rem] font-medium text-muted">{right}</span>}
+    </div>
   );
 }

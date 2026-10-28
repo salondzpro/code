@@ -91,16 +91,21 @@ export function DayScroller({
             <span
               className={`text-[0.857rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
             >
-              {/* Premier jour d'un mois : son abréviation réelle (« oct. », « nov. »), pas les quatre
-                  premières lettres du nom (« OCTO », « NOVE »). */}
-              {showMonth ? shortMonth(d) : t(DAY_LABELS_SHORT_FR[dow])}
+              {t(DAY_LABELS_SHORT_FR[dow])}
             </span>
             <span className="text-[1rem] font-semibold">{dayNumber(d)}</span>
-            {/* Aujourd'hui : un point sous le chiffre (blanc sur le jour choisi). */}
-            <span
-              aria-hidden
-              className={`h-1 w-1 rounded-full ${d === today ? (on ? 'bg-white' : 'bg-ink') : 'bg-transparent'}`}
-            />
+            {/* Premier jour d'un mois : le mois SOUS le chiffre (« oct. », « nov. »). Il remplaçait
+                le nom du jour, et l'on lisait « OCT. 28 » sans savoir quel jour c'était. Sinon,
+                aujourd'hui : un point sous le chiffre (blanc sur le jour choisi). */}
+            {showMonth && d !== today ? (
+              <span aria-hidden className={`h-[0.786rem] text-[0.714rem] leading-none ${on ? 'text-white/70' : 'text-subtle'}`}>
+                {shortMonth(d)}
+              </span>
+            ) : (
+              <span aria-hidden className="flex h-[0.786rem] items-center">
+                <span className={`h-1 w-1 rounded-full ${d === today ? (on ? 'bg-white' : 'bg-ink') : 'bg-transparent'}`} />
+              </span>
+            )}
           </button>
         );
       })}
