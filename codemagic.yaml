@@ -212,3 +212,65 @@ workflows:
         auth: integration
         submit_to_testflight: true
         submit_to_app_store: false
+
+  # -------------------------------------------------------------------------------------------
+  # ANDROID sur Codemagic (29 oct. 2026) : les deux applications se compilent sans le PC.
+  #
+  # La clé d'ENVOI (empreinte D9:54:C1…) est rangée dans Codemagic sous `salondz_upload`
+  # (Teams → Code signing identities → Android keystores). Codemagic la pose sur la machine et
+  # donne son chemin et ses mots de passe dans `CM_KEYSTORE_*` ; on écrit avec eux le fichier
+  # `secrets/android/keystore.properties` que lit `app/build.gradle`, exactement comme sur le PC.
+  #
+  # Le numéro de version vient de `version.properties` / `version-pro.properties`, VERSIONNÉS :
+  # on l'augmente dans git AVANT de lancer (`--same` ici), pour que le PC et Codemagic ne
+  # réutilisent jamais le même numéro — Google refuse un numéro déjà envoyé.
+  #
+  # Lancer : `node --env-file=.env scripts/codemagic.mjs --lancer --android [--pro]`.
+  # -------------------------------------------------------------------------------------------
+  android:
+    name: Salon DZ · Android
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      android_signing:
+        - salondz_upload
+      vars:
+        # Grand public : l'application charge salondz.com (mode en ligne).
+        SALONDZ_ANDROID_ARGS: --en-ligne
+      node: 22
+      java: 21
+    scripts: &android_scripts
+      - name: Dépendances du dépôt
+        script: |
+          corepack enable
+          pnpm install --frozen-lockfile
+      - name: Clé de signature
+        script: |
+          mkdir -p secrets/android
+          cat > secrets/android/keystore.properties <<PROPS
+          storeFile=$CM_KEYSTORE_PATH
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          keyPassword=$CM_KEY_PASSWORD
+          PROPS
+          chmod +x apps/web/android/gradlew
+      - name: Compilation
+        script: |
+          node scripts/build-android.mjs --same $SALONDZ_ANDROID_ARGS
+    artifacts:
+      - apps/web/android/app/build/outputs/bundle/release/*.aab
+
+  android-pro:
+    name: Salon DZ Pro · Android
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      android_signing:
+        - salondz_upload
+      vars:
+        SALONDZ_ANDROID_ARGS: --pro
+      node: 22
+      java: 21
+    scripts: *android_scripts
+    artifacts:
+      - apps/web/android/app/build/outputs/bundle/release/*.aab

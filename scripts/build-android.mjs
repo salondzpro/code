@@ -32,8 +32,14 @@ const PRO = process.argv.includes('--pro');
 const VERSION_FILE = path.join(ANDROID, PRO ? 'version-pro.properties' : 'version.properties');
 const OUT = path.join(process.env.USERPROFILE ?? process.env.HOME ?? '', 'Desktop', 'salondz-play');
 
-const JAVA_HOME = process.env.SALONDZ_JAVA_HOME ?? 'C:/Users/gaci/tools/jdk-21.0.12.1+1';
-const ANDROID_HOME = process.env.ANDROID_HOME ?? 'C:/Users/gaci/AppData/Local/Android/Sdk';
+/**
+ * Deux machines compilent : le PC Windows du propriétaire, et Codemagic (Linux, flux `android` /
+ * `android-pro` de codemagic.yaml, 29 oct. 2026). Hors Windows, Java, le SDK et pnpm viennent de
+ * l'environnement de la machine.
+ */
+const WIN = process.platform === 'win32';
+const JAVA_HOME = process.env.SALONDZ_JAVA_HOME ?? (WIN ? 'C:/Users/gaci/tools/jdk-21.0.12.1+1' : process.env.JAVA_HOME);
+const ANDROID_HOME = process.env.ANDROID_HOME ?? (WIN ? 'C:/Users/gaci/AppData/Local/Android/Sdk' : process.env.ANDROID_SDK_ROOT);
 /**
  * Par défaut, les fichiers du site sont EMBARQUÉS : l'application démarre toujours, même sans réseau.
  *
@@ -59,9 +65,8 @@ if (mode === 'remote' && PRO) {
 }
 const env = {
   ...process.env,
-  JAVA_HOME,
-  ANDROID_HOME,
-  ANDROID_SDK_ROOT: ANDROID_HOME,
+  ...(JAVA_HOME ? { JAVA_HOME } : {}),
+  ...(ANDROID_HOME ? { ANDROID_HOME, ANDROID_SDK_ROOT: ANDROID_HOME } : {}),
   SALONDZ_APP_MODE: mode,
   // Lu par `capacitor.config.ts` (identifiant, nom) et par Vite (`VITE_APP_FLAVOR`, qui retire les
   // écrans clients du bundle — ils ne sont pas cachés, ils ne sont pas livrés).
@@ -87,8 +92,9 @@ console.log(PRO ? 'Variante : PROFESSIONNELLE (pro.salondz.app)' : 'Variante : g
 
 // 2. Le site, puis la coque
 // Le raccourci `pnpm` global est cassé sur cette machine : on passe par le fichier de corepack.
-const PNPM = process.env.SALONDZ_PNPM ?? 'C:/Users/gaci/AppData/Local/node/corepack/v1/pnpm/9.15.0/bin/pnpm.cjs';
-run('node', [PNPM, '--filter', '@salondz/web', 'build'], ROOT);
+const PNPM = process.env.SALONDZ_PNPM ?? (WIN ? 'C:/Users/gaci/AppData/Local/node/corepack/v1/pnpm/9.15.0/bin/pnpm.cjs' : null);
+if (PNPM) run('node', [PNPM, '--filter', '@salondz/web', 'build'], ROOT);
+else run('pnpm', ['--filter', '@salondz/web', 'build'], ROOT);
 
 // Garde-fou : l'adresse de l'API doit se retrouver dans le bundle. Sans lui, une construction qui
 // reprend le `.env` de développement produit une application qui cherche le serveur SUR LE
@@ -159,7 +165,7 @@ if (PRO) {
   console.log(`Icônes professionnelles posées (${icones.length} fichiers).`);
 }
 try {
-  run(`"${path.join(ANDROID, 'gradlew.bat')}"`, [':app:bundleRelease', ...(PRO ? ['-PsalondzPro'] : []), '--no-daemon'], ANDROID);
+  run(WIN ? `"${path.join(ANDROID, 'gradlew.bat')}"` : './gradlew', [':app:bundleRelease', ...(PRO ? ['-PsalondzPro'] : []), '--no-daemon'], ANDROID);
 } finally {
   if (PRO && existsSync(GS_SAUVE)) {
     copyFileSync(GS_SAUVE, GS);

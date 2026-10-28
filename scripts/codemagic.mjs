@@ -3,6 +3,8 @@
  *
  *   node --env-file=.env scripts/codemagic.mjs --lancer              → compile l'app CLIENT (flux `ios`) sur `main`
  *   node --env-file=.env scripts/codemagic.mjs --lancer --pro        → compile l'app PRO (flux `ios-pro`)
+ *   node --env-file=.env scripts/codemagic.mjs --lancer --android [--pro] → Android (flux `android` / `android-pro`)
+ *     (augmenter AVANT `versionCode` dans apps/web/android/version*.properties et pousser)
  *   node --env-file=.env scripts/codemagic.mjs --suivre [id]         → suit la dernière (ou celle donnée) jusqu'à la fin
  *   node --env-file=.env scripts/codemagic.mjs                       → l'état des cinq dernières
  *
@@ -16,7 +18,7 @@ const H = { 'x-auth-token': JETON, 'Content-Type': 'application/json' };
 const api = async (p, init) => (await fetch('https://api.codemagic.io' + p, { headers: H, ...init })).json();
 
 const arg = (n) => process.argv.includes(n);
-const FLUX = arg('--pro') ? 'ios-pro' : 'ios';
+const FLUX = arg('--android') ? (arg('--pro') ? 'android-pro' : 'android') : arg('--pro') ? 'ios-pro' : 'ios';
 
 /** Identifiant de la compilation à suivre : celle qu'on vient de lancer, sinon la dernière. */
 let suivi = process.argv[process.argv.indexOf('--suivre') + 1]?.match(/^[0-9a-f]{24}$/) ? process.argv[process.argv.indexOf('--suivre') + 1] : null;
