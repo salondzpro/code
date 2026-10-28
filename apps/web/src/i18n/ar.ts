@@ -1391,4 +1391,7 @@ export const ar: Record<string, string> = {
   "Vous êtes connecté": "أنت متصل",
   "En direct": "مباشر",
   "Ouvrir": "فتح",
+  "Votre coiffeuse": "مصفّفة شعرك",
+  "Pose gel · 1 h": "تركيب الجل · 1 سا",
+  "Lina · Pose gel · 1 h": "لينا · تركيب الجل · 1 سا",
 };

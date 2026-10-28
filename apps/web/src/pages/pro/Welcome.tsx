@@ -33,12 +33,13 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { DESIGN_IMAGES, writeAuthFlow } from '@/lib/authFlow';
+import { writeAuthFlow } from '@/lib/authFlow';
 import { useBack } from '@/lib/useBack';
 import { useReveal } from '@/lib/reveal';
 import { I, IconButton } from '@/components/ui';
 import { Wordmark } from '@/components/Wordmark';
 import { LangSwitch } from '@/components/LangSwitch';
+import { HeroSlides } from '@/components/HeroSlides';
 import { t } from '@/i18n';
 
 /** Quatre promesses, deux à trois mots chacune : l'icône dit le reste. */
@@ -62,7 +63,8 @@ const MOTS = ['Votre agenda', 'Votre page', 'Votre clientèle', 'Votre lien'];
 
 /** L'aperçu de l'agenda : une journée type, couleurs des catégories. */
 const PREVIEW: { time: string; name: string; service: string; tone: string }[] = [
-  { time: '09:30', name: 'Riad', service: 'Défrisage · 1 h', tone: 'hair' },
+  // Une cliente, un client : le produit sert les deux.
+  { time: '09:30', name: 'Lina', service: 'Pose gel · 1 h', tone: 'nail' },
   { time: '11:00', name: 'Islam', service: 'Taille de barbe · 30 min', tone: 'barb' },
 ];
 
@@ -110,7 +112,8 @@ export function ProWelcome() {
     <div className="pwl rd flex h-app flex-col">
       {/* ------------------------------------------------------------ bandeau vivant */}
       <header className="pwl-hero">
-        <img src={DESIGN_IMAGES.pro.src} alt="" className="pwl-photo" />
+        {/* Salons de femmes ET d'hommes : les photos alternent en fondu enchaîné. */}
+        <HeroSlides className="pwl-photo" />
         <span className="pwl-aurore" aria-hidden />
         <div className="pwl-bar">
           <div className="flex min-w-0 items-center gap-1.5">
@@ -140,8 +143,6 @@ export function ProWelcome() {
           </h1>
           <p className="pwl-sub">{t('Gratuit · Prêt en 5 min')}</p>
         </div>
-
-        <span className="pwl-credit">{DESIGN_IMAGES.pro.credit}</span>
       </header>
 
       <main className="pwl-main">

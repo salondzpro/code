@@ -1408,4 +1408,7 @@ export const en: Record<string, string> = {
   "Vous êtes connecté": "You're signed in",
   "En direct": "Live",
   "Ouvrir": "Open",
+  "Votre coiffeuse": "Your hairstylist",
+  "Pose gel · 1 h": "Gel nails · 1 h",
+  "Lina · Pose gel · 1 h": "Lina · Gel nails · 1 h",
 };

@@ -28,14 +28,14 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { AlertCircle, BellRing, CalendarDays, CalendarCheck, Check, CheckCircle2, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, XCircle, type LucideIcon } from 'lucide-react';
 import { BackButton, Field, I, Input } from './ui';
 import { Wordmark } from './Wordmark';
+import { HeroSlides } from './HeroSlides';
 import { LangSwitch } from './LangSwitch';
 import { t } from '@/i18n';
 
 export type AuthRole = 'client' | 'pro';
 
-const VITRINE: Record<AuthRole, { photo: string; titre: string; points: { icone: LucideIcon; texte: string }[] }> = {
+const VITRINE: Record<AuthRole, { titre: string; points: { icone: LucideIcon; texte: string }[] }> = {
   client: {
-    photo: '/demo/cover-femmes.webp',
     titre: 'Votre salon, en deux gestes.',
     points: [
       { icone: MapPin, texte: 'Les salons autour de vous' },
@@ -44,7 +44,6 @@ const VITRINE: Record<AuthRole, { photo: string; titre: string; points: { icone:
     ],
   },
   pro: {
-    photo: '/demo/cover-hommes.webp',
     titre: 'Votre salon tient dans votre poche.',
     points: [
       { icone: CalendarDays, texte: 'Agenda d’équipe' },
@@ -103,7 +102,7 @@ export function AuthShell({
     <div className={`auth-shell ${heroPro ? 'auth-pro' : ''}`} data-role={role}>
       {/* ---------------------------------------------------------------- Volet de gauche (≥1024) */}
       <aside className="auth-vitrine" aria-hidden>
-        <img src={v.photo} alt="" />
+        <HeroSlides className="auth-vitrine-ph" />
         <Wordmark size={1.429} light />
         <div>
           <p className="auth-surtitre !text-white/70">
@@ -252,7 +251,7 @@ export function ProPreview({ compact, className = '' }: { compact?: boolean; cla
         </span>
         <span className="min-w-0 flex-1">
           <span className="apv-h">{t('Rendez-vous confirmé')}</span>
-          <span className="apv-s">{t('Riad · Défrisage · 1 h')}</span>
+          <span className="apv-s">{t('Lina · Pose gel · 1 h')}</span>
         </span>
         <span className="apv-t" dir="ltr">09:30</span>
       </div>
