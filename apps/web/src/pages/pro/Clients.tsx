@@ -4,11 +4,14 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, Download, Search } from 'lucide-react';
+import { ChevronRight, Download, Search, Star } from 'lucide-react';
 import { pagesItems, useApi, useProClientsInfinite, useProSalon } from '@salondz/api-client';
 import type { ProClient } from '@salondz/types';
 import { LoadMore } from '@/components/LoadMore';
-import { formatDZPhone, formatDateShortDZ, toLocalDateKey } from '@salondz/constants';
+import { formatDA, formatDZPhone, formatDateShortDZ, toLocalDateKey } from '@salondz/constants';
+
+/** À partir de combien de rendez-vous TERMINÉS un client est un habitué. */
+const LOYAL_VISITS = 4;
 import { Avatar, Badge, I, IconButton, Skeleton, Pill } from '@/components/ui';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -92,9 +95,11 @@ export function Clients() {
   return (
     <Screen bottom={NAV_PAD} gap={12}>
       <div className="flex items-end justify-between gap-3">
-        <h1 className="h1">{t("Clients")}</h1>
+        <div className="min-w-0">
+          <h1 className="h1">{t("Clients")}</h1>
+          {total > 0 && <p className="text-[0.857rem] text-muted">{total > 1 ? t('{n} clients', { n: total }) : t('{n} client', { n: total })}</p>}
+        </div>
         <span className="flex items-center gap-2">
-          <span className="text-[1rem] text-muted">{total}</span>
           {total > 0 && (
             <IconButton
               lg
@@ -135,53 +140,71 @@ export function Clients() {
       ) : rows.length === 0 ? (
         <p className="p">
           {onlyBlocked
-            ? 'Aucun client bloqué.'
+            ? t('Aucun client bloqué.')
             : needle
-              ? `Aucun client pour « ${needle} ».`
-              : 'Vos clients apparaîtront ici après leur premier rendez-vous.'}
+              ? t('Aucun client pour « {q} ».', { q: needle })
+              : t('Vos clients apparaîtront ici après leur premier rendez-vous.')}
         </p>
       ) : (
         /* Une ligne par client, comme un répertoire : le nom, le numéro, et à droite ce qui
            compte pour décider d'appeler — combien de rendez-vous, et le prochain ou le dernier. */
         <div className="crd !gap-0 !py-1">
-          {rows.map((c) => (
-            <button
-              key={c.clientKey}
-              type="button"
-              className="li w-full text-start"
-              onClick={() => navigate(`/pro/clients/${encodeURIComponent(c.clientKey)}`)}
-            >
-              <span className="flex min-w-0 flex-1 items-center gap-3">
-                <Avatar name={c.name} size={40} />
-                <span className="min-w-0">
-                  <span className="flex items-center gap-2 text-[1rem] font-semibold">
-                    <span className="truncate">{c.name}</span>
-                    {c.blocked && (
-                      <Badge tone="cn" dot={false}>
-                        {t("Bloqué")}
-                      </Badge>
+          {rows.map((c) => {
+            // Un repère d'un mot : l'habitué se reconnaît, le nouveau aussi.
+            const tag = c.completedCount >= LOYAL_VISITS ? 'loyal' : c.bookingsCount === 1 ? 'new' : null;
+            return (
+              <button
+                key={c.clientKey}
+                type="button"
+                className="li w-full text-start"
+                onClick={() => navigate(`/pro/clients/${encodeURIComponent(c.clientKey)}`)}
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-3">
+                  <Avatar name={c.name} size={40} />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-[1rem] font-semibold">
+                      <span className="truncate">{c.name}</span>
+                      {c.blocked ? (
+                        <Badge tone="cn" dot={false}>
+                          {t("Bloqué")}
+                        </Badge>
+                      ) : tag === 'loyal' ? (
+                        <span className="cl-tag loyal">
+                          <I icon={Star} size={11} /> {t('Habitué')}
+                        </span>
+                      ) : tag === 'new' ? (
+                        <span className="cl-tag">{t('Nouveau')}</span>
+                      ) : null}
+                    </span>
+                    <span className="block truncate text-[0.857rem] text-muted">
+                      <span className="mono" dir="ltr">
+                        {c.phone ? formatDZPhone(c.phone) : t('Sans numéro')}
+                      </span>
+                    </span>
+                  </span>
+                </span>
+                <span className="flex flex-none flex-col items-end text-end">
+                  {/* Le prochain passage compte plus que le dernier : il dit qu'on va le revoir. */}
+                  <span className={`text-[0.714rem] font-semibold uppercase tracking-wide ${c.nextAt ? 'text-ok-fg' : 'text-subtle'}`}>
+                    {c.nextAt ? t('Prochain') : c.lastAt ? t('Dernier') : ''}
+                  </span>
+                  <span className="text-[0.857rem] font-semibold">
+                    {c.nextAt ? formatDateShortDZ(c.nextAt) : c.lastAt ? formatDateShortDZ(c.lastAt) : ''}
+                  </span>
+                  <span className="text-[0.786rem] text-muted">
+                    {t('{n} RDV', { n: c.bookingsCount })}
+                    {c.spentDa > 0 && (
+                      <>
+                        {' · '}
+                        <span dir="ltr">{formatDA(c.spentDa)}</span>
+                      </>
                     )}
                   </span>
-                  <span className="mono block truncate text-[0.857rem] text-muted">
-                    {c.phone ? formatDZPhone(c.phone) : 'Sans numéro'}
-                  </span>
                 </span>
-              </span>
-              <span className="flex flex-none flex-col items-end">
-                <span className="text-[1rem] font-semibold">
-                  {c.bookingsCount} {t("RDV")}
-                </span>
-                <span className={`text-[0.857rem] ${c.nextAt ? 'text-ok-fg' : 'text-muted'}`}>
-                  {c.nextAt
-                    ? formatDateShortDZ(c.nextAt)
-                    : c.lastAt
-                      ? formatDateShortDZ(c.lastAt)
-                      : ''}
-                </span>
-              </span>
-              <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
-            </button>
-          ))}
+                <I icon={ChevronRight} size={18} className="shrink-0 text-disabled rtl:-scale-x-100" />
+              </button>
+            );
+          })}
         </div>
       )}
       <LoadMore

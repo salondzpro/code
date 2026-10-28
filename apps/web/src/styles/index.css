@@ -4693,3 +4693,65 @@ html:has(.auth-onglets) body {
     .nb-svc-c { animation: none; }
   }
 }
+
+/* Clients : repère d'un mot à côté du nom (habitué, nouveau). Plat, sans ombre. */
+@layer components {
+  .cl-tag {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 9999px;
+    background: var(--color-fill);
+    color: var(--color-muted);
+    font-size: 0.714rem;
+    font-weight: 600;
+  }
+  .cl-tag.loyal {
+    background: var(--color-pending-bg);
+    color: var(--color-pending-fg);
+  }
+}
+
+/* Chiffre d'affaires (refonte du 28 oct. 2026). Plat : fonds doux, aucune ombre. */
+@layer components {
+  .rv-diff {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    font-size: 0.857rem;
+    font-weight: 600;
+  }
+  .rv-diff.up { color: var(--color-ok-fg); }
+  .rv-diff.down { color: var(--color-cancel-fg); }
+  .rv-bar { transition: background-color 0.15s, height 0.3s ease; }
+  .rv-split,
+  .rv-gauge {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--color-fill);
+  }
+  .rv-split { height: 0.571rem; }
+  .rv-gauge { flex: 1; height: 0.357rem; }
+  .rv-split > span,
+  .rv-gauge > span {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    border-radius: inherit;
+    background: var(--color-ink);
+    transition: width 0.4s ease;
+  }
+  .rv-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--color-line);
+  }
+  .rv-dot.on { background: var(--color-ink); }
+}

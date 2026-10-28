@@ -1,17 +1,22 @@
-/** PRO-F 23 — Chiffre d'affaires : jour / semaine / mois, barres par jour, encaissé / reste, par prestation. */
+/**
+ * PRO-F 23 — Chiffre d'affaires : jour / semaine / mois. Refonte du 28 oct. 2026 :
+ *   - l'écart avec la période précédente se dit EN DINARS (« +4 200 DA vs semaine dernière ») :
+ *     un pourcentage ou un « × 29 » après une semaine presque vide ne parlait à personne ;
+ *   - toucher une barre affiche ce jour-là (montant, rendez-vous) au-dessus du graphique ;
+ *   - encaissé / reste à encaisser sur UNE barre partagée, chaque prestation avec sa part en jauge.
+ */
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, TrendingDown, TrendingUp } from 'lucide-react';
 import { useProStatsRange } from '@salondz/api-client';
 import {
   DAY_LABELS_SHORT_FR,
   addDaysToKey,
   dayOfWeekFromKey,
   formatDA,
-  formatLocale,
   toLocalDateKey,
   weekKeys,
 } from '@salondz/constants';
-import { Badge, I, IconButton, SectionLabel, Segmented, Skeleton, TopBar } from '@/components/ui';
+import { I, IconButton, SectionLabel, Segmented, Skeleton, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
@@ -70,10 +75,10 @@ export function Revenue() {
   const prev = range(period, addDaysToKey(r.from, -1));
   const prevStats = useProStatsRange(prev.from, prev.to);
   const s = stats.data;
-  const delta =
-    s && prevStats.data && prevStats.data.revenueDa > 0
-      ? Math.round(((s.revenueDa - prevStats.data.revenueDa) / prevStats.data.revenueDa) * 100)
-      : null;
+  // Écart en dinars avec la période précédente (rien à comparer si elle était vide).
+  const diff = s && prevStats.data && prevStats.data.revenueDa > 0 ? s.revenueDa - prevStats.data.revenueDa : null;
+  const prevLabel = period === 'day' ? t('vs hier') : period === 'week' ? t('vs semaine dernière') : t('vs mois dernier');
+  const [picked, setPicked] = useState<string | null>(null);
   const max = Math.max(1, ...(s?.byDay.map((d) => d.revenueDa) ?? [1]));
   const exportCsv = () => {
     if (!s) return;
@@ -116,42 +121,51 @@ export function Revenue() {
       ) : (
         <>
           <div className="crd !gap-3">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <div className="text-[2.286rem] font-bold leading-none tracking-[-1px]">
-                  {formatDA(s!.revenueDa)}
+            {(() => {
+              // Une barre touchée prend la tête de la carte ; sinon, le total de la période.
+              const d = picked ? s!.byDay.find((x) => x.date === picked) : null;
+              return (
+                <div>
+                  <div className="text-[2.286rem] font-semibold leading-none tracking-[-1px]" dir="ltr">
+                    {formatDA(d ? d.revenueDa : s!.revenueDa)}
+                  </div>
+                  <div className="p mt-2">
+                    {d
+                      ? `${t(DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)])} ${Number(d.date.slice(8, 10))}`
+                      : r.label}{' '}
+                    · {t('{n} rendez-vous', { n: d ? d.bookings : s!.bookings })}
+                  </div>
+                  {!d && diff != null && diff !== 0 && (
+                    <div className={`rv-diff ${diff > 0 ? 'up' : 'down'}`}>
+                      <I icon={diff > 0 ? TrendingUp : TrendingDown} size={15} />
+                      <span dir="ltr">
+                        {diff > 0 ? '+' : '−'}
+                        {formatDA(Math.abs(diff))}
+                      </span>{' '}
+                      <span className="font-normal text-muted">{prevLabel}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="p mt-2">
-                  {r.label} · {s!.bookings} {t("rendez-vous")}
-                </div>
-              </div>
-              {delta != null && (
-                /* Au-delà de +300 %, un pourcentage ne veut plus rien dire (« +4263 % » après une
-                   semaine presque vide) : on dit combien de fois plus, en multiple. */
-                <span title={t('Par rapport à la période précédente')} aria-label={t('Par rapport à la période précédente')}>
-                  <Badge tone={delta >= 0 ? 'ok' : 'cn'} md>
-                    {delta > 300
-                      ? `× ${Math.round(delta / 100 + 1).toLocaleString(formatLocale())}`
-                      : `${delta >= 0 ? '+' : ''}${delta} %`}
-                  </Badge>
-                </span>
-              )}
-            </div>
+              );
+            })()}
             {period !== 'day' && (
               <div className="flex items-end gap-2" style={{ height: 210 }}>
                 {s!.byDay.map((d) => {
                   const isToday = d.date === today;
                   const h = Math.max(6, Math.round((d.revenueDa / max) * 170));
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={d.date}
                       className="flex flex-1 flex-col items-center justify-end gap-2"
                       style={{ minWidth: 0 }}
+                      aria-pressed={picked === d.date}
+                      aria-label={`${d.date} · ${formatDA(d.revenueDa)}`}
+                      onClick={() => setPicked((x) => (x === d.date ? null : d.date))}
                     >
                       <div
-                        className={`w-full rounded-[var(--radius-card-sm)] ${isToday ? 'bg-ink' : 'bg-line'}`}
+                        className={`rv-bar w-full rounded-[var(--radius-card-sm)] ${picked === d.date ? 'bg-ink' : picked ? 'bg-line' : isToday ? 'bg-ink' : 'bg-line'}`}
                         style={{ height: h }}
-                        title={`${formatDA(d.revenueDa)} · ${d.bookings} RDV`}
                       />
                       {period === 'week' ? (
                         <span
@@ -168,48 +182,65 @@ export function Revenue() {
                           </span>
                         )
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
             )}
           </div>
-          <div className="crd !gap-0 !py-1">
-            <div className="li">
-              <span>
-                <span className="block text-[1rem] font-semibold">{t("Encaissé")}</span>
-                <span className="p block text-[0.857rem]">{t("Réalisé : rendez-vous terminés")}</span>
-              </span>
-              <span className="text-[1.429rem] font-bold">{formatDA(s!.collectedDa)}</span>
-            </div>
-            <div className="li">
-              <span>
-                <span className="block text-[1rem] font-semibold">{t("Reste à encaisser")}</span>
-                <span className="p block text-[0.857rem]">
-                  {t('Prévisionnel : {n} rendez-vous confirmés à venir', { n: s!.remainingCount })}
-                </span>
-              </span>
-              <span className="text-[1.429rem] font-bold">{formatDA(s!.remainingDa)}</span>
-            </div>
-          </div>
+          {(() => {
+            const sum = s!.collectedDa + s!.remainingDa;
+            const pct = sum > 0 ? (s!.collectedDa / sum) * 100 : 0;
+            return (
+              <div className="crd !gap-2.5">
+                <div className="rv-split" role="img" aria-label={t('Encaissé')}>
+                  <span style={{ width: `${pct}%` }} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="flex items-center gap-1.5 text-[0.857rem] text-muted">
+                      <span className="rv-dot on" /> {t('Encaissé')}
+                    </span>
+                    <span className="block text-[1.143rem] font-semibold" dir="ltr">{formatDA(s!.collectedDa)}</span>
+                    <span className="block text-[0.786rem] text-muted">{t('Rendez-vous terminés')}</span>
+                  </div>
+                  <div className="text-end">
+                    <span className="flex items-center justify-end gap-1.5 text-[0.857rem] text-muted">
+                      <span className="rv-dot" /> {t('Reste à encaisser')}
+                    </span>
+                    <span className="block text-[1.143rem] font-semibold" dir="ltr">{formatDA(s!.remainingDa)}</span>
+                    <span className="block text-[0.786rem] text-muted">
+                      {t('{n} rendez-vous à venir', { n: s!.remainingCount })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           <SectionLabel>{t("Par prestation")}</SectionLabel>
           <div className="crd !gap-0 !py-1">
             {s!.byService.length === 0 && (
               <p className="p py-3">{t("Aucune prestation sur la période.")}</p>
             )}
-            {s!.byService.map((x) => (
-              <div key={x.name} className="li">
-                <span>
-                  <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
-                    {x.name}
+            {s!.byService.map((x) => {
+              const part = s!.revenueDa > 0 ? Math.round((x.revenueDa / s!.revenueDa) * 100) : 0;
+              return (
+                <div key={x.name} className="li !flex-col !items-stretch !gap-1.5">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 truncate text-[1rem] font-semibold">{x.name}</span>
+                    <span className="flex-none text-[1rem] font-semibold" dir="ltr">{formatDA(x.revenueDa)}</span>
                   </span>
-                  <span className="p block text-[0.857rem]">
-                    {x.bookings} {t("réservation")}{x.bookings > 1 ? 's' : ''}
+                  <span className="flex items-center gap-2.5">
+                    <span className="rv-gauge" aria-hidden>
+                      <span style={{ width: `${Math.max(2, part)}%` }} />
+                    </span>
+                    <span className="w-[6.5rem] flex-none text-end text-[0.786rem] text-muted">
+                      {part} % · {t('{n} RDV', { n: x.bookings })}
+                    </span>
                   </span>
-                </span>
-                <span className="text-[1.143rem] font-bold">{formatDA(x.revenueDa)}</span>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </>
       )}

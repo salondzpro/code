@@ -32,6 +32,18 @@ class SalonBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(ReglagesNotificationsPlugin())
         bloquerZoom()
+        // L'application restait AGRANDIE (signalé le 28 oct. 2026) : iOS zoome sur un champ au
+        // focus, et une fois l'échelle figée il n'y avait plus de geste pour revenir. On remet
+        // donc l'échelle à 1 à chaque fermeture du clavier et à chaque retour au premier plan.
+        let centre = NotificationCenter.default
+        centre.addObserver(self, selector: #selector(remettreEchelle), name: UIResponder.keyboardDidHideNotification, object: nil)
+        centre.addObserver(self, selector: #selector(remettreEchelle), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    @objc private func remettreEchelle() {
+        guard let scroll = webView?.scrollView else { return }
+        bloquerZoom()
+        if scroll.zoomScale != 1 { scroll.setZoomScale(1, animated: true) }
     }
 
     /**

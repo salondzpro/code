@@ -158,6 +158,18 @@ function lockViewport(): void {
     if (!(e.target as Element | null)?.closest?.('.leaflet-container')) e.preventDefault();
   };
   for (const type of ['gesturestart', 'gesturechange'] as const) document.addEventListener(type, refuser, { passive: false });
+  // Filet (28 oct. 2026) : si la page est restée agrandie après la saisie dans un champ, réécrire
+  // la balise viewport force WebKit à revenir à l'échelle 1. Sans effet quand l'échelle est déjà 1.
+  const recadrer = () => {
+    window.setTimeout(() => {
+      if ((window.visualViewport?.scale ?? 1) <= 1.01) return;
+      const contenu = meta.content;
+      meta.content = `${contenu}, x=1`;
+      requestAnimationFrame(() => (meta.content = contenu));
+    }, 250);
+  };
+  document.addEventListener('focusout', recadrer);
+  window.visualViewport?.addEventListener('resize', recadrer);
 }
 
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */

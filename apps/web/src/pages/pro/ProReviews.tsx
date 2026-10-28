@@ -26,6 +26,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { BottomSheet, Button, Dim, I, Pill, Skeleton, Textarea, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ReportReviewButton } from '@/components/ReportReview';
+import { ReviewSummary } from '@/components/ReviewExtras';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
@@ -77,7 +78,7 @@ function ReplySheet({
             {error}
           </p>
         )}
-        <Button onClick={() => void envoyer()} disabled={reply.isPending}>
+        <Button onClick={() => void envoyer()} loading={reply.isPending}>
           {review.reply && !texte.trim()
             ? t('Retirer ma réponse')
             : review.reply
@@ -103,14 +104,42 @@ export function ProReviews() {
   return (
     <Screen bottom={NAV_PAD} gap={12}>
       <TopBar backTo="/pro/profil" right={t('Profil')} />
-      <div className="flex items-end justify-between gap-3">
-        <h1 className="h1">{t('Avis')}</h1>
-        <span className="text-[1rem] text-muted">
-          {salon.ratingCount > 0
-            ? t('{note} · {n} avis', { note: salon.ratingAvg.toFixed(1), n: salon.ratingCount })
-            : t('Aucun avis')}
-        </span>
-      </div>
+      <h1 className="h1">{t('Avis')}</h1>
+
+      {/* Vue d'ensemble (28 oct. 2026) : la note, et la part d'avis qui ont une réponse — c'est
+          le chiffre que le professionnel peut faire bouger, et que lisent les futurs clients. */}
+      {salon.ratingCount > 0 && (
+        <div className="crd !gap-3">
+          <div className="flex items-center gap-3.5">
+            <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]" dir="ltr">
+              {salon.ratingAvg.toFixed(1)}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[1.143rem] font-semibold" aria-hidden>
+                {'★'.repeat(Math.round(salon.ratingAvg))}
+                <span className="text-disabled">{'★'.repeat(5 - Math.round(salon.ratingAvg))}</span>
+              </span>
+              <span className="block text-[0.857rem] text-muted">{t('{n} avis', { n: salon.ratingCount })}</span>
+            </span>
+          </div>
+          {(() => {
+            const answered = Math.max(0, salon.ratingCount - waiting);
+            const pct = Math.round((answered / salon.ratingCount) * 100);
+            return (
+              <div className="flex flex-col gap-1.5">
+                <span className="flex items-baseline justify-between gap-3 text-[0.857rem]">
+                  <span className="font-semibold">{t('Avis avec une réponse')}</span>
+                  <span className="text-muted" dir="ltr">{pct} %</span>
+                </span>
+                <span className="rv-gauge !flex-none" aria-hidden>
+                  <span style={{ width: `${Math.max(2, pct)}%` }} />
+                </span>
+              </div>
+            );
+          })()}
+          <ReviewSummary salon={salon} />
+        </div>
+      )}
 
       {waiting > 0 && (
         <div className="pills -mx-4 px-4" role="group" aria-label={t('Filtrer les avis')}>
