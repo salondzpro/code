@@ -150,6 +150,14 @@ function lockViewport(): void {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
   if (!meta) return;
   meta.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+  // iOS ignore `user-scalable=no` depuis iOS 10 : le pincement de la PAGE passe par les événements
+  // `gesture*`, propres à WebKit. On les refuse, sauf sur la carte, qui a son propre pincement.
+  // (Les versions récentes de l'application bloquent aussi le zoom côté natif ; ceci couvre les
+  // installations plus anciennes.)
+  const refuser = (e: Event) => {
+    if (!(e.target as Element | null)?.closest?.('.leaflet-container')) e.preventDefault();
+  };
+  for (const type of ['gesturestart', 'gesturechange'] as const) document.addEventListener(type, refuser, { passive: false });
 }
 
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */

@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { DEMO_LOGIN_CODE, demoAccountFor } from '@salondz/constants';
-import { authGoQuerySchema, devLoginSchema, emailLinkSchema, emailSignupSchema } from '@salondz/validation';
+import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, type EmailCheckStatus } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
 import { ensureDemoUser, ensureDemoWorld } from '../lib/demo';
@@ -136,11 +136,51 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   /** Inscription : crée le compte (non confirmé) et envoie le lien de confirmation. */
+  /**
+   * Rôle d'un compte existant : celui du profil s'il est créé, sinon celui posé à l'inscription.
+   * Un compte est client OU professionnel, jamais les deux.
+   */
+  const roleOf = async (user: { id: string; user_metadata: Record<string, unknown> }): Promise<'pro' | 'client'> => {
+    const res = await db.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    const role = (res.data?.role as string | undefined) ?? (user.user_metadata.role as string | undefined);
+    return role === 'pro' ? 'pro' : 'client';
+  };
+  const PRO_EXISTS_TEXT =
+    'Cette adresse e-mail est déjà associée à un compte professionnel Salon DZ. Connectez-vous, ou récupérez votre accès.';
+
+  /**
+   * VÉRIFICATION DE L'ADRESSE DÈS LA PREMIÈRE ÉTAPE (28 oct. 2026, demande du propriétaire) : on
+   * dit tout de suite qu'une adresse est déjà prise, au lieu de laisser remplir le formulaire puis
+   * refuser. C'est un choix assumé : la route révèle qu'une adresse a un compte. D'où sa limite par
+   * IP SEULE (on ne peut pas la contourner en changeant d'adresse à chaque appel) et l'absence de
+   * tout autre renseignement que le statut. La création reste protégée à part (`/auth/signup`).
+   */
+  app.post(
+    '/auth/email-check',
+    {
+      config: { rateLimit: { max: 30, timeWindow: '10 minutes', keyGenerator: (req: FastifyRequest) => `email-check:${req.ip}` } },
+      schema: { body: emailCheckSchema },
+    },
+    async (req, reply) => {
+      reply.header('Cache-Control', 'private, no-store');
+      const user = await findUser(req.body.email);
+      let status: EmailCheckStatus = 'available';
+      if (user) status = user.email_confirmed_at ? await roleOf(user) : 'pending';
+      return { status };
+    },
+  );
+
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
     const { email, password, role, next } = req.body;
     const existing = await findUser(email);
-    if (existing?.email_confirmed_at)
+    // Compte confirmé : AUCUNE seconde inscription. Le serveur décide, quoi qu'ait affiché l'écran
+    // (un ancien bundle, un appel direct). L'unicité elle-même est tenue par la base : l'adresse
+    // est unique dans `auth.users`, enregistrée en minuscules — deux inscriptions simultanées de
+    // la même adresse en laissent passer une seule, l'autre reçoit « déjà inscrite » ci-dessous.
+    if (existing?.email_confirmed_at) {
+      if ((await roleOf(existing)) === 'pro') throw conflict('PRO_EMAIL_EXISTS', PRO_EXISTS_TEXT);
       throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
+    }
     let link: string;
     if (existing) {
       // Inscription commencée mais jamais confirmée : on garde le compte et on renvoie un lien qui

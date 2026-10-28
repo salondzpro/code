@@ -13,7 +13,14 @@ export interface GeoPlace {
   detail: string;
   lat: number;
   lng: number;
+  /** Quartier (district, localité) quand le service le connaît. */
+  quartier?: string | null;
+  /** Commune (ville). */
+  commune?: string | null;
 }
+
+/** Rectangle géographique [ouest, sud, est, nord] — l'ordre attendu par Photon. */
+export type GeoBBox = readonly [number, number, number, number];
 
 /** Au-delà, la suggestion n'a plus d'intérêt : la personne a fini de taper depuis longtemps. */
 const DELAI_MS = 5_000;
@@ -41,7 +48,20 @@ async function fetchCourt(url: string, signal?: AbortSignal): Promise<Response> 
 const dort = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Position → libellé lisible (« Hydra, Alger » ; hors Algérie « Roubaix, France »), ou null si inconnu. */
-export async function reverseGeocode(lat: number, lng: number, signal?: AbortSignal): Promise<{ label: string; inDZ: boolean; /** Wilaya / région administrative, quand le service la connaît. */ region: string | null } | null> {
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+  signal?: AbortSignal,
+): Promise<{
+  label: string;
+  inDZ: boolean;
+  /** Wilaya / région administrative, quand le service la connaît. */
+  region: string | null;
+  /** Rue et numéro (ou nom du lieu), quartier et commune : de quoi écrire une adresse complète. */
+  rue?: string | null;
+  quartier?: string | null;
+  commune?: string | null;
+} | null> {
   try {
     const res = await fetchCourt(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=fr`, signal);
     if (!res.ok) return null;
@@ -54,7 +74,10 @@ export async function reverseGeocode(lat: number, lng: number, signal?: AbortSig
     const parts = inDZ ? [local, city] : [city ?? local, p.country];
     const label = parts.filter((x, i, a): x is string => !!x && a.indexOf(x) === i).join(', ');
     const region = p.state ?? p.county ?? p.city ?? null;
-    return label ? { label, inDZ, region } : null;
+    const rue = [p.housenumber, p.street].filter(Boolean).join(' ');
+    return label
+      ? { label, inDZ, region, rue: rue || null, quartier: p.district ?? p.locality ?? p.suburb ?? null, commune: p.city ?? p.county ?? null }
+      : null;
   } catch {
     return null;
   }
@@ -100,7 +123,14 @@ function lirePhoton(json: PhotonReponse): GeoPlace[] {
     const key = `${name}|${detail}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ label: name, detail, lat: Number(f.geometry.coordinates[1].toFixed(5)), lng: Number(f.geometry.coordinates[0].toFixed(5)) });
+    out.push({
+      label: name,
+      detail,
+      lat: Number(f.geometry.coordinates[1].toFixed(5)),
+      lng: Number(f.geometry.coordinates[0].toFixed(5)),
+      quartier: p.district ?? p.locality ?? p.suburb ?? null,
+      commune: p.city ?? p.county ?? null,
+    });
   }
   return out;
 }
@@ -127,14 +157,16 @@ export class GeocodeIndisponible extends Error {
  * `GeocodeIndisponible` : une liste vide signifie « rien ne correspond », jamais « ça n'a pas
  * marché ». Une annulation (frappe suivante) rend une liste vide sans bruit.
  */
-export async function geocodeDZ(q: string, signal?: AbortSignal): Promise<GeoPlace[]> {
+export async function geocodeDZ(q: string, signal?: AbortSignal, options: { bbox?: GeoBBox } = {}): Promise<GeoPlace[]> {
   const needle = q.trim();
   if (needle.length < 3) return [];
-  const cle = needle.toLowerCase();
+  // Zone imposée (la wilaya du salon) : les adresses d'ailleurs ne sont même pas demandées.
+  const bbox = options.bbox ? options.bbox.map((n) => n.toFixed(4)).join(',') : DZ_BBOX;
+  const cle = `${needle.toLowerCase()}|${bbox}`;
   const connu = cache.get(cle);
   if (connu) return connu;
 
-  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(needle)}&limit=6&lang=fr&bbox=${DZ_BBOX}`;
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(needle)}&limit=${options.bbox ? 8 : 6}&lang=fr&bbox=${bbox}`;
   let dernier: unknown = null;
   for (const attente of REPRISES) {
     if (signal?.aborted) return [];

@@ -50,7 +50,8 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   const role = PRO_ONLY ? 'pro' : landing ? 'client' : params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
   const next = landing ? (params.get('next') ?? HOME) : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
   const linkErr = params.get('erreur');
-  const [email, setEmail] = useState(() => (landing ? '' : (readAuthFlow()?.identifier ?? '')));
+  // `?email=` : on arrive de l'inscription (« cette adresse a déjà un compte ») — l'adresse est déjà là.
+  const [email, setEmail] = useState(() => params.get('email') ?? (landing ? '' : (readAuthFlow()?.identifier ?? '')));
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState<'password' | 'resend' | 'demo' | null>(null);
   /**

@@ -3368,3 +3368,452 @@ html:has(.auth-onglets) body {
     border-inline: 1px solid var(--color-line-soft);
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Accueil pro COMPACT (28 oct. 2026, demande du propriétaire)          */
+/* ------------------------------------------------------------------ */
+/* Le bandeau du jour tient en deux rangées (bonjour, puis trois chiffres) ; la semaine et le lien
+   ne s'affichent qu'à partir de 1 024 px, où la colonne de droite a la place. Sur téléphone :
+   bandeau, prochain, demandes, la suite de la journée — rien d'autre. */
+@layer components {
+  .phx {
+    gap: 0.875rem;
+    padding: 0.875rem 0.875rem 0;
+  }
+  .phx-hi {
+    margin-top: 0;
+    font-size: 1.429rem;
+    letter-spacing: -0.5px;
+  }
+  .phx-date {
+    margin-top: 0.125rem;
+    font-size: 0.857rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: rgb(255 255 255 / 0.55);
+  }
+  .phx-date::first-letter {
+    text-transform: uppercase;
+  }
+  .phx-top .btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.857rem !important;
+  }
+  .phx-k {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+    margin-inline: -0.875rem;
+    margin-bottom: 0;
+  }
+  .phx-c {
+    justify-content: center;
+    gap: 0;
+    padding: 0.75rem 0.875rem;
+  }
+  .phx-c-day {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.625rem;
+  }
+  .phx-c-day .phx-l,
+  .phx-c-day .phx-s {
+    display: block;
+  }
+  .phx-c-day .phx-l {
+    color: #fff;
+    font-weight: 600;
+  }
+  .phx-v {
+    font-size: 1.429rem;
+    line-height: 1.15;
+  }
+  .phx-ring {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .phx-ring svg {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .phx-ring-n {
+    font-size: 1rem;
+  }
+  /* Prochain : une carte basse, l'appel et WhatsApp en boutons carrés à droite. */
+  .phn {
+    gap: 0.5rem;
+    padding: 0.75rem 0.875rem;
+  }
+  .phn-k {
+    gap: 0.375rem;
+    font-size: 0.75rem;
+  }
+  .phn-t {
+    flex: none;
+    font-size: 1.286rem;
+  }
+  .phn-ib {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    color: var(--color-ink);
+  }
+  .phn-ib.wa {
+    color: var(--color-green);
+  }
+  .phn-ib:active {
+    background: var(--color-fill);
+  }
+  .phr {
+    gap: 0.625rem;
+    padding: 0.75rem;
+  }
+  .phr-a .btn.sm {
+    padding-block: 0.5625rem;
+  }
+}
+@media (max-width: 1023.98px) {
+  .phg-s {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Adresse du salon (28 oct. 2026) — Step4Address, PlacePicker, WilayaPicker */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .adr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  /* Une étape : une carte, une pastille numérotée qui devient une coche. */
+  .adr-s {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.875rem;
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    transition:
+      border-color 0.2s,
+      opacity 0.2s;
+  }
+  .adr-s.on {
+    border-color: var(--color-ink);
+  }
+  .adr-s.err {
+    border-color: var(--color-danger);
+  }
+  .adr-s.off {
+    opacity: 0.55;
+  }
+  .adr-s.off .adr-b > :not(p) {
+    pointer-events: none;
+  }
+  .adr-h {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .adr-n {
+    display: grid;
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--color-fill);
+    border: 1px solid var(--color-line);
+    font-size: 0.857rem;
+    font-weight: 700;
+  }
+  .adr-s.on .adr-n {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-on-ink);
+  }
+  .adr-s.done .adr-n {
+    background: var(--color-ok-fg);
+    border-color: var(--color-ok-fg);
+    color: #fff;
+  }
+  .adr-b {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .adr-in {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    height: 3.286rem;
+    padding: 0 0.375rem 0 0.875rem;
+    border-radius: var(--radius-input);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-line);
+    transition: border-color 0.15s;
+  }
+  .adr-in:focus-within {
+    border-color: var(--color-ink);
+  }
+  .adr-in.err {
+    border-color: var(--color-danger);
+  }
+  .adr-in input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    background: transparent;
+    font-size: 16px;
+    outline: none;
+  }
+  .adr-in input::placeholder {
+    color: var(--color-subtle);
+  }
+  .adr-x {
+    display: grid;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: var(--radius-btn);
+    color: var(--color-muted);
+  }
+  .adr-gps {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 0.875rem;
+    border-radius: var(--radius-btn);
+    background: var(--color-fill);
+    font-size: 0.929rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .adr-gps:disabled {
+    opacity: 0.6;
+  }
+  .adr-sum {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+  }
+  .adr-sum.ok {
+    background: var(--color-ok-bg);
+  }
+  .adr-sum-i {
+    display: grid;
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .adr-sum.ok .adr-sum-i {
+    color: var(--color-ok-fg);
+  }
+  .adr-ok {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.75rem;
+    font-size: 0.929rem;
+    font-weight: 600;
+    color: var(--color-ok-fg);
+  }
+
+  /* Carte : épingle au centre, commandes en bas, aide au premier affichage. */
+  .ppk {
+    position: relative;
+    isolation: isolate;
+    z-index: 0;
+    height: 18rem;
+    overflow: hidden;
+    border-radius: var(--radius-card-sm);
+    border: 1px solid var(--color-line);
+    background: var(--color-fill);
+  }
+  .ppk-pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 400;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.3));
+    transition: transform 0.2s;
+  }
+  .ppk-pin path {
+    fill: var(--color-ink);
+  }
+  .ppk-pin circle {
+    fill: #fff;
+  }
+  .ppk.ok .ppk-pin path {
+    fill: var(--color-ok-fg);
+  }
+  .ppk-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 399;
+    width: 0.625rem;
+    height: 0.3125rem;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.35);
+    pointer-events: none;
+  }
+  .ppk-hint {
+    position: absolute;
+    top: 0.625rem;
+    left: 50%;
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    max-width: calc(100% - 1.25rem);
+    padding: 0.375rem 0.75rem;
+    transform: translateX(-50%);
+    border-radius: var(--radius-pill);
+    background: rgb(17 18 20 / 0.82);
+    color: #fff;
+    font-size: 0.786rem;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .ppk-zoom {
+    position: absolute;
+    top: 0.625rem;
+    inset-inline-end: 0.625rem;
+    z-index: 400;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  .ppk-zoom button {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+  }
+  .ppk-zoom button + button {
+    border-top: 1px solid var(--color-line-soft);
+  }
+  .ppk-gps {
+    position: absolute;
+    bottom: 0.625rem;
+    inset-inline-end: 0.625rem;
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    font-size: 0.857rem;
+    font-weight: 600;
+  }
+  .ppk-label {
+    position: absolute;
+    bottom: 0.625rem;
+    inset-inline-start: 0.625rem;
+    z-index: 400;
+    max-width: calc(100% - 9.5rem);
+    padding: 0.375rem 0.75rem;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    font-size: 0.786rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ppk-label.err {
+    color: var(--color-danger);
+  }
+  .ppk .leaflet-control-attribution {
+    font-size: 9px;
+  }
+
+  /* Wilaya : un grand champ, et la feuille avec recherche. */
+  .wlp {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    height: 3.286rem;
+    padding: 0 0.875rem;
+    border-radius: var(--radius-input);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-line);
+  }
+  .wlp.err {
+    border-color: var(--color-danger);
+  }
+  .wlp-n {
+    display: grid;
+    flex: none;
+    min-width: 2rem;
+    height: 1.75rem;
+    padding: 0 0.375rem;
+    place-items: center;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+    font-size: 0.857rem;
+    font-weight: 700;
+  }
+  .wlp.on .wlp-n {
+    background: var(--color-ink);
+    color: var(--color-on-ink);
+  }
+  .wls {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+  }
+  .wls-l {
+    flex: 1;
+    min-height: 0;
+    margin-inline: -0.25rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .wls-r {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.625rem 0.25rem;
+    border-bottom: 1px solid var(--color-line-soft);
+  }
+  .wls-r.on .wlp-n {
+    background: var(--color-ink);
+    color: var(--color-on-ink);
+  }
+}
+@media (min-width: 768px) {
+  .ppk {
+    height: 22rem;
+  }
+}

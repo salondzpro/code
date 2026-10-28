@@ -18,13 +18,13 @@
  * pas une condition d'accès au produit.
  */
 import { useEffect, useState } from 'react';
-import { WILAYAS, geocodeDZ, wilayaName, type GeoPlace } from '@salondz/constants';
+import { WILAYAS, geocodeDZ, wilayaName, type GeoBBox, type GeoPlace } from '@salondz/constants';
 
 /** Un lieu proposé. `point` dit s'il peut servir de centre à un rayon. */
 export type Lieu =
   | { kind: 'wilaya'; cle: string; label: string; detail: string; wilaya: number }
   | { kind: 'commune'; cle: string; label: string; detail: string; wilaya: number; lat: number; lng: number }
-  | { kind: 'adresse'; cle: string; label: string; detail: string; lat: number; lng: number };
+  | { kind: 'adresse'; cle: string; label: string; detail: string; lat: number; lng: number; quartier?: string | null; commune?: string | null };
 
 /**
  * Forme comparable d'un texte : sans accent, sans apostrophe, en minuscules. Les noms algériens
@@ -91,13 +91,14 @@ function rang(champ: string, q: string): number {
  * Wilayas et communes correspondant à la saisie, les plus probables d'abord. Dès UNE lettre : un
  * champ qui attend trois caractères pour proposer quoi que ce soit ne se sent pas vivant.
  */
-export async function chercherLieux(q: string, max = 7): Promise<Lieu[]> {
+export async function chercherLieux(q: string, max = 7, wilaya?: number | null): Promise<Lieu[]> {
   const needle = aplatir(q);
   if (!needle) return [];
-  const communes = await chargerCommunes().catch(() => [] as Commune[]);
+  // Wilaya imposée : seules ses communes, et pas de ligne « toute la wilaya » (elle est déjà choisie).
+  const communes = (await chargerCommunes().catch(() => [] as Commune[])).filter((c) => !wilaya || c.wilaya === wilaya);
 
   const trouves: { lieu: Lieu; rang: number; taille: number }[] = [];
-  for (const w of WILAYAS) {
+  for (const w of wilaya ? [] : WILAYAS) {
     const r = Math.min(...[rang(aplatir(w.name), needle), rang(w.nameAr, needle)].map((x) => (x < 0 ? 9 : x)));
     if (r > 3) continue;
     trouves.push({
@@ -135,7 +136,10 @@ export type EtatGeocodage = 'repos' | 'cherche' | 'fini' | 'injoignable';
  * quand le réseau répond. Les deux listes sont rendues séparément pour que la première s'affiche
  * sans attendre la seconde.
  */
-export function useLieux(q: string, { adresses = true }: { adresses?: boolean } = {}) {
+export function useLieux(
+  q: string,
+  { adresses = true, wilaya = null, bbox = null }: { adresses?: boolean; wilaya?: number | null; bbox?: GeoBBox | null } = {},
+) {
   const [locaux, setLocaux] = useState<Lieu[]>([]);
   const [fines, setFines] = useState<Lieu[]>([]);
   const [geocodage, setGeocodage] = useState<EtatGeocodage>('repos');
@@ -146,11 +150,11 @@ export function useLieux(q: string, { adresses = true }: { adresses?: boolean } 
       setLocaux([]);
       return;
     }
-    void chercherLieux(q).then((r) => vivant && setLocaux(r));
+    void chercherLieux(q, 7, wilaya).then((r) => vivant && setLocaux(r));
     return () => {
       vivant = false;
     };
-  }, [q]);
+  }, [q, wilaya]);
 
   useEffect(() => {
     // Photon ne sait rien faire d'utile en dessous de trois lettres, et la table embarquée couvre
@@ -162,10 +166,15 @@ export function useLieux(q: string, { adresses = true }: { adresses?: boolean } 
     }
     const ctrl = new AbortController();
     setGeocodage('cherche');
-    geocodeDZ(q, ctrl.signal)
+    geocodeDZ(q, ctrl.signal, bbox ? { bbox } : {})
       .then((r: GeoPlace[]) => {
         if (ctrl.signal.aborted) return;
-        setFines(r.map((a) => ({ kind: 'adresse', cle: `a-${a.lat}-${a.lng}`, label: a.label, detail: a.detail, lat: a.lat, lng: a.lng })));
+        setFines(
+          r
+            // Photon traite le rectangle comme une préférence forte, pas une frontière : on écarte ce qui en sort.
+            .filter((a) => !bbox || dansZone(a, bbox))
+            .map((a) => ({ kind: 'adresse', cle: `a-${a.lat}-${a.lng}`, label: a.label, detail: a.detail, lat: a.lat, lng: a.lng, quartier: a.quartier, commune: a.commune })),
+        );
         setGeocodage('fini');
       })
       .catch(() => {
@@ -174,9 +183,46 @@ export function useLieux(q: string, { adresses = true }: { adresses?: boolean } 
         setGeocodage('injoignable');
       });
     return () => ctrl.abort();
-  }, [q, adresses]);
+  }, [q, adresses, bbox?.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Les adresses qui répètent une commune déjà proposée n'apportent rien. */
   const connus = new Set(locaux.map((l) => aplatir(l.label)));
   return { locaux, adresses: fines.filter((a) => !connus.has(aplatir(a.label))), geocodage };
+}
+
+/** Un point est-il dans le rectangle [ouest, sud, est, nord] ? */
+export const dansZone = (p: { lat: number; lng: number }, b: GeoBBox): boolean =>
+  p.lng >= b[0] && p.lat >= b[1] && p.lng <= b[2] && p.lat <= b[3];
+
+/**
+ * ZONE D'UNE WILAYA : son centre (le chef-lieu quand on le reconnaît) et le rectangle qui contient
+ * toutes ses communes, avec une marge. Calculée depuis la table embarquée — sans réseau, et juste
+ * pour les dix wilayas de 2019 dont la table porte déjà le bon rattachement.
+ */
+export async function zoneWilaya(code: number): Promise<{ center: { lat: number; lng: number }; bbox: GeoBBox } | null> {
+  const communes = (await chargerCommunes().catch(() => [] as Commune[])).filter((c) => c.wilaya === code);
+  if (!communes.length) return null;
+  const lats = communes.map((c) => c.lat);
+  const lngs = communes.map((c) => c.lng);
+  const marge = 0.08;
+  const bbox: GeoBBox = [Math.min(...lngs) - marge, Math.min(...lats) - marge, Math.max(...lngs) + marge, Math.max(...lats) + marge];
+  const nom = aplatir(wilayaName(code));
+  const chefLieu = communes.find((c) => c.plat === nom);
+  const center = chefLieu ? { lat: chefLieu.lat, lng: chefLieu.lng } : { lat: (bbox[1] + bbox[3]) / 2, lng: (bbox[0] + bbox[2]) / 2 };
+  return { center, bbox };
+}
+
+/** La commune la plus proche d'un point, dans une wilaya donnée (repli quand le géocodeur ne dit rien). */
+export async function communeProche(p: { lat: number; lng: number }, wilaya: number): Promise<string | null> {
+  const communes = (await chargerCommunes().catch(() => [] as Commune[])).filter((c) => c.wilaya === wilaya);
+  let best: Commune | null = null;
+  let d = Infinity;
+  for (const c of communes) {
+    const x = (c.lat - p.lat) ** 2 + ((c.lng - p.lng) * Math.cos((p.lat * Math.PI) / 180)) ** 2;
+    if (x < d) {
+      d = x;
+      best = c;
+    }
+  }
+  return best?.nom ?? null;
 }

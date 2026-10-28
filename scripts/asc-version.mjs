@@ -29,8 +29,8 @@ if (!NUMERO) {
 /** Texte des nouveautés, par langue de fiche. Une langue absente d'ici reçoit le texte français. */
 const NOUVEAUTES = {
   'fr-FR': PRO
-    ? 'Nouvel accueil : votre journée, les demandes à valider et le chiffre d’affaires de la semaine en un coup d’œil.\nRegarder un jour dans l’agenda suffit à marquer ses rendez-vous comme vus : les pastilles baissent sans ouvrir chaque fiche, et les jours qui ont du nouveau sont signalés.\nCorrections et améliorations.'
-    : 'Espace professionnel : nouvel accueil, et les pastilles baissent dès qu’on regarde sa journée dans l’agenda.\nCorrections et améliorations.',
+    ? 'Accueil plus compact : votre journée, le prochain client et les demandes à valider, sans rien d’autre.\nInscription : l’adresse du salon se choisit en trois étapes (wilaya, adresse, emplacement exact sur la carte) et se confirme avant de continuer.\nUne adresse e-mail déjà associée à un compte professionnel est signalée dès la saisie.\nAgenda et réservations redessinés. L’application ne zoome plus par erreur.'
+    : 'L’application ne zoome plus par erreur (pincement, taille de police du téléphone).\nEspace professionnel : accueil, agenda et réservations redessinés.\nCorrections et améliorations.',
 };
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;

@@ -23,15 +23,13 @@
  * fige pas les autres.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import {
   CalendarDays,
-  CalendarOff,
   ChevronDown,
   ChevronRight,
   MessageCircle,
   Phone,
-  Plus,
   QrCode,
   Share2,
 } from 'lucide-react';
@@ -54,8 +52,7 @@ import {
   weekKeys,
 } from '@salondz/constants';
 import type { BookingWithStaff } from '@salondz/types';
-import { formatDuration } from '@/lib/format';
-import { Avatar, Button, EmptyState, I, Skeleton, StatusBadge } from '@/components/ui';
+import { Button, EmptyState, I, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -79,15 +76,14 @@ function useNow(): number {
 }
 
 /** Nombre de demandes montrées sur l'accueil ; la suite est dans « Réservations ». */
-const PENDING_SHOWN = 3;
+const PENDING_SHOWN = 2;
 /** Rendez-vous passés montrés avant de replier la suite (« 4 passés »). */
-const PAST_SHOWN = 1;
+const PAST_SHOWN = 0;
 
 /** Montant sans devise, espaces insécables (le séparateur de milliers ne coupe jamais la ligne). */
 const amount = (v: number) => v.toLocaleString(formatLocale()).replace(/ /g, ' ');
 
 export function ProHome() {
-  const navigate = useNavigate();
   const me = useMe();
   const proSalon = useProSalon().data;
   const salon = proSalon?.salon ?? null;
@@ -167,131 +163,92 @@ export function ProHome() {
             .filter(Boolean)
             .join(' · ');
 
+  const pendingCount = stats.data?.pendingCount ?? pendingItems.length;
   const hero = (
     <section className="phx" aria-label={t('Votre journée')}>
       <div className="phx-top">
         <div className="min-w-0">
-          <p className="phx-date">{dateLine}</p>
           <h1 className="phx-hi">{firstName ? t('Bonjour, {name}', { name: firstName }) : t('Votre journée')}</h1>
+          <p className="phx-date">{dateLine}</p>
         </div>
         {/* « Arrêt / Pause » à droite du bonjour ; l'identité du salon est dans l'en-tête. */}
         {salon && <QuickCloseButton openingHours={salon.openingHours} />}
       </div>
 
-      <Link to="/pro/agenda" className="phx-day">
-        <Ring ratio={ratio} live={inProgress}>
-          {todayList.data ? total : '–'}
-        </Ring>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[1.143rem] font-semibold">
-            {t("Rendez-vous aujourd'hui")}
+      {/* Trois chiffres, une rangée : la journée, ce qui attend une réponse, ce qu'elle rapporte. */}
+      <div className="phx-k">
+        <Link to="/pro/agenda" className="phx-c phx-c-day" aria-label={`${t("Rendez-vous aujourd'hui")} · ${dayLine}`}>
+          <Ring ratio={ratio} live={inProgress}>
+            {todayList.data ? total : '–'}
+          </Ring>
+          <span className="min-w-0">
+            <span className="phx-l">{t('Aujourd’hui')}</span>
+            <span className="phx-s">{todayList.data ? (left + live ? t('{n} à venir', { n: left + live }) : total ? t('Terminé') : t('Libre')) : '\u00a0'}</span>
           </span>
-          <span className="block truncate text-[1rem] text-white/60">{dayLine}</span>
-        </span>
-        <I icon={ChevronRight} size={18} className="flex-none text-white/40 rtl:rotate-180" />
-      </Link>
-
-      {stats.isError ? (
-        <ErrorMessage error={stats.error} retry={() => stats.refetch()} />
-      ) : (
-        <div className="phx-k">
-          <Link to="/pro/reservations" className="phx-c" aria-label={t('Demandes à valider')}>
-            <span className="phx-l">{t('À valider')}</span>
-            <span className={`phx-v ${stats.data?.pendingCount ? 'warn' : ''}`}>
-              {stats.isPending ? '–' : stats.data.pendingCount}
-            </span>
-            <span className="phx-s">
-              {stats.isPending ? ' ' : stats.data.pendingCount ? t('Réponse attendue') : t('Tout est traité')}
-            </span>
-          </Link>
-          <Link to="/pro/chiffre-affaires" className="phx-c">
-            <span className="phx-l">{t("Chiffre d'affaires du jour")}</span>
-            <span className="phx-v whitespace-nowrap">
-              <bdi dir="ltr">
-                {stats.isPending ? '–' : amount(stats.data.todayRevenueDa ?? 0)}
-                <span className="phx-u">DA</span>
-              </bdi>
-            </span>
-            <span className="phx-s">{t('Voir le détail')}</span>
-          </Link>
-        </div>
-      )}
+        </Link>
+        <Link to="/pro/reservations" className="phx-c" aria-label={t('Demandes à valider')}>
+          <span className={`phx-v ${pendingCount ? 'warn' : ''}`}>{stats.isPending ? '–' : pendingCount}</span>
+          <span className="phx-l">{t('À valider')}</span>
+        </Link>
+        <Link to="/pro/chiffre-affaires" className="phx-c" aria-label={t("Chiffre d'affaires du jour")}>
+          <span className="phx-v whitespace-nowrap">
+            <bdi dir="ltr">{stats.isPending ? '–' : amount(stats.data?.todayRevenueDa ?? 0)}</bdi>
+          </span>
+          <span className="phx-l">{t('DA ce jour')}</span>
+        </Link>
+      </div>
+      {stats.isError && <ErrorMessage error={stats.error} retry={() => stats.refetch()} />}
     </section>
-  );
-
-  const actions = (
-    <nav className="phq" aria-label={t('Raccourcis')}>
-      <button type="button" className="phq-a on" onClick={() => navigate('/pro/rendez-vous/nouveau')}>
-        <span className="phq-i"><I icon={Plus} size={22} /></span>
-        <span className="phq-t">{t('Nouveau')}</span>
-      </button>
-      <Link to="/pro/agenda" className="phq-a">
-        <span className="phq-i"><I icon={CalendarDays} size={21} /></span>
-        <span className="phq-t">{t('Agenda')}</span>
-      </Link>
-      <Link to="/pro/blocages" className="phq-a">
-        <span className="phq-i"><I icon={CalendarOff} size={21} /></span>
-        <span className="phq-t">{t('Bloquer')}</span>
-      </Link>
-      <button type="button" className="phq-a" onClick={() => setShare(true)} disabled={!salon}>
-        <span className="phq-i"><I icon={Share2} size={21} /></span>
-        <span className="phq-t">{t('Partager')}</span>
-      </button>
-    </nav>
   );
 
   /* ---------------------------------------------------------------- maintenant */
 
   const nowCard = next && (
-    /* Le prochain (ou celui en cours) en grand : heure, client, prestation, prix, membre. */
+    /* Le prochain (ou celui en cours) : heure, client, prestation, et l'appel à portée de pouce. */
     <div className={`phn ${inProgress ? 'live' : ''}`} style={{ ['--tone' as string]: toneVar(toneOf(next)) }}>
-      <div className="flex items-center justify-between gap-3">
-        <span className="phn-k">
-          <span className="phn-dot" aria-hidden />
-          {inProgress
-            ? t('En cours · fin à {time}', { time: formatTimeDZ(next.endsAt) })
-            : `${t('Prochain')} · ${untilLabelFR(next.startsAt, now)}`}
-        </span>
-        {next.status !== 'confirmed' && <StatusBadge status={next.status} md />}
-      </div>
-      <button
-        type="button"
-        className="flex items-center gap-3.5 text-start"
-        onClick={() => setPeek(next.id)}
-        aria-label={t('Ouvrir le rendez-vous de {name}', { name: next.clientName })}
-      >
-        <Avatar name={next.clientName} size={48} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.2px]">{next.clientName}</span>
-          <span className="block truncate text-[1rem] text-muted">
-            {next.serviceName} · {formatDuration(next.durationMinutes)}
-            {next.staff?.displayName ? ` · ${next.staff.displayName}` : ''}
-          </span>
-        </span>
-        <span className="flex flex-none flex-col items-end">
+      <span className="phn-k">
+        <span className="phn-dot" aria-hidden />
+        {inProgress
+          ? t('En cours · fin à {time}', { time: formatTimeDZ(next.endsAt) })
+          : `${t('Prochain')} · ${untilLabelFR(next.startsAt, now)}`}
+        {next.status !== 'confirmed' && <StatusBadge status={next.status} />}
+      </span>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-3 text-start"
+          onClick={() => setPeek(next.id)}
+          aria-label={t('Ouvrir le rendez-vous de {name}', { name: next.clientName })}
+        >
           <span className="phn-t mono" dir="ltr">{formatTimeDZ(next.startsAt)}</span>
-          <span className="text-[0.857rem] font-semibold text-muted">{formatDA(next.priceDa)}</span>
-        </span>
-      </button>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[1.143rem] font-semibold">{next.clientName}</span>
+            <span className="block truncate text-[0.857rem] text-muted">
+              {next.serviceName} · {formatDA(next.priceDa)}
+              {!staffId && next.staff?.displayName ? ` · ${next.staff.displayName}` : ''}
+            </span>
+          </span>
+        </button>
+        {next.clientPhone && (
+          <span className="flex flex-none gap-1.5">
+            <a href={`tel:${next.clientPhone}`} className="phn-ib" aria-label={t('Appeler {name}', { name: next.clientName })}>
+              <I icon={Phone} size={18} />
+            </a>
+            <a
+              href={`https://wa.me/${next.clientPhone.replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="phn-ib wa"
+              aria-label={`WhatsApp ${next.clientName}`}
+            >
+              <I icon={MessageCircle} size={18} />
+            </a>
+          </span>
+        )}
+      </div>
       {inProgress && (
         <div className="phn-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(elapsed * 100)}>
           <span style={{ width: `${elapsed * 100}%` }} />
-        </div>
-      )}
-      {next.clientPhone && (
-        <div className="g2">
-          <a href={`tel:${next.clientPhone}`} className="btn g sm" aria-label={t('Appeler {name}', { name: next.clientName })}>
-            <I icon={Phone} size={16} /> {t('Appeler')}
-          </a>
-          <a
-            href={`https://wa.me/${next.clientPhone.replace(/\D/g, '')}`}
-            target="_blank"
-            rel="noreferrer"
-            className="btn g sm"
-            aria-label={`WhatsApp ${next.clientName}`}
-          >
-            <I icon={MessageCircle} size={16} /> WhatsApp
-          </a>
         </div>
       )}
     </div>
@@ -315,21 +272,23 @@ export function ProHome() {
 
   /* ---------------------------------------------------------------- journée */
 
-  const shownPast = showPast ? past : past.slice(-PAST_SHOWN);
+  const shownPast = showPast ? past : past.slice(past.length - PAST_SHOWN);
+  // Le prochain a sa carte au-dessus : la frise commence APRÈS lui (une information, une fois).
+  const later = upcoming.slice(1);
   const nowLabel = formatTimeDZ(new Date(now).toISOString());
   const day = (
     <section className="flex flex-col gap-2.5" aria-label={t('Ma journée')}>
-      <SectionHead title={t('Ma journée')} count={todays.length || undefined} to="/pro/agenda" more={t('Agenda')} />
+      <SectionHead title={next ? t('Ensuite') : t('Ma journée')} count={later.length || undefined} to="/pro/agenda" more={t('Agenda')} />
       {todayList.isPending && <Skeleton className="h-[9rem] w-full !rounded-[var(--radius-card)]" />}
       {todayList.isError && <ErrorMessage error={todayList.error} retry={() => todayList.refetch()} />}
-      {todayList.data && !todays.length && (
+      {todayList.data && !todays.length && !next && (
         <EmptyState
           icon={CalendarDays}
           title={t('Aucun rendez-vous aujourd’hui')}
           description={t('Ajoutez un client de passage ou partagez votre lien pour remplir la journée.')}
         />
       )}
-      {todays.length > 0 && (
+      {(later.length > 0 || past.length > 0) && (
         <TimelineList>
           {past.length > PAST_SHOWN && !showPast && (
             <li>
@@ -344,14 +303,12 @@ export function ProHome() {
           ))}
           {/* Le repère du moment : entre ce qui est fait et ce qui vient, sauf pendant un
               rendez-vous en cours — sa ligne verte le dit déjà. */}
-          {!inProgress && upcoming.length > 0 && past.length > 0 && (
-            <TimelineNow time={nowLabel} />
-          )}
-          {upcoming.map((b) => (
+          {showPast && past.length > 0 && later.length > 0 && <TimelineNow time={nowLabel} />}
+          {later.map((b) => (
             <TimelineRow
               key={b.id}
               b={b}
-              state={b === next && inProgress ? 'live' : 'next'}
+              state="next"
               tone={toneVar(toneOf(b))}
               showStaff={!staffId}
               onOpen={setPeek}
@@ -426,13 +383,12 @@ export function ProHome() {
       <div className="phg">
         <div className="phg-m">
           {hero}
-          {actions}
           {salon && salon.staff.filter((m) => m.isActive).length > 1 && (
             <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
           )}
           {nowCard}
           {requests}
-          {day}
+          {(later.length > 0 || past.length > 0 || !next) && day}
         </div>
         <div className="phg-s">
           {revenue}

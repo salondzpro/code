@@ -31,6 +31,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 class SalonBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(ReglagesNotificationsPlugin())
+        bloquerZoom()
+    }
+
+    /**
+     * PAS DE ZOOM DANS L'APPLICATION (28 oct. 2026). Depuis iOS 10, la WebView ignore
+     * `user-scalable=no` : le pincement agrandissait toute l'application, et elle restait parfois
+     * agrandie après la saisie dans un champ. On fige l'échelle de la vue défilante à 1 et on coupe
+     * son geste de pincement. La carte (Leaflet) garde le sien : il est géré par la page.
+     */
+    private func bloquerZoom() {
+        guard let scroll = webView?.scrollView else { return }
+        scroll.minimumZoomScale = 1
+        scroll.maximumZoomScale = 1
+        scroll.bouncesZoom = false
+        scroll.pinchGestureRecognizer?.isEnabled = false
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        bloquerZoom()
     }
 }
 

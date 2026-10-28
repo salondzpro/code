@@ -13,6 +13,8 @@ export interface ProDraft {
   address?: string;
   wilayaCode?: number;
   zone?: string;
+  /** Commune (ville) du salon, déduite de l’adresse ou de la position. */
+  city?: string;
   homeService?: boolean;
   lat?: number | null;
   lng?: number | null;

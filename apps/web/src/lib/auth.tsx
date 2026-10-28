@@ -303,9 +303,13 @@ export type AuthErrorKind =
  * par Supabase quand il existe et sinon du message. Jamais de texte anglais brut à l'écran :
  * le dernier recours est un message générique.
  */
+export const PRO_EMAIL_EXISTS_TEXT =
+  'Cette adresse e-mail est déjà associée à un compte professionnel Salon DZ. Connectez-vous, ou récupérez votre accès.';
+
 const API_KINDS: Record<string, AuthErrorKind> = {
   NO_ACCOUNT: 'no_account',
   EMAIL_EXISTS: 'exists',
+  PRO_EMAIL_EXISTS: 'exists',
   ALREADY_CONFIRMED: 'exists',
   EMAIL_INVALID: 'email',
   EMAIL_QUOTA: 'rate',
@@ -317,6 +321,7 @@ export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: st
   if (err instanceof ApiError) {
     if (err.isNetwork) return { kind: 'network', text: t("Connexion perdue. Vérifiez votre réseau et réessayez.") };
     if (err.status === 429) return { kind: 'rate', text: t("Trop de tentatives. Réessayez dans quelques minutes.") };
+    if (err.code === 'PRO_EMAIL_EXISTS') return { kind: 'exists', text: t(PRO_EMAIL_EXISTS_TEXT) };
     return { kind: API_KINDS[err.code] ?? 'other', text: err.message || 'Une erreur est survenue. Réessayez.' };
   }
   const e = err as { code?: string; message?: string; status?: number } | null;

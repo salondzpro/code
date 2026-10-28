@@ -47,6 +47,8 @@ import type {
   ReplyReviewInput,
   ClientHistoryStatus,
   EmailSignupInput,
+  EmailCheckInput,
+  EmailCheckStatus,
   EmailLinkInput,
 } from '@salondz/validation';
 
@@ -430,6 +432,8 @@ export function createApiClient(opts: ApiClientOptions) {
     auth: {
       /** Inscription par e-mail : le compte est créé, le lien de confirmation part par nos e-mails. */
       signup: (body: EmailSignupInput) => post<void>('/auth/signup', body),
+      /** L'adresse est-elle libre ? Appelée dès la saisie, avant toute création de compte. */
+      emailCheck: (body: EmailCheckInput) => post<{ status: EmailCheckStatus }>('/auth/email-check', body),
       /** Lien de connexion par e-mail (compte existant). */
       magicLink: (body: EmailLinkInput) => post<void>('/auth/magic-link', body),
       /** Renvoi du lien de confirmation (compte non confirmé). */

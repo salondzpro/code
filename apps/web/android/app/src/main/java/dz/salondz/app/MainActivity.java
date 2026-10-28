@@ -3,6 +3,7 @@ package dz.salondz.app;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebSettings;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -39,6 +40,8 @@ public class MainActivity extends BridgeActivity {
     // contenu des barres. Sans cela, on perdrait deux bandes grises en haut et en bas.
     WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
+    bloquerZoom();
+
     rootView = findViewById(android.R.id.content);
     ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, windowInsets) -> {
       // `systemBars` couvre la barre d'état et la barre de navigation (boutons comme gestes),
@@ -67,6 +70,27 @@ public class MainActivity extends BridgeActivity {
   }
 
   /**
+   * PAS DE ZOOM DANS L'APPLICATION (28 oct. 2026).
+   *
+   * Deux causes distinctes, toutes deux corrigées ici :
+   *   - la TAILLE DE POLICE du système (Réglages → Affichage → Taille de police) : la WebView
+   *     l'applique en zoomant TOUT le texte (`textZoom` = 115 %, 130 %…). Les écrans dessinés au
+   *     pixel débordaient, l'application paraissait « zoomée ». On fixe 100 % : la mise en page est
+   *     celle qu'on a dessinée, quelle que soit la réglette du téléphone ;
+   *   - le PINCEMENT et le double toucher : la WebView sait zoomer d'elle-même. Une application n'est
+   *     pas une page à agrandir — on coupe le zoom intégré et ses boutons.
+   * La carte (Leaflet) garde son propre pincement : il est géré dans la page, pas par la WebView.
+   */
+  private void bloquerZoom() {
+    if (getBridge() == null || getBridge().getWebView() == null) return;
+    WebSettings reglages = getBridge().getWebView().getSettings();
+    reglages.setTextZoom(100);
+    reglages.setSupportZoom(false);
+    reglages.setBuiltInZoomControls(false);
+    reglages.setDisplayZoomControls(false);
+  }
+
+  /**
    * Les variables CSS vivent dans la page : un rechargement les efface, et les marges ne seraient
    * alors reposées qu'au prochain changement — l'application reprendrait sous les barres. On les
    * réapplique donc au retour au premier plan, et on redemande au système de les notifier.
@@ -74,6 +98,8 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onResume() {
     super.onResume();
+    // Le réglage de police peut avoir changé pendant que l'application était en arrière-plan.
+    bloquerZoom();
     applyInsets(lastTop, lastBottom, lastLeft, lastRight);
     if (rootView != null) ViewCompat.requestApplyInsets(rootView);
   }

@@ -429,6 +429,17 @@ export const emailLinkSchema = z.object({
   next: nextPath,
 });
 export type EmailLinkInput = z.infer<typeof emailLinkSchema>;
+/** Vérification d'une adresse AVANT l'inscription (dès la première étape) : libre, ou déjà prise. */
+export const emailCheckSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  role: z.enum(USER_ROLES).default('client'),
+});
+export type EmailCheckInput = z.infer<typeof emailCheckSchema>;
+/**
+ * `available` : aucune inscription ; `pro` / `client` : un compte CONFIRMÉ de ce rôle existe ;
+ * `pending` : une inscription a commencé mais le lien de confirmation n'a pas été ouvert.
+ */
+export type EmailCheckStatus = 'available' | 'pro' | 'client' | 'pending';
 
 /** Relais d'un lien e-mail : jeton haché Supabase, type de vérification, retour sur le site. */
 export const authGoQuerySchema = z.object({
