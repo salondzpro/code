@@ -177,6 +177,19 @@ export function useMarkNotificationsRead() {
   });
 }
 
+/** Vider la boîte de notifications (lues, ou toutes) ; les pastilles suivent. */
+export function useClearNotifications() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (scope: 'read' | 'all') => api.me.clearNotifications(scope),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.notifications });
+      qc.invalidateQueries({ queryKey: queryKeys.pro.unseen });
+    },
+  });
+}
+
 /**
  * Nombre de notifications NON LUES — la pastille rouge, partout où elle s'affiche (en-tête, menu,
  * profil). Une seule requête en cache pour toutes les pastilles : elles ne peuvent pas diverger, et

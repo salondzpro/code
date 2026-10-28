@@ -353,6 +353,14 @@ on('POST', '/me/notifications/read', (c) => {
   saveWorld();
   return none();
 });
+on('POST', '/me/notifications/clear', (c) => {
+  const u = requireUser(c);
+  const all = c.body.scope === 'all';
+  const before = c.w.notifications.length;
+  c.w.notifications = c.w.notifications.filter((n) => n.userId !== u.id || (!all && !n.readAt));
+  saveWorld();
+  return ok({ deleted: before - c.w.notifications.length });
+});
 on('GET', '/me/stats', (c) => {
   const u = requireUser(c);
   return ok({

@@ -262,6 +262,26 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  /**
+   * VIDER SA BOÎTE (28 oct. 2026, demande du propriétaire) : un professionnel reçoit beaucoup de
+   * notifications et veut repartir d'une liste propre. `scope: 'read'` efface celles déjà lues (les
+   * nouvelles restent), `'all'` efface tout. Une notification n'est pas une archive (le cron les
+   * purge de toute façon) : rien à conserver. Effacer une notification non lue retire aussi le
+   * « pas encore vu » qu'elle portait (pastilles Agenda et Réservations) : c'est le choix fait.
+   * POST et non DELETE : un corps de DELETE se perd chez certains intermédiaires.
+   */
+  app.post(
+    '/me/notifications/clear',
+    { schema: { body: z.object({ scope: z.enum(['read', 'all']).default('read') }) } },
+    async (req) => {
+      let q = db.from('notifications').delete({ count: 'exact' }).eq('user_id', req.user!.id);
+      if (req.body.scope === 'read') q = q.not('read_at', 'is', null);
+      const { error, count } = await q;
+      if (error) throw error;
+      return { deleted: count ?? 0 };
+    },
+  );
+
   // ---- Favoris ----
   /** Compteurs du profil (réservations, favoris, avis donnés) : trois COUNT, aucune liste chargée. */
   app.get('/me/stats', async (req, reply) => {

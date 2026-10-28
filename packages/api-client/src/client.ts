@@ -494,6 +494,8 @@ export function createApiClient(opts: ApiClientOptions) {
       /** Marquer lues : une liste précise, celles d'un rendez-vous, ou toutes (aucun argument). */
       markNotificationsRead: (scope?: { ids?: string[]; bookingId?: string }) =>
         post<void>('/me/notifications/read', scope ?? {}),
+      /** Vider la boîte : les notifications déjà lues, ou toutes. */
+      clearNotifications: (scope: 'read' | 'all') => post<{ deleted: number }>('/me/notifications/clear', { scope }),
       favorites: () => get<{ items: SalonSummary[] }>('/me/favorites'),
       stats: () => get<MeStats>('/me/stats'),
       addFavorite: (salonId: string) => put<void>(`/me/favorites/${salonId}`),

@@ -28,7 +28,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { AlertCircle, BellRing, CalendarDays, CalendarCheck, Check, CheckCircle2, Eye, EyeOff, MapPin, Sparkles, Store, Wallet, XCircle, type LucideIcon } from 'lucide-react';
 import { BackButton, Field, I, Input } from './ui';
 import { Wordmark } from './Wordmark';
-import { HeroSlides } from './HeroSlides';
+import { HERO_MIXTE, HERO_PRO, HeroSlides } from './HeroSlides';
 import { LangSwitch } from './LangSwitch';
 import { t } from '@/i18n';
 
@@ -102,7 +102,7 @@ export function AuthShell({
     <div className={`auth-shell ${heroPro ? 'auth-pro' : ''}`} data-role={role}>
       {/* ---------------------------------------------------------------- Volet de gauche (≥1024) */}
       <aside className="auth-vitrine" aria-hidden>
-        <HeroSlides className="auth-vitrine-ph" />
+        <HeroSlides className="auth-vitrine-ph" photos={role === 'pro' ? HERO_PRO : HERO_MIXTE} />
         <Wordmark size={1.429} light />
         <div>
           <p className="auth-surtitre !text-white/70">

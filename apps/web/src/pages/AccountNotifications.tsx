@@ -3,7 +3,7 @@
  * par type, point tant que non lue, heure courte ; toucher une ligne ouvre le rendez-vous concerné.
  * Tout est marqué lu à l'ouverture : une notification est vue, pas archivée (purge par le cron).
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import {
   Bell,
@@ -16,10 +16,11 @@ import {
   Inbox,
   Settings2,
   Star,
+  Trash2,
   UserX,
   type LucideIcon,
 } from 'lucide-react';
-import { pagesItems, useMarkNotificationsRead, useNotificationsInfinite } from '@salondz/api-client';
+import { pagesItems, useClearNotifications, useMarkNotificationsRead, useNotificationsInfinite } from '@salondz/api-client';
 import {
   addDaysToKey,
   formatTimeDZ,
@@ -30,7 +31,7 @@ import {
 import type { Notification } from '@salondz/types';
 import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { EmptyState, I, IconButton, SectionLabel, Skeleton } from '@/components/ui';
+import { BottomSheet, Button, Dim, EmptyState, I, IconButton, SectionLabel, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
 
@@ -77,6 +78,7 @@ export function AccountNotifications() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.map((n) => `${n.id}:${n.readAt ? 1 : 0}`).join(',')]);
 
+  const [vider, setVider] = useState(false);
   const today = toLocalDateKey();
   const days: [string, Notification[]][] = [];
   for (const n of items) {
@@ -97,14 +99,23 @@ export function AccountNotifications() {
     <Screen bottom={NAV_PAD} gap={16}>
       <div className="flex items-center justify-between gap-3">
         <h1 className="h1">{t("Notifications")}</h1>
-        <IconButton
-          lg
-          aria-label={t("Réglages des notifications")}
-          onClick={() => navigate(isPro ? '/pro/compte' : '/reglages#notifications')}
-        >
-          <I icon={Settings2} size={20} />
-        </IconButton>
+        <div className="flex flex-none items-center gap-2">
+          {/* Vider : on repart d'une liste propre (les notifications déjà vues encombrent). */}
+          {items.length > 0 && (
+            <button type="button" className="ntf-vider" onClick={() => setVider(true)}>
+              <I icon={Trash2} size={17} /> {t('Vider')}
+            </button>
+          )}
+          <IconButton
+            lg
+            aria-label={t("Réglages des notifications")}
+            onClick={() => navigate(isPro ? '/pro/compte' : '/reglages#notifications')}
+          >
+            <I icon={Settings2} size={20} />
+          </IconButton>
+        </div>
       </div>
+      {vider && <ViderSheet onClose={() => setVider(false)} />}
 
       {notifs.isPending && (
         <>
@@ -171,5 +182,40 @@ export function AccountNotifications() {
         label={t("Voir plus de notifications")}
       />
     </Screen>
+  );
+}
+
+/**
+ * Vider la boîte : effacer les notifications DÉJÀ LUES (les nouvelles restent), ou TOUT. Chaque
+ * bouton a son propre état d'envoi ; l'erreur s'affiche dans la feuille, sous les boutons.
+ */
+function ViderSheet({ onClose }: { onClose: () => void }) {
+  const lues = useClearNotifications();
+  const tout = useClearNotifications();
+  const go = (m: typeof lues, scope: 'read' | 'all') => m.mutate(scope, { onSuccess: onClose });
+  const erreur = lues.error ?? tout.error;
+  return (
+    <>
+      <Dim onClose={onClose} />
+      <BottomSheet modal>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <span className="ntf-vider-i" aria-hidden>
+            <I icon={Trash2} size={22} />
+          </span>
+          <div className="h1 !text-[1.429rem]">{t('Vider les notifications')}</div>
+          <p className="p">{t('Elles disparaissent de la liste. Vos rendez-vous ne changent pas.')}</p>
+        </div>
+        <Button variant="g" loading={lues.isPending} disabled={lues.isPending || tout.isPending} onClick={() => go(lues, 'read')}>
+          {t('Effacer celles déjà lues')}
+        </Button>
+        <Button variant="d" loading={tout.isPending} disabled={lues.isPending || tout.isPending} onClick={() => go(tout, 'all')}>
+          {t('Tout effacer')}
+        </Button>
+        {erreur && <ErrorMessage error={erreur} />}
+        <button type="button" className="auth-lien discret" onClick={onClose}>
+          {t('Annuler')}
+        </button>
+      </BottomSheet>
+    </>
   );
 }

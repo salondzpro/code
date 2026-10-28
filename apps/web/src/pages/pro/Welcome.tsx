@@ -39,7 +39,7 @@ import { useReveal } from '@/lib/reveal';
 import { I, IconButton } from '@/components/ui';
 import { Wordmark } from '@/components/Wordmark';
 import { LangSwitch } from '@/components/LangSwitch';
-import { HeroSlides } from '@/components/HeroSlides';
+import { HERO_PRO, HeroSlides } from '@/components/HeroSlides';
 import { t } from '@/i18n';
 
 /** Quatre promesses, deux à trois mots chacune : l'icône dit le reste. */
@@ -57,6 +57,9 @@ const STEPS: { icon: LucideIcon; label: string }[] = [
   { icon: Clock, label: 'Vos horaires' },
   { icon: Rocket, label: 'En ligne !' },
 ];
+
+/** Les métiers servis, dans l'ordre où ils utilisent Salon DZ. */
+const METIERS_PRO = ['Ongles', 'Cils et sourcils', 'Tatouage', 'Barbiers', 'Coiffure'];
 
 /** Le mot qui tourne dans le titre : ce que Salon DZ met dans la poche du professionnel. */
 const MOTS = ['Votre agenda', 'Votre page', 'Votre clientèle', 'Votre lien'];
@@ -113,7 +116,7 @@ export function ProWelcome() {
       {/* ------------------------------------------------------------ bandeau vivant */}
       <header className="pwl-hero">
         {/* Salons de femmes ET d'hommes : les photos alternent en fondu enchaîné. */}
-        <HeroSlides className="pwl-photo" />
+        <HeroSlides className="pwl-photo" photos={HERO_PRO} />
         <span className="pwl-aurore" aria-hidden />
         <div className="pwl-bar">
           <div className="flex min-w-0 items-center gap-1.5">
@@ -142,6 +145,14 @@ export function ProWelcome() {
             {t('dans votre poche.')}
           </h1>
           <p className="pwl-sub">{t('Gratuit · Prêt en 5 min')}</p>
+          {/* À qui s'adresse l'outil, d'un regard : les métiers qui l'utilisent le plus d'abord. */}
+          <ul className="pwl-metiers" aria-label={t('Pour')}>
+            {METIERS_PRO.map((m, i) => (
+              <li key={m} style={{ ['--d' as string]: `${300 + i * 70}ms` }}>
+                {t(m)}
+              </li>
+            ))}
+          </ul>
         </div>
       </header>
 

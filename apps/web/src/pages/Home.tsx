@@ -19,7 +19,7 @@
  * et des transitions CSS sur `opacity` / `transform`, les deux seules propriétés qu'un navigateur
  * anime sans refaire la mise en page. `prefers-reduced-motion` est respecté.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import {
   ArrowRight,
@@ -39,7 +39,7 @@ import { useReveal } from '@/lib/reveal';
 import { Wordmark } from '@/components/Wordmark';
 import { ProPreview } from '@/components/AuthShell';
 import { LangSwitch } from '@/components/LangSwitch';
-import { HeroSlides } from '@/components/HeroSlides';
+import { HERO_MIXTE, HeroSlides, useDefile } from '@/components/HeroSlides';
 import { I } from '@/components/ui';
 import { t } from '@/i18n';
 
@@ -47,13 +47,14 @@ const img = (cle: string) => `/demo/${cle}.webp`;
 
 /** Les métiers servis. L'ORDRE compte : sur quatre colonnes, chaque rangée doit faire 4 (2+1+1). */
 const METIERS: { nom: string; photo: string; large?: boolean }[] = [
-  // Femmes et hommes MÊLÉS, une femme d'abord : la place de marché sert les deux.
-  { nom: 'Coiffeuses', photo: 'f-balayage', large: true },
+  // D'abord les métiers les plus présents sur Salon DZ (ongles, cils, barbiers), femmes et hommes
+  // en alternance ; puis la coiffure, l'événement et les instituts.
+  { nom: 'Ongles', photo: 'f-pose-gel', large: true },
   { nom: 'Barbiers', photo: 'h-barbe' },
-  { nom: 'Ongles', photo: 'f-pose-gel' },
-  { nom: 'Coiffeurs', photo: 'h-coupe', large: true },
   { nom: 'Cils', photo: 'f-extension-cils' },
-  { nom: 'Soins visage', photo: 'f-nettoyage-peau' },
+  { nom: 'Coiffeurs', photo: 'h-coupe', large: true },
+  { nom: 'Sourcils et tatouage', photo: 'f-sourcils' },
+  { nom: 'Coiffeuses', photo: 'f-balayage' },
   { nom: 'Mariage', photo: 'f-chignon-mariee', large: true },
   { nom: 'Instituts', photo: 'cover-femmes', large: true },
 ];
@@ -152,29 +153,22 @@ function Tuile({
   );
 }
 
-/** Le mot qui tourne dans le titre : les métiers qu'on réserve ici. */
-const MOTS = ['Votre coiffeuse', 'Votre barbier', 'Votre onglerie', 'Votre coiffeur', 'Votre esthéticienne', 'Votre salon'];
-
-function useMotTournant(): number {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    const id = window.setInterval(() => setI((x) => (x + 1) % MOTS.length), 2200);
-    return () => window.clearInterval(id);
-  }, []);
-  return i;
-}
+/**
+ * Le métier du titre, ALIGNÉ sur la photo de fond (`HERO_MIXTE`, même ordre) : « Votre onglerie »
+ * s'affiche sur des ongles, « Votre barbier » sur un barbier. Un seul minuteur pilote les deux.
+ */
+const MOTS = ['Votre onglerie', 'Votre barbier', 'Vos cils', 'Votre coiffeur', 'Vos sourcils', 'Votre coiffeuse'];
 
 export function Home() {
   useReveal();
-  const mot = useMotTournant();
+  const mot = useDefile(MOTS.length, 4200);
 
   return (
     <div className="bg-bg">
       {/* ------------------------------------------------------------------ Ouverture */}
       <header className="relative isolate flex min-h-[32rem] flex-col justify-end overflow-hidden text-white sm:min-h-[38rem]">
         {/* Femmes ET hommes : les photos alternent en fondu enchaîné. */}
-        <HeroSlides className="-z-10" />
+        <HeroSlides className="-z-10" photos={HERO_MIXTE} index={mot} />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/70 to-ink/30" />
 
         {/* Barre du haut : la marque, la langue, l'accès à son compte. */}
