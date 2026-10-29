@@ -30,8 +30,7 @@ import {
   UserCircle,
   Users,
   type LucideIcon,
-  ExternalLink,
-} from 'lucide-react';
+  ExternalLink, QrCode } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
 import { useProReviewsUnanswered, useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
@@ -166,6 +165,7 @@ export function ProNav({
             ? [{ to: `apercu:${salon.slug}`, label: t('Aperçu de ma page'), icon: Eye, externe: `${env.siteUrl}/s/${salon.slug}` }]
             : []),
           { to: '/pro/lien', label: t("Lien et partage"), icon: Share2 },
+          { to: '/pro/qr', label: t("Étiquettes à imprimer"), icon: QrCode },
         ]}
       />
       <Group
