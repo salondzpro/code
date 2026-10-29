@@ -1446,4 +1446,12 @@ export const ar: Record<string, string> = {
   "Envoyer un test": "إرسال اختبار",
   "Demandes, annulations, rappels · sur ce navigateur ou sur l’application": "الطلبات والإلغاءات والتذكيرات · على هذا المتصفح أو على التطبيق",
   "Rappels et confirmations, même application fermée": "التذكيرات والتأكيدات، حتى والتطبيق مغلق",
+  "Ce navigateur a refusé l’abonnement aux notifications. Sur Brave, activez « Utiliser les services Google pour la messagerie push » dans ses réglages ; sinon, essayez Chrome, Edge ou Firefox.": "رفض هذا المتصفح الاشتراك في الإشعارات. على Brave، فعّل « استخدام خدمات Google للرسائل الفورية » في إعداداته، وإلا جرّب Chrome أو Edge أو Firefox.",
+  "Notifications activées sur cet appareil.": "تم تفعيل الإشعارات على هذا الجهاز.",
+  "Le service de notifications du navigateur ne répond pas : ce réseau le bloque sans doute (réseau d’entreprise, pare-feu, VPN). Essayez depuis un autre réseau, ou installez l’application.": "خدمة إشعارات المتصفح لا تستجيب: من المرجح أن هذه الشبكة تحجبها (شبكة شركة، جدار حماية، VPN). جرّب من شبكة أخرى أو ثبّت التطبيق.",
+  "Cet appareil ne donne pas sa position. Choisissez une ville dans la recherche.": "هذا الجهاز لا يقدّم موقعه. اختر مدينة من البحث.",
+  "Position désactivée pour Salon DZ : autorisez « Position » dans l’écran qui s’ouvre, puis revenez.": "الموقع معطّل لـ Salon DZ: اسمح بـ « الموقع » في الشاشة التي تُفتح ثم عُد.",
+  "Position bloquée pour ce site : autorisez-la avec l’icône à gauche de l’adresse, puis rechargez la page.": "الموقع محظور لهذا الموقع: اسمح به من الأيقونة على يسار العنوان ثم أعد تحميل الصفحة.",
+  "Position introuvable pour l’instant (intérieur, signal faible). Réessayez, ou choisissez une ville.": "تعذّر تحديد الموقع حاليًا (داخل مبنى، إشارة ضعيفة). أعد المحاولة أو اختر مدينة.",
+  "Position désactivée": "الموقع معطّل",
 };

@@ -10,12 +10,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { LocateFixed } from 'lucide-react';
+import { Locate, LocateFixed, LocateOff } from 'lucide-react';
 import { useMe, useSalonSearch } from '@salondz/api-client';
 import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { arrondir, positionPrecise } from '@/lib/position';
 import { useAutoLocate } from '@/lib/useAutoLocate';
+import { enCoque, ouvrirReglagesApplication } from '@/lib/pushSettings';
 import { BottomNav } from '@/components/AppFrame';
 import { I, Img } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
@@ -68,6 +69,20 @@ export function MapView() {
   const meLayerRef = useRef<L.LayerGroup | null>(null);
   /** Position de l'appareil, suivie en continu : point bleu + halo de précision. */
   const [mePos, setMePos] = useState<{ lat: number; lng: number; acc: number } | null>(null);
+  /**
+   * ÉTAT DE LA POSITION (29 oct. 2026), une seule source pour le point bleu et le bouton :
+   *   - `pending` : on ne sait pas encore (première mesure en cours, ou permission pas encore demandée) ;
+   *   - `on` : une mesure est là — le point bleu est posé sur elle ;
+   *   - `denied` : refusée — aucun point, le bouton dit comment la rallumer ;
+   *   - `unavailable` : pas de capteur, ou aucune mesure obtenue (intérieur, délai dépassé).
+   */
+  const [geo, setGeo] = useState<'pending' | 'on' | 'denied' | 'unavailable'>(() =>
+    'geolocation' in navigator ? 'pending' : 'unavailable',
+  );
+  /** Message affiché près du bouton de position (jamais un toast : il est là où l'on a touché). */
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
+  /** Relance du suivi : retour au premier plan, permission rendue. */
+  const [watchNonce, setWatchNonce] = useState(0);
   const programmatic = useRef(false);
   /** La personne a pris la carte en main : on ne la recentre plus sous son doigt. */
   const touchee = useRef(false);
@@ -115,7 +130,7 @@ export function MapView() {
   const cardSettle = useRef<number | null>(null);
   const current = items.find((s) => s.id === selected) ?? items[0] ?? null;
 
-  const drawArea = useCallback((a: Area | null, moi: { lat: number; lng: number } | null) => {
+  const drawArea = useCallback((a: Area | null) => {
     const layer = areaLayerRef.current;
     if (!layer) return;
     layer.clearLayers();
@@ -128,18 +143,9 @@ export function MapView() {
       fillColor: '#111214',
       fillOpacity: 0.04,
     }).addTo(layer);
-    // Quand le centre de la zone EST la position de la personne — le cas dès qu'elle appuie sur le
-    // bouton de position — la pastille noire se poserait sur le point bleu. Deux pastilles au même
-    // endroit ne disent pas deux choses : on laisse parler le point bleu. (~55 m de tolérance.)
-    const surMoi = !!moi && Math.abs(moi.lat - a.lat) < 0.0005 && Math.abs(moi.lng - a.lng) < 0.0005;
-    if (surMoi) return;
-    L.circleMarker([a.lat, a.lng], {
-      radius: 9,
-      color: '#fff',
-      weight: 4,
-      fillColor: '#111214',
-      fillOpacity: 1,
-    }).addTo(layer);
+    // Plus de pastille noire au centre de la zone (29 oct. 2026) : elle suivait le centre de
+    // l'écran à chaque zoom — on la prenait pour SA position, qui « bougeait » avec le zoom. La
+    // zone se lit à son cercle ; la position, au seul point bleu, posé sur la mesure GPS.
   }, []);
 
   // Carte (créée une fois)
@@ -195,7 +201,7 @@ export function MapView() {
       }, 500);
     });
     mapRef.current = map;
-    drawArea(area, null);
+    drawArea(area);
     return () => {
       map.remove();
       mapRef.current = null;
@@ -203,7 +209,7 @@ export function MapView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => drawArea(area, mePos), [area, mePos, drawArea]);
+  useEffect(() => drawArea(area), [area, drawArea]);
 
   /**
    * Position en TEMPS RÉEL : `watchPosition` pousse chaque nouvelle mesure, donc le point
@@ -213,18 +219,64 @@ export function MapView() {
    */
   useEffect(() => {
     if (!('geolocation' in navigator)) return;
+    let premiere = true;
+    // Sans mesure au bout de 25 s (intérieur, GPS froid) : « introuvable », pas « en attente » sans fin.
+    const delai = window.setTimeout(() => setGeo((g) => (g === 'pending' ? 'unavailable' : g)), 25_000);
     const id = navigator.geolocation.watchPosition(
-      (p) =>
-        setMePos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy ?? 0 }),
+      (p) => {
+        window.clearTimeout(delai);
+        setMePos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy ?? 0 });
+        setGeo('on');
+        if (premiere) setGeoMsg(null);
+        premiere = false;
+      },
       // Une mesure qui échoue n'EFFACE PAS la précédente : en ville, un relevé sur trois expire, et
       // le point bleu se mettait à clignoter puis à disparaître alors qu'on savait très bien où
       // l'on était. Seul un refus de permission fait vraiment tomber le point.
       (err) => {
-        if (err.code === err.PERMISSION_DENIED) setMePos(null);
+        if (err.code === err.PERMISSION_DENIED) {
+          window.clearTimeout(delai);
+          setMePos(null);
+          setGeo('denied');
+        }
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
     );
-    return () => navigator.geolocation.clearWatch(id);
+    return () => {
+      window.clearTimeout(delai);
+      navigator.geolocation.clearWatch(id);
+    };
+  }, [watchNonce]);
+
+  /**
+   * Le suivi NE SURVIT PAS toujours à l'arrière-plan (onglet gelé, application mise de côté) : au
+   * retour, on le relance — sinon le point bleu restait là où l'on était une heure plus tôt. Et
+   * quand le navigateur sait dire l'état de la permission, on suit ses changements : rendue dans
+   * les réglages, le point revient sans recharger ; retirée, il disparaît.
+   */
+  useEffect(() => {
+    const auRetour = () => document.visibilityState === 'visible' && setWatchNonce((n) => n + 1);
+    document.addEventListener('visibilitychange', auRetour);
+    let statut: PermissionStatus | null = null;
+    const suivre = () => {
+      if (!statut) return;
+      if (statut.state === 'denied') {
+        setMePos(null);
+        setGeo('denied');
+      } else setWatchNonce((n) => n + 1);
+    };
+    navigator.permissions
+      ?.query({ name: 'geolocation' })
+      .then((st) => {
+        statut = st;
+        if (st.state === 'denied') setGeo('denied');
+        st.addEventListener('change', suivre);
+      })
+      .catch(() => undefined);
+    return () => {
+      document.removeEventListener('visibilitychange', auRetour);
+      statut?.removeEventListener('change', suivre);
+    };
   }, []);
 
   /**
@@ -254,10 +306,49 @@ export function MapView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mePos]);
 
+  /**
+   * LE LIEU CHANGE AILLEURS (29 oct. 2026) : détection automatique à l'ouverture (`useAutoLocate`),
+   * ville choisie dans la recherche. La carte ne lisait le lieu qu'à sa création : le champ disait
+   * « Akbou » pendant que la carte restait sur Alger, le point bleu hors de l'écran. On suit donc
+   * chaque NOUVEAU lieu — sauf s'il est déjà celui de la zone (le bouton de position pose les deux).
+   */
+  const lieuVu = useRef<string | null>(prefs.lat != null ? `${prefs.lat},${prefs.lng}` : null);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || prefs.lat == null || prefs.lng == null) return;
+    const cle = `${prefs.lat},${prefs.lng}`;
+    if (cle === lieuVu.current) return;
+    lieuVu.current = cle;
+    if (area && Math.abs(area.lat - prefs.lat) < 0.0005 && Math.abs(area.lng - prefs.lng) < 0.0005) return;
+    recentre.current = true;
+    setArea({ lat: prefs.lat, lng: prefs.lng, radiusKm: prefs.radiusKm });
+    setSelected(null);
+    programmatic.current = true;
+    map.setView([prefs.lat, prefs.lng], 14, { animate: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefs.lat, prefs.lng]);
+
   useEffect(() => {
     const layer = meLayerRef.current;
     if (!layer) return;
     layer.clearLayers();
+    // LIEU CHOISI À LA MAIN (une ville, une adresse) : une épingle FIXE, nommée, qui ne se confond
+    // pas avec le point bleu. Elle ne s'affiche pas quand elle tombe sur la position elle-même.
+    const lieu = prefs.lat != null && prefs.lng != null ? { lat: prefs.lat, lng: prefs.lng } : null;
+    const lieuSurMoi = !!lieu && !!mePos && Math.abs(lieu.lat - mePos.lat) < 0.001 && Math.abs(lieu.lng - mePos.lng) < 0.001;
+    if (lieu && !lieuSurMoi && prefs.label && prefs.label !== t('Ma position')) {
+      L.marker([lieu.lat, lieu.lng], {
+        icon: L.divIcon({
+          className: '',
+          html: `<span class="map-place"><span class="map-place-d"></span>${escHtml(prefs.label)}</span>`,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+        }),
+        interactive: false,
+        pane: 'moi',
+        keyboard: false,
+      }).addTo(layer);
+    }
     if (!mePos) return;
     // Halo = précision réelle du relevé, borné : par mauvaise réception il couvrirait la ville.
     if (mePos.acc > 0)
@@ -278,7 +369,7 @@ export function MapView() {
       interactive: false,
       pane: 'moi',
     }).addTo(layer);
-  }, [mePos]);
+  }, [mePos, prefs.lat, prefs.lng, prefs.label]);
 
   // Bulles de prix
   useEffect(() => {
@@ -337,7 +428,22 @@ export function MapView() {
 
   /** Recentre sur soi et cherche autour : le point bleu dit déjà où l'on est. */
   const locate = () => {
-    if (!('geolocation' in navigator)) return;
+    setGeoMsg(null);
+    if (!('geolocation' in navigator)) {
+      setGeoMsg(t('Cet appareil ne donne pas sa position. Choisissez une ville dans la recherche.'));
+      return;
+    }
+    // Refusée : une demande ne s'afficherait plus. Dans l'application, on ouvre ses réglages ;
+    // ailleurs, on dit où aller. La carte reste utilisable avec une ville choisie.
+    if (geo === 'denied') {
+      if (enCoque()) void ouvrirReglagesApplication();
+      setGeoMsg(
+        enCoque()
+          ? t('Position désactivée pour Salon DZ : autorisez « Position » dans l’écran qui s’ouvre, puis revenez.')
+          : t('Position bloquée pour ce site : autorisez-la avec l’icône à gauche de l’adresse, puis rechargez la page.'),
+      );
+      return;
+    }
     const goTo = (lat: number, lng: number) => {
       const a = { lat: arrondir(lat), lng: arrondir(lng), radiusKm: prefs.radiusKm };
       setArea(a);
@@ -363,8 +469,9 @@ export function MapView() {
       (m) => goTo(m.lat, m.lng),
       () => {
         setLocating(false);
-        programmatic.current = true;
-        mapRef.current?.setView(area ? [area.lat, area.lng] : ALGIERS, 13, { animate: true });
+        // Sans mesure, on ne bouge PAS la carte : la ramener ailleurs sans rien dire laissait croire
+        // que l'on avait été localisé. On le dit, là où l'on a touché.
+        setGeoMsg(t('Position introuvable pour l’instant (intérieur, signal faible). Réessayez, ou choisissez une ville.'));
       },
     );
   };
@@ -387,7 +494,10 @@ export function MapView() {
 .map-bubble.on{background:#111214;color:#fff}
 .map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #e6e7e9;transform:translateX(-50%)}
 .map-bubble.on::after{background:#111214;border-color:#111214}
-.leaflet-container{background:#eaecee;font-family:inherit}`}</style>
+.leaflet-container{background:#eaecee;font-family:inherit}
+.map-place{display:inline-flex;align-items:center;gap:6px;width:max-content;transform:translate(-11px,-50%);padding:3px 8px 3px 3px;border-radius:999px;background:#fff;border:1px solid #e6e7e9;font:600 12px/1.2 Inter,system-ui,sans-serif;color:#17181a;white-space:nowrap}
+.map-place-d{width:10px;height:10px;border-radius:50%;background:#111214;border:2px solid #fff;outline:1px solid #111214}
+[dir=rtl] .map-place{transform:translate(calc(-100% + 11px),-50%);padding:3px 3px 3px 8px}`}</style>
       <div ref={mapEl} className="absolute inset-0" aria-label={t("Carte des salons")} />
 
       {/* Recherche et outils : les mêmes trois touches que la liste, la deuxième ramenant
@@ -426,15 +536,30 @@ export function MapView() {
         </div>
       </div>
 
-      <button
-        type="button"
-        className="ib lg absolute bottom-[15.5rem] end-5 z-[400] !shadow-card"
-        aria-label={t("Ma position")}
-        onClick={locate}
-        disabled={locating}
-      >
-        <I icon={LocateFixed} size={20} className={locating ? 'animate-pulse' : ''} />
-      </button>
+      {/* Bouton de position : son icône dit l'état — suivie (point plein), refusée (barrée), en attente. */}
+      <div className="absolute bottom-[15.5rem] end-5 z-[400] flex flex-col items-end gap-2">
+        {geoMsg && (
+          <p
+            className="max-w-[min(17rem,calc(100vw-2.5rem))] rounded-[var(--radius-card)] border border-line bg-surface px-3 py-2 text-[0.857rem] leading-snug text-text"
+            role="status"
+          >
+            {geoMsg}
+          </p>
+        )}
+        <button
+          type="button"
+          className={`ib lg ${geo === 'denied' ? 'text-muted' : geo === 'on' ? 'text-[#1a73e8]' : ''}`}
+          aria-label={geo === 'denied' ? t('Position désactivée') : t('Ma position')}
+          onClick={locate}
+          disabled={locating}
+        >
+          <I
+            icon={geo === 'denied' ? LocateOff : geo === 'on' ? LocateFixed : Locate}
+            size={20}
+            className={locating ? 'animate-pulse' : ''}
+          />
+        </button>
+      </div>
 
       {/* Feuille : fiches glissables (une par salon), synchronisées avec les bulles */}
       <div className="sheet !bottom-[4.75rem] !z-[400] !gap-2 !pb-3 !pt-2">

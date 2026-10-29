@@ -1462,4 +1462,12 @@ export const en: Record<string, string> = {
   "Envoyer un test": "Send a test",
   "Demandes, annulations, rappels · sur ce navigateur ou sur l’application": "Requests, cancellations, reminders · in this browser or in the app",
   "Rappels et confirmations, même application fermée": "Reminders and confirmations, even with the app closed",
+  "Ce navigateur a refusé l’abonnement aux notifications. Sur Brave, activez « Utiliser les services Google pour la messagerie push » dans ses réglages ; sinon, essayez Chrome, Edge ou Firefox.": "This browser refused the notification subscription. On Brave, turn on “Use Google services for push messaging” in its settings; otherwise try Chrome, Edge or Firefox.",
+  "Notifications activées sur cet appareil.": "Notifications turned on for this device.",
+  "Le service de notifications du navigateur ne répond pas : ce réseau le bloque sans doute (réseau d’entreprise, pare-feu, VPN). Essayez depuis un autre réseau, ou installez l’application.": "The browser’s notification service is not responding: this network probably blocks it (company network, firewall, VPN). Try another network, or install the app.",
+  "Cet appareil ne donne pas sa position. Choisissez une ville dans la recherche.": "This device does not share its location. Pick a city in the search.",
+  "Position désactivée pour Salon DZ : autorisez « Position » dans l’écran qui s’ouvre, puis revenez.": "Location is off for Salon DZ: allow “Location” on the screen that opens, then come back.",
+  "Position bloquée pour ce site : autorisez-la avec l’icône à gauche de l’adresse, puis rechargez la page.": "Location is blocked for this site: allow it with the icon left of the address, then reload the page.",
+  "Position introuvable pour l’instant (intérieur, signal faible). Réessayez, ou choisissez une ville.": "Location not found right now (indoors, weak signal). Try again, or pick a city.",
+  "Position désactivée": "Location off",
 };

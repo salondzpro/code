@@ -94,13 +94,21 @@ async function registration(): Promise<ServiceWorkerRegistration> {
   return navigator.serviceWorker.ready;
 }
 
+/**
+ * Borne une attente. Quand le réseau bloque le service de messagerie du navigateur (pare-feu
+ * d'entreprise, proxy : Chrome passe par `mtalk.google.com:5228`), `pushManager.subscribe()` ne
+ * répond JAMAIS — le bouton restait figé, sans un mot. Au-delà du délai, on le dit.
+ */
+const borne = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([p, new Promise<T>((_, ko) => window.setTimeout(() => ko(new Error('timeout')), ms))]);
+
 async function subscribe(): Promise<PushSubscription> {
-  const reg = await registration();
+  const reg = await borne(registration(), 10_000);
   const key = urlBase64ToUint8Array(env.vapidPublicKey!);
   const existing = await reg.pushManager.getSubscription();
   if (existing && sameKey(existing, key)) return existing;
   if (existing) await existing.unsubscribe().catch(() => undefined);
-  return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource });
+  return borne(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource }), 20_000);
 }
 
 /** Ce navigateur a-t-il un abonnement EN COURS ? (une permission accordée ne suffit pas.) */
@@ -120,10 +128,11 @@ export async function webSubscriptionActive(): Promise<boolean> {
  *   - `unsupported` : ce navigateur ne sait pas (Safari d'iPhone hors écran d'accueil, navigation privée…) ;
  *   - `subscribe` : la permission est là, mais le service de messagerie du navigateur a refusé
  *     l'abonnement (Brave avec ses réglages par défaut, réseau d'entreprise, extension) ;
+ *   - `blocked` : le service de messagerie du navigateur ne répond pas (réseau, pare-feu) ;
  *   - `server` : l'abonnement existe, mais notre serveur n'a pas pu l'enregistrer (réseau) ;
  *   - `native` : l'application n'a pas obtenu de jeton du téléphone.
  */
-export type PushFailure = 'denied' | 'dismissed' | 'unsupported' | 'subscribe' | 'server' | 'native';
+export type PushFailure = 'denied' | 'dismissed' | 'unsupported' | 'subscribe' | 'blocked' | 'server' | 'native';
 export type EnableResult = { ok: true } | { ok: false; reason: PushFailure };
 
 /** Signale aux écrans qu'il faut relire l'état (abonnement pris ou retiré ailleurs dans la page). */
@@ -151,7 +160,7 @@ export async function enableWebPushDetailed(api: ApiClient): Promise<EnableResul
     sub = await subscribe();
   } catch (err) {
     console.warn('[push] abonnement navigateur refusé', err);
-    return { ok: false, reason: 'subscribe' };
+    return { ok: false, reason: err instanceof Error && err.message === 'timeout' ? 'blocked' : 'subscribe' };
   }
   try {
     await api.me.registerPushToken({

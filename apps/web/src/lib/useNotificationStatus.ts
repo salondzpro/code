@@ -157,6 +157,8 @@ export function pushFailureText(reason: PushFailure, ctx: Contexte): string {
       return consigne(ctx);
     case 'subscribe':
       return t('Ce navigateur a refusé l’abonnement aux notifications. En navigation privée, ouvrez une fenêtre normale. Sur Brave, activez « Utiliser les services Google pour la messagerie push » dans ses réglages ; sinon, essayez Chrome, Edge ou Firefox.');
+    case 'blocked':
+      return t('Le service de notifications du navigateur ne répond pas : ce réseau le bloque sans doute (réseau d’entreprise, pare-feu, VPN). Essayez depuis un autre réseau, ou installez l’application.');
     case 'server':
       return t('L’autorisation est donnée, mais l’enregistrement n’a pas abouti (réseau). Réessayez dans un instant.');
     case 'native':

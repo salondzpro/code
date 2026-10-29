@@ -17,7 +17,7 @@
  *   - accordé → rien, le bandeau n'existe pas.
  */
 import { useState } from 'react';
-import { BellRing, ExternalLink, X } from 'lucide-react';
+import { BellRing, Check, ExternalLink, X } from 'lucide-react';
 import { useNotificationStatus } from '@/lib/useNotificationStatus';
 import { Button, I } from './ui';
 import { t } from '@/i18n';
@@ -39,9 +39,17 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
   const [masque, setMasque] = useState(() => enRepos());
   /** Chemin écrit, affiché quand l'écran de réglage ne peut pas s'ouvrir d'un geste. */
   const [chemin, setChemin] = useState(false);
+  /** Activation réussie : on le DIT (2,5 s) avant de retirer le bandeau, au lieu de le faire disparaître sans un mot. */
+  const [reussi, setReussi] = useState(false);
 
   // Rien tant que l'état réel n'est pas connu : le bandeau clignoterait chez quelqu'un dont tout est
   // en ordre.
+  if (reussi)
+    return (
+      <div className="flex items-center gap-2.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5 text-ok-fg" role="status">
+        <I icon={Check} size={18} /> <span className="font-semibold">{t('Notifications activées sur cet appareil.')}</span>
+      </div>
+    );
   if (masque || !n.pret || n.situation === 'actives' || n.situation === 'impossibles') return null;
 
   const bloquees = n.situation === 'bloquees';
@@ -59,7 +67,13 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
       setChemin(true);
       return;
     }
-    await n.activer();
+    if (await n.activer()) {
+      setReussi(true);
+      window.setTimeout(() => {
+        setReussi(false);
+        setMasque(true);
+      }, 2500);
+    }
   };
 
   return (
