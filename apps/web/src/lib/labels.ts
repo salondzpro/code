@@ -263,47 +263,10 @@ function ensureFonts(): Promise<void> {
 
 
 // ---------------------------------------------------------------------------------------------
-// « Vitrine noire » — plaque noire de vitrine (29 oct. 2026, d'après le modèle fourni par le
-// propriétaire) : « Salon × Salon DZ » en tête, « Réservation RDV » en très gros, QR, lien, puis
+// « Vitrine noire » — autocollant noir de vitrine (29 oct. 2026, d'après le modèle fourni par le
+// propriétaire, sans les vis de plaque) : « Salon × Salon DZ » en tête, « Réservation RDV » en très gros, QR, lien, puis
 // les réseaux du salon. Mise en page propre, distincte des autres modèles.
 // ---------------------------------------------------------------------------------------------
-
-/** Entretoise métallique de plaque en plexiglas, aux quatre coins. */
-function standoff(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
-  ctx.save();
-  const sh = ctx.createRadialGradient(x + r * 0.15, y + r * 0.25, r * 0.6, x + r * 0.15, y + r * 0.25, r * 1.5);
-  sh.addColorStop(0, 'rgba(0,0,0,0.55)');
-  sh.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = sh;
-  ctx.beginPath();
-  ctx.arc(x + r * 0.15, y + r * 0.25, r * 1.5, 0, Math.PI * 2);
-  ctx.fill();
-  const g = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-  g.addColorStop(0, '#F4F5F6');
-  g.addColorStop(0.45, '#9EA2A6');
-  g.addColorStop(0.55, '#C9CCCF');
-  g.addColorStop(1, '#5D6165');
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fill();
-  // Brossage concentrique
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = r * 0.02;
-  for (let k = 0.2; k < 1; k += 0.12) {
-    ctx.beginPath();
-    ctx.arc(x, y, r * k, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  const hl = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, 0, x - r * 0.35, y - r * 0.4, r * 0.9);
-  hl.addColorStop(0, 'rgba(255,255,255,0.75)');
-  hl.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = hl;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
 
 /**
  * Pastilles des réseaux, façon icône d'application : tuile aux couleurs de la marque et glyphe
@@ -385,13 +348,6 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
   glow.addColorStop(1, '#050506');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
-
-  const sr = (square ? 26 : 28) * u;
-  const so = (square ? 62 : 66) * u;
-  standoff(ctx, so, so, sr);
-  standoff(ctx, W - so, so, sr);
-  standoff(ctx, so, H - so, sr);
-  standoff(ctx, W - so, H - so, sr);
 
   const socials = (input.socials ?? []).filter((x) => x.shown && x.handle.trim());
   const at = (f: number) => H * f;
