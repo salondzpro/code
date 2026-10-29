@@ -216,10 +216,12 @@ workflows:
   # -------------------------------------------------------------------------------------------
   # ANDROID sur Codemagic (29 oct. 2026) : les deux applications se compilent sans le PC.
   #
-  # La clé d'ENVOI (empreinte D9:54:C1…) est rangée dans Codemagic sous `salondz_upload`
-  # (Teams → Code signing identities → Android keystores). Codemagic la pose sur la machine et
-  # donne son chemin et ses mots de passe dans `CM_KEYSTORE_*` ; on écrit avec eux le fichier
-  # `secrets/android/keystore.properties` que lit `app/build.gradle`, exactement comme sur le PC.
+  # La clé d'ENVOI (empreinte SHA-1 D9:54:C1…) est rangée dans Codemagic en variables CHIFFRÉES de
+  # l'application, groupe `android_keystore` : le fichier `upload.jks` en base64
+  # (`ANDROID_KEYSTORE_BASE64`) et ses trois valeurs (`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+  # `ANDROID_KEY_PASSWORD`). Déposées le 29 oct. 2026 par l'API (`POST /apps/:id/variables`) :
+  # Codemagic n'a pas d'API pour ses « Android keystores » d'équipe. On recrée sur la machine le
+  # fichier de clé et `secrets/android/keystore.properties` que lit `app/build.gradle`, comme sur le PC.
   #
   # Le numéro de version vient de `version.properties` / `version-pro.properties`, VERSIONNÉS :
   # on l'augmente dans git AVANT de lancer (`--same` ici), pour que le PC et Codemagic ne
@@ -232,8 +234,8 @@ workflows:
     instance_type: linux_x2
     max_build_duration: 45
     environment:
-      android_signing:
-        - salondz_upload
+      groups:
+        - android_keystore
       vars:
         # Grand public : l'application charge salondz.com (mode en ligne).
         SALONDZ_ANDROID_ARGS: --en-ligne
@@ -247,12 +249,15 @@ workflows:
       - name: Clé de signature
         script: |
           mkdir -p secrets/android
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > secrets/android/upload.jks
           cat > secrets/android/keystore.properties <<PROPS
-          storeFile=$CM_KEYSTORE_PATH
-          storePassword=$CM_KEYSTORE_PASSWORD
-          keyAlias=$CM_KEY_ALIAS
-          keyPassword=$CM_KEY_PASSWORD
+          storeFile=$PWD/secrets/android/upload.jks
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
           PROPS
+          # Garde-fou : la clé doit être la clé d'envoi (SHA-1 D9:54:C1…), sinon Google refuse le .aab.
+          keytool -list -v -keystore secrets/android/upload.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" | grep -q "D9:54:C1"
           chmod +x apps/web/android/gradlew
       - name: Compilation
         script: |
@@ -265,8 +270,8 @@ workflows:
     instance_type: linux_x2
     max_build_duration: 45
     environment:
-      android_signing:
-        - salondz_upload
+      groups:
+        - android_keystore
       vars:
         SALONDZ_ANDROID_ARGS: --pro
       node: 22
