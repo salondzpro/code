@@ -1459,6 +1459,23 @@ body::before {
   .gr {
     gap: 0.875rem;
   }
+
+  /* ESPACE PRO SUR ORDINATEUR (29 oct. 2026) : un outil de travail se sert de l'écran. Le cadre
+     de lecture du téléphone (48 rem centrés) laissait un vide de plusieurs centaines de pixels
+     entre le rail et le contenu, et l'agenda, borné à son nombre de colonnes (2 membres →
+     46 rem), occupait un tiers d'un écran de 1 920 px. Après le rail : l'agenda prend TOUTE la
+     largeur, les autres écrans une large colonne, et une page de cartes s'étend. */
+  .pro-main {
+    --read-w: 68rem;
+    --page-w: none;
+  }
+  .pro-main .scr.agenda {
+    max-width: none;
+  }
+  /* Jour · Semaine · Mois : un sélecteur, pas une barre de 1 500 px. */
+  .pro-main .scr.agenda .seg {
+    max-width: 26rem;
+  }
 }
 
 /* ----------------------------- Grand écran ---------------------------- */
@@ -1469,6 +1486,9 @@ body::before {
     --shell-px: 2rem;
     --read-w: 52rem;
     --rail-w: 20rem;
+  }
+  .pro-main {
+    --read-w: 80rem;
   }
 }
 
