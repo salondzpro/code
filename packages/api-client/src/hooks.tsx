@@ -649,6 +649,22 @@ export function useSaveLabelSocials() {
     onSuccess: (data) => qc.setQueryData(['pro', 'label-socials'], data),
   });
 }
+export const useLabelStyle = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'label-style'], queryFn: () => api.pro.labelStyle(), staleTime: 5 * 60_000, enabled });
+};
+export const useAdminSalonLabelStyle = (salonId: string | null) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['admin', 'label-style', salonId], queryFn: () => api.admin.salonLabelStyle(salonId!), staleTime: 30_000, enabled: !!salonId });
+};
+export function useSaveLabelStyle() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof api.pro.saveLabelStyle>[0]) => api.pro.saveLabelStyle(body),
+    onSuccess: (data) => qc.setQueryData(['pro', 'label-style'], data),
+  });
+}
 export const useAdminLabelSettings = (enabled = true) => {
   const { api } = useApi();
   return useQuery({ queryKey: ['admin', 'label-settings'], queryFn: () => api.admin.labelSettings(), staleTime: 30_000, enabled });

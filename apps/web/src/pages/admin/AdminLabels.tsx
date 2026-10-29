@@ -14,6 +14,7 @@ import {
   useAdminLabelSettings,
   useAdminMe,
   useAdminSalonLabelSocials,
+  useAdminSalonLabelStyle,
   useAdminSalons,
   useSalon,
   useSaveLabelSettings,
@@ -80,6 +81,7 @@ export function AdminLabels() {
   const salon = useSalon(slug ?? '');
   const { url, short } = usePublicUrl(slug ?? '');
   const socials = useAdminSalonLabelSocials(salon.data?.id ?? null);
+  const look = useAdminSalonLabelStyle(salon.data?.id ?? null);
 
   return (
     <Screen gap={14} width="page">
@@ -189,6 +191,7 @@ export function AdminLabels() {
             defaultId={settings.data?.defaultId ?? DEFAULT_LABEL_SETTINGS.defaultId}
             filename={`salondz-${salon.data.slug}`}
             socials={socials.data}
+            style={look.data}
           />
         )}
         {slug && salon.isPending && <Skeleton className="h-[20rem] w-full" />}

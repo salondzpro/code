@@ -5,8 +5,11 @@ import {
   toLocalDateKey,
   weekKeys,
   addDaysToKey,
+  LABEL_FONTS,
+  LABEL_LOCALES,
   LABEL_SOCIAL_IDS,
   LABEL_SOCIAL_MAX,
+  LABEL_TAGLINE_MAX,
 } from '@salondz/constants';
 import {
   createSalonSchema,
@@ -24,7 +27,7 @@ import { snakeize } from '../../lib/mappers';
 import { loadOwnerView } from '../../lib/queries';
 import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon } from '../../plugins/auth';
-import { readLabelSocials, writeLabelSocials } from '../../lib/labelSettings';
+import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } from '../../lib/labelSettings';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -114,6 +117,26 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => writeLabelSocials(req.salon!.id, req.body),
+  );
+  // Langue, couleur, style et phrase de la « Vitrine noire ».
+  app.get('/label-style', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-cache');
+    return readLabelStyle(req.salon!.id);
+  });
+  app.put(
+    '/label-style',
+    {
+      preHandler: app.requireSalon,
+      schema: {
+        body: z.object({
+          locale: z.enum(LABEL_LOCALES),
+          color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+          font: z.enum(LABEL_FONTS),
+          tagline: z.string().trim().max(LABEL_TAGLINE_MAX),
+        }),
+      },
+    },
+    async (req) => writeLabelStyle(req.salon!.id, req.body),
   );
 
   app.patch(

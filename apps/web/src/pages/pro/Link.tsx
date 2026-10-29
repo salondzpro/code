@@ -27,7 +27,7 @@ import {
   TikTokLogo,
   WhatsAppLogo,
 } from '@/components/BrandIcons';
-import { useLabelSettings, useLabelSocials, useProSalon, useSaveLabelSocials } from '@salondz/api-client';
+import { useLabelSettings, useLabelSocials, useLabelStyle, useProSalon, useSaveLabelSocials, useSaveLabelStyle } from '@salondz/api-client';
 import {
   Avatar,
   Badge,
@@ -265,6 +265,8 @@ export function ProQr() {
   const settings = useLabelSettings(!!salon);
   const socials = useLabelSocials(!!salon);
   const saveSocials = useSaveLabelSocials();
+  const look = useLabelStyle(!!salon);
+  const saveLook = useSaveLabelStyle();
   const { url, short } = usePublicUrl(salon?.slug ?? '');
   if (!salon) return <PageLoading />;
   const s = settings.data ?? DEFAULT_LABEL_SETTINGS;
@@ -289,6 +291,8 @@ export function ProQr() {
         filename={`salondz-${salon.slug}`}
         socials={socials.data}
         onSaveSocials={(v) => saveSocials.mutateAsync(v)}
+        style={look.data}
+        onSaveStyle={(v) => saveLook.mutateAsync(v)}
       />
       <Button variant="g" onClick={() => void share(salon.name, url)}>
         <I icon={MoreHorizontal} size={18} /> {t('Partager le lien')}

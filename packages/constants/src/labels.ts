@@ -78,3 +78,52 @@ export function normalizeLabelSocials(raw: unknown): LabelSocial[] {
     return { id, handle, shown: !!handle && r?.shown !== false };
   });
 }
+
+/**
+ * Personnalisation de la « Vitrine noire » par le professionnel : langue des textes imprimés,
+ * couleur du fond (le texte suit, blanc ou encre selon la clarté), style typographique et la
+ * phrase sous « Réservation RDV ». Gardée par salon (`app_settings.label_style:<salon>`).
+ */
+export const LABEL_LOCALES = ['fr', 'ar', 'en'] as const;
+export type LabelLocale = (typeof LABEL_LOCALES)[number];
+export const LABEL_FONTS = ['moderne', 'elegant', 'capitales'] as const;
+export type LabelFont = (typeof LABEL_FONTS)[number];
+export const LABEL_TAGLINE_MAX = 60;
+
+/** Couleurs proposées d'un geste ; toute autre couleur reste possible (`#RRGGBB`). */
+export const LABEL_COLORS: readonly { hex: string; nameFr: string }[] = [
+  { hex: '#050506', nameFr: 'Noir' },
+  { hex: '#FFFFFF', nameFr: 'Blanc' },
+  { hex: '#0F1B33', nameFr: 'Bleu nuit' },
+  { hex: '#12352B', nameFr: 'Vert sapin' },
+  { hex: '#5A1426', nameFr: 'Bordeaux' },
+  { hex: '#F4D9E1', nameFr: 'Rose poudré' },
+  { hex: '#EADFD2', nameFr: 'Champagne' },
+];
+
+export interface LabelStyle {
+  locale: LabelLocale;
+  color: string;
+  font: LabelFont;
+  /** Phrase sous le titre ; vide = phrase par défaut de la langue. */
+  tagline: string;
+}
+
+export const DEFAULT_LABEL_STYLE: LabelStyle = { locale: 'fr', color: '#050506', font: 'moderne', tagline: '' };
+
+/** Textes imprimés par langue (l'affiche peut être dans une autre langue que l'écran). */
+export const LABEL_TEXTS: Record<LabelLocale, { title: string; tagline: string; follow: string }> = {
+  fr: { title: 'Réservation RDV', tagline: 'Scannez le QR Code ou l’application', follow: 'Suivez-nous sur les réseaux' },
+  ar: { title: 'احجز موعدك', tagline: 'امسح رمز QR أو استعمل التطبيق', follow: 'تابعونا على مواقع التواصل' },
+  en: { title: 'Book now', tagline: 'Scan the QR code or use the app', follow: 'Follow us on social media' },
+};
+
+export function normalizeLabelStyle(raw: unknown): LabelStyle {
+  const v = (raw && typeof raw === 'object' ? raw : {}) as Partial<LabelStyle>;
+  return {
+    locale: LABEL_LOCALES.includes(v.locale as LabelLocale) ? (v.locale as LabelLocale) : DEFAULT_LABEL_STYLE.locale,
+    color: typeof v.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.color) ? v.color.toUpperCase() : DEFAULT_LABEL_STYLE.color,
+    font: LABEL_FONTS.includes(v.font as LabelFont) ? (v.font as LabelFont) : DEFAULT_LABEL_STYLE.font,
+    tagline: typeof v.tagline === 'string' ? v.tagline.trim().slice(0, LABEL_TAGLINE_MAX) : '',
+  };
+}

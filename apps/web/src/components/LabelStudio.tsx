@@ -12,6 +12,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Download, Loader2 } from 'lucide-react';
 import { FacebookLogo, InstagramLogo, SnapchatLogo, TikTokLogo } from './BrandIcons';
 import {
+  LABEL_COLORS,
+  LABEL_TAGLINE_MAX,
+  LABEL_TEXTS,
+  normalizeLabelStyle,
+  type LabelFont,
+  type LabelLocale,
+  type LabelStyle,
   LABEL_SOCIAL_MAX,
   LABEL_SOCIAL_NAMES,
   LABEL_TEMPLATES,
@@ -44,12 +51,17 @@ export function LabelStudio({
   filename,
   socials: initialSocials,
   onSaveSocials,
+  style: initialStyle,
+  onSaveStyle,
 }: {
   input: LabelInput;
   /** Réseaux enregistrés pour le salon (modèle « Vitrine noire »). */
   socials?: LabelSocial[];
   /** Enregistre les réseaux ; absent (administration) : modifiables pour l'aperçu seulement. */
   onSaveSocials?: (s: LabelSocial[]) => Promise<unknown>;
+  /** Langue, couleur, style et phrase enregistrés pour le salon (« Vitrine noire »). */
+  style?: LabelStyle;
+  onSaveStyle?: (s: LabelStyle) => Promise<unknown>;
   /** Modèles proposés (réglage de la plateforme). */
   allowed: readonly LabelTemplateId[];
   defaultId: LabelTemplateId;
@@ -89,7 +101,19 @@ export function LabelStudio({
     const id = window.setTimeout(() => setDrawnSocials(socials), 350);
     return () => window.clearTimeout(id);
   }, [socials]);
-  const socialsKey = tpl === 'vitrine' ? JSON.stringify(drawnSocials) : '';
+  const [look, setLook] = useState<LabelStyle>(() => normalizeLabelStyle(initialStyle));
+  const styleFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!initialStyle || styleFor.current === filename) return;
+    styleFor.current = filename;
+    setLook(normalizeLabelStyle(initialStyle));
+  }, [initialStyle, filename]);
+  const [drawnLook, setDrawnLook] = useState(look);
+  useEffect(() => {
+    const id = window.setTimeout(() => setDrawnLook(look), 350);
+    return () => window.clearTimeout(id);
+  }, [look]);
+  const socialsKey = tpl === 'vitrine' ? JSON.stringify([drawnSocials, drawnLook]) : '';
 
   useEffect(() => {
     let alive = true;
@@ -98,7 +122,7 @@ export function LabelStudio({
     setResult(null);
     (async () => {
       try {
-        const canvas = await renderLabel(tpl, format, { ...input, socials: drawnSocials });
+        const canvas = await renderLabel(tpl, format, { ...input, socials: drawnSocials, style: drawnLook });
         const blob = await labelPng(canvas);
         if (!alive) return;
         setPreview((old) => {
@@ -166,6 +190,7 @@ export function LabelStudio({
         ))}
       </div>
 
+      {tpl === 'vitrine' && <StyleEditor value={look} onChange={setLook} onSave={onSaveStyle} />}
       {tpl === 'vitrine' && <SocialsEditor value={socials} onChange={setSocials} onSave={onSaveSocials} />}
 
       <div className="lbl-stage" style={{ aspectRatio: `${size.w} / ${size.h}` }}>
@@ -284,6 +309,134 @@ function SocialsEditor({
           </div>
         );
       })}
+    </section>
+  );
+}
+
+const LOCALE_OPTIONS: { value: LabelLocale; label: string }[] = [
+  { value: 'fr', label: 'Français' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'en', label: 'English' },
+];
+
+/**
+ * Langue de l'affiche, couleur du fond, style typographique et phrase sous « Réservation RDV ».
+ * L'aperçu suit chaque geste ; l'enregistrement part une seconde après le dernier changement,
+ * avec son état sous la carte.
+ */
+function StyleEditor({
+  value,
+  onChange,
+  onSave,
+}: {
+  value: LabelStyle;
+  onChange: (v: LabelStyle) => void;
+  onSave?: (v: LabelStyle) => Promise<unknown>;
+}) {
+  const [state, setState] = useState<'saving' | 'saved' | 'error' | null>(null);
+  // N'enregistre que les gestes de la personne : l'arrivée des réglages du serveur n'en est pas un.
+  const touched = useRef(false);
+  const saved = useRef('');
+  const key = JSON.stringify(value);
+  useEffect(() => {
+    if (!onSave || !touched.current || key === saved.current) return;
+    const id = window.setTimeout(async () => {
+      setState('saving');
+      try {
+        await onSave(value);
+        saved.current = key;
+        setState('saved');
+      } catch {
+        setState('error');
+      }
+    }, 900);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  const set = (p: Partial<LabelStyle>) => {
+    touched.current = true;
+    setState(null);
+    onChange({ ...value, ...p });
+  };
+  const custom = !LABEL_COLORS.some((c) => c.hex === value.color);
+
+  return (
+    <section className="crd !gap-3" aria-label={t('Personnaliser l’affiche')}>
+      <span className="block text-[1rem] font-semibold">{t('Personnaliser l’affiche')}</span>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[0.786rem] font-medium text-muted">{t('Langue de l’affiche')}</span>
+        <Segmented label={t('Langue de l’affiche')} value={value.locale} onChange={(locale) => set({ locale })} options={LOCALE_OPTIONS} />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[0.786rem] font-medium text-muted">{t('Couleur du fond')}</span>
+        <div className="pills bleed" role="radiogroup" aria-label={t('Couleur du fond')}>
+          {LABEL_COLORS.map((c) => (
+            <button
+              key={c.hex}
+              type="button"
+              role="radio"
+              aria-checked={value.color === c.hex}
+              aria-label={t(c.nameFr)}
+              title={t(c.nameFr)}
+              onClick={() => set({ color: c.hex })}
+              className={`lbl-color ${value.color === c.hex ? 'on' : ''}`}
+              style={{ background: c.hex }}
+            />
+          ))}
+          <label className={`lbl-color lbl-color-custom ${custom ? 'on' : ''}`} title={t('Autre couleur')} style={custom ? { background: value.color } : undefined}>
+            <input
+              type="color"
+              value={value.color.toLowerCase()}
+              aria-label={t('Autre couleur')}
+              onChange={(e) => set({ color: e.target.value.toUpperCase() })}
+            />
+            {!custom && <span aria-hidden>+</span>}
+          </label>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[0.786rem] font-medium text-muted">{t('Style')}</span>
+        <Segmented<LabelFont>
+          label={t('Style')}
+          value={value.font}
+          onChange={(font) => set({ font })}
+          options={[
+            { value: 'moderne', label: t('Moderne') },
+            { value: 'elegant', label: t('Élégant') },
+            { value: 'capitales', label: t('Capitales') },
+          ]}
+        />
+      </div>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[0.786rem] font-medium text-muted">{t('Phrase sous « Réservation RDV »')}</span>
+        <input
+          className="inp !py-2"
+          dir="auto"
+          value={value.tagline}
+          maxLength={LABEL_TAGLINE_MAX}
+          placeholder={LABEL_TEXTS[value.locale].tagline}
+          onChange={(e) => set({ tagline: e.target.value })}
+        />
+        <span className="flex justify-between text-[0.714rem] text-muted">
+          <span>{t('Vide : la phrase d’origine, dans la langue de l’affiche.')}</span>
+          <span dir="ltr">
+            {value.tagline.length}/{LABEL_TAGLINE_MAX}
+          </span>
+        </span>
+      </label>
+
+      {state && (
+        <p className={`flex items-center gap-1.5 text-[0.786rem] ${state === 'error' ? 'text-danger' : state === 'saved' ? 'text-ok-fg' : 'text-muted'}`} role="status">
+          {state === 'saving' && <I icon={Loader2} size={14} className="animate-spin" />}
+          {state === 'saved' && <I icon={Check} size={14} />}
+          {state === 'saving' ? t('Enregistrement…') : state === 'saved' ? t('Personnalisation enregistrée.') : t('Non enregistré. Réessayez.')}
+        </p>
+      )}
     </section>
   );
 }

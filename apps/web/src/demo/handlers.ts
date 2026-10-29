@@ -26,6 +26,7 @@ import {
   REVIEW_SUMMARY_MIN_REVIEWS,
   DEFAULT_LABEL_SETTINGS,
   normalizeLabelSocials,
+  normalizeLabelStyle,
 } from '@salondz/constants';
 import type { Booking, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
 import { availableSlots, clientKeyOf, clientStanding, concerns, dashboardStats, daysUntilMax, hm, nextAvailability, proClients, statsRange, summary, unaccent } from './engine';
@@ -613,6 +614,13 @@ on('GET', '/pro/label-socials', (c) => ok(demoSocials.get(ownedSalon(c).id) ?? n
 on('PUT', '/pro/label-socials', (c) => {
   const v = normalizeLabelSocials(c.body as unknown);
   demoSocials.set(ownedSalon(c).id, v);
+  return ok(v);
+});
+const demoStyles = new Map<string, ReturnType<typeof normalizeLabelStyle>>();
+on('GET', '/pro/label-style', (c) => ok(demoStyles.get(ownedSalon(c).id) ?? normalizeLabelStyle(null)));
+on('PUT', '/pro/label-style', (c) => {
+  const v = normalizeLabelStyle(c.body);
+  demoStyles.set(ownedSalon(c).id, v);
   return ok(v);
 });
 on('PUT', '/pro/salon/photos', (c) => {

@@ -28,6 +28,9 @@ import {
   TIKTOK_PATH,
   TIKTOK_RED,
   TIKTOK_RED_OFFSET,
+  LABEL_TEXTS,
+  normalizeLabelStyle,
+  type LabelStyle,
   type LabelFormat, type LabelSocial, type LabelSocialId, type LabelTemplateId } from '@salondz/constants';
 
 export interface LabelInput {
@@ -42,6 +45,8 @@ export interface LabelInput {
   audience?: 'men' | 'women' | 'unisex';
   /** Réseaux imprimés par le modèle « Vitrine noire » (seuls ceux `shown` avec un nom). */
   socials?: LabelSocial[];
+  /** Langue, couleur, style et phrase de la « Vitrine noire ». */
+  style?: LabelStyle;
 }
 
 /** Tailles en pixels, 300 points par pouce : A5 (148 × 210 mm) et carré de 12,7 cm. */
@@ -247,7 +252,9 @@ function ensureFonts(): Promise<void> {
       try {
         const f = new FontFace('Playfair Label', "url(/fonts/playfair-700.woff2) format('woff2')", { weight: '700' });
         const fi = new FontFace('Playfair Label', "url(/fonts/playfair-600i.woff2) format('woff2')", { weight: '600', style: 'italic' });
-        await Promise.all([f.load(), fi.load()]).then((faces) => faces.forEach((x) => document.fonts.add(x)));
+        // Arabe : Cairo (police variable, 400 à 700), sinon le canvas prend la police arabe du système.
+        const ar = new FontFace('Cairo Label', "url(/fonts/cairo-arabic.woff2) format('woff2')", { weight: '200 1000' });
+        await Promise.all([f.load(), fi.load(), ar.load()]).then((faces) => faces.forEach((x) => document.fonts.add(x)));
       } catch {
         /* police de secours (Georgia) : l'étiquette reste propre */
       }
@@ -329,6 +336,27 @@ function socialIcon(ctx: CanvasRenderingContext2D, id: LabelSocialId, x: number,
   ctx.restore();
 }
 
+const CAIRO = "'Cairo Label', " + ARABIC;
+const hasArabic = (t: string) => /[؀-ۿ]/.test(t);
+
+/** Clarté perçue d'une couleur `#RRGGBB`, de 0 (noir) à 1 (blanc). */
+function luminance(hex: string): number {
+  const n = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+
+/** Mélange deux couleurs `#RRGGBB` (t = part de `b`). */
+function mix(a: string, b: string, t: number): string {
+  const pa = parseInt(a.slice(1), 16);
+  const pb = parseInt(b.slice(1), 16);
+  const ch = (sh: number) => Math.round(((pa >> sh) & 255) * (1 - t) + ((pb >> sh) & 255) * t);
+  return `rgb(${ch(16)}, ${ch(8)}, ${ch(0)})`;
+}
+
 async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HTMLCanvasElement> {
   const { w: W, h: H } = LABEL_SIZES[format];
   const c = document.createElement('canvas');
@@ -339,27 +367,49 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
   const u = W / 1000;
   const cx = W / 2;
   const square = format === 'carre';
+  const st = normalizeLabelStyle(input.style);
+  const txt = LABEL_TEXTS[st.locale];
 
-  // Fond noir mat, très légèrement éclairé au centre
-  ctx.fillStyle = '#050506';
+  // Fond : la couleur choisie, légèrement éclairée au centre. Le texte suit sa clarté.
+  const light = luminance(st.color) > 0.45;
+  const ink = light ? '#111214' : '#FFFFFF';
+  const ink2 = light ? 'rgba(17,18,20,0.82)' : 'rgba(255,255,255,0.88)';
+  const muted = light ? 'rgba(17,18,20,0.45)' : 'rgba(255,255,255,0.55)';
+  const ruleC = light ? 'rgba(17,18,20,0.55)' : 'rgba(255,255,255,0.7)';
+  ctx.fillStyle = st.color;
   ctx.fillRect(0, 0, W, H);
   const glow = ctx.createRadialGradient(cx, H * 0.42, 0, cx, H * 0.42, Math.max(W, H) * 0.75);
-  glow.addColorStop(0, '#17181A');
-  glow.addColorStop(1, '#050506');
+  glow.addColorStop(0, mix(st.color, '#FFFFFF', light ? 0.35 : 0.07));
+  glow.addColorStop(1, st.color);
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
+
+  // Familles selon le style ; tout texte arabe passe en Cairo, de droite à gauche.
+  const latin = st.font === 'elegant' ? SERIF : SANS;
+  const caps = st.font === 'capitales';
+  const fontOf = (text: string, weight: number, px: number, family = latin, italic = false) =>
+    hasArabic(text) ? `${weight} ${px}px ${CAIRO}` : `${italic ? 'italic ' : ''}${weight} ${px}px ${family}`;
+  /** Texte centré, retourné en arabe, espacé en capitales. */
+  const center = (text: string, y: number, spacing = 0) => {
+    ctx.textAlign = 'center';
+    if (hasArabic(text)) {
+      ctx.direction = 'rtl';
+      ctx.fillText(text, cx, y);
+      ctx.direction = 'ltr';
+    } else if (spacing) spaced(ctx, text, cx, y, spacing);
+    else ctx.fillText(text, cx, y);
+  };
 
   const socials = (input.socials ?? []).filter((x) => x.shown && x.handle.trim());
   const at = (f: number) => H * f;
   // Repères verticaux (fraction de la hauteur) ; sans réseaux, le bloc central descend un peu.
-  const shift = socials.length ? 0 : square ? 0.05 : 0.05;
+  const shift = socials.length ? 0 : 0.05;
   const Y = square
     ? { head: 0.14, title: 0.27 + shift, sub: 0.32 + shift, qr: 0.36 + shift, qrSize: 0.23, link: 0.66 + shift, rule: 0.745, icons: 0.772, handles: 0.884 }
     : { head: 0.165, title: 0.345 + shift, sub: 0.388 + shift, qr: 0.428 + shift, qrSize: 0.25, link: 0.664 + shift, rule: 0.745, icons: 0.772, handles: 0.848 };
 
-  // En-tête : « Nom du salon × Salon DZ » sur une ligne, sinon le nom au-dessus.
+  // En-tête : « Nom du salon x Salon DZ » sur une ligne, sinon le nom au-dessus.
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#FFFFFF';
   const headMax = 820 * u;
   const brandPx = (square ? 44 : 46) * u;
   ctx.font = `700 ${brandPx}px ${SANS}`;
@@ -373,87 +423,106 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
   const gap = brandPx * 0.6;
   const drawBrand = (x0: number, y: number) => {
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = ink;
     ctx.font = `700 ${brandPx}px ${SANS}`;
     ctx.fillText('Salon', x0, y);
-    ctx.fillStyle = '#9A9DA1';
+    ctx.fillStyle = muted;
     ctx.font = `600 ${brandPx}px ${SANS}`;
     ctx.fillText('DZ', x0 + wSalon + brandPx * 0.2, y);
   };
-  const nameFont = (px: number) => `700 ${px}px ${SANS}`;
+  const drawX = (x0: number, y: number) => {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = muted;
+    ctx.font = `400 ${xPx}px ${SANS}`;
+    ctx.fillText('x', x0, y);
+  };
+  const name = caps && !hasArabic(input.name) ? input.name.toUpperCase() : input.name;
+  const nameFont = (px: number) => fontOf(name, 700, px);
   const oneLineMax = headMax - brandW - xW - gap * 2;
   ctx.font = nameFont(brandPx);
-  if (ctx.measureText(input.name).width <= oneLineMax) {
-    const nameW = ctx.measureText(input.name).width;
+  if (ctx.measureText(name).width <= oneLineMax) {
+    const nameW = ctx.measureText(name).width;
     const total = nameW + gap + xW + gap + brandW;
     let x0 = cx - total / 2;
     const y = at(Y.head);
+    ctx.fillStyle = ink;
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(input.name, x0, y);
+    ctx.fillText(name, x0, y);
     x0 += nameW + gap;
-    ctx.fillStyle = '#8D9094';
-    ctx.font = `400 ${xPx}px ${SANS}`;
-    ctx.fillText('x', x0, y);
+    drawX(x0, y);
     drawBrand(x0 + xW + gap, y);
   } else {
-    const fitted = fitLines(ctx, input.name, nameFont, brandPx * 1.15, 30 * u, headMax, 2);
+    const fitted = fitLines(ctx, name, nameFont, brandPx * 1.15, 30 * u, headMax, 2);
     ctx.font = nameFont(fitted.px);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = ink;
     let y = at(Y.head) - fitted.px * 0.55 * fitted.rows.length;
     for (const row of fitted.rows) {
-      ctx.fillText(row, cx, y);
+      center(row, y);
       y += fitted.px * 1.05;
     }
     y += brandPx * 0.25;
-    const total = xW + gap + brandW;
-    const x0 = cx - total / 2;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#8D9094';
-    ctx.font = `400 ${xPx}px ${SANS}`;
-    ctx.fillText('x', x0, y);
+    const x0 = cx - (xW + gap + brandW) / 2;
+    drawX(x0, y);
     drawBrand(x0 + xW + gap, y);
   }
 
   // Titre
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#FFFFFF';
-  const title = fitLines(ctx, 'Réservation RDV', (px) => `700 ${px}px ${SANS}`, (square ? 100 : 118) * u, 60 * u, 700 * u, 1);
-  ctx.font = `700 ${title.px}px ${SANS}`;
-  ctx.fillText(title.rows[0]!, cx, at(Y.title));
-  ctx.font = `400 ${(square ? 31 : 33) * u}px ${SANS}`;
-  ctx.fillStyle = '#E6E7E9';
-  ctx.fillText('Scannez le QR Code ou l’application', cx, at(Y.sub));
+  ctx.fillStyle = ink;
+  const titleText = caps && !hasArabic(txt.title) ? txt.title.toUpperCase() : txt.title;
+  const tSpacing = (px: number) => (caps && !hasArabic(titleText) ? px * 0.04 : 0);
+  const title = fitLines(ctx, titleText, (px) => fontOf(titleText, 700, px), (square ? 100 : 118) * u, 56 * u, caps ? 660 * u : 700 * u, 1);
+  ctx.font = fontOf(titleText, 700, title.px);
+  center(title.rows[0]!, at(Y.title), tSpacing(title.px));
+
+  // Phrase sous le titre : celle du professionnel, sinon celle de la langue (deux lignes au plus).
+  const tagline = st.tagline || txt.tagline;
+  const tagText = caps && !hasArabic(tagline) ? tagline.toUpperCase() : tagline;
+  const tagWeight = caps ? 600 : st.font === 'elegant' ? 600 : 400;
+  const tagFont = (px: number) => fontOf(tagText, tagWeight, px, latin, st.font === 'elegant');
+  const tag = fitLines(ctx, tagText, tagFont, (square ? 31 : 33) * u * (caps ? 0.82 : 1), 22 * u, 800 * u, 2);
+  ctx.font = tagFont(tag.px);
+  ctx.fillStyle = ink2;
+  let extra = 0;
+  tag.rows.forEach((row, i) => {
+    center(row, at(Y.sub) + i * tag.px * 1.25, caps && !hasArabic(row) ? tag.px * 0.08 : 0);
+    if (i) extra += tag.px * 1.25;
+  });
 
   // QR noir sur pavé blanc : un QR inversé (blanc sur noir) n'est pas lu par tous les téléphones.
   const qr = W * Y.qrSize;
-  const qy = at(Y.qr);
+  const qy = at(Y.qr) + extra;
   const pad = qr * 0.07;
   ctx.fillStyle = '#FFFFFF';
   roundRect(ctx, cx - qr / 2 - pad, qy - pad, qr + 2 * pad, qr + 2 * pad, pad * 0.5);
   ctx.fill();
+  if (light) {
+    ctx.strokeStyle = 'rgba(17,18,20,0.14)';
+    ctx.lineWidth = 3 * u;
+    ctx.stroke();
+  }
   await drawQr(ctx, input.url, cx - qr / 2, qy, qr);
 
   // Lien
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = ink;
   const link = fitLines(ctx, input.short, (px) => `700 ${px}px ${SANS}`, (square ? 36 : 38) * u, 22 * u, 820 * u, 1);
   ctx.font = `700 ${link.px}px ${SANS}`;
   ctx.textAlign = 'center';
-  ctx.fillText(link.rows[0]!, cx, at(Y.link));
+  ctx.fillText(link.rows[0]!, cx, at(Y.link) + extra);
 
   // Réseaux
   if (socials.length) {
-    const label = 'Suivez-nous sur les réseaux';
-    ctx.font = `400 ${(square ? 27 : 29) * u}px ${SANS}`;
-    ctx.fillStyle = '#E6E7E9';
+    const label = caps && !hasArabic(txt.follow) ? txt.follow.toUpperCase() : txt.follow;
+    const lpx = (square ? 27 : 29) * u * (caps ? 0.85 : 1);
+    ctx.font = fontOf(label, caps ? 600 : 400, lpx, latin, st.font === 'elegant');
+    ctx.fillStyle = ink2;
     const ry = at(Y.rule);
-    ctx.fillText(label, cx, ry);
-    const lw = ctx.measureText(label).width;
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    const ls = caps && !hasArabic(label) ? lpx * 0.1 : 0;
+    center(label, ry, ls);
+    const lw = ctx.measureText(label).width + ls * label.length;
+    ctx.strokeStyle = ruleC;
     ctx.lineWidth = 2 * u;
     const lineY = ry - 10 * u;
-    const span = 160 * u;
+    const span = Math.min(160 * u, (900 * u - lw) / 2 - 24 * u);
     ctx.beginPath();
     ctx.moveTo(cx - lw / 2 - 24 * u - span, lineY);
     ctx.lineTo(cx - lw / 2 - 24 * u, lineY);
@@ -468,9 +537,9 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
     socials.forEach((so2, i) => {
       const ccx = x0 + colW * (i + 0.5);
       socialIcon(ctx, so2.id, ccx - s / 2, at(Y.icons), s);
-      ctx.fillStyle = '#FFFFFF';
-      const h = fitLines(ctx, so2.handle, (px) => `600 ${px}px ${SANS}`, (square ? 24 : 24) * u, 14 * u, colW - 10 * u, 1);
-      ctx.font = `600 ${h.px}px ${SANS}`;
+      ctx.fillStyle = ink;
+      const h = fitLines(ctx, so2.handle, (px) => fontOf(so2.handle, 600, px, SANS), 24 * u, 14 * u, colW - 10 * u, 1);
+      ctx.font = fontOf(so2.handle, 600, h.px, SANS);
       ctx.textAlign = 'center';
       ctx.fillText(h.rows[0]!, ccx, at(Y.handles));
     });

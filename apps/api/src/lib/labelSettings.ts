@@ -7,6 +7,8 @@ import {
   DEFAULT_LABEL_SETTINGS,
   LABEL_TEMPLATE_IDS,
   normalizeLabelSocials,
+  normalizeLabelStyle,
+  type LabelStyle,
   type LabelSettings,
   type LabelSocial,
   type LabelTemplateId,
@@ -63,6 +65,28 @@ export async function writeLabelSocials(salonId: string, socials: LabelSocial[])
   const res = await db
     .from('app_settings')
     .upsert({ key: socialsKey(salonId), value: JSON.stringify(clean), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (res.error) throw res.error;
+  return clean;
+}
+
+/** Personnalisation de la « Vitrine noire » (langue, couleur, style, phrase), par salon. */
+const styleKey = (salonId: string) => `label_style:${salonId}`;
+
+export async function readLabelStyle(salonId: string): Promise<LabelStyle> {
+  const res = await db.from('app_settings').select('value').eq('key', styleKey(salonId)).maybeSingle();
+  if (res.error || !res.data?.value) return normalizeLabelStyle(null);
+  try {
+    return normalizeLabelStyle(JSON.parse(res.data.value as string));
+  } catch {
+    return normalizeLabelStyle(null);
+  }
+}
+
+export async function writeLabelStyle(salonId: string, style: LabelStyle): Promise<LabelStyle> {
+  const clean = normalizeLabelStyle(style);
+  const res = await db
+    .from('app_settings')
+    .upsert({ key: styleKey(salonId), value: JSON.stringify(clean), updated_at: new Date().toISOString() }, { onConflict: 'key' });
   if (res.error) throw res.error;
   return clean;
 }
