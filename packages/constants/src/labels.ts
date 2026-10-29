@@ -7,7 +7,7 @@
  * L'administrateur décide quels modèles sont proposés aux professionnels et lequel est présenté
  * d'abord (`app_settings.label_templates`) ; le professionnel choisit parmi eux et télécharge.
  */
-export const LABEL_TEMPLATE_IDS = ['vitrine', 'elegance', 'nude', 'noir', 'ardoise', 'categorie', 'minimal', 'marque'] as const;
+export const LABEL_TEMPLATE_IDS = ['vitrine', 'vitrine-blanc', 'vitrine-rose', 'vitrine-poudre'] as const;
 export type LabelTemplateId = (typeof LABEL_TEMPLATE_IDS)[number];
 
 /** À qui le modèle s'adresse d'abord : il est proposé en tête au salon du même public. */
@@ -18,17 +18,20 @@ export interface LabelTemplateDef {
   nameFr: string;
   hintFr: string;
   audience: LabelAudience;
+  /** Réglages posés quand on choisit le modèle ; la personne peut ensuite tout changer. */
+  preset: { color: string; font: LabelFont; decor: boolean };
 }
 
+/**
+ * Modèles = DÉCLINAISONS de la même mise en page « Vitrine » (29 oct. 2026, décision du
+ * propriétaire : les anciennes mises en page sont retirées). Choisir un modèle pose sa couleur, son
+ * style et ses éclats ; tout reste modifiable ensuite.
+ */
 export const LABEL_TEMPLATES: readonly LabelTemplateDef[] = [
-  { id: 'vitrine', nameFr: 'Vitrine noire', hintFr: 'Plaque noire de vitrine, avec vos réseaux', audience: 'all' },
-  { id: 'elegance', nameFr: 'Élégance', hintFr: 'Rose poudré, typographie fine', audience: 'women' },
-  { id: 'nude', nameFr: 'Nude', hintFr: 'Champagne et doré, esprit institut', audience: 'women' },
-  { id: 'noir', nameFr: 'Barber noir', hintFr: 'Noir et laiton, esprit barbier', audience: 'men' },
-  { id: 'ardoise', nameFr: 'Ardoise', hintFr: 'Gris ardoise, sobre et moderne', audience: 'men' },
-  { id: 'categorie', nameFr: 'Selon le métier', hintFr: 'Couleurs de votre activité principale', audience: 'all' },
-  { id: 'minimal', nameFr: 'Minimal', hintFr: 'Blanc et encre, se marie avec tout', audience: 'all' },
-  { id: 'marque', nameFr: 'Salon DZ', hintFr: 'Aux couleurs de la plateforme', audience: 'all' },
+  { id: 'vitrine', nameFr: 'Vitrine noire', hintFr: 'Plaque noire de vitrine, avec vos réseaux', audience: 'all', preset: { color: '#050506', font: 'moderne', decor: false } },
+  { id: 'vitrine-blanc', nameFr: 'Vitrine blanche', hintFr: 'Blanc et encre, se marie avec tout', audience: 'all', preset: { color: '#FFFFFF', font: 'moderne', decor: false } },
+  { id: 'vitrine-rose', nameFr: 'Rose cendré', hintFr: 'Rose cendré et éclats, ton enjoué', audience: 'women', preset: { color: '#C99A9E', font: 'elegant', decor: true } },
+  { id: 'vitrine-poudre', nameFr: 'Rose poudré', hintFr: 'Rose tendre, typographie fine', audience: 'women', preset: { color: '#F4D9E1', font: 'elegant', decor: true } },
 ];
 
 /** Deux formats d'impression, à 300 points par pouce. */
@@ -97,6 +100,7 @@ export const LABEL_COLORS: readonly { hex: string; nameFr: string }[] = [
   { hex: '#0F1B33', nameFr: 'Bleu nuit' },
   { hex: '#12352B', nameFr: 'Vert sapin' },
   { hex: '#5A1426', nameFr: 'Bordeaux' },
+  { hex: '#C99A9E', nameFr: 'Rose cendré' },
   { hex: '#F4D9E1', nameFr: 'Rose poudré' },
   { hex: '#EADFD2', nameFr: 'Champagne' },
 ];
@@ -107,9 +111,11 @@ export interface LabelStyle {
   font: LabelFont;
   /** Phrase sous le titre ; vide = phrase par défaut de la langue. */
   tagline: string;
+  /** Éclats décoratifs autour du titre (modèles roses). */
+  decor: boolean;
 }
 
-export const DEFAULT_LABEL_STYLE: LabelStyle = { locale: 'fr', color: '#050506', font: 'moderne', tagline: '' };
+export const DEFAULT_LABEL_STYLE: LabelStyle = { locale: 'fr', color: '#050506', font: 'moderne', tagline: '', decor: false };
 
 /** Textes imprimés par langue (l'affiche peut être dans une autre langue que l'écran). */
 export const LABEL_TEXTS: Record<LabelLocale, { title: string; tagline: string; follow: string }> = {
@@ -125,5 +131,6 @@ export function normalizeLabelStyle(raw: unknown): LabelStyle {
     color: typeof v.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.color) ? v.color.toUpperCase() : DEFAULT_LABEL_STYLE.color,
     font: LABEL_FONTS.includes(v.font as LabelFont) ? (v.font as LabelFont) : DEFAULT_LABEL_STYLE.font,
     tagline: typeof v.tagline === 'string' ? v.tagline.trim().slice(0, LABEL_TAGLINE_MAX) : '',
+    decor: v.decor === true,
   };
 }

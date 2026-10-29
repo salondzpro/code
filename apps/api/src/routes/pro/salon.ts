@@ -133,10 +133,11 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
           color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
           font: z.enum(LABEL_FONTS),
           tagline: z.string().trim().max(LABEL_TAGLINE_MAX),
+          decor: z.boolean().optional(),
         }),
       },
     },
-    async (req) => writeLabelStyle(req.salon!.id, req.body),
+    async (req) => writeLabelStyle(req.salon!.id, { ...req.body, decor: req.body.decor ?? false }),
   );
 
   app.patch(

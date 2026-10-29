@@ -1553,4 +1553,9 @@ export const en: Record<string, string> = {
   "Étape 3 sur 3": "Step 3 of 3",
   "Confirmer la réservation": "Confirm booking",
   "Paiement sur place": "Pay at the salon",
+  "Vitrine blanche": "White window plate",
+  "Rose cendré": "Ash pink",
+  "Rose cendré et éclats, ton enjoué": "Ash pink with sparkles, playful tone",
+  "Rose tendre, typographie fine": "Soft pink, fine typography",
+  "Éclats décoratifs": "Decorative sparkles",
 };

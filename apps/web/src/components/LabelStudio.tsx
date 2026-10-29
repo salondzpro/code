@@ -32,18 +32,6 @@ import { LABEL_SIZES, downloadLabel, labelPng, renderLabel, type LabelInput } fr
 import { Button, I, Segmented, Toggle } from './ui';
 import { t } from '@/i18n';
 
-/** Deux couleurs par modèle, pour le reconnaître avant même l'aperçu. */
-const SWATCH: Record<LabelTemplateId, [string, string]> = {
-  vitrine: ['#050506', '#FFFFFF'],
-  elegance: ['#F5DFE7', '#B83D6E'],
-  nude: ['#EADFD2', '#A47A45'],
-  noir: ['#141517', '#C8A15A'],
-  ardoise: ['#24323C', '#5FD0B0'],
-  categorie: ['#E8EEFF', '#3C5FC4'],
-  minimal: ['#FFFFFF', '#111214'],
-  marque: ['#111214', '#3DDC97'],
-};
-
 export function LabelStudio({
   input,
   allowed,
@@ -74,8 +62,7 @@ export function LabelStudio({
     const rank = (x: (typeof LABEL_TEMPLATES)[number]) => (x.id === 'vitrine' ? -1 : x.audience === audience ? 0 : x.audience === 'all' ? 1 : 2);
     return LABEL_TEMPLATES.filter((x) => allowed.includes(x.id)).sort((a, b) => rank(a) - rank(b));
   }, [allowed, audience]);
-  const initial = list.find((x) => x.id === defaultId && (x.audience === 'all' || x.audience === audience))?.id ?? list[0]?.id ?? 'minimal';
-  const [tpl, setTpl] = useState<LabelTemplateId>(initial);
+  const initial = list.find((x) => x.id === defaultId)?.id ?? list[0]?.id ?? 'vitrine';
   const [format, setFormat] = useState<LabelFormat>('affiche');
   const [preview, setPreview] = useState<{ url: string; blob: Blob } | null>(null);
   const [rendering, setRendering] = useState(true);
@@ -84,7 +71,6 @@ export function LabelStudio({
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [fallback, setFallback] = useState(false);
 
-  useEffect(() => setTpl(initial), [initial]);
 
   // Réseaux : saisie locale immédiate, aperçu redessiné après une courte pause de frappe.
   const [socials, setSocials] = useState<LabelSocial[]>(() => normalizeLabelSocials(initialSocials));
@@ -101,19 +87,38 @@ export function LabelStudio({
     const id = window.setTimeout(() => setDrawnSocials(socials), 350);
     return () => window.clearTimeout(id);
   }, [socials]);
-  const [look, setLook] = useState<LabelStyle>(() => normalizeLabelStyle(initialStyle));
+  // Sans réglage enregistré, l'affiche part du modèle par défaut de la plateforme.
+  const presetLook = (id: LabelTemplateId, base: LabelStyle): LabelStyle => {
+    const p = LABEL_TEMPLATES.find((x) => x.id === id)?.preset;
+    return p ? { ...base, color: p.color, font: p.font, decor: p.decor } : base;
+  };
+  const [look, setLook] = useState<LabelStyle>(() =>
+    initialStyle ? normalizeLabelStyle(initialStyle) : presetLook(initial, normalizeLabelStyle(null)),
+  );
   const styleFor = useRef<string | null>(null);
+  const lookTouched = useRef(false);
   useEffect(() => {
     if (!initialStyle || styleFor.current === filename) return;
     styleFor.current = filename;
-    setLook(normalizeLabelStyle(initialStyle));
+    const v = normalizeLabelStyle(initialStyle);
+    // Réglage jamais enregistré (valeurs d'origine) : on garde le modèle par défaut.
+    const vierge = JSON.stringify(v) === JSON.stringify(normalizeLabelStyle(null));
+    setLook(vierge ? presetLook(initial, v) : v);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialStyle, filename]);
+  /** Le modèle affiché est celui dont la couleur et le style correspondent ; sinon « personnalisé ». */
+  const tpl: LabelTemplateId | null =
+    LABEL_TEMPLATES.find((x) => x.preset.color === look.color && x.preset.font === look.font && x.preset.decor === look.decor)?.id ?? null;
+  const choisir = (id: LabelTemplateId) => {
+    lookTouched.current = true;
+    setLook((l) => presetLook(id, l));
+  };
   const [drawnLook, setDrawnLook] = useState(look);
   useEffect(() => {
     const id = window.setTimeout(() => setDrawnLook(look), 350);
     return () => window.clearTimeout(id);
   }, [look]);
-  const socialsKey = tpl === 'vitrine' ? JSON.stringify([drawnSocials, drawnLook]) : '';
+  const socialsKey = JSON.stringify([drawnSocials, drawnLook]);
 
   useEffect(() => {
     let alive = true;
@@ -122,7 +127,7 @@ export function LabelStudio({
     setResult(null);
     (async () => {
       try {
-        const canvas = await renderLabel(tpl, format, { ...input, socials: drawnSocials, style: drawnLook });
+        const canvas = await renderLabel(tpl ?? 'vitrine', format, { ...input, socials: drawnSocials, style: drawnLook });
         const blob = await labelPng(canvas);
         if (!alive) return;
         setPreview((old) => {
@@ -140,7 +145,7 @@ export function LabelStudio({
     };
     // `input` est recréé à chaque rendu chez l'appelant : on suit son CONTENU.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tpl, format, input.name, input.url, input.short, input.logoUrl, (input.categoryIds ?? []).join(','), input.audience, socialsKey]);
+  }, [format, input.name, input.url, input.short, input.logoUrl, (input.categoryIds ?? []).join(','), input.audience, socialsKey]);
 
   const size = LABEL_SIZES[format];
   const telecharger = async () => {
@@ -148,7 +153,7 @@ export function LabelStudio({
     setSaving(true);
     setResult(null);
     try {
-      const r = await downloadLabel(preview.blob, `${filename}-${tpl}-${format}.png`);
+      const r = await downloadLabel(preview.blob, `${filename}-${tpl ?? 'perso'}-${format}.png`);
       if (r === 'fallback') setFallback(true);
       else setResult({ ok: true, text: t('Étiquette enregistrée.') });
     } catch {
@@ -176,11 +181,11 @@ export function LabelStudio({
             type="button"
             role="radio"
             aria-checked={tpl === m.id}
-            onClick={() => setTpl(m.id)}
+            onClick={() => choisir(m.id)}
             className={`lbl-chip ${tpl === m.id ? 'on' : ''}`}
           >
-            <span className="lbl-sw" style={{ background: SWATCH[m.id][0] }} aria-hidden>
-              <span style={{ background: SWATCH[m.id][1] }} />
+            <span className="lbl-sw" style={{ background: m.preset.color }} aria-hidden>
+              <span style={{ background: m.preset.color === '#FFFFFF' || m.preset.color === '#F4D9E1' ? '#111214' : '#FFFFFF' }} />
             </span>
             <span className="min-w-0 text-start">
               <span className="block text-[0.857rem] font-semibold leading-tight">{t(m.nameFr)}</span>
@@ -190,8 +195,8 @@ export function LabelStudio({
         ))}
       </div>
 
-      {tpl === 'vitrine' && <StyleEditor value={look} onChange={setLook} onSave={onSaveStyle} />}
-      {tpl === 'vitrine' && <SocialsEditor value={socials} onChange={setSocials} onSave={onSaveSocials} />}
+      <StyleEditor value={look} onChange={setLook} onSave={onSaveStyle} touchedRef={lookTouched} />
+      <SocialsEditor value={socials} onChange={setSocials} onSave={onSaveSocials} />
 
       <div className="lbl-stage" style={{ aspectRatio: `${size.w} / ${size.h}` }}>
         {preview && <img src={preview.url} alt={t('Aperçu de l’étiquette')} className={rendering ? 'opacity-60' : ''} />}
@@ -328,14 +333,17 @@ function StyleEditor({
   value,
   onChange,
   onSave,
+  touchedRef,
 }: {
   value: LabelStyle;
   onChange: (v: LabelStyle) => void;
   onSave?: (v: LabelStyle) => Promise<unknown>;
+  /** Partagé avec le choix du modèle, qui est aussi un geste de la personne. */
+  touchedRef: { current: boolean };
 }) {
   const [state, setState] = useState<'saving' | 'saved' | 'error' | null>(null);
   // N'enregistre que les gestes de la personne : l'arrivée des réglages du serveur n'en est pas un.
-  const touched = useRef(false);
+  const touched = touchedRef;
   const saved = useRef('');
   const key = JSON.stringify(value);
   useEffect(() => {
@@ -410,6 +418,11 @@ function StyleEditor({
             { value: 'capitales', label: t('Capitales') },
           ]}
         />
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[0.857rem] font-medium">{t('Éclats décoratifs')}</span>
+        <Toggle on={value.decor} onChange={(decor) => set({ decor })} label={t('Éclats décoratifs')} />
       </div>
 
       <label className="flex flex-col gap-1.5">

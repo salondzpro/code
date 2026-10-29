@@ -1537,4 +1537,9 @@ export const ar: Record<string, string> = {
   "Étape 3 sur 3": "الخطوة 3 من 3",
   "Confirmer la réservation": "تأكيد الحجز",
   "Paiement sur place": "الدفع في الصالون",
+  "Vitrine blanche": "لوحة واجهة بيضاء",
+  "Rose cendré": "وردي رمادي",
+  "Rose cendré et éclats, ton enjoué": "وردي رمادي ولمعات، طابع مرح",
+  "Rose tendre, typographie fine": "وردي ناعم، خط رفيع",
+  "Éclats décoratifs": "لمعات زخرفية",
 };

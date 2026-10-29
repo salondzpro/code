@@ -55,60 +55,9 @@ export const LABEL_SIZES: Record<LabelFormat, { w: number; h: number; mm: string
   carre: { w: 1500, h: 1500, mm: '127 × 127 mm' },
 };
 
-interface Palette {
-  bg: string;
-  /** Second ton du fond (dégradé vertical). */
-  bg2: string;
-  ink: string;
-  muted: string;
-  accent: string;
-  /** Bande du lien, en bas. */
-  band: string;
-  bandInk: string;
-  /** Cadre fin intérieur (affiche). */
-  frame: string | null;
-  serif: boolean;
-  /** Nom en capitales espacées (barbier) ou en casse normale. */
-  caps: boolean;
-  /** Motif discret du fond. */
-  motif: 'none' | 'stripes' | 'sparkles' | 'dots';
-}
-
 const SERIF = "'Playfair Label', 'Playfair Display', Georgia, 'Times New Roman', serif";
 const SANS = "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const ARABIC = "'Segoe UI', 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Geeza Pro', Tahoma, sans-serif";
-
-/** Couleurs des métiers : celles de l'agenda (`--color-cat-*`), assombries pour l'impression. */
-const TONES: Record<string, { bg: string; bg2: string; accent: string; ink: string }> = {
-  hair: { bg: '#E9F7F7', bg2: '#D3EEEF', accent: '#1F8A91', ink: '#0B3F43' },
-  barb: { bg: '#E8EEFF', bg2: '#D5E0FF', accent: '#3C5FC4', ink: '#1C2F66' },
-  nail: { bg: '#FCEEF3', bg2: '#F8DCE6', accent: '#C2477A', ink: '#5E1F38' },
-  lash: { bg: '#F0EAFF', bg2: '#E1D6FF', accent: '#6B45C2', ink: '#33206B' },
-  skin: { bg: '#EAF6EF', bg2: '#D6EEDF', accent: '#2F8754', ink: '#164A2D' },
-  lasr: { bg: '#FDF0E4', bg2: '#F9E0C9', accent: '#B8692C', ink: '#5C3010' },
-};
-
-function palette(id: LabelTemplateId, input: LabelInput): Palette {
-  switch (id) {
-    case 'vitrine':
-    case 'elegance':
-      return { bg: '#FCF3F6', bg2: '#F5DFE7', ink: '#3A1C2A', muted: '#8A6474', accent: '#B83D6E', band: '#B83D6E', bandInk: '#FFFFFF', frame: '#D9A9BA', serif: true, caps: false, motif: 'sparkles' };
-    case 'nude':
-      return { bg: '#F7F1EA', bg2: '#EADFD2', ink: '#2B2420', muted: '#7D6F63', accent: '#A47A45', band: '#2B2420', bandInk: '#F1E4CF', frame: '#C9AD84', serif: true, caps: false, motif: 'none' };
-    case 'noir':
-      return { bg: '#141517', bg2: '#0C0D0E', ink: '#FFFFFF', muted: '#A9ABAE', accent: '#C8A15A', band: '#C8A15A', bandInk: '#111214', frame: '#3A3B3E', serif: false, caps: true, motif: 'stripes' };
-    case 'ardoise':
-      return { bg: '#24323C', bg2: '#18232B', ink: '#FFFFFF', muted: '#A8B6C0', accent: '#5FD0B0', band: '#5FD0B0', bandInk: '#0E1A20', frame: '#3A4A55', serif: false, caps: false, motif: 'dots' };
-    case 'minimal':
-      return { bg: '#FFFFFF', bg2: '#FFFFFF', ink: '#111214', muted: '#6B6F73', accent: '#111214', band: '#111214', bandInk: '#FFFFFF', frame: '#E6E7E9', serif: false, caps: false, motif: 'none' };
-    case 'marque':
-      return { bg: '#111214', bg2: '#1B1D20', ink: '#FFFFFF', muted: '#A9ABAE', accent: '#3DDC97', band: '#3DDC97', bandInk: '#0B2B1D', frame: null, serif: false, caps: false, motif: 'none' };
-    case 'categorie': {
-      const t = TONES[categoryTone(input.categoryIds?.[0])] ?? TONES.barb!;
-      return { bg: t.bg, bg2: t.bg2, ink: t.ink, muted: t.ink + 'B3', accent: t.accent, band: t.accent, bandInk: '#FFFFFF', frame: t.accent + '55', serif: input.audience === 'women', caps: false, motif: 'dots' };
-    }
-  }
-}
 
 // ---------------------------------------------------------------------------------------------
 // Outils de dessin
@@ -123,19 +72,6 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-
-function loadImage(src: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolve) => {
-    const im = new Image();
-    im.crossOrigin = 'anonymous';
-    im.onload = () => resolve(im);
-    im.onerror = () => resolve(null);
-    im.src = src;
-  });
-}
-
-const initials = (name: string) =>
-  name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
 
 /** Coupe un nom en au plus `lines` lignes tenant dans `max` px, en réduisant la taille si besoin. */
 function fitLines(ctx: CanvasRenderingContext2D, text: string, font: (px: number) => string, start: number, min: number, max: number, lines: number): { px: number; rows: string[] } {
@@ -185,64 +121,6 @@ function sparkle(ctx: CanvasRenderingContext2D, x: number, y: number, r: number)
   ctx.fill();
 }
 
-function motif(ctx: CanvasRenderingContext2D, p: Palette, W: number, H: number, u: number) {
-  ctx.save();
-  if (p.motif === 'stripes') {
-    // Rayures obliques très discrètes : l'enseigne du barbier, sans le folklore.
-    ctx.strokeStyle = 'rgba(255,255,255,0.035)';
-    ctx.lineWidth = 18 * u;
-    for (let x = -H; x < W; x += 70 * u) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x + H, H);
-      ctx.stroke();
-    }
-  } else if (p.motif === 'dots') {
-    ctx.fillStyle = p.accent;
-    ctx.globalAlpha = 0.07;
-    for (let y = 30 * u; y < H; y += 34 * u) for (let x = 30 * u; x < W; x += 34 * u) {
-      ctx.beginPath();
-      ctx.arc(x, y, 2.4 * u, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-  ctx.restore();
-}
-
-/** Marque Salon DZ, dessinée (même construction que `components/Wordmark.tsx`) : « Salon » plein, « DZ » léger. */
-function wordmark(ctx: CanvasRenderingContext2D, cx: number, y: number, px: number, color: string, sub: string | null, u: number) {
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = color;
-  ctx.font = `700 ${px}px ${SANS}`;
-  const a = ctx.measureText('Salon').width;
-  ctx.font = `400 ${px}px ${SANS}`;
-  const gap = px * 0.22;
-  const b = ctx.measureText('DZ').width;
-  const x0 = cx - (a + gap + b) / 2;
-  ctx.textAlign = 'left';
-  ctx.font = `700 ${px}px ${SANS}`;
-  ctx.fillText('Salon', x0, y);
-  ctx.globalAlpha = 0.6;
-  ctx.font = `400 ${px}px ${SANS}`;
-  ctx.fillText('DZ', x0 + a + gap, y);
-  ctx.globalAlpha = 1;
-  if (sub) {
-    ctx.textAlign = 'center';
-    ctx.font = `600 ${px * 0.32}px ${SANS}`;
-    ctx.globalAlpha = 0.65;
-    spaced(ctx, sub, cx, y + px * 0.62, px * 0.09);
-    ctx.globalAlpha = 1;
-  }
-  void u;
-}
-
-/**
- * QR code dessiné module par module (29 oct. 2026) : modules aux coins arrondis, trois repères
- * en carrés arrondis, et la marque « S » de Salon DZ au centre. Reste parfaitement lisible :
- * correction d'erreur maximale (H, 30 % du code peut manquer), encre pleine sur fond blanc, le
- * centre n'occupe que ~5 % de la surface, et le logo n'est posé que sur les petites versions
- * (≤ 6), qui n'ont pas de motif d'alignement au centre.
- */
 async function drawQr(ctx: CanvasRenderingContext2D, url: string, x: number, y: number, size: number) {
   const qr = QRCode.create(url, { errorCorrectionLevel: 'H' });
   const n = qr.modules.size;
@@ -537,6 +415,26 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
   ctx.font = fontOf(titleText, 700, title.px);
   center(title.rows[0]!, at(Y.title), tSpacing(title.px));
 
+  // Modèles roses : quelques éclats autour du titre — un ton enjoué, sans charger l'affiche.
+  if (st.decor) {
+    ctx.save();
+    ctx.font = fontOf(titleText, 700, title.px);
+    const tw = ctx.measureText(title.rows[0]!).width + (tSpacing(title.px) * title.rows[0]!.length);
+    const ty = at(Y.title) - title.px * 0.36;
+    ctx.fillStyle = light ? 'rgba(122, 46, 70, 0.72)' : 'rgba(255, 255, 255, 0.78)';
+    const L = cx - tw / 2;
+    const R = cx + tw / 2;
+    sparkle(ctx, L - 46 * u, ty - 22 * u, 22 * u);
+    sparkle(ctx, L - 18 * u, ty + 34 * u, 10 * u);
+    sparkle(ctx, R + 44 * u, ty - 30 * u, 15 * u);
+    sparkle(ctx, R + 26 * u, ty + 28 * u, 24 * u);
+    // Deux éclats discrets près de l'en-tête
+    ctx.globalAlpha = 0.6;
+    sparkle(ctx, cx - 380 * u, at(Y.head) - 70 * u, 9 * u);
+    sparkle(ctx, cx + 400 * u, at(Y.head) + 40 * u, 12 * u);
+    ctx.restore();
+  }
+
   // Phrase sous le titre : celle du professionnel, sinon celle de la langue (deux lignes au plus).
   const tagline = st.tagline || txt.tagline;
   const tagText = caps && !hasArabic(tagline) ? tagline.toUpperCase() : tagline;
@@ -610,170 +508,10 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
   return c;
 }
 
-export async function renderLabel(template: LabelTemplateId, format: LabelFormat, input: LabelInput): Promise<HTMLCanvasElement> {
+/** Tous les modèles sont des déclinaisons de la « Vitrine » : le modèle choisit couleur et style (`preset`). */
+export async function renderLabel(_template: LabelTemplateId, format: LabelFormat, input: LabelInput): Promise<HTMLCanvasElement> {
   await ensureFonts();
-  if (template === 'vitrine') return renderVitrine(format, input);
-  const { w: W, h: H } = LABEL_SIZES[format];
-  const c = document.createElement('canvas');
-  c.width = W;
-  c.height = H;
-  const ctx = c.getContext('2d');
-  if (!ctx) throw new Error('canvas');
-  const p = palette(template, input);
-  const u = W / 1000; // unité : 1/1000 de la largeur
-  const cx = W / 2;
-
-  // Fond
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, p.bg);
-  g.addColorStop(1, p.bg2);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-  motif(ctx, p, W, H, u);
-
-  const square = format === 'carre';
-  const bandH = (square ? 120 : 150) * u;
-
-  // Cadre fin intérieur (affiche) : l'étiquette a un bord, même découpée de travers.
-  if (p.frame && !square) {
-    ctx.strokeStyle = p.frame;
-    ctx.lineWidth = 3 * u;
-    roundRect(ctx, 34 * u, 34 * u, W - 68 * u, H - bandH - 68 * u, 22 * u);
-    ctx.stroke();
-  }
-
-  // Bande du lien, en bas
-  ctx.fillStyle = p.band;
-  ctx.fillRect(0, H - bandH, W, bandH);
-
-  let y = (square ? 92 : 108) * u;
-  wordmark(ctx, cx, y, (square ? 46 : 50) * u, p.ink, square ? null : 'RÉSERVATION EN LIGNE', u);
-
-  // Logo du salon (affiche seulement)
-  if (!square) {
-    y += 70 * u;
-    const r = 64 * u;
-    const logo = input.logoUrl ? await loadImage(input.logoUrl) : null;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, y + r, r, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.lineWidth = 5 * u;
-    ctx.strokeStyle = p.accent;
-    ctx.stroke();
-    ctx.clip();
-    if (logo) {
-      const s = Math.max((2 * r) / logo.width, (2 * r) / logo.height);
-      ctx.drawImage(logo, cx - (logo.width * s) / 2, y + r - (logo.height * s) / 2, logo.width * s, logo.height * s);
-    } else {
-      ctx.fillStyle = p.accent;
-      ctx.font = `700 ${r * 0.8}px ${p.serif ? SERIF : SANS}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(initials(input.name), cx, y + r);
-      ctx.textBaseline = 'alphabetic';
-    }
-    ctx.restore();
-    if (p.motif === 'sparkles') {
-      ctx.fillStyle = p.accent;
-      ctx.globalAlpha = 0.55;
-      sparkle(ctx, cx - r - 46 * u, y + 30 * u, 16 * u);
-      sparkle(ctx, cx + r + 40 * u, y + r + 26 * u, 11 * u);
-      sparkle(ctx, cx + r + 70 * u, y + 18 * u, 7 * u);
-      ctx.globalAlpha = 1;
-    }
-    y += 2 * r + 18 * u;
-  } else {
-    y += 30 * u;
-  }
-
-  // NOM DU SALON — bien gras, sur une ou deux lignes
-  const name = p.caps ? input.name.toUpperCase() : input.name;
-  const nameFont = (px: number) => (p.serif ? `700 ${px}px ${SERIF}` : `800 ${px}px ${SANS}`);
-  const fitted = fitLines(ctx, name, nameFont, (square ? 84 : 96) * u, 44 * u, (square ? 860 : 840) * u, 2);
-  ctx.font = nameFont(fitted.px);
-  ctx.fillStyle = p.ink;
-  ctx.textAlign = 'center';
-  for (const row of fitted.rows) {
-    y += fitted.px * 0.98;
-    if (p.caps) spaced(ctx, row, cx, y, fitted.px * 0.06);
-    else ctx.fillText(row, cx, y);
-  }
-
-  // Activité
-  const cats = (input.categoryIds ?? []).slice(0, 2).map((id) => categoryLabel(id));
-  if (cats.length) {
-    y += (square ? 46 : 52) * u;
-    ctx.font = `600 ${(square ? 28 : 31) * u}px ${SANS}`;
-    ctx.fillStyle = p.accent;
-    if (p.caps) spaced(ctx, cats.join('  ·  ').toUpperCase(), cx, y, 3 * u);
-    else ctx.fillText(cats.join('  ·  '), cx, y);
-  }
-
-  // QR code dans sa carte blanche, coins soulignés de l'accent
-  // Le QR prend la place qui RESTE entre le nom et l'appel à scanner : rien ne déborde, quelle que
-  // soit la longueur du nom (une ou deux lignes, une activité ou aucune).
-  const ctaH = (square ? 96 : 236) * u;
-  y += (square ? 44 : 52) * u;
-  const qrBox = Math.max(300 * u, Math.min((square ? 520 : 600) * u, H - bandH - ctaH - y - 24 * u));
-  const pad = 30 * u;
-  const bx = cx - qrBox / 2;
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, bx, y, qrBox, qrBox, 30 * u);
-  ctx.fill();
-  if (p.bg === '#FFFFFF') {
-    ctx.strokeStyle = '#E6E7E9';
-    ctx.lineWidth = 3 * u;
-    ctx.stroke();
-  }
-  // Coins d'accent : l'œil trouve le QR avant de lire
-  ctx.strokeStyle = p.accent;
-  ctx.lineWidth = 9 * u;
-  ctx.lineCap = 'round';
-  const k = 62 * u;
-  const o = -16 * u;
-  const corners: [number, number, number, number][] = [
-    [bx + o, y + o, 1, 1],
-    [bx + qrBox - o, y + o, -1, 1],
-    [bx + o, y + qrBox - o, 1, -1],
-    [bx + qrBox - o, y + qrBox - o, -1, -1],
-  ];
-  for (const [x0, y0, dx, dy] of corners) {
-    ctx.beginPath();
-    ctx.moveTo(x0, y0 + dy * k);
-    ctx.lineTo(x0, y0);
-    ctx.lineTo(x0 + dx * k, y0);
-    ctx.stroke();
-  }
-  await drawQr(ctx, input.url, bx + pad, y + pad, qrBox - 2 * pad);
-  y += qrBox;
-
-  // Appel à l'action, en français puis en arabe
-  y += (square ? 72 : 92) * u;
-  ctx.fillStyle = p.ink;
-  ctx.font = p.serif ? `600 italic ${(square ? 50 : 56) * u}px ${SERIF}` : `700 ${(square ? 46 : 52) * u}px ${SANS}`;
-  ctx.fillText('Scannez pour réserver', cx, y);
-  if (!square) {
-    y += 62 * u;
-    ctx.font = `700 ${40 * u}px ${ARABIC}`;
-    ctx.direction = 'rtl';
-    ctx.fillText('امسح الرمز للحجز', cx, y);
-    ctx.direction = 'ltr';
-    y += 50 * u;
-    ctx.font = `500 ${26 * u}px ${SANS}`;
-    ctx.fillStyle = p.muted;
-    ctx.fillText('24 h/24  ·  sans appeler  ·  confirmation immédiate', cx, y);
-  }
-
-  // Lien en clair, dans la bande du bas
-  ctx.fillStyle = p.bandInk;
-  const linkPx = fitLines(ctx, input.short, (px) => `700 ${px}px ${SANS}`, (square ? 46 : 50) * u, 26 * u, 900 * u, 1);
-  ctx.font = `700 ${linkPx.px}px ${SANS}`;
-  ctx.textBaseline = 'middle';
-  ctx.fillText(linkPx.rows[0]!, cx, H - bandH / 2);
-  ctx.textBaseline = 'alphabetic';
-  return c;
+  return renderVitrine(format, input);
 }
 
 // ---------------------------------------------------------------------------------------------
