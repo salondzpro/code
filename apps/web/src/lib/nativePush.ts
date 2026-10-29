@@ -27,20 +27,23 @@ export const APP_ID: 'dz.salondz.app' | 'pro.salondz.app' = PRO_ONLY ? 'pro.salo
  * Le jeton n'arrive pas en retour d'appel mais par un événement : on attend le premier. Les deux
  * écouteurs sont RETIRÉS ensuite — chaque appel en posait deux de plus, pour toujours.
  */
-function firstToken(Push: PushPlugin, timeoutMs = 15_000): Promise<string | null> {
-  return new Promise((resolve) => {
+function firstToken(Push: PushPlugin, timeoutMs = 15_000): { ready: Promise<unknown>; value: Promise<string | null> } {
+  const handles: Promise<{ remove: () => Promise<void> }>[] = [];
+  const value = new Promise<string | null>((resolve) => {
     let done = false;
-    const handles: Promise<{ remove: () => Promise<void> }>[] = [];
-    const finish = (value: string | null) => {
+    const finish = (v: string | null) => {
       if (done) return;
       done = true;
       for (const h of handles) void h.then((x) => x.remove()).catch(() => undefined);
-      resolve(value);
+      resolve(v);
     };
     handles.push(Push.addListener('registration', (t) => finish(t.value)));
     handles.push(Push.addListener('registrationError', () => finish(null)));
     setTimeout(() => finish(null), timeoutMs);
   });
+  // Les écouteurs doivent être POSÉS avant `register()` : sinon un jeton rendu très vite (déjà connu
+  // du système) part avant qu'on l'écoute, et l'on attendait 15 s pour conclure à un échec.
+  return { ready: Promise.all(handles), value };
 }
 
 /**
@@ -54,8 +57,9 @@ export async function enableNativePush(api: ApiClient): Promise<boolean> {
     const status = current.receive === 'prompt' ? (await Push.requestPermissions()).receive : current.receive;
     if (status !== 'granted') return false;
     const token = firstToken(Push);
+    await token.ready;
     await Push.register();
-    const value = await token;
+    const value = await token.value;
     if (!value) return false;
     // L'appareil dit lui-même ce qu'il est : un iPhone enregistré comme « android » se retrouverait
     // dans la mauvaise liste de la page Appareils, et le propriétaire ne saurait plus quoi révoquer.
@@ -120,8 +124,9 @@ export async function disableNativePush(api: ApiClient): Promise<void> {
   try {
     const { PushNotifications: Push } = await load();
     const token = firstToken(Push, 3_000);
+    await token.ready;
     await Push.register();
-    const value = await token;
+    const value = await token.value;
     await Push.unregister().catch(() => undefined);
     if (value) await api.me.removePushToken(value).catch(() => undefined);
   } catch {

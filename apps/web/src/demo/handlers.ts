@@ -361,6 +361,7 @@ on('POST', '/reviews/:id/report', () => none());
 on('DELETE', '/me/push-tokens/:token', () => none());
 // La démonstration n'enregistre aucun appareil : le site se comporte comme pour un compte sans application.
 on('GET', '/me/push-devices', () => ok({ app: 0, web: 0 }));
+on('POST', '/me/push-test', () => ok({ devices: [] }));
 on('GET', '/me/notifications', (c) => {
   const u = requireUser(c);
   const limit = num(c.query.get('limit'), 30);

@@ -4,8 +4,7 @@
  */
 import { useState } from 'react';
 import { api } from '@/lib/api';
-import { disableWebPush, enableWebPush, pushPermissionNow, usePushPermission, webPushSupported } from '@/lib/webpush';
-import { PushBlocked } from '@/components/PushBlocked';
+import { DevicePushRow } from '@/components/DevicePushRow';
 import { Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
@@ -21,7 +20,6 @@ import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 export function ProAccount() {
   // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
-  const [webPush, setWebPush] = usePushPermission();
   const { seDeconnecter, enCours } = useSignOut();
   const me = useMe();
   const proSalon = useProSalon().data;
@@ -69,28 +67,9 @@ export function ProAccount() {
         <ListRow to="/pro/notifications">
           <RowText icon={Bell} title={t("Notifications")} sub={t("Demandes, confirmations, annulations")} />
         </ListRow>
-        {webPushSupported() && !owner && webPush === 'denied' && <PushBlocked />}
-        {webPushSupported() && !owner && webPush !== 'denied' && (
-          <div className="li">
-            <RowText
-              icon={BellRing}
-              title={t("Notifications sur cet appareil")}
-              sub={t("Demandes, annulations, rappels · application mobile si installée, sinon ce navigateur")}
-            />
-            <Toggle
-              on={webPush === 'granted'}
-              onChange={async (v) => {
-                if (v) {
-                  const ok = await enableWebPush(api);
-                  setWebPush(ok ? 'granted' : await pushPermissionNow());
-                } else {
-                  await disableWebPush(api);
-                  setWebPush('default');
-                }
-              }}
-              label={t("Notifications sur cet appareil")}
-            />
-          </div>
+        {/* Piloté par un administrateur : ce navigateur est le sien, pas celui du professionnel. */}
+        {!owner && (
+          <DevicePushRow sub={t('Demandes, annulations, rappels · sur ce navigateur ou sur l’application')} />
         )}
       </div>
 

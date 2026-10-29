@@ -37,12 +37,15 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title || 'Salon DZ', {
       body: payload.body || '',
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
+      // PNG et non SVG : Chrome sous Windows et Android n'affichent pas une icône SVG.
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
       // Une seule notification par rendez-vous : la nouvelle remplace l'ancienne au lieu
       // d'empiler « demande envoyée », « confirmée », « déplacée » pour le même créneau.
-      tag: data.bookingId ? `booking-${data.bookingId}` : undefined,
-      renotify: true,
+      // `renotify` n'est permis QU'AVEC un `tag` : sans tag, Chrome REJETTE l'affichage
+      // (TypeError) — c'est ainsi que toute notification sans rendez-vous (relance, créneau
+      // libéré, test) disparaissait sans rien afficher (corrigé le 29 oct. 2026).
+      ...(data.bookingId ? { tag: `booking-${data.bookingId}`, renotify: true } : {}),
       data: { ...data, url },
     }),
   );

@@ -33,6 +33,21 @@ interface DeviceToken {
   token: string;
   /** Application qui a enregistré le jeton : sert de `apns-topic` (voir migration 0051). */
   app_id: string | null;
+  /** Navigateur qui s'est abonné (début du user-agent) : distingue un ordinateur d'un téléphone. */
+  device_name: string | null;
+}
+
+/**
+ * Abonnement d'un navigateur de TÉLÉPHONE ? (29 oct. 2026) — c'est la seule exclusion qui compte.
+ * La règle « l'application, jamais en double par le navigateur » visait le même téléphone : le
+ * navigateur du téléphone ET l'application installée dessus. Elle était appliquée à TOUT navigateur,
+ * si bien qu'un professionnel qui avait l'application ne recevait RIEN sur son ordinateur, alors que
+ * l'écran lui disait les notifications actives. Un ordinateur est un autre appareil : il reçoit.
+ * Sans user-agent connu, on suppose un téléphone (comportement d'avant, prudent).
+ */
+export function isMobileBrowser(deviceName: string | null): boolean {
+  if (!deviceName) return true;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(deviceName);
 }
 
 /**
@@ -97,7 +112,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   }
   const wanted = (n: PendingNotification) => !(optOut.has(n.user_id) && CONFIRMATION_TYPES.has(n.type));
 
-  const { data: tokens, error: tErr } = await db.from('push_tokens').select('user_id, token, app_id').in('user_id', userIds);
+  const { data: tokens, error: tErr } = await db.from('push_tokens').select('user_id, token, app_id, device_name').in('user_id', userIds);
   if (tErr) throw tErr;
 
   // Quatre canaux, quatre protocoles, reconnus à la FORME du jeton : Expo (ancienne application),
@@ -107,7 +122,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   const expoByUser = new Map<string, string[]>();
   const apnsByUser = new Map<string, DeviceToken[]>();
   const fcmByUser = new Map<string, string[]>();
-  const webByUser = new Map<string, string[]>();
+  const webByUser = new Map<string, DeviceToken[]>();
   const add = <T>(map: Map<string, T[]>, key: string, value: T) => {
     const list = map.get(key) ?? [];
     list.push(value);
@@ -117,7 +132,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     if (Expo.isExpoPushToken(t.token)) add(expoByUser, t.user_id, t.token);
     else if (apnsEnabled && isApnsToken(t.token)) add(apnsByUser, t.user_id, t);
     else if (fcmEnabled && isFcmToken(t.token)) add(fcmByUser, t.user_id, t.token);
-    else if (webPushEnabled && isWebPushToken(t.token)) add(webByUser, t.user_id, t.token);
+    else if (webPushEnabled && isWebPushToken(t.token)) add(webByUser, t.user_id, t);
   }
 
   /**
@@ -224,9 +239,12 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // l'application mobile est prévenue par elle, pas en double par le navigateur ; le navigateur ne sert
   // qu'à qui n'a pas l'application (un jeton mobile mort est retiré au tour précédent, le navigateur prend le relais).
   for (const n of pending) {
-    if (!wanted(n) || expoByUser.has(n.user_id) || apnsByUser.has(n.user_id) || fcmByUser.has(n.user_id)) continue;
+    if (!wanted(n)) continue;
+    const aLApplication = expoByUser.has(n.user_id) || apnsByUser.has(n.user_id) || fcmByUser.has(n.user_id);
     const p = pousse(n);
-    for (const token of webByUser.get(n.user_id) ?? []) {
+    for (const { token, device_name } of webByUser.get(n.user_id) ?? []) {
+      // Le navigateur du TÉLÉPHONE se tait quand l'application est là ; celui de l'ordinateur, jamais.
+      if (aLApplication && isMobileBrowser(device_name)) continue;
       const r = await sendWebPush(log, token, { title: p.title, body: p.body, data: p.data });
       if (r === 'sent') count(accepted, n.id);
       else if (r === 'gone') invalidTokens.push(token);
@@ -276,4 +294,49 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
 /** Fire-and-forget après une mutation de réservation (ne bloque pas la réponse HTTP). */
 export function pushAfterBooking(log: FastifyBaseLogger, bookingId: string): void {
   dispatchPendingPush(log, bookingId).catch((err) => log.error({ err, bookingId }, 'push dispatch failed'));
+}
+
+/**
+ * NOTIFICATION DE TEST (29 oct. 2026) : « Envoyer un test » dans les réglages. Elle part vers TOUS
+ * les appareils du compte, sans règle d'exclusion — on vérifie chaque canal, pas la politique
+ * d'envoi — et ne laisse aucune trace dans le centre de notifications. Rend, par appareil, ce que
+ * le fournisseur a répondu : c'est ce qui permet de dire « reçu par le navigateur, refusé par
+ * l'iPhone » au lieu d'un « ça ne marche pas » sans prise.
+ */
+export interface TestPushResult {
+  devices: { platform: string; device: string | null; outcome: 'sent' | 'gone' | 'failed' | 'disabled' }[];
+}
+
+export async function sendTestPush(log: FastifyBaseLogger, userId: string): Promise<TestPushResult> {
+  const { data, error } = await db.from('push_tokens').select('token, platform, app_id, device_name').eq('user_id', userId);
+  if (error) throw error;
+  const payload = {
+    title: '🔔 Salon DZ',
+    body: 'Notification de test : tout fonctionne sur cet appareil.',
+    data: { type: 'test', url: '/notifications' },
+  };
+  const devices: TestPushResult['devices'] = [];
+  const gone: string[] = [];
+  for (const t of (data ?? []) as { token: string; platform: string; app_id: string | null; device_name: string | null }[]) {
+    let outcome: TestPushResult['devices'][number]['outcome'] = 'failed';
+    try {
+      if (Expo.isExpoPushToken(t.token)) {
+        const [ticket] = await expo.sendPushNotificationsAsync([{ to: t.token, ...payload, sound: 'default', channelId: 'bookings' }]);
+        outcome = ticket?.status === 'ok' ? 'sent' : 'failed';
+      } else if (isApnsToken(t.token)) {
+        outcome = !apnsEnabled ? 'disabled' : (await sendApns(log, { token: t.token, topic: t.app_id ?? undefined, ...payload, badge: 0 })) ? 'sent' : 'gone';
+      } else if (isFcmToken(t.token)) {
+        outcome = !fcmEnabled ? 'disabled' : (await sendFcm(log, { token: t.token, ...payload, badge: 0 })) ? 'sent' : 'gone';
+      } else if (isWebPushToken(t.token)) {
+        outcome = !webPushEnabled ? 'disabled' : await sendWebPush(log, t.token, payload);
+      }
+    } catch (err) {
+      log.warn({ err, platform: t.platform }, 'push de test : échec');
+      outcome = 'failed';
+    }
+    if (outcome === 'gone') gone.push(t.token);
+    devices.push({ platform: t.platform, device: t.device_name, outcome });
+  }
+  if (gone.length) await db.from('push_tokens').delete().in('token', gone);
+  return { devices };
 }

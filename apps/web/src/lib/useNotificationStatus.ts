@@ -19,7 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Capacitor } from '@capacitor/core';
 import { api } from './api';
 import { useAuth } from './auth';
-import { enableWebPush, pushPermissionNow, usePushPermission } from './webpush';
+import { enableWebPushDetailed, pushPermissionNow, usePushPermission, type PushFailure } from './webpush';
 import { estAndroid, estIOS, greffonReglages, ouvrirReglagesNotifications } from './pushSettings';
 import { PRO_ONLY } from './flavor';
 import { isDemo } from '@/demo/session';
@@ -71,7 +71,9 @@ export function useNotificationStatus(): {
   /** L'écran de réglage peut-il s'ouvrir d'un geste ici ? Sinon : `consigne`. */
   ouvrable: boolean;
   consigne: string;
-  activer: () => Promise<void>;
+  activer: () => Promise<boolean>;
+  /** Pourquoi la dernière activation a échoué, en une phrase (affichée sous le bouton). */
+  erreur: string | null;
   /** Ouvre l'écran de réglage ; rend `false` s'il n'a pas pu s'ouvrir (il faut alors la consigne). */
   ouvrir: () => Promise<boolean>;
   occupe: boolean;
@@ -79,6 +81,7 @@ export function useNotificationStatus(): {
   const { session } = useAuth();
   const [permission, setPermission, permissionLue] = usePushPermission();
   const [occupe, setOccupe] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
   const ctx = contexte();
   const surSite = ctx === 'web-mobile' || ctx === 'web-ordinateur';
 
@@ -91,7 +94,9 @@ export function useNotificationStatus(): {
     staleTime: 5 * 60_000,
     retry: false,
   });
-  const aLApplication = surSite && (appareils.data?.app ?? 0) > 0;
+  // Seul le navigateur du TÉLÉPHONE se tait quand le compte a l'application (c'est le même appareil).
+  // Un ORDINATEUR reçoit toujours : avant le 29 oct. 2026, il se disait « actif » et ne recevait rien.
+  const aLApplication = ctx === 'web-mobile' && (appareils.data?.app ?? 0) > 0;
   const appareilsLus = !surSite || !session || isDemo() || !appareils.isPending;
 
   const [ouvrableNatif, setOuvrableNatif] = useState(() => greffonReglages());
@@ -109,16 +114,22 @@ export function useNotificationStatus(): {
 
   const activer = useCallback(async () => {
     setOccupe(true);
+    setErreur(null);
+    let ok = false;
     try {
-      await enableWebPush(api);
+      const r = await enableWebPushDetailed(api);
+      ok = r.ok;
+      if (!r.ok) setErreur(pushFailureText(r.reason, ctx));
+    } catch {
+      setErreur(pushFailureText('server', ctx));
     } finally {
       // L'ÉTAT RÉEL, jamais la réussite de l'inscription : un téléphone qui a dit oui mais dont le
-      // jeton n'a pas pu être enregistré (réseau) n'est PAS « refusé ». L'inscription sera reprise
-      // au prochain retour dans l'application.
+      // jeton n'a pas pu être enregistré (réseau) n'est PAS « refusé ».
       setPermission(await pushPermissionNow());
       setOccupe(false);
     }
-  }, [setPermission]);
+    return ok;
+  }, [setPermission, ctx]);
 
   const ouvrir = useCallback(async () => (ctx === 'app-android' || ctx === 'app-ios' ? ouvrirReglagesNotifications() : false), [ctx]);
 
@@ -129,7 +140,26 @@ export function useNotificationStatus(): {
     ouvrable: (ctx === 'app-android' && ouvrableNatif) || ctx === 'app-ios',
     consigne: consigne(ctx),
     activer,
+    erreur,
     ouvrir,
     occupe,
   };
+}
+
+/** Une phrase par échec, qui dit quoi faire — jamais « une erreur est survenue ». */
+export function pushFailureText(reason: PushFailure, ctx: Contexte): string {
+  switch (reason) {
+    case 'denied':
+      return t('Les notifications sont bloquées pour Salon DZ. {chemin}', { chemin: consigne(ctx) });
+    case 'dismissed':
+      return t('La demande a été fermée sans réponse. Touchez à nouveau « Activer » et choisissez « Autoriser ».');
+    case 'unsupported':
+      return consigne(ctx);
+    case 'subscribe':
+      return t('Ce navigateur a refusé l’abonnement aux notifications. En navigation privée, ouvrez une fenêtre normale. Sur Brave, activez « Utiliser les services Google pour la messagerie push » dans ses réglages ; sinon, essayez Chrome, Edge ou Firefox.');
+    case 'server':
+      return t('L’autorisation est donnée, mais l’enregistrement n’a pas abouti (réseau). Réessayez dans un instant.');
+    case 'native':
+      return t('Le téléphone n’a pas encore donné son identifiant de notification. Vérifiez la connexion, puis réessayez.');
+  }
 }

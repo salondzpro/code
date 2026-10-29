@@ -97,6 +97,11 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
           </Button>
         </div>
         {bloquees && chemin && <p className="t3 mt-2">{n.consigne}</p>}
+        {n.erreur && (
+          <p className="mt-2 text-[0.857rem] text-danger" role="alert">
+            {n.erreur}
+          </p>
+        )}
       </div>
       <button type="button" aria-label={t('Masquer')} className="-mt-1 -me-1 flex-none self-start p-1 text-subtle" onClick={plusTard}>
         <I icon={X} size={18} />

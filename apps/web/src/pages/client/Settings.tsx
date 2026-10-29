@@ -9,13 +9,7 @@ import { useLocationPrefs } from '@/lib/clientPrefs';
 import { Badge, BottomSheet, Button, ListRow, SectionLabel, Toggle, TopBar, Dim } from '@/components/ui';
 import { api } from '@/lib/api';
 import { errorText } from '@/components/ErrorMessage';
-import {
-  disableWebPush,
-  enableWebPush,
-  usePushPermission,
-  pushPermissionNow,
-} from '@/lib/webpush';
-import { PushBlocked } from '@/components/PushBlocked';
+import { DevicePushRow } from '@/components/DevicePushRow';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
@@ -25,7 +19,6 @@ function since(iso: string): string {
 
 export function Settings() {
   // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
-  const [webPush, setWebPush] = usePushPermission();
   const { session } = useAuth();
   const { seDeconnecter } = useSignOut();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -86,25 +79,7 @@ export function Settings() {
             lorsqu'elle est ouverte. C'est le seul réglage qui dépend d'une permission
             système, d'où l'état « refusé » explicite plutôt qu'un interrupteur qui ne
             bougerait pas. */}
-        {webPush === 'denied' && <PushBlocked />}
-        {webPush !== 'unsupported' && webPush !== 'denied' && (
-          <div className="li">
-            <span className="text-[1rem] font-semibold">{t("Notifications sur cet appareil")}</span>
-            <Toggle
-              on={webPush === 'granted'}
-              onChange={async (v) => {
-                if (v) {
-                  const ok = await enableWebPush(api);
-                  setWebPush(ok ? 'granted' : await pushPermissionNow());
-                } else {
-                  await disableWebPush(api);
-                  setWebPush('default');
-                }
-              }}
-              label={t("Notifications sur cet appareil")}
-            />
-          </div>
-        )}
+        <DevicePushRow sub={t('Rappels et confirmations, même application fermée')} />
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
@@ -138,11 +113,6 @@ export function Settings() {
         </div>
       </div>
 
-      {webPush !== 'granted' && webPush !== 'denied' && (
-        <p className="p -mt-2 text-[0.857rem]">
-          {t("Les rappels et confirmations arrivent sur l'application Salon DZ si elle est installée, sinon par ce navigateur : activez « Notifications sur cet appareil » pour les recevoir même application fermée.")}
-        </p>
-      )}
       <SectionLabel>{t("Préférences")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li">

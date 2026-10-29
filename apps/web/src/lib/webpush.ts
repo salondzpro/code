@@ -18,6 +18,22 @@ import { env } from './env';
 
 const SW_URL = '/sw.js';
 
+/**
+ * « Désactivé ici » : un CHOIX, retenu sur l'appareil. Sans lui, la permission restant accordée par le
+ * navigateur, le réabonnement silencieux du chargement (`refreshWebPushIfGranted`) rallumait les
+ * notifications à la page suivante — l'interrupteur ne pouvait pas rester éteint.
+ */
+const OFF_KEY = 'salondz:push:off';
+const choixOff = (v?: boolean): boolean => {
+  try {
+    if (v === true) localStorage.setItem(OFF_KEY, '1');
+    else if (v === false) localStorage.removeItem(OFF_KEY);
+    return localStorage.getItem(OFF_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
 /** Vrai dans l'application mobile (coque Capacitor), faux sur le site. */
 const nativeShell = (): boolean => Capacitor.isNativePlatform();
 
@@ -46,7 +62,10 @@ export function webPushPermission(): NotificationPermission | 'unsupported' {
  * interrupteur au lieu du chemin vers les réglages.
  */
 export async function pushPermissionNow(): Promise<NotificationPermission | 'unsupported'> {
-  if (!nativeShell()) return webPushPermission();
+  if (!nativeShell()) {
+    const p = webPushPermission();
+    return p === 'granted' && !(await webSubscriptionActive()) ? 'default' : p;
+  }
   const { nativePushPermission } = await import('./nativePush');
   return nativePushPermission();
 }
@@ -61,45 +80,97 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
   return out;
 }
 
-async function subscribe(): Promise<PushSubscription | null> {
-  const reg = await navigator.serviceWorker.register(SW_URL, { scope: '/' });
-  await navigator.serviceWorker.ready;
+/** Même clé ? Un abonnement pris avec une ANCIENNE clé VAPID ne reçoit plus rien, en silence. */
+function sameKey(sub: PushSubscription, key: Uint8Array): boolean {
+  const k = sub.options?.applicationServerKey;
+  if (!k) return true; // navigateur qui ne l'expose pas : on ne peut pas juger, on garde
+  const a = new Uint8Array(k);
+  return a.length === key.length && a.every((v, i) => v === key[i]);
+}
+
+/** Enregistrement du service worker, ACTIF (un worker en cours d'installation ne peut pas s'abonner). */
+async function registration(): Promise<ServiceWorkerRegistration> {
+  await navigator.serviceWorker.register(SW_URL, { scope: '/' });
+  return navigator.serviceWorker.ready;
+}
+
+async function subscribe(): Promise<PushSubscription> {
+  const reg = await registration();
+  const key = urlBase64ToUint8Array(env.vapidPublicKey!);
   const existing = await reg.pushManager.getSubscription();
-  if (existing) return existing;
-  return reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(env.vapidPublicKey!) as BufferSource,
-  });
+  if (existing && sameKey(existing, key)) return existing;
+  if (existing) await existing.unsubscribe().catch(() => undefined);
+  return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource });
+}
+
+/** Ce navigateur a-t-il un abonnement EN COURS ? (une permission accordée ne suffit pas.) */
+export async function webSubscriptionActive(): Promise<boolean> {
+  if (nativeShell() || !webPushSupported()) return false;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration(SW_URL);
+    return !!(await reg?.pushManager.getSubscription());
+  } catch {
+    return false;
+  }
 }
 
 /**
- * Demande la permission si besoin, puis enregistre l'abonnement côté API.
- * Retourne `true` seulement si le navigateur est désormais joignable.
+ * Pourquoi l'activation n'a pas abouti — chaque cas a sa phrase à l'écran (`pushFailureText`) :
+ *   - `denied` / `dismissed` : refusée, ou fenêtre fermée sans répondre ;
+ *   - `unsupported` : ce navigateur ne sait pas (Safari d'iPhone hors écran d'accueil, navigation privée…) ;
+ *   - `subscribe` : la permission est là, mais le service de messagerie du navigateur a refusé
+ *     l'abonnement (Brave avec ses réglages par défaut, réseau d'entreprise, extension) ;
+ *   - `server` : l'abonnement existe, mais notre serveur n'a pas pu l'enregistrer (réseau) ;
+ *   - `native` : l'application n'a pas obtenu de jeton du téléphone.
  */
-export async function enableWebPush(api: ApiClient): Promise<boolean> {
-  // Dans l'application mobile, les notifications passent par Firebase : une WebView ne reçoit rien
-  // par service worker. Les écrans appellent la même fonction, ils n'ont pas à connaître la différence.
+export type PushFailure = 'denied' | 'dismissed' | 'unsupported' | 'subscribe' | 'server' | 'native';
+export type EnableResult = { ok: true } | { ok: false; reason: PushFailure };
+
+/** Signale aux écrans qu'il faut relire l'état (abonnement pris ou retiré ailleurs dans la page). */
+const notifyChange = () => window.dispatchEvent(new Event('salondz:push-state'));
+
+/**
+ * Demande la permission si besoin, s'abonne, puis enregistre l'abonnement côté API — en disant
+ * POURQUOI quand ça échoue. Avant, un échec d'abonnement après une permission accordée laissait
+ * l'écran afficher « activées » : rien n'arrivait, et rien ne le disait.
+ */
+export async function enableWebPushDetailed(api: ApiClient): Promise<EnableResult> {
   if (nativeShell()) {
-    const { enableNativePush } = await import('./nativePush');
-    return enableNativePush(api);
+    const { enableNativePush, nativePushPermission } = await import('./nativePush');
+    if (await enableNativePush(api)) return { ok: true };
+    return { ok: false, reason: (await nativePushPermission()) === 'denied' ? 'denied' : 'native' };
   }
-  if (!webPushSupported()) return false;
+  if (!webPushSupported()) return { ok: false, reason: 'unsupported' };
+  choixOff(false);
+  const permission =
+    Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+  if (permission === 'denied') return { ok: false, reason: 'denied' };
+  if (permission !== 'granted') return { ok: false, reason: 'dismissed' };
+  let sub: PushSubscription;
   try {
-    const permission =
-      Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
-    if (permission !== 'granted') return false;
-    const sub = await subscribe();
-    if (!sub) return false;
+    sub = await subscribe();
+  } catch (err) {
+    console.warn('[push] abonnement navigateur refusé', err);
+    return { ok: false, reason: 'subscribe' };
+  }
+  try {
     await api.me.registerPushToken({
       token: JSON.stringify(sub.toJSON()),
       platform: 'web',
       deviceName: navigator.userAgent.slice(0, 80),
     });
-    return true;
   } catch (err) {
-    console.warn('[push] abonnement navigateur impossible', err);
-    return false;
+    console.warn('[push] enregistrement de l’abonnement impossible', err);
+    return { ok: false, reason: 'server' };
+  } finally {
+    notifyChange();
   }
+  return { ok: true };
+}
+
+/** Variante booléenne, pour les appels qui n'affichent rien. */
+export async function enableWebPush(api: ApiClient): Promise<boolean> {
+  return (await enableWebPushDetailed(api)).ok;
 }
 
 /**
@@ -116,8 +187,10 @@ export async function refreshWebPushIfGranted(api: ApiClient): Promise<void> {
     await ensureNativePush(api);
     return;
   }
-  if (!webPushSupported() || Notification.permission !== 'granted') return;
-  await enableWebPush(api);
+  if (!webPushSupported() || Notification.permission !== 'granted' || choixOff()) return;
+  // Silencieux : la permission est déjà là, on renouvelle l'abonnement (ou on le reprend s'il a
+  // été perdu, ou pris avec une ancienne clé) sans rien demander.
+  await enableWebPushDetailed(api).catch(() => undefined);
 }
 
 /** Coupe les notifications sur CE navigateur : désabonnement local puis retrait côté API. */
@@ -128,6 +201,7 @@ export async function disableWebPush(api: ApiClient): Promise<void> {
     return;
   }
   if (!webPushSupported()) return;
+  choixOff(true);
   try {
     const reg = await navigator.serviceWorker.getRegistration(SW_URL);
     const sub = await reg?.pushManager.getSubscription();
@@ -137,6 +211,8 @@ export async function disableWebPush(api: ApiClient): Promise<void> {
     await api.me.removePushToken(token).catch(() => undefined);
   } catch (err) {
     console.warn('[push] désabonnement impossible', err);
+  } finally {
+    notifyChange();
   }
 }
 
@@ -159,9 +235,31 @@ export function usePushPermission(): [
   boolean,
 ] {
   const [etat, setEtat] = useState<NotificationPermission | 'unsupported'>(() => webPushPermission());
-  const [pret, setPret] = useState(() => !nativeShell());
+  const [pret, setPret] = useState(false);
   useEffect(() => {
-    if (!nativeShell()) return;
+    if (!nativeShell()) {
+      // NAVIGATEUR : « accordée » ne veut rien dire sans abonnement. Une permission accordée SANS
+      // abonnement (désactivé ici, abonnement perdu, refusé par le navigateur) se présente comme
+      // « à activer » : le bouton l'activera sans redemander la permission.
+      let vivant = true;
+      const lire = async () => {
+        const p = webPushPermission();
+        const v = p === 'granted' && !(await webSubscriptionActive()) ? 'default' : p;
+        if (vivant) {
+          setEtat(v);
+          setPret(true);
+        }
+      };
+      void lire();
+      const auRetour = () => document.visibilityState === 'visible' && void lire();
+      document.addEventListener('visibilitychange', auRetour);
+      window.addEventListener('salondz:push-state', lire);
+      return () => {
+        vivant = false;
+        document.removeEventListener('visibilitychange', auRetour);
+        window.removeEventListener('salondz:push-state', lire);
+      };
+    }
     let vivant = true;
     let precedent: NotificationPermission | null = null;
     const lire = async () => {

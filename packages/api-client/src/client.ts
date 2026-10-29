@@ -495,6 +495,9 @@ export function createApiClient(opts: ApiClientOptions) {
       removePushToken: (token: string) => del<void>(`/me/push-tokens/${encodeURIComponent(token)}`),
       /** Appareils qui reçoivent les notifications de ce compte : application mobile et navigateurs. */
       pushDevices: () => get<{ app: number; web: number }>('/me/push-devices'),
+      /** Notification de test vers tous les appareils du compte, avec la réponse de chaque fournisseur. */
+      pushTest: () =>
+        post<{ devices: { platform: string; device: string | null; outcome: 'sent' | 'gone' | 'failed' | 'disabled' }[] }>('/me/push-test', {}),
       notifications: (cursor = 0, limit = 30) =>
         get<NotificationsResponse>('/me/notifications', { cursor, limit }),
       /** Marquer lues : une liste précise, celles d'un rendez-vous, ou toutes (aucun argument). */
