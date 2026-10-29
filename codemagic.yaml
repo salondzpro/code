@@ -29,12 +29,15 @@ workflows:
       # → Apple Developer Portal). S'il diffère, la compilation s'arrête au moment de signer.
       # Relevé le 29 sept. 2026 dans l'interface : « salondz_asc », clé GZ7CF8ABHX.
       app_store_connect: salondz_asc
-    # Une compilation iOS se paie à la minute : elle ne part donc PAS à chaque poussée sur main,
-    # mais sur une ÉTIQUETTE `ios-…` posée exprès. `git tag ios-3 && git push origin ios-3` suffit,
-    # et le numéro de build reste fourni par Codemagic.
+    # Une compilation iOS se paie à la minute : elle part sur une poussée sur main QUI TOUCHE AU
+    # NATIF (voir `when` plus bas), ou sur une ÉTIQUETTE `ios-…` posée exprès.
     triggering:
       events:
+        - push
         - tag
+      branch_patterns:
+        - pattern: main
+          include: true
       tag_patterns:
         - pattern: 'ios-*'
           include: true
@@ -42,6 +45,19 @@ workflows:
         # PRO lançait en plus une compilation grand public (minutes macOS payées pour rien).
         - pattern: 'ios-pro-*'
           include: false
+    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
+    # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
+    when:
+      changeset:
+        includes:
+          - 'apps/web/ios/**'
+          - 'apps/web/android/**'
+          - 'apps/web/capacitor.config.ts'
+          - 'apps/web/package.json'
+          - 'codemagic.yaml'
+        excludes:
+          - '**/*.md'
     environment:
       vars:
         BUNDLE_ID: dz.salondz.app
@@ -94,6 +110,8 @@ workflows:
         script: |
           cd apps/web/ios/App
           agvtool new-version -all "$BUILD_NUMBER"
+          # Version publique : Apple refuse de soumettre une version déjà mise en vente.
+          agvtool new-marketing-version "1.0.$((BUILD_NUMBER + 4))"
       - name: Signature
         script: |
           keychain initialize
@@ -111,9 +129,12 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        # Envoi sur TestFlight uniquement : la mise en vente reste une décision humaine.
+        # PRODUCTION DIRECTE (29 oct. 2026, décision du propriétaire) : chaque compilation est
+        # soumise à la revue d'Apple et mise en vente dès l'approbation, sans passer par lui.
         submit_to_testflight: true
-        submit_to_app_store: false
+        submit_to_app_store: true
+        release_type: AFTER_APPROVAL
+        cancel_previous_submissions: true
 
   # -------------------------------------------------------------------------------------------
   # APPLICATION PROFESSIONNELLE iPhone (`pro.salondz.app`, « Salon DZ Pro »), 10 oct. 2026.
@@ -140,10 +161,27 @@ workflows:
       app_store_connect: salondz_asc
     triggering:
       events:
+        - push
         - tag
+      branch_patterns:
+        - pattern: main
+          include: true
       tag_patterns:
         - pattern: 'ios-pro-*'
           include: true
+    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
+    # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
+    when:
+      changeset:
+        includes:
+          - 'apps/web/ios/**'
+          - 'apps/web/android/**'
+          - 'apps/web/capacitor.config.ts'
+          - 'apps/web/package.json'
+          - 'codemagic.yaml'
+        excludes:
+          - '**/*.md'
     environment:
       vars:
         BUNDLE_ID: pro.salondz.app
@@ -198,6 +236,8 @@ workflows:
         script: |
           cd apps/web/ios/App
           agvtool new-version -all "$BUILD_NUMBER"
+          # Version publique : Apple refuse de soumettre une version déjà mise en vente.
+          agvtool new-marketing-version "1.0.$((BUILD_NUMBER + 4))"
       - name: Signature
         script: |
           keychain initialize
@@ -213,7 +253,9 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        submit_to_app_store: false
+        submit_to_app_store: true
+        release_type: AFTER_APPROVAL
+        cancel_previous_submissions: true
 
   # -------------------------------------------------------------------------------------------
   # ANDROID sur Codemagic (29 oct. 2026) : les deux applications se compilent sans le PC.
@@ -237,9 +279,29 @@ workflows:
     # même machine que les flux iOS, qui a Java et le SDK Android. Minutes macOS : ne lancer que pour publier.
     instance_type: mac_mini_m2
     max_build_duration: 45
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
+    # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
+    when:
+      changeset:
+        includes:
+          - 'apps/web/ios/**'
+          - 'apps/web/android/**'
+          - 'apps/web/capacitor.config.ts'
+          - 'apps/web/package.json'
+          - 'codemagic.yaml'
+        excludes:
+          - '**/*.md'
     environment:
       groups:
         - android_keystore
+        - google_play
       vars:
         # Grand public : l'application charge salondz.com (mode en ligne).
         SALONDZ_ANDROID_ARGS: --en-ligne
@@ -263,11 +325,28 @@ workflows:
           # Garde-fou : la clé doit être la clé d'envoi (SHA-1 D9:54:C1…), sinon Google refuse le .aab.
           keytool -list -v -keystore secrets/android/upload.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" | grep -q "D9:54:C1"
           chmod +x apps/web/android/gradlew
+      - name: Numéro de version (Google Play)
+        # Google refuse un numéro déjà envoyé : on repart du plus haut publié, toutes pistes
+        # confondues, lu chez Google avec la clé de service (groupe `google_play`).
+        script: |
+          if [ -z "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS" ]; then echo "Pas de clé Google Play : numéro du dépôt conservé."; exit 0; fi
+          case "$SALONDZ_ANDROID_ARGS" in *--pro*) PKG=pro.salondz.app; FILE=apps/web/android/version-pro.properties ;; *) PKG=dz.salondz.app; FILE=apps/web/android/version.properties ;; esac
+          LATEST=$(google-play get-latest-build-number --package-name "$PKG" --credentials "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS" 2>/dev/null || echo 0)
+          CUR=$(sed -n 's/^versionCode=//p' "$FILE")
+          NEXT=$(( (LATEST > CUR ? LATEST : CUR) + 1 ))
+          sed -i '' "s/^versionCode=.*/versionCode=$NEXT/" "$FILE"
+          echo "versionCode $PKG : $NEXT (Google : $LATEST, dépôt : $CUR)"
       - name: Compilation
         script: |
           node scripts/build-android.mjs --same $SALONDZ_ANDROID_ARGS
     artifacts:
       - apps/web/android/app/build/outputs/bundle/release/*.aab
+    publishing: &android_publishing
+      # PRODUCTION DIRECTE (29 oct. 2026, décision du propriétaire). Exige la clé de service
+      # Google Play dans le groupe `google_play` (`GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`).
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: production
 
   android-pro:
     name: Salon DZ Pro · Android
@@ -275,9 +354,29 @@ workflows:
     # même machine que les flux iOS, qui a Java et le SDK Android. Minutes macOS : ne lancer que pour publier.
     instance_type: mac_mini_m2
     max_build_duration: 45
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
+    # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
+    when:
+      changeset:
+        includes:
+          - 'apps/web/ios/**'
+          - 'apps/web/android/**'
+          - 'apps/web/capacitor.config.ts'
+          - 'apps/web/package.json'
+          - 'codemagic.yaml'
+        excludes:
+          - '**/*.md'
     environment:
       groups:
         - android_keystore
+        - google_play
       vars:
         SALONDZ_ANDROID_ARGS: --pro
       node: 22
@@ -285,3 +384,4 @@ workflows:
     scripts: *android_scripts
     artifacts:
       - apps/web/android/app/build/outputs/bundle/release/*.aab
+    publishing: *android_publishing
