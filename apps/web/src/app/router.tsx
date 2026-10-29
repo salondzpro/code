@@ -14,6 +14,7 @@ import { ScrollToTop } from './ScrollToTop';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
 import { PRO_ONLY } from '@/lib/flavor';
 import { NotFound } from '@/pages/NotFound';
+import { RootSlug } from '@/pages/client/RootSlug';
 // Parcours de connexion (design AUTH 01 → 16)
 import { Login } from '@/pages/auth/Login';
 import { SignUp } from '@/pages/auth/SignUp';
@@ -306,6 +307,8 @@ export const router = createBrowserRouter([
           { path: 'journal', element: <AdminAudit /> },
         ],
       },
+      // Lien court des étiquettes : `salondz.com/<slug>` → page du salon (`/s/<slug>`).
+      ...(PRO_ONLY ? [] : [{ path: '/:slug', element: <RootSlug /> }]),
       { path: '*', element: <NotFound /> },
     ],
   },

@@ -236,12 +236,75 @@ function wordmark(ctx: CanvasRenderingContext2D, cx: number, y: number, px: numb
   void u;
 }
 
+/**
+ * QR code dessiné module par module (29 oct. 2026) : modules aux coins arrondis, trois repères
+ * en carrés arrondis, et la marque « S » de Salon DZ au centre. Reste parfaitement lisible :
+ * correction d'erreur maximale (H, 30 % du code peut manquer), encre pleine sur fond blanc, le
+ * centre n'occupe que ~5 % de la surface, et le logo n'est posé que sur les petites versions
+ * (≤ 6), qui n'ont pas de motif d'alignement au centre.
+ */
 async function drawQr(ctx: CanvasRenderingContext2D, url: string, x: number, y: number, size: number) {
-  const c = document.createElement('canvas');
-  await QRCode.toCanvas(c, url, { errorCorrectionLevel: 'H', margin: 0, width: Math.round(size), color: { dark: '#111214', light: '#ffffff' } });
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(c, x, y, size, size);
-  ctx.imageSmoothingEnabled = true;
+  const qr = QRCode.create(url, { errorCorrectionLevel: 'H' });
+  const n = qr.modules.size;
+  const at = (r: number, c: number) => !!qr.modules.get(r, c);
+  const cell = size / n;
+  const INK = '#111214';
+  ctx.save();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(x, y, size, size);
+
+  const inFinder = (r: number, c: number) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+  // Zone du logo : carré impair au centre, ~21 % du côté.
+  const logo = qr.version <= 6;
+  let k = Math.round(n * 0.21);
+  if (k % 2 === 0) k += 1;
+  const l0 = (n - k) / 2;
+  const inLogo = (r: number, c: number) => logo && r >= l0 - 0.5 && r < l0 + k - 0.5 && c >= l0 - 0.5 && c < l0 + k - 0.5;
+
+  ctx.fillStyle = INK;
+  const inset = cell * 0.04;
+  for (let r = 0; r < n; r++)
+    for (let c = 0; c < n; c++) {
+      if (!at(r, c) || inFinder(r, c) || inLogo(r, c)) continue;
+      roundRect(ctx, x + c * cell + inset, y + r * cell + inset, cell - 2 * inset, cell - 2 * inset, cell * 0.32);
+      ctx.fill();
+    }
+
+  // Repères : anneau de 7 modules et cœur de 3, en carrés arrondis.
+  const eye = (r: number, c: number) => {
+    const ex = x + c * cell;
+    const ey = y + r * cell;
+    ctx.fillStyle = INK;
+    roundRect(ctx, ex, ey, 7 * cell, 7 * cell, cell * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, ex + cell, ey + cell, 5 * cell, 5 * cell, cell * 1.3);
+    ctx.fill();
+    ctx.fillStyle = INK;
+    roundRect(ctx, ex + 2 * cell, ey + 2 * cell, 3 * cell, 3 * cell, cell * 0.9);
+    ctx.fill();
+  };
+  eye(0, 0);
+  eye(0, n - 7);
+  eye(n - 7, 0);
+
+  if (logo) {
+    // Marque au centre : pastille noire et « S » blanc, comme l'icône de l'application.
+    const lx = x + (l0 - 0.5) * cell;
+    const ly = y + (l0 - 0.5) * cell;
+    const ls = k * cell;
+    const m = cell * 0.55;
+    ctx.fillStyle = INK;
+    roundRect(ctx, lx + m, ly + m, ls - 2 * m, ls - 2 * m, (ls - 2 * m) * 0.24);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 ${(ls - 2 * m) * 0.62}px ${SANS}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('S', lx + ls / 2, ly + ls / 2 + (ls - 2 * m) * 0.03);
+    ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
 }
 
 let fontsReady: Promise<void> | null = null;

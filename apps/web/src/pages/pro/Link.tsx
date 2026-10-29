@@ -19,7 +19,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { LabelStudio } from '@/components/LabelStudio';
-import { DEFAULT_LABEL_SETTINGS } from '@salondz/constants';
+import { DEFAULT_LABEL_SETTINGS, shortSalonPath } from '@salondz/constants';
 import { env } from '@/lib/env';
 import {
   FacebookLogo,
@@ -49,6 +49,16 @@ export function usePublicUrl(slug: string): { url: string; short: string } {
     url: `${env.siteUrl}/s/${slug}`,
     short: `${env.siteUrl.replace(/^https?:\/\/(www\.)?/, '')}/s/${slug}`,
   };
+}
+
+/**
+ * Lien des ÉTIQUETTES : la forme courte `salondz.com/<slug>` (le QR est plus aéré, le lien
+ * imprimé plus lisible). Le lien PARTAGÉ garde `/s/`, seule adresse qui porte l'aperçu
+ * WhatsApp / Facebook (réécriture vers `/share/s/:slug`).
+ */
+export function useLabelUrl(slug: string): { url: string; short: string } {
+  const path = shortSalonPath(slug);
+  return { url: `${env.siteUrl}${path}`, short: `${env.siteUrl.replace(/^https?:\/\/(www\.)?/, '')}${path}` };
 }
 
 export function useQr(url: string, size = 320): string | null {
@@ -267,7 +277,7 @@ export function ProQr() {
   const saveSocials = useSaveLabelSocials();
   const look = useLabelStyle(!!salon);
   const saveLook = useSaveLabelStyle();
-  const { url, short } = usePublicUrl(salon?.slug ?? '');
+  const { url, short } = useLabelUrl(salon?.slug ?? '');
   if (!salon) return <PageLoading />;
   const s = settings.data ?? DEFAULT_LABEL_SETTINGS;
   return (

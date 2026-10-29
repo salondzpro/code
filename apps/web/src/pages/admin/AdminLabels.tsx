@@ -24,7 +24,7 @@ import { Button, I, Skeleton, Toggle } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { LabelStudio } from '@/components/LabelStudio';
 import { ErrorMessage, errorText } from '@/components/ErrorMessage';
-import { usePublicUrl } from '@/pages/pro/Link';
+import { useLabelUrl } from '@/pages/pro/Link';
 import { t } from '@/i18n';
 
 const AUDIENCE: Record<string, string> = { women: 'Femmes', men: 'Hommes', all: 'Tous' };
@@ -79,7 +79,7 @@ export function AdminLabels() {
   const rows = pagesItems(salons.data).slice(0, 6);
   const [slug, setSlug] = useState<string | null>(null);
   const salon = useSalon(slug ?? '');
-  const { url, short } = usePublicUrl(slug ?? '');
+  const { url, short } = useLabelUrl(slug ?? '');
   const socials = useAdminSalonLabelSocials(salon.data?.id ?? null);
   const look = useAdminSalonLabelStyle(salon.data?.id ?? null);
 
