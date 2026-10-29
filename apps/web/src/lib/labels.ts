@@ -349,62 +349,40 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
     ? { head: 0.14, title: 0.27 + shift, sub: 0.32 + shift, qr: 0.36 + shift, qrSize: 0.23, link: 0.66 + shift, rule: 0.745, icons: 0.772, handles: 0.884 }
     : { head: 0.165, title: 0.345 + shift, sub: 0.388 + shift, qr: 0.428 + shift, qrSize: 0.25, link: 0.664 + shift, rule: 0.745, icons: 0.772, handles: 0.848 };
 
-  // En-tête : « Nom du salon x Salon DZ » sur une ligne, sinon le nom au-dessus.
+  // En-tête : le NOM DU SALON seul, centré, sur deux lignes au plus. La marque Salon DZ signe
+  // l'affiche tout en bas (décision du propriétaire, 29 oct. 2026 : plus de « x Salon DZ » en tête).
   ctx.textBaseline = 'alphabetic';
   const headMax = 820 * u;
-  const brandPx = (square ? 44 : 46) * u;
-  ctx.font = `700 ${brandPx}px ${SANS}`;
-  const wSalon = ctx.measureText('Salon').width;
-  ctx.font = `600 ${brandPx}px ${SANS}`;
-  const wDz = ctx.measureText('DZ').width;
-  const brandW = wSalon + brandPx * 0.2 + wDz;
-  const xPx = brandPx * 0.7;
-  ctx.font = `400 ${xPx}px ${SANS}`;
-  const xW = ctx.measureText('x').width;
-  const gap = brandPx * 0.6;
-  const drawBrand = (x0: number, y: number) => {
+  const name = caps && !hasArabic(input.name) ? input.name.toUpperCase() : input.name;
+  const nameFont = (px: number) => fontOf(name, 700, px);
+  const fittedName = fitLines(ctx, name, nameFont, (square ? 56 : 60) * u, 30 * u, headMax, 2);
+  ctx.font = nameFont(fittedName.px);
+  ctx.fillStyle = ink;
+  {
+    let y = at(Y.head) - (fittedName.rows.length - 1) * fittedName.px * 0.55;
+    for (const row of fittedName.rows) {
+      center(row, y, caps && !hasArabic(row) ? fittedName.px * 0.04 : 0);
+      y += fittedName.px * 1.1;
+    }
+  }
+
+  // Signature de la plateforme, centrée tout en bas.
+  {
+    const brandPx = (square ? 34 : 36) * u;
+    ctx.font = `700 ${brandPx}px ${SANS}`;
+    const wSalon = ctx.measureText('Salon').width;
+    ctx.font = `600 ${brandPx}px ${SANS}`;
+    const wDz = ctx.measureText('DZ').width;
+    const gapB = brandPx * 0.2;
+    const x0 = cx - (wSalon + gapB + wDz) / 2;
+    const yB = H - (square ? 52 : 74) * u;
     ctx.textAlign = 'left';
     ctx.fillStyle = ink;
     ctx.font = `700 ${brandPx}px ${SANS}`;
-    ctx.fillText('Salon', x0, y);
+    ctx.fillText('Salon', x0, yB);
     ctx.fillStyle = muted;
     ctx.font = `600 ${brandPx}px ${SANS}`;
-    ctx.fillText('DZ', x0 + wSalon + brandPx * 0.2, y);
-  };
-  const drawX = (x0: number, y: number) => {
-    ctx.textAlign = 'left';
-    ctx.fillStyle = muted;
-    ctx.font = `400 ${xPx}px ${SANS}`;
-    ctx.fillText('x', x0, y);
-  };
-  const name = caps && !hasArabic(input.name) ? input.name.toUpperCase() : input.name;
-  const nameFont = (px: number) => fontOf(name, 700, px);
-  const oneLineMax = headMax - brandW - xW - gap * 2;
-  ctx.font = nameFont(brandPx);
-  if (ctx.measureText(name).width <= oneLineMax) {
-    const nameW = ctx.measureText(name).width;
-    const total = nameW + gap + xW + gap + brandW;
-    let x0 = cx - total / 2;
-    const y = at(Y.head);
-    ctx.fillStyle = ink;
-    ctx.textAlign = 'left';
-    ctx.fillText(name, x0, y);
-    x0 += nameW + gap;
-    drawX(x0, y);
-    drawBrand(x0 + xW + gap, y);
-  } else {
-    const fitted = fitLines(ctx, name, nameFont, brandPx * 1.15, 30 * u, headMax, 2);
-    ctx.font = nameFont(fitted.px);
-    ctx.fillStyle = ink;
-    let y = at(Y.head) - fitted.px * 0.55 * fitted.rows.length;
-    for (const row of fitted.rows) {
-      center(row, y);
-      y += fitted.px * 1.05;
-    }
-    y += brandPx * 0.25;
-    const x0 = cx - (xW + gap + brandW) / 2;
-    drawX(x0, y);
-    drawBrand(x0 + xW + gap, y);
+    ctx.fillText('DZ', x0 + wSalon + gapB, yB);
   }
 
   // Titre
