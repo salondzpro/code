@@ -231,7 +231,9 @@ workflows:
   # -------------------------------------------------------------------------------------------
   android:
     name: Salon DZ · Android
-    instance_type: linux_x2
+    # linux_x2 est refusé par le plan gratuit (« not available with the current billing plan », 29 oct.) :
+    # même machine que les flux iOS, qui a Java et le SDK Android. Minutes macOS : ne lancer que pour publier.
+    instance_type: mac_mini_m2
     max_build_duration: 45
     environment:
       groups:
@@ -267,7 +269,9 @@ workflows:
 
   android-pro:
     name: Salon DZ Pro · Android
-    instance_type: linux_x2
+    # linux_x2 est refusé par le plan gratuit (« not available with the current billing plan », 29 oct.) :
+    # même machine que les flux iOS, qui a Java et le SDK Android. Minutes macOS : ne lancer que pour publier.
+    instance_type: mac_mini_m2
     max_build_duration: 45
     environment:
       groups:
