@@ -101,7 +101,7 @@ services:
     repo: https://github.com/salondzpro/code
     branch: main
     autoDeploy: true
-    buildCommand: pnpm install --frozen-lockfile --filter "@salondz/web..." && pnpm --filter @salondz/web build
+    buildCommand: pnpm install --frozen-lockfile --filter "@salondz/web..." && pnpm --filter @salondz/web build:site
     staticPublishPath: apps/web/dist
     buildFilter:
       paths:
@@ -142,6 +142,11 @@ services:
       - path: /fonts/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
+      # Mise à jour automatique des applications embarquées (apps/web/src/lib/liveUpdate.ts) :
+      # lue depuis l'origine de l'application (https://localhost, capacitor://localhost).
+      - path: /ota/*
+        name: Access-Control-Allow-Origin
+        value: "*"
       - path: /manifest.webmanifest
         name: Content-Type
         value: application/manifest+json

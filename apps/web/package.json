@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist .turbo",
-    "test:e2e": "node test/smoke.e2e.mjs"
+    "test:e2e": "node test/smoke.e2e.mjs",
+    "build:site": "tsc --noEmit && node scripts/build-site.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
@@ -23,6 +24,7 @@
     "@capacitor/share": "^8.0.2",
     "@capacitor/splash-screen": "^8.0.2",
     "@capacitor/status-bar": "^8.0.3",
+    "@capgo/capacitor-updater": "8.54.0",
     "@salondz/api-client": "workspace:*",
     "@salondz/constants": "workspace:*",
     "@salondz/types": "workspace:*",
@@ -48,6 +50,7 @@
     "@types/react": "~19.1.0",
     "@types/react-dom": "~19.1.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "fflate": "0.8.2",
     "playwright-core": "^1.56.1",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.8.3",

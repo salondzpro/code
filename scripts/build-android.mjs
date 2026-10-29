@@ -68,6 +68,14 @@ const env = {
   ...(JAVA_HOME ? { JAVA_HOME } : {}),
   ...(ANDROID_HOME ? { ANDROID_HOME, ANDROID_SDK_ROOT: ANDROID_HOME } : {}),
   SALONDZ_APP_MODE: mode,
+  // Version du bundle embarqué (`src/lib/liveUpdate.ts`) : le commit, comme le site publié.
+  VITE_BUNDLE_VERSION: (() => {
+    try {
+      return execFileSync('git', ['rev-parse', '--short=12', 'HEAD']).toString().trim();
+    } catch {
+      return 'dev';
+    }
+  })(),
   // Lu par `capacitor.config.ts` (identifiant, nom) et par Vite (`VITE_APP_FLAVOR`, qui retire les
   // écrans clients du bundle — ils ne sont pas cachés, ils ne sont pas livrés).
   ...(PRO ? { SALONDZ_APP_FLAVOR: 'pro', VITE_APP_FLAVOR: 'pro' } : {}),

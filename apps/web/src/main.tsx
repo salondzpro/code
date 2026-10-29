@@ -61,4 +61,6 @@ void loadDictionary(getLocale())
     await initNative(go);
     const { wireNativePushTaps } = await import('./lib/nativePush');
     await wireNativePushTaps(go);
+    // Applications embarquées : télécharge en silence la dernière version du site (`lib/liveUpdate.ts`).
+    void import('./lib/liveUpdate').then((m) => m.initLiveUpdate());
   });

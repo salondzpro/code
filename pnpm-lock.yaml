@@ -283,6 +283,9 @@ importers:
       '@capacitor/status-bar':
         specifier: ^8.0.3
         version: 8.0.3(@capacitor/core@8.5.2)
+      '@capgo/capacitor-updater':
+        specifier: 8.54.0
+        version: 8.54.0(@capacitor/core@8.5.2)
       '@salondz/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
@@ -353,6 +356,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.0.0
         version: 5.2.0(vite@7.3.6(@types/node@22.20.1)(jiti@2.7.0)(lightningcss@1.33.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+      fflate:
+        specifier: 0.8.2
+        version: 0.8.2
       playwright-core:
         specifier: ^1.56.1
         version: 1.62.1
@@ -1005,6 +1011,11 @@ packages:
 
   '@capacitor/synapse@1.0.4':
     resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
+
+  '@capgo/capacitor-updater@8.54.0':
+    resolution: {integrity: sha512-943wFpm+Bwe5hF/fWrjQ6RoZZ8fmVd9r+XpdMEaaqYU1KxXff4blwCw+/kf9UR7nXYWKwf/V0bmff5LbiaNFxQ==}
+    peerDependencies:
+      '@capacitor/core': ^8.0.0
 
   '@egjs/hammerjs@2.0.17':
     resolution: {integrity: sha512-XQsZgjm2EcVUiZQf11UBJQfmZeEmOW8DpI1gsFeln6w0ae0ii4dMQEQ0kjl6DspdWX1aGY1/loyXnP0JS06e/A==}
@@ -3546,6 +3557,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -6383,6 +6397,10 @@ snapshots:
       '@capacitor/core': 8.5.2
 
   '@capacitor/synapse@1.0.4': {}
+
+  '@capgo/capacitor-updater@8.54.0(@capacitor/core@8.5.2)':
+    dependencies:
+      '@capacitor/core': 8.5.2
 
   '@egjs/hammerjs@2.0.17':
     dependencies:
@@ -9245,6 +9263,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
+
+  fflate@0.8.2: {}
 
   fill-range@7.1.1:
     dependencies:

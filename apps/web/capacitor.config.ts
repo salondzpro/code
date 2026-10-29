@@ -58,6 +58,12 @@ const config: CapacitorConfig = {
      * bandeau de `components/PushToast.tsx` qui prend le relais, sur les deux systèmes.)
      */
     PushNotifications: { presentationOptions: ['badge', 'sound', 'alert'] },
+    /**
+     * Mise à jour automatique du site embarqué (`src/lib/liveUpdate.ts`) : mode MANUEL et
+     * auto-hébergé (paquets publiés sur salondz.com/ota/), aucune statistique envoyée à un tiers.
+     * `resetWhenUpdate` : une nouvelle version installée depuis la boutique repart de sa copie.
+     */
+    CapacitorUpdater: { autoUpdate: false, statsUrl: '', resetWhenUpdate: true, appReadyTimeout: 10000, keepUrlPathAfterReload: true },
     SplashScreen: {
       // L'écran natif reste affiché jusqu'à ce que l'application prenne le relais, sur le MÊME fond
       // d'encre que l'animation d'ouverture : aucun éclair blanc entre les deux.

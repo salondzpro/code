@@ -72,6 +72,7 @@ workflows:
         # bundle. Une variable oubliée ne fait pas échouer Vite — elle fait échouer l'application
         # chez la personne qui l'installe, ce qui se découvre beaucoup trop tard.
         script: |
+          export VITE_BUNDLE_VERSION="${CM_COMMIT:0:12}"
           pnpm --filter @salondz/web build
           if ! grep -rq "api.salondz.com" apps/web/dist/assets; then
             echo "Le bundle ne contient pas l'adresse de l'API : variables VITE_* manquantes."
@@ -163,6 +164,7 @@ workflows:
           pnpm install --frozen-lockfile
       - name: Construction du site (variante professionnelle)
         script: |
+          export VITE_BUNDLE_VERSION="${CM_COMMIT:0:12}"
           pnpm --filter @salondz/web build
           if ! grep -rq "api.salondz.com" apps/web/dist/assets; then
             echo "Le bundle ne contient pas l'adresse de l'API : variables VITE_* manquantes."

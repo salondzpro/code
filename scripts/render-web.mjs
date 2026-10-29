@@ -49,6 +49,12 @@ const SITE_HEADERS = [
   { path: '/.well-known/apple-app-site-association', name: 'Content-Type', value: 'application/json' },
   { path: '/.well-known/apple-app-site-association', name: 'Cache-Control', value: 'no-cache' },
   { path: '/.well-known/assetlinks.json', name: 'Cache-Control', value: 'no-cache' },
+  // Mise à jour automatique des applications embarquées (`apps/web/src/lib/liveUpdate.ts`) : lue
+  // depuis l'origine de l'application (`https://localhost`, `capacitor://localhost`), donc CORS ;
+  // `latest.json` jamais gardé en cache, sinon une application raterait la version du jour.
+  { path: '/ota/*', name: 'Access-Control-Allow-Origin', value: '*' },
+  { path: '/ota/client/latest.json', name: 'Cache-Control', value: 'no-cache' },
+  { path: '/ota/pro/latest.json', name: 'Cache-Control', value: 'no-cache' },
   { path: '/*', name: 'X-Content-Type-Options', value: 'nosniff' },
   { path: '/*', name: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { path: '/*', name: 'X-Frame-Options', value: 'DENY' },
@@ -78,7 +84,7 @@ const siteSpec = {
   },
   envVars,
   serviceDetails: {
-    buildCommand: 'pnpm install --frozen-lockfile --filter "@salondz/web..." && pnpm --filter @salondz/web build',
+    buildCommand: 'pnpm install --frozen-lockfile --filter "@salondz/web..." && pnpm --filter @salondz/web build:site',
     publishPath: 'apps/web/dist',
     pullRequestPreviewsEnabled: 'no',
     routes: SITE_ROUTES,
