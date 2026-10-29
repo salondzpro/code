@@ -9,6 +9,7 @@ import {
 import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
 import { sendTestPush } from '../lib/push';
+import { readLabelSettings } from '../lib/labelSettings';
 import { camelize, snakeize } from '../lib/mappers';
 import { unwrap, conflict } from '../lib/errors';
 import { loadOwnedSalon } from '../plugins/auth';
@@ -187,6 +188,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
       app: rows.filter((r) => r.platform === 'android' || r.platform === 'ios').length,
       web: rows.filter((r) => r.platform === 'web').length,
     };
+  });
+
+  // Modèles d'étiquettes à imprimer proposés par la plateforme (choisis par l'administration).
+  app.get('/me/label-settings', async (_req, reply) => {
+    reply.header('Cache-Control', 'private, max-age=60');
+    return readLabelSettings();
   });
 
   // Notification de test vers tous les appareils du compte (`lib/push.ts`, `sendTestPush`).

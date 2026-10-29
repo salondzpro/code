@@ -118,6 +118,7 @@ const AdminProfile = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'Adm
 const AdminBookings = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminBookings');
 const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminAudit');
 const AdminReports = lazyNamed(() => import('@/pages/admin/AdminReports'), 'AdminReports');
+const AdminLabels = lazyNamed(() => import('@/pages/admin/AdminLabels'), 'AdminLabels');
 
 /**
  * Routes CLIENT. Dans la variante professionnelle (`VITE_APP_FLAVOR=pro`) elles ne sont pas
@@ -301,6 +302,7 @@ export const router = createBrowserRouter([
           { path: 'comptes/:id', element: <AdminProfile /> },
           { path: 'rendez-vous', element: <AdminBookings /> },
           { path: 'signalements', element: <AdminReports /> },
+          { path: 'etiquettes', element: <AdminLabels /> },
           { path: 'journal', element: <AdminAudit /> },
         ],
       },

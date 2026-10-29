@@ -9,7 +9,7 @@
  * sache à tout instant qu'on agit en tant que plateforme et non en tant que salon.
  */
 import { NavLink, Outlet, Navigate } from 'react-router';
-import { CalendarSearch, ContactRound, Flag, LayoutGrid, ScrollText, Store } from 'lucide-react';
+import { CalendarSearch, ContactRound, Flag, LayoutGrid, QrCode, ScrollText, Store } from 'lucide-react';
 import { useAdminMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { I } from '@/components/ui';
@@ -22,6 +22,7 @@ const NAV = [
   { to: '/admin/comptes', label: 'Comptes', icon: ContactRound },
   { to: '/admin/rendez-vous', label: 'Rendez-vous', icon: CalendarSearch },
   { to: '/admin/signalements', label: 'Signalements', icon: Flag },
+  { to: '/admin/etiquettes', label: 'Étiquettes', icon: QrCode },
   { to: '/admin/journal', label: 'Journal', icon: ScrollText },
 ];
 

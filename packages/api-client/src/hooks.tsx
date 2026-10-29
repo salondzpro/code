@@ -627,6 +627,26 @@ export const useAdminAudit = (enabled = true) => {
  * laisser une seule d'entre elles mentir.
  */
 /** File des signalements d'avis ouverts (administration). */
+/** Modèles d'étiquettes proposés (côté pro) — réglage de plateforme, rarement modifié. */
+export const useLabelSettings = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['label-settings'], queryFn: () => api.me.labelSettings(), staleTime: 5 * 60_000, enabled });
+};
+export const useAdminLabelSettings = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['admin', 'label-settings'], queryFn: () => api.admin.labelSettings(), staleTime: 30_000, enabled });
+};
+export function useSaveLabelSettings() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof api.admin.saveLabelSettings>[0]) => api.admin.saveLabelSettings(body),
+    onSuccess: (data) => {
+      qc.setQueryData(['admin', 'label-settings'], data);
+      void qc.invalidateQueries({ queryKey: ['label-settings'] });
+    },
+  });
+}
 export const useAdminReports = (enabled = true) => {
   const { api } = useApi();
   return useQuery({ queryKey: queryKeys.admin.reports, queryFn: () => api.admin.reports(), staleTime: 15_000, enabled });

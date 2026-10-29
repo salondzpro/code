@@ -14,13 +14,14 @@
  */
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { BOOKING_STATUSES } from '@salondz/constants';
+import { BOOKING_STATUSES, LABEL_TEMPLATE_IDS } from '@salondz/constants';
 import { phoneDZ, uuid } from '@salondz/validation';
 import { db } from '../lib/supabase';
 import { badRequest, notFound, unwrap } from '../lib/errors';
 import { camelize, snakeize } from '../lib/mappers';
 import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
+import { readLabelSettings, writeLabelSettings } from '../lib/labelSettings';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
 
@@ -460,6 +461,33 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       await eraseClientAccount(req.log, id);
       reply.status(204);
       return null;
+    },
+  );
+
+  // ------------------------------------------------------------------ étiquettes à imprimer (29 oct. 2026)
+  /**
+   * Quels modèles d'étiquettes sont proposés aux professionnels, et lequel d'abord. Un réglage de
+   * la PLATEFORME, pas d'un salon : niveau `owner`, et une ligne au journal comme toute écriture.
+   */
+  app.get('/label-settings', async () => readLabelSettings());
+  app.put(
+    '/label-settings',
+    {
+      preHandler: app.requireOwner,
+      schema: {
+        body: z.object({
+          enabled: z.array(z.enum(LABEL_TEMPLATE_IDS)).min(1).max(LABEL_TEMPLATE_IDS.length),
+          defaultId: z.enum(LABEL_TEMPLATE_IDS),
+        }),
+      },
+    },
+    async (req) => {
+      const enabled = [...new Set(req.body.enabled)];
+      if (!enabled.includes(req.body.defaultId)) throw badRequest('DEFAULT_NOT_ENABLED', 'Le modèle par défaut doit faire partie des modèles proposés.');
+      const next = { enabled, defaultId: req.body.defaultId };
+      await writeLabelSettings(next);
+      await trace(req, 'label_settings_update', 'platform', null, `${enabled.join(', ')} · défaut ${next.defaultId}`);
+      return next;
     },
   );
 

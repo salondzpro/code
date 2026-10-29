@@ -18,7 +18,8 @@ import {
   QrCode,
   Share2,
 } from 'lucide-react';
-import { renderQrPoster } from '@/lib/qrPoster';
+import { LabelStudio } from '@/components/LabelStudio';
+import { DEFAULT_LABEL_SETTINGS } from '@salondz/constants';
 import { env } from '@/lib/env';
 import {
   FacebookLogo,
@@ -26,7 +27,7 @@ import {
   TikTokLogo,
   WhatsAppLogo,
 } from '@/components/BrandIcons';
-import { useProSalon } from '@salondz/api-client';
+import { useLabelSettings, useProSalon } from '@salondz/api-client';
 import {
   Avatar,
   Badge,
@@ -128,7 +129,7 @@ export function ShareSheet({
       icon: <I icon={MessageSquareText} size={34} />,
       onClick: () => window.open(`sms:?body=${text}`),
     },
-    { label: t("QR Code"), icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },
+    { label: t("Étiquettes"), icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },
     { label: t("Plus"), icon: <I icon={Share2} size={34} />, onClick: () => void share(name, url) },
   ];
   return (
@@ -188,7 +189,7 @@ export function ProLink() {
           type="button"
           className="flex h-[15rem] w-[15rem] items-center justify-center overflow-hidden rounded-[var(--radius-card)] bg-fill"
           onClick={() => navigate('/pro/qr')}
-          aria-label={t("Agrandir le QR code")}
+          aria-label={t("Étiquettes à imprimer")}
         >
           {qr ? (
             <img src={qr} alt={t("QR code de votre page")} className="h-[13rem] w-[13rem]" />
@@ -254,51 +255,40 @@ export function ProLink() {
   );
 }
 
-/** PRO-F 21 — QR code en vitrine : l'aperçu est l'affiche Salon DZ elle-même, « Enregistrer » la télécharge en PNG. */
+/**
+ * PRO-F 21 — Étiquettes à imprimer (refonte du 29 oct. 2026) : affiche de vitrine A5 et autocollant
+ * de comptoir, en PNG 300 ppp, dans les modèles que la plateforme propose (`LabelStudio`). L'ancienne
+ * affiche unique (1080 × 1440) était trop légère pour une impression nette au-delà d'un A6.
+ */
 export function ProQr() {
   const salon = useProSalon().data?.salon ?? null;
+  const settings = useLabelSettings(!!salon);
   const { url, short } = usePublicUrl(salon?.slug ?? '');
-  const [poster, setPoster] = useState<string | null>(null);
-  useEffect(() => {
-    if (!salon) return;
-    let alive = true;
-    setPoster(null);
-    renderQrPoster({ name: salon.name, url, short, logoUrl: salon.logoUrl ?? salon.coverUrl })
-      .then((d) => alive && setPoster(d))
-      .catch(() => alive && setPoster(null));
-    return () => {
-      alive = false;
-    };
-  }, [salon?.name, salon?.logoUrl, salon?.coverUrl, url, short, salon]);
   if (!salon) return <PageLoading />;
+  const s = settings.data ?? DEFAULT_LABEL_SETTINGS;
   return (
-    <Screen bottom={24} gap={16} className="narrow">
-      <TopBar backTo="/pro/lien" right="QR code" />
-      {poster ? (
-        <img
-          src={poster}
-          alt={`Affiche QR de ${salon.name}`}
-          className="w-full rounded-[var(--radius-card)] border border-line"
-        />
-      ) : (
-        <div className="sk aspect-[3/4] w-full !rounded-[var(--radius-card)]" />
-      )}
-      <p className="p text-center">
-        {t("À imprimer en vitrine : le scan ouvre votre page de réservation.")}
-      </p>
-      <div className="g2">
-        <a
-          href={poster ?? '#'}
-          download={`affiche-qr-${salon.slug}.png`}
-          className={`btn g${poster ? '' : ' opacity-50 pointer-events-none'}`}
-          aria-disabled={!poster}
-        >
-          <I icon={Download} size={18} /> {t("Enregistrer")}
-        </a>
-        <Button onClick={() => void share(salon.name, url)}>
-          <I icon={MoreHorizontal} size={18} /> {t("Partager")}
-        </Button>
+    <Screen bottom={24} gap={14} className="narrow">
+      <TopBar backTo="/pro/lien" right={t('Étiquettes')} />
+      <div>
+        <h1 className="h1 !text-[1.571rem]">{t('Étiquettes à imprimer')}</h1>
+        <p className="p mt-1 text-[0.857rem]">{t('En vitrine ou au comptoir : le scan ouvre votre page de réservation.')}</p>
       </div>
+      <LabelStudio
+        input={{
+          name: salon.name,
+          url,
+          short,
+          logoUrl: salon.logoUrl ?? salon.coverUrl,
+          categoryIds: salon.categoryIds,
+          audience: salon.genderTarget,
+        }}
+        allowed={s.enabled}
+        defaultId={s.defaultId}
+        filename={`salondz-${salon.slug}`}
+      />
+      <Button variant="g" onClick={() => void share(salon.name, url)}>
+        <I icon={MoreHorizontal} size={18} /> {t('Partager le lien')}
+      </Button>
     </Screen>
   );
 }

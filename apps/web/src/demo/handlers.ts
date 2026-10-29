@@ -24,6 +24,7 @@ import {
   localDateTimeToISO,
   toLocalDateKey,
   REVIEW_SUMMARY_MIN_REVIEWS,
+  DEFAULT_LABEL_SETTINGS,
 } from '@salondz/constants';
 import type { Booking, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
 import { availableSlots, clientKeyOf, clientStanding, concerns, dashboardStats, daysUntilMax, hm, nextAvailability, proClients, statsRange, summary, unaccent } from './engine';
@@ -362,6 +363,8 @@ on('DELETE', '/me/push-tokens/:token', () => none());
 // La démonstration n'enregistre aucun appareil : le site se comporte comme pour un compte sans application.
 on('GET', '/me/push-devices', () => ok({ app: 0, web: 0 }));
 on('POST', '/me/push-test', () => ok({ devices: [] }));
+// Étiquettes : en démonstration, tous les modèles sont proposés (réglage d'origine de la plateforme).
+on('GET', '/me/label-settings', () => ok(DEFAULT_LABEL_SETTINGS));
 on('GET', '/me/notifications', (c) => {
   const u = requireUser(c);
   const limit = num(c.query.get('limit'), 30);

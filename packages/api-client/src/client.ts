@@ -1,3 +1,4 @@
+import type { LabelSettings } from '@salondz/constants';
 import type {
   ApiErrorBody,
   AvailabilityResponse,
@@ -495,6 +496,8 @@ export function createApiClient(opts: ApiClientOptions) {
       removePushToken: (token: string) => del<void>(`/me/push-tokens/${encodeURIComponent(token)}`),
       /** Appareils qui reçoivent les notifications de ce compte : application mobile et navigateurs. */
       pushDevices: () => get<{ app: number; web: number }>('/me/push-devices'),
+      /** Modèles d'étiquettes à imprimer que la plateforme propose, et celui présenté d'abord. */
+      labelSettings: () => get<LabelSettings>('/me/label-settings'),
       /** Notification de test vers tous les appareils du compte, avec la réponse de chaque fournisseur. */
       pushTest: () =>
         post<{ devices: { platform: string; device: string | null; outcome: 'sent' | 'gone' | 'failed' | 'disabled' }[] }>('/me/push-test', {}),
@@ -655,6 +658,9 @@ export function createApiClient(opts: ApiClientOptions) {
       reports: () => get<{ items: AdminReportRow[] }>('/admin/reports'),
       closeReport: (id: string, outcome: 'handled' | 'rejected', note?: string) =>
         post<void>(`/admin/reports/${id}/close`, { outcome, note }),
+      /** Modèles d'étiquettes proposés aux professionnels (réglage de la plateforme, niveau owner pour écrire). */
+      labelSettings: () => get<LabelSettings>('/admin/label-settings'),
+      saveLabelSettings: (body: LabelSettings) => put<LabelSettings>('/admin/label-settings', body),
 
       /**
        * Agir (lot 2). Chaque geste porte un MOTIF et laisse une ligne au journal : une suspension
