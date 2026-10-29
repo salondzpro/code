@@ -272,7 +272,7 @@ export function ProQr() {
   }, [salon?.name, salon?.logoUrl, salon?.coverUrl, url, short, salon]);
   if (!salon) return <PageLoading />;
   return (
-    <Screen bottom={24} gap={16}>
+    <Screen bottom={24} gap={16} className="narrow">
       <TopBar backTo="/pro/lien" right="QR code" />
       {poster ? (
         <img

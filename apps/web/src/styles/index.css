@@ -4820,3 +4820,70 @@ html:has(.auth-onglets) body {
   }
   .rv-dot.on { background: var(--color-ink); }
 }
+
+/* ------------------------------------------------------------------ */
+/* PAGES D'ENTRÉE, UN SEUL CADRE (29 oct. 2026)                         */
+/* ------------------------------------------------------------------ */
+/* Sur ordinateur, la Bienvenue pro restait dans la colonne de lecture du téléphone (44 à 52 rem)
+   avec un bandeau sombre rogné sur les côtés, alors que la présentation (`/home`) pose des bandes
+   PLEINE LARGEUR et un contenu de 72 rem. Même marque, deux pages, deux formes. Désormais les deux
+   partagent le même cadre : `--landing-w` (72 rem) et la même gouttière (2 rem), mêmes tailles de
+   titre. Sous 768 px, rien ne change. */
+:root {
+  --landing-w: 72rem;
+}
+@media (min-width: 768px) {
+  .pwl.rd {
+    max-width: none;
+  }
+  .pwl-hero {
+    border-radius: 0;
+    padding-bottom: 5.5rem;
+  }
+  .pwl-hero > .pwl-bar,
+  .pwl-hero > .pwl-copy {
+    width: 100%;
+    max-width: var(--landing-w);
+    margin-inline: auto;
+    padding-inline: 2rem;
+  }
+  .pwl-hero > .pwl-copy {
+    padding-top: 2.5rem;
+  }
+  .pwl-t {
+    font-size: 3.4rem;
+    letter-spacing: -1.6px;
+  }
+  .pwl-sub {
+    font-size: 1.286rem;
+  }
+  .pwl-main {
+    width: 100%;
+    max-width: var(--landing-w);
+    margin: -3rem auto 0;
+    padding-inline: 2rem;
+    border-radius: 0;
+    background: transparent;
+  }
+}
+@media (min-width: 1024px) {
+  /* Les quatre avantages sur UNE rangée, comme les métiers de la présentation. */
+  .pwl-main > .pwl-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  /* La barre d'accès collante suit le même cadre que la page. */
+  .pwl-dock {
+    width: min(var(--landing-w), calc(100vw - 2rem));
+    max-width: none;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Écran dont le contenu est un OBJET à taille humaine (l'affiche QR) : il ne s'étire pas. */
+  .scr.narrow,
+  .pro-main .scr.narrow {
+    max-width: 34rem;
+  }
+}

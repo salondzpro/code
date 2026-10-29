@@ -240,6 +240,16 @@ export const router = createBrowserRouter([
               { path: 'onboarding/9', element: <Step9Hours /> },
               { path: 'onboarding/10', element: <Step10Availability /> },
               { path: 'onboarding/publier', element: <Publish /> },
+            ],
+          },
+          {
+            element: <ProLayout />,
+            children: [
+              { index: true, element: <ProHome /> },
+              // Réglages et fiches (29 oct. 2026) : DANS la coque pro, comme le reste de l'espace. Ils
+              // vivaient sous `PlainLayout` (celui de l'inscription) : sur ordinateur, ils s'ouvraient
+              // sans le rail ni l'en-tête, comme si l'on avait quitté l'espace pro. Seules les étapes
+              // d'inscription restent à part, volontairement concentrées.
               { path: 'lien', element: <ProLink /> },
               { path: 'qr', element: <ProQr /> },
               { path: 'profil/horaires', element: <Step9Hours settings /> },
@@ -252,12 +262,6 @@ export const router = createBrowserRouter([
               { path: 'blocages', element: <Closures /> },
               { path: 'services', element: <Navigate to="/pro/catalogue" replace /> },
               { path: 'realisations', element: <Step8Works settings /> },
-            ],
-          },
-          {
-            element: <ProLayout />,
-            children: [
-              { index: true, element: <ProHome /> },
               { path: 'agenda', element: <AgendaPro /> },
               { path: 'chiffre-affaires', element: <Revenue /> },
               { path: 'clients', element: <Clients /> },

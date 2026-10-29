@@ -51,7 +51,18 @@ export function DayScroller({
 
   useEffect(() => {
     const el = ref.current?.querySelector<HTMLElement>(`[data-day="${selected}"]`);
-    el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    // Défilement de la RANGÉE seulement. `scrollIntoView` faisait aussi défiler la PAGE pour
+    // rendre la rangée visible : un écran qui place le choix du jour plus bas (Nouveau
+    // rendez-vous) s'ouvrait déjà descendu, son titre caché sous l'en-tête.
+    const row = ref.current;
+    if (el && row) {
+      // Écart MESURÉ entre le jour et le milieu de la rangée : juste dans les deux sens d'écriture
+      // (en arabe, `scrollLeft` part de 0 à droite et devient négatif — un calcul par positions
+      // absolues y envoyait le jour hors de l'écran).
+      const a = el.getBoundingClientRect();
+      const c = row.getBoundingClientRect();
+      row.scrollBy({ left: a.left + a.width / 2 - (c.left + c.width / 2), behavior: 'smooth' });
+    }
   }, [selected]);
 
   let lastMonth = '';
