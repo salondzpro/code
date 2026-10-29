@@ -339,14 +339,16 @@ workflows:
       - name: Compilation
         script: |
           node scripts/build-android.mjs --same $SALONDZ_ANDROID_ARGS
+      - name: Publication Google Play (production)
+        # PRODUCTION DIRECTE (29 oct. 2026, décision du propriétaire). Sans la clé de service Google
+        # Play (`GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`, groupe `google_play`), l'étape se contente de
+        # le dire : le .aab reste disponible dans les artefacts, à envoyer à la main.
+        script: |
+          if [ -z "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS" ]; then echo "Pas de clé Google Play : publication automatique impossible, .aab dans les artefacts."; exit 0; fi
+          AAB=$(ls apps/web/android/app/build/outputs/bundle/release/*.aab | head -1)
+          google-play bundles publish --bundle "$AAB" --track production --credentials "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS"
     artifacts:
       - apps/web/android/app/build/outputs/bundle/release/*.aab
-    publishing: &android_publishing
-      # PRODUCTION DIRECTE (29 oct. 2026, décision du propriétaire). Exige la clé de service
-      # Google Play dans le groupe `google_play` (`GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`).
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: production
 
   android-pro:
     name: Salon DZ Pro · Android
@@ -384,4 +386,3 @@ workflows:
     scripts: *android_scripts
     artifacts:
       - apps/web/android/app/build/outputs/bundle/release/*.aab
-    publishing: *android_publishing
