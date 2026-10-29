@@ -89,7 +89,7 @@ export function AdminBookings() {
         />
       </label>
 
-      <div className="pills -mx-4 px-4" role="group" aria-label={t('Filtrer par statut')}>
+      <div className="pills bleed" role="group" aria-label={t('Filtrer par statut')}>
         <Pill on={!statut} onClick={() => setStatut(undefined)}>{t('Tous')}</Pill>
         {BOOKING_STATUSES.map((s) => (
           <Pill key={s} on={statut === s} onClick={() => setStatut(s)}>

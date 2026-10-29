@@ -405,7 +405,7 @@ function StaffColumnsHead({
   onAll: () => void;
 }) {
   return (
-    <div className="sticky z-20 -mx-4 bg-bg px-4" style={{ top: '3.5rem' }}>
+    <div className="sticky z-20 bleed bg-bg" style={{ top: '3.5rem' }}>
       <div className="flex items-stretch border-b border-line">
         <div className="flex-none" style={{ width: GUTTER }} />
         {columns.map((c) => (

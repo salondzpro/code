@@ -198,7 +198,7 @@ export function Localisation() {
 
       {/* Lieux récents */}
       {!searching && recent.length > 0 && (
-        <div className="pills -mx-5 px-5">
+        <div className="pills bleed">
           {recent.map((r) => (
             <Pill key={r.label} lg on={choice.kind !== 'gps' && choice.label === r.label} onClick={() => pickRecent(r)}>
               <I icon={Clock} size={16} className="text-subtle" /> {r.label}

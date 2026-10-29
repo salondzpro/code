@@ -58,7 +58,7 @@ export function DayScroller({
   return (
     <div
       ref={ref}
-      className="pills -mx-4 !gap-1 px-4"
+      className="pills bleed !gap-1"
       role="listbox"
       aria-label={t("Choisir un jour")}
       style={{ scrollSnapType: 'x proximity' }}

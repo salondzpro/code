@@ -74,7 +74,7 @@ export function Step6Service() {
       {templates.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="h3">{t("Suggestions pour votre salon")}</span>
-          <div className="pills -mx-5 px-5" aria-label={t("Prestations courantes")}>
+          <div className="pills bleed" aria-label={t("Prestations courantes")}>
             {templates.slice(0, 12).map((tpl) => (
               <Pill key={tpl.name} lg on={name === tpl.name} onClick={() => applyTemplate(tpl)}>
                 {tpl.name} · {formatDuration(tpl.minutes)}
@@ -101,7 +101,7 @@ export function Step6Service() {
             </div>
           </Field>
         </div>
-        <div className="pills -mx-5 px-5" aria-label={t("Durées courantes")}>
+        <div className="pills bleed" aria-label={t("Durées courantes")}>
           {DURATIONS.map((d) => (
             <Pill key={d} lg on={duration === d} onClick={() => setDuration(d)}>
               {formatDuration(d)}

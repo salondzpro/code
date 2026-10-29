@@ -142,7 +142,7 @@ export function ProReviews() {
       )}
 
       {waiting > 0 && (
-        <div className="pills -mx-4 px-4" role="group" aria-label={t('Filtrer les avis')}>
+        <div className="pills bleed" role="group" aria-label={t('Filtrer les avis')}>
           <Pill on={!onlyWaiting} onClick={() => setOnlyWaiting(false)}>
             {t('Tous')}
           </Pill>

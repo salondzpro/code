@@ -61,7 +61,7 @@ export function AdminSalons() {
         />
       </label>
 
-      <div className="pills -mx-4 px-4" role="group" aria-label={t('Filtrer')}>
+      <div className="pills bleed" role="group" aria-label={t('Filtrer')}>
         <Pill on={!statut} onClick={() => filtre(undefined)}>{t('Tous')}</Pill>
         <Pill on={statut === 'published'} onClick={() => filtre('published')}>{t('Publiés')}</Pill>
         <Pill on={statut === 'draft'} onClick={() => filtre('draft')}>{t('Non publiés')}</Pill>

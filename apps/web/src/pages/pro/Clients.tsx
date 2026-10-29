@@ -123,7 +123,7 @@ export function Clients() {
         />
       </label>
       {blockedCount > 0 && (
-        <div className="pills -mx-4 px-4" role="group" aria-label={t("Filtrer les clients")}>
+        <div className="pills bleed" role="group" aria-label={t("Filtrer les clients")}>
           <Pill on={!onlyBlocked} onClick={() => setOnlyBlocked(false)}>
             {t('Tous · {n}', { n: total })}
           </Pill>

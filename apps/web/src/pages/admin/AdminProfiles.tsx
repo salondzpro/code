@@ -59,7 +59,7 @@ export function AdminProfiles() {
         />
       </label>
 
-      <div className="pills -mx-4 px-4" role="group" aria-label={t('Filtrer')}>
+      <div className="pills bleed" role="group" aria-label={t('Filtrer')}>
         <Pill on={!role} onClick={() => filtre(undefined)}>{t('Tous')}</Pill>
         <Pill on={role === 'client'} onClick={() => filtre('client')}>{t('Clients')}</Pill>
         <Pill on={role === 'pro'} onClick={() => filtre('pro')}>{t('Professionnels')}</Pill>

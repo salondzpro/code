@@ -68,7 +68,7 @@ export function SalonReviews() {
       )}
       {has && <ReviewSummary salon={s} />}
       {has && (
-        <div className="pills -mx-5 px-5" role="group" aria-label={t("Trier les avis")}>
+        <div className="pills bleed" role="group" aria-label={t("Trier les avis")}>
           <Pill lg on={sort === 'best'} onClick={() => setSort('best')}>
             {t("Mieux notés")}
           </Pill>

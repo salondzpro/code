@@ -404,7 +404,7 @@ export function ProBookingNew() {
       <section className="crd !gap-3" aria-labelledby="nb-s3">
         <StepHead n={3} id="nb-s3" title={t('Quand')} done={chosen.length > 0 && (slots.length === 0 || slots.some((x) => x.t === time && !x.taken))} />
         {staff.length > 1 && (
-          <div className="pills -mx-4 !gap-1.5 px-4" role="radiogroup" aria-label={t('Membre')}>
+          <div className="pills bleed !gap-1.5" role="radiogroup" aria-label={t('Membre')}>
             {staff.map((m) => (
               <button
                 key={m.id}

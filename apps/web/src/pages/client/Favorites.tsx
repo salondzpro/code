@@ -26,7 +26,7 @@ export function Favorites() {
       {/* Le filtre par marché n'a de sens que s'il y a des favoris des deux côtés. */}
       {all.some((s) => salonMarkets(s.genderTarget).includes('men')) &&
         all.some((s) => salonMarkets(s.genderTarget).includes('women')) && (
-          <div className="pills -mx-4 px-4">
+          <div className="pills bleed">
             <Pill on={filter === 'all'} onClick={() => setFilter('all')}>
               {t("Tous")}
             </Pill>

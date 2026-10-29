@@ -170,6 +170,8 @@ body::before {
     border: 1px solid var(--color-line);
     border-radius: var(--radius-card);
     padding: 0.875rem;
+    /* Une rangée `.bleed` posée DANS une carte va jusqu'aux bords de la carte, pas de l'écran. */
+    --gutter: 0.875rem;
     display: flex;
     flex-direction: column;
     gap: 0.5625rem;
@@ -341,6 +343,15 @@ body::before {
   }
   .pills::-webkit-scrollbar {
     display: none;
+  }
+  /* RANGÉE PLEINE LARGEUR (29 oct. 2026) : une rangée qui défile de côté (pastilles, jours, filtres)
+     déborde jusqu'aux bords de l'écran, son contenu restant aligné sur la page. La marge négative
+     s'écrivait à la main (`-mx-4 px-4`, parfois `-mx-5 px-5`) et ne suivait pas la gouttière réelle :
+     4 px hors de l'écran à 360 px, et un décalage dès 768 px, où la gouttière grandit. Elle lit
+     désormais `--gutter`, posée par l'écran lui-même. */
+  .bleed {
+    margin-inline: calc(-1 * var(--gutter, 1rem));
+    padding-inline: var(--gutter, 1rem);
   }
   .pill,
   .chip {
@@ -1344,7 +1355,8 @@ body::before {
     /* La feuille n'est plus posée en bas de l'écran : plus rien à lui réserver. */
     padding-bottom: var(--scr-b, 1rem);
     /* Gouttière : celle du téléphone (16 px du design) plus l'aise d'un grand écran. */
-    padding-inline: calc(1rem + var(--shell-px));
+    --gutter: calc(1rem + var(--shell-px));
+    padding-inline: var(--gutter);
   }
 
   /* Feuille MODALE → fenêtre centrée. Même composant, même contenu, autre place. */
@@ -1472,6 +1484,39 @@ body::before {
   .pro-main .scr.agenda {
     max-width: none;
   }
+  /* Barre d'action d'un écran pro (« Enregistrer », « Ajouter ») : centrée sur la zone de CONTENU,
+     après le rail — centrée sur la fenêtre, elle tombait à cheval sur le rail et décalée du formulaire.
+     Le transform garde le translate(-50%) d'origine (le décalage vient de `left`). */
+  .pro-main .sheet:not(.modal) {
+    left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2);
+    width: min(var(--read-w), calc(100vw - var(--rail-w) - 2rem));
+  }
+  /* PAGE D'UN SALON SUR ORDINATEUR (29 oct. 2026) : deux colonnes. L'album à gauche, qui reste en
+     place pendant qu'on parcourt les prestations ; l'identité, le choix et les avis à droite. Une
+     colonne de 672 px au milieu d'un écran de 1 920 px laissait les deux tiers de l'écran vides,
+     et réduisait la photo — ce qui vend le salon — à un bandeau de 14 rem. */
+  .rd.salon-pg {
+    max-width: var(--page-w);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    column-gap: 2rem;
+    align-items: start;
+    padding-inline: calc(1rem + var(--shell-px));
+  }
+  .salon-pg > .salon-tabs {
+    grid-column: 1 / -1;
+  }
+  .salon-pg > .salon-album {
+    position: sticky;
+    top: calc(var(--hdr-h) + 3.5rem);
+    height: min(34rem, calc(100dvh - var(--hdr-h) - 5rem));
+    margin-top: 1rem;
+    border-radius: var(--radius-card);
+  }
+  .salon-pg > .salon-body {
+    padding-inline: 0;
+  }
+
   /* Jour · Semaine · Mois : un sélecteur, pas une barre de 1 500 px. */
   .pro-main .scr.agenda .seg {
     max-width: 26rem;

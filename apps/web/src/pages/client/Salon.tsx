@@ -172,7 +172,7 @@ export function Salon() {
   const reviewItems = pagesItems(reviews.data);
 
   return (
-    <div className="rd h-app pb-6">
+    <div className="rd salon-pg h-app pb-6">
       {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
           qu'on descend dans les prestations, sans avoir à remonter tout en haut. */}
       <Tabs
@@ -180,7 +180,7 @@ export function Salon() {
         value={tab}
         onChange={setTab}
         // L'en-tête fait 3,5 rem et reste collé : les onglets se posent juste dessous.
-        className="sticky top-[3.5rem] z-20"
+        className="salon-tabs sticky top-[3.5rem] z-20"
         options={[
           { value: 'book', label: t("Prendre RDV") },
           { value: 'reviews', label: t("Avis") },
@@ -188,7 +188,7 @@ export function Salon() {
         ]}
       />
       {/* Album : couverture, photos du salon et réalisations réunies. */}
-      <SalonGallery images={gallery} alt={`Photos de ${s.name}`}>
+      <SalonGallery images={gallery} alt={`Photos de ${s.name}`} className="salon-album h-[14rem]">
         <div className="absolute start-4 end-4 top-4 z-10 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <IconButton lg aria-label={t("Retour")} onClick={back}>
@@ -218,7 +218,7 @@ export function Salon() {
 
       {/* Contenu à plat sous la photo : le chevauchement arrondi rognait l'image et
           n'apportait rien, la référence enchaîne les deux bord à bord. */}
-      <div className="relative flex flex-col gap-3 bg-bg px-4 pt-4">
+      <div className="salon-body relative flex flex-col gap-3 bg-bg px-4 pt-4">
         {/* Identité réservée à l'onglet de réservation : sur « Avis » et « À propos »
             elle répétait nom, adresse, note, prix et horaires alors que chaque onglet
             porte déjà ses propres titres. */}
@@ -416,7 +416,7 @@ export function Salon() {
             )}
             {s.ratingCount > 0 && <ReviewSummary salon={s} />}
             {s.ratingCount > 0 && (
-              <div className="pills -mx-4 px-4" role="group" aria-label={t("Trier les avis")}>
+              <div className="pills bleed" role="group" aria-label={t("Trier les avis")}>
                 <Pill lg on={reviewSort === 'best'} onClick={() => setReviewSort('best')}>
                   {t("Mieux notés")}
                 </Pill>
