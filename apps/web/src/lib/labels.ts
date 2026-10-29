@@ -15,7 +15,20 @@
  * salon (ongles, cils, barbier, coiffure, soins…).
  */
 import QRCode from 'qrcode';
-import { categoryLabel, categoryTone, type LabelFormat, type LabelTemplateId } from '@salondz/constants';
+import {
+  categoryLabel,
+  categoryTone,
+  FACEBOOK_COLOR,
+  INSTAGRAM_GRADIENT,
+  INSTAGRAM_PATH,
+  SNAPCHAT_COLOR,
+  SNAPCHAT_PATH,
+  TIKTOK_CYAN,
+  TIKTOK_CYAN_OFFSET,
+  TIKTOK_PATH,
+  TIKTOK_RED,
+  TIKTOK_RED_OFFSET,
+  type LabelFormat, type LabelSocial, type LabelSocialId, type LabelTemplateId } from '@salondz/constants';
 
 export interface LabelInput {
   name: string;
@@ -27,6 +40,8 @@ export interface LabelInput {
   categoryIds?: string[];
   /** Public du salon : choisit la typographie du modèle « Selon le métier ». */
   audience?: 'men' | 'women' | 'unisex';
+  /** Réseaux imprimés par le modèle « Vitrine noire » (seuls ceux `shown` avec un nom). */
+  socials?: LabelSocial[];
 }
 
 /** Tailles en pixels, 300 points par pouce : A5 (148 × 210 mm) et carré de 12,7 cm. */
@@ -70,6 +85,7 @@ const TONES: Record<string, { bg: string; bg2: string; accent: string; ink: stri
 
 function palette(id: LabelTemplateId, input: LabelInput): Palette {
   switch (id) {
+    case 'vitrine':
     case 'elegance':
       return { bg: '#FCF3F6', bg2: '#F5DFE7', ink: '#3A1C2A', muted: '#8A6474', accent: '#B83D6E', band: '#B83D6E', bandInk: '#FFFFFF', frame: '#D9A9BA', serif: true, caps: false, motif: 'sparkles' };
     case 'nude':
@@ -245,8 +261,270 @@ function ensureFonts(): Promise<void> {
 // Rendu
 // ---------------------------------------------------------------------------------------------
 
+
+// ---------------------------------------------------------------------------------------------
+// « Vitrine noire » — plaque noire de vitrine (29 oct. 2026, d'après le modèle fourni par le
+// propriétaire) : « Salon × Salon DZ » en tête, « Réservation RDV » en très gros, QR, lien, puis
+// les réseaux du salon. Mise en page propre, distincte des autres modèles.
+// ---------------------------------------------------------------------------------------------
+
+/** Entretoise métallique de plaque en plexiglas, aux quatre coins. */
+function standoff(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  ctx.save();
+  const sh = ctx.createRadialGradient(x + r * 0.15, y + r * 0.25, r * 0.6, x + r * 0.15, y + r * 0.25, r * 1.5);
+  sh.addColorStop(0, 'rgba(0,0,0,0.55)');
+  sh.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sh;
+  ctx.beginPath();
+  ctx.arc(x + r * 0.15, y + r * 0.25, r * 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  const g = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+  g.addColorStop(0, '#F4F5F6');
+  g.addColorStop(0.45, '#9EA2A6');
+  g.addColorStop(0.55, '#C9CCCF');
+  g.addColorStop(1, '#5D6165');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  // Brossage concentrique
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = r * 0.02;
+  for (let k = 0.2; k < 1; k += 0.12) {
+    ctx.beginPath();
+    ctx.arc(x, y, r * k, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  const hl = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, 0, x - r * 0.35, y - r * 0.4, r * 0.9);
+  hl.addColorStop(0, 'rgba(255,255,255,0.75)');
+  hl.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hl;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
+ * Pastilles des réseaux, façon icône d'application : tuile aux couleurs de la marque et glyphe
+ * officiel (`@salondz/constants`, mêmes tracés que `components/BrandIcons.tsx`). Aucune image
+ * distante : le rendu ne dépend d'aucun serveur.
+ */
+function socialIcon(ctx: CanvasRenderingContext2D, id: LabelSocialId, x: number, y: number, s: number) {
+  ctx.save();
+  roundRect(ctx, x, y, s, s, s * 0.24);
+  const glyph = (d: string, color: string, k: number, dx = 0, dy = 0) => {
+    ctx.save();
+    const g = s * k;
+    ctx.translate(x + (s - g) / 2 + dx, y + (s - g) / 2 + dy);
+    ctx.scale(g / 24, g / 24);
+    ctx.fillStyle = color;
+    ctx.fill(new Path2D(d));
+    ctx.restore();
+  };
+  if (id === 'instagram') {
+    const g = ctx.createLinearGradient(x, y + s, x + s, y);
+    for (const st of INSTAGRAM_GRADIENT) g.addColorStop(Number(st.offset), st.color);
+    ctx.fillStyle = g;
+    ctx.fill();
+    glyph(INSTAGRAM_PATH, '#FFFFFF', 0.62);
+  } else if (id === 'facebook') {
+    ctx.fillStyle = FACEBOOK_COLOR;
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 ${s * 0.86}px ${SANS}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('f', x + s * 0.56, y + s * 1.0);
+  } else if (id === 'snapchat') {
+    ctx.fillStyle = SNAPCHAT_COLOR;
+    ctx.fill();
+    ctx.save();
+    const g = s * 0.64;
+    ctx.translate(x + (s - g) / 2, y + (s - g) / 2);
+    ctx.scale(g / 24, g / 24);
+    const path = new Path2D(SNAPCHAT_PATH);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill(path);
+    ctx.strokeStyle = '#111214';
+    ctx.lineWidth = 1.1;
+    ctx.lineJoin = 'round';
+    ctx.stroke(path);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = '#111214';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = s * 0.02;
+    ctx.stroke();
+    const k = 0.58;
+    const f = (s * k) / 24;
+    glyph(TIKTOK_PATH, TIKTOK_CYAN, k, TIKTOK_CYAN_OFFSET.x * f, TIKTOK_CYAN_OFFSET.y * f);
+    glyph(TIKTOK_PATH, TIKTOK_RED, k, TIKTOK_RED_OFFSET.x * f, TIKTOK_RED_OFFSET.y * f);
+    glyph(TIKTOK_PATH, '#FFFFFF', k);
+  }
+  ctx.restore();
+}
+
+async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HTMLCanvasElement> {
+  const { w: W, h: H } = LABEL_SIZES[format];
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d');
+  if (!ctx) throw new Error('canvas');
+  const u = W / 1000;
+  const cx = W / 2;
+  const square = format === 'carre';
+
+  // Fond noir mat, très légèrement éclairé au centre
+  ctx.fillStyle = '#050506';
+  ctx.fillRect(0, 0, W, H);
+  const glow = ctx.createRadialGradient(cx, H * 0.42, 0, cx, H * 0.42, Math.max(W, H) * 0.75);
+  glow.addColorStop(0, '#17181A');
+  glow.addColorStop(1, '#050506');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  const sr = (square ? 26 : 28) * u;
+  const so = (square ? 62 : 66) * u;
+  standoff(ctx, so, so, sr);
+  standoff(ctx, W - so, so, sr);
+  standoff(ctx, so, H - so, sr);
+  standoff(ctx, W - so, H - so, sr);
+
+  const socials = (input.socials ?? []).filter((x) => x.shown && x.handle.trim());
+  const at = (f: number) => H * f;
+  // Repères verticaux (fraction de la hauteur) ; sans réseaux, le bloc central descend un peu.
+  const shift = socials.length ? 0 : square ? 0.05 : 0.05;
+  const Y = square
+    ? { head: 0.14, title: 0.27 + shift, sub: 0.32 + shift, qr: 0.36 + shift, qrSize: 0.23, link: 0.66 + shift, rule: 0.745, icons: 0.772, handles: 0.884 }
+    : { head: 0.165, title: 0.345 + shift, sub: 0.388 + shift, qr: 0.428 + shift, qrSize: 0.25, link: 0.664 + shift, rule: 0.745, icons: 0.772, handles: 0.848 };
+
+  // En-tête : « Nom du salon × Salon DZ » sur une ligne, sinon le nom au-dessus.
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#FFFFFF';
+  const headMax = 820 * u;
+  const brandPx = (square ? 44 : 46) * u;
+  ctx.font = `700 ${brandPx}px ${SANS}`;
+  const wSalon = ctx.measureText('Salon').width;
+  ctx.font = `600 ${brandPx}px ${SANS}`;
+  const wDz = ctx.measureText('DZ').width;
+  const brandW = wSalon + brandPx * 0.2 + wDz;
+  const xPx = brandPx * 0.7;
+  ctx.font = `400 ${xPx}px ${SANS}`;
+  const xW = ctx.measureText('x').width;
+  const gap = brandPx * 0.6;
+  const drawBrand = (x0: number, y: number) => {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 ${brandPx}px ${SANS}`;
+    ctx.fillText('Salon', x0, y);
+    ctx.fillStyle = '#9A9DA1';
+    ctx.font = `600 ${brandPx}px ${SANS}`;
+    ctx.fillText('DZ', x0 + wSalon + brandPx * 0.2, y);
+  };
+  const nameFont = (px: number) => `700 ${px}px ${SANS}`;
+  const oneLineMax = headMax - brandW - xW - gap * 2;
+  ctx.font = nameFont(brandPx);
+  if (ctx.measureText(input.name).width <= oneLineMax) {
+    const nameW = ctx.measureText(input.name).width;
+    const total = nameW + gap + xW + gap + brandW;
+    let x0 = cx - total / 2;
+    const y = at(Y.head);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(input.name, x0, y);
+    x0 += nameW + gap;
+    ctx.fillStyle = '#8D9094';
+    ctx.font = `400 ${xPx}px ${SANS}`;
+    ctx.fillText('x', x0, y);
+    drawBrand(x0 + xW + gap, y);
+  } else {
+    const fitted = fitLines(ctx, input.name, nameFont, brandPx * 1.15, 30 * u, headMax, 2);
+    ctx.font = nameFont(fitted.px);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    let y = at(Y.head) - fitted.px * 0.55 * fitted.rows.length;
+    for (const row of fitted.rows) {
+      ctx.fillText(row, cx, y);
+      y += fitted.px * 1.05;
+    }
+    y += brandPx * 0.25;
+    const total = xW + gap + brandW;
+    const x0 = cx - total / 2;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8D9094';
+    ctx.font = `400 ${xPx}px ${SANS}`;
+    ctx.fillText('x', x0, y);
+    drawBrand(x0 + xW + gap, y);
+  }
+
+  // Titre
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFFFFF';
+  const title = fitLines(ctx, 'Réservation RDV', (px) => `700 ${px}px ${SANS}`, (square ? 100 : 118) * u, 60 * u, 700 * u, 1);
+  ctx.font = `700 ${title.px}px ${SANS}`;
+  ctx.fillText(title.rows[0]!, cx, at(Y.title));
+  ctx.font = `400 ${(square ? 31 : 33) * u}px ${SANS}`;
+  ctx.fillStyle = '#E6E7E9';
+  ctx.fillText('Scannez le QR Code ou l’application', cx, at(Y.sub));
+
+  // QR noir sur pavé blanc : un QR inversé (blanc sur noir) n'est pas lu par tous les téléphones.
+  const qr = W * Y.qrSize;
+  const qy = at(Y.qr);
+  const pad = qr * 0.07;
+  ctx.fillStyle = '#FFFFFF';
+  roundRect(ctx, cx - qr / 2 - pad, qy - pad, qr + 2 * pad, qr + 2 * pad, pad * 0.5);
+  ctx.fill();
+  await drawQr(ctx, input.url, cx - qr / 2, qy, qr);
+
+  // Lien
+  ctx.fillStyle = '#FFFFFF';
+  const link = fitLines(ctx, input.short, (px) => `700 ${px}px ${SANS}`, (square ? 36 : 38) * u, 22 * u, 820 * u, 1);
+  ctx.font = `700 ${link.px}px ${SANS}`;
+  ctx.textAlign = 'center';
+  ctx.fillText(link.rows[0]!, cx, at(Y.link));
+
+  // Réseaux
+  if (socials.length) {
+    const label = 'Suivez-nous sur les réseaux';
+    ctx.font = `400 ${(square ? 27 : 29) * u}px ${SANS}`;
+    ctx.fillStyle = '#E6E7E9';
+    const ry = at(Y.rule);
+    ctx.fillText(label, cx, ry);
+    const lw = ctx.measureText(label).width;
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 2 * u;
+    const lineY = ry - 10 * u;
+    const span = 160 * u;
+    ctx.beginPath();
+    ctx.moveTo(cx - lw / 2 - 24 * u - span, lineY);
+    ctx.lineTo(cx - lw / 2 - 24 * u, lineY);
+    ctx.moveTo(cx + lw / 2 + 24 * u, lineY);
+    ctx.lineTo(cx + lw / 2 + 24 * u + span, lineY);
+    ctx.stroke();
+
+    const n = socials.length;
+    const colW = Math.min(205 * u, (860 * u) / n);
+    const s = (square ? 66 : 68) * u;
+    const x0 = cx - (colW * n) / 2;
+    socials.forEach((so2, i) => {
+      const ccx = x0 + colW * (i + 0.5);
+      socialIcon(ctx, so2.id, ccx - s / 2, at(Y.icons), s);
+      ctx.fillStyle = '#FFFFFF';
+      const h = fitLines(ctx, so2.handle, (px) => `600 ${px}px ${SANS}`, (square ? 24 : 24) * u, 14 * u, colW - 10 * u, 1);
+      ctx.font = `600 ${h.px}px ${SANS}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(h.rows[0]!, ccx, at(Y.handles));
+    });
+  }
+  return c;
+}
+
 export async function renderLabel(template: LabelTemplateId, format: LabelFormat, input: LabelInput): Promise<HTMLCanvasElement> {
   await ensureFonts();
+  if (template === 'vitrine') return renderVitrine(format, input);
   const { w: W, h: H } = LABEL_SIZES[format];
   const c = document.createElement('canvas');
   c.width = W;

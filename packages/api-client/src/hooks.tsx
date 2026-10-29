@@ -632,6 +632,23 @@ export const useLabelSettings = (enabled = true) => {
   const { api } = useApi();
   return useQuery({ queryKey: ['label-settings'], queryFn: () => api.me.labelSettings(), staleTime: 5 * 60_000, enabled });
 };
+/** Réseaux de l'étiquette « Vitrine noire » du salon (pro), ou d'un salon donné (administration). */
+export const useLabelSocials = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'label-socials'], queryFn: () => api.pro.labelSocials(), staleTime: 5 * 60_000, enabled });
+};
+export const useAdminSalonLabelSocials = (salonId: string | null) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['admin', 'label-socials', salonId], queryFn: () => api.admin.salonLabelSocials(salonId!), staleTime: 30_000, enabled: !!salonId });
+};
+export function useSaveLabelSocials() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof api.pro.saveLabelSocials>[0]) => api.pro.saveLabelSocials(body),
+    onSuccess: (data) => qc.setQueryData(['pro', 'label-socials'], data),
+  });
+}
 export const useAdminLabelSettings = (enabled = true) => {
   const { api } = useApi();
   return useQuery({ queryKey: ['admin', 'label-settings'], queryFn: () => api.admin.labelSettings(), staleTime: 30_000, enabled });

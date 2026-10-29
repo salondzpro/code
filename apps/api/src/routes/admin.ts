@@ -21,7 +21,7 @@ import { badRequest, notFound, unwrap } from '../lib/errors';
 import { camelize, snakeize } from '../lib/mappers';
 import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
-import { readLabelSettings, writeLabelSettings } from '../lib/labelSettings';
+import { readLabelSettings, readLabelSocials, writeLabelSettings } from '../lib/labelSettings';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
 
@@ -470,6 +470,8 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
    * la PLATEFORME, pas d'un salon : niveau `owner`, et une ligne au journal comme toute écriture.
    */
   app.get('/label-settings', async () => readLabelSettings());
+  // Réseaux saisis par le professionnel, pour lui imprimer la même étiquette « Vitrine noire ».
+  app.get('/salons/:id/label-socials', { schema: { params: z.object({ id: uuid }) } }, async (req) => readLabelSocials(req.params.id));
   app.put(
     '/label-settings',
     {

@@ -8,15 +8,26 @@
  * « Nude »), puis ceux qui conviennent à tous ; le modèle par défaut de la plateforme est présélectionné
  * quand il convient au salon.
  */
-import { useEffect, useMemo, useState } from 'react';
-import { Check, Download } from 'lucide-react';
-import { LABEL_TEMPLATES, type LabelFormat, type LabelTemplateId } from '@salondz/constants';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, Download, Loader2 } from 'lucide-react';
+import { FacebookLogo, InstagramLogo, SnapchatLogo, TikTokLogo } from './BrandIcons';
+import {
+  LABEL_SOCIAL_MAX,
+  LABEL_SOCIAL_NAMES,
+  LABEL_TEMPLATES,
+  normalizeLabelSocials,
+  type LabelFormat,
+  type LabelSocial,
+  type LabelSocialId,
+  type LabelTemplateId,
+} from '@salondz/constants';
 import { LABEL_SIZES, downloadLabel, labelPng, renderLabel, type LabelInput } from '@/lib/labels';
-import { Button, I, Segmented } from './ui';
+import { Button, I, Segmented, Toggle } from './ui';
 import { t } from '@/i18n';
 
 /** Deux couleurs par modèle, pour le reconnaître avant même l'aperçu. */
 const SWATCH: Record<LabelTemplateId, [string, string]> = {
+  vitrine: ['#050506', '#FFFFFF'],
   elegance: ['#F5DFE7', '#B83D6E'],
   nude: ['#EADFD2', '#A47A45'],
   noir: ['#141517', '#C8A15A'],
@@ -31,8 +42,14 @@ export function LabelStudio({
   allowed,
   defaultId,
   filename,
+  socials: initialSocials,
+  onSaveSocials,
 }: {
   input: LabelInput;
+  /** Réseaux enregistrés pour le salon (modèle « Vitrine noire »). */
+  socials?: LabelSocial[];
+  /** Enregistre les réseaux ; absent (administration) : modifiables pour l'aperçu seulement. */
+  onSaveSocials?: (s: LabelSocial[]) => Promise<unknown>;
   /** Modèles proposés (réglage de la plateforme). */
   allowed: readonly LabelTemplateId[];
   defaultId: LabelTemplateId;
@@ -41,8 +58,9 @@ export function LabelStudio({
 }) {
   const audience = input.audience === 'women' ? 'women' : input.audience === 'men' ? 'men' : 'all';
   const list = useMemo(() => {
-    const rank = (a: string) => (a === audience ? 0 : a === 'all' ? 1 : 2);
-    return LABEL_TEMPLATES.filter((x) => allowed.includes(x.id)).sort((a, b) => rank(a.audience) - rank(b.audience));
+    // « Vitrine noire » en tête, puis les modèles du public du salon, puis ceux pour tous.
+    const rank = (x: (typeof LABEL_TEMPLATES)[number]) => (x.id === 'vitrine' ? -1 : x.audience === audience ? 0 : x.audience === 'all' ? 1 : 2);
+    return LABEL_TEMPLATES.filter((x) => allowed.includes(x.id)).sort((a, b) => rank(a) - rank(b));
   }, [allowed, audience]);
   const initial = list.find((x) => x.id === defaultId && (x.audience === 'all' || x.audience === audience))?.id ?? list[0]?.id ?? 'minimal';
   const [tpl, setTpl] = useState<LabelTemplateId>(initial);
@@ -56,6 +74,23 @@ export function LabelStudio({
 
   useEffect(() => setTpl(initial), [initial]);
 
+  // Réseaux : saisie locale immédiate, aperçu redessiné après une courte pause de frappe.
+  const [socials, setSocials] = useState<LabelSocial[]>(() => normalizeLabelSocials(initialSocials));
+  // Les réseaux enregistrés arrivent UNE fois par salon (`filename` le désigne) : après, la saisie
+  // locale fait foi — sinon chaque enregistrement réécrasait le champ voisin en cours de frappe.
+  const loadedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!initialSocials || loadedFor.current === filename) return;
+    loadedFor.current = filename;
+    setSocials(normalizeLabelSocials(initialSocials));
+  }, [initialSocials, filename]);
+  const [drawnSocials, setDrawnSocials] = useState(socials);
+  useEffect(() => {
+    const id = window.setTimeout(() => setDrawnSocials(socials), 350);
+    return () => window.clearTimeout(id);
+  }, [socials]);
+  const socialsKey = tpl === 'vitrine' ? JSON.stringify(drawnSocials) : '';
+
   useEffect(() => {
     let alive = true;
     setRendering(true);
@@ -63,7 +98,7 @@ export function LabelStudio({
     setResult(null);
     (async () => {
       try {
-        const canvas = await renderLabel(tpl, format, input);
+        const canvas = await renderLabel(tpl, format, { ...input, socials: drawnSocials });
         const blob = await labelPng(canvas);
         if (!alive) return;
         setPreview((old) => {
@@ -81,7 +116,7 @@ export function LabelStudio({
     };
     // `input` est recréé à chaque rendu chez l'appelant : on suit son CONTENU.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tpl, format, input.name, input.url, input.short, input.logoUrl, (input.categoryIds ?? []).join(','), input.audience]);
+  }, [tpl, format, input.name, input.url, input.short, input.logoUrl, (input.categoryIds ?? []).join(','), input.audience, socialsKey]);
 
   const size = LABEL_SIZES[format];
   const telecharger = async () => {
@@ -131,6 +166,8 @@ export function LabelStudio({
         ))}
       </div>
 
+      {tpl === 'vitrine' && <SocialsEditor value={socials} onChange={setSocials} onSave={onSaveSocials} />}
+
       <div className="lbl-stage" style={{ aspectRatio: `${size.w} / ${size.h}` }}>
         {preview && <img src={preview.url} alt={t('Aperçu de l’étiquette')} className={rendering ? 'opacity-60' : ''} />}
         {!preview && !failed && <div className="sk h-full w-full" />}
@@ -154,5 +191,99 @@ export function LabelStudio({
         </p>
       )}
     </div>
+  );
+}
+
+const SOCIAL_ICONS: Record<LabelSocialId, (p: { size?: number }) => React.ReactElement> = { instagram: InstagramLogo, facebook: FacebookLogo, snapchat: SnapchatLogo, tiktok: TikTokLogo };
+const PLACEHOLDER: Record<LabelSocialId, string> = {
+  instagram: '@votrecompte',
+  facebook: 'Nom de la page',
+  snapchat: 'votrecompte',
+  tiktok: '@votrecompte',
+};
+
+/**
+ * Réseaux imprimés en bas de la « Vitrine noire » : un nom par réseau et un interrupteur « Afficher ».
+ * Enregistré en quittant le champ ou en basculant l'interrupteur (comme les notes d'une fiche
+ * client), avec l'état sur la ligne même.
+ */
+function SocialsEditor({
+  value,
+  onChange,
+  onSave,
+}: {
+  value: LabelSocial[];
+  onChange: (v: LabelSocial[]) => void;
+  onSave?: (v: LabelSocial[]) => Promise<unknown>;
+}) {
+  const [state, setState] = useState<Partial<Record<LabelSocialId, 'saving' | 'saved' | 'error'>>>({});
+  const saved = useRef(JSON.stringify(value));
+
+  const persist = async (next: LabelSocial[], id: LabelSocialId) => {
+    if (!onSave) return;
+    const key = JSON.stringify(next);
+    if (key === saved.current) return;
+    setState((s) => ({ ...s, [id]: 'saving' }));
+    try {
+      await onSave(next);
+      saved.current = key;
+      setState((s) => ({ ...s, [id]: 'saved' }));
+    } catch {
+      setState((s) => ({ ...s, [id]: 'error' }));
+    }
+  };
+  const patch = (id: LabelSocialId, p: Partial<LabelSocial>) => value.map((x) => (x.id === id ? { ...x, ...p } : x));
+
+  return (
+    <section className="crd !gap-0 !py-1" aria-label={t('Vos réseaux sur l’affiche')}>
+      <div className="px-3 pb-1 pt-2">
+        <span className="block text-[1rem] font-semibold">{t('Vos réseaux sur l’affiche')}</span>
+        <span className="p block text-[0.857rem]">{t('Saisissez vos comptes, puis choisissez ceux qui figurent sur l’affiche.')}</span>
+      </div>
+      {value.map((sx) => {
+        const st = state[sx.id];
+        const Logo = SOCIAL_ICONS[sx.id];
+        return (
+          <div key={sx.id} className="li !gap-3">
+            <span className="flex-none" aria-hidden>
+              <Logo size={28} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="text-[0.786rem] font-medium text-muted">{LABEL_SOCIAL_NAMES[sx.id]}</span>
+              <input
+                className="inp !py-2"
+                dir="ltr"
+                value={sx.handle}
+                maxLength={LABEL_SOCIAL_MAX}
+                placeholder={t(PLACEHOLDER[sx.id])}
+                aria-label={t('Compte {name}', { name: LABEL_SOCIAL_NAMES[sx.id] })}
+                onChange={(e) => {
+                  const handle = e.target.value;
+                  // Saisir un nom l'affiche d'office ; le vider le retire.
+                  onChange(patch(sx.id, { handle, shown: handle.trim() ? sx.shown || !sx.handle.trim() : false }));
+                  setState((s) => ({ ...s, [sx.id]: undefined }));
+                }}
+                onBlur={() => void persist(value, sx.id)}
+              />
+              {st === 'error' && <span className="text-[0.786rem] text-danger">{t('Non enregistré. Réessayez.')}</span>}
+            </span>
+            <span className="flex w-[1.25rem] flex-none justify-center" aria-live="polite">
+              {st === 'saving' && <I icon={Loader2} size={16} className="animate-spin text-muted" />}
+              {st === 'saved' && <I icon={Check} size={16} className="text-ok-fg" />}
+            </span>
+            <Toggle
+              on={sx.shown}
+              disabled={!sx.handle.trim()}
+              label={t('Afficher {name} sur l’affiche', { name: LABEL_SOCIAL_NAMES[sx.id] })}
+              onChange={(on) => {
+                const next = patch(sx.id, { shown: on });
+                onChange(next);
+                void persist(next, sx.id);
+              }}
+            />
+          </div>
+        );
+      })}
+    </section>
   );
 }

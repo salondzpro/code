@@ -25,6 +25,7 @@ import {
   toLocalDateKey,
   REVIEW_SUMMARY_MIN_REVIEWS,
   DEFAULT_LABEL_SETTINGS,
+  normalizeLabelSocials,
 } from '@salondz/constants';
 import type { Booking, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
 import { availableSlots, clientKeyOf, clientStanding, concerns, dashboardStats, daysUntilMax, hm, nextAvailability, proClients, statsRange, summary, unaccent } from './engine';
@@ -605,6 +606,14 @@ on('PATCH', '/pro/salon', (c) => {
   for (const [k, v] of Object.entries(rest)) if (v !== undefined && k !== 'slug' && k !== 'id' && k !== 'ownerId') (s as unknown as Record<string, unknown>)[k] = v;
   if (categoryIds) s.categoryIds = [...categoryIds].sort();
   return ok(touch(c.w, s));
+});
+// Réseaux de l'étiquette « Vitrine noire » : gardés le temps de la session de démonstration.
+const demoSocials = new Map<string, ReturnType<typeof normalizeLabelSocials>>();
+on('GET', '/pro/label-socials', (c) => ok(demoSocials.get(ownedSalon(c).id) ?? normalizeLabelSocials([])));
+on('PUT', '/pro/label-socials', (c) => {
+  const v = normalizeLabelSocials(c.body as unknown);
+  demoSocials.set(ownedSalon(c).id, v);
+  return ok(v);
 });
 on('PUT', '/pro/salon/photos', (c) => {
   const s = ownedSalon(c);

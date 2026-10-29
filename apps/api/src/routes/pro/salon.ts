@@ -5,6 +5,8 @@ import {
   toLocalDateKey,
   weekKeys,
   addDaysToKey,
+  LABEL_SOCIAL_IDS,
+  LABEL_SOCIAL_MAX,
 } from '@salondz/constants';
 import {
   createSalonSchema,
@@ -22,6 +24,7 @@ import { snakeize } from '../../lib/mappers';
 import { loadOwnerView } from '../../lib/queries';
 import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon } from '../../plugins/auth';
+import { readLabelSocials, writeLabelSocials } from '../../lib/labelSettings';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -93,6 +96,24 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.status(201);
       return loadOwnerView(created.id);
     },
+  );
+
+  // Réseaux sociaux de l'étiquette « Vitrine noire » (atelier d'étiquettes, `/pro/qr`).
+  app.get('/label-socials', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-cache');
+    return readLabelSocials(req.salon!.id);
+  });
+  app.put(
+    '/label-socials',
+    {
+      preHandler: app.requireSalon,
+      schema: {
+        body: z
+          .array(z.object({ id: z.enum(LABEL_SOCIAL_IDS), handle: z.string().trim().max(LABEL_SOCIAL_MAX), shown: z.boolean() }))
+          .max(LABEL_SOCIAL_IDS.length),
+      },
+    },
+    async (req) => writeLabelSocials(req.salon!.id, req.body),
   );
 
   app.patch(

@@ -1,4 +1,4 @@
-import type { LabelSettings } from '@salondz/constants';
+import type { LabelSettings, LabelSocial } from '@salondz/constants';
 import type {
   ApiErrorBody,
   AvailabilityResponse,
@@ -529,6 +529,9 @@ export function createApiClient(opts: ApiClientOptions) {
         post<void>(`/reviews/${id}/report`, body),
     },
     pro: {
+      /** Réseaux sociaux de l'étiquette « Vitrine noire ». */
+      labelSocials: () => get<LabelSocial[]>('/pro/label-socials'),
+      saveLabelSocials: (body: LabelSocial[]) => put<LabelSocial[]>('/pro/label-socials', body),
       salon: () => get<ProSalonResponse>('/pro/salon'),
       createSalon: (body: CreateSalonInput) => post<SalonOwnerView>('/pro/salon', body),
       updateSalon: (body: UpdateSalonInput) => patch<SalonOwnerView>('/pro/salon', body),
@@ -661,6 +664,7 @@ export function createApiClient(opts: ApiClientOptions) {
       /** Modèles d'étiquettes proposés aux professionnels (réglage de la plateforme, niveau owner pour écrire). */
       labelSettings: () => get<LabelSettings>('/admin/label-settings'),
       saveLabelSettings: (body: LabelSettings) => put<LabelSettings>('/admin/label-settings', body),
+      salonLabelSocials: (salonId: string) => get<LabelSocial[]>(`/admin/salons/${salonId}/label-socials`),
 
       /**
        * Agir (lot 2). Chaque geste porte un MOTIF et laisse une ligne au journal : une suspension
