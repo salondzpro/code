@@ -7,14 +7,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import {
   ArrowLeft,
-  Banknote,
+  Calendar,
   CalendarClock,
-  CalendarDays,
   MessageCircle,
   Navigation,
   Phone,
   RotateCcw,
-  Scissors,
   Star,
   StickyNote,
   UserRound,
@@ -41,7 +39,6 @@ import {
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
-  Avatar,
   BottomSheet,
   Button,
   I,
@@ -53,10 +50,10 @@ import {
 import { Screen } from '@/components/AppFrame';
 import { PickerField } from '@/components/Picker';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { LateRule } from '@/components/LateRule';
+import { BookingSummary } from '@/components/BookingSummary';
 import { FactRow } from '@/components/BookingFacts';
 import { PageLoading } from '@/components/PageLoading';
-import { GoogleCalendarButton } from './BookingConfirmed';
+import { googleCalendarUrl } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
 import { t } from '@/i18n';
 
@@ -177,101 +174,81 @@ export function BookingDetail() {
     );
   }
 
-  const dayKey = toLocalDateKey(new Date(b.startsAt));
-  const dayLabel = relativeDayLabelDZ(dayKey);
-  const dateLong = formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase());
   const address = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
 
   return (
     <Screen className="h-app" gap={12}>
       <TopBar backTo="/rendez-vous" />
-      {/* Où : le salon et son adresse, l'état de la réservation, de quoi le joindre. */}
-      <div className="crd !gap-3">
-        <div className="flex items-center gap-3.5">
-          <Avatar src={b.salon.logoUrl ?? b.salon.coverUrl} name={b.salon.name} size={56} />
-          <span className="min-w-0 flex-1">
-            <h1 className="h1 truncate !text-[1.429rem]">{b.salon.name}</h1>
-            <span className="block truncate text-[0.857rem] text-muted">
-              {address || b.salon.city}
-            </span>
-          </span>
-          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
-        </div>
-        {/* Validation manuelle : le créneau est bloqué pour les autres tant que le salon n'a pas répondu, et
-            la demande expire d'elle-même (le client est prévenu, le créneau libéré). */}
-        {b.status === 'pending' && (
-          <InfoBox>
-            {t('Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).', {
-              when: formatDeadline(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())),
-            })}
-          </InfoBox>
-        )}
-        {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-          <div className="g2">
-            <a href={`tel:${b.salon.phone}`} className="btn g sm">
-              <I icon={Phone} size={18} /> {t("Appeler")}
-            </a>
-            {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-                <I icon={MessageCircle} size={18} /> {t("WhatsApp")}
-              </a>
+      {/* Une seule carte : le salon en tête avec l'état, puis quand, quoi, combien (`BookingSummary`). */}
+      <BookingSummary
+        salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl, area: address || b.salon.city }}
+        status={b.status}
+        cancelledBy={b.cancelledBy}
+        cancellationKind={b.cancellationKind}
+        startsAt={b.startsAt}
+        endsAt={b.endsAt}
+        lines={
+          b.items?.length
+            ? b.items.map((it) => ({ id: it.id, name: it.serviceName, minutes: it.durationMinutes, priceDa: it.priceDa }))
+            : [{ id: b.id, name: b.serviceName, minutes: b.durationMinutes, priceDa: b.priceDa }]
+        }
+        staffName={b.staff?.displayName}
+        priceDa={b.priceDa}
+        payNote={t('Paiement sur place')}
+        showLate={active}
+        muted={!active}
+        extra={
+          <>
+            {/* Pris pour quelqu'un d'autre, ou par quelqu'un d'autre : sans cette ligne, on ne
+                sait pas de quel rendez-vous il s'agit ni pourquoi il est là. */}
+            {forSomeoneElse && (
+              <FactRow icon={UserRound} title={`Pour ${b.clientName}`} sub="À son nom, avec ses règles" />
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Quoi, quand, avec qui, combien : une ligne par fait — même lecture que la fiche pro. */}
-      <div className="crd !gap-0 !py-1">
-        <FactRow
-          icon={CalendarDays}
-          title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : `${dayLabel} · ${dateLong}`}
-          sub={`${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)} · ${formatDuration(b.durationMinutes)}`}
-          right={
-            <span
-              className={`mono text-[1.429rem] font-semibold tracking-[-0.5px] ${active ? '' : 'text-muted'}`}
-            >
-              {formatTimeDZ(b.startsAt)}
-            </span>
-          }
-        />
-        {lines.map((it) => (
-          <FactRow
-            key={it.id}
-            icon={Scissors}
-            title={it.serviceName}
-            sub={it.durationMinutes ? formatDuration(it.durationMinutes) : undefined}
-            right={
-              lines.length > 1 ? (
-                <span className="text-[1rem] font-semibold">{formatDA(it.priceDa)}</span>
-              ) : undefined
-            }
-          />
-        ))}
-        {b.staff?.displayName && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
-        <FactRow icon={Banknote} title={formatDA(b.priceDa)} sub="Paiement sur place" />
-        {/* Pris pour quelqu'un d'autre, ou par quelqu'un d'autre : sans cette ligne, on ne
-            sait pas de quel rendez-vous il s'agit ni pourquoi il est là. */}
-        {forSomeoneElse && (
-          <FactRow icon={UserRound} title={`Pour ${b.clientName}`} sub="À son nom, avec ses règles" />
-        )}
-        {!forSomeoneElse && !!b.bookedByName && (
-          <FactRow icon={UserRound} title={`Réservé par ${b.bookedByName}`} />
-        )}
-        {b.notes && <FactRow icon={StickyNote} title={t("Votre note")} sub={`« ${b.notes} »`} />}
-        {b.cancellationReason && (
-          <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
-        )}
-      </div>
-      {active && <LateRule startsAt={b.startsAt} />}
+            {!forSomeoneElse && !!b.bookedByName && (
+              <FactRow icon={UserRound} title={`Réservé par ${b.bookedByName}`} />
+            )}
+            {b.notes && <FactRow icon={StickyNote} title={t("Votre note")} sub={`« ${b.notes} »`} />}
+            {b.cancellationReason && (
+              <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
+            )}
+          </>
+        }
+      />
+      {/* Validation manuelle : le créneau est bloqué pour les autres tant que le salon n'a pas répondu, et
+          la demande expire d'elle-même (le client est prévenu, le créneau libéré). */}
+      {b.status === 'pending' && (
+        <InfoBox>
+          {t('Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).', {
+            when: formatDeadline(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())),
+          })}
+        </InfoBox>
+      )}
+      {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
+        <div className="g2">
+          <a href={`tel:${b.salon.phone}`} className="btn g sm">
+            <I icon={Phone} size={18} /> {t("Appeler")}
+          </a>
+          {wa && (
+            <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
+              <I icon={MessageCircle} size={18} /> {t("WhatsApp")}
+            </a>
+          )}
+        </div>
+      )}
       <div className="flex flex-col gap-2.5">
         {active && (
-          <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g">
-            <I icon={Navigation} size={18} /> {t("Itinéraire")}
-          </a>
+          <div className="g2">
+            <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
+              <I icon={Navigation} size={18} /> {t("Itinéraire")}
+            </a>
+            <a href={googleCalendarUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
+              <I icon={Calendar} size={18} /> {t("Calendrier")}
+            </a>
+          </div>
         )}
         {canReschedule && (
           <div className="g2">
-            <Link to={`/rendez-vous/${b.id}/reporter`} className="btn g">
+            <Link to={`/rendez-vous/${b.id}/reporter`} className="btn g sm">
               <I icon={CalendarClock} size={18} /> {t("Reporter")}
             </Link>
             <Button variant="d" onClick={() => setCancelling(true)}>
@@ -304,7 +281,6 @@ export function BookingDetail() {
             {t("Merci ! Vous avez noté ce rendez-vous")}{' '}{b.reviewRating}{t("/5. Votre avis est visible sur la page du salon.")}
           </InfoBox>
         )}
-        {active && <GoogleCalendarButton booking={b} />}
       </div>
 
       {cancelling && (

@@ -10,7 +10,7 @@
  */
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { BellRing, ChevronDown } from 'lucide-react';
+import { BellRing, ChevronDown, Pencil } from 'lucide-react';
 import { ErrorState } from '@/components/ErrorMessage';
 import { useMe, useSalon } from '@salondz/api-client';
 import { formatDA, formatDateLongDZ, formatTimeDZ } from '@salondz/constants';
@@ -134,6 +134,12 @@ export function BookingDetails() {
       return navigate(`/s/${slug}/reserver/recap`);
     }
 
+    const prof = me.data?.profile;
+    if (prof?.fullName && prof.phone) {
+      setErr(null);
+      writeDraft(slug, { forOther: false, otherName: '', otherPhone: '', name: prof.fullName, phone: prof.phone, notes: notes.trim() });
+      return navigate(`/s/${slug}/reserver/recap`);
+    }
     if (name.trim().length < 2) return setErr({ field: 'name', msg: t("Indiquez votre nom.") });
     const p = parse(digits);
     if (!p.success) return setErr({ field: 'phone', msg: bad });
@@ -150,6 +156,15 @@ export function BookingDetails() {
   };
 
   const msg = (f: FieldName) => (err?.field === f ? err.msg : null);
+
+  // Pour moi : les coordonnées du COMPTE, affichées d'un coup d'œil. Le serveur réserve de toute
+  // façon au numéro du profil ; les changer se fait dans « Mes informations », d'où l'on revient ici.
+  const profil = me.data?.profile;
+  const compteComplet = !!profil?.fullName && !!profil?.phone;
+  const modifierCompte = () => {
+    writeDraft(slug, { notes: notes.trim() });
+    navigate(`/compte/informations?retour=${encodeURIComponent(`/s/${slug}/reserver/coordonnees`)}`);
+  };
 
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
@@ -194,6 +209,27 @@ export function BookingDetails() {
               error={msg('otherPhone')}
             />
           </>
+        ) : compteComplet ? (
+          <div className="crd !flex-row items-center gap-3 !p-3">
+            <span className="flex h-[2.75rem] w-[2.75rem] flex-none items-center justify-center rounded-full bg-fill text-[1rem] font-semibold" aria-hidden>
+              {(profil!.fullName ?? '').trim().charAt(0).toUpperCase()}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[1rem] font-semibold">{profil!.fullName}</span>
+              <span className="block text-[0.857rem] text-muted" dir="ltr" style={{ textAlign: 'start' }}>
+                +213 {groupLocalDigits((profil!.phone ?? '').replace(/^\+213/, ''))}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={modifierCompte}
+              className="flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] border border-line bg-surface"
+              aria-label={t('Modifier mon nom ou mon numéro')}
+              title={t('Modifier mon nom ou mon numéro')}
+            >
+              <I icon={Pencil} size={18} />
+            </button>
+          </div>
         ) : (
           <>
             <Field label={t("Nom et prénom")} htmlFor="bk-name" error={msg('name')}>

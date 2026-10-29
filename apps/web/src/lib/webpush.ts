@@ -133,7 +133,7 @@ export async function webSubscriptionActive(): Promise<boolean> {
  *   - `native` : l'application n'a pas obtenu de jeton du téléphone.
  */
 export type PushFailure = 'denied' | 'dismissed' | 'unsupported' | 'subscribe' | 'blocked' | 'server' | 'native';
-export type EnableResult = { ok: true } | { ok: false; reason: PushFailure };
+export type EnableResult = { ok: true } | { ok: false; reason: PushFailure; detail?: string; systemBlocked?: boolean };
 
 /** Signale aux écrans qu'il faut relire l'état (abonnement pris ou retiré ailleurs dans la page). */
 const notifyChange = () => window.dispatchEvent(new Event('salondz:push-state'));
@@ -145,9 +145,12 @@ const notifyChange = () => window.dispatchEvent(new Event('salondz:push-state'))
  */
 export async function enableWebPushDetailed(api: ApiClient): Promise<EnableResult> {
   if (nativeShell()) {
-    const { enableNativePush, nativePushPermission } = await import('./nativePush');
-    if (await enableNativePush(api)) return { ok: true };
-    return { ok: false, reason: (await nativePushPermission()) === 'denied' ? 'denied' : 'native' };
+    const { enableNativePushDetailed } = await import('./nativePush');
+    const r = await enableNativePushDetailed(api);
+    if (r.ok) return { ok: true };
+    if (r.reason === 'denied') return { ok: false, reason: 'denied', systemBlocked: r.systemBlocked };
+    if (r.reason === 'server') return { ok: false, reason: 'server' };
+    return { ok: false, reason: 'native', detail: r.detail };
   }
   if (!webPushSupported()) return { ok: false, reason: 'unsupported' };
   choixOff(false);

@@ -27,7 +27,10 @@ export const APP_ID: 'dz.salondz.app' | 'pro.salondz.app' = PRO_ONLY ? 'pro.salo
  * Le jeton n'arrive pas en retour d'appel mais par un événement : on attend le premier. Les deux
  * écouteurs sont RETIRÉS ensuite — chaque appel en posait deux de plus, pour toujours.
  */
-function firstToken(Push: PushPlugin, timeoutMs = 15_000): { ready: Promise<unknown>; value: Promise<string | null> } {
+/** Dernière erreur rendue par le système à l'inscription (affichée pour qu'on puisse la signaler). */
+let lastRegistrationError: string | null = null;
+
+function firstToken(Push: PushPlugin, timeoutMs = 20_000): { ready: Promise<unknown>; value: Promise<string | null> } {
   const handles: Promise<{ remove: () => Promise<void> }>[] = [];
   const value = new Promise<string | null>((resolve) => {
     let done = false;
@@ -38,58 +41,95 @@ function firstToken(Push: PushPlugin, timeoutMs = 15_000): { ready: Promise<unkn
       resolve(v);
     };
     handles.push(Push.addListener('registration', (t) => finish(t.value)));
-    handles.push(Push.addListener('registrationError', () => finish(null)));
-    setTimeout(() => finish(null), timeoutMs);
+    handles.push(
+      Push.addListener('registrationError', (e) => {
+        lastRegistrationError = String((e as { error?: unknown })?.error ?? 'inconnue');
+        finish(null);
+      }),
+    );
+    setTimeout(() => {
+      if (!done) lastRegistrationError = lastRegistrationError ?? 'délai dépassé';
+      finish(null);
+    }, timeoutMs);
   });
   // Les écouteurs doivent être POSÉS avant `register()` : sinon un jeton rendu très vite (déjà connu
   // du système) part avant qu'on l'écoute, et l'on attendait 15 s pour conclure à un échec.
   return { ready: Promise.all(handles), value };
 }
 
-/**
- * Demande la permission si besoin, puis enregistre le jeton côté API.
- * Retourne `true` seulement si l'appareil est désormais joignable.
- */
-export async function enableNativePush(api: ApiClient): Promise<boolean> {
-  try {
-    const { PushNotifications: Push } = await load();
-    const current = await Push.checkPermissions();
-    const status = current.receive === 'prompt' ? (await Push.requestPermissions()).receive : current.receive;
-    if (status !== 'granted') return false;
+/** Résultat détaillé : l'écran dit QUOI faire selon ce qui a manqué. */
+export type NativeEnableResult =
+  | { ok: true }
+  | { ok: false; reason: 'denied' | 'token' | 'server'; detail?: string; /** Le système ne pouvait plus demander : seuls ses réglages rouvrent. */ systemBlocked?: boolean };
+
+/** Le système peut-il encore afficher sa demande ? (`prompt-with-rationale` : Android après un premier refus.) */
+const canAsk = (r: string) => r === 'prompt' || r === 'prompt-with-rationale';
+
+async function obtenirJeton(Push: PushPlugin): Promise<string | null> {
+  // Deux essais : le premier jeton Firebase peut tarder sur un réseau lent ou un téléphone qui
+  // vient de démarrer ; un second `register()` le relance au lieu de conclure trop tôt à l'échec.
+  for (let essai = 0; essai < 2; essai++) {
+    lastRegistrationError = null;
     const token = firstToken(Push);
     await token.ready;
     await Push.register();
     const value = await token.value;
-    if (!value) return false;
+    if (value) return value;
+  }
+  return null;
+}
+
+/**
+ * Demande la permission si le système peut encore la demander (y compris APRÈS un premier refus
+ * sur Android), puis enregistre le jeton côté API.
+ */
+export async function enableNativePushDetailed(api: ApiClient): Promise<NativeEnableResult> {
+  try {
+    const { PushNotifications: Push } = await load();
+    const current = await Push.checkPermissions();
+    const status = canAsk(current.receive) ? (await Push.requestPermissions()).receive : current.receive;
+    if (status !== 'granted') return { ok: false, reason: 'denied', systemBlocked: !canAsk(current.receive) };
+    const value = await obtenirJeton(Push);
+    if (!value) return { ok: false, reason: 'token', detail: lastRegistrationError ?? undefined };
     // L'appareil dit lui-même ce qu'il est : un iPhone enregistré comme « android » se retrouverait
     // dans la mauvaise liste de la page Appareils, et le propriétaire ne saurait plus quoi révoquer.
     const { Capacitor } = await import('@capacitor/core');
     const ios = Capacitor.getPlatform() === 'ios';
-    await api.me.registerPushToken({
-      token: value,
-      platform: ios ? 'ios' : 'android',
-      deviceName: `${ios ? 'Application iPhone' : 'Application Android'}${PRO_ONLY ? ' Pro' : ''}`,
-      appId: APP_ID,
-    });
-    return true;
+    try {
+      await api.me.registerPushToken({
+        token: value,
+        platform: ios ? 'ios' : 'android',
+        deviceName: `${ios ? 'Application iPhone' : 'Application Android'}${PRO_ONLY ? ' Pro' : ''}`,
+        appId: APP_ID,
+      });
+    } catch {
+      return { ok: false, reason: 'server' };
+    }
+    return { ok: true };
   } catch (err) {
     console.warn('[push natif] enregistrement impossible', err);
-    return false;
+    return { ok: false, reason: 'token', detail: err instanceof Error ? err.message : undefined };
   }
 }
 
+/** Version simple : `true` seulement si l'appareil est désormais joignable. */
+export async function enableNativePush(api: ApiClient): Promise<boolean> {
+  return (await enableNativePushDetailed(api)).ok;
+}
+
 /**
- * Première entrée dans l'application : on DEMANDE la permission, une seule fois.
+ * À chaque ouverture de l'application : si les notifications ne sont pas accordées et que le
+ * système peut encore poser sa question (première fois, ou Android après un refus), on la REPOSE —
+ * au plus une fois tous les trois jours, pour ne pas harceler. Quand le système ne peut plus
+ * demander (iPhone après un refus, Android après deux), c'est le bandeau de l'application qui
+ * emmène dans les réglages du téléphone.
  *
  * Pourquoi : sans jeton natif, le serveur n'a que l'abonnement du NAVIGATEUR — et la personne
  * reçoit des notifications qui portent l'icône de Chrome et le nom du site, alors qu'elle a
- * l'application. C'est exactement ce qui a été constaté. Les notifications sont la raison d'être
- * de cette application : joindre un professionnel quand elle est fermée.
- *
- * Une seule demande par installation : si elle est refusée, on n'insiste jamais — le réglage reste
- * accessible dans l'écran Notifications.
+ * l'application. Les notifications sont la raison d'être de cette application.
  */
 const DEJA_DEMANDE = 'salondz:push:demande';
+const REDEMANDE_MS = 3 * 24 * 3600_000;
 
 export async function ensureNativePush(api: ApiClient): Promise<void> {
   try {
@@ -99,9 +139,10 @@ export async function ensureNativePush(api: ApiClient): Promise<void> {
       await enableNativePush(api);
       return;
     }
-    if (receive !== 'prompt') return; // refusée : on n'insiste pas
-    if (localStorage.getItem(DEJA_DEMANDE)) return;
-    localStorage.setItem(DEJA_DEMANDE, '1');
+    if (!canAsk(receive)) return; // le système ne peut plus demander : bandeau → réglages
+    const last = Number(localStorage.getItem(DEJA_DEMANDE) || 0);
+    if (last > 1 && Date.now() - last < REDEMANDE_MS) return;
+    localStorage.setItem(DEJA_DEMANDE, String(Date.now()));
     await enableNativePush(api);
   } catch {
     /* sans conséquence : l'application reste utilisable */

@@ -16,7 +16,10 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
-export function AccountInfo({ backTo = '/profil' }: { backTo?: string }) {
+export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string }) {
+  // `?retour=` : on vient d'un parcours (réservation) et l'on y revient après l'enregistrement.
+  const retour = new URLSearchParams(window.location.search).get('retour');
+  const backTo = retour && retour.startsWith('/s/') ? retour : defaut;
   const navigate = useNavigate();
   const { user } = useAuth();
   const me = useMe();

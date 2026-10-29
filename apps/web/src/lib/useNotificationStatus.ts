@@ -119,7 +119,17 @@ export function useNotificationStatus(): {
     try {
       const r = await enableWebPushDetailed(api);
       ok = r.ok;
-      if (!r.ok) setErreur(pushFailureText(r.reason, ctx));
+      if (!r.ok) {
+        // Application, permission refusée et le système ne peut plus poser sa question : on ouvre
+        // directement l'écran Notifications du téléphone au lieu de seulement l'expliquer.
+        if (r.reason === 'denied' && r.systemBlocked && (ctx === 'app-android' || ctx === 'app-ios')) {
+          const ouvert = await ouvrirReglagesNotifications().catch(() => false);
+          if (!ouvert) setErreur(pushFailureText(r.reason, ctx));
+        } else {
+          const texte = pushFailureText(r.reason, ctx);
+          setErreur(r.reason === 'native' && r.detail ? `${texte} (${r.detail})` : texte);
+        }
+      }
     } catch {
       setErreur(pushFailureText('server', ctx));
     } finally {

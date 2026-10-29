@@ -53,6 +53,14 @@ Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Ex
 - **QR dessiné module par module** (`drawQr`, tous les modèles) : modules arrondis, repères en carrés arrondis, « S » de la marque au centre (versions ≤ 6 seulement, sans motif d'alignement central), correction H, encre sur blanc. Vérifié au décodeur (jsQR) sur les 37 rendus, et encore lu réduit à 500 px de large et flouté.
 - Dans l'application, le PNG passe par `@capacitor/filesystem` + feuille de partage : greffon NATIF, il exige un nouveau binaire ; sans lui, consigne « appui long sur l'aperçu ».
 
+## Réservation client : récapitulatif ⇄ confirmation (29 oct. 2026)
+- **Une carte pour trois écrans** : `components/BookingSummary.tsx` (salon en première ligne avec l'état, date + heure en grand, prestation avec son prix à droite, pied d'une ligne « paiement · heure d'arrivée · retard toléré ») sert le récapitulatif (`BookingReview`), la confirmation (`BookingConfirmed` → `ConfirmedView`) et la fiche (`BookingDetail`).
+- **Le récapitulatif SE TRANSFORME en confirmation sur place** : après `create`, `BookingReview` rend `ConfirmedView` (coche dessinée, onde, carte qui passe au vert — `.bk-ok` / `.bk-flash` dans `index.css`, coupées par `prefers-reduced-motion`) et remplace l'adresse par `/rendez-vous/:id/confirme` avec `history.replaceState(history.state, …)` (état du routeur conservé) : un rechargement rouvre la confirmation, le cache du rendez-vous est déjà posé par `useCreateBooking`.
+- **« Pour moi » = carte du compte** (nom + numéro) et un crayon vers `/compte/informations?retour=…` ; la réservation pour soi prend toujours le nom et le numéro du PROFIL (le serveur aussi). Les champs ne s'affichent que si le profil est incomplet.
+
+## Notifications de l'application : redemander (29 oct. 2026)
+- Android rend `prompt-with-rationale` après un premier refus : c'est encore « peut demander ». `enableNativePushDetailed` redemande dans ce cas (avant, rien n'était demandé et l'écran affichait « le téléphone n'a pas donné son identifiant »). `ensureNativePush` repose la question à l'ouverture au plus tous les 3 jours tant que le système peut demander ; quand il ne peut plus (iPhone après un refus, Android après deux), « Activer » OUVRE directement l'écran Notifications du téléphone (`systemBlocked`). Jeton Firebase : deux essais de 20 s, erreur du système affichée entre parenthèses.
+
 ## Cache HTTP (API publique)
 - Listes/salons : `public, max-age=60, stale-while-revalidate=600` (4G : réponses instantanées en revisite). Chrome ressert la copie périmée et ne revalide qu'en arrière-plan : pour une ressource qui doit refléter immédiatement une écriture (avis, disponibilités), utiliser `public, no-cache` (ETag → 304). Le propriétaire reçoit toujours `private, no-cache`.
 
