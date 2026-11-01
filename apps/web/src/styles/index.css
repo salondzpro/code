@@ -6851,3 +6851,239 @@ html:has(.auth-onglets) body {
     scroll-padding: 0;
   }
 }
+
+/* ===================================================================================== */
+/* AGENDA = MAQUETTE 9 (`Agenda9.dc.html`), valeurs reprises à l'identique (1er nov. 2026). */
+/* Préfixe ag9 ; les rendez-vous se lisent par la FORME (.agb.s-*).                        */
+/* ===================================================================================== */
+@layer components {
+  .ag9-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 2px;
+  }
+  .ag9-k {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 600 12px Inter, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .ag9-today {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font: 600 11px Inter, sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+  }
+  .ag9-t {
+    margin: 0;
+    font: 600 24px/1.1 Outfit, sans-serif;
+    letter-spacing: -0.8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ag9-v {
+    display: flex;
+    flex: none;
+    background: #e9e9ef;
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .ag9-v button {
+    width: 38px;
+    height: 32px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font: 500 13px Inter, sans-serif;
+    color: var(--color-muted);
+    cursor: pointer;
+  }
+  .ag9-v button.on {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(30 27 48 / 0.14);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  /* Frise des 7 jours */
+  .ag9-w {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .ag9-d {
+    height: 58px;
+    border: 0;
+    border-radius: 18px;
+    background: #ffffff;
+    color: var(--color-ink);
+    box-shadow: 0 0 0 0.5px rgb(30 27 48 / 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+  }
+  .ag9-d:active {
+    transform: scale(0.96);
+  }
+  .ag9-d.td:not(.on) {
+    color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent-line);
+  }
+  .ag9-d.on {
+    background: var(--color-ink);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgb(30 27 48 / 0.28);
+  }
+  .ag9-d.off {
+    opacity: 0.45;
+  }
+  .ag9-dw {
+    font: 500 11px Inter, sans-serif;
+    opacity: 0.7;
+  }
+  .ag9-dn {
+    font: 600 17px/1 Outfit, sans-serif;
+  }
+  .ag9-dd {
+    display: flex;
+    gap: 2px;
+    height: 4px;
+  }
+  .ag9-dd i {
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: #c9c6cc;
+  }
+  .ag9-d.on .ag9-dd i {
+    background: rgb(255 255 255 / 0.85);
+  }
+  .ag9-dd i.a,
+  .ag9-d.on .ag9-dd i.a {
+    background: var(--color-accent);
+  }
+
+  /* Puces des membres (équipe seulement) */
+  .ag9-m {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ag9-m::-webkit-scrollbar {
+    display: none;
+  }
+  .ag9-mp {
+    flex: none;
+    height: 42px;
+    border: 0;
+    border-radius: 999px;
+    padding: 0 13px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    background: #ffffff;
+    color: var(--color-ink);
+    box-shadow: 0 0 0 0.5px rgb(30 27 48 / 0.12);
+    font: 600 14px Inter, sans-serif;
+    cursor: pointer;
+  }
+  .ag9-mp em {
+    font: 600 12px Inter, sans-serif;
+    font-style: normal;
+    opacity: 0.55;
+  }
+  .ag9-ma {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: #f2f1f6;
+    font: 600 12px Outfit, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ag9-mp.on {
+    background: var(--color-ink);
+    color: #ffffff;
+    box-shadow: none;
+  }
+  .ag9-mp.on .ag9-ma {
+    background: rgb(255 255 255 / 0.16);
+    color: #ffffff;
+  }
+
+  /* Rendez-vous lus par la forme */
+  .agenda .agb {
+    border-radius: 14px;
+    padding: 7px 8px;
+    font-family: Inter, sans-serif;
+    border-inline-start-width: 0;
+    background-image: none;
+  }
+  .agenda .agb.s-cf {
+    background: #ffffff;
+    color: var(--color-ink);
+    border: 1px solid var(--color-ink);
+    box-shadow: 0 4px 12px rgb(30 27 48 / 0.06);
+  }
+  .agenda .agb.s-cur {
+    background: var(--color-ink);
+    color: #ffffff;
+    border: 0;
+    box-shadow: 0 8px 18px rgb(30 27 48 / 0.25);
+  }
+  .agenda .agb.s-pd {
+    background: #ffffff;
+    color: var(--color-ink);
+    border: 1.5px dashed var(--color-accent);
+    box-shadow: none;
+  }
+  .agenda .agb.s-done {
+    background: #ebe9ef;
+    color: var(--color-muted);
+    border: 0;
+    box-shadow: none;
+  }
+  .ag9-tag {
+    display: inline-block;
+    margin-top: 2px;
+    font: 600 10px Inter, sans-serif;
+    border-radius: 999px;
+    padding: 2px 7px;
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+  .agenda .agoff {
+    border-radius: 14px;
+    background: repeating-linear-gradient(135deg, #ebe9ef 0 6px, #f6f6fa 6px 12px);
+    color: var(--color-subtle);
+  }
+
+  /* « + » de la maquette : carré arrondi de 56 px, à 106 px du bas */
+  .fab.fab-ag {
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    bottom: calc(106px + var(--safe-bottom));
+    box-shadow: 0 12px 26px rgb(108 92 231 / 0.32);
+  }
+}

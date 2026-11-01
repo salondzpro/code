@@ -1629,4 +1629,8 @@ export const ar: Record<string, string> = {
   "Voir la fiche {first}": "عرض بطاقة {first}",
   "Reporter le rendez-vous": "تأجيل الموعد",
   "Prévenir d’un retard": "الإعلام بتأخير",
+  // Agenda = maquette 9 : vues J / S / M
+  "J": "ي",
+  "S": "أ",
+  "M": "ش",
 };

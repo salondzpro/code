@@ -1645,4 +1645,8 @@ export const en: Record<string, string> = {
   "Voir la fiche {first}": "View {first}’s card",
   "Reporter le rendez-vous": "Reschedule the appointment",
   "Prévenir d’un retard": "Warn about a delay",
+  // Agenda = maquette 9 : vues J / S / M
+  "J": "D",
+  "S": "W",
+  "M": "M",
 };

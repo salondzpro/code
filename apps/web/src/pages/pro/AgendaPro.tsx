@@ -24,6 +24,7 @@ import {
   categoryTone,
   dayOfWeekFromKey,
   formatDA,
+  formatLocale,
   formatTimeDZ,
   timeToMinutes,
   toLocalDateKey,
@@ -219,41 +220,87 @@ export function AgendaPro() {
       style={{ ['--ag-max' as string]: `${Math.max(46, columns.length * 20)}rem` }}
     >
       {loadError && <ErrorMessage error={loadError.error} retry={() => void loadError.refetch()} />}
-      <div className="agh">
-        <div className="min-w-0">
-          <div className="agh-sub">{sub}</div>
-          <h1 className="h1 whitespace-nowrap">{title}</h1>
+      {/* En-tête de la maquette 9 : le jour en surtitre à l'accent, la date en grand, J / S / M. */}
+      <div className="ag9-h">
+        <div className="min-w-0 flex-1">
+          <span className="ag9-k">
+            {view === 'day'
+              ? date === today
+                ? t("Aujourd'hui")
+                : date === addDaysToKey(today, 1)
+                  ? t('Demain')
+                  : t(DAY_LABELS_FR[dayOfWeekFromKey(date)])
+              : sub}
+            {date !== today && (
+              <button type="button" className="ag9-today" onClick={() => setDate(today)}>
+                <I icon={CalendarCheck} size={13} /> {t("Aujourd'hui")}
+              </button>
+            )}
+          </span>
+          <h1 className="ag9-t">
+            {view === 'day'
+              ? new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+                  .format(new Date(`${date}T12:00:00Z`))
+                  .replace(/^\p{L}/u, (c) => c.toUpperCase())
+              : title}
+          </h1>
         </div>
-        <div className="flex flex-none items-center gap-1.5">
-          {/* Retour à aujourd'hui : n'apparaît que lorsqu'on s'en est éloigné. */}
-          {date !== today && (
-            <button type="button" className="agh-today" onClick={() => setDate(today)}>
-              <I icon={CalendarCheck} size={16} /> {t("Aujourd'hui")}
+        {view !== 'day' && (
+          <div className="flex flex-none items-center gap-1">
+            <IconButton aria-label={t("Précédent")} onClick={() => shift(-1)}>
+              <I icon={ChevronLeft} size={20} className="rtl:-scale-x-100" />
+            </IconButton>
+            <IconButton aria-label={t("Suivant")} onClick={() => shift(1)}>
+              <I icon={ChevronRight} size={20} className="rtl:-scale-x-100" />
+            </IconButton>
+          </div>
+        )}
+        <div className="ag9-v" role="tablist" aria-label={t('Vue')}>
+          {(['day', 'week', 'month'] as View[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={view === v}
+              aria-label={v === 'day' ? t('Jour') : v === 'week' ? t('Semaine') : t('Mois')}
+              className={view === v ? 'on' : ''}
+              onClick={() => setView(v)}
+            >
+              {v === 'day' ? t('J') : v === 'week' ? t('S') : t('M')}
             </button>
-          )}
-          <IconButton aria-label={t("Précédent")} onClick={() => shift(-1)}>
-            <I icon={ChevronLeft} size={20} className="rtl:-scale-x-100" />
-          </IconButton>
-          <IconButton aria-label={t("Suivant")} onClick={() => shift(1)}>
-            <I icon={ChevronRight} size={20} className="rtl:-scale-x-100" />
-          </IconButton>
+          ))}
         </div>
       </div>
-      <Segmented
-        sm
-        label={t("Vue")}
-        value={view}
-        onChange={setView}
-        options={[
-          { value: 'day', label: t("Jour") },
-          { value: 'week', label: t("Semaine") },
-          { value: 'month', label: t("Mois") },
-        ]}
-      />
 
       {view === 'day' && (
         <>
-          <DayScroller selected={date} onSelect={setDate} disabledDays={closedDays} marks={unseenByDate} />
+          <WeekStrip
+            week={week}
+            selected={date}
+            today={today}
+            byDay={byDay}
+            closedDays={closedDays}
+            marks={unseenByDate}
+            onSelect={setDate}
+          />
+          {team.length >= 2 && (
+            <div className="ag9-m bleed" role="group" aria-label={t('Filtrer par membre')}>
+              <button type="button" className={`ag9-mp${!staffId ? ' on' : ''}`} aria-pressed={!staffId} onClick={() => setStaffId(null)}>
+                <span className="ag9-ma">{team.length}</span>
+                {t("Toute l'équipe")}
+                <em>{(bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && localKey(b.startsAt) === date).length}</em>
+              </button>
+              {team.map((m) => (
+                <button key={m.id} type="button" className={`ag9-mp${staffId === m.id ? ' on' : ''}`} aria-pressed={staffId === m.id} onClick={() => setStaffId(staffId === m.id ? null : m.id)}>
+                  <Avatar src={m.avatarUrl} name={m.displayName} size={32} />
+                  {m.displayName}
+                  <em>
+                    {(bookings.data?.items ?? []).filter((b) => b.staffId === m.id && b.status !== 'cancelled' && localKey(b.startsAt) === date).length}
+                  </em>
+                </button>
+              ))}
+            </div>
+          )}
           {team.length >= 2 && (
             <StaffColumnsHead
               columns={columns}
@@ -276,19 +323,9 @@ export function AgendaPro() {
               const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
               return (
                 <div className="flex flex-col gap-2.5">
-                  {/* Le jour en trois pastilles : combien, combien ça rapporte, ce qui attend. */}
+                  {/* Maquette 9 : plus de rangée de chiffres au-dessus du planning ; seule la pastille des
+                      annulations reste, quand il y en a. */}
                   <div className="ags">
-                    <span className="ags-c">
-                      <b className="mono">{live.length}</b> {t('rendez-vous')}
-                    </span>
-                    <span className="ags-c">
-                      <b className="mono" dir="ltr">{formatDA(revenue)}</b>
-                    </span>
-                    {pending > 0 && (
-                      <span className="ags-c pd">
-                        <b className="mono">{pending}</b> {t("en attente")}
-                      </span>
-                    )}
                     {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
                       <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
                         {t('{n} annulé(s)', { n: showCancelled ? cancelled.length : cancelledOn(d) })}
@@ -409,7 +446,7 @@ function StaffColumnsHead({
   onAll: () => void;
 }) {
   return (
-    <div className="sticky z-20 bleed bg-bg" style={{ top: '3.5rem' }}>
+    <div className="sticky z-20 bleed bg-bg" style={{ top: 'var(--hdr-h)' }}>
       <div className="flex items-stretch border-b border-line">
         <div className="flex-none" style={{ width: GUTTER }} />
         {columns.map((c) => (
@@ -427,12 +464,58 @@ function StaffColumnsHead({
             </span>
           </button>
         ))}
-        {picked && (
-          <button type="button" className="pill !my-1 !py-1.5" onClick={onAll}>
-            {t("Toute l'équipe")}
-          </button>
-        )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Frise de la semaine (maquette 9) : sept jours, des points sous chacun (un par rendez-vous, trois au
+ * plus ; à l'accent pour une demande ou du nouveau), le jour choisi en encre pleine.
+ */
+function WeekStrip({
+  week,
+  selected,
+  today,
+  byDay,
+  closedDays,
+  marks,
+  onSelect,
+}: {
+  week: string[];
+  selected: string;
+  today: string;
+  byDay: Map<string, BookingWithStaff[]>;
+  closedDays: number[];
+  marks?: Record<string, number>;
+  onSelect: (d: string) => void;
+}) {
+  return (
+    <div className="ag9-w">
+      {week.map((d) => {
+        const list = (byDay.get(d) ?? []).filter((b) => b.status !== 'cancelled');
+        const on = d === selected;
+        const closed = closedDays.includes(dayOfWeekFromKey(d));
+        const dots = list.slice(0, 3).map((b, i) => (b.status === 'pending' || (!!marks?.[d] && i === Math.min(list.length, 3) - 1) ? 'a' : ''));
+        return (
+          <button
+            key={d}
+            type="button"
+            className={`ag9-d${on ? ' on' : ''}${d === today ? ' td' : ''}${closed && !list.length ? ' off' : ''}`}
+            aria-pressed={on}
+            aria-label={`${t(DAY_LABELS_FR[dayOfWeekFromKey(d)])} ${Number(d.slice(8, 10))}${list.length ? ` · ${t('{n} rendez-vous', { n: list.length })}` : ''}`}
+            onClick={() => onSelect(d)}
+          >
+            <span className="ag9-dw">{t(DAY_LABELS_FR[dayOfWeekFromKey(d)]).slice(0, 3)}</span>
+            <span className="ag9-dn">{Number(d.slice(8, 10))}</span>
+            <span className="ag9-dd">
+              {dots.map((c, i) => (
+                <i key={i} className={c} />
+              ))}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -516,6 +599,14 @@ function DayColumns({
       staffId: t.staffId ?? null,
     });
   const narrow = columns.length > 1;
+  /** État lu par la FORME (maquette 9) : en cours plein, confirmé en contour, demande en pointillé, passé en gris. */
+  const state = (b: BookingWithStaff) => {
+    const s0 = localMinutes(b.startsAt), e0 = localMinutes(b.endsAt);
+    if (b.status === 'completed' || b.status === 'no_show' || (isToday && e0 <= now) || date < toLocalDateKey()) return 's-done';
+    if (b.status === 'pending') return 's-pd';
+    if (isToday && s0 <= now && now < e0) return 's-cur';
+    return 's-cf';
+  };
   const inCol = (col: Column, staffId: string | null) => col.id === null || col.id === staffId;
 
   /** Tap sur un vide : l'heure sous le doigt, alignée au pas du salon, si elle est libre. */
@@ -629,14 +720,10 @@ function DayColumns({
                       ev.stopPropagation();
                       onOpen(b.id);
                     }}
-                    className={`agb ${TONE[toneOf(b)]} ${isToday && e <= now ? 'past' : ''}`}
+                    className={`agb ${state(b)}`}
                     style={{
                       top: top(s) + 1,
                       height: h,
-                      // Demande non confirmée : rayures claires par-dessus la teinte, lisibles de loin.
-                      backgroundImage: pending
-                        ? 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.5) 5px 10px)'
-                        : undefined,
                     }}
                     aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ' · en attente' : ''}`}
                   >
@@ -660,12 +747,8 @@ function DayColumns({
                             {!narrow && ` · ${formatDA(b.priceDa)}`}
                           </span>
                         )}
-                        {pending && h >= 72 && (
-                          <span className="mt-1 inline-block">
-                            <Badge tone="pd" dot={false}>
-                              {t("En attente")}
-                            </Badge>
-                          </span>
+                        {(pending || state(b) === 's-cur') && h >= 66 && (
+                          <span className="ag9-tag">{pending ? t('À valider') : t('En cours')}</span>
                         )}
                       </>
                     )}
@@ -678,11 +761,11 @@ function DayColumns({
           // Ligne « maintenant » : dans la journée à sa place ; avant l'ouverture en haut, après la fermeture en bas.
           <div
             ref={nowRef}
-            className="pointer-events-none absolute -start-1.5 end-0 z-10 border-t-[1.5px] border-danger"
+            className="pointer-events-none absolute -start-1.5 end-0 z-10 border-t-2 border-accent"
             style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}
           >
-            <span className="absolute -start-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-danger" />
-            <span className="mono absolute end-0 -top-[1.125rem] rounded-full bg-danger px-2 py-0.5 text-[0.857rem] font-semibold text-white">
+            <span className="absolute -start-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-accent" />
+            <span className="mono absolute end-0 -top-[1.125rem] rounded-full bg-accent px-2 py-0.5 text-[0.714rem] font-bold text-white">
               {minutesToTime(now)}
               {now > endMin ? ` · ${t('journée terminée')}` : now < startMin ? ` · ${t("avant l'ouverture")}` : ''}
             </span>

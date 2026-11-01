@@ -8,6 +8,7 @@ import { CalendarClock, CalendarOff, Clock, Store, UserCircle, Users } from 'luc
 import { useProSalon } from '@salondz/api-client';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageHead, SettingRow } from '@/components/ui';
+import { QuickCloseButton } from '@/components/QuickClose';
 import { t } from '@/i18n';
 
 export function Parametres() {
@@ -15,7 +16,13 @@ export function Parametres() {
   const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
   return (
     <Screen bottom={NAV_PAD} gap={18}>
-      <PageHead title={t('Paramètres')} sub={t('Votre salon, vos horaires et votre compte.')} />
+      {/* « Arrêt / Pause » (fermer tout de suite pour quelques heures) : il vivait sur l’accueil, que la
+          maquette 11 a allégé. */}
+      <PageHead
+        title={t('Paramètres')}
+        sub={t('Votre salon, vos horaires et votre compte.')}
+        action={salon && <QuickCloseButton openingHours={salon.openingHours} />}
+      />
       <div className="lst">
         <SettingRow to="/pro/mon-salon" icon={Store} title={t('Mon salon')} sub={t('Nom, adresse, photos, spécialités')} />
         <SettingRow to="/pro/profil/horaires" icon={Clock} title={t("Horaires d'ouverture")} sub={t('Jours et heures où l’on peut réserver')} />
