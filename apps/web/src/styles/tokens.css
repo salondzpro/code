@@ -1,25 +1,41 @@
 /*
- * Jetons de design — source : Claude Design « App Beaute Hi-Fi » (design/App Beaute Hi-Fi.dc.html).
- * Valeurs reprises telles quelles du bloc <style> du fichier ; ne pas inventer de couleur ici.
+ * Jetons de design — refonte du 1er nov. 2026 (« SalonDZ × mew3id », validée sur le canevas
+ * https://claude.ai/artifact/91Wa36xH7wKniVgraxyKUo, accueil 11 et agenda 9).
+ *
+ * UN accent violet (#6c5ce7) pour tout ce qui AGIT ou est CHOISI (bouton principal, interrupteur,
+ * case, créneau, champ actif, onglet actif) ; une encre bleu nuit pour le texte et les éléments
+ * sombres ; des neutres très légèrement teintés de violet (+7° de teinte, comme mew3id) — c'est ce
+ * qui rend la palette harmonieuse sans la colorer. Toutes les valeurs sont calculées en OKLCH à
+ * partir de l'accent et leurs contrastes VÉRIFIÉS (texte ≥ 4,5:1, gris secondaire ≥ 6:1).
+ * Ne pas ajouter de couleur « au jugé » : une nouvelle nuance se dérive de la même gamme.
  */
 
 @theme {
   /* Fonds */
-  --color-canvas: #edeeef; /* autour de la colonne app sur grand écran */
-  --color-bg: #f8f9fa; /* fond des écrans (.ph) */
-  --color-surface: #ffffff; /* cartes (.crd) */
-  --color-fill: #f4f5f6; /* surfaces douces (.sf, .inp, .btn.off) */
-  --color-line: #e6e7e9; /* bordures */
-  --color-line-soft: #eff0f1; /* séparateurs de liste (.li) */
+  --color-canvas: #ebeaf2; /* autour de la colonne app sur grand écran */
+  --color-bg: #f6f6fa; /* fond des écrans : blanc à peine froid, jamais lavande */
+  --color-surface: #ffffff; /* cartes */
+  --color-fill: #f4f4f9; /* surfaces douces (champs, boutons secondaires pleins) */
+  --color-line: #e6e5ee; /* bordures */
+  --color-line-soft: #efeef4; /* séparateurs de liste */
 
   /* Texte */
-  --color-text: #17181a;
-  --color-muted: #6b6f73;
-  --color-subtle: #767a7f; /* 4,5:1 sur blanc : lisible, pas seulement décoratif */
-  --color-disabled: #c4c7ca;
-  --color-ink: #111214;
-  --color-women: #f06a9b; /* titre « Femmes » en rose clair, mode femmes */ /* boutons, états actifs */
+  --color-text: #1e1b30; /* encre bleu nuit, 16,8:1 sur blanc */
+  --color-muted: #636174; /* secondaire, 6:1 sur blanc */
+  --color-subtle: #716f80; /* tertiaire, 4,9:1 sur blanc, 4,5:1 sur le fond */
+  --color-disabled: #c4c3cd;
+  --color-ink: #1e1b30; /* éléments SOMBRES : filtre choisi, message flottant, fonds d'encre */
+  --color-women: #f06a9b; /* titre « Femmes » en rose clair, mode femmes */
   --color-on-ink: #ffffff;
+
+  /* Accent : la couleur de la marque, et la seule */
+  --color-accent: #6c5ce7; /* blanc dessus 4,9:1 */
+  --color-accent-strong: #6553dd; /* texte d'accent posé sur un fond pâle (≥ 4,8:1) */
+  --color-accent-deep: #41398a; /* texte foncé sur fond pâle d'accent */
+  --color-accent-soft: #f0effe; /* fond pâle : bouton secondaire, pastille, icône */
+  --color-accent-tint: #e5e3fe; /* fond pâle appuyé : élément choisi dans une liste */
+  --color-accent-line: #d8d4fa; /* contour d'accent */
+  --color-on-accent: #ffffff;
 
   /* Statuts */
   --color-danger: #e5484d;
@@ -30,9 +46,9 @@
   --color-pending-fg: #96551f;
   --color-cancel-bg: #fde8e8;
   --color-cancel-fg: #b22f33;
-  --color-green: #18a66a; /* interrupteurs, WhatsApp */
+  --color-green: #18a66a; /* WhatsApp seulement (les interrupteurs passent à l'accent) */
   /* Heures libres sur les cartes de la marketplace (chiffres et cadre) : bleu du drapeau
-     français, demandé le 19 sept. 2026. Seule couleur du projet qui ne vient pas du design. */
+     français, demandé le 19 sept. 2026. */
   --color-hour: #0055a4;
 
   /* Catégories (agenda) */
@@ -56,34 +72,36 @@
   --color-cat-lasr-fg: #8a4b18;
 
   /* Alias de transition (anciennes classes) */
-  --color-primary: #111214;
+  --color-primary: #6c5ce7;
   --color-primary-contrast: #ffffff;
   --color-success: #0e7a4d;
   --color-warning: #96551f;
-  --color-accent: #f4f5f6;
   --color-info: #2c4a93;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  /* Titres, grands chiffres, noms : Outfit (latin). L'arabe retombe sur la police du texte. */
+  --font-display: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /**
-   * Arrondis RÉDUITS (consigne du 15 sept. 2026) : 8 px pour les cartes, 6 px pour tout le
-   * petit mobilier (boutons, champs, créneaux, vignettes), 12 px pour les feuilles. Un outil de
-   * travail a des angles nets ; on ne remonte jamais ces valeurs. Racine 14 px : 0,571 rem = 8 px,
-   * 0,428 rem = 6 px, 0,857 rem = 12 px. Pilules et cercles inchangés.
+   * Arrondis — COMPROMIS du 1er nov. 2026 entre les angles nets de SalonDZ (8 / 6 px, consigne du
+   * 15 sept.) et les grandes rondeurs de mew3id (16–24 px), à la demande du propriétaire : cartes
+   * 14 px, boutons et champs 12 px, petit mobilier 10 px, feuilles 20 px. Racine 14 px.
+   * Toujours par ces jetons, jamais une valeur en dur.
    */
-  --radius-card: 0.571rem;
-  --radius-card-sm: 0.428rem;
-  --radius-btn: 0.428rem;
-  --radius-input: 0.428rem;
-  --radius-slot: 0.428rem;
-  --radius-img: 0.428rem;
+  --radius-card: 1rem; /* 14 px */
+  --radius-card-sm: 0.714rem; /* 10 px */
+  --radius-btn: 0.857rem; /* 12 px */
+  --radius-input: 0.857rem; /* 12 px */
+  --radius-slot: 0.714rem; /* 10 px */
+  --radius-img: 0.714rem; /* 10 px */
   --radius-pill: 62.4375rem;
-  --radius-sheet: 0.857rem;
+  --radius-sheet: 1.428rem; /* 20 px */
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 18px 40px -12px rgb(0 0 0 / 0.18);
-  --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.22);
-  --shadow-fab: 0 10px 28px -6px rgb(0 0 0 / 0.35);
-  --shadow-toast: 0 12px 32px -10px rgb(0 0 0 / 0.4);
+  /* Ombres teintées de l'encre (jamais du noir pur) : douces, elles décollent sans salir. */
+  --shadow-card: 0 1px 2px rgb(30 27 48 / 0.04), 0 12px 32px -14px rgb(30 27 48 / 0.16);
+  --shadow-sheet: 0 -12px 40px -12px rgb(30 27 48 / 0.2);
+  --shadow-fab: 0 10px 24px -6px rgb(108 92 231 / 0.45);
+  --shadow-toast: 0 12px 32px -10px rgb(30 27 48 / 0.4);
 
   /* Largeur de la colonne app (écran du design = 390 px) */
   --app-max-width: 430px;

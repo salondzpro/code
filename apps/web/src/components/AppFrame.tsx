@@ -4,12 +4,13 @@
  * la largeur de l'écran (`--shell-w`) au lieu de rester une colonne perdue dans le gris ;
  * c'est la seule différence, et elle est entièrement portée par la feuille de style.
  */
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import { NavLink } from 'react-router';
+import { type CSSProperties, type ReactNode } from 'react';
+import { NavLink, useLocation } from 'react-router';
 import { useProPendingUnseenCount, useProUnseenBookings } from '@salondz/api-client';
-import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
+import { Calendar, CalendarDays, ContactRound, House, Inbox, LayoutGrid, Menu, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 import { PushToast } from './PushToast';
+import { PRO_MENU_EVENT } from './ProHeader';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
 
@@ -90,6 +91,10 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   end?: boolean;
+  /** Grand rond central en relief (l'Agenda, côté pro). */
+  center?: boolean;
+  /** « Plus » : actif sur toute page de gestion qui n'a pas son propre onglet. */
+  rest?: boolean;
 }
 
 const CLIENT_NAV: NavItem[] = [
@@ -98,12 +103,17 @@ const CLIENT_NAV: NavItem[] = [
   { to: '/profil', label: t("Profil"), icon: User },
 ];
 
-/** Navigation pro réduite à l'essentiel du quotidien : la gestion (salon, catalogue, équipe, clients, règles, compte) passe par Profil. */
+/**
+ * Navigation pro (refonte du 1er nov. 2026, façon mew3id) : les quatre écrans du quotidien et
+ * « Plus », qui mène à toute la gestion (salon, catalogue, équipe, règles, compte). L'Agenda est
+ * au CENTRE, en grand rond : c'est l'écran qu'on ouvre le plus, il est sous le pouce.
+ */
 const PRO_NAV: NavItem[] = [
   { to: '/pro', label: t("Accueil"), icon: House, end: true },
-  { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays },
   { to: '/pro/reservations', label: t("Réservations"), icon: Inbox },
-  { to: '/pro/profil', label: t("Profil"), icon: Store },
+  { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, center: true },
+  { to: '/pro/clients', label: t("Clients"), icon: ContactRound },
+  { to: '/pro/profil', label: t("Plus"), icon: Menu, rest: true },
 ];
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
@@ -139,80 +149,88 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
         }
       : {};
   /**
-   * La barre se réduit aux icônes pendant le défilement, et se rouvre avec ses libellés dès
-   * qu'on s'arrête : elle rend de la hauteur au contenu quand on parcourt, et redevient
-   * explicite quand on cherche où aller.
+   * « Plus » mène au hub de gestion (`/pro/profil`) : il reste allumé sur toutes les pages de
+   * gestion qui n'ont pas leur propre onglet (salon, catalogue, équipe, règles, compte…), pour
+   * qu'on sache toujours où l'on est.
    */
-  const [compact, setCompact] = useState(false);
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    const onScroll = () => {
-      // Tout en haut, la barre reste ouverte : rien à gagner à la réduire.
-      setCompact(window.scrollY > 24);
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => setCompact(false), 700);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      if (timer) clearTimeout(timer);
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, []);
+  const { pathname } = useLocation();
+  const restActive =
+    kind === 'pro' &&
+    !items.some((it) => !it.rest && (it.end ? pathname === it.to : pathname.startsWith(it.to))) &&
+    !pathname.startsWith('/pro/rendez-vous');
 
   if (desktop) return null;
   return (
-    <>
-      <span aria-hidden className="nvb-veil" />
-      <nav
-        className={`nvb${compact ? ' cmp' : ''}`}
-        aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}
-      >
-        {items.map((it) => (
-          <NavLink
+    <nav className="nvb" aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}>
+      {items.map((it) =>
+        it.rest ? (
+          // « Plus » ouvre le menu complet (toute la gestion, la page publique, le compte) : il
+          // remplace le bouton de menu de l'en-tête, qu'on ne voit plus sur téléphone.
+          <button
             key={it.to}
-            to={it.to}
-            end={it.end}
-            // NOUVELLES DEMANDES (28 oct. 2026) : l'onglet Réservations prend la couleur des demandes
-            // en attente (ambre) et son libellé devient « 2 nouvelles » — une pastille rouge seule
-            // sur une icône grise passait inaperçue. Le compte : demandes PAS ENCORE VUES et PAS
-            // ENCORE CONFIRMÉES ; il retombe dès que la liste les a affichées.
-            className={({ isActive }) =>
-              `nvi${isActive ? ' on' : ''}${!isActive && it.to === '/pro/reservations' && badges[it.to] ? ' nw' : ''}`
-            }
-            title={it.label}
-            aria-label={
-              badges[it.to]
-                ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? t('nouveau(x)') : t('nouvelle(s) demande(s) à confirmer')}`
-                : undefined
-            }
+            type="button"
+            className={`nvi${restActive ? ' on' : ''}`}
+            onClick={() => window.dispatchEvent(new Event(PRO_MENU_EVENT))}
+            aria-haspopup="dialog"
           >
-            {({ isActive }) => (
+            <span className="relative flex items-center justify-center">
+              <I icon={it.icon} size={22} strokeWidth={restActive ? 2 : 1.6} className="text-current" />
+            </span>
+            <span className="nvl">{it.label}</span>
+          </button>
+        ) : (
+        <NavLink
+          key={it.to}
+          to={it.to}
+          end={it.end}
+          // NOUVELLES DEMANDES (28 oct. 2026) : l'onglet Réservations prend la couleur des demandes
+          // en attente (ambre) et son libellé devient « 2 nouvelles » — une pastille rouge seule
+          // sur une icône grise passait inaperçue. Le compte : demandes PAS ENCORE VUES et PAS
+          // ENCORE CONFIRMÉES ; il retombe dès que la liste les a affichées.
+          className={({ isActive }) => {
+            const on = isActive || (it.rest && restActive);
+            return `nvi${it.center ? ' ctr' : ''}${on ? ' on' : ''}${!on && it.to === '/pro/reservations' && badges[it.to] ? ' nw' : ''}`;
+          }}
+          title={it.label}
+          aria-label={
+            badges[it.to]
+              ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? t('nouveau(x)') : t('nouvelle(s) demande(s) à confirmer')}`
+              : undefined
+          }
+        >
+          {({ isActive }) => {
+            const on = isActive || (!!it.rest && restActive);
+            const badge = !!badges[it.to] && (
+              <span className="nvd" aria-hidden>
+                {badges[it.to]! > 9 ? '9+' : badges[it.to]}
+              </span>
+            );
+            return (
               <>
-                <span className="relative flex items-center justify-center">
-                  <I
-                    icon={it.icon}
-                    size={22}
-                    strokeWidth={isActive ? 2 : 1.6}
-                    className="text-current"
-                  />
-                  {!!badges[it.to] && (
-                    <span className="nvd" aria-hidden>
-                      {badges[it.to]! > 9 ? '9+' : badges[it.to]}
-                    </span>
-                  )}
-                </span>
+                {it.center ? (
+                  <span className="nvc">
+                    <I icon={it.icon} size={24} strokeWidth={1.9} className="text-current" />
+                    {badge}
+                  </span>
+                ) : (
+                  <span className="relative flex items-center justify-center">
+                    <I icon={it.icon} size={22} strokeWidth={on ? 2 : 1.6} className="text-current" />
+                    {badge}
+                  </span>
+                )}
                 <span className="nvl">
-                  {!isActive && it.to === '/pro/reservations' && badges[it.to]
+                  {!on && it.to === '/pro/reservations' && badges[it.to]
                     ? badges[it.to] === 1
                       ? t('1 nouvelle')
                       : t('{n} nouvelles', { n: badges[it.to]! > 9 ? '9+' : badges[it.to]! })
                     : it.label}
                 </span>
               </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-    </>
+            );
+          }}
+        </NavLink>
+        ),
+      )}
+    </nav>
   );
 }

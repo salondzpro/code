@@ -148,7 +148,7 @@ export function PlacePicker({
 
   return (
     <div className={`ppk ${confirmed ? 'ok' : ''} ${className}`}>
-      <style>{`.leaflet-container{background:#eaecee;font-family:inherit}`}</style>
+      <style>{`.leaflet-container{background:#e9e9ef;font-family:inherit}`}</style>
       <div ref={mapEl} className="absolute inset-0" aria-label={t('Carte')} />
       {/* Épingle fixe au centre : la carte bouge dessous. La pointe touche le point exact. */}
       <span className="ppk-pin" aria-hidden>

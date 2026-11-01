@@ -176,7 +176,7 @@ export function PublicHeader() {
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-surface">
+    <header className="hdr sticky top-0 z-30">
       <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center justify-between gap-3 px-[calc(1rem+var(--shell-px))]">
         <button
           type="button"
@@ -216,19 +216,19 @@ export function PublicHeader() {
             </NavLink>
           ))}
         </nav>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-2">
           {/* Cloche : la liste des notifications (confirmations, rappels, créneaux libérés), avec le
               compte des non-lues. Sans elle, la liste n'était atteignable par aucun lien. */}
           {session && (
             <Link
               to="/notifications"
-              className="relative flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] text-text"
+              className="hdr-b relative"
               aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
               title={t("Notifications")}
             >
-              <I icon={Bell} size={22} strokeWidth={1.8} className="text-current" />
+              <I icon={Bell} size={20} strokeWidth={1.8} className="text-current" />
               {nonLues > 0 && (
-                <span className="nvd !left-auto !right-0.5 !top-0.5" aria-hidden>
+                <span className="nvd !left-auto !-right-1 !-top-1" aria-hidden>
                   {nonLues > 9 ? '9+' : nonLues}
                 </span>
               )}
@@ -236,7 +236,7 @@ export function PublicHeader() {
           )}
           <Link
             to={session ? '/profil' : `/connexion?next=${next}`}
-            className="flex h-[2.5rem] w-[2.5rem] items-center justify-center rounded-[var(--radius-card-sm)] bg-ink text-white"
+            className="hdr-b soft"
             aria-label={session ? 'Mon profil' : 'Se connecter ou créer un compte'}
           >
             <I icon={User} size={20} className="text-current" />

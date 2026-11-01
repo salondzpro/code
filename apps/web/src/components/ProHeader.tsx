@@ -18,12 +18,15 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router';
-import { Bell, Menu, Plus, X } from 'lucide-react';
+import { Bell, Plus, X } from 'lucide-react';
 import { useProPendingUnseenCount, useProSalon, useUnreadNotifications } from '@salondz/api-client';
 import { Avatar, I, Dim } from './ui';
 import { ProNav } from './ProNav';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
+
+/** Événement qui ouvre le menu pro (envoyé par l'onglet « Plus » de la barre du bas). */
+export const PRO_MENU_EVENT = 'salondz:pro-menu';
 
 export function ProHeader() {
   const [open, setOpen] = useState(false);
@@ -36,6 +39,13 @@ export function ProHeader() {
   const nonLues = useUnreadNotifications(!!salon);
   const desktop = useDesktop();
   useEffect(() => setOpen(false), [pathname, navKey]);
+  // Refonte du 1er nov. 2026 : le menu s'ouvre depuis l'onglet « Plus » de la barre du bas
+  // (`BottomNav`), plus depuis un bouton d'en-tête — un seul chemin, sous le pouce.
+  useEffect(() => {
+    const ouvrir = () => setOpen(true);
+    window.addEventListener(PRO_MENU_EVENT, ouvrir);
+    return () => window.removeEventListener(PRO_MENU_EVENT, ouvrir);
+  }, []);
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => {
@@ -73,17 +83,8 @@ export function ProHeader() {
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-surface">
-      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center gap-2 px-2">
-        <button
-          type="button"
-          className="ib !border-0 !bg-transparent lg:hidden"
-          aria-label={t("Menu")}
-          aria-expanded={open}
-          onClick={() => setOpen(true)}
-        >
-          <I icon={Menu} size={24} />
-        </button>
+    <header className="hdr sticky top-0 z-30">
+      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center gap-2 px-4 lg:px-2">
         {/* Sur ordinateur, la marque tient exactement la largeur du rail : l'en-tête et le
             rail sont alignés, comme dans un outil de bureau. */}
         <span className="hidden w-[var(--rail-w)] flex-none items-center ps-3 text-[1.143rem] leading-none tracking-[-0.4px] lg:flex">
@@ -95,11 +96,11 @@ export function ProHeader() {
         </span>
         <Link
           to="/pro"
-          className="flex min-w-0 flex-1 items-center justify-center gap-2 lg:justify-start"
+          className="flex min-w-0 flex-1 items-center gap-2.5"
           aria-label={salon ? `${salon.name} · accueil` : 'Accueil'}
         >
-          {salon && <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={28} />}
-          <span className="truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
+          {salon && <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={32} />}
+          <span className="truncate font-display text-[1.214rem] font-semibold tracking-[-0.3px]">
             {salon?.name ?? 'Salon DZ'}
           </span>
         </Link>
@@ -107,20 +108,20 @@ export function ProHeader() {
             exact, même règle que les autres pastilles — il baisse quand on LIT, pas quand on traite. */}
         <Link
           to="/pro/notifications"
-          className="relative flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center rounded-[var(--radius-btn)] text-text"
+          className="hdr-b relative"
           aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
           title={t("Notifications")}
         >
-          <I icon={Bell} size={22} strokeWidth={1.8} className="text-current" />
+          <I icon={Bell} size={20} strokeWidth={1.8} className="text-current" />
           {nonLues > 0 && (
-            <span className="nvd !left-auto !right-0.5 !top-0.5" aria-hidden>
+            <span className="nvd !left-auto !-right-1 !-top-1" aria-hidden>
               {nonLues > 9 ? '9+' : nonLues}
             </span>
           )}
         </Link>
         <Link
           to="/pro/rendez-vous/nouveau"
-          className="me-2 flex h-[2.5rem] w-[2.5rem] flex-none items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-ink text-white lg:w-auto lg:px-3.5"
+          className="hdr-b acc lg:me-2 lg:w-auto lg:gap-2 lg:rounded-[var(--radius-btn)] lg:px-3.5"
           aria-label={t("Nouveau rendez-vous")}
           title={t("Nouveau rendez-vous")}
         >

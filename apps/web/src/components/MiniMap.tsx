@@ -27,14 +27,14 @@ export function MiniMap({ lat, lng, radiusKm, label, className = '' }: { lat: nu
     const g = layer.current;
     if (!m || !g) return;
     g.clearLayers();
-    const circle = L.circle([lat, lng], { radius: radiusKm * 1000, color: '#c4c7ca', dashArray: '6 6', weight: 1.5, fillColor: '#111214', fillOpacity: 0.05 }).addTo(g);
-    L.circleMarker([lat, lng], { radius: 9, color: '#fff', weight: 4, fillColor: '#111214', fillOpacity: 1 }).addTo(g);
+    const circle = L.circle([lat, lng], { radius: radiusKm * 1000, color: '#c4c3cd', dashArray: '6 6', weight: 1.5, fillColor: '#1e1b30', fillOpacity: 0.05 }).addTo(g);
+    L.circleMarker([lat, lng], { radius: 9, color: '#fff', weight: 4, fillColor: '#1e1b30', fillOpacity: 1 }).addTo(g);
     m.fitBounds(circle.getBounds(), { padding: [12, 12], animate: false });
   }, [lat, lng, radiusKm]);
 
   return (
     <div className={`relative overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill ${className}`}>
-      <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}.leaflet-container{background:#eaecee}`}</style>
+      <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}.leaflet-container{background:#e9e9ef}`}</style>
       <div ref={el} className="absolute inset-0" aria-label={t("Carte de la zone")} />
       {label && <span className="pointer-events-none absolute bottom-3 start-4 z-[400] rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>}
     </div>

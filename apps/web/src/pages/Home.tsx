@@ -184,7 +184,7 @@ export function Home() {
         {/* Deux pastilles qui flottent : ce que l'on reçoit après avoir réservé. */}
         <div className="hm-float" aria-hidden>
           <span className="hm-chip">
-            <I icon={CheckCheck} size={16} className="text-[#3ddc97]" /> {t('Rendez-vous confirmé')}
+            <I icon={CheckCheck} size={16} className="text-[#b6a5ff]" /> {t('Rendez-vous confirmé')}
           </span>
           <span className="hm-chip b">
             <I icon={BellRing} size={16} className="text-[#ffb877]" /> {t('Rappel 1 h avant')}

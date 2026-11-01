@@ -781,7 +781,7 @@ function WeekGrid({
                 style={{
                   height: H,
                   background: closed
-                    ? 'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)'
+                    ? 'repeating-linear-gradient(135deg,#f4f4f9 0 6px,#efeef4 6px 12px)'
                     : undefined,
                 }}
               >
@@ -823,7 +823,7 @@ function WeekGrid({
           <span
             className="h-3 w-5 rounded"
             style={{
-              background: 'repeating-linear-gradient(135deg,#f4f5f6 0 3px,#e6e7e9 3px 6px)',
+              background: 'repeating-linear-gradient(135deg,#f4f4f9 0 3px,#e6e5ee 3px 6px)',
             }}
           />{' '}
           {t("Fermé")}
@@ -892,7 +892,7 @@ function MonthGrid({
                 closed && !on
                   ? {
                       background:
-                        'repeating-linear-gradient(135deg,#f4f5f6 0 6px,#eff0f1 6px 12px)',
+                        'repeating-linear-gradient(135deg,#f4f4f9 0 6px,#efeef4 6px 12px)',
                     }
                   : undefined
               }
@@ -929,7 +929,7 @@ function MonthGrid({
           <span
             className="h-3 w-5 rounded"
             style={{
-              background: 'repeating-linear-gradient(135deg,#f4f5f6 0 3px,#e6e7e9 3px 6px)',
+              background: 'repeating-linear-gradient(135deg,#f4f4f9 0 3px,#e6e5ee 3px 6px)',
             }}
           />{' '}
           {t("Fermé")}
