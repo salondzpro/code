@@ -6,7 +6,7 @@ import { CATEGORY_BY_ID, categoriesForSalon, serviceTemplatesFor, type CategoryI
 import { createServiceSchema } from '@salondz/validation';
 import { formatDuration } from '@/lib/format';
 import { errorText } from '@/components/ErrorMessage';
-import { Field, Input, Pill, Textarea } from '@/components/ui';
+import { Field, Input, Pill, Textarea, Toggle } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
@@ -30,6 +30,8 @@ export function Step6Service() {
   const [group, setGroup] = useState(existing?.groupName ?? '');
   const [creating, setCreating] = useState(false);
   const [description, setDescription] = useState(existing?.description ?? '');
+  // L'activation vit ici (plus d'interrupteur dans la liste) ; un enregistrement ne réactive plus une prestation coupée.
+  const [isActive, setIsActive] = useState(existing?.isActive ?? true);
   const [error, setError] = useState<string | null>(null);
 
   if (!salon) return <PageLoading />;
@@ -54,7 +56,7 @@ export function Step6Service() {
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, groupName: group.trim() || null, description: description.trim() || undefined, isActive: true });
+    const parsed = createServiceSchema.safeParse({ name, durationMinutes: duration, priceDa: Number(price.replace(/\D/g, '')), categoryId: (categoryId || null) as CategoryId | null, groupName: group.trim() || null, description: description.trim() || undefined, isActive });
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Vérifiez les champs.');
     setError(null);
     try {
@@ -148,6 +150,17 @@ export function Step6Service() {
         <Field label={t("Description")} htmlFor="svc-desc">
           <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder={t("Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines.")} />
         </Field>
+        {existing && (
+          <div className="crd !flex-row !items-center !gap-3 !py-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[1rem] font-semibold">{t('Réservable sur ma page')}</span>
+              <span className="block text-[0.929rem] text-muted">
+                {isActive ? t('Vos clientes peuvent la choisir.') : t('Masquée : elle reste dans votre catalogue.')}
+              </span>
+            </span>
+            <Toggle on={isActive} onChange={setIsActive} label={t('Réservable sur ma page')} />
+          </div>
+        )}
         {error && (
           <p className="text-[1rem] text-danger" role="alert">
             {error}

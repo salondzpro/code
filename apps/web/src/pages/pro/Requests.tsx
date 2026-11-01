@@ -78,10 +78,10 @@ export function Requests() {
   return (
     <Screen bottom={NAV_PAD} gap={14}>
       {/* Nouveau rendez-vous : le « + » de l'en-tête, toujours à portée — pas de second bouton ici. */}
-      <h1 className="h1">{t('Réservations')}</h1>
+      <h1 className="h1">{t('Demandes')}</h1>
 
       <Tabs
-        label={t('Réservations')}
+        label={t('Demandes')}
         className="rsv-tabs"
         value={tab}
         onChange={setChosen}

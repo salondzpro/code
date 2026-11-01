@@ -1633,4 +1633,9 @@ export const ar: Record<string, string> = {
   "J": "ي",
   "S": "أ",
   "M": "ش",
+  // Prestations : activation dans la fiche
+  "Réservable sur ma page": "قابلة للحجز في صفحتي",
+  "Vos clientes peuvent la choisir.": "يمكن لزبوناتك اختيارها.",
+  "Masquée : elle reste dans votre catalogue.": "مخفية: تبقى في قائمة خدماتك.",
+  "masquée": "مخفية",
 };

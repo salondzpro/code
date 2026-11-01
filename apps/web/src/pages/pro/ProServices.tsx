@@ -8,7 +8,7 @@ import { Camera, ChevronRight, Plus, Tags } from 'lucide-react';
 import { useProSalon, useProServiceMutations } from '@salondz/api-client';
 import { formatDA, groupServices } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
-import { Button, I, Img, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { Button, I, Img, SectionLabel, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -17,7 +17,7 @@ import { t } from '@/i18n';
 export function ProServices() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  const { update, remove } = useProServiceMutations();
+  const { remove } = useProServiceMutations();
   if (!salon) return <PageLoading />;
   const groups = groupServices(salon.services);
   return (
@@ -42,7 +42,7 @@ export function ProServices() {
         </span>
         <I icon={ChevronRight} size={18} className="text-disabled" />
       </button>
-      <ErrorMessage error={update.error ?? remove.error} />
+      <ErrorMessage error={remove.error} />
       {salon.services.length === 0 && <p className="p">{t("Ajoutez votre première prestation.")}</p>}
       {groups.map((g) => (
         <div key={g.name} className="flex flex-col gap-3">
@@ -84,15 +84,12 @@ export function ProServices() {
                       </span>
                       <span className="block text-[1rem] text-muted">
                         {formatDA(sv.priceDa)} · {formatDuration(sv.durationMinutes)}
-                        {sv.isActive ? '' : ' · désactivée'}
+                        {sv.isActive ? '' : ` · ${t('masquée')}`}
                       </span>
                     </span>
                   </button>
-                  <Toggle
-                    on={sv.isActive}
-                    onChange={(v) => update.mutate({ id: sv.id, isActive: v })}
-                    label={`Activer ${sv.name}`}
-                  />
+                  {/* Prix et durée seulement : l'activation se règle dans la fiche (planche « Analyse »). */}
+                  <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
                 </div>
               );
             })}

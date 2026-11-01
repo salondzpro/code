@@ -1649,4 +1649,9 @@ export const en: Record<string, string> = {
   "J": "D",
   "S": "W",
   "M": "M",
+  // Prestations : activation dans la fiche
+  "Réservable sur ma page": "Bookable on my page",
+  "Vos clientes peuvent la choisir.": "Your clients can choose it.",
+  "Masquée : elle reste dans votre catalogue.": "Hidden: it stays in your catalogue.",
+  "masquée": "hidden",
 };
