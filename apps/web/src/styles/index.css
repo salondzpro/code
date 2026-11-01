@@ -982,14 +982,15 @@ body::before {
   .nvi.on .nvl {
     font-weight: 600;
   }
-  /* Rond central (Agenda) : il dépasse du panneau, cerclé de blanc, et passe à l'accent quand on y est. */
+  /* Rond central (Agenda) : il dépasse du panneau, cerclé de blanc, toujours à l'encre (maquette 9) ;
+     quand on y est, seul le libellé passe à l'accent. */
   .nvi.ctr {
     justify-content: flex-end;
     padding-bottom: 0.6875rem;
     color: var(--color-text);
   }
   .nvi.ctr.on {
-    color: var(--color-text);
+    color: var(--color-accent);
   }
   .nvc {
     position: relative;
@@ -1007,10 +1008,6 @@ body::before {
     justify-content: center;
     box-shadow: 0 10px 22px -6px rgb(30 27 48 / 0.4);
     transition: background-color 0.15s ease;
-  }
-  .nvi.ctr.on .nvc {
-    background: var(--color-accent);
-    box-shadow: 0 10px 22px -6px rgb(108 92 231 / 0.55);
   }
   .nvc .nvd {
     top: -0.25rem;
