@@ -1,0 +1,36 @@
+/**
+ * Paramètres (refonte du 1er nov. 2026, ergonomie mew3id) : UNE page qui rassemble tous les réglages
+ * du salon, en une carte de lignes. Elle remplace les pages relais « Profil », « Mon salon » et
+ * « Rendez-vous » du tiroir. « Équipe » n'est proposée en avant qu'à partir de deux personnes ; une
+ * indépendante la trouve sous « Travailler à plusieurs ».
+ */
+import { CalendarClock, CalendarOff, Clock, Store, UserCircle, Users } from 'lucide-react';
+import { useProSalon } from '@salondz/api-client';
+import { Screen, NAV_PAD } from '@/components/AppFrame';
+import { PageHead, SettingRow } from '@/components/ui';
+import { t } from '@/i18n';
+
+export function Parametres() {
+  const salon = useProSalon().data?.salon ?? null;
+  const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
+  return (
+    <Screen bottom={NAV_PAD} gap={18}>
+      <PageHead title={t('Paramètres')} sub={t('Votre salon, vos horaires et votre compte.')} />
+      <div className="lst">
+        <SettingRow to="/pro/mon-salon" icon={Store} title={t('Mon salon')} sub={t('Nom, adresse, photos, spécialités')} />
+        <SettingRow to="/pro/profil/horaires" icon={Clock} title={t("Horaires d'ouverture")} sub={t('Jours et heures où l’on peut réserver')} />
+        <SettingRow to="/pro/blocages" icon={CalendarOff} title={t('Fermetures')} sub={t('Congés, jours fermés')} />
+        <SettingRow to="/pro/reglages/rendez-vous" icon={CalendarClock} title={t('Règles de réservation')} sub={t('Délais, annulation, validation')} />
+      </div>
+      <div className="lst">
+        <SettingRow
+          to="/pro/equipe"
+          icon={Users}
+          title={team ? t('Équipe') : t('Travailler à plusieurs')}
+          sub={team ? t('Membres, leurs horaires et prestations') : t('Ajoutez une personne qui travaille avec vous')}
+        />
+        <SettingRow to="/pro/compte" icon={UserCircle} title={t('Mon compte')} sub={t('Identité, langue, notifications')} />
+      </div>
+    </Screen>
+  );
+}

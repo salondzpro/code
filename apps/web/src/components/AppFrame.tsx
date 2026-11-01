@@ -4,13 +4,13 @@
  * la largeur de l'écran (`--shell-w`) au lieu de rester une colonne perdue dans le gris ;
  * c'est la seule différence, et elle est entièrement portée par la feuille de style.
  */
-import { type CSSProperties, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { useProPendingUnseenCount, useProUnseenBookings } from '@salondz/api-client';
-import { Calendar, CalendarDays, ContactRound, House, Inbox, LayoutGrid, Menu, User, type LucideIcon } from 'lucide-react';
+import { useProPendingUnseenCount, useProSalon, useProUnseenBookings } from '@salondz/api-client';
+import { Calendar, CalendarDays, Inbox, LayoutGrid, Menu, User, Users, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 import { PushToast } from './PushToast';
-import { PRO_MENU_EVENT } from './ProHeader';
+import { ProPlusSheet } from './ProPlusSheet';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
 
@@ -108,16 +108,20 @@ const CLIENT_NAV: NavItem[] = [
  * « Plus », qui mène à toute la gestion (salon, catalogue, équipe, règles, compte). L'Agenda est
  * au CENTRE, en grand rond : c'est l'écran qu'on ouvre le plus, il est sous le pouce.
  */
-const PRO_NAV: NavItem[] = [
-  { to: '/pro', label: t("Accueil"), icon: House, end: true },
-  { to: '/pro/reservations', label: t("Réservations"), icon: Inbox },
+const proNav = (women: boolean): NavItem[] => [
+  { to: '/pro', label: t("Accueil"), icon: LayoutGrid, end: true },
+  { to: '/pro/reservations', label: t("Demandes"), icon: Inbox },
   { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, center: true },
-  { to: '/pro/clients', label: t("Clients"), icon: ContactRound },
-  { to: '/pro/profil', label: t("Plus"), icon: Menu, rest: true },
+  // « Clientes » pour un salon de femmes (comme la maquette 11), « Clients » sinon.
+  { to: '/pro/clients', label: women ? t("Clientes") : t("Clients"), icon: Users },
+  { to: '/pro/plus', label: t("Plus"), icon: Menu, rest: true },
 ];
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
-  const items = kind === 'client' ? CLIENT_NAV : PRO_NAV;
+  // Seulement côté pro : un client n'a pas de salon (la requête répondrait une erreur).
+  const market = useProSalon(kind === 'pro').data?.salon?.genderTarget;
+  const items = kind === 'client' ? CLIENT_NAV : proNav(market === 'women');
+  const [plus, setPlus] = useState(false);
   /**
    * À partir de 1 024 px, la navigation vit dans l'en-tête (client) ou dans le rail
    * permanent (pro) : une pastille flottante au milieu d'un écran de 1 900 px n'a plus de
@@ -149,9 +153,9 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
         }
       : {};
   /**
-   * « Plus » mène au hub de gestion (`/pro/profil`) : il reste allumé sur toutes les pages de
-   * gestion qui n'ont pas leur propre onglet (salon, catalogue, équipe, règles, compte…), pour
-   * qu'on sache toujours où l'on est.
+   * « Plus » ouvre le menu en tuiles (`ProPlusSheet`) : il reste allumé sur toutes les pages de
+   * gestion qui n'ont pas leur propre onglet (prestations, ma page, paramètres…), pour qu'on sache
+   * toujours où l'on est.
    */
   const { pathname } = useLocation();
   const restActive =
@@ -164,13 +168,12 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
     <nav className="nvb" aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}>
       {items.map((it) =>
         it.rest ? (
-          // « Plus » ouvre le menu complet (toute la gestion, la page publique, le compte) : il
-          // remplace le bouton de menu de l'en-tête, qu'on ne voit plus sur téléphone.
+          // « Plus » ouvre le menu en tuiles (prestations, ma page, avis, paramètres, aide…).
           <button
             key={it.to}
             type="button"
-            className={`nvi${restActive ? ' on' : ''}`}
-            onClick={() => window.dispatchEvent(new Event(PRO_MENU_EVENT))}
+            className={`nvi${restActive || plus ? ' on' : ''}`}
+            onClick={() => setPlus(true)}
             aria-haspopup="dialog"
           >
             <span className="relative flex items-center justify-center">
@@ -231,6 +234,7 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
         </NavLink>
         ),
       )}
+      {plus && <ProPlusSheet onClose={() => setPlus(false)} />}
     </nav>
   );
 }

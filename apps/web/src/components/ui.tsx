@@ -599,6 +599,70 @@ export function Card({
   );
 }
 
+/**
+ * En-tête de page de la librairie (1er nov. 2026, ergonomie mew3id) : un grand titre Outfit et UNE
+ * phrase grise, une action ronde à droite au besoin. Pas de barre d'en-tête au-dessus.
+ */
+export function PageHead({ title, sub, action }: { title: ReactNode; sub?: ReactNode; action?: ReactNode }) {
+  return (
+    <div className="pgh">
+      <div className="min-w-0 flex-1">
+        <h1 className="h1">{title}</h1>
+        {sub && <p className="pgh-s">{sub}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+/**
+ * Ligne d'une carte de réglages (librairie) : icône dans une tuile pâle, titre, sous-titre, puis
+ * chevron, valeur ou interrupteur. Les lignes se rangent dans `<div className="lst">`.
+ */
+export function SettingRow({
+  to,
+  onClick,
+  icon,
+  title,
+  sub,
+  right,
+  danger,
+}: {
+  to?: string;
+  onClick?: () => void;
+  icon: LucideIcon;
+  title: ReactNode;
+  sub?: ReactNode;
+  right?: ReactNode;
+  danger?: boolean;
+}) {
+  const inner = (
+    <>
+      <span className={`ico${danger ? ' dg' : ''}`} aria-hidden>
+        <I icon={icon} size={18} strokeWidth={2} />
+      </span>
+      <span className="lst-t">
+        <span className={danger ? 'text-danger' : ''}>{title}</span>
+        {sub && <small>{sub}</small>}
+      </span>
+      {right ?? ((to || onClick) && <I icon={ChevronRight} size={18} className="shrink-0 text-disabled rtl:rotate-180" />)}
+    </>
+  );
+  if (to)
+    return (
+      <Link to={to} className="lst-r">
+        {inner}
+      </Link>
+    );
+  if (onClick)
+    return (
+      <button type="button" onClick={onClick} className="lst-r w-full text-start">
+        {inner}
+      </button>
+    );
+  return <div className="lst-r">{inner}</div>;
+}
+
 /** Encadré d'information gris avec l'icône ⓘ (design .sf). */
 export function InfoBox({ children }: { children: ReactNode }) {
   return (
@@ -791,8 +855,8 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center gap-2 px-5 py-6 text-center">
       {Icon && (
-        <span className="mb-1 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-fill text-muted">
-          <Icon size={30} strokeWidth={1.6} />
+        <span className="mb-1 flex h-[3.714rem] w-[3.714rem] items-center justify-center rounded-full bg-accent-soft text-accent-strong">
+          <Icon size={24} strokeWidth={1.9} />
         </span>
       )}
       <div className="h2">{title}</div>

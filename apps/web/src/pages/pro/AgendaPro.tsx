@@ -8,8 +8,8 @@
  * date et sa position.
  */
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
-import { useNavigate } from 'react-router';
-import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router';
+import { CalendarCheck, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import {
   useProBlocks,
   useProBookings,
@@ -372,6 +372,10 @@ export function AgendaPro() {
         />
       )}
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
+      {/* « + » nouveau rendez-vous (maquette 9) : sur téléphone, il n'y a plus d'en-tête qui le portait. */}
+      <Link to="/pro/rendez-vous/nouveau" className="fab fab-ag lg:!hidden" aria-label={t('Nouveau rendez-vous')}>
+        <I icon={Plus} size={26} strokeWidth={2.4} />
+      </Link>
     </Screen>
   );
 }

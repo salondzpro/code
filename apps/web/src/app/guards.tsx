@@ -74,9 +74,11 @@ export function ProLayout() {
    */
   const desktop = useDesktop();
   return (
-    <AppFrame>
+    // Refonte du 1er nov. 2026 : sur téléphone, plus d'en-tête ni de tiroir (titre dans la page, cloche
+    // sur l'accueil, « + » dans l'agenda, gestion dans « Plus »). L'en-tête ne reste qu'avec le rail.
+    <AppFrame className="pro-frame">
       <ActingAsBanner />
-      <ProHeader />
+      {desktop && <ProHeader />}
       <SalonSuspendedNotice />
       <div className="pro-shell">
         {desktop && <ProRail salon={salon} pending={pending} />}

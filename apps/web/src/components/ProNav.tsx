@@ -32,10 +32,11 @@ import {
   type LucideIcon,
   ExternalLink, QrCode } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
-import { useProReviewsUnanswered, useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
+import { useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
+import { usePlusTiles } from './ProPlusSheet';
 import { env } from '@/lib/env';
 import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
@@ -114,7 +115,7 @@ export function ProNav({
 }) {
   const { seDeconnecter, enCours } = useSignOut();
   // Un avis sans réponse attend quelque chose du professionnel : il est compté comme une demande.
-  const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
+  const plusTiles = usePlusTiles();
   // Non lues : même requête que la cloche de l'en-tête et la liste — un seul chiffre partout.
   const nonLues = useUnreadNotifications(!!salon);
   const pasVus = useProUnseenBookings(!!salon).data?.total ?? 0;
@@ -136,44 +137,21 @@ export function ProNav({
         </Link>
       )}
 
+      {/* Refonte du 1er nov. 2026 : les MÊMES entrées que le téléphone (onglets + menu « Plus »),
+          18 entrées ramenées à 12. Les anciennes pages restent joignables depuis Paramètres. */}
       <Group
         title={t("Au quotidien")}
         items={[
           { to: '/pro', label: t("Accueil"), icon: House, end: true },
+          { to: '/pro/reservations', label: t("Demandes"), icon: Inbox, count: pending },
           { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, count: pasVus },
-          { to: '/pro/reservations', label: t("Réservations"), icon: Inbox, count: pending },
-          { to: '/pro/clients', label: t("Clients"), icon: ContactRound },
-          { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },
+          { to: '/pro/clients', label: salon?.genderTarget === 'women' ? t("Clientes") : t("Clients"), icon: ContactRound },
         ]}
       />
-      <Group
-        title={t("Mon établissement")}
-        items={[
-          { to: '/pro/mon-salon', label: t("Mon salon"), icon: Store },
-          { to: '/pro/catalogue', label: t("Catalogue"), icon: Tag },
-          { to: '/pro/equipe', label: t("Équipe"), icon: Users },
-          { to: '/pro/profil/horaires', label: t("Horaires d'ouverture"), icon: Clock },
-          { to: '/pro/blocages', label: t("Fermetures et blocages"), icon: CalendarOff },
-          { to: '/pro/reglages/rendez-vous', label: t("Règles de rendez-vous"), icon: CalendarCog },
-        ]}
-      />
-      <Group
-        title={t("Page publique")}
-        items={[
-          { to: '/pro/avis', label: t("Avis"), icon: Star, count: unanswered },
-          ...(salon
-            ? [{ to: `apercu:${salon.slug}`, label: t('Aperçu de ma page'), icon: Eye, externe: `${env.siteUrl}/s/${salon.slug}` }]
-            : []),
-          { to: '/pro/lien', label: t("Lien et partage"), icon: Share2 },
-          { to: '/pro/qr', label: t("Étiquettes à imprimer"), icon: QrCode },
-        ]}
-      />
+      <Group title={t("Gérer")} items={plusTiles.map((p) => ({ to: p.to, label: p.label, icon: p.icon, count: p.count }))} />
       <Group
         title={t("Compte")}
-        items={[
-          { to: '/pro/compte', label: t("Mon compte"), icon: UserCircle },
-          { to: '/pro/notifications', label: t("Notifications"), icon: Bell, count: nonLues },
-        ]}
+        items={[{ to: '/pro/notifications', label: t("Notifications"), icon: Bell, count: nonLues }]}
       />
 
       <div className="mt-auto flex flex-col pt-2">

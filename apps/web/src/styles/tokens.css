@@ -83,19 +83,19 @@
   --font-display: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /**
-   * Arrondis — COMPROMIS du 1er nov. 2026 entre les angles nets de SalonDZ (8 / 6 px, consigne du
-   * 15 sept.) et les grandes rondeurs de mew3id (16–24 px), à la demande du propriétaire : cartes
-   * 14 px, boutons et champs 12 px, petit mobilier 10 px, feuilles 20 px. Racine 14 px.
-   * Toujours par ces jetons, jamais une valeur en dur.
+   * Arrondis — LIBRAIRIE DE DESIGN du 1er nov. 2026 (valeurs des maquettes 11 et 9 validées par le
+   * propriétaire, ergonomie mew3id) : cartes 22 px, boutons, champs et tuiles 14 px, créneaux 12 px,
+   * feuilles 28 px. Remplace le compromis du même jour (14 / 12 / 10 / 20) et la consigne « réduits »
+   * du 15 sept. Toujours par ces jetons, jamais une valeur en dur. Racine 14 px.
    */
-  --radius-card: 1rem; /* 14 px */
-  --radius-card-sm: 0.714rem; /* 10 px */
-  --radius-btn: 0.857rem; /* 12 px */
-  --radius-input: 0.857rem; /* 12 px */
-  --radius-slot: 0.714rem; /* 10 px */
-  --radius-img: 0.714rem; /* 10 px */
+  --radius-card: 1.571rem; /* 22 px */
+  --radius-card-sm: 1rem; /* 14 px */
+  --radius-btn: 1rem; /* 14 px */
+  --radius-input: 1rem; /* 14 px */
+  --radius-slot: 0.857rem; /* 12 px */
+  --radius-img: 1rem; /* 14 px */
   --radius-pill: 62.4375rem;
-  --radius-sheet: 1.428rem; /* 20 px */
+  --radius-sheet: 2rem; /* 28 px */
 
   /* Ombres teintées de l'encre (jamais du noir pur) : douces, elles décollent sans salir. */
   --shadow-card: 0 1px 2px rgb(30 27 48 / 0.04), 0 12px 32px -14px rgb(30 27 48 / 0.16);
