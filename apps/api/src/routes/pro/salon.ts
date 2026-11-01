@@ -281,6 +281,51 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  /**
+   * Visites de la page publique sur une période (carte « Votre page » de l'accueil, 1er nov. 2026) :
+   * total, jour par jour, par provenance, et réservations EN LIGNE reçues sur la même période.
+   */
+  app.get(
+    '/page-stats',
+    {
+      preHandler: app.requireSalon,
+      schema: { querystring: z.object({ from: dateKey, to: dateKey }) },
+    },
+    async (req, reply) => {
+      const salonId = req.salon!.id;
+      const { from, to } = req.query;
+      // Une période d’au plus 400 jours : la réponse liste chaque jour.
+      if (to < from || addDaysToKey(from, 400) < to) throw badRequest('BAD_RANGE', 'Période invalide.');
+      const [views, online] = await Promise.all([
+        db.from('salon_page_views').select('day, source, views').eq('salon_id', salonId).gte('day', from).lte('day', to),
+        db
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('salon_id', salonId)
+          .eq('source', 'online')
+          .gte('created_at', localDateTimeToISO(from, '00:00'))
+          .lt('created_at', localDateTimeToISO(addDaysToKey(to, 1), '00:00')),
+      ]);
+      if (views.error) throw views.error;
+      if (online.error) throw online.error;
+      const byDay = new Map<string, number>();
+      const bySource = { link: 0, instagram: 0, qr: 0, other: 0 };
+      for (const r of views.data ?? []) {
+        byDay.set(r.day, (byDay.get(r.day) ?? 0) + r.views);
+        bySource[r.source as keyof typeof bySource] += r.views;
+      }
+      const days: { date: string; views: number }[] = [];
+      for (let d = from; d <= to; d = addDaysToKey(d, 1)) days.push({ date: d, views: byDay.get(d) ?? 0 });
+      reply.header('Cache-Control', 'private, no-store');
+      return {
+        total: days.reduce((s, d) => s + d.views, 0),
+        byDay: days,
+        bySource,
+        bookings: online.count ?? 0,
+      };
+    },
+  );
+
   /** Statistiques d'une période (jour / semaine / mois). */
   app.get(
     '/stats/range',

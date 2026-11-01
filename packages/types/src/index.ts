@@ -448,6 +448,16 @@ export interface ProDashboardStats {
 }
 
 /** Statistiques d'une période (design « Chiffre d'affaires » jour / semaine / mois). */
+/** Visites de la page publique sur une période (carte « Votre page », 1er nov. 2026). */
+export type PageViewSource = 'link' | 'instagram' | 'qr' | 'other';
+export interface ProPageStats {
+  total: number;
+  byDay: { date: DateKey; views: number }[];
+  bySource: Record<PageViewSource, number>;
+  /** Réservations EN LIGNE reçues sur la période. */
+  bookings: number;
+}
+
 export interface ProStatsRange {
   from: DateKey;
   to: DateKey;

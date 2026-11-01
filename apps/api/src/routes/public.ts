@@ -160,6 +160,29 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  /**
+   * Visite de la page publique d'un salon (1er nov. 2026, carte « Votre page » de l'accueil pro).
+   * Un simple compteur par salon, jour et provenance (migration 0053) : AUCUNE donnée personnelle.
+   * Le site ne l'envoie qu'une fois par session et par salon ; l'API borne le débit par adresse.
+   * Jamais bloquant : une erreur est journalisée et la réponse reste 204.
+   */
+  app.post(
+    '/salons/:id/view',
+    {
+      config: { rateLimit: { max: 30, timeWindow: '10 minutes' } },
+      schema: {
+        params: z.object({ id: z.string().uuid() }),
+        body: z.object({ source: z.enum(['link', 'instagram', 'qr', 'other']) }),
+      },
+    },
+    async (req, reply) => {
+      const res = await db.rpc('record_page_view', { p_salon_id: req.params.id, p_source: req.body.source });
+      if (res.error) req.log.warn({ err: res.error.message }, 'visite de page non comptée');
+      reply.header('Cache-Control', 'no-store');
+      return reply.code(204).send();
+    },
+  );
+
   app.get(
     '/salons/:slug',
     {

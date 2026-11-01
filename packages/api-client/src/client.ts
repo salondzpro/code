@@ -1,6 +1,8 @@
 import type { LabelSettings, LabelSocial, LabelStyle } from '@salondz/constants';
 import type {
   ApiErrorBody,
+  PageViewSource,
+  ProPageStats,
   AvailabilityResponse,
   Booking,
   BookingWithSalon,
@@ -466,6 +468,8 @@ export function createApiClient(opts: ApiClientOptions) {
       salon: (slug: string) => get<SalonPublic>(`/salons/${encodeURIComponent(slug)}`),
       availability: (salonId: string, q: AvailabilityQuery) =>
         get<AvailabilityResponse>(`/salons/${salonId}/availability`, q as Query, false),
+      /** Visite de la page d'un salon (compteur anonyme, jamais bloquant). */
+      pageView: (salonId: string, source: PageViewSource) => post<void>(`/salons/${salonId}/view`, { source }),
       reviews: (salonId: string, offset = 0, limit = 20, sort: ReviewSort = 'best') =>
         get<Paginated<ReviewItem>>(`/salons/${salonId}/reviews`, { offset, limit, sort }, false),
       /** Synthèse IA des avis (`null` sous le seuil ou tant qu'elle n'est pas calculée). */
@@ -544,6 +548,7 @@ export function createApiClient(opts: ApiClientOptions) {
       stats: () => get<ProDashboardStats>('/pro/stats'),
       statsRange: (from: string, to: string) =>
         get<ProStatsRange>('/pro/stats/range', { from, to }),
+      pageStats: (from: string, to: string) => get<ProPageStats>('/pro/page-stats', { from, to }),
       slugCheck: (name: string) =>
         get<{ slug: string; available: boolean }>('/pro/salon/slug-check', { name }),
       services: {

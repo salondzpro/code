@@ -18,6 +18,8 @@ import {
   Star,
 } from 'lucide-react';
 import { writeDraft } from '@/lib/bookingDraft';
+import { recordPageView } from '@/lib/pageView';
+import { useApi } from '@salondz/api-client';
 import { env } from '@/lib/env';
 import { Toast } from '@/components/ui';
 import { Check } from 'lucide-react';
@@ -104,6 +106,12 @@ export function Salon() {
   const back = useBack('/');
   const { session } = useAuth();
   const salon = useSalon(slug);
+  const { api } = useApi();
+  // Visite comptée pour la carte « Votre page » du professionnel (anonyme, une fois par session).
+  const salonId = salon.data?.id;
+  useEffect(() => {
+    if (salonId) recordPageView(salonId, (src) => api.public.pageView(salonId, src));
+  }, [salonId, api]);
   const favs = useFavorites(!!session);
   const standing = useBookingStanding(salon.data?.id ?? '', !!session);
   const cannotBook = !!standing.data && !standing.data.canBook;

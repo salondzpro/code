@@ -30,6 +30,7 @@ export const queryKeys = {
     salon: ['pro', 'salon'] as const,
     stats: ['pro', 'stats'] as const,
     statsRange: (from: string, to: string) => ['pro', 'stats', from, to] as const,
+    pageStats: (from: string, to: string) => ['pro', 'page-stats', from, to] as const,
     bookings: (q: Partial<ListBookingsQuery>) => ['pro', 'bookings', q] as const,
     bookingsAll: ['pro', 'bookings'] as const,
     pending: ['pro', 'bookings', 'pending'] as const,
@@ -201,6 +202,12 @@ export function makeQueries(api: ApiClient) {
           queryKey: queryKeys.pro.statsRange(from, to),
           queryFn: () => api.pro.statsRange(from, to),
           staleTime: 30_000,
+        }),
+      pageStats: (from: string, to: string) =>
+        queryOptions({
+          queryKey: queryKeys.pro.pageStats(from, to),
+          queryFn: () => api.pro.pageStats(from, to),
+          staleTime: 60_000,
         }),
       bookings: (q: Partial<ListBookingsQuery> = {}) =>
         queryOptions({

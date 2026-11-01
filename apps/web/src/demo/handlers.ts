@@ -361,6 +361,8 @@ on('POST', '/me/role', (c) => {
 on('POST', '/me/push-tokens', () => none());
 // Démonstration : le signalement d'un avis est accepté sans rien envoyer (comme tout le reste de la démonstration).
 on('POST', '/reviews/:id/report', () => none());
+// Visite de page (compteur anonyme) : rien à compter dans un monde de démonstration.
+on('POST', '/salons/:id/view', () => none());
 on('DELETE', '/me/push-tokens/:token', () => none());
 // La démonstration n'enregistre aucun appareil : le site se comporte comme pour un compte sans application.
 on('GET', '/me/push-devices', () => ok({ app: 0, web: 0 }));
@@ -648,6 +650,19 @@ on('GET', '/pro/salon/slug-check', (c) => {
 });
 on('GET', '/pro/stats', (c) => ok(dashboardStats(c.w, ownedSalon(c).id, c.now)));
 on('GET', '/pro/stats/range', (c) => ok(statsRange(c.w, ownedSalon(c).id, c.query.get('from')!, c.query.get('to')!)));
+// Visites de la page (démonstration) : des chiffres stables par jour, tirés de la date — la carte
+// « Votre page » de l'accueil a quelque chose de vraisemblable à montrer.
+on('GET', '/pro/page-stats', (c) => {
+  const from = c.query.get('from')!, to = c.query.get('to')!;
+  const byDay: { date: string; views: number }[] = [];
+  for (let d = from; d <= to; d = addDaysToKey(d, 1)) {
+    const seed = [...d].reduce((n, ch) => n * 31 + ch.charCodeAt(0), 7) % 997;
+    byDay.push({ date: d, views: d > toLocalDateKey() ? 0 : 8 + (seed % 19) });
+  }
+  const total = byDay.reduce((n, x) => n + x.views, 0);
+  const instagram = Math.round(total * 0.24), qr = Math.round(total * 0.12);
+  return ok({ total, byDay, bySource: { link: total - instagram - qr, instagram, qr, other: 0 }, bookings: Math.max(1, Math.round(total / 14)) });
+});
 
 // ---------------------------------------------------------------------------------------------
 // Espace pro : prestations

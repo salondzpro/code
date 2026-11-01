@@ -309,6 +309,10 @@ export const useProStatsRange = (from: string, to: string, enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.statsRange(from, to), enabled });
 };
+export const useProPageStats = (from: string, to: string, enabled = true) => {
+  const { queries } = useApi();
+  return useQuery({ ...queries.pro.pageStats(from, to), enabled, retry: false });
+};
 export const useProBookings = (q: Partial<ListBookingsQuery> = {}, enabled = true) => {
   const { queries } = useApi();
   return useQuery({ ...queries.pro.bookings(q), enabled });
