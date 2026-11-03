@@ -1,160 +1,117 @@
 /**
- * Espace pro — Profil = porte d'entrée de la gestion, en six rubriques métier (une sous-page dédiée chacune) :
- * Mon salon · Catalogue · Équipe · Clients · Rendez-vous · Compte. En tête, la page publique (logo, couverture,
- * en ligne / non publiée, Aperçu, Partager). La navigation basse ne garde que Accueil / Agenda / Réservations / Profil.
+ * Espace pro — PROFIL, quatrième onglet de la barre du bas (3 nov. 2026) : la porte d'entrée de toute
+ * la gestion, en une page. En tête, le salon tel que les clientes le voient (logo, nom, lien, en ligne
+ * ou non, Aperçu, Partager) ; puis ce qu'on gère au fil des semaines (clientèle, prestations, page,
+ * avis, chiffre d'affaires, équipe), puis les réglages et l'aide, puis la déconnexion.
+ *
+ * Il remplace l'onglet « Clientes » et la feuille « Plus » du 1er nov. : la barre du bas ne garde que
+ * le quotidien (Accueil · Agenda · Demandes · Profil) et rien de la gestion n'est perdu — tout est ICI,
+ * une ligne par destination, sans sous-menu. « Équipe » n'apparaît qu'à partir de deux personnes
+ * actives (une indépendante la trouve dans Paramètres, « Travailler à plusieurs »).
  */
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
 import {
-  CalendarCog,
+  Bell,
   Camera,
+  ChartColumn,
+  ChevronRight,
+  CircleHelp,
   Clock,
   ContactRound,
   Eye,
+  Link2,
+  LogOut,
+  Scissors,
+  Settings,
   Share2,
-  Store,
-  Tag,
-  UserCircle,
+  Star,
   Users,
-  type LucideIcon,
 } from 'lucide-react';
-import { useProSalon, useProSalonMutations } from '@salondz/api-client';
-import {
-  DAY_LABELS_FR,
-  SALON_MAX_PHOTOS,
-  dayOfWeekFromKey,
-  toLocalDateKey,
-} from '@salondz/constants';
+import { useProReviewsUnanswered, useProSalon, useProSalonMutations, useUnreadNotifications } from '@salondz/api-client';
+import { DAY_LABELS_FR, dayOfWeekFromKey, toLocalDateKey } from '@salondz/constants';
 import { uploadSalonPhoto } from '@/lib/upload';
+import { useSignOut } from '@/lib/auth';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, Badge, Button, I, ListRow, SectionLabel } from '@/components/ui';
+import { Avatar, Badge, Button, I, PageHead, SettingRow } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { ShareSheet, usePublicUrl } from './Link';
-import { RowText } from './MonSalon';
-import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
+import { ImageCropper } from '@/components/ImageCropper';
 import { env } from '@/lib/env';
 import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
 
-/** Tuile de rubrique (2 par ligne) : icône, titre, ce qu'on y trouve. */
-function Tile({
-  to,
-  icon,
-  title,
-  sub,
-}: {
-  to: string;
-  icon: LucideIcon;
-  title: string;
-  sub: string;
-}) {
+/** Compteur d'une ligne (avis sans réponse, notifications non lues) : abricot, chiffre noir, puis le chevron. */
+function Count({ n }: { n: number }) {
   return (
-    <Link to={to} className="crd !gap-3 !p-4" aria-label={title}>
-      <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-ink text-white">
-        <I icon={icon} size={20} />
-      </span>
-      <span>
-        <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{title}</span>
-        <span className="block text-[0.857rem] leading-snug text-muted">{sub}</span>
-      </span>
-    </Link>
+    <span className="flex flex-none items-center gap-2">
+      {n > 0 && <span className="pf-n">{n > 9 ? '9+' : n}</span>}
+      <I icon={ChevronRight} size={18} className="text-disabled rtl:rotate-180" />
+    </span>
   );
 }
 
 export function ProProfile() {
-  const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
-  const { updateSalon, setPhotos } = useProSalonMutations();
+  const { updateSalon } = useProSalonMutations();
+  const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
+  const unread = useUnreadNotifications(!!salon);
+  const { seDeconnecter, enCours } = useSignOut();
   const [sheet, setSheet] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<'cover' | 'logo' | null>(null);
-  const [crop, setCrop] = useState<{ kind: 'cover' | 'logo'; file: File } | null>(null);
-  const coverInput = useRef<HTMLInputElement | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [crop, setCrop] = useState<File | null>(null);
   const logoInput = useRef<HTMLInputElement | null>(null);
   const { url, short } = usePublicUrl(salon?.slug ?? '');
   if (!salon) return <PageLoading />;
-  const active = salon.staff.filter((m) => m.isActive).length;
+  const team = salon.staff.filter((m) => m.isActive).length > 1;
   const services = salon.services.filter((s) => s.isActive).length;
   const todayDow = dayOfWeekFromKey(toLocalDateKey());
   const todayHours = salon.openingHours.filter((h) => h.dayOfWeek === todayDow && !h.isClosed);
 
-  const upload = async (kind: 'cover' | 'logo', file: File | undefined) => {
-    if (!file) return;
+  const uploadLogo = async (file: File) => {
     setError(null);
-    setBusy(kind);
+    setBusy(true);
     try {
       const u = await uploadSalonPhoto(salon.id, file);
-      if (kind === 'logo') await updateSalon.mutateAsync({ logoUrl: u });
-      // Nouvelle couverture = première photo ; les anciennes couvertures restent dans la galerie.
-      else
-        await setPhotos.mutateAsync(
-          [{ url: u }, ...salon.photos.map((p) => ({ url: p.url }))].slice(0, SALON_MAX_PHOTOS),
-        );
+      await updateSalon.mutateAsync({ logoUrl: u });
     } catch (err) {
       setError(errorText(err));
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   };
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <h1 className="h1">{t("Profil")}</h1>
+      <PageHead title={t('Profil')} />
 
-      {/* Page publique */}
+      {/* Le salon, tel que les clientes le voient */}
       <div className="crd !gap-4">
         <div className="flex items-center gap-3.5">
           <button
             type="button"
             className="relative flex-none"
             onClick={() => logoInput.current?.click()}
-            aria-label={t("Changer la photo de profil")}
-            disabled={busy !== null}
+            aria-label={t('Changer la photo de profil')}
+            disabled={busy}
           >
             <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={72} />
             <span className="absolute -bottom-0.5 -end-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
-              <I icon={Camera} size={16} />
+              {busy ? <span className="btn-spin" aria-hidden /> : <I icon={Camera} size={15} />}
             </span>
           </button>
           <span className="min-w-0 flex-1">
-            <span className="block text-[1.429rem] font-bold tracking-[-0.4px]">{salon.name}</span>
-            <span className="block truncate text-[1rem] text-muted">{short}</span>
+            <span className="line-clamp-2 block font-display text-[1.357rem] font-semibold leading-tight tracking-[-0.3px]">{salon.name}</span>
+            <span className="block truncate text-[0.964rem] text-muted" dir="ltr">
+              {short}
+            </span>
           </span>
           <Badge tone={salon.isPublished ? 'ok' : 'pd'} md>
-            {salon.isPublished ? 'En ligne' : 'Non publiée'}
+            {salon.isPublished ? t('En ligne') : t('Non publiée')}
           </Badge>
         </div>
-        <button
-          type="button"
-          className="relative h-[8.75rem] w-full overflow-hidden rounded-[var(--radius-card-sm)] bg-line"
-          onClick={() => coverInput.current?.click()}
-          aria-label={t("Changer la photo de couverture")}
-          disabled={busy !== null}
-        >
-          {salon.coverUrl ? (
-            <img src={salon.coverUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span className="flex h-full items-center justify-center text-subtle">
-              <I icon={Camera} size={28} />
-            </span>
-          )}
-          <span className="absolute bottom-2.5 end-2.5 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.857rem] font-semibold shadow-sm">
-            <I icon={Camera} size={16} /> {busy === 'cover' ? 'Envoi…' : 'Changer la couverture'}
-          </span>
-        </button>
-        <input
-          ref={coverInput}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) setCrop({ kind: 'cover', file: f });
-            e.target.value = '';
-          }}
-        />
         <input
           ref={logoInput}
           type="file"
@@ -162,16 +119,16 @@ export function ProProfile() {
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];
-            if (f) setCrop({ kind: 'logo', file: f });
+            if (f) setCrop(f);
             e.target.value = '';
           }}
         />
         <div className="g2">
           <Button variant="g" sm onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
-            <I icon={Eye} size={18} /> {t("Aperçu")}
+            <I icon={Eye} size={18} /> {t('Aperçu')}
           </Button>
           <Button sm onClick={() => setSheet(true)}>
-            <I icon={Share2} size={18} /> {t("Partager")}
+            <I icon={Share2} size={18} /> {t('Partager')}
           </Button>
         </div>
         {error && (
@@ -181,87 +138,80 @@ export function ProProfile() {
         )}
       </div>
 
-      {/* Six rubriques métier */}
-      <SectionLabel>{t("Gérer mon activité")}</SectionLabel>
-      <div className="g2">
-        <Tile
-          to="/pro/mon-salon"
-          icon={Store}
-          title={t("Mon salon")}
-          sub="Photos, réalisations, adresse"
-        />
-        <Tile
-          to="/pro/catalogue"
-          icon={Tag}
-          title={t("Catalogue")}
-          sub={`${services} prestation${services > 1 ? 's' : ''} · catégories, prix, durée`}
-        />
-        <Tile
-          to="/pro/equipe"
-          icon={Users}
-          title={t("Équipe")}
-          sub={`${active} membre${active > 1 ? 's' : ''} actif${active > 1 ? 's' : ''} · horaires, absences`}
-        />
-        <Tile
+      {/* Ce qu'on gère au fil des semaines */}
+      <nav className="lst" aria-label={t('Gérer mon activité')}>
+        <SettingRow
           to="/pro/clients"
           icon={ContactRound}
-          title={t("Clients")}
-          sub="Fiches, historique, bloqués"
+          title={salon.genderTarget === 'women' ? t('Clientes') : t('Clients')}
+          sub={t('Fiches, historique, notes')}
         />
-        <Tile
-          to="/pro/reglages/rendez-vous"
-          icon={CalendarCog}
-          title={t("Rendez-vous")}
-          sub="Règles de réservation, annulation, retard"
+        <SettingRow
+          to="/pro/catalogue"
+          icon={Scissors}
+          title={t('Prestations')}
+          sub={services === 1 ? t('1 prestation · prix, durée') : t('{n} prestations · prix, durée', { n: services })}
         />
-        <Tile
-          to="/pro/compte"
-          icon={UserCircle}
-          title={t("Compte")}
-          sub="Profil, notifications, paramètres"
+        <SettingRow to="/pro/lien" icon={Link2} title={t('Ma page')} sub={t('Lien, code QR, étiquettes')} />
+        <SettingRow
+          to="/pro/avis"
+          icon={Star}
+          title={t('Avis')}
+          sub={
+            unanswered
+              ? t('{n} sans réponse', { n: unanswered })
+              : salon.genderTarget === 'women'
+                ? t('Ce que disent vos clientes')
+                : t('Ce que disent vos clients')
+          }
+          right={<Count n={unanswered} />}
         />
-      </div>
+        <SettingRow to="/pro/chiffre-affaires" icon={ChartColumn} title={t("Chiffre d'affaires")} sub={t('Jour, semaine, mois')} />
+        {team && <SettingRow to="/pro/equipe" icon={Users} title={t('Équipe')} sub={t('Membres, leurs horaires et prestations')} />}
+      </nav>
 
-      {/* Horaires d’ouverture : la question du quotidien, à un tap depuis Profil. */}
-      <SectionLabel>{t("Horaires d’ouverture")}</SectionLabel>
-      <div className="crd !gap-0 !py-1">
-        <ListRow to="/pro/profil/horaires">
-          <RowText
-            icon={Clock}
-            title={
-              todayHours.length
-                ? todayHours.map((h) => `${h.opensAt} – ${h.closesAt}`).join(' · ')
-                : 'Fermé aujourd’hui'
-            }
-            sub={`Aujourd’hui · ${t(DAY_LABELS_FR[todayDow])}`}
-          />
-        </ListRow>
+      {/* Réglages et aide */}
+      <nav className="lst" aria-label={t('Paramètres')}>
+        <SettingRow
+          to="/pro/profil/horaires"
+          icon={Clock}
+          title={t("Horaires d'ouverture")}
+          sub={
+            todayHours.length
+              ? `${t('Aujourd’hui')} · ${todayHours.map((h) => `${h.opensAt.slice(0, 5)} – ${h.closesAt.slice(0, 5)}`).join(', ')}`
+              : `${t(DAY_LABELS_FR[todayDow])} · ${t('Fermé')}`
+          }
+        />
+        <SettingRow to="/pro/parametres" icon={Settings} title={t('Paramètres')} sub={t('Salon, fermetures, règles, compte')} />
+        <SettingRow to="/pro/notifications" icon={Bell} title={t('Notifications')} right={<Count n={unread} />} />
+        <SettingRow to="/aide" icon={CircleHelp} title={t('Aide')} />
+      </nav>
+
+      <div className="lst">
+        <SettingRow
+          onClick={() => void seDeconnecter()}
+          icon={LogOut}
+          title={enCours ? t('Déconnexion…') : t('Se déconnecter')}
+          danger
+          right={enCours ? <span className="btn-spin text-danger" aria-hidden /> : <span />}
+        />
       </div>
 
       <BrandFooter />
       {crop && (
         <ImageCropper
-          file={crop.file}
-          aspect={crop.kind === 'logo' ? 1 : COVER_ASPECT}
-          round={crop.kind === 'logo'}
-          title={crop.kind === 'logo' ? 'Recadrer le logo' : 'Recadrer la couverture'}
+          file={crop}
+          aspect={1}
+          round
+          title={t('Recadrer le logo')}
           onCancel={() => setCrop(null)}
           onDone={(f) => {
-            const kind = crop.kind;
             setCrop(null);
-            void upload(kind, f);
+            void uploadLogo(f);
           }}
         />
       )}
-      {sheet && (
-        <ShareSheet
-          name={salon.name}
-          url={url}
-          short={short}
-          logo={salon.logoUrl}
-          onClose={() => setSheet(false)}
-        />
-      )}
+      {sheet && <ShareSheet name={salon.name} url={url} short={short} logo={salon.logoUrl} onClose={() => setSheet(false)} />}
     </Screen>
   );
 }

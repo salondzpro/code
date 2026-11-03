@@ -86,8 +86,9 @@ const page = await ctx.newPage();
 page.on('pageerror', (e) => console.log('  pageerror:', String(e).slice(0, 200)));
 const readBadge = () =>
   page.evaluate(() => {
-    const d = document.querySelector('.nvd');
+    // La pastille de l'onglet Demandes (l'Agenda porte aussi un point `.nvd.dot`, placé AVANT dans la barre).
     const item = [...document.querySelectorAll('.nvi')].find((n) => n.getAttribute('href') === '/pro/reservations');
+    const d = item?.querySelector('.nvd') ?? null;
     const cs = d ? getComputedStyle(d) : null;
     return {
       pastille: d ? d.textContent.trim() : 'aucune',

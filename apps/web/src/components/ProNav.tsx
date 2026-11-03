@@ -13,33 +13,54 @@
 import { Link, NavLink } from 'react-router';
 import {
   Bell,
-  CalendarCog,
   CalendarDays,
-  CalendarOff,
   ChartColumn,
-  Clock,
+  CircleHelp,
   ContactRound,
-  Eye,
   House,
   Inbox,
+  Link2,
   LogOut,
-  Share2,
+  Scissors,
+  Settings,
   Star,
-  Store,
-  Tag,
-  UserCircle,
   Users,
   type LucideIcon,
-  ExternalLink, QrCode } from 'lucide-react';
+  ExternalLink,
+} from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
-import { useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
+import { useProReviewsUnanswered, useProSalon, useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
-import { usePlusTiles } from './ProPlusSheet';
-import { env } from '@/lib/env';
 import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
+
+interface Tile {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  count?: number;
+}
+
+/**
+ * Entrées de gestion du rail (ordinateur) — les mêmes que la page Profil du téléphone. « Équipe »
+ * n'apparaît qu'à partir de deux personnes actives (95 % des pros travaillent seuls).
+ */
+export function usePlusTiles(): Tile[] {
+  const salon = useProSalon().data?.salon ?? null;
+  const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
+  const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
+  return [
+    { to: '/pro/catalogue', label: t('Prestations'), icon: Scissors },
+    { to: '/pro/lien', label: t('Ma page'), icon: Link2 },
+    { to: '/pro/avis', label: t('Avis'), icon: Star, count: unanswered },
+    { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },
+    ...(team ? [{ to: '/pro/equipe', label: t('Équipe'), icon: Users }] : []),
+    { to: '/pro/parametres', label: t('Paramètres'), icon: Settings },
+    { to: '/aide', label: t('Aide'), icon: CircleHelp },
+  ];
+}
 
 interface Item {
   to: string;
@@ -90,7 +111,7 @@ function Group({ title, items }: { title: string; items: Item[] }) {
               />
               <span className="min-w-0 flex-1 truncate text-[1.143rem]">{it.label}</span>
               {!!it.count && (
-                <span className="flex h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1.5 text-[0.857rem] font-bold text-white">
+                <span className="flex h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-apricot px-1.5 text-[0.857rem] font-bold text-ink">
                   {it.count > 9 ? '9+' : it.count}
                 </span>
               )}
@@ -132,7 +153,7 @@ export function ProNav({
             <span className="block truncate text-[0.857rem] text-muted">{short}</span>
           </span>
           <Badge tone={salon.isPublished ? 'ok' : 'pd'}>
-            {salon.isPublished ? 'En ligne' : 'Non publiée'}
+            {salon.isPublished ? t('En ligne') : t('Non publiée')}
           </Badge>
         </Link>
       )}
@@ -143,8 +164,8 @@ export function ProNav({
         title={t("Au quotidien")}
         items={[
           { to: '/pro', label: t("Accueil"), icon: House, end: true },
-          { to: '/pro/reservations', label: t("Demandes"), icon: Inbox, count: pending },
           { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, count: pasVus },
+          { to: '/pro/reservations', label: t("Demandes"), icon: Inbox, count: pending },
           { to: '/pro/clients', label: salon?.genderTarget === 'women' ? t("Clientes") : t("Clients"), icon: ContactRound },
         ]}
       />

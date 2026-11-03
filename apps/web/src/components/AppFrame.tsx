@@ -4,13 +4,12 @@
  * la largeur de l'écran (`--shell-w`) au lieu de rester une colonne perdue dans le gris ;
  * c'est la seule différence, et elle est entièrement portée par la feuille de style.
  */
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useProPendingUnseenCount, useProSalon, useProUnseenBookings } from '@salondz/api-client';
-import { Calendar, CalendarDays, Inbox, LayoutGrid, Menu, User, Users, type LucideIcon } from 'lucide-react';
+import { Calendar, CalendarDays, House, Inbox, LayoutGrid, Store, User, type LucideIcon } from 'lucide-react';
 import { I } from './ui';
 import { PushToast } from './PushToast';
-import { ProPlusSheet } from './ProPlusSheet';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
 
@@ -91,9 +90,7 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   end?: boolean;
-  /** Grand rond central en relief (l'Agenda, côté pro). */
-  center?: boolean;
-  /** « Plus » : actif sur toute page de gestion qui n'a pas son propre onglet. */
+  /** Onglet « Profil » : allumé sur toute page de gestion qui n'a pas son propre onglet. */
   rest?: boolean;
 }
 
@@ -104,24 +101,23 @@ const CLIENT_NAV: NavItem[] = [
 ];
 
 /**
- * Navigation pro (refonte du 1er nov. 2026, façon mew3id) : les quatre écrans du quotidien et
- * « Plus », qui mène à toute la gestion (salon, catalogue, équipe, règles, compte). L'Agenda est
- * au CENTRE, en grand rond : c'est l'écran qu'on ouvre le plus, il est sous le pouce.
+ * Navigation pro (3 nov. 2026, demande du propriétaire) : QUATRE onglets égaux, dans l'ordre du
+ * quotidien — Accueil · Agenda · Demandes · Profil. Plus de rond central en relief : aucun onglet ne
+ * prend plus de place qu'un autre. Profil mène à toute la gestion (clientèle, prestations, ma page,
+ * avis, chiffre d'affaires, équipe, paramètres, aide) ; il reste allumé sur ces pages, pour qu'on
+ * sache toujours où l'on est.
  */
-const proNav = (women: boolean): NavItem[] => [
-  { to: '/pro', label: t("Accueil"), icon: LayoutGrid, end: true },
+const PRO_NAV: NavItem[] = [
+  { to: '/pro', label: t("Accueil"), icon: House, end: true },
+  { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays },
   { to: '/pro/reservations', label: t("Demandes"), icon: Inbox },
-  { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, center: true },
-  // « Clientes » pour un salon de femmes (comme la maquette 11), « Clients » sinon.
-  { to: '/pro/clients', label: women ? t("Clientes") : t("Clients"), icon: Users },
-  { to: '/pro/plus', label: t("Plus"), icon: Menu, rest: true },
+  { to: '/pro/profil', label: t("Profil"), icon: Store, rest: true },
 ];
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
   // Seulement côté pro : un client n'a pas de salon (la requête répondrait une erreur).
-  const market = useProSalon(kind === 'pro').data?.salon?.genderTarget;
-  const items = kind === 'client' ? CLIENT_NAV : proNav(market === 'women');
-  const [plus, setPlus] = useState(false);
+  const salon = useProSalon(kind === 'pro').data?.salon ?? null;
+  const items = kind === 'client' ? CLIENT_NAV : PRO_NAV;
   /**
    * À partir de 1 024 px, la navigation vit dans l'en-tête (client) ou dans le rail
    * permanent (pro) : une pastille flottante au milieu d'un écran de 1 900 px n'a plus de
@@ -129,34 +125,17 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
    */
   const desktop = useDesktop();
   /**
-   * Demandes à confirmer à la main : le compte est posé en rouge sur l'onglet Réservations,
-   * visible depuis n'importe quel écran de l'espace pro. Un rendez-vous qui attend une
-   * confirmation est de l'argent et un client en suspens ; le professionnel ne doit pas
-   * avoir à ouvrir un écran pour l'apprendre.
-   *
-   * Même requête que l'accueil (`['pro','bookings','pending']`) : le cache est partagé,
-   * donc aucune requête de plus, et l'invalidation du temps réel met la pastille à jour
-   * sans rien actualiser.
+   * Demandes à confirmer PAS ENCORE VUES : leur nombre, en abricot, sur l'onglet Demandes, visible
+   * depuis n'importe quel écran de l'espace pro. Même requête que l'accueil : le cache est partagé
+   * et le temps réel met la pastille à jour sans rien actualiser. Elle retombe dès qu'un écran les a
+   * affichées ; le nombre de demandes en attente reste sur l'accueil.
    */
   const pending = useProPendingUnseenCount(kind === 'pro');
   /**
-   * Rendez-vous PAS ENCORE VUS, quelle que soit leur date. Un rendez-vous pris pour la semaine
-   * prochaine n'apparaissait nulle part tant qu'on ne descendait pas jusqu'à ce jour-là : on
-   * pouvait passer à côté pendant des jours. Le compteur de l'agenda le signale.
+   * Rendez-vous PAS ENCORE VUS, quelle que soit leur date (pris pour la semaine prochaine, par
+   * exemple) : un simple point sur l'Agenda — le détail, jour par jour, est dans l'agenda.
    */
-  const unseen = useProUnseenBookings(kind === 'pro');
-  const badges: Record<string, number> =
-    kind === 'pro'
-      ? {
-          '/pro/reservations': pending,
-          '/pro/agenda': unseen.data?.total ?? 0,
-        }
-      : {};
-  /**
-   * « Plus » ouvre le menu en tuiles (`ProPlusSheet`) : il reste allumé sur toutes les pages de
-   * gestion qui n'ont pas leur propre onglet (prestations, ma page, paramètres…), pour qu'on sache
-   * toujours où l'on est.
-   */
+  const unseen = useProUnseenBookings(kind === 'pro').data?.total ?? 0;
   const { pathname } = useLocation();
   const restActive =
     kind === 'pro' &&
@@ -165,76 +144,55 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
 
   if (desktop) return null;
   return (
-    <nav className="nvb" aria-label={kind === 'client' ? 'Navigation' : 'Navigation professionnelle'}>
-      {items.map((it) =>
-        it.rest ? (
-          // « Plus » ouvre le menu en tuiles (prestations, ma page, avis, paramètres, aide…).
-          <button
+    <nav className="nvb" aria-label={kind === 'client' ? t('Navigation') : t('Navigation professionnelle')}>
+      {items.map((it) => {
+        const count = kind === 'pro' && it.to === '/pro/reservations' ? pending : 0;
+        const dot = kind === 'pro' && it.to === '/pro/agenda' && unseen > 0;
+        const label = count
+          ? `${it.label} · ${t('{n} nouvelle(s) demande(s) à confirmer', { n: count })}`
+          : dot
+            ? `${it.label} · ${t('{n} rendez-vous pas encore vu(s)', { n: unseen })}`
+            : undefined;
+        return (
+          <NavLink
             key={it.to}
-            type="button"
-            className={`nvi${restActive || plus ? ' on' : ''}`}
-            onClick={() => setPlus(true)}
-            aria-haspopup="dialog"
+            to={it.to}
+            end={it.end}
+            className={({ isActive }) => `nvi${isActive || (it.rest && restActive) ? ' on' : ''}`}
+            title={it.label}
+            aria-label={label}
           >
-            <span className="relative flex items-center justify-center">
-              <I icon={it.icon} size={22} strokeWidth={restActive ? 2 : 1.6} className="text-current" />
-            </span>
-            <span className="nvl">{it.label}</span>
-          </button>
-        ) : (
-        <NavLink
-          key={it.to}
-          to={it.to}
-          end={it.end}
-          // NOUVELLES DEMANDES (28 oct. 2026) : l'onglet Réservations prend la couleur des demandes
-          // en attente (ambre) et son libellé devient « 2 nouvelles » — une pastille rouge seule
-          // sur une icône grise passait inaperçue. Le compte : demandes PAS ENCORE VUES et PAS
-          // ENCORE CONFIRMÉES ; il retombe dès que la liste les a affichées.
-          className={({ isActive }) => {
-            const on = isActive || (it.rest && restActive);
-            return `nvi${it.center ? ' ctr' : ''}${on ? ' on' : ''}${!on && it.to === '/pro/reservations' && badges[it.to] ? ' nw' : ''}`;
-          }}
-          title={it.label}
-          aria-label={
-            badges[it.to]
-              ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? t('nouveau(x)') : t('nouvelle(s) demande(s) à confirmer')}`
-              : undefined
-          }
-        >
-          {({ isActive }) => {
-            const on = isActive || (!!it.rest && restActive);
-            const badge = !!badges[it.to] && (
-              <span className="nvd" aria-hidden>
-                {badges[it.to]! > 9 ? '9+' : badges[it.to]}
-              </span>
-            );
-            return (
-              <>
-                {it.center ? (
-                  <span className="nvc">
-                    <I icon={it.icon} size={24} strokeWidth={1.9} className="text-current" />
-                    {badge}
-                  </span>
-                ) : (
+            {({ isActive }) => {
+              const on = isActive || (!!it.rest && restActive);
+              return (
+                <>
                   <span className="relative flex items-center justify-center">
-                    <I icon={it.icon} size={22} strokeWidth={on ? 2 : 1.6} className="text-current" />
-                    {badge}
+                    {kind === 'pro' && it.rest && salon ? (
+                      // Profil : la photo du salon (ou son initiale) plutôt qu'une icône de plus.
+                      <span className="nva" aria-hidden>
+                        {(salon.logoUrl ?? salon.coverUrl) ? (
+                          <img src={(salon.logoUrl ?? salon.coverUrl)!} alt="" />
+                        ) : (
+                          salon.name.trim().charAt(0).toUpperCase()
+                        )}
+                      </span>
+                    ) : (
+                      <I icon={it.icon} size={22} strokeWidth={on ? 2 : 1.7} className="text-current" />
+                    )}
+                    {count > 0 && (
+                      <span className="nvd" aria-hidden>
+                        {count > 9 ? '9+' : count}
+                      </span>
+                    )}
+                    {dot && <span className="nvd dot" aria-hidden />}
                   </span>
-                )}
-                <span className="nvl">
-                  {!on && it.to === '/pro/reservations' && badges[it.to]
-                    ? badges[it.to] === 1
-                      ? t('1 nouvelle')
-                      : t('{n} nouvelles', { n: badges[it.to]! > 9 ? '9+' : badges[it.to]! })
-                    : it.label}
-                </span>
-              </>
-            );
-          }}
-        </NavLink>
-        ),
-      )}
-      {plus && <ProPlusSheet onClose={() => setPlus(false)} />}
+                  <span className="nvl">{it.label}</span>
+                </>
+              );
+            }}
+          </NavLink>
+        );
+      })}
     </nav>
   );
 }
