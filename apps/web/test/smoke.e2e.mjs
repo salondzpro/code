@@ -377,12 +377,15 @@ try {
     if (large > 1280) throw new Error(`débordement horizontal : ${large} px`);
     await shot(p, 'pro-coque-ordinateur');
   });
-  await step('pro: profil → photos du salon (logo + couvertures)', async () => {
+  await step('pro: profil → paramètres → photos du salon (logo + couvertures)', async () => {
+    // Profil = porte de toute la gestion depuis le 3 nov. 2026 (onglet de la barre du bas).
     await p.goto(WEB + '/pro/profil');
     await p.getByRole('heading', { name: 'Profil' }).waitFor();
-    await p.getByRole('button', { name: 'Changer la photo de couverture' }).waitFor();
-    // Le rail de navigation porte le même libellé : on vise la carte du contenu.
-    await p.locator('.pro-main').getByRole('link', { name: 'Mon salon' }).click();
+    await p.getByRole('button', { name: 'Changer la photo de profil' }).waitFor();
+    // Le rail de navigation porte les mêmes libellés : on vise le contenu.
+    await p.locator('.pro-main').getByRole('link', { name: /Paramètres/ }).click();
+    await p.waitForURL(/\/pro\/parametres$/);
+    await p.locator('.pro-main').getByRole('link', { name: /Mon salon/ }).click();
     await p.waitForURL(/\/pro\/mon-salon$/);
     await p.getByRole('link', { name: /Photos du salon/ }).click();
     await p.waitForURL(/\/pro\/photos$/);
@@ -468,10 +471,10 @@ try {
     await p.getByRole('button', { name: "Ajouter l'exception" }).click();
     await p.locator('.li', { hasText: '12:00 – 13:00' }).getByText('Karim Smoke · Pause').waitFor();
   });
-  await step('pro: accueil « Votre journée »', async () => {
+  await step('pro: accueil « Ma journée » (bandeau du jour, frise)', async () => {
     await p.goto(WEB + '/pro');
-    await p.getByRole('heading', { name: 'Votre journée' }).waitFor();
-    await p.getByText(/Bonjour/).waitFor();
+    await p.locator('.pro-main').getByRole('heading', { name: 'Ma journée' }).waitFor();
+    await p.locator('.pro-main').getByText('CA du jour').waitFor();
     await shot(p, 'pro-accueil');
   });
   await step('pro: agenda → rendez-vous de passage à 15:00', async () => {

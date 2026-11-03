@@ -1,52 +1,62 @@
 /*
- * Jetons de design — refonte du 1er nov. 2026 (« SalonDZ × mew3id », validée sur le canevas
- * https://claude.ai/artifact/91Wa36xH7wKniVgraxyKUo, accueil 11 et agenda 9).
+ * Jetons de design — identité NOIRE de Salon DZ (3 nov. 2026, demande du propriétaire).
  *
- * UN accent violet (#6c5ce7) pour tout ce qui AGIT ou est CHOISI (bouton principal, interrupteur,
- * case, créneau, champ actif, onglet actif) ; une encre bleu nuit pour le texte et les éléments
- * sombres ; des neutres très légèrement teintés de violet (+7° de teinte, comme mew3id) — c'est ce
- * qui rend la palette harmonieuse sans la colorer. Toutes les valeurs sont calculées en OKLCH à
- * partir de l'accent et leurs contrastes VÉRIFIÉS (texte ≥ 4,5:1, gris secondaire ≥ 6:1).
- * Ne pas ajouter de couleur « au jugé » : une nouvelle nuance se dérive de la même gamme.
+ * Le noir profond #111214 est LA couleur de la marque : celle de l'écran d'ouverture, des étiquettes
+ * imprimées et du QR. Il porte tout ce qui AGIT ou est CHOISI (bouton principal, onglet actif,
+ * filtre, interrupteur, créneau). Blanc pour les surfaces, gris très clair pour le fond, gris foncé
+ * pour le texte secondaire. Deux couleurs seulement, et chacune a UN sens :
+ *   • ABRICOT — ce qui attend le professionnel (demandes à valider, notifications importantes) ;
+ *   • VERT DOUX — ce qui est acquis (rendez-vous confirmé ou terminé).
+ * Plus de violet (accent du 1er nov. retiré), pas de dégradé, ombres à peine visibles : la
+ * profondeur vient d'un filet d'un pixel, pas d'un halo. Contrastes VÉRIFIÉS (texte ≥ 4,5:1 sur le
+ * blanc ET sur le fond). Une nouvelle nuance se dérive de cette gamme, jamais « au jugé ».
+ *
+ * Les noms `--color-accent-*` restent (toute l'application les lit) : ils valent désormais le noir
+ * et ses gris. Changer l'accent de la marque = changer ces seules lignes.
  */
 
 @theme {
   /* Fonds */
-  --color-canvas: #ebeaf2; /* autour de la colonne app sur grand écran */
-  --color-bg: #f6f6fa; /* fond des écrans : blanc à peine froid, jamais lavande */
+  --color-canvas: #ececee; /* autour de la colonne app sur grand écran */
+  --color-bg: #f5f5f6; /* fond des écrans : gris très clair, neutre */
   --color-surface: #ffffff; /* cartes */
-  --color-fill: #f4f4f9; /* surfaces douces (champs, boutons secondaires pleins) */
-  --color-line: #e6e5ee; /* bordures */
-  --color-line-soft: #efeef4; /* séparateurs de liste */
+  --color-fill: #f2f2f3; /* surfaces douces (champs, boutons secondaires pleins) */
+  --color-line: #e4e5e7; /* bordures */
+  --color-line-soft: #eeeff0; /* séparateurs de liste */
 
   /* Texte */
-  --color-text: #1e1b30; /* encre bleu nuit, 16,8:1 sur blanc */
-  --color-muted: #636174; /* secondaire, 6:1 sur blanc */
-  --color-subtle: #716f80; /* tertiaire, 4,9:1 sur blanc, 4,5:1 sur le fond */
-  --color-disabled: #c4c3cd;
-  --color-ink: #1e1b30; /* éléments SOMBRES : filtre choisi, message flottant, fonds d'encre */
+  --color-text: #141517; /* 18,3:1 sur blanc */
+  --color-muted: #5d6067; /* gris foncé, secondaire : 6,3:1 sur blanc, 5,8:1 sur le fond */
+  --color-subtle: #6a6d74; /* tertiaire : 5,2:1 sur blanc, 4,8:1 sur le fond */
+  --color-disabled: #c5c7cb;
+  --color-ink: #111214; /* noir profond de la marque : boutons, sélection, bandeau du jour */
   --color-women: #f06a9b; /* titre « Femmes » en rose clair, mode femmes */
   --color-on-ink: #ffffff;
 
-  /* Accent : la couleur de la marque, et la seule */
-  --color-accent: #6c5ce7; /* blanc dessus 4,9:1 */
-  --color-accent-strong: #6553dd; /* texte d'accent posé sur un fond pâle (≥ 4,8:1) */
-  --color-accent-deep: #41398a; /* texte foncé sur fond pâle d'accent */
-  --color-accent-soft: #f0effe; /* fond pâle : bouton secondaire, pastille, icône */
-  --color-accent-tint: #e5e3fe; /* fond pâle appuyé : élément choisi dans une liste */
-  --color-accent-line: #d8d4fa; /* contour d'accent */
+  /* Accent = le noir de la marque (noms conservés pour toute l'application) */
+  --color-accent: #111214; /* blanc dessus 18,7:1 */
+  --color-accent-strong: #111214;
+  --color-accent-deep: #111214;
+  --color-accent-soft: #f2f2f3; /* fond pâle : bouton secondaire, pastille, icône */
+  --color-accent-tint: #e8e8ea; /* fond pâle appuyé : élément choisi dans une liste */
+  --color-accent-line: #d6d7da; /* contour d'un bouton secondaire */
   --color-on-accent: #ffffff;
 
   /* Statuts */
   --color-danger: #e5484d;
   --color-danger-line: #f4d7d8;
-  --color-ok-bg: #e2f6ec;
-  --color-ok-fg: #0e7a4d;
-  --color-pending-bg: #fce8d8;
-  --color-pending-fg: #96551f;
+  /* Vert doux : confirmé, terminé. `--color-ok` pour un point ou une barre, jamais pour du texte. */
+  --color-ok: #2e9e6b;
+  --color-ok-bg: #e4f4eb;
+  --color-ok-fg: #13703f; /* 5,4:1 sur son fond */
+  /* Abricot : ce qui attend une réponse. `--color-apricot` pour un point, une pastille (texte noir
+     dessus : 8,1:1) ; `--color-pending-fg` pour du texte (5,3:1 sur son fond). */
+  --color-apricot: #f0954f;
+  --color-pending-bg: #fdeedf;
+  --color-pending-fg: #9a4f12;
   --color-cancel-bg: #fde8e8;
   --color-cancel-fg: #b22f33;
-  --color-green: #18a66a; /* WhatsApp seulement (les interrupteurs passent à l'accent) */
+  --color-green: #18a66a; /* WhatsApp seulement */
   /* Heures libres sur les cartes de la marketplace (chiffres et cadre) : bleu du drapeau
      français, demandé le 19 sept. 2026. */
   --color-hour: #0055a4;
@@ -72,10 +82,10 @@
   --color-cat-lasr-fg: #8a4b18;
 
   /* Alias de transition (anciennes classes) */
-  --color-primary: #6c5ce7;
+  --color-primary: #111214;
   --color-primary-contrast: #ffffff;
-  --color-success: #0e7a4d;
-  --color-warning: #96551f;
+  --color-success: #13703f;
+  --color-warning: #9a4f12;
   --color-info: #2c4a93;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
@@ -83,25 +93,26 @@
   --font-display: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /**
-   * Arrondis — LIBRAIRIE DE DESIGN du 1er nov. 2026 (valeurs des maquettes 11 et 9 validées par le
-   * propriétaire, ergonomie mew3id) : cartes 22 px, boutons, champs et tuiles 14 px, créneaux 12 px,
-   * feuilles 28 px. Remplace le compromis du même jour (14 / 12 / 10 / 20) et la consigne « réduits »
-   * du 15 sept. Toujours par ces jetons, jamais une valeur en dur. Racine 14 px.
+   * Arrondis (3 nov. 2026) : cartes 16 px, boutons, champs et tuiles 12 px, créneaux 10 px,
+   * feuilles 24 px. Plus tenus que les 22 px du 1er nov. (une valeur de mew3id, ronde et
+   * enfantine sur des cartes compactes), moins secs que les 8 px de septembre. Toujours par ces
+   * jetons, jamais une valeur en dur. Racine 14 px.
    */
-  --radius-card: 1.571rem; /* 22 px */
-  --radius-card-sm: 1rem; /* 14 px */
-  --radius-btn: 1rem; /* 14 px */
-  --radius-input: 1rem; /* 14 px */
-  --radius-slot: 0.857rem; /* 12 px */
-  --radius-img: 1rem; /* 14 px */
+  --radius-card: 1.143rem; /* 16 px */
+  --radius-card-sm: 0.857rem; /* 12 px */
+  --radius-btn: 0.857rem; /* 12 px */
+  --radius-input: 0.857rem; /* 12 px */
+  --radius-slot: 0.714rem; /* 10 px */
+  --radius-img: 0.857rem; /* 12 px */
   --radius-pill: 62.4375rem;
-  --radius-sheet: 2rem; /* 28 px */
+  --radius-sheet: 1.714rem; /* 24 px */
 
-  /* Ombres teintées de l'encre (jamais du noir pur) : douces, elles décollent sans salir. */
-  --shadow-card: 0 1px 2px rgb(30 27 48 / 0.04), 0 12px 32px -14px rgb(30 27 48 / 0.16);
-  --shadow-sheet: 0 -12px 40px -12px rgb(30 27 48 / 0.2);
-  --shadow-fab: 0 10px 24px -6px rgb(108 92 231 / 0.45);
-  --shadow-toast: 0 12px 32px -10px rgb(30 27 48 / 0.4);
+  /* Ombres du noir de la marque, à peine visibles : un filet fait la séparation, l'ombre seulement
+     le relief d'une feuille ou d'un message qui flotte. */
+  --shadow-card: 0 1px 2px rgb(17 18 20 / 0.04);
+  --shadow-sheet: 0 -10px 36px -14px rgb(17 18 20 / 0.22);
+  --shadow-fab: 0 8px 20px -8px rgb(17 18 20 / 0.45);
+  --shadow-toast: 0 12px 30px -12px rgb(17 18 20 / 0.32);
 
   /* Largeur de la colonne app (écran du design = 390 px) */
   --app-max-width: 430px;

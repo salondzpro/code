@@ -1,8 +1,9 @@
 /**
- * Story des créneaux libres (carte « Prête à partager » de l'accueil, maquette 11) : une image
- * 1080 × 1920 dessinée dans le navigateur — photo du salon assombrie à la couleur de la marque,
- * « Demain · créneaux libres », jusqu'à 4 heures en pastilles blanches, le lien de réservation et
- * le nom du salon. Partagée par la feuille du téléphone (Instagram, WhatsApp…), sinon téléchargée.
+ * Story des créneaux libres (« Mes disponibilités » de l'accueil pro, en image) : 1080 × 1920
+ * dessinée dans le navigateur — photo du salon assombrie au NOIR de la marque (3 nov. 2026 : plus de
+ * violet), « Demain · créneaux libres », jusqu'à 4 heures en pastilles blanches, le lien de
+ * réservation et le nom du salon. Partagée par la feuille du téléphone (Instagram, WhatsApp…), sinon
+ * téléchargée.
  */
 const W = 1080;
 const H = 1920;
@@ -31,11 +32,11 @@ export async function drawStory(o: {
   const g = c.getContext('2d');
   if (!g) return null;
   try {
-    await Promise.all([document.fonts.load('italic 140px "Instrument Serif"'), document.fonts.load('700 96px Outfit')]);
+    await Promise.all([document.fonts.load('600 150px Outfit'), document.fonts.load('500 80px Outfit')]);
   } catch {
     /* polices indisponibles : repli système */
   }
-  g.fillStyle = '#211743';
+  g.fillStyle = '#111214';
   g.fillRect(0, 0, W, H);
   const img = o.photo ? await loadImage(o.photo) : null;
   if (img) {
@@ -45,18 +46,21 @@ export async function drawStory(o: {
     g.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
     g.globalAlpha = 1;
   }
-  const grad = g.createLinearGradient(0, 0, 0, H * 1.2);
-  grad.addColorStop(0, 'rgba(33,23,67,.1)');
-  grad.addColorStop(1, '#6c5ce7');
+  // Voile noir : le texte reste lisible quelle que soit la photo (fonction, pas décor).
+  const grad = g.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(17,18,20,.55)');
+  grad.addColorStop(0.45, 'rgba(17,18,20,.35)');
+  grad.addColorStop(1, 'rgba(17,18,20,.92)');
   g.fillStyle = grad;
   g.fillRect(0, 0, W, H);
 
   g.fillStyle = '#ffffff';
   g.textBaseline = 'alphabetic';
-  g.font = 'italic 150px "Instrument Serif", Georgia, serif';
+  g.font = '600 150px Outfit, Inter, sans-serif';
   g.fillText(o.dayLabel, 90, 300);
-  g.font = '700 104px Outfit, Inter, sans-serif';
-  g.fillText(o.subtitle, 90, 420);
+  g.font = '500 92px Outfit, Inter, sans-serif';
+  g.fillStyle = 'rgba(255,255,255,.82)';
+  g.fillText(o.subtitle, 90, 415);
 
   const pillW = W - 180, pillH = 132, gap = 34;
   const startY = H - 420 - o.times.length * (pillH + gap);
@@ -66,7 +70,7 @@ export async function drawStory(o: {
     g.beginPath();
     g.roundRect(90, y, pillW, pillH, pillH / 2);
     g.fill();
-    g.fillStyle = '#211743';
+    g.fillStyle = '#111214';
     g.font = '600 64px Outfit, Inter, sans-serif';
     g.textAlign = 'center';
     g.fillText(t, W / 2, y + pillH / 2 + 22);

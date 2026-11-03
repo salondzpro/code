@@ -1,49 +1,88 @@
 /**
- * PRO-F 22 — Accueil professionnel = EXACTEMENT la maquette 11 du canevas
- * (https://claude.ai/artifact/91Wa36xH7wKniVgraxyKUo, `Accueil11.dc.html`), demandée « sans rien
- * changer » par le propriétaire le 1er nov. 2026. Les valeurs (tailles, arrondis, ombres) sont
- * celles de la maquette, dans les classes `h11-*` d'index.css ; les données sont les vraies :
+ * PRO-F 22 — Accueil professionnel (refonte du 3 nov. 2026 : identité NOIRE de Salon DZ, simplicité
+ * de mew3id sans la copier). Ce qu'un professionnel doit comprendre en cinq secondes, dans l'ordre :
  *
- *   1. bonjour (avatar, « Bonjour » en italique, date) et la cloche ;
- *   2. PROCHAINES ARRIVÉES : une carte par rendez-vous du jour à venir, à glisser de côté — client,
- *      « dans 1 h 20 », heure → fin, prestation et prix, membre (équipe), fidélité, note, et quatre
- *      gestes : Appeler, WhatsApp, Rappel (messages prêts), Plus (fiche, reporter, retard, annuler).
- *      Carte de fin : créneaux libres restants, rendez-vous de demain, partager ses créneaux ;
- *   3. le LIEN de réservation : copier, code QR (fenêtre « Réservez votre créneau »), envoyer ses
- *      disponibilités (message prérempli d'après les vrais créneaux) ;
- *   4. VOTRE PAGE : visites de la semaine, réservations en ligne, visites par jour, provenance ;
- *   5. la STORY des créneaux libres de demain, à partager (image dessinée dans le navigateur) ;
- *   6. la JOURNÉE DE L'ÉQUIPE en rubans — seulement pour une équipe.
- * Filtre par membre et mention du membre : seulement à partir de deux personnes (95 % des pros
- * travaillent seuls). SalonDZ n'envoie jamais de WhatsApp lui-même : wa.me s'ouvre chez le pro.
+ *   1. l'EN-TÊTE : sa photo, le nom du salon, la date ; la cloche ; « + » nouveau rendez-vous ;
+ *   2. le BANDEAU DU JOUR, en noir plat : rendez-vous terminés sur le total, demandes à valider
+ *      (abricot dès qu'il y en a), chiffre d'affaires du jour — chaque chiffre mène à son écran — et,
+ *      dessous, la journée rendez-vous par rendez-vous (la longueur de chaque trait = sa durée) ;
+ *   3. trois ACTIONS RAPIDES : mon lien (partager, copier), mon code QR, mes disponibilités ;
+ *   4. MA JOURNÉE en frise compacte : heure de début et de fin, client, prestation, prix, statut.
+ *      Le prochain rendez-vous (ou celui en cours) porte « dans 1 h 20 » et ses gestes (appeler,
+ *      message prêt, confirmer une demande) ; ce qui est passé se replie en une ligne. Un conseil
+ *      seulement quand il sert : des créneaux encore libres aujourd'hui → les partager ;
+ *   5. VOTRE PAGE : visites et réservations en ligne de la semaine, visites jour par jour ;
+ *   6. À VENIR : les prochains rendez-vous des jours suivants, et l'agenda.
+ *
+ * Une équipe (≥ 2 personnes actives) voit en plus le filtre par membre, avec photos : il s'applique
+ * à tout l'écran (chiffres compris). 95 % des pros travaillent seuls : pour eux, aucune mention
+ * d'équipe. À partir de 1 024 px : la journée à gauche, les outils, la page et la suite à droite.
+ *
+ * Toutes les données sont réelles (rendez-vous, demandes, disponibilités, visites de la page) et
+ * rien n'est estimé : le chiffre d'affaires du jour est la somme des rendez-vous confirmés ou
+ * terminés du jour, exactement la règle du serveur (`pro_stats`). Un bloc dont la donnée manque ne
+ * s'affiche pas (les visites, tant que la migration 0053 n'est pas appliquée en production).
+ * SalonDZ n'envoie jamais de WhatsApp lui-même : wa.me s'ouvre chez le professionnel.
  */
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
-import { Bell, CalendarCheck, CalendarClock, Check, Clock, Copy, Download, FileText, Instagram, Link2, MessageCircle, MoreHorizontal, Phone, QrCode, Send, Sparkles, UserRound, Users, X, XCircle, BellRing } from 'lucide-react';
+import {
+  Bell,
+  CalendarClock,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Download,
+  Image as ImageIcon,
+  Link2,
+  MessageCircle,
+  Phone,
+  Plus,
+  QrCode,
+  Send,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import {
   useAvailability,
   useMe,
+  useProBookingMutations,
   useProBookings,
-  useProClients,
   useProPageStats,
   useProPendingBookings,
   useProSalon,
   useSeenOnDisplay,
   useUnreadNotifications,
 } from '@salondz/api-client';
-import { addDaysToKey, formatDA, formatLocale, formatTimeDZ, toLocalDateKey, untilLabelFR, weekKeys } from '@salondz/constants';
-import type { BookingWithStaff, ProClient, SalonOwnerView, Staff } from '@salondz/types';
-import { Avatar, I, Skeleton } from '@/components/ui';
+import {
+  addDaysToKey,
+  formatDA,
+  formatLocale,
+  formatTimeDZ,
+  relativeDayLabelDZ,
+  toLocalDateKey,
+  untilLabelFR,
+  weekKeys,
+} from '@salondz/constants';
+import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
+import { Avatar, BottomSheet, Button, Dim, I, Pill, Skeleton, Toast } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
+import { StaffFilter } from '@/components/StaffFilter';
 import { useStaffFilter } from '@/lib/proPrefs';
+import { useDesktop } from '@/lib/breakpoint';
 import { drawStory, shareImage } from '@/lib/storyImage';
-import { useCopy, useLabelUrl, useQr } from './Link';
+import { ShareSheet, useLabelUrl, usePublicUrl, useQr } from './Link';
 import { t } from '@/i18n';
+
+/** Horizon de « À venir » (jours après aujourd'hui) et nombre de rendez-vous montrés. */
+const NEXT_DAYS = 14;
+const NEXT_SHOWN = 4;
 
 /** Heure courante rafraîchie chaque minute (« dans 25 min », « en cours »). */
 function useNow(): number {
@@ -55,6 +94,11 @@ function useNow(): number {
   return now;
 }
 
+const ms = (iso: string) => new Date(iso).getTime();
+const byStart = (a: BookingWithStaff, b: BookingWithStaff) => a.startsAt.localeCompare(b.startsAt);
+const dayOf = (iso: string) => toLocalDateKey(new Date(iso));
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 /** « 14:30 » → « 14h30 », « 14:00 » → « 14h » (décalé de `add` minutes). */
 const hfr = (hm: string, add = 0) => {
   const [h, m] = hm.split(':').map(Number);
@@ -65,460 +109,498 @@ const hfr = (hm: string, add = 0) => {
 /** « 10h, 13h30 et 16h ». */
 const joinTimes = (list: string[]) =>
   list.length <= 1 ? list.join('') : `${list.slice(0, -1).join(', ')} ${t('et')} ${list[list.length - 1]}`;
-const elide = (name: string) => (/^[aeiouyéèêâîôûh]/i.test(name) ? `d’${name}` : `de ${name}`);
 
-type Toast = { text: string; kind: 'ok' | 'call' | 'wa' } | null;
+/**
+ * État d'un rendez-vous du jour, tel qu'on le LIT : passé (terminé ou absent), en cours, confirmé,
+ * à valider. Un confirmé dont l'heure de fin est passée est terminé — le serveur ne le clôt
+ * qu'au bout de trois heures, l'écran n'a pas à attendre.
+ */
+type RowKey = 'done' | 'noshow' | 'live' | 'confirmed' | 'pending';
+function rowKey(b: BookingWithStaff, now: number): RowKey {
+  if (b.status === 'no_show') return 'noshow';
+  if (b.status === 'completed') return 'done';
+  if (b.status === 'pending') return 'pending';
+  if (ms(b.endsAt) <= now) return 'done';
+  if (ms(b.startsAt) <= now) return 'live';
+  return 'confirmed';
+}
+const rowLabel = (k: RowKey) =>
+  k === 'done'
+    ? t('Terminé')
+    : k === 'noshow'
+      ? t('Absent')
+      : k === 'live'
+        ? t('En cours')
+        : k === 'pending'
+          ? t('À valider')
+          : t('Confirmé');
+
 type Sheet =
+  | { kind: 'share' }
   | { kind: 'qr' }
   | { kind: 'dispo' }
   | { kind: 'msg'; b: BookingWithStaff; tpl: number }
-  | { kind: 'more'; b: BookingWithStaff }
   | null;
 
 export function ProHome() {
   const me = useMe();
   const proSalon = useProSalon().data;
   const salon = proSalon?.salon ?? null;
+  const desktop = useDesktop();
   const today = toLocalDateKey();
   const tomorrow = addDaysToKey(today, 1);
   const week = weekKeys(today);
   const todayList = useProBookings({ from: today, to: today, limit: 50 }, !!salon);
-  const tomorrowList = useProBookings({ from: tomorrow, to: tomorrow, limit: 50 }, !!salon);
-  const pending = useProPendingBookings();
+  const nextList = useProBookings({ from: tomorrow, to: addDaysToKey(today, NEXT_DAYS), limit: 30 }, !!salon);
+  const pending = useProPendingBookings(!!salon);
   const pageStats = useProPageStats(week[0]!, week[6]!, !!salon);
-  const clients = useProClients();
-  const nonLues = useUnreadNotifications(!!salon);
+  const unread = useUnreadNotifications(!!salon);
   const [staffId, setStaffId] = useStaffFilter();
   const [sheet, setSheet] = useState<Sheet>(null);
   const [peek, setPeek] = useState<string | null>(null);
-  const [toast, setToast] = useState<Toast>(null);
-  const [, copy] = useCopy();
+  const [toast, setToast] = useState<string | null>(null);
+  const [showPast, setShowPast] = useState(false);
   const now = useNow();
-  const link = useLabelUrl(salon?.slug ?? '');
+  const { setStatus } = useProBookingMutations();
+  // Lien PARTAGÉ (`/s/…`, le seul qui porte l'aperçu WhatsApp) et lien COURT du QR (`salondz.com/…`).
+  const share = usePublicUrl(salon?.slug ?? '');
+  const label = useLabelUrl(salon?.slug ?? '');
 
   useEffect(() => {
     if (!toast) return;
-    const id = window.setTimeout(() => setToast(null), 2200);
+    const id = window.setTimeout(() => setToast(null), 2400);
     return () => window.clearTimeout(id);
   }, [toast]);
 
-  const profile = proSalon?.owner ?? me.data?.profile;
-  const firstName = (profile?.fullName ?? salon?.name ?? '').split(' ')[0];
+  /* ------------------------------------------------------------------ données */
   const members = salon?.staff.filter((m) => m.isActive) ?? [];
   const team = members.length > 1;
   const meStaffId = members.find((m) => m.userId && m.userId === me.data?.profile?.id)?.id ?? null;
   const filterOn = team && staffId && members.some((m) => m.id === staffId) ? staffId : null;
+  const mine = <T extends { staffId: string | null }>(list: T[]) => (filterOn ? list.filter((b) => b.staffId === filterOn) : list);
 
-  const allToday = (todayList.data?.items ?? [])
-    .filter((b) => b.status !== 'cancelled')
-    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const shown = filterOn ? allToday.filter((b) => b.staffId === filterOn) : allToday;
-  const upcoming = shown.filter(
-    (b) => new Date(b.endsAt).getTime() > now && (b.status === 'pending' || b.status === 'confirmed'),
-  );
-  const tomorrowCount = (tomorrowList.data?.items ?? []).filter((b) => b.status !== 'cancelled').length;
+  const allToday = (todayList.data?.items ?? []).filter((b) => b.status !== 'cancelled').sort(byStart);
+  const day = mine(allToday);
+  const upcoming = day.filter((b) => ms(b.endsAt) > now && (b.status === 'pending' || b.status === 'confirmed'));
+  const past = day.filter((b) => !upcoming.includes(b));
+  const liveCount = upcoming.filter((b) => b.status === 'confirmed' && ms(b.startsAt) <= now).length;
+  const women = salon?.genderTarget === 'women';
+  const doneCount = day.filter((b) => rowKey(b, now) === 'done').length;
+  const revenue = day.filter((b) => b.status === 'confirmed' || b.status === 'completed').reduce((s, b) => s + b.priceDa, 0);
+  const toValidate = mine(pending.data?.items ?? []).length;
+  const counts: Record<string, number> = {};
+  for (const b of allToday) counts[b.staffId] = (counts[b.staffId] ?? 0) + 1;
+
+  const nextAll = mine((nextList.data?.items ?? []).filter((b) => b.status === 'pending' || b.status === 'confirmed')).sort(byStart);
+  const nextShown = nextAll.slice(0, NEXT_SHOWN);
+  const tomorrowCount = nextAll.filter((b) => dayOf(b.startsAt) === tomorrow).length;
+
+  // Ce que l'accueil MONTRE vaut lecture : la journée et les prochains jours affichés.
   useSeenOnDisplay(
-    shown.map((b) => b.id),
-    !!salon && !todayList.isFetching && !pending.isFetching,
+    [...day, ...nextShown].map((b) => b.id),
+    !!salon && !todayList.isFetching && !nextList.isFetching,
   );
 
-  // Créneaux libres : la prestation la plus courte (la plus « facile à caser ») sert d'étalon.
+  // Créneaux encore libres aujourd'hui : la prestation la plus courte (la plus facile à caser) sert
+  // d'étalon, et le membre filtré s'il y en a un — c'est son agenda qu'on regarde.
   const services = (salon?.services ?? []).filter((s) => s.isActive);
   const shortest = [...services].sort((a, b) => a.durationMinutes - b.durationMinutes)[0];
-  const freeToday = useAvailability(salon?.id ?? '', { serviceId: shortest?.id ?? '', date: today });
-  const freeTomorrow = useAvailability(salon?.id ?? '', { serviceId: shortest?.id ?? '', date: tomorrow });
-  const leftToday = (freeToday.data?.slots ?? []).filter((s) => new Date(s.startsAt).getTime() > now);
+  const freeToday = useAvailability(salon?.id ?? '', {
+    serviceId: shortest?.id ?? '',
+    date: today,
+    ...(filterOn ? { staffId: filterOn } : {}),
+  });
+  const leftToday = (freeToday.data?.slots ?? []).filter((s) => ms(s.startsAt) > now).length;
 
-  const clientOf = (b: BookingWithStaff): ProClient | undefined =>
-    (clients.data?.items ?? []).find(
-      (c) => (b.clientId && c.clientId === b.clientId) || (!!b.clientPhone && c.phone === b.clientPhone),
-    );
-
-  const dateLine = new Intl.DateTimeFormat(formatLocale(), {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'Africa/Algiers',
-  }).format(new Date());
-
-  const picked = members.find((m) => m.id === filterOn);
-  const endTitle = !filterOn
-    ? t('C’est tout pour aujourd’hui')
-    : filterOn === meStaffId
-      ? t('C’est tout pour vous aujourd’hui')
-      : t('C’est tout pour {name} aujourd’hui', { name: picked?.displayName ?? '' });
-  const lastEnd = upcoming.length ? formatTimeDZ(upcoming[upcoming.length - 1]!.endsAt) : null;
+  const profile = proSalon?.owner ?? me.data?.profile;
+  const avatar = (profile && 'avatarUrl' in profile ? profile.avatarUrl : null) ?? salon?.logoUrl ?? salon?.coverUrl ?? null;
+  const dateLine = cap(
+    new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date()),
+  );
 
   const openWa = (phone: string | null, text?: string) => {
     if (!phone) return;
-    const n = phone.replace(/\D/g, '');
-    window.open(`https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ''}`, '_blank', 'noopener');
+    window.open(`https://wa.me/${phone.replace(/\D/g, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`, '_blank', 'noopener');
   };
 
-  /* -------------------------------------------------------------- 1. bonjour */
-  const avatar = (profile && 'avatarUrl' in profile ? profile.avatarUrl : null) ?? salon?.logoUrl ?? salon?.coverUrl ?? null;
+  /* ------------------------------------------------------------------ 1. en-tête */
   const header = (
-    <header className="h11-hd">
-      <Avatar src={avatar} name={firstName || 'S'} size={44} />
-      <div className="min-w-0 flex-1">
-        <span className="h11-hi">
-          <span className="h11-serif">{t('Bonjour')}</span> {firstName}
+    <header className="prh-hd">
+      <Link to="/pro/profil" className="prh-id" aria-label={`${salon?.name ?? t('Profil du salon')} · ${t('Profil du salon')}`}>
+        <Avatar src={avatar} name={salon?.name ?? 'S'} size={48} />
+        <span className="prh-id-t">
+          <span className="prh-id-n">{salon?.name ?? ' '}</span>
+          <span className="prh-id-d">{dateLine}</span>
         </span>
-        <span className="h11-date">{dateLine}</span>
-      </div>
-      <Link
-        to="/pro/notifications"
-        className="h11-bell"
-        aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')}
-      >
-        <I icon={Bell} size={20} strokeWidth={1.8} />
-        {nonLues > 0 && <span className="h11-bell-dot" aria-hidden />}
       </Link>
+      {/* Sur ordinateur, l'en-tête de l'espace pro porte déjà la cloche et « + Rendez-vous ». */}
+      {!desktop && (
+        <>
+          <Link
+            to="/pro/notifications"
+            className="prh-ib"
+            aria-label={unread ? `${t('Notifications')} · ${unread}` : t('Notifications')}
+          >
+            <I icon={Bell} size={20} strokeWidth={1.8} />
+            {unread > 0 && <span className="prh-ib-d" aria-hidden />}
+          </Link>
+          <Link to="/pro/rendez-vous/nouveau" className="prh-ib ink" aria-label={t('Nouveau rendez-vous')} title={t('Nouveau rendez-vous')}>
+            <I icon={Plus} size={22} strokeWidth={2} />
+          </Link>
+        </>
+      )}
     </header>
   );
 
-  /* -------------------------------------------------------------- 2. arrivées */
-  const staffChip = (m: Staff | null) => {
-    const on = (m?.id ?? null) === filterOn;
-    const label = !m ? t('Toute l’équipe') : m.id === meStaffId ? t('Vous') : m.displayName;
-    return (
-      <button
-        key={m?.id ?? 'all'}
-        type="button"
-        className={`h11-sc${on ? ' on' : ''}${m?.avatarUrl ? ' img' : ''}${!m ? ' all' : ''}`}
-        aria-pressed={on}
-        aria-label={label}
-        title={label}
-        onClick={() => setStaffId(m?.id ?? null)}
-      >
-        {!m ? <I icon={Users} size={15} strokeWidth={2.1} /> : m.avatarUrl ? <img src={m.avatarUrl} alt="" /> : m.displayName.charAt(0).toUpperCase()}
-      </button>
-    );
-  };
-
-  const arrivals = (
-    <section className="h11-arr" aria-label={t('Prochaines arrivées')}>
-      <div className="h11-arr-h">
-        <h2>{t('Prochaines arrivées')}</h2>
-        {team && (
-          <div className="h11-sf" role="group" aria-label={t('Filtrer par membre de l’équipe')}>
-            {staffChip(null)}
-            {members.map((m) => staffChip(m))}
-          </div>
-        )}
+  /* ------------------------------------------------------------------ 2. bandeau du jour */
+  const ready = !!todayList.data;
+  const kpis = (
+    <section className="prh-kpi" aria-label={t('Aujourd’hui')}>
+      <div className="prh-kpi-r">
+        <Link to="/pro/agenda" className="prh-k">
+          <span className="prh-k-v" dir="ltr">
+            {!ready ? '–' : day.length ? (
+              <>
+                {doneCount}
+                <small>/{day.length}</small>
+              </>
+            ) : (
+              0
+            )}
+          </span>
+          <span className="prh-k-l">{ready && !day.length ? t('Rendez-vous') : t('Terminés')}</span>
+        </Link>
+        <Link to="/pro/reservations" className={`prh-k${toValidate ? ' pd' : ''}`}>
+          <span className="prh-k-v" dir="ltr">{pending.data ? toValidate : '–'}</span>
+          <span className="prh-k-l">{t('À valider')}</span>
+        </Link>
+        <Link to="/pro/chiffre-affaires" className="prh-k" aria-label={`${t("Chiffre d'affaires du jour")} : ${formatDA(revenue)}`}>
+          <span className="prh-k-v" dir="ltr">
+            {ready ? formatDA(revenue, { withSymbol: false }) : '–'}
+            <small>DA</small>
+          </span>
+          <span className="prh-k-l">{t('CA du jour')}</span>
+        </Link>
       </div>
-      {todayList.isPending && <Skeleton className="mx-[4px] h-[13rem] !rounded-[24px]" />}
-      {todayList.isError && <ErrorMessage error={todayList.error} retry={() => todayList.refetch()} />}
-      {todayList.data && (
-        <div className="h11-row">
-          {upcoming.map((b, i) => {
-            const c = clientOf(b);
-            const visits = c?.completedCount ?? null;
-            const isNew = visits === 0;
-            const tag = visits === null ? null : isNew ? t('Nouvelle cliente') : visits >= 5 ? t('Fidèle · {n} visites', { n: visits }) : t('{n} visite(s)', { n: visits });
-            const note = b.notes || c?.notes || null;
-            const live = new Date(b.startsAt).getTime() <= now;
-            const member = salon?.staff.find((m) => m.id === b.staffId);
-            const noPhone = !b.clientPhone;
+      {day.length > 0 && (
+        <div
+          className="prh-bar"
+          role="img"
+          aria-label={[
+            past.length ? t('{n} rendez-vous passé(s)', { n: past.length }) : null,
+            upcoming.length ? t('{n} à venir', { n: upcoming.length }) : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        >
+          {day.map((b) => {
+            const k = rowKey(b, now);
             return (
-              <article key={b.id} className={`h11-card${i === 0 ? ' first' : ''}`} aria-label={`${b.clientName}, ${b.serviceName}, ${formatTimeDZ(b.startsAt)}`}>
-                <button type="button" className="h11-top" onClick={() => setPeek(b.id)}>
-                  <span className="h11-av">{b.clientName.trim().charAt(0).toUpperCase()}</span>
-                  <span className="h11-who">
-                    <span className="h11-name">{b.clientName}</span>
-                    <span className={`h11-when${i === 0 ? ' on' : ''}`}>
-                      <i aria-hidden />
-                      {live ? t('En cours') : untilLabelFR(b.startsAt, now)}
-                    </span>
-                  </span>
-                  <span className="h11-time" dir="ltr">
-                    <b>{formatTimeDZ(b.startsAt)}</b>
-                    <span>→ {formatTimeDZ(b.endsAt)}</span>
-                  </span>
-                </button>
-                <div className="h11-mid">
-                  <div className="h11-line">
-                    <span className="h11-svc">{b.serviceName}</span>
-                    <span className="h11-price" dir="ltr">{formatDA(b.priceDa)}</span>
-                  </div>
-                  <div className="h11-sub">
-                    {team && b.staff ? (
-                      <span className="h11-by">
-                        <Avatar src={member?.avatarUrl} name={b.staff.displayName} size={22} />
-                        <span>{b.staffId === meStaffId ? t('Avec vous') : t('Avec {name}', { name: b.staff.displayName })}</span>
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    {b.status === 'pending' ? (
-                      <span className="h11-tag pd">{t('À valider')}</span>
-                    ) : (
-                      tag && <span className={`h11-tag${isNew ? ' new' : ''}`}>{tag}</span>
-                    )}
-                  </div>
-                </div>
-                {note && (
-                  <div className="h11-note">
-                    <I icon={FileText} size={14} strokeWidth={2} />
-                    <span>{note}</span>
-                  </div>
-                )}
-                <div className="flex-1" />
-                <div className="h11-act">
-                  <a
-                    href={b.clientPhone ? `tel:${b.clientPhone}` : undefined}
-                    className={`h11-tile${noPhone ? ' off' : ''}`}
-                    aria-disabled={noPhone || undefined}
-                    aria-label={t('Appeler {name}', { name: b.clientName })}
-                    onClick={() => b.clientPhone && setToast({ text: `${t('Appel')} : ${b.clientName}`, kind: 'call' })}
-                  >
-                    <I icon={Phone} size={18} strokeWidth={1.9} />
-                    {t('Appeler')}
-                  </a>
-                  <button
-                    type="button"
-                    className={`h11-tile wa${noPhone ? ' off' : ''}`}
-                    disabled={noPhone}
-                    aria-label={t('WhatsApp avec {name}', { name: b.clientName })}
-                    onClick={() => openWa(b.clientPhone)}
-                  >
-                    <I icon={MessageCircle} size={18} strokeWidth={1.9} />
-                    WhatsApp
-                  </button>
-                  <button type="button" className="h11-tile s" aria-label={t('Envoyer un rappel à {name}', { name: b.clientName })} onClick={() => setSheet({ kind: 'msg', b, tpl: 0 })}>
-                    <I icon={BellRing} size={18} strokeWidth={1.9} />
-                    {t('Rappel')}
-                  </button>
-                  <button type="button" className="h11-tile" aria-label={t('Plus d’options pour {name}', { name: b.clientName })} onClick={() => setSheet({ kind: 'more', b })}>
-                    <I icon={MoreHorizontal} size={18} strokeWidth={2.4} />
-                    {t('Plus')}
-                  </button>
-                </div>
-              </article>
+              <i
+                key={b.id}
+                className={k === 'done' ? 'd' : k === 'live' ? 'l' : k === 'pending' ? 'p' : k === 'noshow' ? 'x' : ''}
+                style={{ flexGrow: Math.max(15, b.durationMinutes) } as CSSProperties}
+              />
             );
           })}
-          <article className="h11-card end" aria-label={t('Fin de journée')}>
-            <div className="h11-end-h">
-              <span className="h11-end-i">
-                <I icon={CalendarCheck} size={20} strokeWidth={1.9} />
-              </span>
-              <span className="h11-end-t">{upcoming.length ? endTitle : t('Aucune arrivée prévue aujourd’hui')}</span>
-            </div>
-            <span className="h11-end-p">
-              {[
-                freeToday.data
-                  ? lastEnd
-                    ? t('Après {time}, il vous reste {n} créneau(x) libre(s).', { time: hfr(lastEnd), n: leftToday.length })
-                    : t('Il vous reste {n} créneau(x) libre(s) aujourd’hui.', { n: leftToday.length })
-                  : null,
-                tomorrowList.data ? t('Demain : {n} rendez-vous.', { n: tomorrowCount }) : null,
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            </span>
-            <div className="flex-1" />
-            <button type="button" className="h11-b grad" onClick={() => setSheet({ kind: 'dispo' })}>
-              {t('Partager mes créneaux libres')}
-            </button>
-            <Link to="/pro/agenda" className="h11-b out">
-              {t('Ouvrir l’agenda')}
-            </Link>
-          </article>
         </div>
       )}
     </section>
   );
 
-  /* -------------------------------------------------------------- 3. lien */
-  const linkCard = salon && (
-    <section className="h11-link" aria-label={t('Votre lien de réservation')}>
-      <div className="flex min-w-0 flex-col gap-px">
-        <span className="h11-link-l">{t('Votre lien de réservation')}</span>
-        <span className="h11-link-u" dir="ltr">
-          {link.short}
+  /* ------------------------------------------------------------------ 3. actions rapides */
+  const actions = salon && (
+    <nav className="prh-qa" aria-label={t('Actions rapides')}>
+      <button type="button" className="prh-q" onClick={() => setSheet({ kind: 'share' })}>
+        <span className="prh-q-i" aria-hidden>
+          <I icon={Link2} size={20} strokeWidth={1.9} />
         </span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          className="h11-b soft"
-          onClick={() => {
-            copy(link.url);
-            setToast({ text: t('Lien copié !'), kind: 'ok' });
-          }}
-        >
-          <I icon={Copy} size={17} strokeWidth={2} /> {t('Copier')}
-        </button>
-        <button type="button" className="h11-b grad" onClick={() => setSheet({ kind: 'qr' })}>
-          <I icon={QrCode} size={17} strokeWidth={2} /> {t('Code QR')}
-        </button>
-      </div>
-      <button type="button" className="h11-b out" onClick={() => setSheet({ kind: 'dispo' })}>
-        <I icon={CalendarClock} size={17} strokeWidth={2} /> {t('Envoyer mes disponibilités')}
+        <span className="prh-q-l">{t('Mon lien')}</span>
       </button>
+      <button type="button" className="prh-q" onClick={() => setSheet({ kind: 'qr' })}>
+        <span className="prh-q-i" aria-hidden>
+          <I icon={QrCode} size={20} strokeWidth={1.9} />
+        </span>
+        <span className="prh-q-l">{t('Code QR')}</span>
+      </button>
+      <button type="button" className="prh-q" onClick={() => setSheet({ kind: 'dispo' })}>
+        <span className="prh-q-i" aria-hidden>
+          <I icon={CalendarClock} size={20} strokeWidth={1.9} />
+        </span>
+        <span className="prh-q-l">{t('Mes disponibilités')}</span>
+      </button>
+    </nav>
+  );
+
+  /* ------------------------------------------------------------------ 4. ma journée */
+  const showStaff = team && !filterOn;
+  // Journée finie : on montre ce qui a été fait. Sinon, le passé se replie en une ligne.
+  const pastOpen = showPast || !upcoming.length;
+  const dayBlock = (
+    <section aria-labelledby="prh-day">
+      <div className="prh-sh">
+        <h2 id="prh-day">{t('Ma journée')}</h2>
+        {ready && day.length > 0 && (
+          <span className="prh-sh-x">
+            {!upcoming.length
+              ? t('Journée terminée')
+              : [
+                  liveCount === 1 ? t('1 en cours') : liveCount > 1 ? t('{n} en cours', { n: liveCount }) : null,
+                  upcoming.length - liveCount ? t('{n} à venir', { n: upcoming.length - liveCount }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+          </span>
+        )}
+      </div>
+      {todayList.isPending && <Skeleton className="h-[11rem] w-full !rounded-[var(--radius-card)]" />}
+      {todayList.isError && <ErrorMessage error={todayList.error} retry={() => todayList.refetch()} />}
+      {ready &&
+        (day.length ? (
+          <div className="prh-card prh-day">
+            <ol className="prh-tl">
+              {!pastOpen && past.length > 0 && (
+                <li className="prh-r done">
+                  <button type="button" className="prh-r-b prh-fold" aria-expanded={false} onClick={() => setShowPast(true)}>
+                    <span className="prh-r-h" aria-hidden />
+                    <span className="prh-r-p" aria-hidden />
+                    <span className="prh-fold-t">
+                      {past.length === 1 ? t('1 rendez-vous passé') : t('{n} rendez-vous passés', { n: past.length })}
+                    </span>
+                    <span className="prh-fold-e" aria-hidden>
+                      <I icon={ChevronDown} size={18} strokeWidth={2} />
+                    </span>
+                  </button>
+                </li>
+              )}
+              {pastOpen &&
+                past.map((b) => <DayRow key={b.id} b={b} now={now} showStaff={showStaff} meStaffId={meStaffId} onOpen={setPeek} />)}
+              {upcoming.map((b, i) => (
+                <DayRow
+                  key={b.id}
+                  b={b}
+                  now={now}
+                  showStaff={showStaff}
+                  meStaffId={meStaffId}
+                  focus={i === 0}
+                  onOpen={setPeek}
+                  onMessage={() => setSheet({ kind: 'msg', b, tpl: 0 })}
+                  confirm={
+                    i === 0 && b.status === 'pending'
+                      ? {
+                          run: () => setStatus.mutate({ id: b.id, status: 'confirmed' }),
+                          busy: setStatus.isPending,
+                          error: setStatus.error,
+                        }
+                      : undefined
+                  }
+                />
+              ))}
+            </ol>
+            {leftToday > 0 && (
+              // Le seul conseil de la journée, et seulement quand il sert : remplir ce qui reste.
+              <button type="button" className="prh-tip" onClick={() => setSheet({ kind: 'dispo' })}>
+                <I icon={Sparkles} size={16} strokeWidth={2} />
+                <span>
+                  {leftToday === 1 ? t('Encore 1 créneau libre aujourd’hui') : t('Encore {n} créneaux libres aujourd’hui', { n: leftToday })}
+                </span>
+                <b>{t('Partager')}</b>
+              </button>
+            )}
+            {!upcoming.length && tomorrowCount > 0 && (
+              <p className="prh-tip">
+                <I icon={CalendarDays} size={16} strokeWidth={2} />
+                <span>{t('Demain : {n} rendez-vous.', { n: tomorrowCount })}</span>
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="prh-card prh-empty">
+            <span className="prh-empty-i" aria-hidden>
+              <I icon={CalendarDays} size={22} strokeWidth={1.8} />
+            </span>
+            <b>{t('Aucun rendez-vous aujourd’hui')}</b>
+            <p>
+              {leftToday === 1
+                ? t('Il vous reste 1 créneau libre aujourd’hui.')
+                : leftToday > 1
+                  ? t('Il vous reste {n} créneaux libres aujourd’hui.', { n: leftToday })
+                  : t('Partagez vos disponibilités pour remplir votre agenda.')}
+            </p>
+            <div className="prh-empty-a col">
+              <Button sm onClick={() => setSheet({ kind: 'dispo' })}>
+                <I icon={Send} size={16} strokeWidth={2} /> {t('Envoyer mes disponibilités')}
+              </Button>
+              <Link to="/pro/rendez-vous/nouveau" className="btn g sm">
+                <I icon={Plus} size={16} strokeWidth={2} /> {t('Ajouter un rendez-vous')}
+              </Link>
+            </div>
+          </div>
+        ))}
     </section>
   );
 
-  /* -------------------------------------------------------------- 4. votre page */
+  /* ------------------------------------------------------------------ 5. votre page */
   const ps = pageStats.data;
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
-  const pageCard = ps && (
-    <section className="h11-page" aria-label={t('Votre page')}>
-      <div className="h11-page-h">
-        <h2>{t('Votre page')}</h2>
-        <span>{t('Cette semaine')}</span>
+  const pageBlock = ps && (
+    <section aria-labelledby="prh-page">
+      <div className="prh-sh">
+        <h2 id="prh-page">{t('Votre page')}</h2>
+        <span className="prh-sh-x">{t('Cette semaine')}</span>
       </div>
-      <div className="h11-page-c">
-        <div className="h11-kp">
-          <div>
-            <b>{ps.total}</b>
-            <span>{t('visites')}</span>
+      <div className="prh-card prh-pg">
+        <div className="prh-pg-m">
+          <div className="prh-pg-n">
+            <div>
+              <b dir="ltr">{ps.total}</b>
+              <span>{ps.total === 1 ? t('visite') : t('visites')}</span>
+            </div>
+            <div>
+              <b dir="ltr">{ps.bookings}</b>
+              <span>{ps.bookings === 1 ? t('réservation') : t('réservations')}</span>
+            </div>
           </div>
-          <div>
-            <b className="acc">{ps.bookings}</b>
-            <span>{t('réservations')}</span>
-          </div>
-        </div>
-        <div className="h11-bars">
-          <span className="h11-bars-l">{t('Visites par jour')}</span>
-          <div className="h11-bars-r" role="img" aria-label={`${t('Visites par jour')} : ${ps.byDay.map((d) => d.views).join(', ')}`}>
+          <div className="prh-pg-b" role="img" aria-label={`${t('Visites par jour')} : ${ps.byDay.map((d) => d.views).join(', ')}`}>
             {ps.byDay.map((d) => (
-              <div key={d.date} className="h11-bar">
-                <div>
-                  <i className={d.date === today ? 'on' : ''} style={{ height: `${Math.max(3, Math.round((d.views / maxViews) * 24))}px` }} />
-                </div>
-                <span>
+              <span key={d.date}>
+                <i
+                  className={d.date === today ? 'on' : d.date > today ? 'fut' : ''}
+                  style={{ height: `${d.date > today ? 3 : Math.max(3, Math.round((d.views / maxViews) * 34))}px` }}
+                />
+                <small aria-hidden>
                   {new Intl.DateTimeFormat(formatLocale(), { weekday: 'narrow', timeZone: 'UTC' }).format(new Date(`${d.date}T12:00:00Z`))}
-                </span>
-              </div>
+                </small>
+              </span>
             ))}
           </div>
         </div>
-        <div className="h11-src">
-          <span>
-            <I icon={Link2} size={12} strokeWidth={2} />
-            {t('Lien')} <b>{ps.bySource.link + ps.bySource.other}</b>
-          </span>
-          <span>
-            <I icon={Instagram} size={12} strokeWidth={2} />
-            Instagram <b>{ps.bySource.instagram}</b>
-          </span>
-          <span>
-            <I icon={QrCode} size={12} strokeWidth={2} />
-            {t('Code QR')} <b>{ps.bySource.qr}</b>
-          </span>
-        </div>
-        <div className="h11-bravo">
-          <I icon={Sparkles} size={14} strokeWidth={2} />
-          <span>{ps.total ? t('Bravo, continuez à partager votre lien.') : t('Partagez votre lien pour recevoir vos premières visites.')}</span>
-        </div>
+        {ps.total === 0 ? (
+          <button type="button" className="prh-tip" onClick={() => setSheet({ kind: 'share' })}>
+            <I icon={Sparkles} size={16} strokeWidth={2} />
+            <span>{t('Partagez votre lien pour recevoir vos premières visites.')}</span>
+            <b>{t('Partager')}</b>
+          </button>
+        ) : (
+          ps.bookings === 0 &&
+          ps.total >= 5 && (
+            <Link to="/pro/profil/horaires" className="prh-tip">
+              <I icon={Sparkles} size={16} strokeWidth={2} />
+              <span>{t('Des visites, pas encore de réservation : vérifiez vos horaires.')}</span>
+              <I icon={ChevronRight} size={16} strokeWidth={2} className="rtl:rotate-180" />
+            </Link>
+          )
+        )}
       </div>
     </section>
   );
 
-  /* -------------------------------------------------------------- 5. story */
-  const storySlots = (() => {
-    const d = freeTomorrow.data;
-    if (!d) return null;
-    const list = d.slots.length ? d.slots.map((s) => formatTimeDZ(s.startsAt)) : d.nextAvailable?.slots.map((s) => s.slice(0, 5)) ?? [];
-    const date = d.slots.length ? tomorrow : d.nextAvailable?.date ?? null;
-    // Trois heures étalées sur la journée : la première, celle du milieu, la dernière.
-    const pick = list.length <= 3 ? list : [list[0]!, list[Math.floor(list.length / 2)]!, list[list.length - 1]!];
-    return { times: pick, date };
-  })();
-  const storyDay =
-    storySlots?.date === tomorrow || !storySlots?.date
-      ? t('Demain')
-      : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', timeZone: 'UTC' }).format(new Date(`${storySlots.date}T12:00:00Z`));
-  const [storyBusy, setStoryBusy] = useState(false);
-  const shareStory = async () => {
-    if (!salon || !storySlots?.times.length) return;
-    setStoryBusy(true);
-    try {
-      const blob = await drawStory({
-        photo: salon.coverUrl ?? salon.photos[0]?.url ?? null,
-        dayLabel: storyDay.charAt(0).toUpperCase() + storyDay.slice(1),
-        subtitle: t('créneaux libres'),
-        times: storySlots.times,
-        salon: salon.name,
-        link: link.short,
-      });
-      if (blob) {
-        const shared = await shareImage(blob, `salondz-creneaux-${salon.slug}.png`, `${t('Réservez ici')} 👉 ${link.url}`);
-        if (!shared) setToast({ text: t('Image enregistrée'), kind: 'ok' });
-      }
-    } finally {
-      setStoryBusy(false);
-    }
-  };
-  const storyCard = salon && (
-    <section className="h11-story" aria-label={t('Prête à partager')}>
-      <div className="h11-story-p">
-        {(salon.coverUrl ?? salon.photos[0]?.url) && <img src={salon.coverUrl ?? salon.photos[0]!.url} alt="" />}
-        <div className="h11-story-g" />
-        <div className="h11-story-t">
-          <span className="h11-serif">{storyDay.charAt(0).toUpperCase() + storyDay.slice(1)}</span>
-          <b>{t('créneaux libres')}</b>
-        </div>
-        <div className="h11-story-s" dir="ltr">
-          {(storySlots?.times.length ? storySlots.times : ['–']).map((x) => (
-            <span key={x}>{x}</span>
-          ))}
-        </div>
-        <span className="h11-story-n">{salon.name}</span>
+  /* ------------------------------------------------------------------ 6. à venir */
+  const nextBlock = (
+    <section aria-labelledby="prh-next">
+      <div className="prh-sh">
+        <h2 id="prh-next">{t('À venir')}</h2>
+        <Link to="/pro/agenda" className="prh-sh-l">
+          {t('Voir l’agenda')}
+          <I icon={ChevronRight} size={15} strokeWidth={2.2} className="rtl:rotate-180" />
+        </Link>
       </div>
-      <div className="h11-story-r">
-        <span className="h11-story-k">{t('Prête à partager')}</span>
-        <span className="h11-story-h">{t('Vos créneaux libres de demain, en story')}</span>
-        <span className="h11-story-d">{t('Générée d’après votre agenda, avec votre lien de réservation.')}</span>
-        <div className="flex-1" />
-        <button type="button" className="h11-pill ig" disabled={storyBusy || !storySlots?.times.length} onClick={() => void shareStory()}>
-          {t('Story Instagram')}
-        </button>
-        <button type="button" className="h11-pill wa" disabled={storyBusy || !storySlots?.times.length} onClick={() => void shareStory()}>
-          {t('Statut WhatsApp')}
-        </button>
-      </div>
+      {nextList.isPending && <Skeleton className="h-[8rem] w-full !rounded-[var(--radius-card)]" />}
+      {nextList.isError && <ErrorMessage error={nextList.error} retry={() => nextList.refetch()} />}
+      {nextList.data &&
+        (nextShown.length ? (
+          <div className="prh-card prh-nx">
+            {nextShown.map((b) => (
+              <button key={b.id} type="button" className="prh-nx-r" onClick={() => setPeek(b.id)}>
+                <span className="prh-nx-d">
+                  <small>{relativeDayLabelDZ(dayOf(b.startsAt), today)}</small>
+                  <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
+                </span>
+                <span className="prh-r-c">
+                  <span className="prh-r-n">{b.clientName}</span>
+                  <span className="prh-r-s">
+                    {b.serviceName}
+                    {showStaff && b.staff ? ` · ${b.staffId === meStaffId ? t('Vous') : b.staff.displayName}` : ''}
+                  </span>
+                </span>
+                <span className="prh-r-e">
+                  <span className="prh-r-pr" dir="ltr">
+                    {formatDA(b.priceDa)}
+                  </span>
+                  {b.status === 'pending' && <span className="prh-st pending">{t('À valider')}</span>}
+                </span>
+              </button>
+            ))}
+            {nextAll.length > NEXT_SHOWN && (
+              <Link to="/pro/reservations" className="prh-tip">
+                <span>
+                  {nextAll.length - NEXT_SHOWN === 1
+                    ? t('Et 1 autre rendez-vous')
+                    : t('Et {n} autres rendez-vous', { n: nextAll.length - NEXT_SHOWN })}
+                </span>
+                <I icon={ChevronRight} size={16} strokeWidth={2} className="rtl:rotate-180" />
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="prh-card prh-empty sm">
+            <span className="prh-empty-i" aria-hidden>
+              <I icon={CalendarDays} size={20} strokeWidth={1.8} />
+            </span>
+            <b>{t('Rien de prévu les prochains jours')}</b>
+            <p>{t('Vos prochains rendez-vous s’afficheront ici dès qu’ils seront pris.')}</p>
+            {day.length > 0 && (
+              <div className="prh-empty-a">
+                <Button variant="g" sm auto onClick={() => setSheet({ kind: 'dispo' })}>
+                  <I icon={Send} size={16} strokeWidth={2} /> {t('Envoyer mes disponibilités')}
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
     </section>
   );
 
   return (
-    <Screen bottom={NAV_PAD} gap={16} width="page" className="h11">
+    <Screen bottom={NAV_PAD} gap={18} className="prh">
       {header}
       <NotificationsNudge role="pro" />
       {salon && <QuickCloseBanner />}
-      <div className="phg">
-        <div className="phg-m">
-          {arrivals}
-          <div className="contents lg:hidden">{linkCard}</div>
-          {pageCard}
-          {storyCard}
-          {team && salon && todayList.data && <TeamDay salon={salon} bookings={allToday} now={now} today={today} onOpen={setPeek} meStaffId={meStaffId} />}
+      <div className="prh-g">
+        <div className="prh-m">
+          {team && salon && (
+            <StaffFilter staff={salon.staff} value={filterOn} onChange={setStaffId} counts={counts} meStaffId={meStaffId} />
+          )}
+          {kpis}
+          {!desktop && actions}
+          {dayBlock}
         </div>
-        <div className="phg-s">{linkCard}</div>
+        <div className="prh-s">
+          {desktop && actions}
+          {pageBlock}
+          {nextBlock}
+        </div>
       </div>
 
-      {toast &&
-        createPortal(
-          <div role="status" className={`h11-toast ${toast.kind}`}>
-            <span>
-              <I icon={toast.kind === 'call' ? Phone : toast.kind === 'wa' ? MessageCircle : Check} size={13} strokeWidth={3} />
-            </span>
-            {toast.text}
-          </div>,
-          document.body,
-        )}
-      {sheet?.kind === 'qr' && salon && <QrDialog url={`${link.url}?src=qr`} name={salon.name} slug={salon.slug} onClose={() => setSheet(null)} />}
+      {toast && <Toast icon={Check}>{toast}</Toast>}
+      {sheet?.kind === 'share' && salon && (
+        <ShareSheet name={salon.name} url={share.url} short={share.short} logo={salon.logoUrl} onClose={() => setSheet(null)} />
+      )}
+      {sheet?.kind === 'qr' && salon && (
+        <QrSheet url={`${label.url}?src=qr`} name={salon.name} slug={salon.slug} women={women} onClose={() => setSheet(null)} />
+      )}
       {sheet?.kind === 'dispo' && salon && (
         <DispoSheet
           salon={salon}
-          url={link.url}
+          url={share.url}
+          short={label.short}
+          women={women}
           today={today}
           now={now}
           onClose={() => setSheet(null)}
           onDone={(text) => {
             setSheet(null);
-            setToast({ text, kind: 'ok' });
+            if (text) setToast(text);
           }}
         />
       )}
@@ -529,28 +611,13 @@ export function ProHome() {
           salon={salon}
           onTpl={(tpl) => setSheet({ ...sheet, tpl })}
           onClose={() => setSheet(null)}
-          onCopy={(text) => {
-            copy(text);
+          onDone={(text) => {
             setSheet(null);
-            setToast({ text: t('Message copié !'), kind: 'ok' });
+            setToast(text);
           }}
           onSend={(text) => {
             openWa(sheet.b.clientPhone, text);
             setSheet(null);
-            setToast({ text: t('WhatsApp s’ouvre avec le message'), kind: 'wa' });
-          }}
-        />
-      )}
-      {sheet?.kind === 'more' && (
-        <MoreSheet
-          b={sheet.b}
-          team={team}
-          clientKey={clientOf(sheet.b)?.clientKey ?? null}
-          onClose={() => setSheet(null)}
-          onLate={() => setSheet({ kind: 'msg', b: sheet.b, tpl: 1 })}
-          onOpen={() => {
-            setSheet(null);
-            setPeek(sheet.b.id);
           }}
         />
       )}
@@ -559,80 +626,162 @@ export function ProHome() {
   );
 }
 
-/* ================================================================== feuilles et fenêtre */
+/* ================================================================== une ligne de la journée */
 
-function Overlay({ onClose, children, center }: { onClose: () => void; children: ReactNode; center?: boolean }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [onClose]);
-  return createPortal(
-    <>
-      <button type="button" className="h11-veil" aria-label={t('Fermer')} onClick={onClose} />
-      <div className={center ? 'h11-dlg-w' : 'h11-sheet-w'}>{children}</div>
-    </>,
-    document.body,
+/**
+ * Une ligne de la frise : heure de début et de fin, point sur le rail (sa FORME et sa couleur disent
+ * l'état : creux = à venir, plein = passé ou en cours ; vert = confirmé ou terminé, abricot = à
+ * valider, noir = en cours), client, prestation, prix et statut. La ligne `focus` (le prochain
+ * rendez-vous, ou celui en cours) ajoute le délai et les gestes : appeler, message prêt, et
+ * « Confirmer » si c'est une demande.
+ */
+function DayRow({
+  b,
+  now,
+  showStaff,
+  meStaffId,
+  focus,
+  onOpen,
+  onMessage,
+  confirm,
+}: {
+  b: BookingWithStaff;
+  now: number;
+  showStaff: boolean;
+  meStaffId: string | null;
+  focus?: boolean;
+  onOpen: (id: string) => void;
+  onMessage?: () => void;
+  /** Le prochain rendez-vous est une DEMANDE : la valider d'ici (une seule mutation, portée par l'accueil). */
+  confirm?: { run: () => void; busy: boolean; error: unknown };
+}) {
+  const k = rowKey(b, now);
+  return (
+    <li className={`prh-r ${k}${focus ? ' focus' : ''}`}>
+      <button
+        type="button"
+        className="prh-r-b"
+        onClick={() => onOpen(b.id)}
+        aria-label={`${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)}, ${b.clientName}, ${b.serviceName}, ${formatDA(b.priceDa)}, ${rowLabel(k)}`}
+      >
+        <span className="prh-r-h">
+          <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
+          <span dir="ltr">{formatTimeDZ(b.endsAt)}</span>
+        </span>
+        <span className="prh-r-p" aria-hidden />
+        <span className="prh-r-c">
+          <span className="prh-r-n">{b.clientName}</span>
+          <span className="prh-r-s">
+            {b.serviceName}
+            {showStaff && b.staff ? ` · ${b.staffId === meStaffId ? t('Vous') : b.staff.displayName}` : ''}
+          </span>
+        </span>
+        <span className="prh-r-e">
+          <span className="prh-r-pr" dir="ltr">
+            {formatDA(b.priceDa)}
+          </span>
+          <span className={`prh-st ${k}`}>{rowLabel(k)}</span>
+        </span>
+      </button>
+      {focus && (
+        <div className="prh-r-f">
+          <span className={`prh-when${k === 'live' ? ' live' : k === 'pending' ? ' pd' : ''}`}>
+            {k === 'live' ? t('Fin à {time}', { time: formatTimeDZ(b.endsAt) }) : cap(untilLabelFR(b.startsAt, now))}
+          </span>
+          <span className="flex-1" />
+          {b.clientPhone && (
+            <>
+              <a href={`tel:${b.clientPhone}`} className="prh-r-a" aria-label={t('Appeler {name}', { name: b.clientName })} title={t('Appeler')}>
+                <I icon={Phone} size={18} strokeWidth={1.9} />
+              </a>
+              <button
+                type="button"
+                className="prh-r-a wa"
+                aria-label={t('Message à {first}', { first: b.clientName.split(' ')[0] ?? b.clientName })}
+                title={t('Message')}
+                onClick={onMessage}
+              >
+                <I icon={MessageCircle} size={18} strokeWidth={1.9} />
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      {confirm && (
+        // Une demande est le prochain rendez-vous : la valider est LE geste du moment.
+        <div className="prh-r-ok">
+          <Button sm loading={confirm.busy} onClick={confirm.run}>
+            <I icon={Check} size={16} strokeWidth={2.2} /> {t('Confirmer la demande')}
+          </Button>
+        </div>
+      )}
+      {confirm?.error != null && (
+        <div className="prh-r-err">
+          <ErrorMessage error={confirm.error} />
+        </div>
+      )}
+    </li>
   );
 }
+
+/* ================================================================== feuilles */
 
 function SheetHead({ title, sub, onClose }: { title: string; sub?: string; onClose: () => void }) {
   return (
-    <>
-      <span className="h11-grab" aria-hidden />
-      <div className="h11-sh-h">
-        <div className="min-w-0">
-          <h3>{title}</h3>
-          {sub && <p dir="auto">{sub}</p>}
-        </div>
-        <button type="button" className="rx" aria-label={t('Fermer')} onClick={onClose}>
-          <I icon={X} size={18} />
-        </button>
+    <div className="prh-shh">
+      <div className="min-w-0 flex-1">
+        <h2 className="h2">{title}</h2>
+        {sub && (
+          <p className="prh-shh-s" dir="auto">
+            {sub}
+          </p>
+        )}
       </div>
-    </>
-  );
-}
-
-function Chips<T>({ items, value, onPick, label }: { items: { key: T; label: string }[]; value: T; onPick: (k: T) => void; label: (k: T) => string }) {
-  return (
-    <div className="h11-chips">
-      {items.map((c) => (
-        <button key={String(c.key)} type="button" className={`h11-chip${c.key === value ? ' on' : ''}`} aria-pressed={c.key === value} onClick={() => onPick(c.key)}>
-          {c.label || label(c.key)}
-        </button>
-      ))}
+      <button type="button" className="rx" aria-label={t('Fermer')} onClick={onClose}>
+        <I icon={X} size={18} />
+      </button>
     </div>
   );
 }
 
-function QrDialog({ url, name, slug, onClose }: { url: string; name: string; slug: string; onClose: () => void }) {
-  const qr = useQr(url, 520);
+/** Code QR de la page (lien court + `?src=qr`, pour compter d'où viennent les visites). */
+function QrSheet({ url, name, slug, women, onClose }: { url: string; name: string; slug: string; women: boolean; onClose: () => void }) {
+  const qr = useQr(url, 560);
   return (
-    <Overlay onClose={onClose} center>
-      <div role="dialog" aria-modal="true" aria-label={t('Code QR de votre page')} className="h11-dlg">
-        <button type="button" className="rx h11-dlg-x" aria-label={t('Fermer')} onClick={onClose}>
-          <I icon={X} size={18} />
-        </button>
-        <h3>{t('Réservez votre créneau')}</h3>
-        <p>{t('Scannez ce code pour accéder à {name}', { name })}</p>
-        <div className="h11-qr">{qr ? <img src={qr} alt={t('Code QR de votre page')} width={220} height={220} /> : <Skeleton className="h-[220px] w-[220px]" />}</div>
-        <p>{t('Scannez ce code pour accéder directement à la page de réservation de {name}.', { name })}</p>
-        <a className="h11-b grad h11-dl" href={qr ?? undefined} download={`salondz-qr-${slug}.png`}>
-          <I icon={Download} size={20} strokeWidth={2} /> {t('Télécharger le QR Code')}
-        </a>
-      </div>
-    </Overlay>
+    <>
+      <Dim onClose={onClose} />
+      <BottomSheet modal label={t('Code QR de votre page')} className="prh-sheet">
+        <SheetHead
+          title={t('Code QR de votre page')}
+          sub={women ? t('Vos clientes le scannent pour réserver chez {name}.', { name }) : t('Vos clients le scannent pour réserver chez {name}.', { name })}
+          onClose={onClose}
+        />
+        <div className="prh-qr">
+          {qr ? <img src={qr} alt={t('Code QR de votre page')} width={220} height={220} /> : <Skeleton className="h-[220px] w-[220px]" />}
+        </div>
+        <div className="g2">
+          <Link to="/pro/qr" className="btn g" onClick={onClose}>
+            {t('Étiquettes')}
+          </Link>
+          <a className={`btn${qr ? '' : ' off'}`} href={qr ?? undefined} download={`salondz-qr-${slug}.png`}>
+            <I icon={Download} size={18} strokeWidth={2} /> {t('Télécharger')}
+          </a>
+        </div>
+      </BottomSheet>
+    </>
   );
 }
 
+/**
+ * « Mes disponibilités » : un message prêt à envoyer aux clientes qui demandent « dispo ? » en
+ * message privé, d'après les VRAIS créneaux de la prestation et du jour choisis — ou la même chose
+ * en IMAGE pour une story ou un statut (dessinée dans le navigateur).
+ */
 function DispoSheet({
   salon,
   url,
+  short,
+  women,
   today,
   now,
   onClose,
@@ -640,20 +789,27 @@ function DispoSheet({
 }: {
   salon: SalonOwnerView;
   url: string;
+  short: string;
+  women: boolean;
   today: string;
   now: number;
   onClose: () => void;
-  onDone: (toast: string) => void;
+  onDone: (toast: string | null) => void;
 }) {
   const services = salon.services.filter((s) => s.isActive);
   const [svc, setSvc] = useState(services[0]?.id ?? '');
-  const days = useMemo(() => [null, ...Array.from({ length: 7 }, (_, i) => addDaysToKey(today, i))], [today]);
   const [day, setDay] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const days: (string | null)[] = [null, ...Array.from({ length: 7 }, (_, i) => addDaysToKey(today, i))];
   const date = day ?? today;
   const av = useAvailability(salon.id, { serviceId: svc, date });
   const service = services.find((s) => s.id === svc);
   const dayName = (d: string) =>
-    d === today ? t('aujourd’hui') : d === addDaysToKey(today, 1) ? t('demain') : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
+    d === today
+      ? t('aujourd’hui')
+      : d === addDaysToKey(today, 1)
+        ? t('demain')
+        : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
   const dayChip = (d: string | null) =>
     d === null
       ? t('Prochaines dispos')
@@ -663,73 +819,136 @@ function DispoSheet({
           ? t('Demain')
           : new Intl.DateTimeFormat(formatLocale(), { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
   const slotsOf = (list: string[]) => joinTimes(list.slice(0, 5).map((x) => hfr(x)));
+
+  // Les heures du jour choisi (ou, pour « Prochaines dispos », celles d'aujourd'hui puis du
+  // prochain jour libre) : le message ET l'image en partent.
+  const daySlots = av.data ? av.data.slots.filter((s) => ms(s.startsAt) > now).map((s) => formatTimeDZ(s.startsAt)) : [];
+  const nextFree = day === null ? av.data?.nextAvailable ?? null : null;
   let parts = '';
   if (av.data) {
-    const todaySlots = av.data.slots.filter((s) => new Date(s.startsAt).getTime() > now).map((s) => formatTimeDZ(s.startsAt));
-    if (day === null) {
-      const a = todaySlots.length ? `${dayName(today)} ${t('à')} ${slotsOf(todaySlots)}` : '';
-      const n = av.data.nextAvailable;
-      const b = n ? `${dayName(n.date)} ${t('à')} ${slotsOf(n.slots.map((x) => x.slice(0, 5)))}` : '';
-      parts = [a, b].filter(Boolean).join(`, ${t('puis')} `);
-    } else {
-      parts = todaySlots.length ? `${dayName(date)} ${t('à')} ${slotsOf(todaySlots)}` : '';
-    }
+    const a = daySlots.length ? `${dayName(date)} ${t('à')} ${slotsOf(daySlots)}` : '';
+    const b = nextFree ? `${dayName(nextFree.date)} ${t('à')} ${slotsOf(nextFree.slots.map((x) => x.slice(0, 5)))}` : '';
+    parts = [a, b].filter(Boolean).join(`, ${t('puis')} `);
   }
   const message = parts
     ? t('Salam 😊 Pour {svc}, mes disponibilités : {when}. Réservez directement ici 👉', { svc: service?.name ?? '', when: parts })
     : t('Salam 😊 Pour {svc}, je n’ai plus de créneau ce jour-là. Réservez le prochain directement ici 👉', { svc: service?.name ?? '' });
   const full = `${message} ${url}`;
+
+  const story = daySlots.length
+    ? { date, times: daySlots }
+    : nextFree
+      ? { date: nextFree.date, times: nextFree.slots.map((x) => x.slice(0, 5)) }
+      : null;
+  const storyTimes = !story
+    ? []
+    : story.times.length <= 4
+      ? story.times
+      : [0, 1, 2, 3].map((i) => story.times[Math.round((i * (story.times.length - 1)) / 3)]!);
+  const makeStory = async () => {
+    if (!story) return;
+    setBusy(true);
+    try {
+      const blob = await drawStory({
+        photo: salon.coverUrl ?? salon.photos[0]?.url ?? null,
+        dayLabel: cap(story.date === today ? t('Aujourd’hui') : story.date === addDaysToKey(today, 1) ? t('Demain') : dayName(story.date)),
+        subtitle: t('créneaux libres'),
+        times: storyTimes,
+        salon: salon.name,
+        link: short,
+      });
+      if (blob) {
+        const shared = await shareImage(blob, `salondz-creneaux-${salon.slug}.png`, `${t('Réservez ici')} 👉 ${url}`);
+        onDone(shared ? null : t('Image enregistrée'));
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <Overlay onClose={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={t('Envoyer mes disponibilités')} className="h11-sheet">
-        <SheetHead title={t('Envoyer mes disponibilités')} sub={t('Un message prêt à envoyer aux clientes qui vous demandent vos dispos en DM.')} onClose={onClose} />
-        <span className="h11-sh-l">{t('Prestation')}</span>
-        <Chips items={services.map((s) => ({ key: s.id, label: s.name }))} value={svc} onPick={setSvc} label={() => ''} />
-        <span className="h11-sh-l">{t('Jour')}</span>
-        <Chips items={days.map((d) => ({ key: d, label: dayChip(d) }))} value={day} onPick={setDay} label={() => ''} />
-        <span className="h11-sh-l">{t('Message')}</span>
-        <p className="h11-msg">
-          {av.isPending ? '…' : message} <span className="whitespace-nowrap" dir="ltr">{url}</span>
+    <>
+      <Dim onClose={onClose} />
+      <BottomSheet modal label={t('Envoyer mes disponibilités')} className="prh-sheet">
+        <SheetHead
+          title={t('Envoyer mes disponibilités')}
+          sub={
+            women
+              ? t('Un message prêt à envoyer aux clientes qui vous demandent vos dispos.')
+              : t('Un message prêt à envoyer aux clients qui vous demandent vos dispos.')
+          }
+          onClose={onClose}
+        />
+        {services.length > 1 && (
+          <div className="prh-f">
+            <span className="prh-lbl">{t('Prestation')}</span>
+            <div className="pills bleed">
+              {services.map((s) => (
+                <Pill key={s.id} on={s.id === svc} aria-pressed={s.id === svc} onClick={() => setSvc(s.id)}>
+                  {s.name}
+                </Pill>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="prh-f">
+          <span className="prh-lbl">{t('Jour')}</span>
+          <div className="pills bleed">
+            {days.map((d) => (
+              <Pill key={d ?? 'next'} on={d === day} aria-pressed={d === day} onClick={() => setDay(d)}>
+                {dayChip(d)}
+              </Pill>
+            ))}
+          </div>
+        </div>
+        <p className="prh-msg" aria-live="polite">
+          {av.isPending && !!svc ? '…' : message}{' '}
+          <span className="whitespace-nowrap" dir="ltr">
+            {url}
+          </span>
         </p>
-        <div className="h11-sh-a">
-          <button
-            type="button"
-            className="h11-b lg soft"
+        <div className="g2">
+          <Button
+            variant="g"
             onClick={() => {
               void navigator.clipboard?.writeText(full);
               onDone(t('Message copié !'));
             }}
           >
-            <I icon={Copy} size={20} strokeWidth={2} /> {t('Copier')}
-          </button>
-          <button
-            type="button"
-            className="h11-b lg grad"
+            <I icon={Copy} size={18} strokeWidth={2} /> {t('Copier')}
+          </Button>
+          <Button
             onClick={() => {
               if (navigator.share) {
                 void navigator.share({ text: full }).catch(() => undefined);
-                onClose();
+                onDone(null);
               } else {
                 void navigator.clipboard?.writeText(full);
                 onDone(t('Message copié !'));
               }
             }}
           >
-            <I icon={Send} size={20} strokeWidth={2} /> {t('Partager')}
-          </button>
+            <I icon={Send} size={18} strokeWidth={2} /> {t('Partager')}
+          </Button>
         </div>
-      </div>
-    </Overlay>
+        <button type="button" className="prh-story" disabled={!story || busy} onClick={() => void makeStory()}>
+          <I icon={ImageIcon} size={18} strokeWidth={1.9} />
+          <span>{t('En image, pour une story ou un statut')}</span>
+          {busy ? <span className="btn-spin" aria-hidden /> : <I icon={ChevronRight} size={16} strokeWidth={2} className="rtl:rotate-180" />}
+        </button>
+      </BottomSheet>
+    </>
   );
 }
 
+/** Message prêt pour un client du jour : rappel, retard, plus tôt, adresse — copié ou envoyé par WhatsApp. */
 function MessageSheet({
   b,
   tpl,
   salon,
   onTpl,
   onClose,
-  onCopy,
+  onDone,
   onSend,
 }: {
   b: BookingWithStaff;
@@ -737,7 +956,7 @@ function MessageSheet({
   salon: SalonOwnerView;
   onTpl: (n: number) => void;
   onClose: () => void;
-  onCopy: (text: string) => void;
+  onDone: (toast: string) => void;
   onSend: (text: string) => void;
 }) {
   const first = b.clientName.split(' ')[0] ?? b.clientName;
@@ -752,169 +971,36 @@ function MessageSheet({
   const names = [t('Rappel'), t('Retard'), t('Plus tôt'), t('Adresse')];
   const text = texts[tpl] ?? texts[0]!;
   return (
-    <Overlay onClose={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={t('Message à {first}', { first })} className="h11-sheet">
+    <>
+      <Dim onClose={onClose} />
+      <BottomSheet modal label={t('Message à {first}', { first })} className="prh-sheet">
         <SheetHead title={t('Message à {first}', { first })} sub={`${b.serviceName} · ${t('aujourd’hui à {time}', { time: start })}`} onClose={onClose} />
-        <span className="h11-sh-l">{t('Modèle')}</span>
-        <Chips items={names.map((n, i) => ({ key: i, label: n }))} value={tpl} onPick={onTpl} label={() => ''} />
-        <span className="h11-sh-l">{t('Message')}</span>
-        <p className="h11-msg">{text}</p>
-        <div className="h11-sh-a">
-          <button type="button" className="h11-b lg soft" onClick={() => onCopy(text)}>
-            <I icon={Copy} size={20} strokeWidth={2} /> {t('Copier')}
-          </button>
-          <button type="button" className="h11-b lg grad" disabled={!b.clientPhone} onClick={() => onSend(text)}>
-            <I icon={MessageCircle} size={20} strokeWidth={2} /> WhatsApp
-          </button>
-        </div>
-      </div>
-    </Overlay>
-  );
-}
-
-function MoreSheet({
-  b,
-  team,
-  clientKey,
-  onClose,
-  onLate,
-  onOpen,
-}: {
-  b: BookingWithStaff;
-  team: boolean;
-  clientKey: string | null;
-  onClose: () => void;
-  onLate: () => void;
-  onOpen: () => void;
-}) {
-  const first = b.clientName.split(' ')[0] ?? b.clientName;
-  const sub = `${b.serviceName} · ${formatTimeDZ(b.startsAt)} → ${formatTimeDZ(b.endsAt)}${team && b.staff ? ` · ${t('avec {name}', { name: b.staff.displayName })}` : ''}`;
-  const Row = ({ icon, label, to, onClick, danger }: { icon: typeof Clock; label: string; to?: string; onClick?: () => void; danger?: boolean }) => {
-    const inner = (
-      <>
-        <span className={`h11-mr-i${danger ? ' dg' : ''}`}>
-          <I icon={icon} size={18} strokeWidth={2} />
-        </span>
-        <span className="flex-1">{label}</span>
-      </>
-    );
-    return to ? (
-      <Link to={to} className={`h11-mr${danger ? ' dg' : ''}`} onClick={onClose}>
-        {inner}
-      </Link>
-    ) : (
-      <button type="button" className={`h11-mr${danger ? ' dg' : ''}`} onClick={onClick}>
-        {inner}
-      </button>
-    );
-  };
-  return (
-    <Overlay onClose={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={b.clientName} className="h11-sheet">
-        <span className="h11-grab" aria-hidden />
-        <div className="h11-sh-h">
-          <div className="min-w-0">
-            <h3>{b.clientName}</h3>
-            <p dir="auto">{sub}</p>
+        <div className="prh-f">
+          <span className="prh-lbl">{t('Modèle')}</span>
+          <div className="pills bleed">
+            {names.map((n, i) => (
+              <Pill key={n} on={i === tpl} aria-pressed={i === tpl} onClick={() => onTpl(i)}>
+                {n}
+              </Pill>
+            ))}
           </div>
         </div>
-        <div className="h11-mrs">
-          {clientKey ? (
-            <Row icon={UserRound} label={t('Voir la fiche {first}', { first: elide(first) })} to={`/pro/clients/${encodeURIComponent(clientKey)}`} />
-          ) : (
-            <Row icon={UserRound} label={t('Voir le rendez-vous')} onClick={onOpen} />
-          )}
-          <Row icon={CalendarClock} label={t('Reporter le rendez-vous')} to={`/pro/rendez-vous/${b.id}/reporter`} />
-          <Row icon={Clock} label={t('Prévenir d’un retard')} onClick={onLate} />
-          <Row icon={XCircle} label={t('Annuler le rendez-vous')} onClick={onOpen} danger />
+        <p className="prh-msg">{text}</p>
+        <div className="g2">
+          <Button
+            variant="g"
+            onClick={() => {
+              void navigator.clipboard?.writeText(text);
+              onDone(t('Message copié !'));
+            }}
+          >
+            <I icon={Copy} size={18} strokeWidth={2} /> {t('Copier')}
+          </Button>
+          <Button disabled={!b.clientPhone} onClick={() => onSend(text)}>
+            <I icon={MessageCircle} size={18} strokeWidth={2} /> WhatsApp
+          </Button>
         </div>
-        <button type="button" className="h11-b lg neu" onClick={onClose}>
-          {t('Fermer')}
-        </button>
-      </div>
-    </Overlay>
-  );
-}
-
-/* ================================================================== journée de l'équipe */
-
-function TeamDay({
-  salon,
-  bookings,
-  now,
-  today,
-  onOpen,
-  meStaffId,
-}: {
-  salon: SalonOwnerView;
-  bookings: BookingWithStaff[];
-  now: number;
-  today: string;
-  onOpen: (id: string) => void;
-  meStaffId: string | null;
-}) {
-  const dow = new Date(`${today}T12:00:00Z`).getUTCDay();
-  const hours = salon.openingHours.filter((h) => h.dayOfWeek === dow && !h.isClosed);
-  const toMin = (hm: string) => {
-    const [h, m] = hm.split(':').map(Number);
-    return h! * 60 + (m ?? 0);
-  };
-  const minOf = (iso: string) => toMin(formatTimeDZ(iso));
-  let start = hours.length ? Math.min(...hours.map((h) => toMin(h.opensAt))) : 10 * 60;
-  let end = hours.length ? Math.max(...hours.map((h) => toMin(h.closesAt))) : 20 * 60;
-  for (const b of bookings) {
-    start = Math.min(start, minOf(b.startsAt));
-    end = Math.max(end, minOf(b.endsAt));
-  }
-  start = Math.floor(start / 120) * 120;
-  end = Math.max(start + 240, Math.ceil(end / 120) * 120);
-  const span = end - start;
-  const pct = (m: number) => `${((m - start) / span) * 100}%`;
-  const nowMin = minOf(new Date(now).toISOString());
-  const marks: number[] = [];
-  for (let m = start; m <= end; m += 120) marks.push(m);
-  const members = salon.staff.filter((m) => m.isActive);
-  return (
-    <section className="h11-team" aria-label={t('La journée de l’équipe')}>
-      <div className="h11-team-g" dir="ltr">
-        {members.map((m) => (
-          <div key={m.id} className="contents">
-            {m.avatarUrl ? (
-              <img src={m.avatarUrl} alt={m.id === meStaffId ? t('Vous') : m.displayName} className="h11-team-a" />
-            ) : (
-              <span className="h11-team-a ini">{m.displayName.charAt(0).toUpperCase()}</span>
-            )}
-            <div className="h11-team-t">
-              {bookings
-                .filter((b) => b.staffId === m.id)
-                .map((b) => {
-                  const done = new Date(b.endsAt).getTime() <= now || b.status === 'completed' || b.status === 'no_show';
-                  return (
-                    <button
-                      key={b.id}
-                      type="button"
-                      className={`h11-team-b${done ? ' done' : b.status === 'pending' ? ' pd' : ''}`}
-                      style={{ left: pct(minOf(b.startsAt)), width: `max(6px, ${((minOf(b.endsAt) - minOf(b.startsAt)) / span) * 100}%)` } as CSSProperties}
-                      aria-label={`${m.displayName} · ${formatTimeDZ(b.startsAt)} · ${b.clientName}`}
-                      onClick={() => onOpen(b.id)}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-        ))}
-        {nowMin >= start && nowMin <= end && (
-          <span className="h11-team-now" aria-hidden style={{ ['--f' as string]: ((nowMin - start) / span).toFixed(4) } as CSSProperties} />
-        )}
-      </div>
-      <div className="h11-team-h" dir="ltr" aria-hidden>
-        <span />
-        <div>
-          {marks.map((m) => (
-            <span key={m}>{Math.floor(m / 60)}h</span>
-          ))}
-        </div>
-      </div>
-    </section>
+      </BottomSheet>
+    </>
   );
 }

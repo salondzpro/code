@@ -780,11 +780,14 @@ export function BottomSheet({
   children,
   grab = true,
   modal = false,
+  label,
   className = '',
   sheetRef,
 }: {
   children: ReactNode;
   grab?: boolean;
+  /** Nom de la fenêtre pour les lecteurs d'écran (feuille modale) : elle devient un vrai `dialog`. */
+  label?: string;
   /**
    * Feuille MODALE (toujours accompagnée d'un `Dim`) : elle interrompt, on y répond, elle se
    * ferme. Sans ce drapeau, la feuille est la BARRE D'ACTION d'un écran, posée en bas en
@@ -820,7 +823,11 @@ export function BottomSheet({
     else if (sheetRef && 'current' in sheetRef) (sheetRef as { current: HTMLDivElement | null }).current = node;
   };
   return (
-    <div ref={setRef} className={`sheet${modal ? ' modal' : ''} ${className}`}>
+    <div
+      ref={setRef}
+      className={`sheet${modal ? ' modal' : ''} ${className}`}
+      {...(modal && label ? { role: 'dialog', 'aria-modal': true, 'aria-label': label } : {})}
+    >
       {grab && <div className="grab" />}
       {children}
     </div>

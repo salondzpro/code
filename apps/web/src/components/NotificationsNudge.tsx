@@ -78,25 +78,26 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
 
   return (
     <div className="flex gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-3.5" role="status">
-      <span className="mt-0.5 flex size-10 flex-none items-center justify-center rounded-[var(--radius-card-sm)] bg-fill">
-        <I icon={BellRing} size={20} strokeWidth={1.7} />
+      <span className="mt-0.5 flex size-9 flex-none items-center justify-center rounded-[var(--radius-card-sm)] bg-fill">
+        <I icon={BellRing} size={18} strokeWidth={1.8} />
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">
           {role === 'pro' ? t('Ne manquez plus une réservation') : t('Ne manquez plus votre rendez-vous')}
         </p>
-        <p className="p mt-1 text-[0.938rem]">
+        <p className="p mt-0.5 text-[0.929rem] leading-snug">
           {bloquees
             ? t('Les notifications de Salon DZ sont coupées sur cet appareil.')
             : role === 'pro'
-              ? t('Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.')
+              ? t('Recevez chaque demande à l’instant où elle arrive.')
               : t('Rappel 1 h puis 30 min avant, et un mot dès que le salon confirme.')}
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        {/* Une rangée, deux gestes courts (3 nov. 2026) : le bandeau tenait sur quatre lignes. */}
+        <div className="mt-2.5 flex flex-wrap gap-2">
           {!(bloquees && chemin) && (
             <Button sm auto loading={n.occupe} onClick={() => void agir()}>
               {!bloquees ? (
-                t('Activer les notifications')
+                t('Activer')
               ) : n.ouvrable ? (
                 <>
                   {t('Ouvrir les réglages')} <I icon={ExternalLink} size={15} />
