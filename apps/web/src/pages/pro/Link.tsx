@@ -15,7 +15,6 @@ import {
   Lock,
   MessageSquareText,
   MoreHorizontal,
-  QrCode,
   Share2,
 } from 'lucide-react';
 import { LabelStudio } from '@/components/LabelStudio';
