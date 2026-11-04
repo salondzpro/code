@@ -21,8 +21,7 @@ export function SalonServices() {
   const s = salon.data;
   return (
     <Screen className="h-app" gap={16}>
-      <TopBar backTo={`/s/${s.slug}`} right={s.name} />
-      <h1 className="h1">{t("Prestations")}</h1>
+      <TopBar backTo={`/s/${s.slug}`} right={s.name} title={t("Prestations")} />
       {groupServices(s.services).map((g) => (
       <div key={g.name} className="flex flex-col gap-3.5">
         <span className="h3">{g.name}</span>

@@ -171,8 +171,7 @@ export function BookingWhen() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/s/${s.slug}`} right="Étape 1 sur 3" />
-      <h1 className="h1">{t("Quand ?")}</h1>
+      <TopBar backTo={`/s/${s.slug}`} right="Étape 1 sur 3" title={t("Quand ?")} />
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
         <span className="min-w-0">

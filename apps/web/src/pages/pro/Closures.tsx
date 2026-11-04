@@ -167,8 +167,7 @@ export function Closures() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/equipe" right="Équipe" />
-      <h1 className="h1">{t("Fermetures")}</h1>
+      <TopBar backTo="/pro/equipe" title={t("Fermetures")} />
 
       <div className="crd !gap-0 !px-4 !py-1">
         {blocks.isPending && <Skeleton className="my-3 h-[4rem]" />}

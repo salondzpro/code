@@ -17,8 +17,7 @@ export function SalonWorks() {
   const photos = s.works;
   return (
     <Screen className="h-app" gap={16}>
-      <TopBar backTo={`/s/${s.slug}`} right={s.name} />
-      <h1 className="h1">{t("Réalisations")}</h1>
+      <TopBar backTo={`/s/${s.slug}`} right={s.name} title={t("Réalisations")} />
       {photos.length === 0 ? (
         <EmptyState
           icon={Images}

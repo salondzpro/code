@@ -51,8 +51,7 @@ export function ProAccount() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/parametres" />
-      <h1 className="h1">{t("Mon compte")}</h1>
+      <TopBar backTo="/pro/parametres" title={t("Mon compte")} />
 
       <SectionLabel>{t("Profil professionnel")}</SectionLabel>
       <div className="crd !gap-0 !py-1">

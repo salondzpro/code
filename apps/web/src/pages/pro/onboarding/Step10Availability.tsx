@@ -151,8 +151,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   if (settings) {
     return (
       <Screen bottom={SHEET_PAD} gap={16}>
-        <StepBar step={10} backTo={backTo} />
-        <h1 className="h1">{t("Créneaux et règles")}</h1>
+        <StepBar step={10} backTo={backTo} right={null} title={t("Créneaux et règles")} />
         {slots}
         {rules}
         {salon && <RulesFacts salon={salon} />}

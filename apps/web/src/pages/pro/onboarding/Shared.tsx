@@ -12,9 +12,11 @@ export function StepBar({
   step,
   backTo,
   right,
+  title,
 }: {
   step: number;
   backTo?: string;
+  title?: ReactNode;
   /** Fourni en réglages (hors inscription) : pas de compteur ni de progression. */
   right?: ReactNode;
 }) {
@@ -24,6 +26,7 @@ export function StepBar({
     <div className="flex flex-col gap-3">
       <TopBar
         backTo={backTo}
+        title={title}
         right={settings ? right : <span className="text-[0.857rem] text-muted">{t('Étape {n} sur {total}', { n: shown, total: ONBOARDING_STEPS })}</span>}
       />
       {!settings && (

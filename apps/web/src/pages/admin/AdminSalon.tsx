@@ -87,7 +87,7 @@ export function AdminSalon() {
 
   return (
     <Screen gap={14} width="page">
-      <TopBar backTo="/admin/salons" right={t('Professionnels')} />
+      <TopBar backTo="/admin/salons" title={t('Professionnels')} />
 
       <div className="crd !gap-3">
         <div className="flex items-center gap-3.5">

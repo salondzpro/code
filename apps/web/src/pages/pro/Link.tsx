@@ -188,9 +188,7 @@ export function ProLink() {
 
   return (
     <Screen bottom={24} gap={16}>
-      <TopBar backTo="/pro" />
-      {/* Une phrase, une clé : coupée en deux morceaux, l'arabe les remettait dans le désordre. */}
-      <h1 className="h1 max-w-[14ch]">{t('Votre page de réservation')}</h1>
+      <TopBar backTo="/pro" title={t('Votre page de réservation')} />
       <div className="crd items-center !gap-3 !py-4">
         <button
           type="button"
@@ -279,11 +277,8 @@ export function ProQr() {
   const s = settings.data ?? DEFAULT_LABEL_SETTINGS;
   return (
     <Screen bottom={24} gap={14} className="narrow">
-      <TopBar backTo="/pro/lien" right={t('Étiquettes')} />
-      <div>
-        <h1 className="h1 !text-[1.571rem]">{t('Étiquettes à imprimer')}</h1>
-        <p className="p mt-1 text-[0.857rem]">{t('En vitrine ou au comptoir : le scan ouvre votre page de réservation.')}</p>
-      </div>
+      <TopBar backTo="/pro/lien" title={t('Étiquettes à imprimer')} />
+      <p className="p text-[0.857rem]">{t('En vitrine ou au comptoir : le scan ouvre votre page de réservation.')}</p>
       <LabelStudio
         input={{
           name: salon.name,

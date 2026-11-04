@@ -192,8 +192,7 @@ export function Localisation() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar close right={t(MARKET_LABELS_FR[market])} />
-      <h1 className="h1">{t("Localisation")}</h1>
+      <TopBar close title={t("Localisation")} />
       <SearchBox value={q} onChange={setQ} placeholder={t("Quartier, ville, wilaya ou adresse")} />
 
       {/* Lieux récents */}

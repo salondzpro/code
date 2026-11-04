@@ -219,7 +219,7 @@ export function ClientDetail() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <TopBar backTo="/pro/clients" right="Fiche client" />
+      <TopBar backTo="/pro/clients" title={t('Fiche client')} />
 
       {/* Qui, et les trois gestes du quotidien : appeler, écrire, prendre rendez-vous. */}
       <div className="crd !gap-3">

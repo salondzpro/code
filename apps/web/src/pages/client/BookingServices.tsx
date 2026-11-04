@@ -83,8 +83,7 @@ export function BookingServices() {
 
   return (
     <Screen gap={12}>
-      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[1rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? t('Homme') : t('Femme')}</span>} />
-      <h1 className="h1">{t("Prestations")}</h1>
+      <TopBar backTo={`/s/${s.slug}`} right={<span className="pill soft !text-[1rem] !font-semibold">{s.name} · {s.genderTarget === 'men' ? t('Homme') : t('Femme')}</span>} title={t("Prestations")} />
       <p className="p !text-[1rem]">
         {t("Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.")}
       </p>

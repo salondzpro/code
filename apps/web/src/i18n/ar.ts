@@ -1703,4 +1703,5 @@ export const ar: Record<string, string> = {
   "Plus rien de prévu": "لا شيء آخر مبرمج",
   "Prochains rendez-vous": "المواعيد القادمة",
   "Partager mes créneaux": "مشاركة مواعيدي",
+  "{a} sur 5 · {n} avis": "{a} من 5 · {n} تقييم",
 };

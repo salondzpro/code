@@ -1719,4 +1719,5 @@ export const en: Record<string, string> = {
   "Plus rien de prévu": "Nothing else planned",
   "Prochains rendez-vous": "Upcoming appointments",
   "Partager mes créneaux": "Share my slots",
+  "{a} sur 5 · {n} avis": "{a} out of 5 · {n} reviews",
 };

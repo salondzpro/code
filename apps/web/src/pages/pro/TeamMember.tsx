@@ -115,7 +115,7 @@ export function TeamMember() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/equipe" right="Équipe" />
+      <TopBar backTo="/pro/equipe" title={t('Équipe')} />
       <div className="flex items-center gap-3.5">
         <button
           type="button"
@@ -369,8 +369,7 @@ export function TeamMemberServices() {
   };
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/pro/equipe/${member.id}`} right={member.displayName} />
-      <h1 className="h1">{t("Prestations")}</h1>
+      <TopBar backTo={`/pro/equipe/${member.id}`} title={t("Prestations")} right={member.displayName} />
       <p className="p">
         {t("Le membre n'est proposé aux clients que pour les prestations qu'il réalise.")}
       </p>
@@ -460,8 +459,7 @@ export function TeamMemberHours() {
   };
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/pro/equipe/${member.id}`} right={member.displayName} />
-      <h1 className="h1">{t("Horaires")}</h1>
+      <TopBar backTo={`/pro/equipe/${member.id}`} title={t("Horaires")} right={member.displayName} />
       <Segmented
         label={t("Horaires")}
         value={custom ? 'custom' : 'salon'}

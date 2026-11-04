@@ -178,7 +178,7 @@ export function BookingDetail() {
 
   return (
     <Screen className="h-app" gap={12}>
-      <TopBar backTo="/rendez-vous" />
+      <TopBar backTo="/rendez-vous" title={t('Rendez-vous')} />
       {/* Une seule carte : le salon en tête avec l'état, puis quand, quoi, combien (`BookingSummary`). */}
       <BookingSummary
         salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl, area: address || b.salon.city }}

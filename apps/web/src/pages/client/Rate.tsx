@@ -48,17 +48,17 @@ export function Rate() {
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar
         backTo="/rendez-vous?scope=past"
+        title={
+          <>
+            {t("Comment s'est passée")} {t("votre visite ?")}
+          </>
+        }
         right={
           <button type="button" className="text-[0.857rem] text-muted" onClick={() => navigate('/rendez-vous?scope=past')}>
             {t("Passer")}
           </button>
         }
       />
-      <h1 className="h1">
-        {t("Comment s'est passée")}
-        <br />
-        {t("votre visite ?")}
-      </h1>
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
         <span className="min-w-0">

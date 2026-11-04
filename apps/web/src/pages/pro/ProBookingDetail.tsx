@@ -129,7 +129,7 @@ export function ProBookingDetail() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/agenda" />
+      <TopBar backTo="/pro/agenda" title={t('Rendez-vous')} />
       {/* Qui : le client d'abord, avec de quoi le joindre — c'est ce que le salon cherche
           en ouvrant la fiche (un retard, une question, une confirmation). */}
       <div className="crd !gap-3">
@@ -358,8 +358,7 @@ export function ProBookingReschedule() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/pro/rendez-vous/${b.id}`} right="Reporter" />
-      <h1 className="h1">{t("Nouveau créneau")}</h1>
+      <TopBar backTo={`/pro/rendez-vous/${b.id}`} title={t("Nouveau créneau")} />
       <div className="sf text-[0.857rem] text-muted">
         {t("Actuel ·")}{' '}{formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
         {b.serviceName}

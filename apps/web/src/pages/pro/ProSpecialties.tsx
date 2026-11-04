@@ -35,10 +35,7 @@ export function ProSpecialties() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo="/pro/mon-salon" right={t('Mon salon')} />
-      <StepTitle sub={t("Vos clients vous trouvent par spécialité. Choisissez-en une ou plusieurs : la suite de l'inscription s'adapte.")}>
-        {t("Que proposez-vous ?")}
-      </StepTitle>
+      <TopBar backTo="/pro/mon-salon" title={t('Spécialités')} />
       <SpecialtiesGrid items={specialtiesFor(salon.genderTarget)} chosen={chosen} onChange={setChosen} />
       <p className="p text-[0.857rem]">{t('{n} sur {max} spécialités', { n: chosen.length, max: MAX_SPECIALTIES })}</p>
       {error && (

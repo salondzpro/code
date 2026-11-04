@@ -97,8 +97,7 @@ export function BookingReview() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo={`/s/${slug}/reserver/coordonnees`} right={t('Étape 3 sur 3')} />
-      <h1 className="h1 !text-[1.571rem]">{t('Vérifiez et confirmez')}</h1>
+      <TopBar backTo={`/s/${slug}/reserver/coordonnees`} right={t('Étape 3 sur 3')} title={t('Vérifiez et confirmez')} />
 
       {/* Impossible de réserver : dit d'abord, en grand, avec la solution (appeler). */}
       {blockedMessage && (

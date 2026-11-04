@@ -146,10 +146,12 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={9} backTo={settings ? '/pro/parametres' : stepPath(8)} right={settings ? t('Horaires') : undefined} />
-      <StepTitle icon={settings ? undefined : Clock} sub={t('Touchez un jour pour le régler.')}>
-        {t('Horaires')}
-      </StepTitle>
+      <StepBar step={9} backTo={settings ? '/pro/parametres' : stepPath(8)} right={settings ? null : undefined} title={settings ? t('Horaires') : undefined} />
+      {!settings && (
+        <StepTitle icon={Clock} sub={t('Touchez un jour pour le régler.')}>
+          {t('Horaires')}
+        </StepTitle>
+      )}
       <WeekHoursEditor rows={rows} onChange={setRows} />
       <p className="text-[0.857rem] text-muted">{t("Semaine commençant")} {t("Dimanche").toLowerCase()} · {t("heure d'Alger")}</p>
       {error && (

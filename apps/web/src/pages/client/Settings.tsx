@@ -70,8 +70,7 @@ export function Settings() {
 
   return (
     <Screen bottom={NAV_PAD} gap={14}>
-      <TopBar backTo="/profil" right={t("Mon compte")} />
-      <h1 className="h1">{t("Réglages")}</h1>
+      <TopBar backTo="/profil" title={t("Réglages")} />
 
       <SectionLabel>{t("Notifications")}</SectionLabel>
       <div className="crd !gap-0 !py-1 scroll-mt-[4.5rem]" id="notifications">

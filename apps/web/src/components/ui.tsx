@@ -145,15 +145,19 @@ export function TopBar({
   close,
   right,
   noBack,
+  title,
 }: {
   backTo?: string;
   close?: boolean;
   right?: ReactNode;
   noBack?: boolean;
+  /** Titre de la page, sur la ligne du bouton retour : une rangée de gagnée sur chaque écran. */
+  title?: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      {noBack ? <span /> : <BackButton to={backTo} close={close} />}
+      {noBack ? !title && <span /> : <BackButton to={backTo} close={close} />}
+      {title && <h1 className="h1 tb-t">{title}</h1>}
       {typeof right === 'string' ? (
         <span className="text-[1rem] text-muted">{right}</span>
       ) : (

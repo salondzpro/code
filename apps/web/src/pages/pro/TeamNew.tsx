@@ -42,8 +42,7 @@ export function TeamNew() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo="/pro/equipe" right="Équipe" />
-      <h1 className="h1">{t("Nouveau membre")}</h1>
+      <TopBar backTo="/pro/equipe" title={t("Nouveau membre")} />
       <p className="p">{t("Agenda propre, horaires du salon — modifiables ensuite dans sa fiche.")}</p>
       <Field label={t("Prénom")} htmlFor="staff-name">
         <Input

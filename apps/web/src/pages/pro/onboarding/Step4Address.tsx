@@ -237,10 +237,12 @@ export function Step4Address({ settings }: { settings?: boolean }) {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={4} backTo={settings ? '/pro/mon-salon' : stepPath(3)} right={settings ? t('Adresse') : undefined} />
-      <StepTitle icon={settings ? undefined : MapPin} sub={settings ? undefined : t('Wilaya, adresse, emplacement.')}>
-        {t('Où se trouve votre salon ?')}
-      </StepTitle>
+      <StepBar step={4} backTo={settings ? '/pro/mon-salon' : stepPath(3)} right={settings ? null : undefined} title={settings ? t('Adresse') : undefined} />
+      {!settings && (
+        <StepTitle icon={MapPin} sub={t('Wilaya, adresse, emplacement.')}>
+          {t('Où se trouve votre salon ?')}
+        </StepTitle>
+      )}
 
       <form id="address" onSubmit={submit} className="adr" noValidate>
         {/* ---------------------------------------------------------------- 1 */}

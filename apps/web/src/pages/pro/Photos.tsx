@@ -75,8 +75,7 @@ export function ProPhotos() {
 
   return (
     <Screen gap={16}>
-      <TopBar backTo="/pro/mon-salon" />
-      <h1 className="h1">{t("Photos du salon")}</h1>
+      <TopBar backTo="/pro/mon-salon" title={t("Photos du salon")} />
       <SectionLabel>{t("Photo de profil")}</SectionLabel>
       <div className="crd !flex-row items-center gap-4">
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={80} />

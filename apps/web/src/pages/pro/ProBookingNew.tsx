@@ -349,8 +349,7 @@ export function ProBookingNew() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/agenda" close />
-      <h1 className="h1 !text-[1.714rem]">{t('Nouveau rendez-vous')}</h1>
+      <TopBar backTo="/pro/agenda" close title={t('Nouveau rendez-vous')} />
 
       {/* 1. QUI */}
       <section className="crd !gap-2.5" aria-labelledby="nb-s1">

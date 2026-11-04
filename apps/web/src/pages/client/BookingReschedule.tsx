@@ -52,8 +52,7 @@ export function BookingReschedule() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/rendez-vous/${b.id}`} right="Reporter" />
-      <h1 className="h1">{t("Nouveau créneau")}</h1>
+      <TopBar backTo={`/rendez-vous/${b.id}`} title={t("Nouveau créneau")} />
       <div className="sf flex items-center gap-3 text-[0.857rem] text-muted">
         <I icon={Clock} size={18} />
         <span>

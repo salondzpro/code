@@ -157,7 +157,7 @@ export function AdminProfile() {
 
   return (
     <Screen gap={14} width="page">
-      <TopBar backTo="/admin/comptes" right={t('Comptes')} />
+      <TopBar backTo="/admin/comptes" title={t('Comptes')} />
 
       <div className="crd !gap-3">
         <div className="flex items-center gap-3.5">

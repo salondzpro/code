@@ -69,10 +69,17 @@ export function Step6Service() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={6} backTo={first ? stepPath(4) : '/pro/catalogue'} />
-      <StepTitle icon={existing ? undefined : Tag} sub={existing ? undefined : t('Nom, prix, durée.')}>
-        {existing ? t('Modifier la prestation') : first ? t('Votre première prestation') : t('Nouvelle prestation')}
-      </StepTitle>
+      <StepBar
+        step={6}
+        backTo={first ? stepPath(4) : '/pro/catalogue'}
+        right={first ? undefined : null}
+        title={first ? undefined : existing ? t('Modifier la prestation') : t('Nouvelle prestation')}
+      />
+      {first && (
+        <StepTitle icon={Tag} sub={t('Nom, prix, durée.')}>
+          {t('Votre première prestation')}
+        </StepTitle>
+      )}
       {templates.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="h3">{t("Suggestions pour votre salon")}</span>

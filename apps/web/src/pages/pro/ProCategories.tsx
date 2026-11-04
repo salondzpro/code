@@ -53,8 +53,7 @@ export function ProCategories() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/catalogue" right="Catalogue" />
-      <h1 className="h1">{t("Catégories")}</h1>
+      <TopBar backTo="/pro/catalogue" title={t("Catégories")} />
       {groups.length === 0 ? (
         <p className="p">{t("Une catégorie apparaît dès que vous ajoutez une prestation.")}</p>
       ) : (

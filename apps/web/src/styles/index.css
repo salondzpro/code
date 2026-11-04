@@ -7882,3 +7882,54 @@ html[data-kb] #root {
     border-radius: 28px;
   }
 }
+
+/* Titre d'une page sur la ligne du bouton retour : deux lignes au plus si le titre est long. */
+@layer components {
+  .tb-t {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 1.571rem;
+    line-height: 1.15;
+  }
+  .rv-ring {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rv-ring svg {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  .rv-ring circle {
+    fill: none;
+    stroke: var(--color-line);
+    stroke-width: 8;
+  }
+  .rv-ring circle.on {
+    stroke: var(--color-accent);
+    stroke-linecap: round;
+  }
+  .rv-ring b {
+    font: 600 15px/1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink);
+  }
+  .rv-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+}

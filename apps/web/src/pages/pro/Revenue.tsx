@@ -14,7 +14,7 @@ import {
   toLocalDateKey,
   weekKeys,
 } from '@salondz/constants';
-import { BackButton, I, IconButton, SectionLabel, Segmented, Skeleton } from '@/components/ui';
+import { I, IconButton, TopBar, SectionLabel, Segmented, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
@@ -108,13 +108,15 @@ export function Revenue() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <div className="flex items-center gap-3">
-        <BackButton to="/pro" />
-        <h1 className="h1 min-w-0 flex-1 truncate">{t("Chiffre d'affaires")}</h1>
-        <IconButton lg aria-label={t("Exporter")} onClick={exportCsv}>
-          <I icon={Download} size={20} />
-        </IconButton>
-      </div>
+      <TopBar
+        backTo="/pro"
+        title={t("Chiffre d'affaires")}
+        right={
+          <IconButton lg aria-label={t("Exporter")} onClick={exportCsv}>
+            <I icon={Download} size={20} />
+          </IconButton>
+        }
+      />
       <Segmented
         label={t("Période")}
         value={period}

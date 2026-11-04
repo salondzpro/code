@@ -28,6 +28,7 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ReportReviewButton } from '@/components/ReportReview';
 import { ReviewSummary } from '@/components/ReviewExtras';
 import { PageLoading } from '@/components/PageLoading';
+import { formatLocale } from '@salondz/constants';
 import { t } from '@/i18n';
 
 const MAX = 600;
@@ -99,46 +100,30 @@ export function ProReviews() {
   const waiting = useProReviewsUnanswered(!!salon).data?.count ?? 0;
 
   if (!salon) return <PageLoading />;
+  const note = new Intl.NumberFormat(formatLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(salon.ratingAvg);
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <TopBar backTo="/pro" />
-      <h1 className="h1">{t('Avis')}</h1>
-
-      {/* Vue d'ensemble (28 oct. 2026) : la note, et la part d'avis qui ont une réponse — c'est
-          le chiffre que le professionnel peut faire bouger, et que lisent les futurs clients. */}
-      {salon.ratingCount > 0 && (
-        <div className="crd !gap-3">
-          <div className="flex items-center gap-3.5">
-            <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]" dir="ltr">
-              {salon.ratingAvg.toFixed(1)}
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[1.143rem] font-semibold" aria-hidden>
-                {'★'.repeat(Math.round(salon.ratingAvg))}
-                <span className="text-disabled">{'★'.repeat(5 - Math.round(salon.ratingAvg))}</span>
+      <TopBar
+        backTo="/pro"
+        title={t('Avis')}
+        right={
+          salon.ratingCount > 0 ? (
+            <span className="rv-head" aria-label={t('{a} sur 5 · {n} avis', { a: note, n: salon.ratingCount })}>
+              {t('{n} avis', { n: salon.ratingCount })}
+              <span className="rv-ring">
+                <svg viewBox="0 0 100 100" aria-hidden>
+                  <circle cx="50" cy="50" r="44" pathLength="100" />
+                  <circle className="on" cx="50" cy="50" r="44" pathLength="100" strokeDasharray={`${(salon.ratingAvg / 5) * 100} 100`} />
+                </svg>
+                <b dir="ltr">{note}</b>
               </span>
-              <span className="block text-[0.857rem] text-muted">{t('{n} avis', { n: salon.ratingCount })}</span>
             </span>
-          </div>
-          {(() => {
-            const answered = Math.max(0, salon.ratingCount - waiting);
-            const pct = Math.round((answered / salon.ratingCount) * 100);
-            return (
-              <div className="flex flex-col gap-1.5">
-                <span className="flex items-baseline justify-between gap-3 text-[0.857rem]">
-                  <span className="font-semibold">{t('Avis avec une réponse')}</span>
-                  <span className="text-muted" dir="ltr">{pct} %</span>
-                </span>
-                <span className="rv-gauge !flex-none" aria-hidden>
-                  <span style={{ width: `${Math.max(2, pct)}%` }} />
-                </span>
-              </div>
-            );
-          })()}
-          <ReviewSummary salon={salon} />
-        </div>
-      )}
+          ) : undefined
+        }
+      />
+
+      {salon.ratingCount > 0 && <ReviewSummary salon={salon} />}
 
       {waiting > 0 && (
         <div className="pills bleed" role="group" aria-label={t('Filtrer les avis')}>

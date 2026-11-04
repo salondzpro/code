@@ -44,8 +44,7 @@ export function SalonReviews() {
 
   return (
     <Screen className="h-app" gap={16}>
-      <TopBar backTo={`/s/${s.slug}`} right={s.name} />
-      <h1 className="h1">{t("Avis")}</h1>
+      <TopBar backTo={`/s/${s.slug}`} right={s.name} title={t("Avis")} />
       {has ? (
         <div className="crd !flex-row !items-center !gap-4">
           <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]">

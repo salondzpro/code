@@ -168,8 +168,7 @@ export function BookingDetails() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
-      <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 2 sur 3" />
-      <h1 className="h1">{t("Pour qui ?")}</h1>
+      <TopBar backTo={`/s/${slug}/reserver/quand`} right="Étape 2 sur 3" title={t("Pour qui ?")} />
 
       <Segmented
         label={t("Pour qui est ce rendez-vous")}
