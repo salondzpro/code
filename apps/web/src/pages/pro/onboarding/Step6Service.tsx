@@ -87,7 +87,7 @@ export function Step6Service() {
       )}
       <form id="service" onSubmit={submit} className="flex flex-col gap-4">
         <Field label={t("Nom")} htmlFor="svc-name">
-          <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={salon.genderTarget === 'men' ? t("Coupe + barbe") : t("Pose gel")} autoFocus={templates.length === 0} />
+          <Input id="svc-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={salon.genderTarget === 'men' ? t("Coupe + barbe") : t("Pose gel")} />
         </Field>
         <div className="g2">
           <Field label={t("Prix")} htmlFor="svc-price">
@@ -145,7 +145,7 @@ export function Step6Service() {
               },
             }}
           />
-          {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder={t("Nom de la nouvelle catégorie (ex. Soins de la barbe)")} aria-label={t("Nouvelle catégorie")} autoFocus />}
+          {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder={t("Nom de la nouvelle catégorie (ex. Soins de la barbe)")} aria-label={t("Nouvelle catégorie")} />}
         </Field>
         <Field label={t("Description")} htmlFor="svc-desc">
           <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder={t("Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines.")} />

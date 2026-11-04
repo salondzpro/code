@@ -80,7 +80,6 @@ export function ProfileSetup() {
             }}
             autoComplete="name"
             placeholder={t("Inès Rahmani")}
-            autoFocus
           />
         </Field>
         <div>

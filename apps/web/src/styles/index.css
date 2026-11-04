@@ -1927,15 +1927,16 @@ body::before {
 /* JAMAIS DE ZOOM AU TOUCHER D'UN CHAMP (iOS : Safari ET l'application)  */
 /* ------------------------------------------------------------------ */
 /* iOS agrandit la page dès qu'un champ de moins de 16 px reçoit le focus, et ne la remet pas
-   toujours à l'échelle ensuite. La règle vivait dans la couche de base : la classe `.inp` (couche
-   des composants, 15 px) l'écrasait, et le zoom se produisait sur TOUS les formulaires. Elle est
-   désormais HORS couche — en CSS en cascade, un style hors couche l'emporte sur toutes les couches,
-   utilitaires compris. Android ne zoome pas au focus : le dessin n'y change pas. */
-@supports (-webkit-touch-callout: none) {
-  input:not([type='checkbox']):not([type='radio']):not([type='range']),
-  select,
-  textarea {
-    font-size: max(16px, 1em);
+   toujours à l'échelle ensuite. Android ne zoome pas au focus : le dessin n'y change pas. */
+@layer base {
+  @supports (-webkit-touch-callout: none) {
+    /* `!important` dans la couche `base` : c'est la seule combinaison qui l'emporte sur un utilitaire
+       `!text-[1rem]`. Un `!important` se lit à l'envers des couches, et hors couche il perd. */
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    select,
+    textarea {
+      font-size: max(16px, 1em) !important;
+    }
   }
 }
 

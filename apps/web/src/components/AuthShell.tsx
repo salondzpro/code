@@ -417,7 +417,6 @@ export function PasswordField({
   err,
   hint,
   action,
-  autoFocus,
 }: {
   id: string;
   label: string;
@@ -428,7 +427,6 @@ export function PasswordField({
   err?: boolean;
   hint?: string;
   action?: ReactNode;
-  autoFocus?: boolean;
 }) {
   const [montre, setMontre] = useState(false);
   return (
@@ -443,7 +441,6 @@ export function PasswordField({
           onChange={(e) => onChange(e.target.value)}
           err={err}
           className="!pe-12"
-          autoFocus={autoFocus}
         />
         <button
           type="button"

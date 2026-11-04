@@ -57,7 +57,6 @@ export function TeamNew() {
           placeholder={t("Prénom du membre")}
           aria-label={t("Nouveau membre")}
           maxLength={60}
-          autoFocus
         />
       </Field>
       <ServicesPicker

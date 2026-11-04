@@ -70,7 +70,6 @@ export function MagicLink() {
               setError(null);
             }}
             err={!!error}
-            autoFocus
           />
         </Field>
         {error && <AuthError texte={error} />}

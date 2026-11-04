@@ -67,7 +67,6 @@ export function ProCategories() {
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     maxLength={60}
-                    autoFocus
                     aria-label={`Nouveau nom de ${g.name}`}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') void save(g.name);

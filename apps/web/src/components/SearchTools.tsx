@@ -212,7 +212,6 @@ export function SearchField({
         <I icon={Search} size={20} className="flex-none text-muted" />
         <input
           aria-label={t("Recherche")}
-          autoFocus
           value={qDraft}
           onChange={(e) => setQDraft(e.target.value)}
           onFocus={() => setFocus('q')}

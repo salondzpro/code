@@ -68,7 +68,6 @@ function ReplySheet({
           maxLength={MAX}
           aria-label={t('Réponse du salon')}
           placeholder={t('Merci pour votre retour. Nous avons…')}
-          autoFocus
         />
         <span className="text-[0.857rem] text-muted">
           {t('{n} caractères sur {max}', { n: texte.trim().length, max: MAX })}

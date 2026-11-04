@@ -42,7 +42,7 @@ export function Step2Name() {
         {t("Comment s'appelle votre salon ?")}
       </StepTitle>
       <Field label={t("Nom du salon")} htmlFor="salon-name">
-        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t("Salon Sarah")} autoFocus />
+        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t("Salon Sarah")} />
       </Field>
       <div className="crd !gap-3">
         <div className="flex items-center gap-3">

@@ -350,13 +350,11 @@ export function SearchBox({
   onChange,
   placeholder,
   onSubmit,
-  autoFocus,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   onSubmit?: () => void;
-  autoFocus?: boolean;
 }) {
   return (
     <form
@@ -386,7 +384,6 @@ export function SearchBox({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        autoFocus={autoFocus}
       />
     </form>
   );

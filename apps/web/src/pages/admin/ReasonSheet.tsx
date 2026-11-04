@@ -9,7 +9,7 @@
  * Elle rappelle aussi ce que l'action FAIT — « le salon disparaît de la place de marché » — parce
  * qu'un bouton nommé « Masquer » ne dit pas si les rendez-vous déjà pris tiennent.
  */
-import { useCallback, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { BottomSheet, Button, Dim, Field, Textarea } from '@/components/ui';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
@@ -44,9 +44,6 @@ export function ReasonSheet({
   extra?: ReactNode;
 }) {
   const [motif, setMotif] = useState('');
-  // `Textarea` est une primitive du design sans `ref` : on prend le champ au montage, ce qui donne
-  // aussi le focus au bon moment sans effet différé.
-  const champ = useCallback((el: HTMLTextAreaElement | null) => el?.focus(), []);
 
   const trop_court = motif.trim().length < MOTIF_MIN;
   const bloque = pending || (!optional && trop_court);
@@ -67,8 +64,6 @@ export function ReasonSheet({
           >
             <Textarea
               id="motif"
-              autoFocus
-              elRef={champ}
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
               placeholder={t('Ce qui a motivé cette décision')}

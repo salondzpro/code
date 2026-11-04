@@ -113,7 +113,7 @@ function ClientSheet({
         <div className="h2 !text-[1.286rem]">{mode === 'find' ? t('Client existant') : t('Nouveau client')}</div>
         {mode === 'find' ? (
           <>
-            <SearchBox value={q} onChange={setQ} placeholder={t('Nom ou téléphone')} autoFocus />
+            <SearchBox value={q} onChange={setQ} placeholder={t('Nom ou téléphone')} />
             {searching ? (
               <Skeleton className="h-[4rem] w-full !rounded-[var(--radius-card-sm)]" />
             ) : !needle ? null : rows.length > 0 ? (
@@ -154,7 +154,6 @@ function ClientSheet({
                   setErr(null);
                 }}
                 placeholder={t("Mohamed B.")}
-                autoFocus
                 aria-required
               />
             </Field>
@@ -532,7 +531,6 @@ export function ProBookingNew() {
             onChange={(e) => setNotes(e.target.value)}
             maxLength={300}
             rows={2}
-            autoFocus
             placeholder={t('Coloration à préparer, cliente pressée…')}
             className="inp !p-2.5 !text-[1rem]"
             style={{ resize: 'none' }}

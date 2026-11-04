@@ -64,7 +64,6 @@ export function ForgotPassword() {
               setError(null);
             }}
             err={!!error}
-            autoFocus
           />
         </Field>
         {error && <AuthError texte={error} />}
@@ -133,7 +132,6 @@ export function NewPassword() {
               setError(null);
             }}
             err={!!error}
-            autoFocus
           />
           <PasswordField
             id="np-confirm"
