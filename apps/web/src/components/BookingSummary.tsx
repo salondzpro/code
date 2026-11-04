@@ -108,7 +108,7 @@ export function BookingSummary({
           icon={Banknote}
           title={t('Total')}
           sub={staffName ? t('Avec {name}', { name: staffName }) : undefined}
-          right={<span className="text-[1rem] font-bold">{formatDA(priceDa)}</span>}
+          right={<span className="text-[1rem] font-semibold">{formatDA(priceDa)}</span>}
         />
       )}
       {extra}

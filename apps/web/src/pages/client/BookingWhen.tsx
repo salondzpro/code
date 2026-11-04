@@ -176,7 +176,7 @@ export function BookingWhen() {
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
         <span className="min-w-0">
-          <span className="block text-[1rem] font-bold tracking-[-0.3px]">{s.name}</span>
+          <span className="block text-[1rem] font-semibold tracking-[-0.3px]">{s.name}</span>
           <span className="block text-[0.857rem] text-muted">
             {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
           </span>
@@ -209,7 +209,7 @@ export function BookingWhen() {
         <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
       ) : freeGrid.length === 0 ? (
         <div className="crd !gap-2" role="status">
-          <span className="text-[1rem] font-bold tracking-[-0.3px]">
+          <span className="text-[1rem] font-semibold tracking-[-0.3px]">
             {dayOver ? t('Journée terminée') : t('Complet ce jour')}
           </span>
           <span className="p text-[1rem]">

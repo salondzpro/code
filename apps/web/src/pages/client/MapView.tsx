@@ -599,7 +599,7 @@ export function MapView() {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[1.143rem] font-bold leading-tight tracking-[-0.4px]">
+                        <span className="truncate text-[1.143rem] font-semibold leading-tight tracking-[-0.4px]">
                           {s.name}
                         </span>
                         {s.ratingCount > 0 && <RatingPill avg={s.ratingAvg} />}

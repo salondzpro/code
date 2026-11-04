@@ -118,7 +118,7 @@ export function ImageCropper({
     <>
       <Dim onClose={onCancel} className="!z-40" />
       <BottomSheet modal className="!z-50">
-        <div className="text-center text-[1.143rem] font-bold tracking-[-0.4px]">{title}</div>
+        <div className="text-center text-[1.143rem] font-semibold tracking-[-0.4px]">{title}</div>
         <p className="p text-center text-[0.857rem]">
           {t("Déplacez la photo dans le cadre et ajustez le zoom.")}
         </p>

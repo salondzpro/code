@@ -128,17 +128,17 @@ export function BookingDetail() {
         </div>
         <div className="crd !gap-3 !border-danger-line">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[1rem] font-bold">
+            <span className="text-[1rem] font-semibold">
               {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
             </span>
             <StatusBadge status="cancelled" lg cancelledBy="client" />
           </div>
           <div className="flex items-end justify-between gap-3">
-            <span className="mono text-[2.286rem] font-bold leading-none tracking-[-0.9px] line-through decoration-danger/60 decoration-2">
+            <span className="mono text-[2.286rem] font-semibold leading-none tracking-[-0.9px] line-through decoration-danger/60 decoration-2">
               {formatTimeDZ(b.startsAt)}{' '}
               <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
             </span>
-            <span className="text-[1.714rem] font-bold leading-none tracking-[-0.6px] text-muted line-through decoration-danger/60 decoration-2">
+            <span className="text-[1.714rem] font-semibold leading-none tracking-[-0.6px] text-muted line-through decoration-danger/60 decoration-2">
               {formatDA(b.priceDa)}
             </span>
           </div>
@@ -148,7 +148,7 @@ export function BookingDetail() {
         </div>
         <div className="crd !gap-0">
           <div className="li !py-3">
-            <span className="text-[1rem] font-bold">
+            <span className="text-[1rem] font-semibold">
               {lines.length} {t("prestation")}{lines.length > 1 ? 's' : ''}
             </span>
             <span className="text-[1rem] text-muted">{t("annulée")}{lines.length > 1 ? 's' : ''}</span>
@@ -288,7 +288,7 @@ export function BookingDetail() {
           <Dim onClose={() => setCancelling(false)} />
           <BottomSheet modal>
             <div className="text-center">
-              <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
+              <div className="text-[1.429rem] font-semibold tracking-[-0.4px]">
                 {t("Annuler ce rendez-vous ?")}
               </div>
               <p className="p mt-2">

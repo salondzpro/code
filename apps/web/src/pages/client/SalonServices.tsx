@@ -32,12 +32,12 @@ export function SalonServices() {
             <Link key={sv.id} to={`/s/${s.slug}/prestation/${sv.id}`} className="crd !flex-row items-center gap-4">
               <Img src={photos[0]?.url ?? s.coverUrl} className="h-[7rem] w-[7rem] flex-none !rounded-[var(--radius-card-sm)]" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">{sv.name}</span>
+                <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">{sv.name}</span>
                 <span className="block text-[0.857rem] text-muted">
                   {formatDuration(sv.durationMinutes)}
                   {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                 </span>
-                <span className="mt-1.5 block text-[1rem] font-bold">{formatDA(sv.priceDa)}</span>
+                <span className="mt-1.5 block text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
               </span>
               <I icon={ChevronRight} size={20} className="text-disabled" />
             </Link>

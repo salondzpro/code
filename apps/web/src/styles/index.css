@@ -5,7 +5,7 @@
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/inter-500.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/inter-700.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-700.woff2') format('woff2'); }
 /* Outfit (titres, grands chiffres) : fichier VARIABLE, une seule requête pour 400 à 700. Alphabet latin seulement ;
    l'arabe retombe sur la police du texte. */
 @font-face { font-family: 'Outfit'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/outfit-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
@@ -148,7 +148,7 @@ body::before {
     font-size: 0.929rem;
     font-weight: 600;
     color: var(--color-muted);
-    letter-spacing: -0.1px;
+    letter-spacing: 0;
   }
   .p {
     font-size: 1rem;
@@ -601,7 +601,7 @@ body::before {
     background: var(--color-accent);
     color: var(--color-on-ink);
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
   }
 
   /* Panneau plein écran (prestations, filtres) : en-tête fixe, contenu défilant, bouton
@@ -773,7 +773,7 @@ body::before {
   /* Heure en tête du bloc : on lit QUAND avant QUI, comme dans les outils du métier. */
   .agb-t {
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.01em;
     opacity: 0.85;
   }
@@ -958,7 +958,7 @@ body::before {
     color: #ffffff;
     border: 1.5px solid var(--color-surface);
     font-size: 0.6875rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1;
     display: flex;
     align-items: center;
@@ -968,7 +968,7 @@ body::before {
     font-size: 0.786rem;
     font-weight: 500;
     line-height: 1;
-    letter-spacing: -0.1px;
+    letter-spacing: 0;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1730,8 +1730,6 @@ body::before {
     gap: 0.4375rem;
     font-size: 0.786rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--color-muted);
   }
   .auth-point {
@@ -2087,10 +2085,7 @@ html:has(.auth-onglets) body {
     padding: 1.125rem 1rem 1rem;
     border-radius: var(--radius-card);
     color: #fff;
-    background:
-      radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.09) 0%, transparent 55%),
-      radial-gradient(80% 70% at 0% 100%, rgb(255 255 255 / 0.05) 0%, transparent 60%),
-      var(--color-ink);
+    background: var(--color-ink);
     overflow: hidden;
     isolation: isolate;
     animation: ph-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -2116,8 +2111,6 @@ html:has(.auth-onglets) body {
   .phx-date {
     font-size: 0.857rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
     color: rgb(255 255 255 / 0.55);
   }
   .phx-hi {
@@ -2326,9 +2319,7 @@ html:has(.auth-onglets) body {
     align-items: center;
     gap: 0.4375rem;
     font-size: 0.857rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: 600;
     color: var(--color-muted);
   }
   .phn.live .phn-k {
@@ -2549,7 +2540,7 @@ html:has(.auth-onglets) body {
     background: var(--color-danger);
     color: #fff;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.25rem;
   }
   .phd-more {
@@ -2623,7 +2614,6 @@ html:has(.auth-onglets) body {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-subtle);
-    text-transform: uppercase;
   }
   .phc-b.on .phc-d {
     color: var(--color-text);
@@ -2721,10 +2711,7 @@ html:has(.auth-onglets) body {
     gap: 0.875rem;
     padding: 0.375rem 0 2.75rem;
     color: #fff;
-    background:
-      radial-gradient(90% 120% at 100% 0%, rgb(255 255 255 / 0.1) 0%, transparent 60%),
-      radial-gradient(70% 90% at 0% 100%, rgb(255 255 255 / 0.06) 0%, transparent 65%),
-      var(--color-ink);
+    background: var(--color-ink);
     overflow: hidden;
     isolation: isolate;
   }
@@ -2759,7 +2746,7 @@ html:has(.auth-onglets) body {
     background: #fff;
     color: var(--color-ink);
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.08em;
     line-height: 1.4;
   }
@@ -2773,8 +2760,6 @@ html:has(.auth-onglets) body {
     gap: 0.4375rem;
     font-size: 0.786rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: rgb(255 255 255 / 0.6);
   }
   .aph-dot {
@@ -3060,9 +3045,7 @@ html:has(.auth-onglets) body {
     padding: 0.5rem 0 0.625rem;
     border-bottom: 1px solid var(--color-line-soft);
     font-size: 0.857rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: 600;
     color: var(--color-muted);
   }
   .pwl-mock-n {
@@ -3230,7 +3213,7 @@ html:has(.auth-onglets) body {
     background: var(--color-fill);
     border: 1px solid var(--color-line);
     font-size: 0.857rem;
-    font-weight: 700;
+    font-weight: 600;
   }
   .pwl-steps li:last-child .pwl-step-n {
     background: var(--color-ink);
@@ -3245,9 +3228,7 @@ html:has(.auth-onglets) body {
     padding: 1.25rem;
     border-radius: var(--radius-card);
     color: #fff;
-    background:
-      radial-gradient(100% 120% at 100% 0%, rgb(255 255 255 / 0.1) 0%, transparent 60%),
-      var(--color-ink);
+    background: var(--color-ink);
   }
   .pwl-end-btn {
     margin-top: 0.5rem;
@@ -3292,7 +3273,7 @@ html:has(.auth-onglets) body {
     background: var(--color-fill);
     color: var(--color-muted);
     font-size: 0.786rem;
-    font-weight: 700;
+    font-weight: 600;
     vertical-align: 0.0625rem;
     font-variant-numeric: tabular-nums;
   }
@@ -3365,8 +3346,6 @@ html:has(.auth-onglets) body {
     overflow: hidden;
     font-size: 0.857rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--color-muted);
@@ -3587,7 +3566,7 @@ html:has(.auth-onglets) body {
     background: var(--color-fill);
     border: 1px solid var(--color-line);
     font-size: 0.857rem;
-    font-weight: 700;
+    font-weight: 600;
   }
   .adr-s.on .adr-n {
     background: var(--color-accent);
@@ -3837,7 +3816,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-card-sm);
     background: var(--color-fill);
     font-size: 0.857rem;
-    font-weight: 700;
+    font-weight: 600;
   }
   .wlp.on .wlp-n {
     background: var(--color-accent);
@@ -3886,9 +3865,7 @@ html:has(.auth-onglets) body {
   .hm-pro-show {
     padding: 1.5rem 1.25rem;
     border-radius: var(--radius-card);
-    background:
-      radial-gradient(90% 120% at 100% 0%, rgb(255 255 255 / 0.1) 0%, transparent 60%),
-      var(--color-ink);
+    background: var(--color-ink);
   }
   .hm-pro-show .apv {
     max-width: 26rem;
@@ -4185,9 +4162,7 @@ html:has(.auth-onglets) body {
   }
   .pwl-acces-t {
     font-size: 0.857rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: 600;
     color: var(--color-muted);
   }
   .pwl-porte {
@@ -4383,9 +4358,7 @@ html:has(.auth-onglets) body {
     position: relative;
     padding: 2rem 1rem 1rem;
     border-radius: var(--radius-card);
-    background:
-      radial-gradient(90% 120% at 100% 0%, rgb(182 165 255 / 0.14) 0%, transparent 60%),
-      var(--color-ink);
+    background: var(--color-ink);
   }
   .pwl-show .pwl-mock {
     margin-inline: 0;
@@ -4476,7 +4449,6 @@ html:has(.auth-onglets) body {
     font-weight: 600;
     white-space: nowrap;
     animation:
-      hm-flotte 5s ease-in-out infinite,
       ph-in 0.7s 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .hm-chip.b {
@@ -5028,7 +5000,7 @@ html:has(.auth-onglets) body {
   .hdr-b.acc {
     background: var(--color-accent);
     color: var(--color-on-accent);
-    box-shadow: 0 6px 16px -8px rgb(108 92 231 / 0.6);
+    box-shadow: none;
   }
   .hdr-b.soft {
     background: var(--color-accent-soft);
@@ -5150,7 +5122,7 @@ html:has(.auth-onglets) body {
   .pac-time b {
     font-family: var(--font-display);
     font-size: 1.714rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.6px;
     line-height: 1;
   }
@@ -5176,7 +5148,7 @@ html:has(.auth-onglets) body {
   }
   .pac-line b {
     flex: none;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
   }
   .pac-line.sub {
@@ -5278,7 +5250,7 @@ html:has(.auth-onglets) body {
   .pak-v {
     font-family: var(--font-display);
     font-size: 1.714rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.5px;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
@@ -5412,7 +5384,7 @@ html:has(.auth-onglets) body {
   .h1 {
     font-family: var(--font-display);
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.6px;
     line-height: 1.15;
   }
@@ -5512,7 +5484,7 @@ html:has(.auth-onglets) body {
     font-family: var(--font-display);
     font-size: 1.214rem;
     font-weight: 600;
-    letter-spacing: -0.1px;
+    letter-spacing: 0;
   }
   .btn.sm {
     min-height: 3rem;
@@ -5717,7 +5689,7 @@ html:has(.auth-onglets) body {
     color: #ffffff;
     font-family: var(--font-sans);
     font-size: 0.786rem;
-    font-weight: 700;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5758,7 +5730,7 @@ html:has(.auth-onglets) body {
   }
   .h11 .bleed,
   .h11-row {
-    --gutter: 18px;
+    --gutter: 14px;
   }
   .h11-serif {
     font: italic 400 26px/1 'Instrument Serif', Georgia, serif;
@@ -5876,13 +5848,13 @@ html:has(.auth-onglets) body {
       0 0 0 3.5px var(--color-accent);
   }
   .h11-row {
-    margin: 0 -18px;
-    padding: 5px 18px 14px;
+    margin: 0 -14px;
+    padding: 5px 14px 14px;
     display: flex;
     gap: 10px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding: 0 18px;
+    scroll-padding: 0 14px;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
@@ -5965,7 +5937,7 @@ html:has(.auth-onglets) body {
     gap: 3px;
   }
   .h11-time b {
-    font: 700 24px/1 Outfit, sans-serif;
+    font: 600 24px/1 Outfit, sans-serif;
     letter-spacing: -0.8px;
     color: var(--color-ink);
   }
@@ -5997,7 +5969,7 @@ html:has(.auth-onglets) body {
   }
   .h11-price {
     flex: none;
-    font: 700 17px/1.2 Outfit, sans-serif;
+    font: 600 17px/1.2 Outfit, sans-serif;
     letter-spacing: -0.2px;
     color: var(--color-ink);
     white-space: nowrap;
@@ -6084,7 +6056,7 @@ html:has(.auth-onglets) body {
     gap: 2px;
     font: 500 11px Outfit, sans-serif;
     cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .h11-tile:active {
     transform: scale(0.96);
@@ -6142,7 +6114,7 @@ html:has(.auth-onglets) body {
     gap: 8px;
     cursor: pointer;
     text-decoration: none;
-    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .h11-b:active {
     transform: scale(0.97);
@@ -6247,7 +6219,7 @@ html:has(.auth-onglets) body {
     border-inline-end: 1px solid var(--h11-hair);
   }
   .h11-kp b {
-    font: 800 28px/1 Outfit, sans-serif;
+    font: 600 28px/1 Outfit, sans-serif;
     letter-spacing: -0.8px;
     color: var(--color-ink);
   }
@@ -6316,7 +6288,7 @@ html:has(.auth-onglets) body {
     white-space: nowrap;
   }
   .h11-src b {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-accent);
   }
   .h11-bravo {
@@ -6381,7 +6353,7 @@ html:has(.auth-onglets) body {
     font-size: 17px;
   }
   .h11-story-t b {
-    font: 700 13px/1.1 Outfit, sans-serif;
+    font: 600 13px/1.1 Outfit, sans-serif;
   }
   .h11-story-s {
     position: absolute;
@@ -6421,8 +6393,6 @@ html:has(.auth-onglets) body {
   }
   .h11-story-k {
     font: 600 12px Inter, sans-serif;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--color-accent);
   }
   .h11-story-h {
@@ -6625,7 +6595,7 @@ html:has(.auth-onglets) body {
   .h11-sh-h h3,
   .h11-dlg h3 {
     margin: 0;
-    font: 700 23px/1.2 Outfit, sans-serif;
+    font: 600 23px/1.2 Outfit, sans-serif;
     letter-spacing: -0.5px;
   }
   .h11-sh-h p {
@@ -6635,7 +6605,7 @@ html:has(.auth-onglets) body {
   }
   .h11-sh-l {
     margin-top: 16px;
-    font: 700 14px/20px Outfit, sans-serif;
+    font: 600 14px/20px Outfit, sans-serif;
   }
   .h11-chips {
     margin-top: 8px;
@@ -6908,7 +6878,7 @@ html:has(.auth-onglets) body {
     justify-content: center;
     gap: 3px;
     cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .ag9-d:active {
     transform: scale(0.96);
@@ -7149,7 +7119,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-pill);
     background: var(--color-accent);
     color: #ffffff;
-    font: 700 10px/12px Inter, sans-serif;
+    font: 600 10px/12px Inter, sans-serif;
     font-variant-numeric: tabular-nums;
   }
 
@@ -7160,7 +7130,7 @@ html:has(.auth-onglets) body {
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
-    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .agenda .agb:active {
     filter: none;
@@ -7340,7 +7310,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-btn);
     font: 600 13px var(--font-display);
     cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .rp-b:active {
     transform: scale(0.96);
@@ -7605,5 +7575,32 @@ html[data-kb] #root {
     bottom: var(--kb, 0px);
     max-height: calc(100dvh - var(--kb, 0px) - 12px);
     overflow-y: auto;
+  }
+}
+
+/* Passe unslop (4 nov. 2026) : plus de décor qui tourne en boucle sur les pages de présentation. Ce qui
+   bouge dit quelque chose ; le reste se tient tranquille. Les points « en direct » de l'accueil restent. */
+@layer base {
+  b,
+  strong {
+    font-weight: 600;
+  }
+}
+@layer components {
+  .phx::before,
+  .aph::before,
+  .pwl-aurore,
+  .pwl-porte.ink::after {
+    display: none;
+  }
+  .pwl-acces {
+    background: var(--color-line);
+    animation: ph-in 0.6s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .pwl-notif,
+  .pwl-live-d,
+  .pwl-mock-new,
+  .pwl-mock-new .pwl-mock-badge {
+    animation: none;
   }
 }

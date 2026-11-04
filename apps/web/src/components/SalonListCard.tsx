@@ -144,12 +144,12 @@ export function NextSlots({
     const slots = rows.flatMap((r) => r.slots).slice(0, 3);
     return (
       <div className="flex items-center gap-2" aria-label={`Prochaines disponibilités ${day}`}>
-        <span className="flex-none text-[0.857rem] font-bold">{day}</span>
+        <span className="flex-none text-[0.857rem] font-semibold">{day}</span>
         {slots.map((t) => (
           <button
             key={t}
             type="button"
-            className="pill mono !rounded-[var(--radius-card-sm)] !border-hour !px-3 !py-1.5 !text-[1rem] font-bold !text-hour hover:!bg-fill"
+            className="pill mono !rounded-[var(--radius-card-sm)] !border-hour !px-3 !py-1.5 !text-[1rem] font-semibold !text-hour hover:!bg-fill"
             aria-label={`Réserver ${day} à ${t}`}
             onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
           >
@@ -163,7 +163,7 @@ export function NextSlots({
     <div className="flex flex-col gap-1.5" aria-label={`Prochaines disponibilités ${day}`}>
       {/* Le jour est indiqué une seule fois, dans l'en-tête : les lignes MATIN / APRÈS-MIDI restent sur une ligne. */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[0.857rem] font-bold uppercase tracking-[0.08em] text-muted">
+        <span className="text-[0.857rem] font-semibold text-muted">
           {t("Prochaines disponibilités")}{' '}
           <span className="normal-case tracking-normal text-text">· {day}</span>
         </span>
@@ -171,7 +171,7 @@ export function NextSlots({
       </div>
       {rows.map((r) => (
         <div key={r.key} className="flex items-center gap-2">
-          <span className="w-[5.75rem] flex-none text-[0.857rem] font-bold uppercase tracking-[0.06em]">
+          <span className="w-[5.75rem] flex-none text-[0.857rem] font-semibold">
             {r.label}
           </span>
           <div className="flex flex-1 flex-wrap gap-1.5">
@@ -179,7 +179,7 @@ export function NextSlots({
               <button
                 key={t}
                 type="button"
-                className="pill mono !rounded-[var(--radius-card-sm)] !border-hour !px-3 !py-2 !text-[1rem] font-bold !text-hour hover:!bg-fill"
+                className="pill mono !rounded-[var(--radius-card-sm)] !border-hour !px-3 !py-2 !text-[1rem] font-semibold !text-hour hover:!bg-fill"
                 aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
                 onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
               >
@@ -269,7 +269,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
       <div className="flex flex-col gap-1.5 px-4 pb-3.5 pt-3">
         {/* Gauche : nom · Droite : note — une seule ligne */}
         <div className="flex items-center justify-between gap-3">
-          <span className="min-w-0 truncate text-[1.143rem] font-bold leading-tight tracking-[-0.5px]">
+          <span className="min-w-0 truncate text-[1.143rem] font-semibold leading-tight tracking-[-0.5px]">
             {s.name}
           </span>
           <span className="flex-none">

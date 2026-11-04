@@ -63,10 +63,10 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
     <span
       className={`flex w-[3.75rem] flex-none flex-col items-center rounded-[var(--radius-card-sm)] bg-fill py-2 ${muted ? 'text-muted' : ''}`}
     >
-      <span className="text-[0.857rem] font-semibold uppercase tracking-[0.06em] text-muted">
+      <span className="text-[0.857rem] font-semibold text-muted">
         {weekday(iso).replace('.', '')}
       </span>
-      <span className="text-[1.714rem] font-bold leading-none tracking-[-0.5px]">{dayNum(iso)}</span>
+      <span className="text-[1.714rem] font-semibold leading-none tracking-[-0.5px]">{dayNum(iso)}</span>
       <span className="text-[0.857rem] text-muted">{monthShort(iso).replace('.', '')}</span>
     </span>
   );
@@ -91,7 +91,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
       <div className="flex items-center justify-between gap-3">
         <span className="min-w-0">
           <span
-            className={`block text-[1.143rem] font-bold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}
+            className={`block text-[1.143rem] font-semibold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}
           >
             {relativeDayLabelDZ(dayKey)}
           </span>
@@ -105,14 +105,14 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
       </div>
       <div className="flex items-end justify-between gap-3">
         <span
-          className={`mono text-[2.286rem] font-bold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
+          className={`mono text-[2.286rem] font-semibold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
         >
           {formatTimeDZ(b.startsAt)}
           <span className="ms-1 text-[1rem] font-medium tracking-normal text-muted">
             → {formatTimeDZ(b.endsAt)}
           </span>
         </span>
-        <span className="text-[1.429rem] font-bold leading-none tracking-[-0.5px]">
+        <span className="text-[1.429rem] font-semibold leading-none tracking-[-0.5px]">
           {formatDA(b.priceDa)}
         </span>
       </div>
@@ -122,7 +122,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           className={`h-[4.5rem] w-[4.5rem] flex-none !rounded-[var(--radius-card-sm)] ${active ? '' : 'opacity-60'}`}
         />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
+          <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
             {b.salon.name}
           </span>
           <span className="block text-[1rem] text-muted">
@@ -195,7 +195,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
         <DateBlock iso={b.startsAt} muted={cancelled} />
         <span className="min-w-0 flex-1">
           <span
-            className={`block truncate text-[1.143rem] font-bold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
+            className={`block truncate text-[1.143rem] font-semibold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
           >
             {b.salon.name}
           </span>
@@ -224,7 +224,7 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
           {b.status === 'completed' &&
             (b.reviewRating != null ? (
               <span
-                className="flex items-center gap-1.5 self-center px-3 text-[1rem] font-bold"
+                className="flex items-center gap-1.5 self-center px-3 text-[1rem] font-semibold"
                 aria-label={`Votre note : ${b.reviewRating} sur 5`}
               >
                 <I icon={Star} size={18} className="fill-current" /> {b.reviewRating}/5

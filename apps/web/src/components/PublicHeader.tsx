@@ -108,7 +108,7 @@ export function PublicHeader() {
                 {/* Le MOT « Femmes » en rose, exactement comme le titre de la marketplace : la
                     couleur dit d'un coup d'œil de quel catalogue on parle, et les deux listes ne
                     se confondent plus. */}
-                <span className="text-[1.143rem] font-bold tracking-[-0.3px]">
+                <span className="text-[1.143rem] font-semibold tracking-[-0.3px]">
                   {market === 'women' ? (
                     <>
                       {t('Pour')} <span className="text-women">{t('Femmes')}</span>

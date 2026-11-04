@@ -185,7 +185,7 @@ export function Clients() {
                 </span>
                 <span className="flex flex-none flex-col items-end text-end">
                   {/* Le prochain passage compte plus que le dernier : il dit qu'on va le revoir. */}
-                  <span className={`text-[0.714rem] font-semibold uppercase tracking-wide ${c.nextAt ? 'text-ok-fg' : 'text-subtle'}`}>
+                  <span className={`text-[0.714rem] font-semibold ${c.nextAt ? 'text-ok-fg' : 'text-subtle'}`}>
                     {c.nextAt ? t('Prochain') : c.lastAt ? t('Dernier') : ''}
                   </span>
                   <span className="text-[0.857rem] font-semibold">

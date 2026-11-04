@@ -90,7 +90,7 @@ function Group({ title, items }: { title: string; items: Item[] }) {
               />
               <span className="min-w-0 flex-1 truncate text-[1.143rem]">{it.label}</span>
               {!!it.count && (
-                <span className="flex h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1.5 text-[0.857rem] font-bold text-white">
+                <span className="flex h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1.5 text-[0.857rem] font-semibold text-white">
                   {it.count > 9 ? '9+' : it.count}
                 </span>
               )}

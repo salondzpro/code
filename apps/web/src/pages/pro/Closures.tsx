@@ -320,7 +320,7 @@ export function Closures() {
           <Dim onClose={() => setDel(null)} />
           <BottomSheet modal className="!z-50">
             <div className="text-center">
-              <div className="text-[1.429rem] font-bold tracking-[-0.4px]">
+              <div className="text-[1.429rem] font-semibold tracking-[-0.4px]">
                 {t("Supprimer cette exception ?")}
               </div>
               <p className="p mt-2">

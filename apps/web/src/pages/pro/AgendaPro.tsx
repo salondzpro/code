@@ -1057,7 +1057,7 @@ function WeekGrid({
                 {t(DAY_LABELS_SHORT_FR[dow])}
               </span>
               <span
-                className={`flex h-9 w-full items-center justify-center rounded-[var(--radius-card-sm)] text-[1rem] font-bold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
+                className={`flex h-9 w-full items-center justify-center rounded-[var(--radius-card-sm)] text-[1rem] font-semibold ${on ? 'bg-ink text-white' : closed ? 'text-disabled' : d === today ? 'text-ink' : ''}`}
               >
                 {Number(d.slice(8, 10))}
               </span>
@@ -1189,7 +1189,7 @@ function MonthGrid({
                 <span aria-hidden className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-[var(--color-surface)]" />
               )}
               <span
-                className={`text-[1rem] ${on ? 'font-bold' : d === today ? 'font-bold' : ''}`}
+                className={`text-[1rem] ${on ? 'font-semibold' : d === today ? 'font-semibold' : ''}`}
               >
                 {Number(d.slice(8, 10))}
               </span>
@@ -1227,7 +1227,7 @@ function MonthGrid({
           onClick={() => onOpenDay(selected)}
         >
           <span>
-            <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
+            <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">
               {t(DAY_LABELS_FR[dayOfWeekFromKey(selected)])} {Number(selected.slice(8, 10))}{' '}
               {t(MONTHS[Number(selected.slice(5, 7)) - 1]!)}
             </span>

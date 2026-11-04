@@ -183,7 +183,7 @@ export function QuickCloseBanner() {
           <I icon={DoorClosed} size={18} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[1rem] font-bold text-cancel-fg">
+          <span className="block text-[1rem] font-semibold text-cancel-fg">
             {t("Fermé jusqu'à")}{' '}{formatTimeDZ(active.endsAt)}
           </span>
           <span className="block text-[0.857rem] text-cancel-fg/80">

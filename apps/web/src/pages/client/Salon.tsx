@@ -316,7 +316,7 @@ export function Salon() {
               >
                 <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
                 <span className="min-w-0">
-                  <span className="block text-[1rem] font-bold text-cancel-fg">
+                  <span className="block text-[1rem] font-semibold text-cancel-fg">
                     {t("Réservation en ligne impossible")}
                   </span>
                   <span className="block text-[1rem] text-cancel-fg">
@@ -362,7 +362,7 @@ export function Salon() {
                         />
                       )}
                       <div className="min-w-0">
-                        <span className="block text-[1.143rem] font-bold tracking-[-0.3px]">
+                        <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">
                           {sv.name}
                         </span>
                         {sv.description && (
@@ -492,7 +492,7 @@ export function Salon() {
                 const rows = s.openingHours.filter((h) => h.dayOfWeek === d && !h.isClosed);
                 return (
                   <div key={d} className="li">
-                    <span className={`text-[1rem] ${idx === 0 ? 'font-bold' : ''}`}>
+                    <span className={`text-[1rem] ${idx === 0 ? 'font-semibold' : ''}`}>
                       {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : t(DAY_LABELS_FR[d])}
                       {idx <= 1 && (
                         <span className="ms-1.5 text-[1rem] font-normal text-muted">

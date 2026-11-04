@@ -79,7 +79,7 @@ export function ProServices() {
                       </button>
                     )}
                     <span className="min-w-0">
-                      <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">
+                      <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
                         {sv.name}
                       </span>
                       <span className="block text-[1rem] text-muted">

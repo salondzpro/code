@@ -48,7 +48,7 @@ export function SalonReviews() {
       <h1 className="h1">{t("Avis")}</h1>
       {has ? (
         <div className="crd !flex-row !items-center !gap-4">
-          <span className="text-[2.286rem] font-bold leading-none tracking-[-1px]">
+          <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]">
             {formatRating(avg)}
           </span>
           <span className="min-w-0">

@@ -62,7 +62,7 @@ export function Favorites() {
             <Link to={`/s/${s.slug}`} className="flex min-w-0 flex-1 items-center gap-3.5">
               <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={72} />
               <span className="min-w-0">
-                <span className="block text-[1.143rem] font-bold tracking-[-0.4px]">{s.name}</span>
+                <span className="block text-[1.143rem] font-semibold tracking-[-0.4px]">{s.name}</span>
                 <span className="block text-[0.857rem] text-muted">{[...s.categoryIds.slice(0, 2).map((c) => categoryLabel(c)), s.zone ?? s.city].join(' · ')}</span>
                 <span className={`mt-1 block text-[0.857rem] ${s.nextAvailable ? 'font-semibold text-ok-fg' : 'text-muted'}`}>{s.nextAvailable ? t('Dispo {day} à {time}', { day: relativeDayLabelDZ(s.nextAvailable.date).toLowerCase(), time: s.nextAvailable.slots[0]! }) : t('Aucune disponibilité cette semaine')}</span>
               </span>

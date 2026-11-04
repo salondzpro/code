@@ -78,7 +78,7 @@ export function Step3Identity() {
             </span>
           </span>
           <span className="min-w-0 pb-1">
-            <span className="block truncate text-[1.143rem] font-bold tracking-[-0.3px]">{name}</span>
+            <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">{name}</span>
             <span className="p block text-[0.857rem]">{t("Aperçu de votre page")}</span>
           </span>
         </div>

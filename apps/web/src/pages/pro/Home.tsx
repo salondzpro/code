@@ -343,7 +343,7 @@ export function ProHome() {
           className="h11-b soft"
           onClick={() => {
             copy(link.url);
-            setToast({ text: t('Lien copié !'), kind: 'ok' });
+            setToast({ text: t('Lien copié'), kind: 'ok' });
           }}
         >
           <I icon={Copy} size={17} strokeWidth={2} /> {t('Copier')}
@@ -539,7 +539,7 @@ export function ProHome() {
           onCopy={(text) => {
             copy(text);
             setSheet(null);
-            setToast({ text: t('Message copié !'), kind: 'ok' });
+            setToast({ text: t('Message copié'), kind: 'ok' });
           }}
           onSend={(text) => {
             openWa(sheet.b.clientPhone, text);
@@ -704,7 +704,7 @@ function DispoSheet({
             className="h11-b lg soft"
             onClick={() => {
               void navigator.clipboard?.writeText(full);
-              onDone(t('Message copié !'));
+              onDone(t('Message copié'));
             }}
           >
             <I icon={Copy} size={20} strokeWidth={2} /> {t('Copier')}
@@ -718,7 +718,7 @@ function DispoSheet({
                 onClose();
               } else {
                 void navigator.clipboard?.writeText(full);
-                onDone(t('Message copié !'));
+                onDone(t('Message copié'));
               }
             }}
           >

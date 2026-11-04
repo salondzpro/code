@@ -1698,4 +1698,5 @@ export const ar: Record<string, string> = {
   "Story Snapchat": "قصة سناب شات",
   "Instagram": "إنستغرام",
   "Snapchat": "سناب شات",
+  "Message copié": "تم نسخ الرسالة",
 };

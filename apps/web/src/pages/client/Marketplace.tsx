@@ -154,7 +154,7 @@ export function Marketplace() {
           <div className="flex h-[5rem] w-[5rem] items-center justify-center rounded-full bg-fill text-subtle">
             <I icon={Search} size={44} />
           </div>
-          <div className="mt-2 text-[1.429rem] font-bold leading-tight tracking-[-0.4px]">
+          <div className="mt-2 text-[1.429rem] font-semibold leading-tight tracking-[-0.4px]">
             {t("Aucun professionnel")}{category ? ` « ${categoryLabel(category)} »` : ''} {t("à")}{' '}{prefs.label}
           </div>
           <p className="p">{t("Essayez d'élargir le rayon ou de retirer un filtre.")}</p>

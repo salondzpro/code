@@ -106,7 +106,7 @@ export function BookingReview() {
           className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-danger-line bg-cancel-bg p-4"
           role="alert"
         >
-          <span className="flex items-center gap-2.5 text-[1.143rem] font-bold text-cancel-fg">
+          <span className="flex items-center gap-2.5 text-[1.143rem] font-semibold text-cancel-fg">
             <I icon={Ban} size={22} /> {t("Réservation en ligne impossible")}
           </span>
           <p className="text-[1rem] text-cancel-fg">{blockedMessage}</p>

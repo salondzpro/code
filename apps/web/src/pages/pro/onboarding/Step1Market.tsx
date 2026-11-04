@@ -82,7 +82,7 @@ export function Step1Market() {
               <I icon={Check} size={18} />
             </span>
             <div className="ovl-t">
-              <div className="text-[1.429rem] font-bold leading-[1.1] tracking-[-0.6px]">{t(MARKET_LABELS_FR[c.id])}</div>
+              <div className="text-[1.429rem] font-semibold leading-[1.1] tracking-[-0.6px]">{t(MARKET_LABELS_FR[c.id])}</div>
               <div className="mt-1 text-[0.857rem] leading-[1.35] text-white/85">
                 {categoriesForMarket(c.id)
                   .slice(0, 5)

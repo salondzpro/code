@@ -95,7 +95,7 @@ export function AdminLayout() {
           <span className="flex items-center gap-2 text-[1.143rem] leading-none tracking-[-0.4px]">
             <span className="font-semibold">Salon</span>
             <span className="font-light text-muted">DZ</span>
-            <span className="rounded-[var(--radius-btn)] bg-ink px-1.5 py-0.5 text-[0.75rem] font-bold uppercase tracking-[0.08em] text-on-ink">
+            <span className="rounded-[var(--radius-btn)] bg-ink px-1.5 py-0.5 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-on-ink">
               {t('Plateforme')}
             </span>
           </span>

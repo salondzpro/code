@@ -58,7 +58,7 @@ export function DevicePushRow({ sub }: { sub: string }) {
         // Démonstration : aucun serveur. On affiche la notification localement, pour voir à quoi
         // elle ressemble — et vérifier que ce navigateur sait en afficher une.
         const reg = await navigator.serviceWorker?.getRegistration('/sw.js');
-        await reg?.showNotification('🔔 Salon DZ', { body: t('Notification de test : tout fonctionne sur cet appareil.'), icon: '/icon-192.png' });
+        await reg?.showNotification('Salon DZ', { body: t('Notification de test : tout fonctionne sur cet appareil.'), icon: '/icon-192.png' });
         setRetour({ ok: !!reg, texte: reg ? t('Notification de test affichée.') : t('Activez d’abord les notifications sur cet appareil.') });
         return;
       }

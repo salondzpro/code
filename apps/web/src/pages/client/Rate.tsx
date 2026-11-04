@@ -62,7 +62,7 @@ export function Rate() {
       <div className="crd !flex-row items-center gap-3.5">
         <Avatar src={b.salon.coverUrl} name={b.salon.name} size={88} />
         <span className="min-w-0">
-          <span className="block text-[1.143rem] font-bold tracking-[-0.4px]">{b.salon.name}</span>
+          <span className="block text-[1.143rem] font-semibold tracking-[-0.4px]">{b.salon.name}</span>
           <span className="block text-[0.857rem] text-muted">
             {dayMonth(b.startsAt)} · {b.serviceName} · {formatDA(b.priceDa)}
           </span>

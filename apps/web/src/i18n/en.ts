@@ -1714,4 +1714,5 @@ export const en: Record<string, string> = {
   "Story Snapchat": "Snapchat story",
   "Instagram": "Instagram",
   "Snapchat": "Snapchat",
+  "Message copié": "Message copied",
 };

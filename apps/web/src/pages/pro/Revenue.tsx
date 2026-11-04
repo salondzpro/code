@@ -174,12 +174,12 @@ export function Revenue() {
                         style={{ height: h }}
                       />
                       {period === 'week' ? (
-                        <span className={`text-[0.857rem] ${isToday ? 'font-bold' : 'text-muted'}`}>
+                        <span className={`text-[0.857rem] ${isToday ? 'font-semibold' : 'text-muted'}`}>
                           {t(DAY_LABELS_SHORT_FR[dayOfWeekFromKey(d.date)])}
                         </span>
                       ) : (
                         (Number(d.date.slice(8, 10)) % 5 === 1 || isToday) && (
-                          <span className={`text-[0.857rem] ${isToday ? 'font-bold' : 'text-muted'}`}>
+                          <span className={`text-[0.857rem] ${isToday ? 'font-semibold' : 'text-muted'}`}>
                             {Number(d.date.slice(8, 10))}
                           </span>
                         )

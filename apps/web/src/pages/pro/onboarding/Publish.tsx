@@ -69,7 +69,7 @@ export function Publish() {
       </div>
       <div className="rounded-[var(--radius-card)] bg-ink p-5 text-white">
         <div className="text-[0.857rem] text-white/60">{t("Votre page publique")}</div>
-        <div className="mt-1 text-[1.429rem] font-bold tracking-[-0.4px]">
+        <div className="mt-1 text-[1.429rem] font-semibold tracking-[-0.4px]">
           {host}{t("/s/")}{salon.slug}
         </div>
       </div>

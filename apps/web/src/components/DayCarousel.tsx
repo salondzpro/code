@@ -100,7 +100,7 @@ export function DayScroller({
               <span aria-hidden className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-danger ring-2 ring-[var(--color-bg)]" />
             )}
             <span
-              className={`text-[0.857rem] uppercase tracking-wide ${on ? 'text-white/70' : 'text-subtle'}`}
+              className={`text-[0.857rem] ${on ? 'text-white/70' : 'text-subtle'}`}
             >
               {t(DAY_LABELS_SHORT_FR[dow])}
             </span>

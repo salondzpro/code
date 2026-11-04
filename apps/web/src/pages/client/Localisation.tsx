@@ -308,7 +308,7 @@ export function Localisation() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[1.143rem] font-bold tracking-[-0.4px]" aria-live="polite">
+            <div className="text-[1.143rem] font-semibold tracking-[-0.4px]" aria-live="polite">
               {preview.isFetching ? '…' : `${count} résultat${count > 1 ? 's' : ''}`}
             </div>
             <div className="p">

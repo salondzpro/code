@@ -277,7 +277,7 @@ export function BookingDetails() {
       <BottomSheet>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[1.429rem] font-bold tracking-[-0.5px]">{formatDA(price)}</div>
+            <div className="text-[1.429rem] font-semibold tracking-[-0.5px]">{formatDA(price)}</div>
             <div className="p">
               {formatDuration(minutes)} ·{' '}
               {formatDateLongDZ(draft.startsAt).replace(/^\w/, (c) => c.toLowerCase())},{' '}

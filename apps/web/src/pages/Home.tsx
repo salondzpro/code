@@ -193,7 +193,7 @@ export function Home() {
 
         <div className="mx-auto w-full max-w-[72rem] px-5 pb-14 pt-28 sm:px-8 sm:pb-16">
           <h1
-            className="hm-in max-w-[16ch] text-[2.286rem] font-bold leading-[1.05] tracking-[-1.4px] sm:text-[3.4rem]"
+            className="hm-in max-w-[16ch] text-[2.286rem] font-semibold leading-[1.05] tracking-[-1.4px] sm:text-[3.4rem]"
             style={{ ['--d' as string]: '200ms' }}
           >
             {/* La phrase entière tourne (« Votre barbier ») : traduite d'un bloc, l'ordre des mots

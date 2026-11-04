@@ -54,7 +54,7 @@ export function ServiceDetail() {
               {sv.categoryId ? ` · ${categoryLabel(sv.categoryId)}` : ''}
             </p>
           </div>
-          <span className="text-[1.429rem] font-bold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
+          <span className="text-[1.429rem] font-semibold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
         </div>
         {sv.description && <p className="p text-[0.857rem]">{sv.description}</p>}
         {photos.length > 1 && (
@@ -70,7 +70,7 @@ export function ServiceDetail() {
         <div className="crd !flex-row items-center gap-3.5">
           <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
           <span className="min-w-0 flex-1">
-            <span className="block text-[1rem] font-bold tracking-[-0.3px]">{s.name}</span>
+            <span className="block text-[1rem] font-semibold tracking-[-0.3px]">{s.name}</span>
             <span className="text-[0.857rem] text-muted">
               {s.zone ?? s.city}
               {s.ratingCount > 0 ? ` · ★ ${formatRating(s.ratingAvg)}` : ''}
