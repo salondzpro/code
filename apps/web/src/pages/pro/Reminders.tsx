@@ -1,19 +1,20 @@
 /**
- * Rappels, sur le modèle de mew3id : le titre, une phrase qui dit ce qu'on voit, « Modifier le
- * message », puis une ligne par rendez-vous confirmé et pas encore rappelé, avec trois boutons :
- * WhatsApp et SMS (message déjà écrit), Appeler. Un message envoyé fait quitter la liste ; un appel non,
+ * Rappels, version minimaliste : le titre, un crayon pour le message, Aujourd'hui / Demain, puis une
+ * ligne par rendez-vous confirmé et pas encore rappelé, avec trois icônes : WhatsApp et SMS (message
+ * déjà écrit), appel. Un message envoyé fait quitter la liste ; un appel non,
  * il peut rester sans réponse. Par défaut, les prochains rendez-vous d'aujourd'hui ; demain se prépare
  * d'un toucher.
  */
 import { useState } from 'react';
-import { MessageCircle, MessageSquareText, Pencil, Phone, Send } from 'lucide-react';
+import { Pencil, Phone, Send } from 'lucide-react';
 import { useProSalon } from '@salondz/api-client';
-import { addDaysToKey, formatLocale, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
-import { BottomSheet, Button, Dim, I, Segmented, Skeleton, Textarea } from '@/components/ui';
+import { BottomSheet, Button, Dim, I, Skeleton, Textarea } from '@/components/ui';
+import { WhatsAppLogo } from '@/components/BrandIcons';
 import {
   defaultReminderMessage,
   fillReminder,
@@ -33,11 +34,6 @@ const TAGS = [
   { key: 'jour', label: 'Jour' },
   { key: 'heure', label: 'Heure' },
 ];
-
-const longDay = (key: string) =>
-  new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-    new Date(`${key}T12:00:00Z`),
-  );
 
 function MessageSheet({
   salon,
@@ -104,70 +100,58 @@ export function Reminders() {
   };
 
   return (
-    <Screen bottom={NAV_PAD} gap={12}>
-      <div>
+    <Screen bottom={NAV_PAD} gap={8}>
+      <div className="rp-hd">
         <h1 className="h1">{t('Rappels')}</h1>
-        <p className="rp-sub">
-          {day === 'today'
-            ? t('Prochains rendez-vous confirmés d’aujourd’hui ({date}) pas encore rappelés.', { date: longDay(key) })
-            : t('Rendez-vous confirmés de demain ({date}) pas encore rappelés.', { date: longDay(key) })}
-        </p>
+        <button type="button" className="rp-i" aria-label={t('Modifier le message')} title={t('Modifier le message')} onClick={() => setEditing(true)}>
+          <I icon={Pencil} size={18} />
+        </button>
       </div>
-      <button type="button" className="rp-edit" onClick={() => setEditing(true)}>
-        <I icon={Pencil} size={15} /> {t('Modifier le message')}
-      </button>
-      <Segmented
-        sm
-        label={t('Jour')}
-        value={day}
-        onChange={setDay}
-        options={[
-          { value: 'today', label: t("Aujourd'hui") },
-          { value: 'tomorrow', label: t('Demain') },
-        ]}
-      />
+      <div className="rp-tabs" role="tablist" aria-label={t('Jour')}>
+        {(['today', 'tomorrow'] as Day[]).map((d) => (
+          <button key={d} type="button" role="tab" aria-selected={day === d} className={day === d ? 'on' : ''} onClick={() => setDay(d)}>
+            {d === 'today' ? t("Aujourd'hui") : t('Demain')}
+          </button>
+        ))}
+      </div>
       {list.isError && <ErrorMessage error={list.error} retry={() => list.refetch()} />}
-      {list.isPending && <Skeleton className="h-[9rem] w-full !rounded-[var(--radius-card)]" />}
+      {list.isPending && <Skeleton className="h-[9rem] w-full !rounded-[var(--radius-card-sm)]" />}
       {list.data && waiting.length === 0 && (
-        <div className="rp-card rp-empty">
-          <I icon={Send} size={36} strokeWidth={1.6} />
-          <b>{t('Aucun rappel à envoyer')}</b>
-          <span>
-            {day === 'today'
-              ? t('Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.')
-              : t('Les rendez-vous confirmés pour demain apparaîtront ici.')}
+        <div className="rp-empty">
+          <I icon={Send} size={28} strokeWidth={1.6} />
+          <span>{t('Aucun rappel à envoyer')}</span>
+        </div>
+      )}
+      {waiting.map((b) => (
+        <article key={b.id} className="rp-r">
+          <b className="rp-t" dir="ltr">
+            {formatTimeDZ(b.startsAt)}
+          </b>
+          <span className="min-w-0 flex-1">
+            <span className="rp-n">{b.clientName}</span>
+            <span className="rp-s">
+              {b.serviceName}
+              {team && b.staff ? ` · ${b.staff.displayName}` : ''}
+            </span>
           </span>
-        </div>
-      )}
-      {waiting.length > 0 && (
-        <div className="rp-card">
-          {waiting.map((b) => (
-            <article key={b.id} className="rp-r">
-              <b className="rp-n">{b.clientName}</b>
-              <span className="rp-s">
-                <span dir="ltr">{formatTimeDZ(b.startsAt)}</span> · {b.serviceName}
-                {team && b.staff ? ` · ${b.staff.displayName}` : ''}
-              </span>
-              {b.clientPhone ? (
-                <div className="rp-a">
-                  <button type="button" className="rp-b wa" onClick={() => whatsapp(b)}>
-                    <I icon={MessageCircle} size={20} /> WhatsApp
-                  </button>
-                  {/* `?&body=` : la seule écriture comprise à la fois par Android et l'iPhone. */}
-                  <a href={`sms:${b.clientPhone}?&body=${message(b)}`} className="rp-b sms" onClick={() => markReminded(b.id)}>
-                    <I icon={MessageSquareText} size={20} /> {t('SMS')}
-                  </a>
-                  <a href={`tel:${b.clientPhone}`} className="rp-b tel">
-                    <I icon={Phone} size={20} /> {t('Appeler')}
-                  </a>
-                </div>
-              ) : (
-                <span className="rp-no">{t('Sans numéro')}</span>
-              )}
-            </article>
-          ))}
-        </div>
-      )}
+          {b.clientPhone ? (
+            <span className="rp-a">
+              <button type="button" className="rp-i" aria-label={t('WhatsApp')} title={t('WhatsApp')} onClick={() => whatsapp(b)}>
+                <WhatsAppLogo size={20} />
+              </button>
+              {/* `?&body=` : la seule écriture comprise à la fois par Android et l'iPhone. */}
+              <a href={`sms:${b.clientPhone}?&body=${message(b)}`} className="rp-i" aria-label={t('SMS')} title={t('SMS')} onClick={() => markReminded(b.id)}>
+                <I icon={Send} size={18} />
+              </a>
+              <a href={`tel:${b.clientPhone}`} className="rp-i" aria-label={t('Appeler')} title={t('Appeler')}>
+                <I icon={Phone} size={18} />
+              </a>
+            </span>
+          ) : (
+            <span className="rp-no">{t('Sans numéro')}</span>
+          )}
+        </article>
+      ))}
       {editing && <MessageSheet salon={salon} sample={waiting[0] ?? items[0]} onClose={() => setEditing(false)} />}
     </Screen>
   );
