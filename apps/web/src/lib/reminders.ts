@@ -50,11 +50,12 @@ export function useReminderBookings(enabled: boolean) {
   return { list, items };
 }
 
-/** Pastille de l'onglet : ce qu'on peut encore envoyer. */
+/** Pastille de l'onglet : ce qu'on peut encore envoyer aujourd'hui, la liste affichée par défaut. */
 export function useRemindersToSend(enabled: boolean): number {
   const { items } = useReminderBookings(enabled);
   const done = useReminded();
-  return items.filter((b) => b.clientPhone && !done[b.id]).length;
+  const today = toLocalDateKey();
+  return items.filter((b) => b.clientPhone && !done[b.id] && toLocalDateKey(new Date(b.startsAt)) === today).length;
 }
 
 const messageKey = (salonId: string) => `salondz:reminder-message:${salonId}`;

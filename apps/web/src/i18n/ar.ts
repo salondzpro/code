@@ -1689,4 +1689,9 @@ export const ar: Record<string, string> = {
   "Automatique : notification 1 h et 30 min avant, pour les clients avec un compte.": "تلقائي: إشعار قبل ساعة و30 دقيقة، للزبائن الذين لديهم حساب.",
   "à envoyer": "للإرسال",
   "Salam {prenom} 😊 Petit rappel : votre rendez-vous {prestation} chez {salon} est {jour} à {heure}. À bientôt !": "سلام {prenom} 😊 تذكير: موعدك {prestation} عند {salon} {jour} على الساعة {heure}. إلى اللقاء!",
+  "Modifier le message": "تعديل الرسالة",
+  "Prochains rendez-vous confirmés d’aujourd’hui ({date}) pas encore rappelés.": "المواعيد المؤكدة القادمة اليوم ({date}) التي لم يتم التذكير بها.",
+  "Rendez-vous confirmés de demain ({date}) pas encore rappelés.": "المواعيد المؤكدة ليوم غد ({date}) التي لم يتم التذكير بها.",
+  "Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.": "ستظهر هنا المواعيد المؤكدة القادمة لهذا اليوم.",
+  "Les rendez-vous confirmés pour demain apparaîtront ici.": "ستظهر هنا المواعيد المؤكدة ليوم غد.",
 };

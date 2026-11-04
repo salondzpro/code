@@ -1705,4 +1705,9 @@ export const en: Record<string, string> = {
   "Automatique : notification 1 h et 30 min avant, pour les clients avec un compte.": "Automatic: notification 1 h and 30 min before, for clients with an account.",
   "à envoyer": "to send",
   "Salam {prenom} 😊 Petit rappel : votre rendez-vous {prestation} chez {salon} est {jour} à {heure}. À bientôt !": "Salam {prenom} 😊 A quick reminder: your {prestation} appointment at {salon} is {jour} at {heure}. See you soon!",
+  "Modifier le message": "Edit the message",
+  "Prochains rendez-vous confirmés d’aujourd’hui ({date}) pas encore rappelés.": "Upcoming confirmed appointments today ({date}) not yet reminded.",
+  "Rendez-vous confirmés de demain ({date}) pas encore rappelés.": "Confirmed appointments tomorrow ({date}) not yet reminded.",
+  "Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.": "Today's upcoming confirmed appointments will appear here.",
+  "Les rendez-vous confirmés pour demain apparaîtront ici.": "Confirmed appointments for tomorrow will appear here.",
 };
