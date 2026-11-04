@@ -152,7 +152,8 @@ export function ProHome() {
   const openWa = (phone: string | null, text?: string) => {
     if (!phone) return;
     const n = phone.replace(/\D/g, '');
-    window.open(`https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ''}`, '_blank', 'noopener');
+    // Pas `wa.me` : sa redirection casse les émojis du message.
+    window.open(`https://api.whatsapp.com/send?phone=${n}${text ? `&text=${encodeURIComponent(text)}` : ''}`, '_blank', 'noopener');
   };
 
   /* -------------------------------------------------------------- 1. bonjour */

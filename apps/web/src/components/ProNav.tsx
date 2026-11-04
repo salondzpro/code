@@ -16,8 +16,8 @@ import {
   CalendarDays,
   CalendarOff,
   ChartColumn,
+  BellRing,
   Clock,
-  ContactRound,
   Eye,
   House,
   Inbox,
@@ -142,7 +142,7 @@ export function ProNav({
           { to: '/pro', label: t("Accueil"), icon: House, end: true },
           { to: '/pro/reservations', label: t("Demandes"), icon: Inbox, count: pending },
           { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, count: pasVus },
-          { to: '/pro/clients', label: salon?.genderTarget === 'women' ? t("Clientes") : t("Clients"), icon: ContactRound },
+          { to: '/pro/rappels', label: t("Rappels"), icon: BellRing },
         ]}
       />
       <Group title={t("Gérer")} items={plusTiles.map((p) => ({ to: p.to, label: p.label, icon: p.icon, count: p.count }))} />

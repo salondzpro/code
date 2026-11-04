@@ -6,7 +6,7 @@
  */
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { ChartColumn, CircleHelp, Link2, LogOut, Scissors, Settings, Star, Users, X, type LucideIcon } from 'lucide-react';
+import { ChartColumn, CircleHelp, ContactRound, Link2, LogOut, Scissors, Settings, Star, Users, X, type LucideIcon } from 'lucide-react';
 import { useProReviewsUnanswered, useProSalon } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
 import { usePublicUrl } from '@/pages/pro/Link';
@@ -26,6 +26,8 @@ export function usePlusTiles(): Tile[] {
   const unanswered = useProReviewsUnanswered(!!salon).data?.count ?? 0;
   const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
   return [
+    // « Clientes » pour un salon de femmes (comme la maquette 11), « Clients » sinon.
+    { to: '/pro/clients', label: salon?.genderTarget === 'women' ? t('Clientes') : t('Clients'), icon: ContactRound },
     { to: '/pro/catalogue', label: t('Prestations'), icon: Scissors },
     { to: '/pro/lien', label: t('Ma page'), icon: Link2 },
     { to: '/pro/avis', label: t('Avis'), icon: Star, count: unanswered },

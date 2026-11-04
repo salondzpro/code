@@ -58,18 +58,24 @@ import { formatDuration } from '@/lib/format';
 import { SlotSuggestions } from '@/components/SlotSuggestions';
 import { t } from '@/i18n';
 
-/** Feuille « Client » : la clientèle d'abord (recherche serveur), sinon un client de passage. */
+/**
+ * Feuille « Client », en deux parcours : retrouver un client (rien ne s'affiche avant d'avoir cherché)
+ * ou en créer un. Une recherche sans résultat propose de créer ce qu'on vient de taper.
+ */
 function ClientSheet({
+  mode: startMode,
   name,
   phone,
   onPick,
   onClose,
 }: {
+  mode: 'find' | 'new';
   name: string;
   phone: string;
   onPick: (name: string, phone: string) => void;
   onClose: () => void;
 }) {
+  const [mode, setMode] = useState(startMode);
   const [q, setQ] = useState('');
   const [needle, setNeedle] = useState('');
   const [newName, setNewName] = useState(name);
@@ -79,8 +85,17 @@ function ClientSheet({
     const t = window.setTimeout(() => setNeedle(q.trim()), 250);
     return () => window.clearTimeout(t);
   }, [q]);
-  const clients = useProClientsInfinite(needle);
+  const clients = useProClientsInfinite(needle, mode === 'find' && !!needle);
   const rows = pagesItems(clients.data).slice(0, 8);
+  const searching = !!q.trim() && (q.trim() !== needle || clients.isPending);
+  const create = () => {
+    const typed = q.trim();
+    const isPhone = /^[\d\s+]+$/.test(typed);
+    setNewName(isPhone ? '' : typed);
+    setNewPhone(isPhone ? typed : '');
+    setErr(null);
+    setMode('new');
+  };
   const validate = () => {
     if (newName.trim().length < 2) return setErr(t("Indiquez le nom du client."));
     let p: string | undefined;
@@ -95,71 +110,75 @@ function ClientSheet({
     <>
       <Dim onClose={onClose} className="!z-[45]" />
       <BottomSheet modal className="!z-50 max-h-[90vh] overflow-y-auto">
-        <div className="h2 text-center !text-[1.143rem]">{t("Client")}</div>
-        <SearchBox value={q} onChange={setQ} placeholder={t("Rechercher dans ma clientèle")} autoFocus />
-        {clients.isPending ? (
-          <Skeleton className="h-[6rem] w-full !rounded-[var(--radius-card)]" />
-        ) : rows.length > 0 ? (
-          <div className="crd !gap-0 !py-1">
-            {rows.map((c) => (
-              <button
-                key={c.clientKey}
-                type="button"
-                className="li w-full text-start"
-                onClick={() => onPick(c.name, c.phone ?? '')}
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  <Avatar name={c.name} size={36} />
-                  <span className="min-w-0">
-                    <span className="block truncate text-[1rem] font-semibold">{c.name}</span>
-                    <span className="block text-[0.857rem] text-muted">
-                      {c.phone ? formatDZPhone(c.phone) : t('Sans numéro')} · {t('{n} rendez-vous', { n: c.bookingsCount })}
+        <div className="h2 !text-[1.286rem]">{mode === 'find' ? t('Client existant') : t('Nouveau client')}</div>
+        {mode === 'find' ? (
+          <>
+            <SearchBox value={q} onChange={setQ} placeholder={t('Nom ou téléphone')} autoFocus />
+            {searching ? (
+              <Skeleton className="h-[4rem] w-full !rounded-[var(--radius-card-sm)]" />
+            ) : !needle ? null : rows.length > 0 ? (
+              <div className="crd !gap-0 !py-1">
+                {rows.map((c) => (
+                  <button
+                    key={c.clientKey}
+                    type="button"
+                    className="li w-full text-start"
+                    onClick={() => onPick(c.name, c.phone ?? '')}
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <Avatar name={c.name} size={36} />
+                      <span className="min-w-0">
+                        <span className="block truncate text-[1rem] font-semibold">{c.name}</span>
+                        <span className="block text-[0.857rem] text-muted" dir="ltr">
+                          {c.phone ? formatDZPhone(c.phone) : t('Sans numéro')}
+                        </span>
+                      </span>
                     </span>
-                  </span>
-                </span>
-                {c.name === name && (c.phone ?? '') === phone && <I icon={Check} size={20} />}
-              </button>
-            ))}
-          </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <Button variant="soft" onClick={create}>
+                <I icon={UserPlus} size={18} /> {t('Créer « {q} »', { q: needle })}
+              </Button>
+            )}
+          </>
         ) : (
-          <p className="p">
-            {needle ? t('Aucun client pour « {q} ».', { q: needle }) : t('Votre clientèle apparaîtra ici.')}
-          </p>
+          <>
+            <Field label={t("Nom *")} htmlFor="nc-name">
+              <Input
+                id="nc-name"
+                value={newName}
+                onChange={(e) => {
+                  setNewName(e.target.value);
+                  setErr(null);
+                }}
+                placeholder={t("Mohamed B.")}
+                autoFocus
+                aria-required
+              />
+            </Field>
+            <Field label={t("Téléphone")} htmlFor="nc-phone">
+              <Input
+                id="nc-phone"
+                type="tel"
+                inputMode="tel"
+                value={newPhone}
+                onChange={(e) => {
+                  setNewPhone(e.target.value);
+                  setErr(null);
+                }}
+                placeholder="05 51 23 45 67"
+              />
+            </Field>
+            {err && (
+              <p className="text-[1rem] text-danger" role="alert">
+                {err}
+              </p>
+            )}
+            <Button onClick={validate}>{t("Valider")}</Button>
+          </>
         )}
-        <span className="h3">{t("Client de passage")}</span>
-        <div className="g2">
-          <Field label={t("Nom *")} htmlFor="nc-name">
-            <Input
-              id="nc-name"
-              value={newName}
-              onChange={(e) => {
-                setNewName(e.target.value);
-                setErr(null);
-              }}
-              placeholder={t("Mohamed B.")}
-              aria-required
-            />
-          </Field>
-          <Field label={t("Téléphone")} htmlFor="nc-phone">
-            <Input
-              id="nc-phone"
-              type="tel"
-              inputMode="tel"
-              value={newPhone}
-              onChange={(e) => {
-                setNewPhone(e.target.value);
-                setErr(null);
-              }}
-              placeholder="05 51 23 45 67"
-            />
-          </Field>
-        </div>
-        {err && (
-          <p className="text-[1rem] text-danger" role="alert">
-            {err}
-          </p>
-        )}
-        <Button onClick={validate}>{t("Valider")}</Button>
       </BottomSheet>
     </>
   );
@@ -182,7 +201,7 @@ export function ProBookingNew() {
   const [error, setError] = useState<string | null>(null);
   // Erreurs affichées sur la ligne concernée (client obligatoire, prestation).
   const [fieldErr, setFieldErr] = useState<{ name?: string; services?: string }>({});
-  const [sheet, setSheet] = useState<'client' | null>(null);
+  const [sheet, setSheet] = useState<'find' | 'new' | null>(null);
   // Rendez-vous créé : validation animée, puis fiche du rendez-vous.
   const [done, setDone] = useState<{ id: string } | null | false>(false);
   // Rendez-vous déjà pris ce jour-là (pour griser les créneaux du membre choisi).
@@ -278,7 +297,7 @@ export function ProBookingNew() {
     if (name.trim().length < 2) errs.name = 'Indiquez le client.';
     if (services.length === 0) errs.services = 'Choisissez au moins une prestation.';
     setFieldErr(errs);
-    if (errs.name) return setSheet('client');
+    if (errs.name) return setSheet('find');
     if (errs.services)
       return document.getElementById('nb-services')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setError(null);
@@ -327,35 +346,29 @@ export function ProBookingNew() {
       {/* 1. QUI */}
       <section className="crd !gap-2.5" aria-labelledby="nb-s1">
         <StepHead n={1} id="nb-s1" title={t('Client')} done={clientDone} />
-        <button
-          type="button"
-          className={`nb-pick ${fieldErr.name ? 'err' : ''}`}
-          onClick={() => setSheet('client')}
-          aria-invalid={!!fieldErr.name || undefined}
-        >
-          {clientDone ? (
-            <>
-              <Avatar name={name} size={36} />
-              <span className="min-w-0 flex-1 text-start">
-                <span className="block truncate text-[1rem] font-semibold">{name}</span>
-                <span className="block text-[0.857rem] text-muted" dir="ltr">
-                  {phone ? formatDZPhone(phone) : t('Sans numéro')}
-                </span>
+        {clientDone ? (
+          <button type="button" className="nb-pick" onClick={() => setSheet('find')}>
+            <Avatar name={name} size={36} />
+            <span className="min-w-0 flex-1 text-start">
+              <span className="block truncate text-[1rem] font-semibold">{name}</span>
+              <span className="block text-[0.857rem] text-muted" dir="ltr">
+                {phone ? formatDZPhone(phone) : t('Sans numéro')}
               </span>
-              <span className="text-[0.857rem] font-semibold text-muted">{t('Changer')}</span>
-            </>
-          ) : (
-            <>
-              <span className="nb-pick-i">
-                <I icon={Search} size={18} />
-              </span>
-              <span className="min-w-0 flex-1 truncate text-start text-[1rem] text-subtle">
-                {t('Rechercher ou ajouter un client')}
-              </span>
-              <I icon={UserPlus} size={18} className="shrink-0 text-muted" />
-            </>
-          )}
-        </button>
+            </span>
+            <span className="text-[0.857rem] font-semibold text-muted">{t('Changer')}</span>
+          </button>
+        ) : (
+          <div className="g2">
+            <button type="button" className={`nb-two ${fieldErr.name ? 'err' : ''}`} onClick={() => setSheet('find')}>
+              <I icon={Search} size={20} />
+              {t('Client existant')}
+            </button>
+            <button type="button" className={`nb-two ${fieldErr.name ? 'err' : ''}`} onClick={() => setSheet('new')}>
+              <I icon={UserPlus} size={20} />
+              {t('Nouveau client')}
+            </button>
+          </div>
+        )}
         {fieldErr.name && (
           <p className="text-[0.857rem] text-danger" role="alert">
             {fieldErr.name}
@@ -531,8 +544,9 @@ export function ProBookingNew() {
         </button>
       )}
 
-      {sheet === 'client' && (
+      {sheet && (
         <ClientSheet
+          mode={sheet}
           name={name}
           phone={phone}
           onPick={(n, p) => {

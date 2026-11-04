@@ -115,6 +115,7 @@ const AdminSalons = lazyNamed(() => import('@/pages/admin/AdminSalons'), 'AdminS
 const AdminSalon = lazyNamed(() => import('@/pages/admin/AdminSalon'), 'AdminSalon');
 const AdminProfiles = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'AdminProfiles');
 const AdminProfile = lazyNamed(() => import('@/pages/admin/AdminProfiles'), 'AdminProfile');
+const Reminders = lazyNamed(() => import('@/pages/pro/Reminders'), 'Reminders');
 const AdminBookings = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminBookings');
 const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminAudit');
 const AdminReports = lazyNamed(() => import('@/pages/admin/AdminReports'), 'AdminReports');
@@ -265,6 +266,7 @@ export const router = createBrowserRouter([
               { path: 'realisations', element: <Step8Works settings /> },
               { path: 'agenda', element: <AgendaPro /> },
               { path: 'chiffre-affaires', element: <Revenue /> },
+              { path: 'rappels', element: <Reminders /> },
               { path: 'clients', element: <Clients /> },
               { path: 'clients/:key', element: <ClientDetail /> },
               { path: 'equipe', element: <Team /> },

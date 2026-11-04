@@ -7249,6 +7249,116 @@ html:has(.auth-onglets) body {
     }
   }
 
+  /* Nouveau rendez-vous : client existant ou nouveau, deux grandes portes. */
+  .nb-two {
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 6px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card-sm);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font: 600 14px/18px Inter, sans-serif;
+    cursor: pointer;
+  }
+  .nb-two:active {
+    background: var(--color-accent-soft);
+  }
+  .nb-two.err {
+    border-color: var(--color-danger);
+  }
+
+  /* Rappels */
+  .rp-auto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-accent-soft);
+  }
+  .rp-auto-i {
+    width: 36px;
+    height: 36px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--color-accent-strong);
+  }
+  .rp-auto b {
+    display: block;
+    font: 600 14px/18px Inter, sans-serif;
+  }
+  .rp-auto span span {
+    display: block;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .rp-on {
+    flex: none;
+    font: 600 13px Inter, sans-serif;
+    color: var(--color-ok-fg);
+  }
+  .rp-r {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 10px;
+    border-top: 1px solid var(--color-line-soft);
+  }
+  .rp-r:first-child {
+    border-top: 0;
+  }
+  .rp-t {
+    flex: none;
+    font: 600 16px var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .rp-n,
+  .rp-s {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rp-n {
+    font: 600 14px/18px Inter, sans-serif;
+  }
+  .rp-s {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .rp-b {
+    flex: none;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius-slot);
+    background: #e4f7eb;
+    color: #0f7a43;
+    font: 600 13px Inter, sans-serif;
+    cursor: pointer;
+  }
+  .rp-b.done {
+    background: var(--color-fill);
+    color: var(--color-muted);
+  }
+  .rp-no {
+    flex: none;
+    font-size: 13px;
+    color: var(--color-subtle);
+  }
+
   /* Créneau déjà pris et propositions (création et report de rendez-vous, côté pro). */
   .slot.bz {
     background: var(--color-cancel-bg);

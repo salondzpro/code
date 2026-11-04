@@ -7,7 +7,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useProPendingUnseenCount, useProSalon, useProUnseenBookings } from '@salondz/api-client';
-import { Calendar, CalendarDays, Inbox, LayoutGrid, Menu, User, Users, type LucideIcon } from 'lucide-react';
+import { Calendar, CalendarDays, Inbox, LayoutGrid, Menu, User, type LucideIcon, BellRing } from 'lucide-react';
 import { I } from './ui';
 import { PushToast } from './PushToast';
 import { ProPlusSheet } from './ProPlusSheet';
@@ -108,19 +108,16 @@ const CLIENT_NAV: NavItem[] = [
  * « Plus », qui mène à toute la gestion (salon, catalogue, équipe, règles, compte). L'Agenda est
  * au CENTRE, en grand rond : c'est l'écran qu'on ouvre le plus, il est sous le pouce.
  */
-const proNav = (women: boolean): NavItem[] => [
+const PRO_NAV: NavItem[] = [
   { to: '/pro', label: t("Accueil"), icon: LayoutGrid, end: true },
   { to: '/pro/reservations', label: t("Demandes"), icon: Inbox },
   { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, center: true },
-  // « Clientes » pour un salon de femmes (comme la maquette 11), « Clients » sinon.
-  { to: '/pro/clients', label: women ? t("Clientes") : t("Clients"), icon: Users },
+  { to: '/pro/rappels', label: t("Rappels"), icon: BellRing },
   { to: '/pro/plus', label: t("Plus"), icon: Menu, rest: true },
 ];
 
 export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
-  // Seulement côté pro : un client n'a pas de salon (la requête répondrait une erreur).
-  const market = useProSalon(kind === 'pro').data?.salon?.genderTarget;
-  const items = kind === 'client' ? CLIENT_NAV : proNav(market === 'women');
+  const items = kind === 'client' ? CLIENT_NAV : PRO_NAV;
   const [plus, setPlus] = useState(false);
   /**
    * À partir de 1 024 px, la navigation vit dans l'en-tête (client) ou dans le rail
