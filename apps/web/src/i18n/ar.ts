@@ -1699,4 +1699,8 @@ export const ar: Record<string, string> = {
   "Instagram": "إنستغرام",
   "Snapchat": "سناب شات",
   "Message copié": "تم نسخ الرسالة",
+  "rendez-vous aujourd’hui": "موعد اليوم",
+  "Plus rien de prévu": "لا شيء آخر مبرمج",
+  "Prochains rendez-vous": "المواعيد القادمة",
+  "Partager mes créneaux": "مشاركة مواعيدي",
 };

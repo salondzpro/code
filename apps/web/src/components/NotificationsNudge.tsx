@@ -85,13 +85,13 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
         <p className="font-semibold">
           {role === 'pro' ? t('Ne manquez plus une réservation') : t('Ne manquez plus votre rendez-vous')}
         </p>
+        {(bloquees || role !== 'pro') && (
         <p className="p mt-1 text-[0.938rem]">
           {bloquees
             ? t('Les notifications de Salon DZ sont coupées sur cet appareil.')
-            : role === 'pro'
-              ? t('Sans notifications, vous découvrez les demandes en ouvrant l’application. Avec, vous les recevez à l’instant où elles arrivent.')
-              : t('Rappel 1 h puis 30 min avant, et un mot dès que le salon confirme.')}
+            : t('Rappel 1 h puis 30 min avant, et un mot dès que le salon confirme.')}
         </p>
+        )}
         <div className="mt-3 flex flex-wrap gap-2">
           {!(bloquees && chemin) && (
             <Button sm auto loading={n.occupe} onClick={() => void agir()}>
@@ -106,9 +106,6 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
               )}
             </Button>
           )}
-          <Button sm auto variant="g" onClick={plusTard}>
-            {t('Plus tard')}
-          </Button>
         </div>
         {bloquees && chemin && <p className="t3 mt-2">{n.consigne}</p>}
         {n.erreur && (

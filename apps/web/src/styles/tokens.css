@@ -12,8 +12,8 @@
 
 @theme {
   /* Fonds */
-  --color-canvas: #ebeaf2; /* autour de la colonne app sur grand écran */
-  --color-bg: #f6f6fa; /* fond des écrans : blanc à peine froid, jamais lavande */
+  --color-canvas: #ffffff; /* autour de la colonne app sur grand écran */
+  --color-bg: #ffffff; /* fond des écrans : blanc pur, partout (consigne du 4 nov. 2026) */
   --color-surface: #ffffff; /* cartes */
   --color-fill: #f4f4f9; /* surfaces douces (champs, boutons secondaires pleins) */
   --color-line: #e6e5ee; /* bordures */

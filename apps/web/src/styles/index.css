@@ -7015,7 +7015,7 @@ html:has(.auth-onglets) body {
   }
   .agenda .agoff {
     border-radius: 14px;
-    background: repeating-linear-gradient(135deg, #ebe9ef 0 6px, #f6f6fa 6px 12px);
+    background: repeating-linear-gradient(135deg, #ebe9ef 0 6px, #ffffff 6px 12px);
     color: var(--color-subtle);
   }
 
@@ -7513,7 +7513,7 @@ html:has(.auth-onglets) body {
     gap: 10px;
     padding: 10px 12px;
     border-radius: 18px;
-    background: var(--color-bg);
+    background: var(--color-fill);
     font-size: 14px;
   }
   .ag9-sr b {
@@ -7602,5 +7602,283 @@ html[data-kb] #root {
   .pwl-mock-new,
   .pwl-mock-new .pwl-mock-badge {
     animation: none;
+  }
+}
+
+/* Accueil pro, sur le modèle de mew3id (4 nov. 2026). Violet uni, jamais de dégradé. */
+@layer components {
+  .h12-top {
+    margin: -0.75rem -1rem 0;
+    padding: 16px 20px 72px;
+    border-radius: 0 0 32px 32px;
+    background: var(--color-accent);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .h12-hd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .h12-date {
+    display: block;
+    font-size: 14px;
+    color: rgb(255 255 255 / 0.9);
+  }
+  .h12-date::first-letter {
+    text-transform: uppercase;
+  }
+  .h12-hi {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 600 24px/1.2 var(--font-display);
+    letter-spacing: -0.4px;
+  }
+  .h12-bell {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.18);
+    color: #ffffff;
+  }
+  .h12-bell i {
+    position: absolute;
+    top: 10px;
+    right: 11px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ffffff;
+  }
+  .h12-day {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #ffffff;
+  }
+  .h12-ring {
+    position: relative;
+    width: 104px;
+    height: 104px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .h12-ring svg {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  .h12-ring circle {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.25);
+    stroke-width: 7;
+  }
+  .h12-ring circle.on {
+    stroke: #ffffff;
+    stroke-linecap: round;
+  }
+  .h12-ring b {
+    font: 600 40px/1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .h12-day > span:last-child b {
+    display: block;
+    font: 600 18px/1.25 var(--font-display);
+  }
+  .h12-day > span:last-child > span {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    color: rgb(255 255 255 / 0.9);
+  }
+  .h12-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: #ffffff;
+  }
+  .h12-link {
+    position: relative;
+    margin-top: -68px;
+    box-shadow: 0 8px 24px rgb(30 27 48 / 0.08);
+  }
+  .h12-l {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .h12-u {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 600 16px/1.3 var(--font-display);
+    color: var(--color-ink);
+  }
+  .h12-h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 0;
+    font: 600 18px/1.3 var(--font-display);
+    color: var(--color-ink);
+  }
+  .h12-h span {
+    font: 400 13px Inter, sans-serif;
+    color: var(--color-muted);
+  }
+  .h12-row {
+    --gutter: 1rem;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 1rem;
+    scrollbar-width: none;
+  }
+  .h12-row::-webkit-scrollbar {
+    display: none;
+  }
+  .h12-c {
+    flex: 0 0 200px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card-sm);
+    background: #ffffff;
+    text-align: start;
+    cursor: pointer;
+  }
+  .h12-c:active {
+    background: var(--color-fill);
+  }
+  .h12-ct {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .h12-ct b {
+    font: 600 20px/1.2 var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink);
+  }
+  .h12-ct em {
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font: 600 11px Inter, sans-serif;
+  }
+  .h12-cn,
+  .h12-cs {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .h12-cn {
+    font: 600 15px/1.3 var(--font-display);
+    color: var(--color-ink);
+  }
+  .h12-cs {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .h12-kp {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    text-align: center;
+  }
+  .h12-kp > div:first-child {
+    border-inline-end: 1px solid var(--color-line);
+  }
+  .h12-kp b {
+    display: block;
+    font: 600 28px/1.15 var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink);
+  }
+  .h12-kp b.acc {
+    color: var(--color-accent);
+  }
+  .h12-kp span {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .h12-bars {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    align-items: end;
+    margin-top: 8px;
+  }
+  .h12-bars > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    height: 60px;
+  }
+  .h12-bars i {
+    width: 100%;
+    border-radius: 4px;
+    background: var(--color-line);
+  }
+  .h12-bars i.on {
+    background: var(--color-accent);
+  }
+  .h12-bars span {
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+  .h12-sh {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .h12-sh button {
+    min-width: 0;
+    height: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    border-radius: var(--radius-btn);
+    background: var(--color-fill);
+    color: var(--color-ink);
+    font: 600 13px var(--font-display);
+    cursor: pointer;
+  }
+  .h12-sh button:disabled {
+    opacity: 0.5;
+  }
+}
+@media (min-width: 1024px) {
+  .h12-top {
+    margin: 0;
+    border-radius: 28px;
   }
 }

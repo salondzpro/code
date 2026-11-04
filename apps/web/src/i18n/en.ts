@@ -1715,4 +1715,8 @@ export const en: Record<string, string> = {
   "Instagram": "Instagram",
   "Snapchat": "Snapchat",
   "Message copié": "Message copied",
+  "rendez-vous aujourd’hui": "appointments today",
+  "Plus rien de prévu": "Nothing else planned",
+  "Prochains rendez-vous": "Upcoming appointments",
+  "Partager mes créneaux": "Share my slots",
 };
