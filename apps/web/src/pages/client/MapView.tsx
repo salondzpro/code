@@ -11,7 +11,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Locate, LocateFixed, LocateOff } from 'lucide-react';
-import { useMe, useSalonSearch } from '@salondz/api-client';
+import { useSalonSearch } from '@salondz/api-client';
+import { useClientMarket } from '@/lib/useClientMarket';
 import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
 import { formatKm, useLocationPrefs } from '@/lib/clientPrefs';
 import { arrondir, positionPrecise } from '@/lib/position';
@@ -49,8 +50,7 @@ const escHtml = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<'
 export function MapView() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const me = useMe();
-  const market = me.data?.profile.market ?? 'women';
+  const { market } = useClientMarket();
   const [prefs, setPrefs] = useLocationPrefs();
   // La carte n'est pas sous `ClientLayout` : la détection d'ouverture s'y monte aussi.
   useAutoLocate();

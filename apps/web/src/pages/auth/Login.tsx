@@ -177,13 +177,15 @@ export function Login({ landing }: { landing?: boolean } = {}) {
   return (
     <AuthShell
       role={role}
-      back={landing ? undefined : role === 'pro' ? '/pro/bienvenue' : '/home'}
+      back={landing ? next.replace('/reserver/coordonnees', '/reserver/quand') : role === 'pro' ? '/pro/bienvenue' : '/'}
       onglets={{ actif: 'connexion', liens: { connexion, inscription } }}
       titre={role === 'pro' ? 'Connexion à votre espace' : 'Connexion'}
       sous={
         role === 'pro'
           ? t('Votre agenda vous attend.')
-          : t('Vos rendez-vous, en un instant.')
+          : next.includes('/reserver/')
+            ? t('Connectez-vous pour valider votre créneau.')
+            : t('Vos rendez-vous, en un instant.')
       }
       pied={
         // Créer un compte : c'est l'onglet « Inscription », en tête (toucher ou glisser).

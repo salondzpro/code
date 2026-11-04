@@ -9,6 +9,7 @@
  */
 import { AlertTriangle } from 'lucide-react';
 import { useMe } from '@salondz/api-client';
+import { useAuth } from '@/lib/auth';
 import { I } from '@/components/ui';
 import { t } from '@/i18n';
 
@@ -43,7 +44,8 @@ export function SalonSuspendedNotice() {
 
 /** Côté client : il ne peut plus réserver en ligne, nulle part. */
 export function AccountSuspendedNotice() {
-  const profil = useMe().data?.profile ?? null;
+  const { session } = useAuth();
+  const profil = useMe(!!session).data?.profile ?? null;
   if (!profil?.suspendedAt) return null;
   return (
     <Bandeau

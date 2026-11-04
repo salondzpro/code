@@ -1654,4 +1654,5 @@ export const ar: Record<string, string> = {
   "Reprendre rendez-vous dans 3 semaines": "حجز موعد جديد بعد 3 أسابيع",
   "En cours · fin à {h}": "جارٍ · ينتهي على الساعة {h}",
   "Bonjour {name}, petit rappel de votre rendez-vous {day} à {time}{salon}.": "مرحبا {name}، تذكير بموعدك {day} على الساعة {time}{salon}.",
+  "Connectez-vous pour valider votre créneau.": "سجّلي الدخول لتأكيد موعدك.",
 };

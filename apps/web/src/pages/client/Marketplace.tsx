@@ -13,7 +13,7 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ArrowLeftRight, Search } from 'lucide-react';
-import { pagesItems, useMe, useSalonSearchInfinite, useUpdateProfile } from '@salondz/api-client';
+import { pagesItems, useSalonSearchInfinite } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
   MARKET_LABELS_FR,
@@ -22,6 +22,7 @@ import {
   type Market,
 } from '@salondz/constants';
 import { useLocationPrefs } from '@/lib/clientPrefs';
+import { useClientMarket } from '@/lib/useClientMarket';
 import { I, IconButton, Pill, Skeleton } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -37,10 +38,8 @@ const NOUN: Record<Market, [string, string]> = {
 export function Marketplace() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const me = useMe();
-  const update = useUpdateProfile();
+  const { market, setMarket, ready } = useClientMarket();
   const [prefs, setPrefs] = useLocationPrefs();
-  const market: Market = me.data?.profile.market ?? 'women';
   const category = params.get('category') ?? '';
   const q = params.get('q') ?? '';
   /**
@@ -50,13 +49,13 @@ export function Marketplace() {
    */
   const wantedMarket = params.get('market');
   useEffect(() => {
-    if (!me.data || (wantedMarket !== 'men' && wantedMarket !== 'women')) return;
-    if (me.data.profile.market !== wantedMarket) update.mutate({ market: wantedMarket });
+    if (!ready || (wantedMarket !== 'men' && wantedMarket !== 'women')) return;
+    if (market !== wantedMarket) setMarket(wantedMarket);
     const next = new URLSearchParams(params);
     next.delete('market');
     setParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wantedMarket, me.data?.profile.market]);
+  }, [wantedMarket, market, ready]);
 
   const query = useSalonSearchInfinite({
     q: q || undefined,
@@ -87,7 +86,7 @@ export function Marketplace() {
     setParams(next, { replace: true });
   };
 
-  const swapMarket = () => update.mutate({ market: market === 'men' ? 'women' : 'men' });
+  const swapMarket = () => setMarket(market === 'men' ? 'women' : 'men');
 
   const all = pagesItems(query.data);
   // « Ouvert maintenant » se filtre côté client : l'état d'ouverture est déjà dans chaque carte.
@@ -135,7 +134,6 @@ export function Marketplace() {
         <IconButton
           aria-label={t("Changer de marché")}
           onClick={swapMarket}
-          disabled={update.isPending}
           className="!h-9 !w-9 !rounded-[var(--radius-card-sm)]"
         >
           <I icon={ArrowLeftRight} size={16} />

@@ -123,13 +123,15 @@ export function SignUp() {
   return (
     <AuthShell
       role={role}
-      back={role === 'pro' ? '/pro/bienvenue' : undefined}
+      back={role === 'pro' ? '/pro/bienvenue' : next.replace('/reserver/coordonnees', '/reserver/quand')}
       onglets={{ actif: 'inscription', liens: { connexion, inscription } }}
       titre={role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
       sous={
         role === 'pro'
           ? t('Gratuit · Prêt en 5 min')
-          : t('Réservez sans appeler.')
+          : next.includes('/reserver/')
+            ? t('Créez votre compte pour valider votre créneau.')
+            : t('Réservez sans appeler.')
       }
     >
       <form onSubmit={creer} noValidate>

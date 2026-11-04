@@ -18,6 +18,7 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import { readDraft, writeDraft } from '@/lib/bookingDraft';
+import { setGuestMarket } from '@/lib/useClientMarket';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDuration } from '@/lib/format';
@@ -280,6 +281,8 @@ export function BookingWhen() {
           disabled={!slot}
           onClick={() => {
             writeDraft(slug, { date, startsAt: slot! });
+            // Le compte qui va se créer reprend le marché de ce salon : une étape de moins.
+            if (!session && (s.genderTarget === 'men' || s.genderTarget === 'women')) setGuestMarket(s.genderTarget);
             navigate(`/s/${s.slug}/reserver/coordonnees`);
           }}
         >

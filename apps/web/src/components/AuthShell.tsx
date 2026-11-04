@@ -136,7 +136,7 @@ export function AuthShell({
             <div className="flex min-w-0 items-center gap-1">
               {back && <BackButton to={back} />}
               {marque && (
-                <Link to="/home" aria-label="Salon DZ" className={back ? '' : 'ps-1'}>
+                <Link to="/" aria-label="Salon DZ" className={back ? '' : 'ps-1'}>
                   <Wordmark size={1.286} />
                 </Link>
               )}

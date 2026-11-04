@@ -211,7 +211,7 @@ export function Home() {
           </p>
           <div className="hm-in mt-8 flex flex-wrap gap-3" style={{ ['--d' as string]: '440ms' }}>
             <Link
-              to="/intro"
+              to="/"
               className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-white px-6 py-3.5 font-semibold text-ink transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
             >
               {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
@@ -235,7 +235,7 @@ export function Home() {
           {METIERS.map((m, i) => (
             <Link
               key={m.nom}
-              to="/intro"
+              to="/"
               data-reveal
               style={{ ['--d' as string]: `${(i % 4) * 80}ms` }}
               className={`hm-cat ${m.large ? 'col-span-2 aspect-[16/10]' : 'aspect-[3/4] sm:aspect-auto sm:h-full'}`}
@@ -293,7 +293,7 @@ export function Home() {
           <Wordmark size={1.714} />
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              to="/intro"
+              to="/"
               className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-ink px-6 py-3.5 font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
             >
               {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />

@@ -8,12 +8,6 @@ import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
 import { refreshWebPushIfGranted } from '@/lib/webpush';
 import { PageLoading } from '@/components/PageLoading';
-/**
- * Coque native, testée SANS importer Capacitor : la coque pose `window.Capacitor` avant le code de
- * l'application, et importer le paquet ici coûterait un chargement au premier rendu d'un garde.
- */
-const enCoque = (): boolean =>
-  Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
 import { ErrorState } from '@/components/ErrorMessage';
 import { AppFrame, BottomNav } from '@/components/AppFrame';
 import { ProRail } from '@/components/ProNav';
@@ -113,8 +107,15 @@ export function RequireAuth() {
 }
 
 /**
- * Espace client : session requise, profil complété (prénom) et marché choisi.
- * Sans session → introduction (AUTH 02). Profil incomplet → AUTH 13. Sans marché → AUTH 15.
+ * Ce qu'un visiteur consulte sans compte : la place de marché, la carte et le choix du lieu. Les
+ * pages de salon et le choix du créneau sont publics aussi (`routesPubliques`) ; la connexion se
+ * demande quand on valide un créneau, à `/s/:slug/reserver/coordonnees`.
+ */
+const LIBRE_ACCES = /^\/(carte|localisation|categorie\/[^/]+)?\/?$/;
+
+/**
+ * Espace client. Sans session : les pages en libre accès s'ouvrent, les autres mènent à la
+ * connexion. Avec une session : profil complété (AUTH 13) et marché choisi (AUTH 15).
  */
 export function RequireClient() {
   const { session, loading } = useAuth();
@@ -134,22 +135,10 @@ export function RequireClient() {
     void refreshWebPushIfGranted(api);
   }, [session]);
   if (loading) return <PageLoading />;
-  if (!session)
-    return (
-      <Navigate
-        to={
-          // Racine du SITE : un visiteur non connecté arrive sur la présentation, qui explique ce
-          // qu'est Salon DZ avant de lui demander de se connecter. Dans l'APPLICATION, il a déjà
-          // choisi de l'installer : on lui ouvre directement le portail.
-          location.pathname === '/'
-            ? enCoque()
-              ? '/intro'
-              : '/home'
-            : `/connexion?next=${encodeURIComponent(location.pathname + location.search)}`
-        }
-        replace
-      />
-    );
+  if (!session) {
+    if (LIBRE_ACCES.test(location.pathname)) return <Outlet />;
+    return <Navigate to={`/connexion?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
   if (me.isPending) return <PageLoading />;
   if (me.isError) return <ErrorState error={me.error} retry={() => me.refetch()} accueil={false} />;
   const p = me.data.profile;

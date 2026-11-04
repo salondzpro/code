@@ -1670,4 +1670,5 @@ export const en: Record<string, string> = {
   "Reprendre rendez-vous dans 3 semaines": "Book again in 3 weeks",
   "En cours · fin à {h}": "In progress · ends at {h}",
   "Bonjour {name}, petit rappel de votre rendez-vous {day} à {time}{salon}.": "Hello {name}, a quick reminder of your appointment {day} at {time}{salon}.",
+  "Connectez-vous pour valider votre créneau.": "Sign in to confirm your slot.",
 };

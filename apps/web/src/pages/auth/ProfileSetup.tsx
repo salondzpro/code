@@ -5,6 +5,7 @@
  * rendez-vous pris par quelqu'un d'autre à ce compte.
  */
 import { useEffect, useState, type FormEvent } from 'react';
+import { guestMarket } from '@/lib/useClientMarket';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { ChevronDown } from 'lucide-react';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
@@ -49,9 +50,10 @@ export function ProfileSetup() {
       // couper après coup — et c'est pourquoi on ne les force PAS ici : la colonne vaut `true` par
       // défaut en base, donc l'écrire ne servirait qu'à rallumer, en silence, ce que quelqu'un
       // aurait éteint.
-      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data });
+      const market = !isPro && !me.data?.profile.market ? guestMarket() : null;
+      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, ...(market ? { market } : {}) });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
-      else if (!me.data?.profile.market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
+      else if (!me.data?.profile.market && !market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });
     } catch (err) {
       setError({ field: 'form', msg: errorText(err) });

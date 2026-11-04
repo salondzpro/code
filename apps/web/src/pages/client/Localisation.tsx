@@ -9,7 +9,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBack } from '@/lib/useBack';
 import { Building2, Check, Clock, MapPin, Navigation, Settings, Smartphone } from 'lucide-react';
-import { useMe, useSalonCities, useSalonSearch } from '@salondz/api-client';
+import { useSalonCities, useSalonSearch } from '@salondz/api-client';
+import { useClientMarket } from '@/lib/useClientMarket';
 import { MARKET_LABELS_FR, reverseGeocode, wilayaName } from '@salondz/constants';
 import { RADIUS_OPTIONS, formatKm, pushRecentPlace, readRecentPlaces, useLocationPrefs, type RecentPlace } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
@@ -35,8 +36,7 @@ function normalize(s: string): string {
 
 export function Localisation() {
   const back = useBack('/');
-  const me = useMe();
-  const market = me.data?.profile.market ?? 'women';
+  const { market } = useClientMarket();
   const [prefs, setPrefs] = useLocationPrefs();
   const [q, setQ] = useState('');
   const dq = useDebounced(q.trim(), 250);

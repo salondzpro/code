@@ -63,9 +63,8 @@ try {
   await page.waitForTimeout(5000);
   ok(await page.evaluate(() => window.Capacitor?.isNativePlatform?.() === true), 'le site se sait dans une application native');
   const chemin = new URL(page.url()).pathname;
-  // Le site envoie un visiteur sur la page de présentation ; l'application, non : on vient de
-  // l'installer, on n'a pas besoin qu'on nous la présente.
-  ok(chemin === '/intro', `la racine mène au portail et non à la présentation (${chemin})`);
+  // La place de marché s'ouvre sans compte ; la connexion vient à la validation d'un créneau.
+  ok(chemin === '/', `la racine ouvre la place de marché sans compte (${chemin})`);
   ok(await rempli(), 'l’écran est rendu — c’est l’écran blanc du 25 sept. que ce contrôle surveille');
 
   console.log('\n2. Les écrans d’entrée répondent');

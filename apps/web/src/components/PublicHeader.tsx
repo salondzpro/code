@@ -21,6 +21,7 @@ import { Bell, CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } 
 import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
 import { useMe, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth, useSignOut } from '@/lib/auth';
+import { guestMarket } from '@/lib/useClientMarket';
 import { I, Dim } from './ui';
 import { t } from '@/i18n';
 
@@ -45,7 +46,7 @@ export function PublicHeader() {
   // Même requête que la ligne du profil — un seul chiffre, partout, sans compteur optimiste.
   const nonLues = useUnreadNotifications(!!session);
   // Le marché du compte s'ouvre d'office : c'est celui que la cliente ou le client consulte.
-  const market = me.data?.profile.market ?? MARKETS[0];
+  const market = me.data?.profile.market ?? guestMarket() ?? MARKETS[0];
   const shown = picked === null ? market : picked === 'none' ? null : picked;
   const next = encodeURIComponent(pathname);
   useEffect(() => setOpen(false), [pathname, navKey]);

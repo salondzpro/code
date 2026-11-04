@@ -1,6 +1,7 @@
 /**
  * Brouillon de réservation (design C-F 08 → 11) : prestations choisies, créneau, coordonnées.
- * Conservé par salon dans sessionStorage pour survivre à une connexion intermédiaire.
+ * Conservé par salon sur l'appareil : on choisit son créneau sans compte, et le lien de confirmation
+ * d'une inscription s'ouvre souvent dans un nouvel onglet, où `sessionStorage` serait vide.
  */
 export interface BookingDraft {
   slug: string;
@@ -15,14 +16,22 @@ export interface BookingDraft {
   forOther?: boolean;
   otherName?: string;
   otherPhone?: string;
+  savedAt?: number;
 }
+
+/** Au-delà, le créneau choisi n'a plus de raison d'être repris. */
+const MAX_AGE_MS = 2 * 60 * 60 * 1000;
 
 const key = (slug: string) => `salondz:booking:${slug}`;
 
 export function readDraft(slug: string): BookingDraft {
   try {
-    const raw = sessionStorage.getItem(key(slug));
-    if (raw) return JSON.parse(raw) as BookingDraft;
+    const raw = localStorage.getItem(key(slug));
+    if (raw) {
+      const draft = JSON.parse(raw) as BookingDraft;
+      if (Date.now() - (draft.savedAt ?? 0) < MAX_AGE_MS) return draft;
+      localStorage.removeItem(key(slug));
+    }
   } catch {
     /* ignore */
   }
@@ -30,9 +39,9 @@ export function readDraft(slug: string): BookingDraft {
 }
 
 export function writeDraft(slug: string, patch: Partial<BookingDraft>): BookingDraft {
-  const next = { ...readDraft(slug), ...patch, slug };
+  const next = { ...readDraft(slug), ...patch, slug, savedAt: Date.now() };
   try {
-    sessionStorage.setItem(key(slug), JSON.stringify(next));
+    localStorage.setItem(key(slug), JSON.stringify(next));
   } catch {
     /* ignore */
   }
@@ -41,7 +50,7 @@ export function writeDraft(slug: string, patch: Partial<BookingDraft>): BookingD
 
 export function clearDraft(slug: string): void {
   try {
-    sessionStorage.removeItem(key(slug));
+    localStorage.removeItem(key(slug));
   } catch {
     /* ignore */
   }
