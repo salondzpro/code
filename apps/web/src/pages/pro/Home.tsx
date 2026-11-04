@@ -320,9 +320,6 @@ export function ProHome() {
             <button type="button" className="h11-b grad" onClick={() => setSheet({ kind: 'dispo' })}>
               {t('Partager mes créneaux libres')}
             </button>
-            <Link to="/pro/agenda" className="h11-b out">
-              {t('Ouvrir l’agenda')}
-            </Link>
           </article>
         </div>
       )}
@@ -353,9 +350,6 @@ export function ProHome() {
           <I icon={QrCode} size={17} strokeWidth={2} /> {t('Code QR')}
         </button>
       </div>
-      <button type="button" className="h11-b out" onClick={() => setSheet({ kind: 'dispo' })}>
-        <I icon={CalendarClock} size={17} strokeWidth={2} /> {t('Envoyer mes disponibilités')}
-      </button>
     </section>
   );
 

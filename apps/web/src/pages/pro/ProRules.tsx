@@ -1,11 +1,7 @@
 /**
- * Profil → Rendez-vous : les règles qui encadrent les réservations. Page de faits, pas d'explications —
- * les deux réglages modifiables en haut, puis ce que voient les clients et les blocages appliqués par
- * Salon DZ, en lignes courtes « règle · valeur ».
+ * Ce que voient les clients et les blocages appliqués par Salon DZ, en lignes « règle · valeur ». Faits
+ * affichés en bas de « Créneaux et règles », la seule page de réglage des rendez-vous.
  */
-import { useState } from 'react';
-import { ShieldCheck, SlidersHorizontal } from 'lucide-react';
-import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import {
   ARRIVAL_ADVANCE_MINUTES,
   CANCEL_ABUSE_BLOCK_DAYS,
@@ -17,11 +13,8 @@ import {
   NO_SHOW_ABUSE_MAX,
   NO_SHOW_ABUSE_WINDOW_DAYS,
 } from '@salondz/constants';
-import { errorText } from '@/components/ErrorMessage';
-import { ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
-import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { PageLoading } from '@/components/PageLoading';
-import { RowText } from './MonSalon';
+import type { SalonOwnerView } from '@salondz/types';
+import { SectionLabel } from '@/components/ui';
 import { t } from '@/i18n';
 
 /** Une règle par ligne : son libellé, sa valeur. */
@@ -34,43 +27,11 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ProRules() {
-  const salon = useProSalon().data?.salon ?? null;
-  const { updateSalon } = useProSalonMutations();
-  const [error, setError] = useState<string | null>(null);
-  if (!salon) return <PageLoading />;
+export function RulesFacts({ salon }: { salon: SalonOwnerView }) {
   const before = `${salon.cancelMinHours} h avant`;
-
   return (
-    <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">{t("Rendez-vous")}</h1>
-
-      <div className="crd !gap-0 !py-1">
-        <ListRow to="/pro/profil/regles">
-          <RowText
-            icon={SlidersHorizontal}
-            title={t("Créneaux et règles")}
-            sub="Délai, horizon, annulation, report"
-          />
-        </ListRow>
-        <div className="li">
-          <RowText
-            icon={ShieldCheck}
-            title={t("Validation manuelle")}
-            sub="Vous confirmez chaque demande"
-          />
-          <Toggle
-            on={!salon.autoConfirm}
-            onChange={(v) =>
-              updateSalon.mutate({ autoConfirm: !v }, { onError: (e) => setError(errorText(e)) })
-            }
-            label={t("Validation manuelle")}
-          />
-        </div>
-      </div>
-
-      <SectionLabel>{t("Ce que voient vos clients")}</SectionLabel>
+    <>
+<SectionLabel>{t("Ce que voient vos clients")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <Fact label={t("Annulation")} value={`Jusqu'à ${before}`} />
         <Fact
@@ -96,11 +57,6 @@ export function ProRules() {
           value={`${NO_SHOW_ABUSE_BLOCK_DAYS} j suspendu`}
         />
       </div>
-      {error && (
-        <p className="text-[1rem] text-danger" role="alert">
-          {error}
-        </p>
-      )}
-    </Screen>
+    </>
   );
 }

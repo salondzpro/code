@@ -170,12 +170,6 @@ export function Settings() {
             {t("Active")}
           </Badge>
         </div>
-        <ListRow to="/aide">
-          <span className="text-[1rem]">{t("Aide et contact")}</span>
-        </ListRow>
-        <ListRow to="/confidentialite">
-          <span className="text-[1rem]">{t("Confidentialité et CGU")}</span>
-        </ListRow>
         <ListRow onClick={() => void exportData()}>
           <span className="text-[1rem]">{exporting ? t('Préparation…') : t("Télécharger mes données")}</span>
         </ListRow>

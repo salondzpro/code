@@ -12,7 +12,6 @@
  */
 import { Link, NavLink } from 'react-router';
 import {
-  Bell,
   CalendarCog,
   CalendarDays,
   CalendarOff,
@@ -32,7 +31,7 @@ import {
   type LucideIcon,
   ExternalLink, QrCode } from 'lucide-react';
 import type { SalonOwnerView } from '@salondz/types';
-import { useProUnseenBookings, useUnreadNotifications } from '@salondz/api-client';
+import { useProUnseenBookings } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
@@ -116,14 +115,12 @@ export function ProNav({
   const { seDeconnecter, enCours } = useSignOut();
   // Un avis sans réponse attend quelque chose du professionnel : il est compté comme une demande.
   const plusTiles = usePlusTiles();
-  // Non lues : même requête que la cloche de l'en-tête et la liste — un seul chiffre partout.
-  const nonLues = useUnreadNotifications(!!salon);
   const pasVus = useProUnseenBookings(!!salon).data?.total ?? 0;
   const { short } = usePublicUrl(salon?.slug ?? '');
   return (
     <>
       {salon && (
-        <Link to="/pro/profil" className="flex items-center gap-3 py-2" aria-label={t("Profil du salon")}>
+        <Link to="/pro/mon-salon" className="flex items-center gap-3 py-2" aria-label={t("Mon salon")}>
           <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={48} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
@@ -149,10 +146,6 @@ export function ProNav({
         ]}
       />
       <Group title={t("Gérer")} items={plusTiles.map((p) => ({ to: p.to, label: p.label, icon: p.icon, count: p.count }))} />
-      <Group
-        title={t("Compte")}
-        items={[{ to: '/pro/notifications', label: t("Notifications"), icon: Bell, count: nonLues }]}
-      />
 
       <div className="mt-auto flex flex-col pt-2">
         {/* Le menu reste ouvert, indicateur compris, jusqu'à la fin de la déconnexion : il se

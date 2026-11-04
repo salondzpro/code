@@ -377,10 +377,9 @@ try {
     if (large > 1280) throw new Error(`débordement horizontal : ${large} px`);
     await shot(p, 'pro-coque-ordinateur');
   });
-  await step('pro: profil → photos du salon (logo + couvertures)', async () => {
-    await p.goto(WEB + '/pro/profil');
-    await p.getByRole('heading', { name: 'Profil' }).waitFor();
-    await p.getByRole('button', { name: 'Changer la photo de couverture' }).waitFor();
+  await step('pro: paramètres → photos du salon (logo + couvertures)', async () => {
+    await p.goto(WEB + '/pro/parametres');
+    await p.getByRole('heading', { name: 'Paramètres' }).waitFor();
     // Le rail de navigation porte le même libellé : on vise la carte du contenu.
     await p.locator('.pro-main').getByRole('link', { name: 'Mon salon' }).click();
     await p.waitForURL(/\/pro\/mon-salon$/);

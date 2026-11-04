@@ -1,17 +1,18 @@
 /**
- * Profil → Compte : profil professionnel (nom, téléphone), notifications, paramètres (page publiée, espace client),
- * déconnexion.
+ * Paramètres → Mon compte : identité, notifications de cet appareil, langue, publication de la page,
+ * suppression du compte. Aide, CGU et confidentialité sont dans le pied de page ; la liste des
+ * notifications est sur la cloche de l'accueil ; « Se déconnecter » est dans le menu « Plus ».
  */
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { DevicePushRow } from '@/components/DevicePushRow';
-import { Bell, Globe, Languages, LogOut, Trash2, User, LifeBuoy, ShieldCheck, BellRing } from 'lucide-react';
+import { Globe, Languages, Trash2, User } from 'lucide-react';
 import { useMe, useProSalon, useProSalonMutations, useUpdateProfile } from '@salondz/api-client';
 import { PickerField } from '@/components/Picker';
 import { formatDZPhone } from '@salondz/constants';
 import { useSignOut } from '@/lib/auth';
 import { errorText } from '@/components/ErrorMessage';
-import { Badge, BottomSheet, Button, Dim, I, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { BottomSheet, Button, Dim, I, ListRow, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
@@ -20,7 +21,7 @@ import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
 export function ProAccount() {
   // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
-  const { seDeconnecter, enCours } = useSignOut();
+  const { seDeconnecter } = useSignOut();
   const me = useMe();
   const proSalon = useProSalon().data;
   const salon = proSalon?.salon ?? null;
@@ -50,8 +51,8 @@ export function ProAccount() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/profil" right="Profil" />
-      <h1 className="h1">{t("Compte")}</h1>
+      <TopBar backTo="/pro/parametres" />
+      <h1 className="h1">{t("Mon compte")}</h1>
 
       <SectionLabel>{t("Profil professionnel")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
@@ -63,9 +64,6 @@ export function ProAccount() {
             title={identity?.fullName ?? (owner ? t('Propriétaire sans nom') : t('Vous'))}
             sub={identity?.phone ? formatDZPhone(identity.phone) : t('Numéro non renseigné')}
           />
-        </ListRow>
-        <ListRow to="/pro/notifications">
-          <RowText icon={Bell} title={t("Notifications")} sub={t("Demandes, confirmations, annulations")} />
         </ListRow>
         {/* Piloté par un administrateur : ce navigateur est le sien, pas celui du professionnel. */}
         {!owner && (
@@ -106,31 +104,9 @@ export function ProAccount() {
         </p>
       )}
 
-      <div className="crd !gap-0 !py-1">
-        <ListRow to="/aide">
-          <RowText icon={LifeBuoy} title={t("Aide et contact")} sub="support@salondz.com · pro@salondz.com" />
-        </ListRow>
-        <ListRow to="/confidentialite">
-          <RowText icon={ShieldCheck} title={t("Confidentialité et CGU")} sub={t("Vos données, vos obligations")} />
-        </ListRow>
-      </div>
-      <div className="crd !gap-0 !py-1">
-        <button
-          type="button"
-          className="li w-full text-start disabled:opacity-70"
-          disabled={enCours}
-          aria-busy={enCours || undefined}
-          onClick={() => void seDeconnecter()}
-        >
-          <span className="flex items-center gap-3.5 text-danger">
-            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-cancel-bg">
-              {enCours ? <span className="btn-spin" aria-hidden /> : <I icon={LogOut} size={18} />}
-            </span>
-            <span className="text-[1rem] font-semibold">{enCours ? t('Déconnexion…') : t('Se déconnecter')}</span>
-          </span>
-        </button>
-        {/* Jamais en pilotage : `/me` serait le compte de l'administrateur, pas celui du professionnel. */}
-        {!owner && (
+      {/* Jamais en pilotage : `/me` serait le compte de l'administrateur, pas celui du professionnel. */}
+      {!owner && (
+        <div className="crd !gap-0 !py-1">
           <button type="button" className="li w-full text-start" onClick={() => setConfirmDelete(true)}>
             <span className="flex items-center gap-3.5 text-danger">
               <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-cancel-bg">
@@ -139,8 +115,8 @@ export function ProAccount() {
               <span className="text-[1rem] font-semibold">{t("Supprimer mon compte et mon salon")}</span>
             </span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
       {confirmDelete && (
         <>
           <Dim onClose={() => deleting === '…' || setConfirmDelete(false)} />

@@ -41,6 +41,7 @@ import {
   TopBar, Dim } from '@/components/ui';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
+import { openExternal } from '@/lib/openExternal';
 import { t } from '@/i18n';
 
 /** Lien public d'un salon : TOUJOURS sur le domaine officiel (env.siteUrl), jamais sur l'adresse de navigation. */
@@ -106,7 +107,6 @@ export function ShareSheet({
   logo?: string | null;
 }) {
   const [copied, copy] = useCopy();
-  const navigate = useNavigate();
   const text = encodeURIComponent(`Prenez rendez-vous chez ${name} en ligne, 24 h/24 : ${url}`);
   const items: { label: string; icon: React.ReactNode; onClick: () => void }[] = [
     {
@@ -139,7 +139,6 @@ export function ShareSheet({
       icon: <I icon={MessageSquareText} size={34} />,
       onClick: () => window.open(`sms:?body=${text}`),
     },
-    { label: t("Étiquettes"), icon: <I icon={QrCode} size={34} />, onClick: () => navigate('/pro/qr') },
     { label: t("Plus"), icon: <I icon={Share2} size={34} />, onClick: () => void share(name, url) },
   ];
   return (
@@ -169,7 +168,6 @@ export function ShareSheet({
             </button>
           ))}
         </div>
-        <Button onClick={() => copy(url)}>{copied ? 'Lien copié' : 'Copier le lien'}</Button>
         <span className="sr-only">{logo ? 'logo' : ''}</span>
       </BottomSheet>
     </>
@@ -220,8 +218,8 @@ export function ProLink() {
       </div>
       <div className="g2">
         <Button onClick={() => setSheet(true)}>{t("Partager")}</Button>
-        <Button variant="g" onClick={() => copy(url)}>
-          {t("Copier")}
+        <Button variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
+          {t("Aperçu")}
         </Button>
       </div>
       {/* Ce que le lien donne aujourd'hui : des faits, chacun menant à l'écran qui le règle
@@ -241,7 +239,7 @@ export function ProLink() {
         <ListRow to="/pro/profil/regles" right={<span className="text-[1rem] font-semibold">{t('{n} avant', { n: lead })}</span>}>
           <span className="text-[1rem] text-muted">{t("Délai minimum")}</span>
         </ListRow>
-        <ListRow to="/pro/reglages/rendez-vous" right={<span className="text-[1rem] font-semibold">{salon.autoConfirm ? t("Non") : t("Oui")}</span>}>
+        <ListRow to="/pro/profil/regles" right={<span className="text-[1rem] font-semibold">{salon.autoConfirm ? t("Non") : t("Oui")}</span>}>
           <span className="text-[1rem] text-muted">{t("Validation manuelle")}</span>
         </ListRow>
       </div>

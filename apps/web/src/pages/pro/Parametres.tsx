@@ -27,15 +27,13 @@ export function Parametres() {
         <SettingRow to="/pro/mon-salon" icon={Store} title={t('Mon salon')} sub={t('Nom, adresse, photos, spécialités')} />
         <SettingRow to="/pro/profil/horaires" icon={Clock} title={t("Horaires d'ouverture")} sub={t('Jours et heures où l’on peut réserver')} />
         <SettingRow to="/pro/blocages" icon={CalendarOff} title={t('Fermetures')} sub={t('Congés, jours fermés')} />
-        <SettingRow to="/pro/reglages/rendez-vous" icon={CalendarClock} title={t('Règles de réservation')} sub={t('Délais, annulation, validation')} />
+        <SettingRow to="/pro/profil/regles" icon={CalendarClock} title={t('Règles de réservation')} sub={t('Délais, annulation, validation')} />
       </div>
       <div className="lst">
-        <SettingRow
-          to="/pro/equipe"
-          icon={Users}
-          title={team ? t('Équipe') : t('Travailler à plusieurs')}
-          sub={team ? t('Membres, leurs horaires et prestations') : t('Ajoutez une personne qui travaille avec vous')}
-        />
+        {/* À plusieurs, « Équipe » est dans le menu « Plus » : une seule entrée. */}
+        {!team && (
+          <SettingRow to="/pro/equipe" icon={Users} title={t('Travailler à plusieurs')} sub={t('Ajoutez une personne qui travaille avec vous')} />
+        )}
         <SettingRow to="/pro/compte" icon={UserCircle} title={t('Mon compte')} sub={t('Identité, langue, notifications')} />
       </div>
     </Screen>

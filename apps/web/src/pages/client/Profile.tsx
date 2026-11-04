@@ -7,18 +7,14 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import {
-  Bell,
   Camera,
-  CalendarClock,
   ChevronRight,
-  Heart,
-  History,
   LogOut,
   Pencil,
   Settings,
   type LucideIcon,
 } from 'lucide-react';
-import { useMe, useMeStats, useUnreadNotifications, useUpdateProfile } from '@salondz/api-client';
+import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
 import { Avatar, Badge, Button, I } from '@/components/ui';
@@ -72,7 +68,6 @@ export function Profile() {
   const { seDeconnecter, enCours } = useSignOut();
   const me = useMe();
   const stats = useMeStats();
-  const nonLues = useUnreadNotifications();
   const updateProfile = useUpdateProfile();
   const avatarInput = useRef<HTMLInputElement | null>(null);
   const [cropAvatar, setCropAvatar] = useState<File | null>(null);
@@ -148,24 +143,8 @@ export function Profile() {
         />
       </div>
 
-      <span className="h3">{t("Mes rendez-vous")}</span>
-      <div className="crd !gap-0 !py-1">
-        <Row to="/rendez-vous" icon={CalendarClock} label={t("À venir")} sub={t("Vos prochains rendez-vous")} />
-        <Row to="/rendez-vous?scope=past" icon={History} label={t("Historique")} sub={t("Rendez-vous passés et annulés")} />
-        <Row to="/favoris" icon={Heart} label={t("Mes salons favoris")} right={stats.data ? String(stats.data.favorites) : undefined} />
-      </div>
-
       <span className="h3">{t("Mon compte")}</span>
       <div className="crd !gap-0 !py-1">
-        {/* La LISTE des notifications (le réglage, lui, est dans Réglages) : cette ligne envoyait sur
-            le réglage, et aucune autre ne menait à la liste — elle existait sans qu'on puisse l'ouvrir. */}
-        <Row
-          to="/notifications"
-          icon={Bell}
-          label={t("Notifications")}
-          sub={t("Rappels, confirmations, nouveautés")}
-          right={nonLues ? String(nonLues) : undefined}
-        />
         <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
       </div>
 

@@ -93,10 +93,8 @@ const ClientDetail = lazyNamed(() => import('@/pages/pro/ClientDetail'), 'Client
 const ProServices = lazyNamed(() => import('@/pages/pro/ProServices'), 'ProServices');
 const ProCategories = lazyNamed(() => import('@/pages/pro/ProCategories'), 'ProCategories');
 const ProReviews = lazyNamed(() => import('@/pages/pro/ProReviews'), 'ProReviews');
-const ProProfile = lazyNamed(() => import('@/pages/pro/ProProfile'), 'ProProfile');
 const Parametres = lazyNamed(() => import('@/pages/pro/Parametres'), 'Parametres');
 const MonSalon = lazyNamed(() => import('@/pages/pro/MonSalon'), 'MonSalon');
-const ProRules = lazyNamed(() => import('@/pages/pro/ProRules'), 'ProRules');
 const ProSpecialties = lazyNamed(() => import('@/pages/pro/ProSpecialties'), 'ProSpecialties');
 const ProAccount = lazyNamed(() => import('@/pages/pro/ProAccount'), 'ProAccount');
 const ProBookingDetail = lazyNamed(() => import('@/pages/pro/ProBookingDetail'), 'ProBookingDetail');
@@ -279,10 +277,10 @@ export const router = createBrowserRouter([
               { path: 'categories', element: <ProCategories /> },
               { path: 'avis', element: <ProReviews /> },
               { path: 'reservations', element: <Requests /> },
-              { path: 'profil', element: <ProProfile /> },
+              { path: 'profil', element: <Navigate to="/pro/parametres" replace /> },
               { path: 'parametres', element: <Parametres /> },
               { path: 'mon-salon', element: <MonSalon /> },
-              { path: 'reglages/rendez-vous', element: <ProRules /> },
+              { path: 'reglages/rendez-vous', element: <Navigate to="/pro/profil/regles" replace /> },
               { path: 'specialites', element: <ProSpecialties /> },
               { path: 'compte', element: <ProAccount /> },
               { path: 'compte/informations', element: <AccountInfo backTo="/pro/compte" /> },

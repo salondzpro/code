@@ -85,7 +85,7 @@ export function Team() {
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/profil" right="Profil" />
+      <TopBar backTo="/pro" />
       <h1 className="h1">{t("Équipe")}</h1>
       <ul className="crd !gap-0 !py-1">
         {salon.staff.map((m) => (

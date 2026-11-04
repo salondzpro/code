@@ -20,7 +20,7 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router';
 import { Bell, Plus, X } from 'lucide-react';
 import { useProPendingUnseenCount, useProSalon, useUnreadNotifications } from '@salondz/api-client';
-import { Avatar, I, Dim } from './ui';
+import { I, Dim } from './ui';
 import { ProNav } from './ProNav';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
@@ -94,16 +94,7 @@ export function ProHeader() {
             {t("Pro")}
           </span>
         </span>
-        <Link
-          to="/pro"
-          className="flex min-w-0 flex-1 items-center gap-2.5"
-          aria-label={salon ? `${salon.name} · accueil` : 'Accueil'}
-        >
-          {salon && <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={32} />}
-          <span className="truncate font-display text-[1.214rem] font-semibold tracking-[-0.3px]">
-            {salon?.name ?? 'Salon DZ'}
-          </span>
-        </Link>
+        <span className="flex-1" />
         {/* Cloche : la liste des notifications, avec le compte des non-lues. Rouge discret, chiffre
             exact, même règle que les autres pastilles — il baisse quand on LIT, pas quand on traite. */}
         <Link

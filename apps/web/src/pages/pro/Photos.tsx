@@ -75,7 +75,7 @@ export function ProPhotos() {
 
   return (
     <Screen gap={16}>
-      <TopBar backTo="/pro/profil" />
+      <TopBar backTo="/pro/mon-salon" />
       <h1 className="h1">{t("Photos du salon")}</h1>
       <SectionLabel>{t("Photo de profil")}</SectionLabel>
       <div className="crd !flex-row items-center gap-4">

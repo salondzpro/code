@@ -14,6 +14,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { ShieldCheck, Timer } from 'lucide-react';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
+import { RulesFacts } from '../ProRules';
 import { t } from '@/i18n';
 
 const GRANULARITY = [15, 30, 60];
@@ -60,7 +61,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
 
   if (!salon) return <PageLoading />;
   const staffCount = salon.staff.filter((s) => s.isActive).length;
-  const backTo = settings ? '/pro/reglages/rendez-vous' : stepPath(9);
+  const backTo = settings ? '/pro/parametres' : stepPath(9);
 
   const save = async () => {
     setError(null);
@@ -73,10 +74,9 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
         cancelMinHours: cancel,
         allowClientReschedule: report,
         depositRequired: deposit,
-        // En réglages, publication et validation manuelle se règlent sur Compte et Rendez-vous.
-        ...(settings ? {} : { autoConfirm: !manual }),
+        autoConfirm: !manual,
       });
-      navigate(settings ? '/pro/reglages/rendez-vous' : '/pro/onboarding/publier');
+      navigate(settings ? '/pro/parametres' : '/pro/onboarding/publier');
     } catch (err) {
       setError(errorText(err));
     }
@@ -111,14 +111,10 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
           <span className="text-[1rem] font-semibold">{t("Rendez-vous en même temps")}</span>
           <span className="text-[1rem] text-muted">{staffCount}</span>
         </Link>
-        {!settings && (
-          <>
-            <div className="li">
-              <span className="text-[1rem] font-semibold">{t("Je valide chaque demande")}</span>
-              <Toggle on={manual} onChange={setManual} label={t("Validation manuelle")} />
-            </div>
-          </>
-        )}
+        <div className="li">
+          <span className="text-[1rem] font-semibold">{t("Je valide chaque demande")}</span>
+          <Toggle on={manual} onChange={setManual} label={t("Validation manuelle")} />
+        </div>
       </div>
     </>
   );
@@ -155,10 +151,11 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   if (settings) {
     return (
       <Screen bottom={SHEET_PAD} gap={16}>
-        <StepBar step={10} backTo={backTo} right={t("Rendez-vous")} />
+        <StepBar step={10} backTo={backTo} />
         <h1 className="h1">{t("Créneaux et règles")}</h1>
         {slots}
         {rules}
+        {salon && <RulesFacts salon={salon} />}
         {alert}
         <StepSheet label={t('Enregistrer')} onClick={() => void save()} busy={updateSalon.isPending} />
       </Screen>

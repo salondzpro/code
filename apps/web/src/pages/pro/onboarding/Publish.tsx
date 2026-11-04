@@ -23,12 +23,12 @@ export function Publish() {
   const works = salon.photos.length + salon.services.reduce((a, s) => a + (s.photos?.length ?? 0), 0);
   const openDays = salon.openingHours.filter((h) => !h.isClosed).length;
   const items: { label: string; ok: boolean; hint?: string; to: string }[] = [
-    { label: t("Établissement et adresse"), ok: !!salon.name && !!salon.city, to: '/pro/profil' },
-    { label: t("Couverture et logo"), ok: !!salon.coverUrl && !!salon.logoUrl, hint: !salon.coverUrl ? 'Ajoutez une photo de couverture' : undefined, to: '/pro/profil' },
+    { label: t("Établissement et adresse"), ok: !!salon.name && !!salon.city, to: '/pro/mon-salon' },
+    { label: t("Couverture et logo"), ok: !!salon.coverUrl && !!salon.logoUrl, hint: !salon.coverUrl ? 'Ajoutez une photo de couverture' : undefined, to: '/pro/photos' },
     { label: `${salon.services.filter((s) => s.isActive).length} prestation${salon.services.length > 1 ? 's' : ''}${withPhotos ? ` avec photos` : ''}`, ok: salon.services.some((s) => s.isActive), hint: t("Au moins une prestation active"), to: '/pro/onboarding/6' },
     { label: `${works} réalisation${works > 1 ? 's' : ''}`, ok: works > 0, hint: t("Recommandé — améliore votre visibilité"), to: '/pro/onboarding/8' },
     { label: t("Horaires et disponibilités"), ok: openDays > 0, to: '/pro/onboarding/9' },
-    { label: t("Description du salon"), ok: !!salon.description, hint: t("Recommandé — améliore votre visibilité"), to: '/pro/profil' },
+    { label: t("Description du salon"), ok: !!salon.description, hint: t("Recommandé — améliore votre visibilité"), to: '/pro/mon-salon' },
   ];
 
   const done = items.filter((i) => i.ok).length;

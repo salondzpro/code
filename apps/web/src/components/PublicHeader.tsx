@@ -17,10 +17,10 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation } from 'react-router';
-import { Bell, CalendarClock, ChevronDown, Home, LogOut, Menu, Store, User, X } from 'lucide-react';
+import { Bell, CalendarClock, ChevronDown, Home, Menu, Store, User, X } from 'lucide-react';
 import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
 import { useMe, useUnreadNotifications } from '@salondz/api-client';
-import { useAuth, useSignOut } from '@/lib/auth';
+import { useAuth } from '@/lib/auth';
 import { guestMarket } from '@/lib/useClientMarket';
 import { I, Dim } from './ui';
 import { t } from '@/i18n';
@@ -40,7 +40,6 @@ export function PublicHeader() {
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
   const { session } = useAuth();
-  const { seDeconnecter, enCours } = useSignOut();
   const me = useMe(!!session);
   // Non lues : la cloche de l'en-tête est le seul accès visible à la liste des notifications du client.
   // Même requête que la ligne du profil — un seul chiffre, partout, sans compteur optimiste.
@@ -92,15 +91,6 @@ export function PublicHeader() {
             {t("Se connecter")}
           </Link>
         )}
-
-        <div className="flex flex-col">
-          {links.map((it) => (
-            <Link key={it.to} to={it.to} className="flex items-center gap-3 py-2.5">
-              <I icon={it.icon} size={20} className="flex-none text-muted" />
-              <span className="text-[1.143rem]">{it.label}</span>
-            </Link>
-          ))}
-        </div>
 
         {/* Chaque marché est une section qui s'ouvre et se ferme, titre en gras : côte à
             côte et à plat, les deux listes se lisaient comme une seule et on ne savait plus
@@ -154,18 +144,7 @@ export function PublicHeader() {
 
         {/* Dégagement sous le dernier élément : la barre d'onglets flotte à 78 px du bas. */}
         <div className="mt-auto flex flex-col pt-2" style={{ paddingBottom: '5.5rem' }}>
-          {session ? (
-            <button
-              type="button"
-              className="flex items-center gap-3 py-2.5 text-danger disabled:opacity-70"
-              disabled={enCours}
-              aria-busy={enCours || undefined}
-              onClick={() => void seDeconnecter(() => setOpen(false))}
-            >
-              {enCours ? <span className="btn-spin flex-none" aria-hidden /> : <I icon={LogOut} size={20} className="flex-none text-current" />}
-              <span className="text-[1.143rem]">{enCours ? t('Déconnexion…') : t('Se déconnecter')}</span>
-            </button>
-          ) : (
+          {!session && (
             <Link to="/pro" className="flex items-center gap-3 py-2.5">
               <I icon={Store} size={20} className="flex-none text-muted" />
               <span className="text-[1.143rem]">{t("Je suis professionnel")}</span>
@@ -235,13 +214,12 @@ export function PublicHeader() {
               )}
             </Link>
           )}
-          <Link
-            to={session ? '/profil' : `/connexion?next=${next}`}
-            className="hdr-b soft"
-            aria-label={session ? 'Mon profil' : 'Se connecter ou créer un compte'}
-          >
-            <I icon={User} size={20} className="text-current" />
-          </Link>
+          {/* Connecté, le profil est dans la barre du bas (ou la navigation de l'en-tête sur ordinateur). */}
+          {!session && (
+            <Link to={`/connexion?next=${next}`} className="hdr-b soft" aria-label={t('Se connecter ou créer un compte')}>
+              <I icon={User} size={20} className="text-current" />
+            </Link>
+          )}
         </span>
       </div>
       {open && createPortal(drawer, document.body)}

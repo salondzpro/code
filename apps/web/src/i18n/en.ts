@@ -1671,4 +1671,7 @@ export const en: Record<string, string> = {
   "En cours · fin à {h}": "In progress · ends at {h}",
   "Bonjour {name}, petit rappel de votre rendez-vous {day} à {time}{salon}.": "Hello {name}, a quick reminder of your appointment {day} at {time}{salon}.",
   "Connectez-vous pour valider votre créneau.": "Sign in to confirm your slot.",
+  "Créneau libre de {a} à {b}": "Free slot from {a} to {b}",
+  "Bloquer {r}": "Block {r}",
+  "Se connecter ou créer un compte": "Sign in or create an account",
 };

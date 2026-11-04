@@ -138,7 +138,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
         setOutside(r.outsideBookings);
         return;
       }
-      navigate(settings ? '/pro/profil' : stepPath(10));
+      navigate(settings ? '/pro/parametres' : stepPath(10));
     } catch (err) {
       setError(errorText(err));
     }
@@ -146,7 +146,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={9} backTo={settings ? '/pro/profil' : stepPath(8)} right={settings ? t('Horaires') : undefined} />
+      <StepBar step={9} backTo={settings ? '/pro/parametres' : stepPath(8)} right={settings ? t('Horaires') : undefined} />
       <StepTitle icon={settings ? undefined : Clock} sub={t('Touchez un jour pour le régler.')}>
         {t('Horaires')}
       </StepTitle>
@@ -158,7 +158,7 @@ export function Step9Hours({ settings }: { settings?: boolean }) {
         </p>
       )}
       <StepSheet label={settings ? t('Enregistrer') : t('Continuer')} onClick={() => void save()} disabled={invalid} busy={setHours.isPending} />
-      {outside && <HoursConflictSheet items={outside} onClose={() => navigate(settings ? '/pro/profil' : stepPath(10))} />}
+      {outside && <HoursConflictSheet items={outside} onClose={() => navigate(settings ? '/pro/parametres' : stepPath(10))} />}
     </Screen>
   );
 }

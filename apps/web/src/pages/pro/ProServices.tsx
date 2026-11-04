@@ -22,7 +22,7 @@ export function ProServices() {
   const groups = groupServices(salon.services);
   return (
     <Screen bottom={NAV_PAD} gap={16}>
-      <TopBar backTo="/pro/profil" right="Profil" />
+      <TopBar backTo="/pro" />
       <h1 className="h1">{t("Catalogue")}</h1>
       <button
         type="button"

@@ -221,8 +221,13 @@ export function ProBookingNew() {
       slots.length > 0 &&
       (isPastSlot(date, time) || !slots.some((x) => x.t === time)) &&
       firstFree
-    )
-      setTime(firstFree);
+    ) {
+      // L'heure visée n'est pas proposable : la plus proche, jamais le début de la journée.
+      const pool = slots.filter((x) => !x.taken);
+      const at = timeToMinutes(time);
+      const gap = (x: { t: string }) => Math.abs(timeToMinutes(x.t) - at);
+      setTime((pool.length ? pool : slots).reduce((a, b) => (gap(b) < gap(a) ? b : a)).t);
+    }
     else if (slots.length === 0 && isPastSlot(date, time)) setTime(ceilToStep(nowTimeDZ(), 5));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, slots.length, firstFree]);

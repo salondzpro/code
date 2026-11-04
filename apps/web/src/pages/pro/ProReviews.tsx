@@ -103,7 +103,7 @@ export function ProReviews() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <TopBar backTo="/pro/profil" right={t('Profil')} />
+      <TopBar backTo="/pro" />
       <h1 className="h1">{t('Avis')}</h1>
 
       {/* Vue d'ensemble (28 oct. 2026) : la note, et la part d'avis qui ont une réponse — c'est

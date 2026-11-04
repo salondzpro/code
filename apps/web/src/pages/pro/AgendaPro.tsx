@@ -375,6 +375,7 @@ export function AgendaPro() {
                     hours={dayHours(d)}
                     step={salon.slotIntervalMinutes || 15}
                     onOpen={setPeek}
+                    picked={freeSlot}
                     onGap={setFreeSlot}
                     onBlock={setBlocked}
                     onFree={(t, sid) =>
@@ -621,6 +622,7 @@ function DayColumns({
   hours,
   step,
   onOpen,
+  picked,
   onGap,
   onBlock,
   onFree,
@@ -635,6 +637,8 @@ function DayColumns({
   /** Pas des créneaux du salon : le tap sur un vide s'y aligne. */
   step: number;
   onOpen: (id: string) => void;
+  /** Créneau ouvert dans la fenêtre : son heure reste marquée dans la grille. */
+  picked: FreeSlot | null;
   onGap: (slot: FreeSlot) => void;
   onBlock: (slot: BlockedSlot) => void;
   onFree: (timeHM: string, staffId: string | null) => void;
@@ -722,6 +726,19 @@ function DayColumns({
     return gaps.filter((g) => g.e - g.s >= MIN_FREE_MINUTES);
   };
 
+  /**
+   * L'heure sous le doigt, sur la grille des créneaux du salon (comptée depuis l'ouverture, comme le
+   * formulaire de rendez-vous), sans sortir du créneau libre.
+   */
+  const snapIn = (g: { s: number; e: number }, offset: number) => {
+    const h = sortedHours.find((x) => timeToMinutes(x.opensAt) <= g.s && g.s < timeToMinutes(x.closesAt));
+    const base = h ? timeToMinutes(h.opensAt) : g.s;
+    const first = base + Math.ceil((g.s - base) / step) * step;
+    const last = base + Math.floor((g.e - step - base) / step) * step;
+    if (last < first) return g.s;
+    return Math.min(last, Math.max(first, base + Math.floor((g.s + offset - base) / step) * step));
+  };
+
   /** Tap sur un vide : l'heure sous le doigt, alignée au pas du salon, si elle est libre. */
   const tapFree = (e: MouseEvent<HTMLDivElement>, col: Column) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -752,29 +769,22 @@ function DayColumns({
         {columns.map((col) => (
           <div key={col.id ?? 'all'} className="agcol" onClick={(e) => tapFree(e, col)} role="presentation">
             {gapsOf(col).map((g) => (
-              <button
+              <FreeGap
                 key={`g-${g.s}`}
-                type="button"
-                className="ag9-f"
-                style={{ top: top(g.s), height: (g.e - g.s) * PX - GAP }}
-                aria-label={`${t('Créneau libre')} ${hm(g.s)} – ${hm(g.e)}`}
-                onClick={(ev) => {
-                  ev.stopPropagation();
-                  const y = ev.clientY - ev.currentTarget.getBoundingClientRect().top;
-                  const at = g.s + Math.floor(y / PX / step) * step;
-                  onGap({
-                    date,
-                    start: g.s,
-                    end: g.e,
-                    at: Math.max(g.s, Math.min(at, g.e - step)),
-                    staffId: col.id,
-                    staffName: col.id ? col.name : null,
-                  });
-                }}
-              >
-                <I icon={Plus} size={14} strokeWidth={2.4} />
-                {!narrow && <span>{t('Libre · {d}', { d: formatDuration(g.e - g.s) })}</span>}
-              </button>
+                top={top(g.s)}
+                height={(g.e - g.s) * PX - GAP}
+                start={g.s}
+                step={step}
+                label={narrow ? null : t('Libre · {d}', { d: formatDuration(g.e - g.s) })}
+                aria={`${t('Créneau libre')} ${hm(g.s)} – ${hm(g.e)}`}
+                snap={(offset) => snapIn(g, offset)}
+                picked={
+                  picked && picked.date === date && picked.staffId === col.id && picked.start === g.s ? picked.at : null
+                }
+                onPick={(at) =>
+                  onGap({ date, start: g.s, end: g.e, at, staffId: col.id, staffName: col.id ? col.name : null })
+                }
+              />
             ))}
             {closedIn(col).map((c) => {
               const style = { top: top(c.s), height: Math.max(22, (c.e - c.s) * PX - GAP) };
@@ -887,6 +897,69 @@ function DayColumns({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Créneau libre. L'heure visée s'affiche dès que le doigt se pose (et au survol de la souris), à
+ * l'endroit exact : on voit où le rendez-vous va se placer avant de lâcher.
+ */
+function FreeGap({
+  top,
+  height,
+  start,
+  step,
+  label,
+  aria,
+  snap,
+  picked,
+  onPick,
+}: {
+  top: number;
+  height: number;
+  start: number;
+  step: number;
+  label: string | null;
+  aria: string;
+  snap: (offsetMinutes: number) => number;
+  picked: number | null;
+  onPick: (at: number) => void;
+}) {
+  const [mark, setMark] = useState<number | null>(null);
+  const read = (e: { clientY: number; currentTarget: HTMLElement }) =>
+    snap((e.clientY - e.currentTarget.getBoundingClientRect().top) / PX);
+  const shown = mark ?? picked;
+  return (
+    <button
+      type="button"
+      className="ag9-f"
+      style={{ top, height }}
+      aria-label={aria}
+      onPointerDown={(e) => setMark(read(e))}
+      onPointerMove={(e) => {
+        if (e.pointerType === 'mouse') setMark(read(e));
+      }}
+      onPointerLeave={() => setMark(null)}
+      onPointerCancel={() => setMark(null)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setMark(null);
+        // Au clavier, le clic n'a pas de position : le début du créneau.
+        onPick(e.detail === 0 ? snap(0) : read(e));
+      }}
+    >
+      {shown === null && (
+        <>
+          <I icon={Plus} size={14} strokeWidth={2.4} />
+          {label && <span>{label}</span>}
+        </>
+      )}
+      {shown !== null && (
+        <span className="ag9-tap" style={{ top: (shown - start) * PX - 1.5, height: Math.max(22, step * PX) }} dir="ltr">
+          {hm(shown)}
+        </span>
+      )}
+    </button>
   );
 }
 

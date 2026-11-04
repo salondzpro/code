@@ -1655,4 +1655,7 @@ export const ar: Record<string, string> = {
   "En cours · fin à {h}": "جارٍ · ينتهي على الساعة {h}",
   "Bonjour {name}, petit rappel de votre rendez-vous {day} à {time}{salon}.": "مرحبا {name}، تذكير بموعدك {day} على الساعة {time}{salon}.",
   "Connectez-vous pour valider votre créneau.": "سجّلي الدخول لتأكيد موعدك.",
+  "Créneau libre de {a} à {b}": "موعد شاغر من {a} إلى {b}",
+  "Bloquer {r}": "غلق {r}",
+  "Se connecter ou créer un compte": "تسجيل الدخول أو إنشاء حساب",
 };

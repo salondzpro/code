@@ -7136,10 +7136,25 @@ html:has(.auth-onglets) body {
     color: var(--color-subtle);
     font: 600 12px Inter, sans-serif;
     cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
   }
+  .ag9-f:hover,
   .ag9-f:active {
-    transform: scale(0.97);
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-line);
+  }
+  /* Heure visée, à sa place dans le créneau libre. */
+  .ag9-tap {
+    position: absolute;
+    inset-inline: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-slot);
+    background: var(--color-accent);
+    color: #ffffff;
+    font: 600 12px Inter, sans-serif;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
   }
 
   /* Ligne de l'heure : derrière les blocs, sa pastille dans la gouttière. */

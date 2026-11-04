@@ -53,7 +53,7 @@ function dayLabel(date: string) {
   return t(DAY_LABELS_FR[dayOfWeekFromKey(date)]);
 }
 
-function SheetHead({ chip, title, sub, time }: { chip: string; title: string; sub: string; time: string }) {
+function SheetHead({ chip, title, sub, time }: { chip: string; title: string; sub: string; time?: string }) {
   return (
     <>
       <span className="ag9-sc off">{chip}</span>
@@ -62,9 +62,11 @@ function SheetHead({ chip, title, sub, time }: { chip: string; title: string; su
           <span className="ag9-st">{title}</span>
           <span className="ag9-sb">{sub}</span>
         </div>
-        <span className="ag9-stm" dir="ltr">
-          {time}
-        </span>
+        {time && (
+          <span className="ag9-stm" dir="ltr">
+            {time}
+          </span>
+        )}
       </div>
     </>
   );
@@ -141,9 +143,8 @@ export function FreeSlotSheet({
       <BottomSheet modal className="max-h-[88vh] overflow-y-auto">
         <SheetHead
           chip={t('Libre')}
-          title={t('Créneau libre')}
-          sub={t('{d} disponibles', { d: formatDuration(slot.end - slot.start) })}
-          time={time}
+          title={minutesToTime(slot.at)}
+          sub={t('Créneau libre de {a} à {b}', { a: minutesToTime(slot.start), b: minutesToTime(slot.end) })}
         />
         <WithRow name={slot.staffName} />
         <p className="ag9-sn">
@@ -152,14 +153,14 @@ export function FreeSlotSheet({
         <ErrorMessage error={create.error} />
         {saved && <p className="ag9-sn">{t('Image enregistrée')}</p>}
         <div className="flex flex-col gap-2">
-          <Button className="ag9-b" loading={sharing} onClick={() => void share()}>
-            {t('Partager en story Instagram')}
-          </Button>
-          <Button variant="soft" onClick={add}>
+          <Button className="ag9-b" onClick={add}>
             {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}
           </Button>
+          <Button variant="soft" loading={sharing} onClick={() => void share()}>
+            {t('Partager en story Instagram')}
+          </Button>
           <Button variant="soft" loading={create.isPending} onClick={() => void block()}>
-            {t('Bloquer ce créneau')}
+            {t('Bloquer {r}', { r: time })}
           </Button>
         </div>
       </BottomSheet>
