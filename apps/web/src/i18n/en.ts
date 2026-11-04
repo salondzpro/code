@@ -1692,4 +1692,7 @@ export const en: Record<string, string> = {
   "Client existant": "Existing client",
   "Nouveau client": "New client",
   "Créer « {q} »": "Create “{q}”",
+  "Voir dans l’agenda": "See in the calendar",
+  "Prévenir sur WhatsApp": "Notify on WhatsApp",
+  "Salam {first} 😊 Votre rendez-vous chez {salon} est bien noté : {day} à {time}.": "Salam {first} 😊 Your appointment at {salon} is booked: {day} at {time}.",
 };

@@ -7250,6 +7250,24 @@ html:has(.auth-onglets) body {
     }
   }
 
+  /* Rendez-vous court, sur une ligne : le texte ne doit pas être coupé en bas. */
+  .agenda .agb.tight.one {
+    justify-content: center;
+    padding-block: 2px;
+  }
+
+  /* Rendez-vous tout juste ajouté : trois battements vert clair, puis il redevient normal. */
+  .agenda .agb.flash {
+    animation: ag9-added 1s ease-in-out 3;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .agenda .agb.flash {
+      animation: none;
+      background: #d6f5e0;
+      color: var(--color-ink);
+    }
+  }
+
   /* Nouveau rendez-vous : client existant ou nouveau, deux grandes portes. */
   .nb-two {
     min-height: 80px;
@@ -7530,6 +7548,14 @@ html:has(.auth-onglets) body {
     justify-content: center;
     border-radius: 50%;
     background: var(--color-fill);
+    color: var(--color-ink);
+  }
+}
+
+@keyframes ag9-added {
+  50% {
+    background: #c9f2d7;
+    border-color: #2fa866;
     color: var(--color-ink);
   }
 }

@@ -498,9 +498,13 @@ try {
     await p.getByRole('option', { name: '15:00', exact: true }).click();
     await shot(p, 'pro-rdv-nouveau');
     await p.getByRole('button', { name: 'Enregistrer' }).click();
-    // Validation animée « Rendez-vous ajouté », puis fiche du rendez-vous.
+    // Validation « Rendez-vous ajouté », retour à l'agenda, puis fiche depuis la fenêtre du rendez-vous.
     await p.getByTestId('success-splash').getByText('Rendez-vous ajouté').waitFor();
     await shot(p, 'pro-rdv-ajoute');
+    await p.getByRole('button', { name: 'Voir dans l’agenda' }).click();
+    await p.waitForURL(/\/pro\/agenda$/);
+    await p.locator('.agb', { hasText: 'Walid P.' }).first().click();
+    await p.getByRole('button', { name: /Fiche complète/ }).click();
     await p.waitForURL(/\/pro\/rendez-vous\/[0-9a-f-]+$/);
     await p.getByRole('heading', { name: 'Walid P.' }).waitFor();
     await p.getByText('15:00 – 15:30').waitFor();

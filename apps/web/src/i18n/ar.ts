@@ -1676,4 +1676,7 @@ export const ar: Record<string, string> = {
   "Client existant": "زبون حالي",
   "Nouveau client": "زبون جديد",
   "Créer « {q} »": "إنشاء « {q} »",
+  "Voir dans l’agenda": "عرض في جدول المواعيد",
+  "Prévenir sur WhatsApp": "إعلام عبر واتساب",
+  "Salam {first} 😊 Votre rendez-vous chez {salon} est bien noté : {day} à {time}.": "سلام {first} 😊 تم تسجيل موعدك عند {salon}: {day} على الساعة {time}.",
 };

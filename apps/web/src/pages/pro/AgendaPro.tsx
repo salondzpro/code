@@ -33,6 +33,7 @@ import {
   minutesToTime,
 } from '@salondz/constants';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
+import { readAgendaMemory, saveAgendaMemory, takeAgendaFlash } from '@/lib/agendaMemory';
 import { BlockedSlotSheet, FreeSlotSheet, type BlockedSlot, type FreeSlot } from '@/components/FreeSlotSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
@@ -93,6 +94,8 @@ const PX = 60 / 60;
 const GAP = 4;
 /** Largeur de la gouttière des heures. */
 const GUTTER = '40px';
+/** Durée du clignotement d'un rendez-vous tout juste ajouté. */
+const FLASH_MS = 3000;
 /** Étendue de la frise des jours autour de son ancrage. */
 const STRIP_DAYS_BEFORE = 12 * 7;
 const STRIP_DAYS_AFTER = 26 * 7;
@@ -116,8 +119,11 @@ export function AgendaPro() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const today = toLocalDateKey();
-  const [view, setView] = useState<View>('day');
-  const [date, setDate] = useState(today);
+  // Retour depuis un formulaire : le jour, la vue et le défilement où l'on en était.
+  const [memo] = useState(readAgendaMemory);
+  const [added] = useState(takeAgendaFlash);
+  const [view, setView] = useState<View>(added && added.date === memo?.date ? 'day' : (memo?.view ?? 'day'));
+  const [date, setDate] = useState(memo?.date || today);
   const week = useMemo(() => weekKeys(date), [date]);
   const monthStart = `${date.slice(0, 7)}-01`;
   const monthGridStart = addDaysToKey(monthStart, -dayOfWeekFromKey(monthStart));
@@ -144,6 +150,44 @@ export function AgendaPro() {
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
   const [staffId, setStaffId] = useStaffFilter();
+  // Le rendez-vous ajouté clignote s'il est sur le jour affiché ; sinon, rien n'est à montrer.
+  const [flash, setFlash] = useState(added && added.date === date ? added.id : null);
+  useEffect(() => {
+    if (flash && added?.staffId && staffId && staffId !== added.staffId) setStaffId(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => saveAgendaMemory({ date, view }), [date, view]);
+  useEffect(() => {
+    const onScroll = () => saveAgendaMemory({ scrollY: window.scrollY });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  // Après `ScrollToTop`, qui passe après cet écran : d'où le délai.
+  const restored = useRef(false);
+  const ready = !!bookings.data;
+  useEffect(() => {
+    if (!ready || restored.current) return;
+    restored.current = true;
+    if (!memo?.scrollY || flash) return;
+    const y = memo.scrollY;
+    const timer = window.setTimeout(() => window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior }), 0);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+  const flashShown = !!flash && (bookings.data?.items ?? []).some((b) => b.id === flash);
+  useEffect(() => {
+    if (!flashShown) return;
+    const show = window.setTimeout(
+      () => document.querySelector(`[data-bk="${flash}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+      120,
+    );
+    const end = window.setTimeout(() => setFlash(null), FLASH_MS);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(end);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flashShown]);
   // Annulés masqués par défaut (planning réel) ; à la demande, ils apparaissent en pointillés avec qui a annulé.
   const [showCancelled, setShowCancelled] = useShowCancelled();
   const items = useMemo(
@@ -375,6 +419,8 @@ export function AgendaPro() {
                     hours={dayHours(d)}
                     step={salon.slotIntervalMinutes || 15}
                     onOpen={setPeek}
+                    followNow={!memo?.scrollY}
+                    flash={flash}
                     picked={freeSlot}
                     onGap={setFreeSlot}
                     onBlock={setBlocked}
@@ -622,6 +668,8 @@ function DayColumns({
   hours,
   step,
   onOpen,
+  followNow,
+  flash,
   picked,
   onGap,
   onBlock,
@@ -637,6 +685,10 @@ function DayColumns({
   /** Pas des créneaux du salon : le tap sur un vide s'y aligne. */
   step: number;
   onOpen: (id: string) => void;
+  /** Amener l'heure actuelle à l'écran ; faux quand on revient à une position gardée. */
+  followNow: boolean;
+  /** Rendez-vous tout juste ajouté. */
+  flash: string | null;
   /** Créneau ouvert dans la fenêtre : son heure reste marquée dans la grille. */
   picked: FreeSlot | null;
   onGap: (slot: FreeSlot) => void;
@@ -648,7 +700,7 @@ function DayColumns({
   // Aujourd'hui : on amène l'heure actuelle au centre de l'écran à l'ouverture (suivi de la journée en direct).
   const nowRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    if (!isToday) return;
+    if (!isToday || !followNow) return;
     // Seulement si la ligne est hors de vue : la date, la frise et les puces restent à l'écran.
     const t = window.setTimeout(() => {
       const line = nowRef.current;
@@ -862,7 +914,8 @@ function DayColumns({
                       ev.stopPropagation();
                       onOpen(b.id);
                     }}
-                    className={`agb ${st}${h < 60 ? ' tight' : ''}`}
+                    data-bk={b.id}
+                    className={`agb ${st}${h < 60 ? ' tight' : ''}${h < 32 ? ' one' : ''}${b.id === flash ? ' flash' : ''}`}
                     style={{ top: top(s), height: h }}
                     aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ` · ${t('À valider')}` : ''}`}
                   >

@@ -13,7 +13,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Check, Search, StickyNote, UserPlus } from 'lucide-react';
+import { Check, Search, StickyNote, UserPlus, MessageCircle } from 'lucide-react';
 import {
   ApiError,
   pagesItems,
@@ -56,6 +56,7 @@ import { PageLoading } from '@/components/PageLoading';
 import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
 import { SlotSuggestions } from '@/components/SlotSuggestions';
+import { flashInAgenda, saveAgendaMemory } from '@/lib/agendaMemory';
 import { t } from '@/i18n';
 
 /**
@@ -312,6 +313,7 @@ export function ProBookingNew() {
         notes: notes.trim() || undefined,
         source: 'walk_in',
       });
+      flashInAgenda(b.id, date, b.staffId ?? null);
       setDone(b);
     } catch (err) {
       // Créneau pris : les propositions s'affichent à sa place, une erreur en plus ne dirait rien de neuf.
@@ -336,6 +338,14 @@ export function ProBookingNew() {
     setFieldErr((f) => ({ ...f, services: undefined }));
   };
   const clientDone = name.trim().length >= 2;
+  const confirmation = `https://api.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${encodeURIComponent(
+    t('Salam {first} 😊 Votre rendez-vous chez {salon} est bien noté : {day} à {time}.', {
+      first: name.trim().split(' ')[0] ?? name,
+      salon: salon.name,
+      day: relativeDayLabelDZ(date).toLowerCase(),
+      time,
+    }),
+  )}`;
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
@@ -560,8 +570,25 @@ export function ProBookingNew() {
         <SuccessSplash
           title={t('Rendez-vous ajouté')}
           subtitle={`${name.trim()} · ${relativeDayLabelDZ(date)} · ${time}`}
-          onDone={() =>
-            navigate(done ? `/pro/rendez-vous/${done.id}` : '/pro/agenda', { replace: true })
+          actions={
+            <>
+              <Button
+                sm
+                auto
+                className="ag9-b"
+                onClick={() => {
+                  saveAgendaMemory({ date, view: 'day', scrollY: 0 });
+                  navigate('/pro/agenda', { replace: true });
+                }}
+              >
+                {t('Voir dans l’agenda')}
+              </Button>
+              {phone && (
+                <a href={confirmation} target="_blank" rel="noreferrer" className="btn soft sm auto">
+                  <I icon={MessageCircle} size={16} /> {t('Prévenir sur WhatsApp')}
+                </a>
+              )}
+            </>
           }
         />
       )}
