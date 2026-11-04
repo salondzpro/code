@@ -6437,6 +6437,10 @@ html:has(.auth-onglets) body {
   }
   .h11-pill {
     height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     border: 0;
     border-radius: 999px;
     font: 600 14px Inter, sans-serif;
@@ -6445,6 +6449,10 @@ html:has(.auth-onglets) body {
   .h11-pill.ig {
     background: var(--color-ink);
     color: #ffffff;
+  }
+  .h11-pill.snap {
+    background: #fffc00;
+    color: #16161a;
   }
   .h11-pill.wa {
     background: #e9f9ef;

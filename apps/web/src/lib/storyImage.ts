@@ -4,6 +4,8 @@
  * « Demain · créneaux libres », jusqu'à 4 heures en pastilles blanches, le lien de réservation et
  * le nom du salon. Partagée par la feuille du téléphone (Instagram, WhatsApp…), sinon téléchargée.
  */
+import { isNativeApp, shareFileNative } from './nativeFile';
+
 const W = 1080;
 const H = 1920;
 
@@ -84,16 +86,28 @@ export async function drawStory(o: {
   return new Promise((resolve) => c.toBlob((b) => resolve(b), 'image/png'));
 }
 
-/** Partage l'image par la feuille du téléphone ; sinon la télécharge. Rend `true` si partagée. */
-export async function shareImage(blob: Blob, name: string, text: string): Promise<boolean> {
+/**
+ * Partage l'image par la feuille du téléphone ; sinon la télécharge. Rend `true` si la feuille s'est
+ * ouverte. Pour une story, pas de `text` : un texte joint à l'image empêche Instagram de proposer les
+ * stories sur certains téléphones, et le lien est déjà dessiné sur l'image.
+ */
+export async function shareImage(blob: Blob, name: string, text?: string): Promise<boolean> {
+  if (await isNativeApp()) {
+    try {
+      return await shareFileNative(blob, name);
+    } catch {
+      // La personne a refermé la feuille : rien à signaler.
+      return true;
+    }
+  }
   const file = new File([blob], name, { type: 'image/png' });
   try {
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], text });
+      await navigator.share(text ? { files: [file], text } : { files: [file] });
       return true;
     }
   } catch {
-    return false;
+    return true;
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

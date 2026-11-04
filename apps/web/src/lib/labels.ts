@@ -545,20 +545,8 @@ export async function labelPng(canvas: HTMLCanvasElement): Promise<Blob> {
  * alors l'image en grand, à enregistrer d'un appui long.
  */
 export async function downloadLabel(blob: Blob, filename: string): Promise<'done' | 'fallback'> {
-  const { Capacitor } = await import('@capacitor/core');
-  if (Capacitor.isNativePlatform()) {
-    if (!Capacitor.isPluginAvailable('Filesystem')) return 'fallback';
-    const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
-    const data = await new Promise<string>((ok, ko) => {
-      const r = new FileReader();
-      r.onload = () => ok(String(r.result).split(',')[1] ?? '');
-      r.onerror = () => ko(r.error);
-      r.readAsDataURL(blob);
-    });
-    const saved = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
-    await Share.share({ title: filename, files: [saved.uri] });
-    return 'done';
-  }
+  const { isNativeApp, shareFileNative } = await import('./nativeFile');
+  if (await isNativeApp()) return (await shareFileNative(blob, filename)) ? 'done' : 'fallback';
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;

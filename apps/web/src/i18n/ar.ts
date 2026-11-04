@@ -1695,4 +1695,7 @@ export const ar: Record<string, string> = {
   "Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.": "ستظهر هنا المواعيد المؤكدة القادمة لهذا اليوم.",
   "Les rendez-vous confirmés pour demain apparaîtront ici.": "ستظهر هنا المواعيد المؤكدة ليوم غد.",
   "SMS": "رسالة نصية",
+  "Story Snapchat": "قصة سناب شات",
+  "Instagram": "إنستغرام",
+  "Snapchat": "سناب شات",
 };

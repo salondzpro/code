@@ -1711,4 +1711,7 @@ export const en: Record<string, string> = {
   "Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.": "Today's upcoming confirmed appointments will appear here.",
   "Les rendez-vous confirmés pour demain apparaîtront ici.": "Confirmed appointments for tomorrow will appear here.",
   "SMS": "SMS",
+  "Story Snapchat": "Snapchat story",
+  "Instagram": "Instagram",
+  "Snapchat": "Snapchat",
 };

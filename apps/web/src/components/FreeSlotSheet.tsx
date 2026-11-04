@@ -17,6 +17,7 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
+import { InstagramLogo, SnapchatLogo } from './BrandIcons';
 import { ErrorMessage } from './ErrorMessage';
 import { BottomSheet, Button, Dim } from './ui';
 import { formatDuration } from '@/lib/format';
@@ -111,9 +112,8 @@ export function FreeSlotSheet({
         link: link.short,
       });
       if (!blob) return;
-      const shared = await shareImage(blob, `salondz-creneau-${salon.slug}.png`, `${t('Réservez ici')} 👉 ${link.url}`);
       // Sans feuille de partage (ordinateur), l'image vient d'être téléchargée : on le dit.
-      if (!shared && !navigator.canShare) setSaved(true);
+      if (!(await shareImage(blob, `salondz-creneau-${salon.slug}.png`))) setSaved(true);
     } finally {
       setSharing(false);
     }
@@ -156,9 +156,14 @@ export function FreeSlotSheet({
           <Button className="ag9-b" onClick={add}>
             {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}
           </Button>
-          <Button variant="soft" loading={sharing} onClick={() => void share()}>
-            {t('Partager en story Instagram')}
-          </Button>
+          <div className="g2">
+            <Button variant="soft" loading={sharing} onClick={() => void share()}>
+              <InstagramLogo size={18} /> {t('Instagram')}
+            </Button>
+            <Button variant="soft" loading={sharing} onClick={() => void share()}>
+              <SnapchatLogo size={18} /> {t('Snapchat')}
+            </Button>
+          </div>
           <Button variant="soft" loading={create.isPending} onClick={() => void block()}>
             {t('Bloquer {r}', { r: time })}
           </Button>

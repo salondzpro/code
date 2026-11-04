@@ -42,6 +42,7 @@ import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { useStaffFilter } from '@/lib/proPrefs';
 import { drawStory, shareImage } from '@/lib/storyImage';
+import { InstagramLogo, SnapchatLogo } from '@/components/BrandIcons';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
 
@@ -429,7 +430,7 @@ export function ProHome() {
       ? t('Demain')
       : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', timeZone: 'UTC' }).format(new Date(`${storySlots.date}T12:00:00Z`));
   const [storyBusy, setStoryBusy] = useState(false);
-  const shareStory = async () => {
+  const shareStory = async (text?: string) => {
     if (!salon || !storySlots?.times.length) return;
     setStoryBusy(true);
     try {
@@ -442,7 +443,7 @@ export function ProHome() {
         link: link.short,
       });
       if (blob) {
-        const shared = await shareImage(blob, `salondz-creneaux-${salon.slug}.png`, `${t('Réservez ici')} 👉 ${link.url}`);
+        const shared = await shareImage(blob, `salondz-creneaux-${salon.slug}.png`, text);
         if (!shared) setToast({ text: t('Image enregistrée'), kind: 'ok' });
       }
     } finally {
@@ -471,9 +472,17 @@ export function ProHome() {
         <span className="h11-story-d">{t('Générée d’après votre agenda, avec votre lien de réservation.')}</span>
         <div className="flex-1" />
         <button type="button" className="h11-pill ig" disabled={storyBusy || !storySlots?.times.length} onClick={() => void shareStory()}>
-          {t('Story Instagram')}
+          <InstagramLogo size={18} /> {t('Story Instagram')}
         </button>
-        <button type="button" className="h11-pill wa" disabled={storyBusy || !storySlots?.times.length} onClick={() => void shareStory()}>
+        <button type="button" className="h11-pill snap" disabled={storyBusy || !storySlots?.times.length} onClick={() => void shareStory()}>
+          <SnapchatLogo size={18} /> {t('Story Snapchat')}
+        </button>
+        <button
+          type="button"
+          className="h11-pill wa"
+          disabled={storyBusy || !storySlots?.times.length}
+          onClick={() => void shareStory(`${t('Réservez ici')} 👉 ${link.url}`)}
+        >
           {t('Statut WhatsApp')}
         </button>
       </div>
