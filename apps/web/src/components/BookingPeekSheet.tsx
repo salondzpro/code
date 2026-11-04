@@ -12,24 +12,11 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { AlarmClock, ArrowRight, CheckCircle2, MessageCircle, Phone, UserX } from 'lucide-react';
+import { useMarkBookingSeen, useMe, useProBooking, useProBookingMutations, useProSalon } from '@salondz/api-client';
 import {
-  AlarmClock,
-  ArrowRight,
-  Check,
-  CheckCircle2,
-  MessageCircle,
-  Phone,
-  Scissors,
-  StickyNote,
-  UserRound,
-  UserX,
-  XCircle,
-} from 'lucide-react';
-import { useMarkBookingSeen, useProBooking, useProBookingMutations } from '@salondz/api-client';
-import {
+  addDaysToKey,
   formatDA,
-  formatDateLongDZ,
-  formatDZPhone,
   formatTimeDZ,
   isLate,
   LATE_TOLERANCE_MINUTES,
@@ -40,14 +27,18 @@ import {
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { ErrorMessage } from './ErrorMessage';
-import { FactRow } from './BookingFacts';
 import { PickerField } from './Picker';
-import { Avatar, BottomSheet, Button, I, Skeleton, StatusBadge, Dim } from './ui';
+import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { t } from '@/i18n';
+
+/** Délai proposé pour la prochaine visite d'une cliente dont le rendez-vous est terminé. */
+const REBOOK_DAYS = 21;
 
 export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const navigate = useNavigate();
   const booking = useProBooking(id);
+  const salon = useProSalon().data?.salon ?? null;
+  const meId = useMe().data?.profile?.id;
   const { setStatus, cancel } = useProBookingMutations();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState('');
@@ -85,19 +76,46 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
   const confirmable = b?.status === 'pending' && !past;
   const closable = b?.status === 'confirmed' && past;
   const late = !!b && active && isLate(b.startsAt);
-  const lines = b?.items?.length
-    ? b.items
-    : b
-      ? [
-          {
-            id: b.id,
-            serviceName: b.serviceName,
-            durationMinutes: b.durationMinutes,
-            priceDa: b.priceDa,
-          },
-        ]
-      : [];
-  const wa = b?.clientPhone ? `https://wa.me/${b.clientPhone.replace(/\D/g, '')}` : null;
+  const running = !!b && b.status === 'confirmed' && past && new Date(b.endsAt).getTime() > Date.now();
+  const team = (salon?.staff ?? []).filter((m) => m.isActive).length;
+  const mine = !!meId && salon?.staff.find((m) => m.id === b?.staffId)?.userId === meId;
+  const phone = b?.clientPhone?.replace(/\D/g, '');
+  const wa = phone ? `https://wa.me/${phone}` : null;
+  const reminder =
+    wa && b
+      ? `${wa}?text=${encodeURIComponent(
+          t('Bonjour {name}, petit rappel de votre rendez-vous {day} à {time}{salon}.', {
+            name: b.clientName,
+            day: relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt))).toLowerCase(),
+            time: formatTimeDZ(b.startsAt),
+            salon: salon ? ` · ${salon.name}` : '',
+          }),
+        )}`
+      : null;
+  // L'état se lit d'un coup d'œil, avec les mêmes formes que dans l'agenda.
+  const chip = !b
+    ? null
+    : b.status === 'pending'
+      ? { text: t('À valider'), cls: 'pd' }
+      : running
+        ? { text: t('En cours · fin à {h}', { h: formatTimeDZ(b.endsAt) }), cls: 'cur' }
+        : b.status === 'confirmed'
+          ? { text: t('Confirmé'), cls: '' }
+          : b.status === 'completed'
+            ? { text: t('Terminé'), cls: '' }
+            : b.status === 'no_show'
+              ? { text: t('Absent'), cls: 'no' }
+              : { text: cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind), cls: 'no' };
+  const rebook = () => {
+    if (!b) return;
+    const q = new URLSearchParams({
+      date: addDaysToKey(toLocalDateKey(new Date(b.startsAt)), REBOOK_DAYS),
+      time: formatTimeDZ(b.startsAt),
+      name: b.clientName,
+    });
+    if (b.clientPhone) q.set('phone', b.clientPhone);
+    navigate(`/pro/rendez-vous/nouveau?${q}`);
+  };
 
   return (
     <>
@@ -109,145 +127,130 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
         )}
         {b && (
           <>
-            {/* L'essentiel d'abord : quand, combien, dans quel état. */}
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <span className="block text-[0.857rem] font-semibold uppercase tracking-[0.08em] text-muted">
-                  {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
-                </span>
-                <span className="mono block text-[2.286rem] font-semibold leading-none tracking-[-1px]">
-                  {formatTimeDZ(b.startsAt)}
-                  <span className="text-[1.143rem] font-normal text-muted">
-                    {' '}
-                    – {formatTimeDZ(b.endsAt)}
-                  </span>
-                </span>
-              </div>
-              <div className="flex flex-none flex-col items-end gap-1.5">
-                <StatusBadge status={b.status} cancelledBy={b.cancelledBy} lg />
-                <span className="text-[1.429rem] font-semibold leading-none">
-                  {formatDA(b.priceDa)}
-                </span>
-              </div>
-            </div>
-            <span className="text-[0.857rem] text-muted">
-              {formatDateLongDZ(b.startsAt)} · {formatDuration(b.durationMinutes)}
-              {b.staff ? ` · ${b.staff.displayName}` : ''}
-            </span>
-
-            {/* Qui, et comment le joindre : côté salon, le numéro reste visible. */}
-            <div className="crd !gap-2.5">
-              <div className="flex items-center gap-3">
-                <Avatar name={b.clientName} size={40} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[1.143rem] font-semibold">
-                    {b.clientName}
-                  </span>
-                  {b.clientPhone && (
-                    <span className="mono block text-[0.857rem] text-muted">
-                      {formatDZPhone(b.clientPhone)}
-                    </span>
-                  )}
-                  {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
-                  {!!b.bookedByName && (
-                    <span className="block truncate text-[0.857rem] text-muted">
-                      {t("Réservé par")}{' '}{b.bookedByName}
-                    </span>
-                  )}
-                </span>
-              </div>
+            {/* L'état et les contacts, puis qui, quoi, quand. */}
+            <div className="ag9-sl">
+              {chip && <span className={`ag9-sc ${chip.cls}`}>{chip.text}</span>}
               {b.clientPhone && (
-                <div className="g2">
-                  <a href={`tel:${b.clientPhone}`} className="btn g sm">
-                    <I icon={Phone} size={16} /> {t("Appeler")}
-                  </a>
-                  {wa && (
-                    <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-                      <I icon={MessageCircle} size={16} /> {t("WhatsApp")}
-                    </a>
-                  )}
-                </div>
+                <a href={`tel:${b.clientPhone}`} className="ag9-si" aria-label={t('Appeler')}>
+                  <I icon={Phone} size={16} />
+                </a>
+              )}
+              {wa && (
+                <a href={wa} target="_blank" rel="noreferrer" className="ag9-si" aria-label={t('WhatsApp')}>
+                  <I icon={MessageCircle} size={16} />
+                </a>
               )}
             </div>
-
-            <div className="crd !gap-0 !py-1">
-              {lines.map((it) => (
-                <FactRow
-                  key={it.id}
-                  icon={Scissors}
-                  title={it.serviceName}
-                  sub={lines.length > 1 ? formatDuration(it.durationMinutes) : undefined}
-                  right={
-                    lines.length > 1 ? (
-                      <span className="text-[1rem] font-semibold">{formatDA(it.priceDa)}</span>
-                    ) : undefined
-                  }
-                />
-              ))}
-              {b.staff && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
-              {b.notes && <FactRow icon={StickyNote} title={t("Note du client")} sub={`« ${b.notes} »`} />}
-              {b.cancellationReason && (
-                <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
-              )}
+            <div className="ag9-sh">
+              <div className="min-w-0">
+                <span className="ag9-st">{b.clientName}</span>
+                <span className="ag9-sb">
+                  {b.serviceName} · {formatDuration(b.durationMinutes)}
+                </span>
+              </div>
+              <span className="ag9-stm" dir="ltr">
+                {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
+              </span>
             </div>
+            <div className="ag9-sr">
+              {b.staff && team > 1 ? (
+                <>
+                  <span className="text-subtle">{t('Avec')}</span>
+                  <b>{mine ? t('Vous') : b.staff.displayName}</b>
+                </>
+              ) : (
+                <b>{relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}</b>
+              )}
+              <span className="font-semibold" dir="ltr">
+                {formatDA(b.priceDa)}
+              </span>
+            </div>
+            {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
+            {!!b.bookedByName && (
+              <p className="ag9-sn">
+                {t('Réservé par')} {b.bookedByName}
+              </p>
+            )}
+            {b.notes && <p className="ag9-sn">« {b.notes} »</p>}
+            {b.cancellationReason && <p className="ag9-sn">{b.cancellationReason}</p>}
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 
-            {/* Décisions, dans l'ordre où elles se présentent réellement. */}
-            {confirmable && (
-              <Button
-                variant="ok"
-                disabled={setStatus.isPending}
-                onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}
-              >
-                <I icon={Check} size={18} /> {t("Confirmer le rendez-vous")}
-              </Button>
-            )}
-            {closable && (
-              <div className="g2">
-                <Button
-                  disabled={setStatus.isPending}
-                  onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}
-                >
-                  <I icon={CheckCircle2} size={18} /> {t("Terminé")}
-                </Button>
-                <Button
-                  variant="d"
-                  disabled={setStatus.isPending}
-                  onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}
-                >
-                  <I icon={UserX} size={18} /> {t("Absent")}
-                </Button>
-              </div>
-            )}
-            {late && (
-              <Button
-                variant="d"
-                disabled={cancel.isPending}
-                onClick={() =>
-                  void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))
-                }
-              >
-                <I icon={AlarmClock} size={18} /> {t("Annuler pour retard (plus de")}{' '}
-                {LATE_TOLERANCE_MINUTES} {t("min)")}
-              </Button>
-            )}
-            {active && !past && !cancelling && (
-              <div className="g2">
-                <Button
-                  variant="g"
-                  onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}
-                >
-                  {t("Reporter")}
-                </Button>
-                <Button variant="d" onClick={() => setCancelling(true)}>
-                  {t("Annuler")}
-                </Button>
+            {/* Une action principale selon l'état, les autres en dessous. */}
+            {!cancelling && (
+              <div className="flex flex-col gap-2">
+                {confirmable && (
+                  <Button
+                    className="ag9-a"
+                    loading={setStatus.isPending}
+                    onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}
+                  >
+                    {t('Accepter')}
+                  </Button>
+                )}
+                {confirmable && team > 1 && (
+                  <Button variant="soft" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                    {t('Confier à une autre personne')}
+                  </Button>
+                )}
+                {confirmable && (
+                  <Button variant="d" onClick={() => setCancelling(true)}>
+                    {t('Refuser')}
+                  </Button>
+                )}
+                {closable && (
+                  <>
+                    <Button
+                      className="ag9-b"
+                      disabled={setStatus.isPending}
+                      onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}
+                    >
+                      <I icon={CheckCircle2} size={18} /> {t('Terminé')}
+                    </Button>
+                    <Button
+                      variant="d"
+                      disabled={setStatus.isPending}
+                      onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}
+                    >
+                      <I icon={UserX} size={18} /> {t('Absent')}
+                    </Button>
+                  </>
+                )}
+                {late && (
+                  <Button
+                    variant="d"
+                    disabled={cancel.isPending}
+                    onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}
+                  >
+                    <I icon={AlarmClock} size={18} /> {t('Annuler pour retard (plus de')}{' '}
+                    {LATE_TOLERANCE_MINUTES} {t('min)')}
+                  </Button>
+                )}
+                {b.status === 'confirmed' && !past && (
+                  <>
+                    {reminder && (
+                      <a href={reminder} target="_blank" rel="noreferrer" className="btn ag9-b">
+                        {t('Rappel WhatsApp')}
+                      </a>
+                    )}
+                    <Button variant="soft" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                      {t('Reporter')}
+                    </Button>
+                    <Button variant="d" onClick={() => setCancelling(true)}>
+                      {t('Annuler le rendez-vous')}
+                    </Button>
+                  </>
+                )}
+                {b.status === 'completed' && (
+                  <Button className="ag9-b" onClick={rebook}>{t('Reprendre rendez-vous dans 3 semaines')}</Button>
+                )}
               </div>
             )}
             {cancelling && (
               <div className="crd !gap-2.5 !border-danger-line">
-                <span className="text-[1rem] font-semibold">{t("Annuler ce rendez-vous ?")}</span>
+                <span className="text-[1rem] font-semibold">
+                  {b.status === 'pending' ? t('Refuser cette demande ?') : t('Annuler ce rendez-vous ?')}
+                </span>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
                   <PickerField
@@ -268,7 +271,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                       void act(cancel.mutateAsync({ id: b.id, reason: reason || undefined }))
                     }
                   >
-                    {t("Annuler le rendez-vous")}
+                    {b.status === 'pending' ? t('Refuser') : t('Annuler le rendez-vous')}
                   </Button>
                   <Button variant="g" onClick={() => setCancelling(false)}>
                     {t("Garder")}

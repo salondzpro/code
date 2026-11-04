@@ -48,7 +48,7 @@ export function I({
 }
 
 // ---------- Boutons ----------
-type Variant = 'ink' | 'g' | 'd' | 'ok' | 'off';
+type Variant = 'ink' | 'g' | 'd' | 'ok' | 'off' | 'soft';
 export function Button({
   variant = 'ink',
   sm,

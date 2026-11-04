@@ -16,6 +16,7 @@ import {
   useProSalon,
   useProUnseenBookings,
   useSeenOnDisplay,
+  useMe,
 } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
@@ -32,6 +33,7 @@ import {
   minutesToTime,
 } from '@salondz/constants';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
+import { BlockedSlotSheet, FreeSlotSheet, type BlockedSlot, type FreeSlot } from '@/components/FreeSlotSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
@@ -84,10 +86,14 @@ const DOT: Record<string, string> = {
   lasr: '#d88c52',
 };
 
-/** Hauteur d'une heure : 72 px, pour qu'un rendez-vous de 15 min reste un bloc lisible (18 px). */
-const PX = 72 / 60;
+/** Hauteur d'une heure : 60 px (maquette 9), une journée de travail tient sur un écran de téléphone. */
+const PX = 60 / 60;
+/** Espace entre deux blocs qui se suivent. */
+const GAP = 4;
 /** Largeur de la gouttière des heures. */
-const GUTTER = '2.75rem';
+const GUTTER = '40px';
+/** En dessous, un trou n'accueille aucune prestation utile : il n'est pas proposé comme créneau. */
+const MIN_FREE_MINUTES = 30;
 
 const localKey = (iso: string) => toLocalDateKey(new Date(iso));
 const localMinutes = (iso: string) => timeToMinutes(formatTimeDZ(iso));
@@ -126,6 +132,9 @@ export function AgendaPro() {
   const loadError = bookings.isError ? bookings : blocks.isError ? blocks : null;
   // Un rendez-vous s'ouvre en fenêtre : l'agenda reste derrière, à sa date et sa position.
   const [peek, setPeek] = useState<string | null>(null);
+  const [freeSlot, setFreeSlot] = useState<FreeSlot | null>(null);
+  const [blocked, setBlocked] = useState<BlockedSlot | null>(null);
+  const meId = useMe().data?.profile?.id;
 
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
@@ -180,12 +189,14 @@ export function AgendaPro() {
    */
   const team = [...salon.staff.filter((m) => m.isActive)].sort((a, b) => a.sortOrder - b.sortOrder);
   const picked = team.find((m) => m.id === staffId) ?? null;
+  const nameOf = (m: { userId: string | null; displayName: string }) =>
+    m.userId && m.userId === meId ? t('Vous') : m.displayName;
   const columns: Column[] =
     team.length < 2
       ? [{ id: null, name: salon.name, avatarUrl: null }]
       : (picked ? [picked] : team).map((m) => ({
           id: m.id,
-          name: m.displayName,
+          name: nameOf(m),
           avatarUrl: m.avatarUrl,
         }));
 
@@ -229,7 +240,7 @@ export function AgendaPro() {
                 ? t("Aujourd'hui")
                 : date === addDaysToKey(today, 1)
                   ? t('Demain')
-                  : t(DAY_LABELS_FR[dayOfWeekFromKey(date)])
+                  : null
               : sub}
             {date !== today && (
               <button type="button" className="ag9-today" onClick={() => setDate(today)}>
@@ -293,7 +304,7 @@ export function AgendaPro() {
               {team.map((m) => (
                 <button key={m.id} type="button" className={`ag9-mp${staffId === m.id ? ' on' : ''}`} aria-pressed={staffId === m.id} onClick={() => setStaffId(staffId === m.id ? null : m.id)}>
                   <Avatar src={m.avatarUrl} name={m.displayName} size={32} />
-                  {m.displayName}
+                  {nameOf(m)}
                   <em>
                     {(bookings.data?.items ?? []).filter((b) => b.staffId === m.id && b.status !== 'cancelled' && localKey(b.startsAt) === date).length}
                   </em>
@@ -316,22 +327,22 @@ export function AgendaPro() {
               const all = (byDay.get(d) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
               const live = all.filter((b) => b.status !== 'cancelled');
               const cancelled = all.filter((b) => b.status === 'cancelled');
-              const revenue = live
-                .filter((b) => b.status !== 'no_show')
-                .reduce((a, b) => a + b.priceDa, 0);
-              const pending = live.filter((b) => b.status === 'pending').length;
-              const dayBlk = (blocks.data?.items ?? []).filter((t) => localKey(t.startsAt) === d);
+              // Un blocage de plusieurs jours compte sur chacun d'eux : le créneau n'y est pas libre.
+              const dayBlk = (blocks.data?.items ?? []).filter(
+                (x) => localKey(x.startsAt) <= d && localKey(x.endsAt) >= d,
+              );
+              const nCancelled = showCancelled ? cancelled.length : cancelledOn(d);
               return (
                 <div className="flex flex-col gap-2.5">
                   {/* Maquette 9 : plus de rangée de chiffres au-dessus du planning ; seule la pastille des
                       annulations reste, quand il y en a. */}
-                  <div className="ags">
-                    {(showCancelled ? cancelled.length : cancelledOn(d)) > 0 && (
+                  {nCancelled > 0 && (
+                    <div className="ags">
                       <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
-                        {t('{n} annulé(s)', { n: showCancelled ? cancelled.length : cancelledOn(d) })}
+                        {t('{n} annulé(s)', { n: nCancelled })}
                       </Pill>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <DayColumns
                     date={d}
                     columns={columns}
@@ -340,8 +351,9 @@ export function AgendaPro() {
                     blocks={dayBlk}
                     hours={dayHours(d)}
                     step={salon.slotIntervalMinutes || 15}
-                    toneOf={toneOf}
                     onOpen={setPeek}
+                    onGap={setFreeSlot}
+                    onBlock={setBlocked}
                     onFree={(t, sid) =>
                       navigate(
                         `/pro/rendez-vous/nouveau?date=${d}&time=${t}${sid ? `&staff=${sid}` : ''}`,
@@ -409,6 +421,8 @@ export function AgendaPro() {
         />
       )}
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
+      {freeSlot && <FreeSlotSheet slot={freeSlot} salon={salon} onClose={() => setFreeSlot(null)} />}
+      {blocked && <BlockedSlotSheet slot={blocked} onClose={() => setBlocked(null)} />}
       {/* « + » nouveau rendez-vous (maquette 9) : sur téléphone, il n'y a plus d'en-tête qui le portait. */}
       <Link to="/pro/rendez-vous/nouveau" className="fab fab-ag lg:!hidden" aria-label={t('Nouveau rendez-vous')}>
         <I icon={Plus} size={26} strokeWidth={2.4} />
@@ -446,25 +460,22 @@ function StaffColumnsHead({
   onAll: () => void;
 }) {
   return (
-    <div className="sticky z-20 bleed bg-bg" style={{ top: 'var(--hdr-h)' }}>
-      <div className="flex items-stretch border-b border-line">
-        <div className="flex-none" style={{ width: GUTTER }} />
-        {columns.map((c) => (
-          <button
-            key={c.id ?? 'all'}
-            type="button"
-            aria-pressed={picked === c.id}
-            onClick={() => c.id && onPick(c.id)}
-            className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 py-1.5 ${picked ? '' : 'flex-col gap-1'}`}
-            title={c.name}
-          >
-            <Avatar src={c.avatarUrl} name={c.name} size={picked ? 24 : 28} />
-            <span className="max-w-full truncate text-[0.857rem] font-semibold">
-              {picked ? c.name : c.name.split(' ')[0]}
-            </span>
-          </button>
-        ))}
-      </div>
+    <div className="ag9-ch" style={{ top: 'var(--hdr-h)', paddingInlineStart: GUTTER }}>
+      {columns.map((c) => (
+        <button
+          key={c.id ?? 'all'}
+          type="button"
+          aria-pressed={picked === c.id}
+          onClick={() => {
+            if (picked === c.id) onAll();
+            else if (c.id) onPick(c.id);
+          }}
+          title={c.name}
+        >
+          <Avatar src={c.avatarUrl} name={c.name} size={22} />
+          <span className="truncate">{c.name.split(' ')[0]}</span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -533,8 +544,9 @@ function DayColumns({
   blocks,
   hours,
   step,
-  toneOf,
   onOpen,
+  onGap,
+  onBlock,
   onFree,
 }: {
   date: string;
@@ -542,12 +554,13 @@ function DayColumns({
   items: BookingWithStaff[];
   /** Rendez-vous annulés du jour (pointillés, avec qui a annulé). */
   cancelled?: BookingWithStaff[];
-  blocks: { startsAt: string; endsAt: string; reason: string | null; staffId?: string | null }[];
+  blocks: { id: string; startsAt: string; endsAt: string; reason: string | null; staffId?: string | null }[];
   hours: { opensAt: string; closesAt: string }[];
   /** Pas des créneaux du salon : le tap sur un vide s'y aligne. */
   step: number;
-  toneOf: (b: BookingWithStaff) => string;
   onOpen: (id: string) => void;
+  onGap: (slot: FreeSlot) => void;
+  onBlock: (slot: BlockedSlot) => void;
   onFree: (timeHM: string, staffId: string | null) => void;
 }) {
   const isToday = date === toLocalDateKey();
@@ -556,10 +569,13 @@ function DayColumns({
   const nowRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!isToday) return;
-    const t = window.setTimeout(
-      () => nowRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
-      150,
-    );
+    // Seulement si la ligne est hors de vue : la date, la frise et les puces restent à l'écran.
+    const t = window.setTimeout(() => {
+      const line = nowRef.current;
+      if (!line) return;
+      const y = line.getBoundingClientRect().top;
+      if (y < 0 || y > window.innerHeight - 170) line.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 150);
     return () => window.clearTimeout(t);
   }, [isToday, date]);
 
@@ -577,12 +593,9 @@ function DayColumns({
   const height = (endMin - startMin) * PX + 16;
   const hourMarks: number[] = [];
   for (let m = Math.ceil(startMin / 60) * 60; m <= endMin; m += 60) hourMarks.push(m);
-  const halfMarks: number[] = [];
-  for (let m = Math.ceil(startMin / 30) * 30; m <= endMin; m += 30)
-    if (m % 60 !== 0) halfMarks.push(m);
 
   // Plages fermées : pauses (toutes colonnes) et blocages (tout le salon, ou un seul membre).
-  const closed: { s: number; e: number; label: string; staffId: string | null }[] = [];
+  const closed: { s: number; e: number; label: string; staffId: string | null; blockId?: string }[] = [];
   const sortedHours = [...hours].sort((a, b) => a.opensAt.localeCompare(b.opensAt));
   for (let i = 1; i < sortedHours.length; i++)
     closed.push({
@@ -591,13 +604,11 @@ function DayColumns({
       label: t("Pause"),
       staffId: null,
     });
-  for (const t of blocks)
-    closed.push({
-      s: Math.max(startMin, localMinutes(t.startsAt)),
-      e: Math.min(endMin, localMinutes(t.endsAt)),
-      label: t.reason ?? 'Blocage',
-      staffId: t.staffId ?? null,
-    });
+  for (const bk of blocks) {
+    const s = localKey(bk.startsAt) < date ? startMin : Math.max(startMin, localMinutes(bk.startsAt));
+    const e = localKey(bk.endsAt) > date ? endMin : Math.min(endMin, localMinutes(bk.endsAt));
+    if (e > s) closed.push({ s, e, label: bk.reason ?? t('Bloqué'), staffId: bk.staffId ?? null, blockId: bk.id });
+  }
   const narrow = columns.length > 1;
   /** État lu par la FORME (maquette 9) : en cours plein, confirmé en contour, demande en pointillé, passé en gris. */
   const state = (b: BookingWithStaff) => {
@@ -608,6 +619,32 @@ function DayColumns({
     return 's-cf';
   };
   const inCol = (col: Column, staffId: string | null) => col.id === null || col.id === staffId;
+  const closedIn = (col: Column) => closed.filter((c) => c.staffId === null || inCol(col, c.staffId));
+
+  /** Créneaux libres d'une colonne : les horaires, moins le passé, les rendez-vous et les fermetures. */
+  const gapsOf = (col: Column) => {
+    if (date < toLocalDateKey()) return [];
+    const from = isToday ? Math.ceil(now / step) * step : 0;
+    const taken = [
+      ...items
+        .filter((b) => inCol(col, b.staffId))
+        .map((b) => ({ s: localMinutes(b.startsAt), e: localMinutes(b.endsAt) })),
+      ...closedIn(col),
+    ].sort((a, b) => a.s - b.s);
+    const gaps: { s: number; e: number }[] = [];
+    for (const h of sortedHours) {
+      const end = timeToMinutes(h.closesAt);
+      let cur = Math.max(timeToMinutes(h.opensAt), from);
+      for (const b of taken) {
+        if (b.e <= cur) continue;
+        if (b.s >= end) break;
+        if (b.s > cur) gaps.push({ s: cur, e: b.s });
+        cur = Math.max(cur, b.e);
+      }
+      if (cur < end) gaps.push({ s: cur, e: end });
+    }
+    return gaps.filter((g) => g.e - g.s >= MIN_FREE_MINUTES);
+  };
 
   /** Tap sur un vide : l'heure sous le doigt, alignée au pas du salon, si elle est libre. */
   const tapFree = (e: MouseEvent<HTMLDivElement>, col: Column) => {
@@ -623,64 +660,76 @@ function DayColumns({
         inCol(col, b.staffId) && localMinutes(b.startsAt) < m + step && localMinutes(b.endsAt) > m,
     );
     if (busy) return;
-    if (closed.some((c) => (c.staffId === null || c.staffId === col.id) && c.s < m + step && c.e > m))
-      return;
+    if (closedIn(col).some((c) => c.s < m + step && c.e > m)) return;
     onFree(minutesToTime(m), col.id);
   };
 
+  const nowShown = isToday && now >= startMin && now <= endMin;
   return (
-    <div className="relative flex" style={{ height }}>
-      <div className="relative flex-none" style={{ width: GUTTER }}>
-        {hourMarks.map((m) => (
-          <span
-            key={m}
-            className="mono absolute end-2 -translate-y-1/2 text-[0.857rem] text-subtle"
-            style={{ top: top(m) }}
-          >
-            {hm(m)}
-          </span>
-        ))}
-      </div>
-      <div className="agz relative flex flex-1">
-        <div className="pointer-events-none absolute inset-0">
-          {hourMarks.map((m) => (
-            <div key={m} className="absolute start-0 end-0 border-t border-line" style={{ top: top(m) }} />
-          ))}
-          {halfMarks.map((m) => (
-            <div
-              key={m}
-              className="absolute start-0 end-0 border-t border-dashed border-line-soft"
-              style={{ top: top(m) }}
-            />
-          ))}
+    <div className="ag9-g" style={{ height, paddingInlineStart: GUTTER }}>
+      {hourMarks.map((m) => (
+        <div key={m} className="ag9-hr" style={{ top: top(m) }}>
+          <span><bdi dir="ltr">{hm(m)}</bdi></span>
         </div>
+      ))}
+      <div className="ag9-cs" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
         {columns.map((col) => (
-          <div
-            key={col.id ?? 'all'}
-            className="agcol"
-            onClick={(e) => tapFree(e, col)}
-            role="presentation"
-          >
-            {closed
-              .filter((c) => c.staffId === null || c.staffId === col.id)
-              .map((c) => (
-                <div
-                  key={`c-${c.s}-${c.label}`}
+          <div key={col.id ?? 'all'} className="agcol" onClick={(e) => tapFree(e, col)} role="presentation">
+            {gapsOf(col).map((g) => (
+              <button
+                key={`g-${g.s}`}
+                type="button"
+                className="ag9-f"
+                style={{ top: top(g.s), height: (g.e - g.s) * PX - GAP }}
+                aria-label={`${t('Créneau libre')} ${hm(g.s)} – ${hm(g.e)}`}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  const y = ev.clientY - ev.currentTarget.getBoundingClientRect().top;
+                  const at = g.s + Math.floor(y / PX / step) * step;
+                  onGap({
+                    date,
+                    start: g.s,
+                    end: g.e,
+                    at: Math.max(g.s, Math.min(at, g.e - step)),
+                    staffId: col.id,
+                    staffName: col.id ? col.name : null,
+                  });
+                }}
+              >
+                <I icon={Plus} size={14} strokeWidth={2.4} />
+                {!narrow && <span>{t('Libre · {d}', { d: formatDuration(g.e - g.s) })}</span>}
+              </button>
+            ))}
+            {closedIn(col).map((c) => {
+              const style = { top: top(c.s), height: Math.max(22, (c.e - c.s) * PX - GAP) };
+              const blockId = c.blockId;
+              return blockId ? (
+                <button
+                  key={`c-${c.s}-${blockId}`}
+                  type="button"
                   className="agoff"
-                  style={{ top: top(c.s) + 1, height: Math.max(18, (c.e - c.s) * PX - 2) }}
-                  title={`${c.label} · ${hm(c.s)} – ${hm(c.e)}`}
+                  style={style}
+                  aria-label={`${c.label} · ${hm(c.s)} – ${hm(c.e)}`}
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    onBlock({ id: blockId, label: c.label, start: c.s, end: c.e, staffName: col.id ? col.name : null });
+                  }}
                 >
                   {c.label}
-                  {!narrow && ` · ${hm(c.s)} – ${hm(c.e)}`}
+                </button>
+              ) : (
+                <div key={`c-${c.s}-${c.label}`} className="agoff" style={style} title={`${c.label} · ${hm(c.s)} – ${hm(c.e)}`}>
+                  {c.label}
                 </div>
-              ))}
+              );
+            })}
             {cancelled
               .filter((b) => inCol(col, b.staffId))
               .map((b) => {
                 const s = localMinutes(b.startsAt);
                 const e = localMinutes(b.endsAt);
                 if (e <= startMin || s >= endMin) return null;
-                const h = Math.max(22, (e - s) * PX - 2);
+                const h = Math.max(22, (e - s) * PX - GAP);
                 return (
                   <button
                     key={b.id}
@@ -690,18 +739,14 @@ function DayColumns({
                       onOpen(b.id);
                     }}
                     className="agb cn"
-                    style={{ top: top(s) + 1, height: h }}
+                    style={{ top: top(s), height: h }}
                     aria-label={`${b.clientName} · ${cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}`}
                   >
-                    <span className="block truncate text-[0.857rem] font-semibold line-through">
+                    <span className="agb-n line-through">
                       {b.clientName}
                       {!narrow && ` · ${b.serviceName}`}
                     </span>
-                    {h >= 32 && (
-                      <span className="block truncate text-[0.857rem]">
-                        {cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}
-                      </span>
-                    )}
+                    {h >= 40 && <span className="agb-s">{cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind)}</span>}
                   </button>
                 );
               })}
@@ -710,8 +755,19 @@ function DayColumns({
               .map((b) => {
                 const s = localMinutes(b.startsAt);
                 const e = localMinutes(b.endsAt);
-                const h = Math.max(22, (e - s) * PX - 2);
+                const h = Math.max(22, (e - s) * PX - GAP);
+                const st = state(b);
                 const pending = b.status === 'pending';
+                const tag = pending
+                  ? t('À valider')
+                  : st === 's-cur'
+                    ? t('En cours')
+                    : st === 's-done' && !narrow
+                      ? t('Terminé')
+                      : null;
+                // Ce qui tient dans le bloc, dans l'ordre : heure, nom, état, puis prestation.
+                const showTag = !!tag && h >= 52;
+                const showService = h >= (showTag ? 72 : 52);
                 return (
                   <button
                     key={b.id}
@@ -720,36 +776,27 @@ function DayColumns({
                       ev.stopPropagation();
                       onOpen(b.id);
                     }}
-                    className={`agb ${state(b)}`}
-                    style={{
-                      top: top(s) + 1,
-                      height: h,
-                    }}
-                    aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ' · en attente' : ''}`}
+                    className={`agb ${st}${h < 60 ? ' tight' : ''}`}
+                    style={{ top: top(s), height: h }}
+                    aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ` · ${t('À valider')}` : ''}`}
                   >
                     {h < 32 ? (
-                      <span className="block truncate text-[0.857rem] font-semibold">
-                        <span className="mono agb-t">{formatTimeDZ(b.startsAt)}</span> {b.clientName}
-                        {!narrow && ` · ${b.serviceName}`}
+                      <span className="agb-n">
+                        <span dir="ltr">{formatTimeDZ(b.startsAt)}</span> {b.clientName}
                       </span>
                     ) : (
                       <>
-                        <span className="mono agb-t block">
-                          {formatTimeDZ(b.startsAt)}
-                          {h >= 50 && !narrow && <span className="opacity-70"> – {formatTimeDZ(b.endsAt)}</span>}
+                        <span className="agb-t" dir="ltr">
+                          {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                         </span>
-                        <span className={`block truncate font-semibold ${narrow ? 'text-[0.857rem]' : 'text-[1rem]'}`}>
-                          {b.clientName}
-                        </span>
-                        {h >= 50 && (
-                          <span className="block truncate text-[0.857rem] opacity-90">
+                        <span className="agb-n">{b.clientName}</span>
+                        {showService && (
+                          <span className="agb-s">
                             {b.serviceName}
                             {!narrow && ` · ${formatDA(b.priceDa)}`}
                           </span>
                         )}
-                        {(pending || state(b) === 's-cur') && h >= 66 && (
-                          <span className="ag9-tag">{pending ? t('À valider') : t('En cours')}</span>
-                        )}
+                        {showTag && <span className={`ag9-tag${st === 's-done' ? ' done' : ''}`}>{tag}</span>}
                       </>
                     )}
                   </button>
@@ -757,21 +804,12 @@ function DayColumns({
               })}
           </div>
         ))}
-        {isToday && (
-          // Ligne « maintenant » : dans la journée à sa place ; avant l'ouverture en haut, après la fermeture en bas.
-          <div
-            ref={nowRef}
-            className="pointer-events-none absolute -start-1.5 end-0 z-10 border-t-2 border-accent"
-            style={{ top: top(Math.min(Math.max(now, startMin), endMin)) }}
-          >
-            <span className="absolute -start-1 -top-[0.3125rem] h-2 w-2 rounded-full bg-accent" />
-            <span className="mono absolute end-0 -top-[1.125rem] rounded-full bg-accent px-2 py-0.5 text-[0.714rem] font-bold text-white">
-              {minutesToTime(now)}
-              {now > endMin ? ` · ${t('journée terminée')}` : now < startMin ? ` · ${t("avant l'ouverture")}` : ''}
-            </span>
-          </div>
-        )}
       </div>
+      {nowShown && (
+        <div ref={nowRef} className="ag9-nw" style={{ top: top(now) }}>
+          <span><bdi dir="ltr">{minutesToTime(now)}</bdi></span>
+        </div>
+      )}
     </div>
   );
 }

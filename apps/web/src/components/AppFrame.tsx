@@ -186,13 +186,12 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
           key={it.to}
           to={it.to}
           end={it.end}
-          // NOUVELLES DEMANDES (28 oct. 2026) : l'onglet Réservations prend la couleur des demandes
-          // en attente (ambre) et son libellé devient « 2 nouvelles » — une pastille rouge seule
-          // sur une icône grise passait inaperçue. Le compte : demandes PAS ENCORE VUES et PAS
-          // ENCORE CONFIRMÉES ; il retombe dès que la liste les a affichées.
+          // Maquette 9 : l'onglet garde son libellé, la pastille d'accent porte le compte des
+          // demandes PAS ENCORE VUES et PAS ENCORE CONFIRMÉES ; il retombe dès que la liste les a
+          // affichées.
           className={({ isActive }) => {
             const on = isActive || (it.rest && restActive);
-            return `nvi${it.center ? ' ctr' : ''}${on ? ' on' : ''}${!on && it.to === '/pro/reservations' && badges[it.to] ? ' nw' : ''}`;
+            return `nvi${it.center ? ' ctr' : ''}${on ? ' on' : ''}`;
           }}
           title={it.label}
           aria-label={
@@ -221,13 +220,7 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
                     {badge}
                   </span>
                 )}
-                <span className="nvl">
-                  {!on && it.to === '/pro/reservations' && badges[it.to]
-                    ? badges[it.to] === 1
-                      ? t('1 nouvelle')
-                      : t('{n} nouvelles', { n: badges[it.to]! > 9 ? '9+' : badges[it.to]! })
-                    : it.label}
-                </span>
+                <span className="nvl">{it.label}</span>
               </>
             );
           }}
