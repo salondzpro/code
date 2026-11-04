@@ -16,8 +16,8 @@ import {
   CalendarDays,
   CalendarOff,
   ChartColumn,
-  BellRing,
   Clock,
+  Send,
   Eye,
   House,
   Inbox,
@@ -33,6 +33,7 @@ import {
 import type { SalonOwnerView } from '@salondz/types';
 import { useProUnseenBookings } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
+import { useRemindersToSend } from '@/lib/reminders';
 import { Avatar, Badge, I } from './ui';
 import { usePublicUrl } from '@/pages/pro/Link';
 import { usePlusTiles } from './ProPlusSheet';
@@ -116,6 +117,7 @@ export function ProNav({
   // Un avis sans réponse attend quelque chose du professionnel : il est compté comme une demande.
   const plusTiles = usePlusTiles();
   const pasVus = useProUnseenBookings(!!salon).data?.total ?? 0;
+  const reminders = useRemindersToSend(!!salon);
   const { short } = usePublicUrl(salon?.slug ?? '');
   return (
     <>
@@ -142,7 +144,7 @@ export function ProNav({
           { to: '/pro', label: t("Accueil"), icon: House, end: true },
           { to: '/pro/reservations', label: t("Demandes"), icon: Inbox, count: pending },
           { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, count: pasVus },
-          { to: '/pro/rappels', label: t("Rappels"), icon: BellRing },
+          { to: '/pro/rappels', label: t("Rappels"), icon: Send, count: reminders },
         ]}
       />
       <Group title={t("Gérer")} items={plusTiles.map((p) => ({ to: p.to, label: p.label, icon: p.icon, count: p.count }))} />

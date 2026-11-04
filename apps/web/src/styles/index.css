@@ -7064,30 +7064,6 @@ html:has(.auth-onglets) body {
     box-shadow: 0 10px 22px rgb(30 27 48 / 0.2);
   }
 
-  /* En-tête des colonnes : avatar et prénom sur une ligne, collé pendant le défilement. */
-  .ag9-ch {
-    position: sticky;
-    z-index: 20;
-    display: flex;
-    gap: 6px;
-    height: 26px;
-    margin-bottom: -8px;
-    background: var(--color-bg);
-  }
-  .ag9-ch button {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: 0;
-    background: transparent;
-    color: var(--color-ink);
-    font: 600 12px Inter, sans-serif;
-    cursor: pointer;
-  }
-
   /* Grille du jour : directement sur le fond de page, les heures dans la gouttière. */
   .ag9-g {
     position: relative;
@@ -7135,10 +7111,16 @@ html:has(.auth-onglets) body {
     font: 600 12px Inter, sans-serif;
     cursor: pointer;
   }
-  .ag9-f:hover,
   .ag9-f:active {
     background: var(--color-accent-soft);
     border-color: var(--color-accent-line);
+  }
+  /* Seulement à la souris : sur un écran tactile, le survol reste collé après le toucher. */
+  @media (hover: hover) {
+    .ag9-f:hover {
+      background: var(--color-accent-soft);
+      border-color: var(--color-accent-line);
+    }
   }
   /* Heure visée, à sa place dans le créneau libre. */
   .ag9-tap {
@@ -7217,6 +7199,13 @@ html:has(.auth-onglets) body {
   .agb-n {
     font: 600 13px/16px Inter, sans-serif;
   }
+  /* Qui reçoit ce rendez-vous : le nom des colonnes n'est plus affiché, le filtre du haut suffit. */
+  .agb-n > .av {
+    display: inline-flex;
+    vertical-align: top;
+    margin-block-start: 1px;
+    margin-inline-end: 4px;
+  }
   .agb-s {
     font: 400 12px/15px Inter, sans-serif;
     opacity: 0.72;
@@ -7292,53 +7281,38 @@ html:has(.auth-onglets) body {
   }
 
   /* Rappels */
-  .rp-auto {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: var(--radius-card-sm);
-    background: var(--color-accent-soft);
-  }
-  .rp-auto-i {
-    width: 36px;
+  .rp-edit {
+    flex: none;
     height: 36px;
-    flex: none;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #ffffff;
-    color: var(--color-accent-strong);
-  }
-  .rp-auto b {
-    display: block;
-    font: 600 14px/18px Inter, sans-serif;
-  }
-  .rp-auto span span {
-    display: block;
-    font-size: 13px;
-    color: var(--color-muted);
-  }
-  .rp-on {
-    flex: none;
+    gap: 6px;
+    padding: 0 12px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-slot);
+    background: var(--color-surface);
     font: 600 13px Inter, sans-serif;
-    color: var(--color-ok-fg);
+    cursor: pointer;
   }
-  .rp-r {
+  .rp-c {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--color-line-soft);
+    border-radius: var(--radius-card-sm);
+    background: var(--color-surface);
+  }
+  .rp-h {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-block: 10px;
-    border-top: 1px solid var(--color-line-soft);
-  }
-  .rp-r:first-child {
-    border-top: 0;
   }
   .rp-t {
     flex: none;
-    font: 600 16px var(--font-display);
+    font: 600 20px var(--font-display);
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.3px;
   }
   .rp-n,
   .rp-s {
@@ -7348,34 +7322,114 @@ html:has(.auth-onglets) body {
     white-space: nowrap;
   }
   .rp-n {
-    font: 600 14px/18px Inter, sans-serif;
+    font: 600 15px/19px Inter, sans-serif;
   }
   .rp-s {
     font-size: 13px;
     color: var(--color-muted);
   }
+  .rp-a {
+    display: flex;
+    gap: 8px;
+  }
   .rp-b {
-    flex: none;
-    min-height: 40px;
+    flex: 1;
+    height: 46px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 0 12px;
+    justify-content: center;
+    gap: 8px;
     border: 0;
-    border-radius: var(--radius-slot);
+    border-radius: var(--radius-btn);
+    background: #128c4f;
+    color: #ffffff;
+    font: 600 15px var(--font-display);
+    cursor: pointer;
+  }
+  .rp-b:active {
+    background: #0f7a43;
+  }
+  .rp-p {
+    width: 46px;
+    height: 46px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-btn);
+    background: var(--color-fill);
+    color: var(--color-ink);
+  }
+  .rp-no {
+    font-size: 13px;
+    color: var(--color-subtle);
+  }
+  .rp-ok {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border-radius: var(--radius-card-sm);
     background: #e4f7eb;
     color: #0f7a43;
+    font: 600 14px Inter, sans-serif;
+  }
+  .rp-d {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-block: 10px;
+    border: 0;
+    border-top: 1px solid var(--color-line-soft);
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 14px;
+    text-align: start;
+    cursor: pointer;
+  }
+  .rp-d:first-child {
+    border-top: 0;
+  }
+  .rp-auto {
+    display: flex;
+    gap: 6px;
+    margin: 4px 2px 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+  .rp-auto svg {
+    flex: none;
+    margin-top: 2px;
+  }
+  .rp-tag {
+    height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--radius-slot);
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
     font: 600 13px Inter, sans-serif;
     cursor: pointer;
   }
-  .rp-b.done {
-    background: var(--color-fill);
-    color: var(--color-muted);
+  .rp-prev {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radius-slot);
+    background: #e4f7eb;
+    font-size: 14px;
+    line-height: 1.4;
   }
-  .rp-no {
-    flex: none;
+  .rp-reset {
+    align-self: center;
+    padding: 4px;
+    border: 0;
+    background: none;
+    color: var(--color-muted);
     font-size: 13px;
-    color: var(--color-subtle);
+    cursor: pointer;
   }
 
   /* Créneau déjà pris et propositions (création et report de rendez-vous, côté pro). */
@@ -7557,5 +7611,24 @@ html:has(.auth-onglets) body {
     background: #c9f2d7;
     border-color: #2fa866;
     color: var(--color-ink);
+  }
+}
+
+/* Clavier ouvert (`lib/keyboard.ts`) : ce qui est fixé en bas d'écran remonte au-dessus de lui, ou
+   s'efface pour laisser la place au champ. Hors couche : aucune autre règle ne doit passer devant. */
+html[data-kb] .nvb,
+html[data-kb] .fab,
+html[data-kb] .sheet:not(.modal) {
+  display: none;
+}
+html[data-kb] #root {
+  padding-bottom: var(--kb, 0px);
+}
+@media (max-width: 767.98px) {
+  html[data-kb] .sheet.modal,
+  html[data-kb] .h11-sheet-w {
+    bottom: var(--kb, 0px);
+    max-height: calc(100dvh - var(--kb, 0px) - 12px);
+    overflow-y: auto;
   }
 }

@@ -379,14 +379,6 @@ export function AgendaPro() {
               ))}
             </div>
           )}
-          {team.length >= 2 && (
-            <StaffColumnsHead
-              columns={columns}
-              picked={picked?.id ?? null}
-              onPick={(id) => setStaffId(staffId === id ? null : id)}
-              onAll={() => setStaffId(null)}
-            />
-          )}
           <DayCarousel
             date={date}
             onChange={setDate}
@@ -509,44 +501,6 @@ function isoWeek(key: string): number {
   return (
     1 +
     Math.round(((d.getTime() - first.getTime()) / 86400000 - 3 + ((first.getUTCDay() + 6) % 7)) / 7)
-  );
-}
-
-/**
- * En-tête des colonnes : un membre par colonne (avatar, prénom). Il reste COLLÉ sous
- * l'en-tête de l'application pendant le défilement : à 11 h on doit encore savoir quelle
- * colonne est celle de qui. Il vit hors du carrousel, car un ancêtre défilant casse le
- * `sticky` — et il est identique pour les trois panneaux.
- */
-function StaffColumnsHead({
-  columns,
-  picked,
-  onPick,
-  onAll,
-}: {
-  columns: Column[];
-  picked: string | null;
-  onPick: (id: string) => void;
-  onAll: () => void;
-}) {
-  return (
-    <div className="ag9-ch" style={{ top: 'var(--hdr-h)', paddingInlineStart: GUTTER }}>
-      {columns.map((c) => (
-        <button
-          key={c.id ?? 'all'}
-          type="button"
-          aria-pressed={picked === c.id}
-          onClick={() => {
-            if (picked === c.id) onAll();
-            else if (c.id) onPick(c.id);
-          }}
-          title={c.name}
-        >
-          <Avatar src={c.avatarUrl} name={c.name} size={22} />
-          <span className="truncate">{c.name.split(' ')[0]}</span>
-        </button>
-      ))}
-    </div>
   );
 }
 
@@ -921,6 +875,7 @@ function DayColumns({
                   >
                     {h < 32 ? (
                       <span className="agb-n">
+                        {narrow && <Avatar src={col.avatarUrl} name={col.name} size={14} />}
                         <span dir="ltr">{formatTimeDZ(b.startsAt)}</span> {b.clientName}
                       </span>
                     ) : (
@@ -928,7 +883,10 @@ function DayColumns({
                         <span className="agb-t" dir="ltr">
                           {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                         </span>
-                        <span className="agb-n">{b.clientName}</span>
+                        <span className="agb-n">
+                          {narrow && <Avatar src={col.avatarUrl} name={col.name} size={14} />}
+                          {b.clientName}
+                        </span>
                         {showService && (
                           <span className="agb-s">
                             {b.serviceName}

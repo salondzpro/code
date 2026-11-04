@@ -7,7 +7,8 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useProPendingUnseenCount, useProSalon, useProUnseenBookings } from '@salondz/api-client';
-import { Calendar, CalendarDays, Inbox, LayoutGrid, Menu, User, type LucideIcon, BellRing } from 'lucide-react';
+import { useRemindersToSend } from '@/lib/reminders';
+import { Calendar, CalendarDays, Inbox, LayoutGrid, Menu, User, type LucideIcon, Send } from 'lucide-react';
 import { I } from './ui';
 import { PushToast } from './PushToast';
 import { ProPlusSheet } from './ProPlusSheet';
@@ -112,7 +113,7 @@ const PRO_NAV: NavItem[] = [
   { to: '/pro', label: t("Accueil"), icon: LayoutGrid, end: true },
   { to: '/pro/reservations', label: t("Demandes"), icon: Inbox },
   { to: '/pro/agenda', label: t("Agenda"), icon: CalendarDays, center: true },
-  { to: '/pro/rappels', label: t("Rappels"), icon: BellRing },
+  { to: '/pro/rappels', label: t("Rappels"), icon: Send },
   { to: '/pro/plus', label: t("Plus"), icon: Menu, rest: true },
 ];
 
@@ -142,11 +143,13 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
    * pouvait passer à côté pendant des jours. Le compteur de l'agenda le signale.
    */
   const unseen = useProUnseenBookings(kind === 'pro');
+  const reminders = useRemindersToSend(kind === 'pro');
   const badges: Record<string, number> =
     kind === 'pro'
       ? {
           '/pro/reservations': pending,
           '/pro/agenda': unseen.data?.total ?? 0,
+          '/pro/rappels': reminders,
         }
       : {};
   /**
@@ -193,7 +196,7 @@ export function BottomNav({ kind }: { kind: 'client' | 'pro' }) {
           title={it.label}
           aria-label={
             badges[it.to]
-              ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? t('nouveau(x)') : t('nouvelle(s) demande(s) à confirmer')}`
+              ? `${it.label} · ${badges[it.to]} ${it.to === '/pro/agenda' ? t('nouveau(x)') : it.to === '/pro/rappels' ? t('à envoyer') : t('nouvelle(s) demande(s) à confirmer')}`
               : undefined
           }
         >

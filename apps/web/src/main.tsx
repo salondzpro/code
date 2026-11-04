@@ -29,6 +29,7 @@ if (env.adminHost && window.location.pathname === '/') {
 }
 
 startUpdateCheck();
+void import('./lib/keyboard').then((m) => m.watchKeyboard());
 
 // Ordre voulu : dictionnaire de la langue courante (rien en français), PUIS le code de l'application,
 // dont certains modules traduisent au chargement. Le rendu vient en dernier.

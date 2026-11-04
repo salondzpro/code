@@ -149,7 +149,7 @@ async function setupChrome(): Promise<void> {
 function lockViewport(): void {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
   if (!meta) return;
-  meta.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+  meta.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content';
   // iOS ignore `user-scalable=no` depuis iOS 10 : le pincement de la PAGE passe par les événements
   // `gesture*`, propres à WebKit. On les refuse, sauf sur la carte, qui a son propre pincement.
   // (Les versions récentes de l'application bloquent aussi le zoom côté natif ; ceci couvre les
