@@ -58,5 +58,9 @@ export function watchKeyboard(): void {
       reveal();
     }, KEYBOARD_DELAY_MS);
   });
-  document.addEventListener('focusout', () => window.setTimeout(apply, 100));
+  // Plus de champ actif = plus de clavier : la barre du bas revient quoi qu'il arrive.
+  document.addEventListener('focusout', () => {
+    window.setTimeout(apply, 100);
+    window.setTimeout(apply, 500);
+  });
 }
