@@ -1674,4 +1674,9 @@ export const en: Record<string, string> = {
   "Créneau libre de {a} à {b}": "Free slot from {a} to {b}",
   "Bloquer {r}": "Block {r}",
   "Se connecter ou créer un compte": "Sign in or create an account",
+  "par rapport à hier": "compared with yesterday",
+  "par rapport à la semaine dernière": "compared with last week",
+  "par rapport au mois dernier": "compared with last month",
+  "Aucun rendez-vous": "No appointments",
+  "À encaisser": "To collect",
 };

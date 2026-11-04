@@ -1658,4 +1658,9 @@ export const ar: Record<string, string> = {
   "Créneau libre de {a} à {b}": "موعد شاغر من {a} إلى {b}",
   "Bloquer {r}": "غلق {r}",
   "Se connecter ou créer un compte": "تسجيل الدخول أو إنشاء حساب",
+  "par rapport à hier": "مقارنة بالأمس",
+  "par rapport à la semaine dernière": "مقارنة بالأسبوع الماضي",
+  "par rapport au mois dernier": "مقارنة بالشهر الماضي",
+  "Aucun rendez-vous": "لا توجد مواعيد",
+  "À encaisser": "للتحصيل",
 };

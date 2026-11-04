@@ -4752,7 +4752,6 @@ html:has(.auth-onglets) body {
   .rv-diff.up { color: var(--color-ok-fg); }
   .rv-diff.down { color: var(--color-cancel-fg); }
   .rv-bar { transition: background-color 0.15s, height 0.3s ease; }
-  .rv-split,
   .rv-gauge {
     position: relative;
     display: block;
@@ -4760,9 +4759,7 @@ html:has(.auth-onglets) body {
     border-radius: 9999px;
     background: var(--color-fill);
   }
-  .rv-split { height: 0.571rem; }
   .rv-gauge { flex: 1; height: 0.357rem; }
-  .rv-split > span,
   .rv-gauge > span {
     position: absolute;
     inset-block: 0;
