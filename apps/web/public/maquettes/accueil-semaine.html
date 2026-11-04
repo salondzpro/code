@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Salon DZ · maquettes accueil et semaine</title>
+<style>
+@font-face{font-family:Outfit;src:url('/fonts/outfit-latin.woff2') format('woff2');font-weight:100 900;font-display:swap}
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:#e9e9ec;color:#16161a;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;padding:0}
+
+/* Choix de la direction */
+.bar{position:sticky;top:0;z-index:9;display:flex;gap:6px;padding:10px 12px;background:#e9e9ec;justify-content:center}
+.bar button{flex:0 1 150px;padding:10px 6px;border-radius:12px;background:#fff;font-weight:600;font-size:13px;line-height:1.25;cursor:pointer}
+.bar button.on{background:#16161a;color:#fff}
+.bar i{display:block;font-style:normal;font-weight:400;font-size:11px;opacity:.65}
+.desk{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;padding:6px 12px 40px}
+.col{width:390px;max-width:100%}
+.cap{font-size:13px;font-weight:600;padding:0 4px 8px;color:#55555c}
+
+/* Palettes : une encre, un fond, un accent, rien d'autre */
+.ta{--bg:#ffffff;--card:#f5f6f8;--ink:#101317;--mute:#646a73;--line:#e6e8ec;--acc:#2452e6;--on:#ffffff;--soft:#e9eefe;--hero:#101317;--heroT:#ffffff;--heroM:#aab0ba}
+.tb{--bg:#f6f4ee;--card:#ffffff;--ink:#17231e;--mute:#66706a;--line:#e4e1d8;--acc:#0f6b4f;--on:#ffffff;--soft:#e2efe9;--hero:#14453a;--heroT:#ffffff;--heroM:#a9c7bc}
+.tc{--bg:#f4f5f8;--card:#ffffff;--ink:#16213a;--mute:#626b7e;--line:#e3e6ed;--acc:#e8492f;--on:#ffffff;--soft:#fdeae6;--hero:#16213a;--heroT:#ffffff;--heroM:#a7b1c6}
+
+/* Téléphone */
+.ph{position:relative;background:var(--bg);color:var(--ink);border-radius:28px;overflow:hidden;padding:16px 16px 96px;display:flex;flex-direction:column;gap:12px;min-height:844px}
+.t{font-family:Outfit,Inter,sans-serif;letter-spacing:-.3px}
+.hd{display:flex;align-items:center;gap:10px}
+.hd div{flex:1;min-width:0}
+.hd b{display:block;font:600 22px/1.15 Outfit,Inter,sans-serif;letter-spacing:-.5px}
+.hd span{font-size:13px;color:var(--mute)}
+.ic{width:42px;height:42px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--card);position:relative}
+.ic i{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 2px var(--card)}
+svg{display:block}
+
+/* Le chiffre du jour */
+.hero{background:var(--hero);color:var(--heroT);border-radius:20px;padding:16px}
+.hero small{display:block;font-size:13px;color:var(--heroM)}
+.hero b{display:block;font:600 40px/1.1 Outfit,Inter,sans-serif;letter-spacing:-1px;margin-top:2px}
+.hero .r{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:14px}
+.hero .st{display:flex;gap:4px;flex:1;max-width:120px}
+.hero .st i{flex:1;height:6px;border-radius:3px;background:rgb(255 255 255 / .22)}
+.hero .st i.d{background:var(--heroT)}
+
+/* Prochaine cliente */
+.lb{font-size:13px;font-weight:600;color:var(--mute);padding:2px 2px 0}
+.nx{background:var(--card);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.nx .top{display:flex;align-items:flex-start;gap:12px}
+.nx .hr{font:600 26px/1 Outfit,Inter,sans-serif;letter-spacing:-.6px}
+.nx .hr small{display:block;margin-top:4px;font:500 12px Inter,sans-serif;letter-spacing:0;color:var(--acc)}
+.nx .wh{flex:1;min-width:0;text-align:end}
+.nx .wh b{display:block;font-size:16px;font-weight:600}
+.nx .wh span{font-size:13px;color:var(--mute)}
+.ac{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ac button{height:46px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;background:var(--bg);font-size:13px;font-weight:600}
+.ta .ac button{background:#fff}
+.ac button.m{background:var(--acc);color:var(--on)}
+
+/* Lignes */
+.ln{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:12px 14px;min-height:60px}
+.ln .bd{min-width:24px;height:24px;padding:0 7px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:var(--acc);color:var(--on);font-size:13px;font-weight:600}
+.ln .tx{flex:1;min-width:0}
+.ln .tx b{display:block;font-size:14px;font-weight:600}
+.ln .tx span{display:block;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ln .go{flex:none;height:36px;padding:0 12px;display:flex;align-items:center;border-radius:10px;background:var(--soft);color:var(--acc);font-size:13px;font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kp{background:var(--card);border-radius:16px;padding:12px 14px}
+.kp b{display:block;font:600 24px/1.1 Outfit,Inter,sans-serif}
+.kp span{font-size:13px;color:var(--mute)}
+
+/* Barre du bas */
+.nv{position:absolute;left:0;right:0;bottom:0;height:76px;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:0 4px}
+.nv span{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--mute)}
+.nv span.on{color:var(--ink);font-weight:600}
+
+/* Semaine */
+.sh{display:flex;align-items:center;gap:8px}
+.sh div{flex:1;min-width:0}
+.sh small{display:block;font-size:12px;font-weight:600;color:var(--acc)}
+.sh b{display:block;font:600 24px/1.15 Outfit,Inter,sans-serif;letter-spacing:-.6px}
+.sg{display:flex;background:var(--card);border-radius:999px;padding:3px}
+.sg span{width:36px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;font-size:13px;color:var(--mute)}
+.sg span.on{background:var(--ink);color:var(--bg);font-weight:600}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sum div{background:var(--card);border-radius:14px;padding:10px 12px}
+.sum b{display:block;font:600 18px/1.2 Outfit,Inter,sans-serif;white-space:nowrap}
+.sum span{font-size:12px;color:var(--mute)}
+.wk{display:flex;flex-direction:column;gap:6px}
+.dy{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;background:var(--card);border-radius:16px;padding:10px 12px;min-height:72px}
+.dy.td{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.dy .d{text-align:center}
+.dy .d span{display:block;font-size:12px;color:var(--mute)}
+.dy .d b{display:block;font:600 20px/1.15 Outfit,Inter,sans-serif}
+.dy .tp{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.dy .tp b{font-weight:600}
+.dy .tp span{color:var(--mute)}
+.tr{position:relative;height:12px;border-radius:6px;background:var(--line)}
+.tr i{position:absolute;top:0;bottom:0;border-radius:6px;background:var(--ink)}
+.tr i.p{background:var(--mute);opacity:.55}
+.tr i.a{background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--acc)}
+.tr u{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:var(--acc)}
+.dy.off{opacity:.55;min-height:48px}
+.ax{display:flex;justify-content:space-between;padding:0 12px 0 66px;font-size:11px;color:var(--mute)}
+.fab{position:absolute;right:16px;bottom:90px;width:54px;height:54px;border-radius:18px;background:var(--acc);color:var(--on);display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div class="bar" id="bar">
+  <button data-t="ta" class="on">A · Blanc et cobalt<i>net, moderne</i></button>
+  <button data-t="tb">B · Crème et sapin<i>chaud, haut de gamme</i></button>
+  <button data-t="tc">C · Nuit et corail<i>vivant, féminin</i></button>
+</div>
+<div class="desk ta" id="t">
+  <div class="col">
+    <div class="cap">Accueil</div>
+    <div class="ph">
+      <div class="hd">
+        <div><b>Bonjour Yasmine</b><span>Mercredi 4 novembre</span></div>
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg><i></i></span>
+      </div>
+      <div class="hero">
+        <small>Aujourd'hui</small>
+        <b>10 800 DA</b>
+        <div class="r"><span>2 faits sur 4 rendez-vous</span><span class="st"><i class="d"></i><i class="d"></i><i></i><i></i></span></div>
+      </div>
+      <div class="lb">Prochaine cliente</div>
+      <div class="nx">
+        <div class="top">
+          <div class="hr">16:30<small>dans 1 h 37</small></div>
+          <div class="wh"><b>Rania K.</b><span>Tresses · 3 000 DA</span></div>
+        </div>
+        <div class="ac">
+          <button><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>Appeler</button>
+          <button class="m">Rappel</button>
+          <button>Plus</button>
+        </div>
+      </div>
+      <div class="ln"><span class="bd">1</span><span class="tx"><b>Demande à valider</b><span>Amel K. · jeudi 16:00 · Brushing</span></span><span class="go">Voir</span></div>
+      <div class="ln"><span class="tx"><b>3 créneaux libres demain</b><span>09:00 · 13:00 · 17:45</span></span><span class="go">Partager</span></div>
+      <div class="two">
+        <div class="kp"><b>98</b><span>visites de ma page</span></div>
+        <div class="kp"><b>7</b><span>réservations</span></div>
+      </div>
+      <div class="ln"><span class="tx"><b>Mon lien</b><span>salondz.com/yasmine-beauty-studio</span></span><span class="go">Copier</span></div>
+      <div class="nv">
+        <span class="on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Accueil</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-6z"/></svg>Demandes</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Agenda</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg>Rappels</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Plus</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="cap">Agenda · semaine</div>
+    <div class="ph">
+      <div class="sh">
+        <div><small>Semaine 45</small><b>1 – 7 novembre</b></div>
+        <span class="sg"><span>J</span><span class="on">S</span><span>M</span></span>
+      </div>
+      <div class="sum">
+        <div><b>14</b><span>rendez-vous</span></div>
+        <div><b>29 100 DA</b><span>prévus</span></div>
+        <div><b>20 %</b><span>occupé</span></div>
+      </div>
+      <div class="ax"><span>9 h</span><span>12 h</span><span>15 h</span><span>18 h</span></div>
+      <div class="wk" id="wk"></div>
+      <span class="fab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <div class="nv">
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Accueil</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-6z"/></svg>Demandes</span>
+        <span class="on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Agenda</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg>Rappels</span>
+        <span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Plus</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// Heures de 9 h à 19 h. p = passé, a = à valider, sinon à venir.
+const days=[
+ ['Dim',1,0,'0 DA',[]],
+ ['Lun',2,0,'0 DA',[]],
+ ['Mar',3,3,'6 300 DA',[[10,10.5,'p'],[12,13,'p'],[16.5,18,'p']]],
+ ['Mer',4,4,'10 800 DA',[[10.5,11,'p'],[10.5,11.5,'p'],[12.5,13.25,'p'],[16.5,18,'']],true,15.1],
+ ['Jeu',5,5,'9 800 DA',[[9,9.5,''],[12,12.5,''],[13.5,14.25,''],[15,15.75,''],[16,16.5,'a']]],
+ ['Ven',6,0,'',null],
+ ['Sam',7,2,'2 200 DA',[[10,10.5,''],[12,13,'']]],
+];
+const pc=h=>((h-9)/10*100).toFixed(1)+'%';
+document.getElementById('wk').innerHTML=days.map(([w,n,c,da,bl,td,now])=>bl===null
+ ?`<div class="dy off"><div class="d"><span>${w}</span><b>${n}</b></div><div class="tp" style="margin:0"><span>Fermé</span></div></div>`
+ :`<div class="dy${td?' td':''}"><div class="d"><span>${w}</span><b>${n}</b></div><div><div class="tp"><b>${c?c+' rendez-vous':'Libre'}</b><span>${c?da:''}</span></div><div class="tr">${bl.map(([a,b,k])=>`<i class="${k}" style="left:${pc(a)};width:calc(${pc(b)} - ${pc(a)})"></i>`).join('')}${now?`<u style="left:${pc(now)}"></u>`:''}</div></div></div>`).join('');
+const t=document.getElementById('t');
+document.getElementById('bar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;t.className='desk '+b.dataset.t;[...b.parentNode.children].forEach(x=>x.classList.toggle('on',x===b));});
+</script>
+</body>
+</html>
