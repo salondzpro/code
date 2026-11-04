@@ -7,7 +7,7 @@
  * Un rendez-vous s'ouvre en FENÊTRE (`BookingPeekSheet`) : l'agenda reste derrière, à sa
  * date et sa position.
  */
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { CalendarCheck, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import {
@@ -37,6 +37,7 @@ import { BlockedSlotSheet, FreeSlotSheet, type BlockedSlot, type FreeSlot } from
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
 import { formatDuration } from '@/lib/format';
+import { useDesktop } from '@/lib/breakpoint';
 import {
   Avatar,
   Badge,
@@ -92,6 +93,9 @@ const PX = 60 / 60;
 const GAP = 4;
 /** Largeur de la gouttière des heures. */
 const GUTTER = '40px';
+/** Étendue de la frise des jours autour de son ancrage. */
+const STRIP_DAYS_BEFORE = 12 * 7;
+const STRIP_DAYS_AFTER = 26 * 7;
 /** En dessous, un trou n'accueille aucune prestation utile : il n'est pas proposé comme créneau. */
 const MIN_FREE_MINUTES = 30;
 
@@ -135,6 +139,7 @@ export function AgendaPro() {
   const [freeSlot, setFreeSlot] = useState<FreeSlot | null>(null);
   const [blocked, setBlocked] = useState<BlockedSlot | null>(null);
   const meId = useMe().data?.profile?.id;
+  const desktop = useDesktop();
 
   const toneOf = (b: BookingWithStaff) =>
     categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
@@ -160,6 +165,23 @@ export function AgendaPro() {
     for (const b of items) m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
     return m;
   }, [items]);
+  // Frise : la semaine qu'on fait défiler, hors de la fenêtre déjà chargée, se charge à la demande.
+  const [stripDay, setStripDay] = useState<string | null>(null);
+  const stripEnd = stripDay ? addDaysToKey(stripDay, 6) : null;
+  const stripOutside = !!stripDay && !!stripEnd && (stripDay < from || stripEnd > to);
+  const stripBookings = useProBookings(
+    { from: stripDay ?? from, to: stripEnd ?? to, limit: 200 },
+    !!salon && stripOutside,
+  );
+  const stripByDay = useMemo(() => {
+    const m = new Map(byDay);
+    const known = new Set(items.map((b) => b.id));
+    for (const b of stripBookings.data?.items ?? []) {
+      if (known.has(b.id) || (staffId && b.staffId !== staffId)) continue;
+      m.set(localKey(b.startsAt), [...(m.get(localKey(b.startsAt)) ?? []), b]);
+    }
+    return m;
+  }, [byDay, items, stripBookings.data, staffId]);
   /**
    * Ce que l'écran MONTRE est vu : le jour affiché, la semaine affichée, ou la journée touchée dans
    * le mois (sa liste s'ouvre sous la grille). Les pastilles « Agenda » et « Réservations » baissent
@@ -256,7 +278,8 @@ export function AgendaPro() {
               : title}
           </h1>
         </div>
-        {view !== 'day' && (
+        {/* Sur téléphone, la frise et la grille se font défiler au doigt ; à la souris, les flèches. */}
+        {(view !== 'day' || desktop) && (
           <div className="flex flex-none items-center gap-1">
             <IconButton aria-label={t("Précédent")} onClick={() => shift(-1)}>
               <I icon={ChevronLeft} size={20} className="rtl:-scale-x-100" />
@@ -286,13 +309,13 @@ export function AgendaPro() {
       {view === 'day' && (
         <>
           <WeekStrip
-            week={week}
             selected={date}
             today={today}
-            byDay={byDay}
+            byDay={stripByDay}
             closedDays={closedDays}
             marks={unseenByDate}
             onSelect={setDate}
+            onView={setStripDay}
           />
           {team.length >= 2 && (
             <div className="ag9-m bleed" role="group" aria-label={t('Filtrer par membre')}>
@@ -481,29 +504,81 @@ function StaffColumnsHead({
 }
 
 /**
- * Frise de la semaine (maquette 9) : sept jours, des points sous chacun (un par rendez-vous, trois au
- * plus ; à l'accent pour une demande ou du nouveau), le jour choisi en encre pleine.
+ * Frise des jours (maquette 9) : sept jours à l'écran, qu'on fait défiler au doigt vers le passé ou
+ * l'avenir. Défiler ne change pas le jour affiché : on regarde, puis on touche. Sous chaque jour, un
+ * point par rendez-vous (trois au plus ; à l'accent pour une demande ou du nouveau), le jour choisi
+ * en encre pleine.
  */
 function WeekStrip({
-  week,
   selected,
   today,
   byDay,
   closedDays,
   marks,
   onSelect,
+  onView,
 }: {
-  week: string[];
   selected: string;
   today: string;
   byDay: Map<string, BookingWithStaff[]>;
   closedDays: number[];
   marks?: Record<string, number>;
   onSelect: (d: string) => void;
+  /** Premier jour visible, une fois le défilement arrêté : ses rendez-vous se chargent à la demande. */
+  onView: (firstDay: string) => void;
 }) {
+  const row = useRef<HTMLDivElement | null>(null);
+  const anchor = useRef(weekKeys(selected)[0]!);
+  // La frise s'étend autour d'un jour d'ancrage ; on la recentre quand le jour choisi approche d'un bord.
+  if (
+    selected < addDaysToKey(anchor.current, -STRIP_DAYS_BEFORE + 7) ||
+    selected > addDaysToKey(anchor.current, STRIP_DAYS_AFTER - 7)
+  )
+    anchor.current = weekKeys(selected)[0]!;
+  const first = addDaysToKey(anchor.current, -STRIP_DAYS_BEFORE);
+  const days = Array.from({ length: STRIP_DAYS_BEFORE + STRIP_DAYS_AFTER }, (_, i) => addDaysToKey(first, i));
+
+  /** Amène la semaine du jour choisi à l'écran, sauf s'il y est déjà. Mesures relatives : juste en arabe aussi. */
+  const placed = useRef(false);
+  useLayoutEffect(() => {
+    const el = row.current;
+    const day = el?.querySelector<HTMLElement>(`[data-day="${selected}"]`);
+    const start = el?.querySelector<HTMLElement>(`[data-day="${weekKeys(selected)[0]}"]`);
+    if (!el || !day || !start) return;
+    const pad = parseFloat(getComputedStyle(el).paddingInlineStart) || 0;
+    const box = el.getBoundingClientRect();
+    const d = day.getBoundingClientRect();
+    if (placed.current && d.left >= box.left + pad - 1 && d.right <= box.right - pad + 1) return;
+    const a = start.getBoundingClientRect();
+    const rtl = getComputedStyle(el).direction === 'rtl';
+    el.scrollBy({
+      left: rtl ? a.right - (box.right - pad) : a.left - (box.left + pad),
+      behavior: placed.current ? 'smooth' : 'auto',
+    });
+    placed.current = true;
+  }, [selected, first]);
+
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const onScroll = () => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      const el = row.current;
+      if (!el) return;
+      const box = el.getBoundingClientRect();
+      // Les jours sont dans l'ordre du temps, quel que soit le sens d'écriture : le premier visible.
+      const shown = [...el.children].find((x) => {
+        const r = x.getBoundingClientRect();
+        const mid = r.left + r.width / 2;
+        return mid >= box.left && mid <= box.right;
+      });
+      if (shown instanceof HTMLElement && shown.dataset.day) onView(shown.dataset.day);
+    }, 150);
+  };
+
   return (
-    <div className="ag9-w">
-      {week.map((d) => {
+    <div ref={row} className="ag9-w bleed" onScroll={onScroll}>
+      {days.map((d) => {
         const list = (byDay.get(d) ?? []).filter((b) => b.status !== 'cancelled');
         const on = d === selected;
         const closed = closedDays.includes(dayOfWeekFromKey(d));
@@ -512,9 +587,10 @@ function WeekStrip({
           <button
             key={d}
             type="button"
+            data-day={d}
             className={`ag9-d${on ? ' on' : ''}${d === today ? ' td' : ''}${closed && !list.length ? ' off' : ''}`}
             aria-pressed={on}
-            aria-label={`${t(DAY_LABELS_FR[dayOfWeekFromKey(d)])} ${Number(d.slice(8, 10))}${list.length ? ` · ${t('{n} rendez-vous', { n: list.length })}` : ''}`}
+            aria-label={`${t(DAY_LABELS_FR[dayOfWeekFromKey(d)])} ${Number(d.slice(8, 10))} ${t(MONTHS[Number(d.slice(5, 7)) - 1]!)}${list.length ? ` · ${t('{n} rendez-vous', { n: list.length })}` : ''}`}
             onClick={() => onSelect(d)}
           >
             <span className="ag9-dw">{t(DAY_LABELS_FR[dayOfWeekFromKey(d)]).slice(0, 3)}</span>

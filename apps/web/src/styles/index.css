@@ -6887,11 +6887,23 @@ html:has(.auth-onglets) body {
 
   /* Frise des 7 jours */
   .ag9-w {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    display: flex;
     gap: 4px;
+    /* De la place pour l'ombre du jour choisi, que le défilement couperait sinon. */
+    margin-block: -4px -14px;
+    padding-block: 4px 14px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter, 1rem);
+    scrollbar-width: none;
+  }
+  .ag9-w::-webkit-scrollbar {
+    display: none;
   }
   .ag9-d {
+    flex: 0 0 calc((100% - 24px) / 7);
+    scroll-snap-align: start;
     height: 58px;
     border: 0;
     border-radius: 18px;
