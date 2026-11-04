@@ -1694,4 +1694,5 @@ export const ar: Record<string, string> = {
   "Rendez-vous confirmés de demain ({date}) pas encore rappelés.": "المواعيد المؤكدة ليوم غد ({date}) التي لم يتم التذكير بها.",
   "Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.": "ستظهر هنا المواعيد المؤكدة القادمة لهذا اليوم.",
   "Les rendez-vous confirmés pour demain apparaîtront ici.": "ستظهر هنا المواعيد المؤكدة ليوم غد.",
+  "SMS": "رسالة نصية",
 };

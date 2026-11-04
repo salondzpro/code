@@ -1,11 +1,12 @@
 /**
  * Rappels, sur le modèle de mew3id : le titre, une phrase qui dit ce qu'on voit, « Modifier le
- * message », puis une ligne par rendez-vous confirmé et pas encore rappelé, avec son bouton WhatsApp.
- * Une fois envoyé, le rendez-vous quitte la liste. Par défaut, les prochains rendez-vous d'aujourd'hui ;
- * demain se prépare d'un toucher.
+ * message », puis une ligne par rendez-vous confirmé et pas encore rappelé, avec trois boutons :
+ * WhatsApp et SMS (message déjà écrit), Appeler. Un message envoyé fait quitter la liste ; un appel non,
+ * il peut rester sans réponse. Par défaut, les prochains rendez-vous d'aujourd'hui ; demain se prépare
+ * d'un toucher.
  */
 import { useState } from 'react';
-import { MessageCircle, Pencil, Send } from 'lucide-react';
+import { MessageCircle, MessageSquareText, Pencil, Phone, Send } from 'lucide-react';
 import { useProSalon } from '@salondz/api-client';
 import { addDaysToKey, formatLocale, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
@@ -94,11 +95,11 @@ export function Reminders() {
   const waiting = ofDay.filter((b) => !sent[b.id]);
   const team = salon.staff.filter((m) => m.isActive).length > 1;
 
-  const send = (b: BookingWithStaff) => {
+  const message = (b: BookingWithStaff) => encodeURIComponent(fillReminder(readReminderMessage(salon.id), b, salon));
+  const whatsapp = (b: BookingWithStaff) => {
     if (!b.clientPhone) return;
-    const text = encodeURIComponent(fillReminder(readReminderMessage(salon.id), b, salon));
     // Pas `wa.me` : sa redirection casse les émojis du message.
-    window.open(`https://api.whatsapp.com/send?phone=${b.clientPhone.replace(/\D/g, '')}&text=${text}`, '_blank', 'noopener');
+    window.open(`https://api.whatsapp.com/send?phone=${b.clientPhone.replace(/\D/g, '')}&text=${message(b)}`, '_blank', 'noopener');
     markReminded(b.id);
   };
 
@@ -148,9 +149,18 @@ export function Reminders() {
                 {team && b.staff ? ` · ${b.staff.displayName}` : ''}
               </span>
               {b.clientPhone ? (
-                <button type="button" className="rp-b" onClick={() => send(b)}>
-                  <I icon={MessageCircle} size={17} /> WhatsApp
-                </button>
+                <div className="rp-a">
+                  <button type="button" className="rp-b wa" onClick={() => whatsapp(b)}>
+                    <I icon={MessageCircle} size={20} /> WhatsApp
+                  </button>
+                  {/* `?&body=` : la seule écriture comprise à la fois par Android et l'iPhone. */}
+                  <a href={`sms:${b.clientPhone}?&body=${message(b)}`} className="rp-b sms" onClick={() => markReminded(b.id)}>
+                    <I icon={MessageSquareText} size={20} /> {t('SMS')}
+                  </a>
+                  <a href={`tel:${b.clientPhone}`} className="rp-b tel">
+                    <I icon={Phone} size={20} /> {t('Appeler')}
+                  </a>
+                </div>
               ) : (
                 <span className="rp-no">{t('Sans numéro')}</span>
               )}

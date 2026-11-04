@@ -7313,22 +7313,41 @@ html:has(.auth-onglets) body {
     font-size: 13px;
     color: var(--color-muted);
   }
+  /* Trois façons de joindre, trois couleurs qu'on reconnaît sans lire. */
+  .rp-a {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
   .rp-b {
-    height: 38px;
-    margin-top: 8px;
-    display: inline-flex;
+    min-width: 0;
+    height: 62px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    border: 1px solid #a9e3bf;
-    border-radius: var(--radius-slot);
-    background: var(--color-surface);
-    color: #128c4f;
-    font: 600 14px var(--font-display);
+    gap: 4px;
+    border: 0;
+    border-radius: var(--radius-btn);
+    font: 600 13px var(--font-display);
     cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
   }
   .rp-b:active {
-    background: #e4f7eb;
+    transform: scale(0.96);
+  }
+  .rp-b.wa {
+    background: #128c4f;
+    color: #ffffff;
+  }
+  .rp-b.sms {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+  }
+  .rp-b.tel {
+    background: var(--color-fill);
+    color: var(--color-ink);
   }
   .rp-no {
     margin-top: 6px;

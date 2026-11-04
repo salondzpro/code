@@ -1710,4 +1710,5 @@ export const en: Record<string, string> = {
   "Rendez-vous confirmés de demain ({date}) pas encore rappelés.": "Confirmed appointments tomorrow ({date}) not yet reminded.",
   "Les prochains rendez-vous confirmés d’aujourd’hui apparaîtront ici.": "Today's upcoming confirmed appointments will appear here.",
   "Les rendez-vous confirmés pour demain apparaîtront ici.": "Confirmed appointments for tomorrow will appear here.",
+  "SMS": "SMS",
 };
