@@ -1679,4 +1679,6 @@ export const en: Record<string, string> = {
   "par rapport au mois dernier": "compared with last month",
   "Aucun rendez-vous": "No appointments",
   "À encaisser": "To collect",
+  "Déjà pris à {h}": "Already taken at {h}",
+  "Aucun autre créneau pour le moment.": "No other slot for now.",
 };

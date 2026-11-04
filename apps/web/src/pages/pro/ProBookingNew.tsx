@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Check, Search, StickyNote, UserPlus } from 'lucide-react';
 import {
+  ApiError,
   pagesItems,
   useProBookingMutations,
   useProBookings,
@@ -54,6 +55,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
+import { SlotSuggestions } from '@/components/SlotSuggestions';
 import { t } from '@/i18n';
 
 /** Feuille « Client » : la clientèle d'abord (recherche serveur), sinon un client de passage. */
@@ -215,6 +217,12 @@ export function ProBookingNew() {
     return out;
   });
   const endTime = minutesToTime(timeToMinutes(time) + minutes);
+  // Pris : par un rendez-vous affiché, ou refusé par le serveur (la vérité sur les chevauchements).
+  const refused = createWalkIn.error instanceof ApiError && createWalkIn.error.code === 'SLOT_TAKEN';
+  const busy = refused || !!slots.find((x) => x.t === time)?.taken;
+  // Sans prestation choisie, on cherche pour la plus courte du catalogue.
+  const shortest = [...active].sort((a, b) => a.durationMinutes - b.durationMinutes)[0];
+  const searchIds = chosen.length ? chosen.map((s) => s!.id) : shortest ? [shortest.id] : [];
   const firstFree = slots.find((x) => !x.taken)?.t ?? slots[0]?.t;
   useEffect(() => {
     if (
@@ -288,6 +296,11 @@ export function ProBookingNew() {
       });
       setDone(b);
     } catch (err) {
+      // Créneau pris : les propositions s'affichent à sa place, une erreur en plus ne dirait rien de neuf.
+      if (err instanceof ApiError && err.code === 'SLOT_TAKEN') {
+        document.getElementById('nb-when')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       setError(errorText(err));
     }
   };
@@ -406,7 +419,7 @@ export function ProBookingNew() {
       </section>
 
       {/* 3. QUAND — membre, jour, puis la grille des créneaux de la période */}
-      <section className="crd !gap-3" aria-labelledby="nb-s3">
+      <section id="nb-when" className="crd !gap-3" aria-labelledby="nb-s3">
         <StepHead n={3} id="nb-s3" title={t('Quand')} done={chosen.length > 0 && (slots.length === 0 || slots.some((x) => x.t === time && !x.taken))} />
         {staff.length > 1 && (
           <div className="pills bleed !gap-1.5" role="radiogroup" aria-label={t('Membre')}>
@@ -464,15 +477,33 @@ export function ProBookingNew() {
                     type="button"
                     role="option"
                     aria-selected={sl.t === time}
-                    disabled={sl.taken}
-                    className={`slot mono !py-2.5 !text-[1rem] font-semibold ${sl.t === time ? 'on' : sl.taken ? 'off line-through' : ''}`}
-                    onClick={() => setTime(sl.t)}
+                    className={`slot mono !py-2.5 !text-[1rem] font-semibold ${sl.taken ? (sl.t === time ? 'bz line-through' : 'off line-through') : sl.t === time ? 'on' : ''}`}
+                    onClick={() => {
+                      createWalkIn.reset();
+                      setTime(sl.t);
+                    }}
                   >
                     {sl.t}
                   </button>
                 ))}
             </div>
           </>
+        )}
+        {busy && searchIds.length > 0 && (
+          <SlotSuggestions
+            salonId={salon.id}
+            serviceIds={searchIds}
+            date={date}
+            time={time}
+            staffId={sid}
+            team={staff.map((m) => ({ id: m.id, name: m.displayName }))}
+            onPick={(c) => {
+              createWalkIn.reset();
+              setDate(c.date);
+              setTime(c.time);
+              setStaffId(c.staffId);
+            }}
+          />
         )}
       </section>
 

@@ -10,6 +10,7 @@ import {
   useProBookingMutations,
   useProBookings,
   useProSalon,
+  ApiError,
 } from '@salondz/api-client';
 import {
   addDaysToKey,
@@ -53,6 +54,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import { PageLoading } from '@/components/PageLoading';
+import { SlotSuggestions } from '@/components/SlotSuggestions';
 import { t } from '@/i18n';
 
 export function ProBookingDetail() {
@@ -331,12 +333,28 @@ export function ProBookingReschedule() {
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
+  const d = date ?? (b ? toLocalDateKey(new Date(b.startsAt)) : toLocalDateKey());
+  const dayBookings = useProBookings({ from: d, to: d, limit: 200 }, !!b);
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
   if (!b || !salon) return <PageLoading />;
-  const d = date ?? toLocalDateKey(new Date(b.startsAt));
   const tm = time ?? formatTimeDZ(b.startsAt);
   const staff = salon.staff.filter((s) => s.isActive);
   const sid = staffId ?? b.staffId;
+  // Le nouveau créneau recouvre-t-il un autre rendez-vous de ce membre ? Affichage seulement : le
+  // serveur reste seul juge, et son refus déclenche les mêmes propositions.
+  const startMs = new Date(localDateTimeToISO(d, tm)).getTime();
+  const endMs = startMs + b.durationMinutes * 60_000;
+  const overlaps = (dayBookings.data?.items ?? []).some(
+    (x) =>
+      x.id !== b.id &&
+      (x.status === 'pending' || x.status === 'confirmed') &&
+      x.staffId === sid &&
+      new Date(x.startsAt).getTime() < endMs &&
+      new Date(x.endsAt).getTime() > startMs,
+  );
+  const refused = reschedule.error instanceof ApiError && reschedule.error.code === 'SLOT_TAKEN';
+  const busy = overlaps || refused;
+  const serviceIds = (b.items?.length ? b.items.map((x) => x.serviceId) : [b.serviceId]).filter((x): x is string => !!x);
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
@@ -354,7 +372,10 @@ export function ProBookingReschedule() {
             className="bg-transparent text-end text-[1rem] outline-none"
             value={d}
             min={toLocalDateKey()}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              reschedule.reset();
+              setDate(e.target.value);
+            }}
             aria-label={t("Nouvelle date")}
           />
         </label>
@@ -366,7 +387,10 @@ export function ProBookingReschedule() {
             min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
             className="bg-transparent text-end text-[1rem] outline-none"
             value={tm}
-            onChange={(e) => setTime(e.target.value)}
+            onChange={(e) => {
+              reschedule.reset();
+              setTime(e.target.value);
+            }}
             aria-label={t("Nouvelle heure")}
           />
         </label>
@@ -377,23 +401,46 @@ export function ProBookingReschedule() {
               inline
               label={t("Membre")}
               value={sid}
-              onChange={setStaffId}
+              onChange={(v) => {
+                reschedule.reset();
+                setStaffId(v);
+              }}
               options={staff.map((m) => ({ value: m.id, label: m.displayName }))}
             />
           </label>
         )}
       </div>
-      <ErrorMessage error={reschedule.error} />
+      {busy && sid && serviceIds.length > 0 && (
+        <SlotSuggestions
+          salonId={salon.id}
+          serviceIds={serviceIds}
+          date={d}
+          time={tm}
+          staffId={sid}
+          team={staff.map((m) => ({ id: m.id, name: m.displayName }))}
+          onPick={(c) => {
+            reschedule.reset();
+            setDate(c.date);
+            setTime(c.time);
+            setStaffId(c.staffId);
+          }}
+        />
+      )}
+      {!refused && <ErrorMessage error={reschedule.error} />}
       <BottomSheet>
         <Button
-          disabled={reschedule.isPending}
+          disabled={reschedule.isPending || busy}
           onClick={async () => {
-            await reschedule.mutateAsync({
-              id: b.id,
-              startsAt: localDateTimeToISO(d, tm),
-              staffId: sid,
-            });
-            navigate(`/pro/rendez-vous/${b.id}`, { replace: true });
+            try {
+              await reschedule.mutateAsync({
+                id: b.id,
+                startsAt: localDateTimeToISO(d, tm),
+                staffId: sid,
+              });
+              navigate(`/pro/rendez-vous/${b.id}`, { replace: true });
+            } catch {
+              /* affichée sous le formulaire, avec les propositions si le créneau est pris */
+            }
           }}
         >
           {t("Valider le report")}

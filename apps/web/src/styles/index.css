@@ -7249,6 +7249,64 @@ html:has(.auth-onglets) body {
     }
   }
 
+  /* Créneau déjà pris et propositions (création et report de rendez-vous, côté pro). */
+  .slot.bz {
+    background: var(--color-cancel-bg);
+    color: var(--color-cancel-fg);
+    border-color: transparent;
+  }
+  .sg {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-accent-soft);
+  }
+  .sg-t {
+    font: 600 14px/18px Inter, sans-serif;
+    color: var(--color-ink);
+  }
+  .sg-n {
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .sg-r {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .sg-b {
+    min-width: 0;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    border: 0;
+    border-radius: var(--radius-slot);
+    background: #ffffff;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .sg-b:active {
+    background: var(--color-accent-tint);
+  }
+  .sg-b b {
+    font: 600 17px/20px var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .sg-b span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+
   /* Compteurs de la barre du bas pro : à l'accent (maquette 9). */
   .pro-frame .nvd {
     background: var(--color-accent);

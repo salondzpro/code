@@ -1663,4 +1663,6 @@ export const ar: Record<string, string> = {
   "par rapport au mois dernier": "مقارنة بالشهر الماضي",
   "Aucun rendez-vous": "لا توجد مواعيد",
   "À encaisser": "للتحصيل",
+  "Déjà pris à {h}": "محجوز على الساعة {h}",
+  "Aucun autre créneau pour le moment.": "لا يوجد موعد آخر حاليا.",
 };
