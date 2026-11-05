@@ -202,8 +202,13 @@ export async function saveImage(blob: Blob, name: string): Promise<void> {
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
 
-export const storyMessage = (day: string, times: string[], url: string) =>
-  `${t('Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉', { day: day.toLowerCase(), times: times.join(', ') })} ${url}`;
+export const storyMessage = (day: string, times: string[], url: string, service?: string) => {
+  const vars = { day: day.toLowerCase(), times: times.join(', ') };
+  const text = service
+    ? t('Salam 😊 Pour {service}, mes disponibilités {day} : {times}. Réservez ici 👉', { ...vars, service })
+    : t('Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉', vars);
+  return `${text} ${url}`;
+};
 
 /** Une story ne porte pas de lien cliquable : le lien est copié pour le sticker Lien. */
 export async function shareStory(o: { blob: Blob; name: string; channel: StoryChannel; link: string; message: string }): Promise<void> {

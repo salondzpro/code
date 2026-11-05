@@ -1765,4 +1765,7 @@ export const ar: Record<string, string> = {
   "Répondez à vos avis": "ردّي على التقييمات",
   "Une réponse courte montre que vous êtes à l’écoute.": "الرد القصير يُظهر اهتمامك.",
   "Voir mes avis": "عرض تقييماتي",
+  "Salam 😊 Pour {service}, mes disponibilités {day} : {times}. Réservez ici 👉": "سلام 😊 بالنسبة لـ {service}، أوقاتي المتاحة {day}: {times}. احجزي هنا 👉",
+  "Un message prêt à envoyer à qui vous demande vos disponibilités.": "رسالة جاهزة لمن يسأل عن أوقاتك المتاحة.",
+  "Toutes": "الكل",
 };

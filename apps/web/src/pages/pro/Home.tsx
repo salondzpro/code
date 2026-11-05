@@ -30,10 +30,10 @@ import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { ClientContact } from '@/components/ClientContact';
+import { DispoSheet } from '@/components/DispoSheet';
 import { ProStoryRail } from '@/components/ProStories';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { StoryCard } from '@/components/StoryCard';
-import { StoryStudio } from '@/components/StoryStudio';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
@@ -262,7 +262,16 @@ export function ProHome() {
         )}
       {sheet?.kind === 'qr' && salon && <QrDialog url={`${link.url}?src=qr`} name={salon.name} slug={salon.slug} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'dispo' && salon && (
-        <StoryStudio salon={salon} url={link.url} short={link.short} onClose={closeSheet} />
+        <DispoSheet
+          salon={salon}
+          url={link.url}
+          onClose={closeSheet}
+          onCopy={(text) => {
+            copy(text);
+            closeSheet();
+            setToast({ text: t('Message copié'), kind: 'ok' });
+          }}
+        />
       )}
       {bell && <NotificationsSheet onClose={() => setBell(false)} />}
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}

@@ -7945,6 +7945,31 @@ html[data-kb] #root {
     font-weight: 600;
     color: var(--color-accent-strong);
   }
+  /* Feuille « Partager mes disponibilités ». */
+  .ds-p {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .ds-g {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ds-g > span {
+    font: 600 14px var(--font-display);
+    color: var(--color-ink);
+  }
+  .ds-m {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: var(--radius-card-sm);
+    background: var(--color-fill);
+    font-size: 15px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    color: var(--color-ink);
+  }
   /* Une story en plein écran : conseils et vidéo du lien en bio. */
   .sv {
     position: fixed;

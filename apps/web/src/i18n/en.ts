@@ -1781,4 +1781,7 @@ export const en: Record<string, string> = {
   "Répondez à vos avis": "Reply to your reviews",
   "Une réponse courte montre que vous êtes à l’écoute.": "A short reply shows that you listen.",
   "Voir mes avis": "See my reviews",
+  "Salam 😊 Pour {service}, mes disponibilités {day} : {times}. Réservez ici 👉": "Salam 😊 For {service}, my availability {day}: {times}. Book here 👉",
+  "Un message prêt à envoyer à qui vous demande vos disponibilités.": "A message ready to send to anyone asking for your availability.",
+  "Toutes": "All",
 };
