@@ -158,10 +158,30 @@ function VideoViewer({ load, version, file, onClose }: { load: () => Promise<Bio
       };
       raf = requestAnimationFrame(tick);
     };
-    void Promise.all([load(), document.fonts.load('600 60px Outfit').catch(() => undefined)]).then(([d]) => {
-      data = d;
-      if (!dead) play();
-    });
+    // Le tout premier enregistrement d'un navigateur sort vide : un court essai réveille l'encodeur.
+    const warmUp = () =>
+      new Promise<void>((done) => {
+        const type = types[0];
+        if (!record || !type || !c.captureStream) return done();
+        const probe = new MediaRecorder(c.captureStream(30), { mimeType: type });
+        let frame = 0;
+        const id = window.setInterval(() => {
+          drawBioFrame(g, (frame += 1) * 40, data);
+          if (frame < 15) return;
+          window.clearInterval(id);
+          probe.onstop = () => done();
+          probe.stop();
+        }, 40);
+        probe.start();
+      });
+    void Promise.all([load(), document.fonts.load('600 60px Outfit').catch(() => undefined)])
+      .then(([d]) => {
+        data = d;
+        return warmUp();
+      })
+      .then(() => {
+        if (!dead) play();
+      });
     return () => {
       dead = true;
       cancelAnimationFrame(raf);
