@@ -7318,6 +7318,13 @@ html:has(.auth-onglets) body {
     color: var(--color-ink);
     cursor: pointer;
   }
+  /* Même rond, même icône : le mot se glisse dessous. */
+  .rp-i.sms {
+    flex-direction: column;
+  }
+  .rp-i.sms small {
+    font: 600 9px/10px Inter, sans-serif;
+  }
   .rp-i:active {
     background: var(--color-line);
   }

@@ -140,8 +140,9 @@ export function Reminders() {
                 <WhatsAppLogo size={20} />
               </button>
               {/* `?&body=` : la seule écriture comprise à la fois par Android et l'iPhone. */}
-              <a href={`sms:${b.clientPhone}?&body=${message(b)}`} className="rp-i" aria-label={t('SMS')} title={t('SMS')} onClick={() => markReminded(b.id)}>
+              <a href={`sms:${b.clientPhone}?&body=${message(b)}`} className="rp-i sms" aria-label={t('SMS')} title={t('SMS')} onClick={() => markReminded(b.id)}>
                 <I icon={Send} size={18} />
+                <small>SMS</small>
               </a>
               <a href={`tel:${b.clientPhone}`} className="rp-i" aria-label={t('Appeler')} title={t('Appeler')}>
                 <I icon={Phone} size={18} />
