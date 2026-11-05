@@ -6,10 +6,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { Download, Play, Share2, Sparkles, X } from 'lucide-react';
-import { addDaysToKey, dayChipLabelDZ, minutesToTime, toLocalDateKey } from '@salondz/constants';
+import { Download, Play, Share, Sparkles, X } from 'lucide-react';
+import { useLabelSocials } from '@salondz/api-client';
+import { minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
-import { Button, I } from './ui';
+import { I } from './ui';
 import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoTypes, bioVideoVersion, drawBioFrame, loadBioVideo, type BioVideoData } from '@/lib/bioVideo';
 import { proProfile, profilePhotos, profileQuestion } from '@/lib/proProfile';
 import { proTips, type ProTip } from '@/lib/proTips';
@@ -99,7 +100,7 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
   );
 }
 
-function VideoViewer({ load, version, file, onClose }: { load: () => Promise<BioVideoData>; version: string; file: string; onClose: () => void }) {
+function VideoViewer({ load, version, file, photo, women, name, onClose }: { load: () => Promise<BioVideoData>; version: string; file: string; photo: string; women: boolean; name: string; onClose: () => void }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const bar = useRef<HTMLElement | null>(null);
   const [video, setVideo] = useState<Blob | null>(() => made.get(version) ?? null);
@@ -124,7 +125,7 @@ function VideoViewer({ load, version, file, onClose }: { load: () => Promise<Bio
       record = false;
       if (type && c.captureStream) {
         const parts: Blob[] = [];
-        recorder = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 2_500_000 });
+        recorder = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 5_000_000 });
         recorder.ondataavailable = (e) => {
           if (e.data.size) parts.push(e.data);
         };
@@ -162,7 +163,10 @@ function VideoViewer({ load, version, file, onClose }: { load: () => Promise<Bio
     const warmUp = () =>
       new Promise<void>((done) => {
         const type = types[0];
-        if (!record || !type || !c.captureStream) return done();
+        if (!record || !type || !c.captureStream) {
+          done();
+          return;
+        }
         const probe = new MediaRecorder(c.captureStream(30), { mimeType: type });
         let frame = 0;
         const id = window.setInterval(() => {
@@ -174,7 +178,8 @@ function VideoViewer({ load, version, file, onClose }: { load: () => Promise<Bio
         }, 40);
         probe.start();
       });
-    void Promise.all([load(), document.fonts.load('600 60px Outfit').catch(() => undefined)])
+    const fonts = ['700 60px Outfit', '500 16px Inter', 'italic 400 70px "Instrument Serif"'].map((f) => document.fonts.load(f).catch(() => undefined));
+    void Promise.all([load(), ...fonts])
       .then(([d]) => {
         data = d;
         return warmUp();
@@ -190,45 +195,50 @@ function VideoViewer({ load, version, file, onClose }: { load: () => Promise<Bio
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version]);
 
-  const name = video ? `${file}.${video.type.includes('mp4') ? 'mp4' : 'webm'}` : file;
+  const fileName = video ? `${file}.${video.type.includes('mp4') ? 'mp4' : 'webm'}` : file;
   const share = async () => {
     if (!video || busy) return;
     setBusy(true);
     try {
-      await shareImage(video, name);
+      await shareImage(video, fileName);
     } finally {
       setBusy(false);
     }
   };
 
   return createPortal(
-    <div className="sv vid" role="dialog" aria-modal="true" aria-label={t('Ma vidéo')}>
-      <div className="sv-b" aria-hidden>
-        <i>
-          <b ref={bar} className="live" />
-        </i>
-      </div>
-      <header className="sv-h">
-        <span>{t('Ma vidéo')}</span>
+    <div className="sv vid" role="dialog" aria-modal="true" aria-label={t('Votre vidéo')}>
+      <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Votre vidéo')} />
+      <div className="sv-top">
+        <div className="sv-b" aria-hidden>
+          <i>
+            <b ref={bar} className="live" />
+          </i>
+        </div>
         <button type="button" aria-label={t('Fermer')} onClick={onClose}>
-          <I icon={X} size={22} />
+          <I icon={X} size={24} />
         </button>
-      </header>
-      <div className="sv-v">
-        <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Ma vidéo')} />
       </div>
       <div className="sv-a">
+        <div className="sv-w">
+          <img src={photo} alt={name} />
+          <span>
+            <b>{t('Votre vidéo')}</b>
+            {women ? t('Partagez ce tutoriel pour montrer à vos clientes comment réserver') : t('Partagez ce tutoriel pour montrer à vos clients comment réserver')}
+          </span>
+        </div>
         {noVideo ? (
           <p>{t('Ce téléphone ne sait pas créer la vidéo.')}</p>
         ) : (
-          <>
-            <Button sm className="ag9-n" disabled={!video} onClick={() => video && void saveImage(video, name)}>
-              <I icon={Download} size={18} /> {video ? t('Télécharger') : t('Création…')}
-            </Button>
-            <Button sm className="ag9-b" disabled={!video} loading={busy} onClick={() => void share()}>
-              <I icon={Share2} size={18} /> {t('Partager')}
-            </Button>
-          </>
+          <div className="sv-c">
+            <button type="button" className="p" disabled={!video || busy} aria-busy={busy || undefined} onClick={() => void share()}>
+              {busy ? <span className="btn-spin" aria-hidden /> : <I icon={Share} size={20} />}
+              {video ? t('Partager') : t('Création…')}
+            </button>
+            <button type="button" disabled={!video} onClick={() => video && void saveImage(video, fileName)}>
+              <I icon={Download} size={20} /> {t('Télécharger')}
+            </button>
+          </div>
         )}
       </div>
     </div>,
@@ -239,6 +249,7 @@ function VideoViewer({ load, version, file, onClose }: { load: () => Promise<Bio
 export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView; short: string; pending: number }) {
   const today = toLocalDateKey();
   const { date, hours } = useStoryDefaultDay(salon);
+  const socials = useLabelSocials();
   const [open, setOpen] = useState<'tips' | 'video' | null>(null);
   const [, refresh] = useState(0);
   const close = useMemo(() => () => setOpen(null), []);
@@ -248,9 +259,8 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
   const tips = useMemo(() => proTips(salon, pending, dayIndex, question), [salon, pending, dayIndex, question]);
   const photos = useMemo(() => profilePhotos(salon), [salon]);
   const loadVideo = () => {
-    const label = date === today ? t("Aujourd'hui") : date === addDaysToKey(today, 1) ? t('Demain') : dayChipLabelDZ(date);
-    const days = Array.from({ length: 5 }, (_, i) => dayChipLabelDZ(addDaysToKey(date, i)));
-    return loadBioVideo(salon, short, label, days, hours.map((h) => minutesToTime(h.start)));
+    const instagram = socials.data?.find((s) => s.id === 'instagram')?.handle || null;
+    return loadBioVideo(salon, short, date, hours.map((h) => minutesToTime(h.start)), instagram);
   };
   const version = useMemo(() => bioVideoVersion(salon, short), [salon, short]);
   const tipsKey = seenKey('tips', salon.id);
@@ -281,7 +291,7 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
         </button>
       </div>
       {open === 'tips' && <TipsViewer tips={tips} photos={photos} onClose={close} />}
-      {open === 'video' && <VideoViewer load={loadVideo} version={version} file={`salondz-video-${salon.slug}`} onClose={close} />}
+      {open === 'video' && <VideoViewer load={loadVideo} version={version} file={`salondz-video-${salon.slug}`} photo={salon.logoUrl ?? photos[0]!} women={salon.genderTarget !== 'men'} name={salon.name} onClose={close} />}
     </>
   );
 }

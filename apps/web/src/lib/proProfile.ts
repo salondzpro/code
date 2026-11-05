@@ -56,6 +56,22 @@ export function profilePhotos(salon: SalonOwnerView): string[] {
   return unique.length ? unique : STOCK[proProfile(salon)].map((k) => `/demo/${k}.webp`);
 }
 
+/** Son métier en deux mots, pour la bio de la vidéo. */
+export function profileJob(profile: ProProfile): string {
+  switch (profile) {
+    case 'barbier':
+      return t('Barbier');
+    case 'onglerie':
+      return t('Onglerie');
+    case 'esthetique':
+      return t('Institut de beauté');
+    case 'spa':
+      return t('Spa & hammam');
+    default:
+      return t('Salon de coiffure');
+  }
+}
+
 /** La question qu'on lui pose le plus souvent en message. */
 export function profileQuestion(profile: ProProfile): string {
   switch (profile) {
