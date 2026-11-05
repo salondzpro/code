@@ -2,11 +2,11 @@
  * PRO-F 22 — Accueil professionnel, sur le modèle de mew3id (refonte demandée le 4 nov. 2026 :
  * « très facile, moins d'écriture ») :
  *
- *   1. l'en-tête violet : bonjour, cloche, et le grand rond du jour (rendez-vous, prochaine cliente) ;
+ *   1. l'en-tête violet : bonjour, cloche, ronds de stories, rond du jour et PROCHAINS RENDEZ-VOUS en
+ *      cartes à glisser ; une carte ouvre la fenêtre du rendez-vous ;
  *   2. le LIEN de réservation, posé à cheval sur l'en-tête : copier, code QR, partager ses disponibilités ;
- *   3. les PROCHAINS RENDEZ-VOUS, en cartes à glisser ; une carte ouvre la fenêtre du rendez-vous ;
- *   4. VOTRE PAGE : visites, réservations et visites par jour ;
- * Une carte = une heure, un nom, une prestation. Tout le reste est dans la fenêtre du rendez-vous.
+ *   3. MA PAGE : visites, réservations et visites par jour ;
+ *   4. MA STORY : préparée sur place.
  */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -14,6 +14,7 @@ import { Link } from 'react-router';
 import { Bell, CalendarClock, Check, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
 import {
   useMe,
+  useProBookingMutations,
   useProBookings,
   useProPageStats,
   useProPendingBookings,
@@ -21,14 +22,15 @@ import {
   useSeenOnDisplay,
   useUnreadNotifications,
 } from '@salondz/api-client';
-import { addDaysToKey, formatLocale, formatTimeDZ, toLocalDateKey, weekKeys } from '@salondz/constants';
+import { addDaysToKey, formatDA, formatLocale, formatTimeDZ, toLocalDateKey, weekKeys } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
-import { Avatar, I, Skeleton } from '@/components/ui';
+import { Avatar, Button, I, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { ClientContact } from '@/components/ClientContact';
+import { ProStoryRail } from '@/components/ProStories';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { StoryCard } from '@/components/StoryCard';
 import { StoryStudio } from '@/components/StoryStudio';
@@ -49,9 +51,6 @@ function useNow(): number {
 type Toast = { text: string; kind: 'ok' | 'call' | 'wa' } | null;
 type Sheet = { kind: 'qr' } | { kind: 'dispo' } | null;
 
-/** L'accueil montre les prochains ; le reste de la journée s'ouvre sur place. */
-const NEXT_ON_HOME = 3;
-
 export function ProHome() {
   const me = useMe();
   const proSalon = useProSalon().data;
@@ -65,7 +64,7 @@ export function ProHome() {
   const nonLues = useUnreadNotifications(!!salon);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [peek, setPeek] = useState<string | null>(null);
-  const [allNext, setAllNext] = useState(false);
+  const { setStatus } = useProBookingMutations();
   const [bell, setBell] = useState(false);
   const closeSheet = useCallback(() => setSheet(null), []);
   const [toast, setToast] = useState<Toast>(null);
@@ -114,9 +113,6 @@ export function ProHome() {
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
   const total = allToday.length;
   const done = total - upcoming.length;
-  // Un seul de plus ne mérite pas un bouton.
-  const nextRows = allNext || upcoming.length <= NEXT_ON_HOME + 1 ? upcoming : upcoming.slice(0, NEXT_ON_HOME);
-  const next = upcoming[0];
 
   return (
     <Screen bottom={NAV_PAD} gap={16} className="h12">
@@ -133,27 +129,60 @@ export function ProHome() {
             {nonLues > 0 && <i aria-hidden />}
           </button>
         </div>
-        <Link to="/pro/agenda" className="h12-day">
-          <span className="h12-ring">
-            <svg viewBox="0 0 100 100" aria-hidden>
-              <circle cx="50" cy="50" r="45" pathLength="100" />
-              {done > 0 && <circle className="on" cx="50" cy="50" r="45" pathLength="100" strokeDasharray={`${(done / total) * 100} 100`} />}
-            </svg>
-            <b>{total}</b>
-          </span>
-          <span className="min-w-0">
-            <b>{t('rendez-vous aujourd’hui')}</b>
-            <span>
-              {next ? (
-                <>
-                  <span dir="ltr">{formatTimeDZ(next.startsAt)}</span> · {next.clientName}
-                </>
-              ) : (
-                t('Plus rien de prévu')
-              )}
+        {salon && <ProStoryRail salon={salon} url={link.url} short={link.short} pending={pending.data?.items.length ?? 0} />}
+        <div className="h12-mid">
+          <Link to="/pro/agenda" className={`h12-day${upcoming.length ? ' col' : ''}`}>
+            <span className="h12-ring">
+              <svg viewBox="0 0 100 100" aria-hidden>
+                <circle cx="50" cy="50" r="45" pathLength="100" />
+                {done > 0 && <circle className="on" cx="50" cy="50" r="45" pathLength="100" strokeDasharray={`${(done / total) * 100} 100`} />}
+              </svg>
+              <b>{total}</b>
             </span>
-          </span>
-        </Link>
+            <span className="min-w-0">
+              <b>{t('rendez-vous aujourd’hui')}</b>
+              {!upcoming.length && <span>{t('Plus rien de prévu')}</span>}
+            </span>
+          </Link>
+          {upcoming.length > 0 && (
+            <div className="h12-nc" aria-label={t('Prochains rendez-vous')}>
+              {upcoming.map((b) => {
+                const future = new Date(b.startsAt).getTime() > now;
+                return (
+                  <article key={b.id} className="h12-nk">
+                    <button type="button" className="h12-nb" onClick={() => setPeek(b.id)}>
+                      <span className="h12-nt">
+                        <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
+                        {b.status === 'pending' && <em>{t('À valider')}</em>}
+                      </span>
+                      <span className="rp-n">{b.clientName}</span>
+                      <span className="h12-ns">
+                        <span>{b.serviceName}</span> · <b dir="ltr">{formatDA(b.priceDa)}</b>
+                      </span>
+                    </button>
+                    {b.status === 'pending' && future ? (
+                      <div className="ag9-ac">
+                        <Button sm className="ag9-n" onClick={() => setPeek(b.id)}>
+                          {t('Refuser')}
+                        </Button>
+                        <Button
+                          sm
+                          className="ag9-b"
+                          loading={setStatus.isPending && setStatus.variables?.id === b.id}
+                          onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
+                        >
+                          {t('Accepter')}
+                        </Button>
+                      </div>
+                    ) : (
+                      <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && future} />
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </header>
 
       {salon && (
@@ -186,31 +215,9 @@ export function ProHome() {
       <NotificationsNudge role="pro" />
       {salon && <QuickCloseBanner />}
 
+      {setStatus.error && <ErrorMessage error={setStatus.error} />}
       {todayList.isPending && <Skeleton className="h-[6rem] w-full !rounded-[var(--radius-card)]" />}
       {todayList.isError && <ErrorMessage error={todayList.error} retry={() => todayList.refetch()} />}
-      {upcoming.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <h2 className="h12-h">{t('Prochains rendez-vous')}</h2>
-          <div className="h12-list">
-            {nextRows.map((b) => (
-              <article key={b.id} className="rp-r">
-                <button type="button" className="h12-nx" onClick={() => setPeek(b.id)}>
-                  <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
-                  <span className="rp-n">{b.clientName}</span>
-                  {b.status === 'pending' && <em>{t('À valider')}</em>}
-                </button>
-                <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed'} />
-              </article>
-            ))}
-          </div>
-          {nextRows.length < upcoming.length && (
-            <button type="button" className="h12-more" onClick={() => setAllNext(true)}>
-              {t('Voir les {n} autres', { n: upcoming.length - nextRows.length })}
-            </button>
-          )}
-        </section>
-      )}
-
       {ps && (
         <section className="flex flex-col gap-2" aria-label={t('Ma page')}>
           <h2 className="h12-h">

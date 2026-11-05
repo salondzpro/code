@@ -10,7 +10,7 @@ import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, WhatsAppLogo } from './BrandIcons';
 import { I, Skeleton } from './ui';
 import { drawStory, shareStory, storyMessage, type StoryChannel } from '@/lib/storyImage';
-import { fullStoryDate, hoursOf, rangesOf, useStorySlots } from '@/lib/useStorySlots';
+import { fullStoryDate, hoursOf, rangesOf, useStoryDefaultDay, useStorySlots } from '@/lib/useStorySlots';
 import { t } from '@/i18n';
 
 export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: string; short: string }) {
@@ -18,9 +18,8 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
   const tomorrow = addDaysToKey(today, 1);
   const [chosen, setChosen] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
-  const todayFree = useStorySlots(salon, today);
-  const noneToday = todayFree.ready && !todayFree.slots.length;
-  const date = chosen ?? (noneToday ? tomorrow : today);
+  const { date: byDefault, noneToday } = useStoryDefaultDay(salon);
+  const date = chosen ?? byDefault;
   const { parts, ready } = useStorySlots(salon, date);
   // Toutes les heures libres par défaut : on retire celles qu'on ne veut pas montrer.
   const hours = hoursOf(parts);
@@ -91,7 +90,7 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
   };
 
   return (
-    <section className="h12-sc" aria-label={t('Créer ma story')}>
+    <section id="ma-story" className="h12-sc" aria-label={t('Créer ma story')}>
       <div className="h12-sl">
         <div className="h12-sp">
           {image ? (

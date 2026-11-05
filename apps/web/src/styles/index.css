@@ -7597,6 +7597,15 @@ html:has(.auth-onglets) body {
   }
 }
 
+@keyframes sv-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes ag9-added {
   50% {
     background: #c9f2d7;
@@ -7788,55 +7797,294 @@ html[data-kb] #root {
     font: 400 13px Inter, sans-serif;
     color: var(--color-muted);
   }
-  /* Prochains rendez-vous : l'heure, le nom, les ronds des Rappels. Le reste est dans la fenêtre. */
-  .h12-list {
-    padding-inline: 14px;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-card-sm);
-    background: #ffffff;
-  }
-  .h12-list .rp-r {
-    gap: 8px;
-    padding-block: 8px;
-  }
-  .h12-list .rp-r:last-child {
-    border-bottom: 0;
-  }
-  .h12-nx {
-    min-width: 0;
-    flex: 1;
-    min-height: 40px;
+  /* Prochains rendez-vous, dans l'en-tête : des cartes à glisser à côté du rond du jour. */
+  .h12-mid {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+  }
+  .h12-day.col {
+    width: 92px;
+    flex: none;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+  .h12-day.col .h12-ring {
+    width: 88px;
+    height: 88px;
+  }
+  .h12-day.col .h12-ring b {
+    font-size: 34px;
+  }
+  .h12-day.col > span:last-child b {
+    font: 500 12px/1.25 var(--font-display);
+  }
+  .h12-nc {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    margin-inline-end: -20px;
+    padding-inline-end: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0;
+    scrollbar-width: none;
+  }
+  .h12-nc::-webkit-scrollbar {
+    display: none;
+  }
+  .h12-nk {
+    min-width: 0;
+    flex: 0 0 90%;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: var(--radius-card-sm);
+    background: #ffffff;
+    color: var(--color-ink);
+  }
+  .h12-nk:only-child {
+    flex-basis: 100%;
+  }
+  .h12-nk .rp-a {
+    justify-content: flex-start;
+  }
+  .h12-nk .ag9-ac .btn {
+    padding-inline: 4px;
+  }
+  .h12-nb {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
     padding: 0;
     border: 0;
     background: none;
     text-align: start;
     cursor: pointer;
   }
-  .h12-nx b {
-    flex: none;
-    font: 600 16px var(--font-display);
+  .h12-nt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .h12-nt b {
+    font: 600 20px/1.2 var(--font-display);
     font-variant-numeric: tabular-nums;
+  }
+  .h12-nt em {
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font: 600 11px Inter, sans-serif;
+  }
+  .h12-ns {
+    min-width: 0;
+    display: flex;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .h12-ns span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .h12-ns b {
+    flex: none;
+    font-weight: 600;
     color: var(--color-ink);
   }
-  .h12-nx em {
-    flex: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    font-size: 0;
+  /* Les ronds de stories : anneau blanc tant que ce n'est pas vu. */
+  .h12-rail {
+    display: flex;
+    gap: 16px;
   }
-  .h12-more {
-    align-self: center;
-    padding: 4px 8px;
+  .h12-rail > button {
+    width: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
     border: 0;
     background: none;
-    font: 600 14px var(--font-display);
-    color: var(--color-accent-strong);
+    color: #ffffff;
+    font: 500 12px var(--font-display);
     cursor: pointer;
+  }
+  .h12-sv {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--color-ink);
+    box-shadow: 0 0 0 3px var(--color-accent), 0 0 0 5px rgb(255 255 255 / 0.35);
+  }
+  .h12-sv.on {
+    box-shadow: 0 0 0 3px var(--color-accent), 0 0 0 5px #ffffff;
+  }
+  .h12-sv small {
+    display: flex;
+    flex-direction: column;
+    font: 600 10px/1.15 var(--font-display);
+    text-align: center;
+  }
+  .h12-sv small b {
+    font-weight: 600;
+    color: var(--color-accent-strong);
+  }
+  /* Une story en plein écran : conseils et vidéo du lien en bio. */
+  .sv {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(var(--safe-top, 0px) + 10px);
+    padding-bottom: calc(12px + var(--safe-bottom));
+    background: var(--color-accent);
+    color: #ffffff;
+    animation: st-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .sv.vid {
+    background: #14121f;
+  }
+  .sv-b {
+    flex: none;
+    display: flex;
+    gap: 4px;
+    padding-inline: 12px;
+  }
+  .sv-b i {
+    flex: 1;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 0.35);
+  }
+  .sv-b b {
+    display: block;
+    height: 100%;
+    background: #ffffff;
+    transform-origin: left;
+  }
+  [dir='rtl'] .sv-b b {
+    transform-origin: right;
+  }
+  .sv-b b.live {
+    transform: scaleX(0);
+  }
+  .sv-b b.run {
+    animation: sv-fill linear both;
+  }
+  .sv-h {
+    position: relative;
+    z-index: 2;
+    flex: none;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 16px 6px;
+    font: 600 15px var(--font-display);
+  }
+  .sv-h button {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: none;
+    color: #ffffff;
+    cursor: pointer;
+  }
+  .sv-z {
+    position: absolute;
+    top: 80px;
+    bottom: 0;
+    z-index: 1;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .sv-z.p {
+    inset-inline-start: 0;
+    width: 32%;
+  }
+  .sv-z.n {
+    inset-inline-end: 0;
+    width: 68%;
+  }
+  .sv-t {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 28px 56px;
+  }
+  .sv-t h2 {
+    margin: 0;
+    font: 600 32px/1.15 var(--font-display);
+  }
+  .sv-t p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+  .sv-t button {
+    position: relative;
+    z-index: 2;
+    min-height: 44px;
+    margin-top: 8px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: var(--radius-btn, 14px);
+    background: #ffffff;
+    color: var(--color-ink);
+    font: 600 15px var(--font-display);
+    cursor: pointer;
+  }
+  .sv-v {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px 12px;
+  }
+  .sv-v canvas {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: var(--radius-card-sm);
+  }
+  .sv-a {
+    flex: none;
+    display: flex;
+    gap: 8px;
+    padding-inline: 16px;
+  }
+  .sv-a .btn {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+  .sv-a .btn.ag9-n {
+    min-height: 3rem;
   }
   .h12-kp {
     display: grid;

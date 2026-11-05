@@ -5,7 +5,7 @@
  */
 import { useMemo } from 'react';
 import { useAvailability } from '@salondz/api-client';
-import { formatLocale, formatTimeDZ, minutesToTime, timeToMinutes } from '@salondz/constants';
+import { addDaysToKey, formatLocale, formatTimeDZ, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -70,4 +70,14 @@ export function useStorySlots(salon: SalonOwnerView, date: string, range?: { fro
 
   const slots = useMemo(() => parts.map(rangeLabel), [parts]);
   return { parts, slots, ready: !shortest || av.isSuccess || av.isError };
+}
+
+/** Le jour proposé : aujourd'hui s'il reste des disponibilités, sinon demain. */
+export function useStoryDefaultDay(salon: SalonOwnerView) {
+  const today = toLocalDateKey();
+  const todayFree = useStorySlots(salon, today);
+  const noneToday = todayFree.ready && !todayFree.slots.length;
+  const date = noneToday ? addDaysToKey(today, 1) : today;
+  const { parts } = useStorySlots(salon, date);
+  return { date, noneToday, hours: hoursOf(parts) };
 }

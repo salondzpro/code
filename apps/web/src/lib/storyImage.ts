@@ -40,7 +40,7 @@ const LINK_Y = H - 340;
 const LINK_H = 136;
 
 /** Taille la plus grande qui tient sur la largeur : un long nom de salon ne se tasse pas. */
-function fit(g: CanvasRenderingContext2D, text: string, weight: number, size: number, max: number, family = 'Outfit, Inter, sans-serif') {
+export function fit(g: CanvasRenderingContext2D, text: string, weight: number, size: number, max: number, family = 'Outfit, Inter, sans-serif') {
   let px = size;
   g.font = `${weight} ${px}px ${family}`;
   while (px > 28 && g.measureText(text).width > max) {
@@ -226,7 +226,7 @@ export async function shareImage(blob: Blob, name: string, text?: string): Promi
       return true;
     }
   }
-  const file = new File([blob], name, { type: 'image/png' });
+  const file = new File([blob], name, { type: blob.type || 'image/png' });
   try {
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share(text ? { files: [file], text } : { files: [file] });
