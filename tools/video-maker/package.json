@@ -1,0 +1,11 @@
+{
+  "name": "salondz-video-maker",
+  "private": true,
+  "type": "module",
+  "description": "Filme le vrai parcours de réservation de Salon DZ et en fait une vidéo avec clics et voix off.",
+  "scripts": { "make": "node make.mjs" },
+  "dependencies": {
+    "ffmpeg-static": "5.3.0",
+    "playwright-core": "1.56.1"
+  }
+}
