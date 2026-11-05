@@ -16,6 +16,7 @@ import { proProfile, profilePhotos, profileQuestion } from '@/lib/proProfile';
 import { proTips, type ProTip } from '@/lib/proTips';
 import { saveImage, shareImage } from '@/lib/storyImage';
 import { useStoryDefaultDay } from '@/lib/useStorySlots';
+import { encodeVideo } from '@/lib/videoEncode';
 import { t } from '@/i18n';
 
 const TIP_MS = 7000;
@@ -106,9 +107,11 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
   const [video, setVideo] = useState<Blob | null>(() => made.get(version) ?? null);
   const [noVideo, setNoVideo] = useState(() => !bioVideoTypes().length);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
   useFullScreen(onClose);
 
-  // La vidéo se joue, et s'enregistre pendant sa première lecture : à la fin, elle est prête à partager.
+  // La vidéo se joue pendant que son fichier se fabrique image par image. Sans encodeur sur le téléphone,
+  // on retombe sur l'enregistrement de la lecture, moins fiable.
   useEffect(() => {
     const c = canvas.current;
     const g = c?.getContext('2d');
@@ -118,7 +121,7 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
     let raf = 0;
     let recorder: MediaRecorder | null = null;
     const types = bioVideoTypes();
-    let record = !made.has(version);
+    let record = false;
     const play = () => {
       recorder = null;
       const type = record ? types[0] : undefined;
@@ -179,14 +182,21 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
         probe.start();
       });
     const fonts = ['700 60px Outfit', '500 16px Inter', 'italic 400 70px "Instrument Serif"'].map((f) => document.fonts.load(f).catch(() => undefined));
-    void Promise.all([load(), ...fonts])
-      .then(([d]) => {
-        data = d;
-        return warmUp();
-      })
-      .then(() => {
-        if (!dead) play();
-      });
+    void Promise.all([load(), ...fonts]).then(async ([d]) => {
+      data = d;
+      if (dead) return;
+      play();
+      if (made.has(version)) return;
+      const blob = await encodeVideo(BIO_VIDEO_SIZE, BIO_VIDEO_MS, (x, ms) => drawBioFrame(x, ms, data), setProgress, () => dead).catch(() => null);
+      if (dead) return;
+      if (blob) {
+        made.set(version, blob);
+        setVideo(blob);
+        return;
+      }
+      await warmUp();
+      record = true;
+    });
     return () => {
       dead = true;
       cancelAnimationFrame(raf);
@@ -233,7 +243,7 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
           <div className="sv-c">
             <button type="button" className="p" disabled={!video || busy} aria-busy={busy || undefined} onClick={() => void share()}>
               {busy ? <span className="btn-spin" aria-hidden /> : <I icon={Share} size={20} />}
-              {video ? t('Partager') : t('Création…')}
+              {video ? t('Partager') : `${t('Création…')} ${Math.round(progress * 100)} %`}
             </button>
             <button type="button" disabled={!video} onClick={() => video && void saveImage(video, fileName)}>
               <I icon={Download} size={20} /> {t('Télécharger')}
