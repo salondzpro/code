@@ -7950,7 +7950,7 @@ html[data-kb] #root {
   /* La story sur l'accueil : l'aperçu et ses photos à gauche, le jour et le partage à droite. */
   .h12-sc {
     display: grid;
-    grid-template-columns: min(38%, 220px) minmax(0, 1fr);
+    grid-template-columns: min(34%, 200px) minmax(0, 1fr);
     gap: 14px;
     padding: 14px;
     border: 1px solid var(--color-line);
@@ -8027,31 +8027,36 @@ html[data-kb] #root {
     align-items: flex-start;
     gap: 8px;
   }
-  .h12-sr h2 {
-    margin: 0;
-    font: 600 18px/1.2 var(--font-display);
-    color: var(--color-ink);
+  /* Le titre à gauche, le jour à droite, sur une ligne. */
+  .h12-shd {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
   }
-  .h12-sr > p {
+  .h12-shd h2 {
     margin: 0;
-    font-size: 13px;
-    line-height: 1.35;
-    color: var(--color-muted);
+    font: 600 17px/1.2 var(--font-display);
+    white-space: nowrap;
+    color: var(--color-ink);
   }
   .h12-sd {
     position: relative;
+    flex: none;
   }
   .h12-sd > button {
     min-height: 36px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 0 10px;
+    gap: 2px;
+    padding: 0 6px 0 10px;
     border: 0;
     border-radius: var(--radius-pill);
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
-    font: 600 14px var(--font-display);
+    font: 600 13px var(--font-display);
+    white-space: nowrap;
     cursor: pointer;
   }
   .h12-so {
@@ -8062,7 +8067,7 @@ html[data-kb] #root {
   .h12-sm {
     position: absolute;
     top: calc(100% + 6px);
-    inset-inline-start: 0;
+    inset-inline-end: 0;
     z-index: 31;
     min-width: 160px;
     display: flex;
@@ -8129,8 +8134,11 @@ html[data-kb] #root {
     opacity: 0.45;
     cursor: default;
   }
-  .h12-sr > .h12-sn {
+  .h12-sn {
+    margin: 0;
     font-size: 12px;
+    line-height: 1.35;
+    color: var(--color-muted);
   }
   .st {
     --st-w: calc(min(54dvh, 520px) * 9 / 16);

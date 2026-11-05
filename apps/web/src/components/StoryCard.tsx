@@ -4,7 +4,7 @@
  * disponibilités, sinon demain. La photo ajoutée reste sur le téléphone.
  */
 import { useEffect, useRef, useState } from 'react';
-import { CalendarDays, ChevronDown, ImagePlus } from 'lucide-react';
+import { ChevronDown, ImagePlus } from 'lucide-react';
 import { addDaysToKey, formatLocale, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, WhatsAppLogo } from './BrandIcons';
@@ -125,41 +125,41 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
       </div>
 
       <div className="h12-sr">
-        <div className="h12-sd">
-          <button type="button" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)}>
-            <I icon={CalendarDays} size={16} />
-            {short2(date)}
-            <I icon={ChevronDown} size={16} />
-          </button>
-          {menu && (
-            <>
-              <span className="h12-so" aria-hidden onClick={() => setMenu(false)} />
-              <div className="h12-sm" role="menu">
-                {!noneToday && (
-                  <button type="button" role="menuitem" className={date === today ? 'on' : ''} onClick={() => pick(today)}>
-                    {t("Aujourd'hui")}
+        <div className="h12-shd">
+          <h2>{t('Ma story')}</h2>
+          <div className="h12-sd">
+            <button type="button" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)}>
+              {short2(date)}
+              <I icon={ChevronDown} size={16} />
+            </button>
+            {menu && (
+              <>
+                <span className="h12-so" aria-hidden onClick={() => setMenu(false)} />
+                <div className="h12-sm" role="menu">
+                  {!noneToday && (
+                    <button type="button" role="menuitem" className={date === today ? 'on' : ''} onClick={() => pick(today)}>
+                      {t("Aujourd'hui")}
+                    </button>
+                  )}
+                  <button type="button" role="menuitem" className={date === tomorrow ? 'on' : ''} onClick={() => pick(tomorrow)}>
+                    {t('Demain')}
                   </button>
-                )}
-                <button type="button" role="menuitem" className={date === tomorrow ? 'on' : ''} onClick={() => pick(tomorrow)}>
-                  {t('Demain')}
-                </button>
-                <label className={date !== today && date !== tomorrow ? 'on' : ''}>
-                  {t('Autre date')}
-                  <input
-                    type="date"
-                    value={date}
-                    min={today}
-                    aria-label={t('Autre date')}
-                    onChange={(e) => e.target.value && pick(e.target.value)}
-                    onClick={(e) => e.currentTarget.showPicker?.()}
-                  />
-                </label>
-              </div>
-            </>
-          )}
+                  <label className={date !== today && date !== tomorrow ? 'on' : ''}>
+                    {t('Autre date')}
+                    <input
+                      type="date"
+                      value={date}
+                      min={today}
+                      aria-label={t('Autre date')}
+                      onChange={(e) => e.target.value && pick(e.target.value)}
+                      onClick={(e) => e.currentTarget.showPicker?.()}
+                    />
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        <h2>{t('Vos places libres, prêtes en story')}</h2>
-        <p>{t("Créée d'après votre agenda, avec votre lien de réservation.")}</p>
         <div className="h12-sb">
           <button type="button" className="ig" disabled={!image} aria-busy={busy === 'instagram' || undefined} onClick={() => void share('instagram')}>
             {busy === 'instagram' ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={20} />}

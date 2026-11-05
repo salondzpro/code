@@ -1740,7 +1740,6 @@ export const en: Record<string, string> = {
   "Fiche": "Details",
   "Confier": "Reassign",
   "Reprendre dans 3 semaines": "Rebook in 3 weeks",
-  "Vos places libres, prêtes en story": "Your free slots, ready as a story",
-  "Créée d'après votre agenda, avec votre lien de réservation.": "Built from your calendar, with your booking link.",
   "Photo du salon": "Salon photo",
+  "Ma story": "My story",
 };
