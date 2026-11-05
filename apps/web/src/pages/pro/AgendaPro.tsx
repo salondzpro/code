@@ -278,7 +278,7 @@ export function AgendaPro() {
     view === 'day'
       ? `${date === today ? `${t("Aujourd'hui")} · ` : date === addDaysToKey(today, 1) ? `${t('Demain')} · ` : ''}${t(DAY_LABELS_FR[dayOfWeekFromKey(date)])}`
       : view === 'week'
-        ? `${t('Semaine')} ${isoWeek(date)} · ${t(MONTHS[Number(week[0]!.slice(5, 7)) - 1]!)} ${week[0]!.slice(0, 4)}`
+        ? `${t(MONTHS[Number(week[0]!.slice(5, 7)) - 1]!)} ${week[0]!.slice(0, 4)}`
         : date.slice(0, 4);
   const title =
     view === 'day'
@@ -490,17 +490,6 @@ export function AgendaPro() {
         <I icon={Plus} size={26} strokeWidth={2.4} />
       </Link>
     </Screen>
-  );
-}
-
-function isoWeek(key: string): number {
-  const d = new Date(`${key}T12:00:00Z`);
-  const day = (d.getUTCDay() + 6) % 7;
-  d.setUTCDate(d.getUTCDate() - day + 3);
-  const first = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
-  return (
-    1 +
-    Math.round(((d.getTime() - first.getTime()) / 86400000 - 3 + ((first.getUTCDay() + 6) % 7)) / 7)
   );
 }
 
