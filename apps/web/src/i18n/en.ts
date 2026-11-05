@@ -1742,4 +1742,5 @@ export const en: Record<string, string> = {
   "Reprendre dans 3 semaines": "Rebook in 3 weeks",
   "Photo du salon": "Salon photo",
   "Ma story": "My story",
+  "Choisissez au moins une heure.": "Choose at least one time.",
 };

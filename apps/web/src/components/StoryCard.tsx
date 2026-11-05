@@ -5,12 +5,12 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ImagePlus } from 'lucide-react';
-import { addDaysToKey, formatLocale, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatLocale, minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, WhatsAppLogo } from './BrandIcons';
 import { I, Skeleton } from './ui';
 import { drawStory, shareStory, storyMessage, type StoryChannel } from '@/lib/storyImage';
-import { fullStoryDate, useStorySlots } from '@/lib/useStorySlots';
+import { fullStoryDate, hoursOf, rangesOf, useStorySlots } from '@/lib/useStorySlots';
 import { t } from '@/i18n';
 
 export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: string; short: string }) {
@@ -21,12 +21,17 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
   const todayFree = useStorySlots(salon, today);
   const noneToday = todayFree.ready && !todayFree.slots.length;
   const date = chosen ?? (noneToday ? tomorrow : today);
-  const { slots, ready } = useStorySlots(salon, date);
+  const { parts, ready } = useStorySlots(salon, date);
+  // Toutes les heures libres par défaut : on retire celles qu'on ne veut pas montrer.
+  const hours = hoursOf(parts);
+  const [off, setOff] = useState<number[]>([]);
+  const times = rangesOf(hours.filter((h) => !off.includes(h.start)));
   const label = (d: string) => (d === today ? t("Aujourd'hui") : d === tomorrow ? t('Demain') : fullStoryDate(d));
   const short2 = (d: string) =>
     d === today || d === tomorrow ? label(d) : new Intl.DateTimeFormat(formatLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
   const pick = (d: string) => {
     setChosen(d);
+    setOff([]);
     setMenu(false);
   };
 
@@ -44,9 +49,9 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
 
   const [image, setImage] = useState<{ blob: Blob; src: string } | null>(null);
   const shown = useRef<string | null>(null);
-  const key = `${date}|${slots.join(',')}|${photo}`;
+  const key = `${date}|${times.join(',')}|${photo}`;
   useEffect(() => {
-    if (!slots.length) {
+    if (!times.length) {
       setImage(null);
       return;
     }
@@ -57,7 +62,7 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
       dayLabel: label(date),
       dateLabel: fullStoryDate(date),
       subtitle: t('Disponibilités'),
-      times: slots,
+      times,
       salon: salon.name,
       link: short,
     }).then((blob) => {
@@ -79,7 +84,7 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
     setBusy(channel);
     if (channel !== 'whatsapp') setNote(t('Lien copié : collez-le dans le sticker Lien de la story.'));
     try {
-      await shareStory({ blob: image.blob, name: `salondz-story-${salon.slug}.png`, channel, link: url, message: storyMessage(label(date), slots, url) });
+      await shareStory({ blob: image.blob, name: `salondz-story-${salon.slug}.png`, channel, link: url, message: storyMessage(label(date), times, url) });
     } finally {
       setBusy(null);
     }
@@ -91,8 +96,8 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
         <div className="h12-sp">
           {image ? (
             <img src={image.src} alt={t('Aperçu de la story')} />
-          ) : ready ? (
-            <span>{t('Plus de créneau libre ce jour-là.')}</span>
+          ) : ready && !times.length ? (
+            <span>{hours.length ? t('Choisissez au moins une heure.') : t('Plus de créneau libre ce jour-là.')}</span>
           ) : (
             <Skeleton className="h-full w-full" />
           )}
@@ -160,6 +165,25 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
             )}
           </div>
         </div>
+        {hours.length > 0 && (
+          <div className="h12-hs" role="group" aria-label={t('Heures')}>
+            {hours.map((h) => {
+              const on = !off.includes(h.start);
+              return (
+                <button
+                  key={h.start}
+                  type="button"
+                  dir="ltr"
+                  aria-pressed={on}
+                  className={on ? 'on' : ''}
+                  onClick={() => setOff((o) => (on ? [...o, h.start] : o.filter((x) => x !== h.start)))}
+                >
+                  {minutesToTime(h.start)}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className="h12-sb">
           <button type="button" className="ig" disabled={!image} aria-busy={busy === 'instagram' || undefined} onClick={() => void share('instagram')}>
             {busy === 'instagram' ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={20} />}

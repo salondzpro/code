@@ -212,9 +212,9 @@ export function ProHome() {
       )}
 
       {ps && (
-        <section className="flex flex-col gap-2" aria-label={t('Votre page')}>
+        <section className="flex flex-col gap-2" aria-label={t('Ma page')}>
           <h2 className="h12-h">
-            {t('Votre page')} <span>{t('Cette semaine')}</span>
+            {t('Ma page')} <span>{t('Cette semaine')}</span>
           </h2>
           <div className="h12-card">
             <div className="h12-kp">

@@ -1726,4 +1726,5 @@ export const ar: Record<string, string> = {
   "Reprendre dans 3 semaines": "موعد جديد بعد 3 أسابيع",
   "Photo du salon": "صورة الصالون",
   "Ma story": "الستوري الخاصة بي",
+  "Choisissez au moins une heure.": "اختاري ساعة واحدة على الأقل.",
 };
