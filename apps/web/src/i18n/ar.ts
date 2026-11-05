@@ -1724,4 +1724,7 @@ export const ar: Record<string, string> = {
   "Fiche": "التفاصيل",
   "Confier": "إسناد",
   "Reprendre dans 3 semaines": "موعد جديد بعد 3 أسابيع",
+  "Vos places libres, prêtes en story": "مواعيدك الشاغرة جاهزة في ستوري",
+  "Créée d'après votre agenda, avec votre lien de réservation.": "مُعدّة من جدولك، مع رابط الحجز الخاص بك.",
+  "Photo du salon": "صورة الصالون",
 };

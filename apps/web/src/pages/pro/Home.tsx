@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { Bell, CalendarClock, Check, ChevronRight, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
+import { Bell, CalendarClock, Check, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
 import {
   useMe,
   useProBookings,
@@ -30,6 +30,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { ClientContact } from '@/components/ClientContact';
 import { QuickCloseBanner } from '@/components/QuickClose';
+import { StoryCard } from '@/components/StoryCard';
 import { StoryStudio } from '@/components/StoryStudio';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
@@ -240,20 +241,7 @@ export function ProHome() {
         </section>
       )}
 
-      {salon && (
-        <button type="button" className="h12-story" onClick={() => setSheet({ kind: 'dispo' })}>
-          <span className="h12-mini" aria-hidden>
-            <i />
-            <i />
-            <i />
-          </span>
-          <span className="min-w-0 flex-1">
-            <b>{t('Créer ma story')}</b>
-            <span>{t('Mes créneaux libres, prêts à publier')}</span>
-          </span>
-          <I icon={ChevronRight} size={20} />
-        </button>
-      )}
+      {salon && <StoryCard salon={salon} url={link.url} short={link.short} />}
 
       {toast &&
         createPortal(

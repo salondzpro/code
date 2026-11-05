@@ -8,21 +8,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Copy, Download, X } from 'lucide-react';
-import { useAvailability } from '@salondz/api-client';
-import { addDaysToKey, formatLocale, formatTimeDZ, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatLocale, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, SnapchatGhost, WhatsAppGlyph } from './BrandIcons';
 import { I } from './ui';
-import { drawStory, saveImage, shareImage, type StoryModel } from '@/lib/storyImage';
+import { drawStory, saveImage, shareStory, storyMessage, type StoryChannel, type StoryModel } from '@/lib/storyImage';
+import { fullStoryDate as fullDate, useStorySlots } from '@/lib/useStorySlots';
 import { t } from '@/i18n';
-
-type Channel = 'instagram' | 'snapchat' | 'whatsapp';
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const fullDate = (key: string) =>
-  capitalize(
-    new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${key}T12:00:00Z`)),
-  );
 
 export function StoryStudio({
   salon,
@@ -55,30 +47,10 @@ export function StoryStudio({
     [photo],
   );
 
-  const shortest = [...salon.services.filter((s) => s.isActive)].sort((a, b) => a.durationMinutes - b.durationMinutes)[0];
   const [date, setDate] = useState(startDate ?? today);
   const [other, setOther] = useState(!!startDate && startDate !== today && startDate !== tomorrow);
   const [range, setRange] = useState(from !== undefined);
-  const av = useAvailability(salon.id, { serviceId: shortest?.id ?? '', date });
-
-  // Les créneaux qui se suivent forment une plage : « 09:00 – 12:30 ». La fin est celle de la dernière
-  // prestation possible, donc l'heure où le pro redevient pris ou ferme.
-  const slots = useMemo(() => {
-    const step = av.data?.slotIntervalMinutes || 15;
-    const duration = av.data?.durationMinutes || step;
-    const groups: { start: number; last: number }[] = [];
-    for (const s of av.data?.slots ?? []) {
-      if (new Date(s.startsAt).getTime() <= Date.now()) continue;
-      const m = timeToMinutes(formatTimeDZ(s.startsAt));
-      if (range && from !== undefined && to !== undefined && (m < from || m >= to)) continue;
-      const g = groups[groups.length - 1];
-      if (g && m - g.last <= step) g.last = m;
-      else groups.push({ start: m, last: m });
-    }
-    // Depuis un créneau de l'agenda, la plage ne déborde pas de ce créneau.
-    const end = (g: { last: number }) => (range && to !== undefined ? Math.min(g.last + duration, to) : g.last + duration);
-    return groups.map((g) => `${minutesToTime(g.start)} – ${minutesToTime(end(g))}`);
-  }, [av.data, range, from, to]);
+  const { slots } = useStorySlots(salon, date, range && from !== undefined && to !== undefined ? { from, to } : undefined);
 
   const [off, setOff] = useState<string[]>([]);
   const pick = (d: string, isOther = false) => {
@@ -163,22 +135,18 @@ export function StoryStudio({
     };
   }, [onClose]);
 
-  const [busy, setBusy] = useState<Channel | null>(null);
+  const [busy, setBusy] = useState<StoryChannel | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const image = images[model];
-  const message = `${t('Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉', { day: label(date).toLowerCase(), times: times.join(', ') })} ${url}`;
+  const message = storyMessage(label(date), times, url);
   const file = `salondz-story-${salon.slug}.png`;
 
-  const share = async (channel: Channel) => {
+  const share = async (channel: StoryChannel) => {
     if (!image || busy) return;
     setBusy(channel);
-    const story = channel !== 'whatsapp';
-    if (story) {
-      void navigator.clipboard?.writeText(url).catch(() => undefined);
-      setNote(t('Lien copié : collez-le dans le sticker Lien de la story.'));
-    }
+    if (channel !== 'whatsapp') setNote(t('Lien copié : collez-le dans le sticker Lien de la story.'));
     try {
-      await shareImage(image.blob, file, story ? undefined : message);
+      await shareStory({ blob: image.blob, name: file, channel, link: url, message });
     } finally {
       setBusy(null);
     }

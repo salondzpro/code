@@ -3,11 +3,13 @@
  * le jour, les heures et le lien. Le bas reste libre : Instagram y pose ses boutons.
  */
 import { isNativeApp, shareFileNative } from './nativeFile';
+import { t } from '@/i18n';
 
 const W = 1080;
 const H = 1920;
 
 export type StoryModel = 'photo' | 'violet' | 'clair';
+export type StoryChannel = 'instagram' | 'snapchat' | 'whatsapp';
 
 const cache = new Map<string, Promise<HTMLImageElement | null>>();
 function loadImage(src: string): Promise<HTMLImageElement | null> {
@@ -198,6 +200,16 @@ export async function saveImage(blob: Blob, name: string): Promise<void> {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+export const storyMessage = (day: string, times: string[], url: string) =>
+  `${t('Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉', { day: day.toLowerCase(), times: times.join(', ') })} ${url}`;
+
+/** Une story ne porte pas de lien cliquable : le lien est copié pour le sticker Lien. */
+export async function shareStory(o: { blob: Blob; name: string; channel: StoryChannel; link: string; message: string }): Promise<void> {
+  const story = o.channel !== 'whatsapp';
+  if (story) void navigator.clipboard?.writeText(o.link).catch(() => undefined);
+  await shareImage(o.blob, o.name, story ? undefined : o.message);
 }
 
 /**
