@@ -2,8 +2,11 @@
  * Notifications (client et pro) : la boîte de réception des faits du moment. Groupées par jour, une icône
  * par type, point tant que non lue, heure courte ; toucher une ligne ouvre le rendez-vous concerné.
  * Tout est marqué lu à l'ouverture : une notification est vue, pas archivée (purge par le cron).
+ * La cloche l'ouvre dans une fenêtre qui monte du bas (`NotificationsSheet`) : on ne quitte pas l'écran.
+ * L'adresse `/notifications` reste servie pour les liens déjà envoyés.
  */
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
 import {
   Bell,
@@ -14,7 +17,6 @@ import {
   CalendarPlus,
   CalendarX,
   Inbox,
-  Settings2,
   Star,
   Trash2,
   UserX,
@@ -31,7 +33,7 @@ import {
 import type { Notification } from '@salondz/types';
 import { LoadMore } from '@/components/LoadMore';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { BottomSheet, Button, Dim, EmptyState, I, IconButton, SectionLabel, Skeleton } from '@/components/ui';
+import { BottomSheet, Button, Dim, EmptyState, I, SectionLabel, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
 
@@ -49,6 +51,27 @@ const KIND: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
 };
 
 export function AccountNotifications() {
+  return (
+    <Screen bottom={NAV_PAD} gap={16}>
+      <NotificationsBody />
+    </Screen>
+  );
+}
+
+/** Fenêtre de la cloche : elle se referme quand on ouvre un rendez-vous. */
+export function NotificationsSheet({ onClose }: { onClose: () => void }) {
+  return createPortal(
+    <>
+      <Dim onClose={onClose} className="!z-[45]" />
+      <BottomSheet modal className="!z-50 max-h-[85dvh] overflow-y-auto">
+        <NotificationsBody onLeave={onClose} />
+      </BottomSheet>
+    </>,
+    document.body,
+  );
+}
+
+function NotificationsBody({ onLeave }: { onLeave?: () => void }) {
   const navigate = useNavigate();
   const isPro = useLocation().pathname.startsWith('/pro');
   const notifs = useNotificationsInfinite();
@@ -90,30 +113,25 @@ export function AccountNotifications() {
   const open = (n: Notification) => {
     // Créneau libéré : vers la réservation du salon, le jour concerné.
     const url = typeof n.data?.url === 'string' ? n.data.url : null;
-    if (n.type === 'slot_freed' && url) return navigate(url);
+    if (n.type === 'slot_freed' && url) {
+      onLeave?.();
+      return navigate(url);
+    }
     if (!n.bookingId) return;
+    onLeave?.();
     navigate(`${isPro ? '/pro' : ''}/rendez-vous/${n.bookingId}`);
   };
 
   return (
-    <Screen bottom={NAV_PAD} gap={16}>
+    <>
       <div className="flex items-center justify-between gap-3">
         <h1 className="h1">{t("Notifications")}</h1>
-        <div className="flex flex-none items-center gap-2">
-          {/* Vider : on repart d'une liste propre (les notifications déjà vues encombrent). */}
-          {items.length > 0 && (
-            <button type="button" className="ntf-vider" onClick={() => setVider(true)}>
-              <I icon={Trash2} size={17} /> {t('Vider')}
-            </button>
-          )}
-          <IconButton
-            lg
-            aria-label={t("Réglages des notifications")}
-            onClick={() => navigate(isPro ? '/pro/compte' : '/reglages#notifications')}
-          >
-            <I icon={Settings2} size={20} />
-          </IconButton>
-        </div>
+        {/* Vider : on repart d'une liste propre (les notifications déjà vues encombrent). */}
+        {items.length > 0 && (
+          <button type="button" className="ntf-vider" onClick={() => setVider(true)}>
+            <I icon={Trash2} size={17} /> {t('Vider')}
+          </button>
+        )}
       </div>
       {vider && <ViderSheet onClose={() => setVider(false)} />}
 
@@ -181,7 +199,7 @@ export function AccountNotifications() {
         onMore={() => void notifs.fetchNextPage()}
         label={t("Voir plus de notifications")}
       />
-    </Screen>
+    </>
   );
 }
 
@@ -196,8 +214,8 @@ function ViderSheet({ onClose }: { onClose: () => void }) {
   const erreur = lues.error ?? tout.error;
   return (
     <>
-      <Dim onClose={onClose} />
-      <BottomSheet modal>
+      <Dim onClose={onClose} className="!z-[55]" />
+      <BottomSheet modal className="!z-[60]">
         <div className="flex flex-col items-center gap-2 text-center">
           <span className="ntf-vider-i" aria-hidden>
             <I icon={Trash2} size={22} />

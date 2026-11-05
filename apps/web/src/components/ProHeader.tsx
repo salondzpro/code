@@ -23,6 +23,7 @@ import { useProPendingUnseenCount, useProSalon, useUnreadNotifications } from '@
 import { I, Dim } from './ui';
 import { ProNav } from './ProNav';
 import { useDesktop } from '@/lib/breakpoint';
+import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { t } from '@/i18n';
 
 /** Événement qui ouvre le menu pro (envoyé par l'onglet « Plus » de la barre du bas). */
@@ -38,6 +39,7 @@ export function ProHeader() {
   // Pastille des NON-LUES sur la cloche : la même requête que le menu et la liste des notifications.
   const nonLues = useUnreadNotifications(!!salon);
   const desktop = useDesktop();
+  const [bell, setBell] = useState(false);
   useEffect(() => setOpen(false), [pathname, navKey]);
   // Refonte du 1er nov. 2026 : le menu s'ouvre depuis l'onglet « Plus » de la barre du bas
   // (`BottomNav`), plus depuis un bouton d'en-tête — un seul chemin, sous le pouce.
@@ -97,8 +99,9 @@ export function ProHeader() {
         <span className="flex-1" />
         {/* Cloche : la liste des notifications, avec le compte des non-lues. Rouge discret, chiffre
             exact, même règle que les autres pastilles — il baisse quand on LIT, pas quand on traite. */}
-        <Link
-          to="/pro/notifications"
+        <button
+          type="button"
+          onClick={() => setBell(true)}
           className="hdr-b relative"
           aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
           title={t("Notifications")}
@@ -109,7 +112,7 @@ export function ProHeader() {
               {nonLues > 9 ? '9+' : nonLues}
             </span>
           )}
-        </Link>
+        </button>
         <Link
           to="/pro/rendez-vous/nouveau"
           className="hdr-b acc lg:me-2 lg:w-auto lg:gap-2 lg:rounded-[var(--radius-btn)] lg:px-3.5"
@@ -121,6 +124,7 @@ export function ProHeader() {
         </Link>
       </div>
       {!desktop && open && createPortal(drawer, document.body)}
+      {bell && <NotificationsSheet onClose={() => setBell(false)} />}
     </header>
   );
 }

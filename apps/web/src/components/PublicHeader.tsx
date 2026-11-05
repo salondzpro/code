@@ -23,6 +23,7 @@ import { useMe, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { guestMarket } from '@/lib/useClientMarket';
 import { I, Dim } from './ui';
+import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { t } from '@/i18n';
 
 /** Trois catégories par marché : au-delà, le tiroir devient une liste à faire défiler. */
@@ -39,6 +40,7 @@ export function PublicHeader() {
   // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
   // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
+  const [bell, setBell] = useState(false);
   const { session } = useAuth();
   const me = useMe(!!session);
   // Non lues : la cloche de l'en-tête est le seul accès visible à la liste des notifications du client.
@@ -200,8 +202,9 @@ export function PublicHeader() {
           {/* Cloche : la liste des notifications (confirmations, rappels, créneaux libérés), avec le
               compte des non-lues. Sans elle, la liste n'était atteignable par aucun lien. */}
           {session && (
-            <Link
-              to="/notifications"
+            <button
+              type="button"
+              onClick={() => setBell(true)}
               className="hdr-b relative"
               aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
               title={t("Notifications")}
@@ -212,7 +215,7 @@ export function PublicHeader() {
                   {nonLues > 9 ? '9+' : nonLues}
                 </span>
               )}
-            </Link>
+            </button>
           )}
           {/* Connecté, le profil est dans la barre du bas (ou la navigation de l'en-tête sur ordinateur). */}
           {!session && (
@@ -223,6 +226,7 @@ export function PublicHeader() {
         </span>
       </div>
       {open && createPortal(drawer, document.body)}
+      {bell && <NotificationsSheet onClose={() => setBell(false)} />}
     </header>
   );
 }

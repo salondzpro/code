@@ -30,6 +30,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { AvailabilitySheet } from '@/components/AvailabilitySheet';
+import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
 
@@ -59,6 +60,7 @@ export function ProHome() {
   const nonLues = useUnreadNotifications(!!salon);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [peek, setPeek] = useState<string | null>(null);
+  const [bell, setBell] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
   const [, copy] = useCopy();
   const now = useNow();
@@ -119,10 +121,10 @@ export function ProHome() {
               {t('Bonjour')} {firstName}
             </span>
           </div>
-          <Link to="/pro/notifications" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')}>
+          <button type="button" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
             <I icon={Bell} size={20} strokeWidth={1.8} />
             {nonLues > 0 && <i aria-hidden />}
-          </Link>
+          </button>
         </div>
         <Link to="/pro/agenda" className="h12-day">
           <span className="h12-ring">
@@ -253,6 +255,7 @@ export function ProHome() {
           }}
         />
       )}
+      {bell && <NotificationsSheet onClose={() => setBell(false)} />}
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
     </Screen>
   );
