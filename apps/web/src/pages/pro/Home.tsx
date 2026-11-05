@@ -28,6 +28,7 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
+import { ClientContact } from '@/components/ClientContact';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { StoryStudio } from '@/components/StoryStudio';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
@@ -47,6 +48,9 @@ function useNow(): number {
 type Toast = { text: string; kind: 'ok' | 'call' | 'wa' } | null;
 type Sheet = { kind: 'qr' } | { kind: 'dispo' } | null;
 
+/** L'accueil montre les prochains ; le reste de la journée s'ouvre sur place. */
+const NEXT_ON_HOME = 3;
+
 export function ProHome() {
   const me = useMe();
   const proSalon = useProSalon().data;
@@ -60,6 +64,7 @@ export function ProHome() {
   const nonLues = useUnreadNotifications(!!salon);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [peek, setPeek] = useState<string | null>(null);
+  const [allNext, setAllNext] = useState(false);
   const [bell, setBell] = useState(false);
   const closeSheet = useCallback(() => setSheet(null), []);
   const [toast, setToast] = useState<Toast>(null);
@@ -75,8 +80,6 @@ export function ProHome() {
 
   const profile = proSalon?.owner ?? me.data?.profile;
   const firstName = (profile?.fullName ?? salon?.name ?? '').split(' ')[0];
-  const members = salon?.staff.filter((m) => m.isActive) ?? [];
-  const team = members.length > 1;
 
   const allToday = (todayList.data?.items ?? [])
     .filter((b) => b.status !== 'cancelled')
@@ -110,6 +113,8 @@ export function ProHome() {
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
   const total = allToday.length;
   const done = total - upcoming.length;
+  // Un seul de plus ne mérite pas un bouton.
+  const nextRows = allNext || upcoming.length <= NEXT_ON_HOME + 1 ? upcoming : upcoming.slice(0, NEXT_ON_HOME);
   const next = upcoming[0];
 
   return (
@@ -185,21 +190,23 @@ export function ProHome() {
       {upcoming.length > 0 && (
         <section className="flex flex-col gap-2">
           <h2 className="h12-h">{t('Prochains rendez-vous')}</h2>
-          <div className="h12-row bleed">
-            {upcoming.map((b) => (
-              <button key={b.id} type="button" className="h12-c" onClick={() => setPeek(b.id)}>
-                <span className="h12-ct">
+          <div className="h12-list">
+            {nextRows.map((b) => (
+              <article key={b.id} className="rp-r">
+                <button type="button" className="h12-nx" onClick={() => setPeek(b.id)}>
                   <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
+                  <span className="rp-n">{b.clientName}</span>
                   {b.status === 'pending' && <em>{t('À valider')}</em>}
-                </span>
-                <span className="h12-cn">{b.clientName}</span>
-                <span className="h12-cs">
-                  {b.serviceName}
-                  {team && b.staff ? ` · ${b.staff.displayName}` : ''}
-                </span>
-              </button>
+                </button>
+                <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed'} />
+              </article>
             ))}
           </div>
+          {nextRows.length < upcoming.length && (
+            <button type="button" className="h12-more" onClick={() => setAllNext(true)}>
+              {t('Voir les {n} autres', { n: upcoming.length - nextRows.length })}
+            </button>
+          )}
         </section>
       )}
 
