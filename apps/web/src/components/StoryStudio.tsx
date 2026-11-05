@@ -13,7 +13,7 @@ import { addDaysToKey, formatLocale, formatTimeDZ, minutesToTime, timeToMinutes,
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, SnapchatGhost, WhatsAppGlyph } from './BrandIcons';
 import { I } from './ui';
-import { drawStory, saveImage, shareImage, type StoryModel } from '@/lib/storyImage';
+import { drawStory, saveImage, shareImage, shareToInstagram, type StoryModel } from '@/lib/storyImage';
 import { t } from '@/i18n';
 
 type Channel = 'instagram' | 'snapchat' | 'whatsapp';
@@ -178,7 +178,8 @@ export function StoryStudio({
       setNote(t('Lien copié : collez-le dans le sticker Lien de la story.'));
     }
     try {
-      await shareImage(image.blob, file, story ? undefined : message);
+      if (channel === 'instagram') await shareToInstagram(image.blob, file);
+      else await shareImage(image.blob, file, story ? undefined : message);
     } finally {
       setBusy(null);
     }

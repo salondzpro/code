@@ -9,6 +9,8 @@ const schema = z.object({
   VITE_VAPID_PUBLIC_KEY: z.string().optional(),
   /** Origine publique du site (liens partagés, QR, retours d'e-mail). Défaut : salondz.com en production, l'origine courante en dev. */
   VITE_PUBLIC_SITE_URL: z.string().url().optional(),
+  /** Identifiant d'application Meta : sans lui, Instagram n'ouvre pas son écran de story. */
+  VITE_META_APP_ID: z.string().optional(),
 });
 
 /** Adresse dédiée du portail d'administration (voir `docs/ADMIN.md`). */
@@ -27,6 +29,7 @@ export const env = {
   apiUrl: parsed.data.VITE_API_URL,
   vapidPublicKey: parsed.data.VITE_VAPID_PUBLIC_KEY ?? null,
   sentryDsn: parsed.data.VITE_SENTRY_DSN || undefined,
+  metaAppId: parsed.data.VITE_META_APP_ID || undefined,
   isDev: import.meta.env.DEV,
   /** Toujours le domaine officiel : un pro qui navigue sur l'ancienne adresse onrender partage quand même salondz.com. */
   siteUrl: (parsed.data.VITE_PUBLIC_SITE_URL ?? (import.meta.env.DEV ? window.location.origin : 'https://salondz.com')).replace(/\/$/, ''),

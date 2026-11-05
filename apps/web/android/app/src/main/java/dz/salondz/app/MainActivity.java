@@ -34,6 +34,7 @@ public class MainActivity extends BridgeActivity {
     // Greffon propre à l'application (état réel des notifications, écran de réglages) : il doit être
     // enregistré AVANT le démarrage du pont, sinon la page ne le voit pas.
     registerPlugin(ReglagesNotificationsPlugin.class);
+    registerPlugin(PartageDirectPlugin.class);
     super.onCreate(savedInstanceState);
 
     // De bord à bord : le fond de l'application occupe tout l'écran, et c'est le CSS qui écarte le

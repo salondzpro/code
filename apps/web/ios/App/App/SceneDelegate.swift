@@ -31,6 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 class SalonBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(ReglagesNotificationsPlugin())
+        bridge?.registerPluginInstance(PartageDirectPlugin())
         bloquerZoom()
         // L'application restait AGRANDIE (signalé le 28 oct. 2026) : iOS zoome sur un champ au
         // focus, et une fois l'échelle figée il n'y avait plus de geste pour revenir. On remet
@@ -114,6 +115,39 @@ public class ReglagesNotificationsPlugin: CAPPlugin, CAPBridgedPlugin {
                 return
             }
             UIApplication.shared.open(url, options: [:]) { ouvert in
+                call.resolve(["ouvert": ouvert])
+            }
+        }
+    }
+}
+
+/**
+ * STORY : ouvre l'écran de story d'Instagram sans passer par la feuille de partage. L'image passe par
+ * le presse-papiers, seule voie prévue par Instagram sur iPhone. Sans identifiant d'application Meta,
+ * Instagram refuse cet écran : `{ ouvert: false }`, et la page retombe sur la feuille.
+ */
+@objc(PartageDirectPlugin)
+public class PartageDirectPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "PartageDirectPlugin"
+    public let jsName = "PartageDirect"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "instagram", returnType: CAPPluginReturnPromise),
+    ]
+
+    @objc func instagram(_ call: CAPPluginCall) {
+        guard let identifiant = call.getString("identifiantMeta"), !identifiant.isEmpty,
+              let chemin = call.getString("chemin"), let fichier = URL(string: chemin),
+              let image = try? Data(contentsOf: fichier),
+              let adresse = URL(string: "instagram-stories://share?source_application=\(identifiant)") else {
+            call.resolve(["ouvert": false])
+            return
+        }
+        DispatchQueue.main.async {
+            UIPasteboard.general.setItems(
+                [["com.instagram.sharedSticker.backgroundImage": image]],
+                options: [.expirationDate: Date().addingTimeInterval(300)]
+            )
+            UIApplication.shared.open(adresse) { ouvert in
                 call.resolve(["ouvert": ouvert])
             }
         }

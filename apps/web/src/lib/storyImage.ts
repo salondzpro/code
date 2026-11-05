@@ -2,7 +2,7 @@
  * Image de story 1080 × 1920 dessinée dans le navigateur : la photo du salon, puis un panneau blanc avec
  * le jour, les heures et le lien. Le bas reste libre : Instagram y pose ses boutons.
  */
-import { isNativeApp, shareFileNative } from './nativeFile';
+import { isNativeApp, openInstagramNative, shareFileNative } from './nativeFile';
 
 const W = 1080;
 const H = 1920;
@@ -198,6 +198,12 @@ export async function saveImage(blob: Blob, name: string): Promise<void> {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/** Instagram directement dans l'application, sans feuille ; sinon le partage habituel. */
+export async function shareToInstagram(blob: Blob, name: string): Promise<boolean> {
+  if ((await isNativeApp()) && (await openInstagramNative(blob, name).catch(() => false))) return true;
+  return shareImage(blob, name);
 }
 
 /**
