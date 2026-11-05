@@ -7,10 +7,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { Copy, Share2, Sparkles, Star, X } from 'lucide-react';
-import { addDaysToKey, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, dayChipLabelDZ, minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { Button, I } from './ui';
-import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoData, bioVideoTypes, bioVideoVersion, drawBioFrame, type BioVideoData } from '@/lib/bioVideo';
+import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoTypes, bioVideoVersion, drawBioFrame, loadBioVideo, type BioVideoData } from '@/lib/bioVideo';
+import { proProfile, profilePhotos, profileQuestion } from '@/lib/proProfile';
 import { proTips, type ProTip } from '@/lib/proTips';
 import { shareImage } from '@/lib/storyImage';
 import { useStoryDefaultDay } from '@/lib/useStorySlots';
@@ -51,7 +52,7 @@ function useFullScreen(onClose: () => void) {
   }, [onClose]);
 }
 
-function TipsViewer({ tips, onClose }: { tips: ProTip[]; onClose: () => void }) {
+function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[]; onClose: () => void }) {
   const navigate = useNavigate();
   const [i, setI] = useState(0);
   useFullScreen(onClose);
@@ -64,6 +65,7 @@ function TipsViewer({ tips, onClose }: { tips: ProTip[]; onClose: () => void }) 
 
   return createPortal(
     <div className="sv tip" role="dialog" aria-modal="true" aria-label={t('Conseil')}>
+      <img className="sv-i" src={photos[i % photos.length]} alt="" />
       <div className="sv-b" aria-hidden>
         {tips.map((x, n) => (
           <i key={x.id}>{n < i ? <b className="full" /> : n === i ? <b key={i} className="run" style={{ animationDuration: `${TIP_MS}ms` }} /> : null}</i>
@@ -97,7 +99,7 @@ function TipsViewer({ tips, onClose }: { tips: ProTip[]; onClose: () => void }) 
   );
 }
 
-function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData; version: string; file: string; url: string; onClose: () => void }) {
+function VideoViewer({ load, version, file, url, onClose }: { load: () => Promise<BioVideoData>; version: string; file: string; url: string; onClose: () => void }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const bar = useRef<HTMLElement | null>(null);
   const [video, setVideo] = useState<Blob | null>(() => made.get(version) ?? null);
@@ -112,6 +114,7 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
     const g = c?.getContext('2d');
     if (!c || !g) return;
     let dead = false;
+    let data: BioVideoData;
     let raf = 0;
     let recorder: MediaRecorder | null = null;
     const types = bioVideoTypes();
@@ -156,7 +159,8 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
       };
       raf = requestAnimationFrame(tick);
     };
-    void document.fonts.load('600 60px Outfit').catch(() => undefined).then(() => {
+    void Promise.all([load(), document.fonts.load('600 60px Outfit').catch(() => undefined)]).then(([d]) => {
+      data = d;
       if (!dead) play();
     });
     return () => {
@@ -164,7 +168,8 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
       cancelAnimationFrame(raf);
       if (recorder?.state === 'recording') recorder.stop();
     };
-  }, [data, version]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version]);
 
   const share = async () => {
     if (!video || busy) return;
@@ -222,8 +227,14 @@ export function ProStoryRail({ salon, url, short, pending }: { salon: SalonOwner
   const close = useMemo(() => () => setOpen(null), []);
 
   const dayIndex = Math.floor(Date.parse(`${today}T12:00:00Z`) / 86_400_000);
-  const tips = useMemo(() => proTips(salon, pending, dayIndex), [salon, pending, dayIndex]);
-  const data = useMemo(() => bioVideoData(salon, short), [salon, short]);
+  const question = profileQuestion(proProfile(salon));
+  const tips = useMemo(() => proTips(salon, pending, dayIndex, question), [salon, pending, dayIndex, question]);
+  const photos = useMemo(() => profilePhotos(salon), [salon]);
+  const loadVideo = () => {
+    const label = date === today ? t("Aujourd'hui") : date === addDaysToKey(today, 1) ? t('Demain') : dayChipLabelDZ(date);
+    const days = Array.from({ length: 5 }, (_, i) => dayChipLabelDZ(addDaysToKey(date, i)));
+    return loadBioVideo(salon, short, label, days, hours.map((h) => minutesToTime(h.start)));
+  };
   const version = useMemo(() => bioVideoVersion(salon, short), [salon, short]);
   const tipsKey = seenKey('tips', salon.id);
   const videoKey = seenKey('video', salon.id);
@@ -258,8 +269,8 @@ export function ProStoryRail({ salon, url, short, pending }: { salon: SalonOwner
           {t('Nouveau')}
         </button>
       </div>
-      {open === 'tips' && <TipsViewer tips={tips} onClose={close} />}
-      {open === 'video' && <VideoViewer data={data} version={version} file={`salondz-lien-en-bio-${salon.slug}`} url={url} onClose={close} />}
+      {open === 'tips' && <TipsViewer tips={tips} photos={photos} onClose={close} />}
+      {open === 'video' && <VideoViewer load={loadVideo} version={version} file={`salondz-lien-en-bio-${salon.slug}`} url={url} onClose={close} />}
     </>
   );
 }

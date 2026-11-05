@@ -12,7 +12,7 @@ export type StoryModel = 'photo' | 'violet' | 'clair';
 export type StoryChannel = 'instagram' | 'snapchat' | 'whatsapp';
 
 const cache = new Map<string, Promise<HTMLImageElement | null>>();
-function loadImage(src: string): Promise<HTMLImageElement | null> {
+export function loadImage(src: string): Promise<HTMLImageElement | null> {
   let p = cache.get(src);
   if (!p) {
     p = new Promise((resolve) => {

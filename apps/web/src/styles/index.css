@@ -7986,6 +7986,33 @@ html[data-kb] #root {
   .sv.vid {
     background: #14121f;
   }
+  /* La photo du conseil : celle du salon, sinon celle de son métier. */
+  .sv-i {
+    position: absolute;
+    inset: 0 0 auto;
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+  }
+  .sv.tip::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 1;
+    height: 120px;
+    background: rgb(20 16 36 / 0.45);
+  }
+  .sv.tip .sv-t {
+    position: absolute;
+    inset: 50% 0 0;
+    justify-content: center;
+    padding-block: 16px calc(16px + var(--safe-bottom));
+  }
+  .sv.tip .sv-b,
+  .sv.tip .sv-h {
+    position: relative;
+    z-index: 2;
+  }
   .sv-b {
     flex: none;
     display: flex;
@@ -8058,13 +8085,13 @@ html[data-kb] #root {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: center;
-    gap: 12px;
-    padding: 0 28px 56px;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0 28px 28px;
   }
   .sv-t h2 {
     margin: 0;
-    font: 600 32px/1.15 var(--font-display);
+    font: 600 28px/1.15 var(--font-display);
   }
   .sv-t p {
     margin: 0;
