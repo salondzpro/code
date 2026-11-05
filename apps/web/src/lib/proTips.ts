@@ -39,7 +39,7 @@ export function proTips(salon: SalonOwnerView, pendingCount: number, dayIndex: n
   }
 
   const general: ProTip[] = [
-    { id: 'bio', title: t('Votre lien dans votre bio'), body: t('Fini « {question} » en message : dans votre bio Instagram, votre lien répond à votre place.', { question }) },
+    { id: 'bio', title: t('Votre lien dans votre bio'), body: t('Fini « {question} » en message. Dans Instagram : Modifier le profil, Liens, Ajouter un lien externe, puis collez votre lien.', { question }) },
     { id: 'reminders', title: t('Envoyez vos rappels'), body: t('Un petit message avant le rendez-vous, et moins de monde oublie de venir.'), to: '/pro/rappels', action: t('Voir mes rappels') },
     { id: 'story', title: t('Postez vos heures libres'), body: t('Une story avec vos disponibilités aide à remplir les trous de la journée.') },
     { id: 'qr', title: t('Affichez votre code QR'), body: t("Posé à l'accueil ou sur le miroir, il permet de reprendre rendez-vous sur place."), to: '/pro/lien', action: t('Voir mon code QR') },

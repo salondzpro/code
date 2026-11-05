@@ -1,19 +1,19 @@
 /**
- * Les ronds de l'accueil, comme des stories : « Ma story » descend à la carte de story, « Conseil » ouvre
- * les conseils du jour, « Nouveau » ouvre la vidéo du lien en bio. Un rond s'éteint une fois vu ; celui de
- * la vidéo se rallume dès que le lien, une prestation ou un prix change.
+ * Les ronds de l'accueil, comme des stories : « Ma vidéo » ouvre la vidéo à télécharger ou partager,
+ * « Conseil » les conseils du jour. Un rond s'éteint une fois vu ; celui de la vidéo se rallume dès que
+ * le lien, une prestation ou un prix change.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { Copy, Share2, Sparkles, Star, X } from 'lucide-react';
+import { Download, Play, Share2, Sparkles, X } from 'lucide-react';
 import { addDaysToKey, dayChipLabelDZ, minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { Button, I } from './ui';
 import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoTypes, bioVideoVersion, drawBioFrame, loadBioVideo, type BioVideoData } from '@/lib/bioVideo';
 import { proProfile, profilePhotos, profileQuestion } from '@/lib/proProfile';
 import { proTips, type ProTip } from '@/lib/proTips';
-import { shareImage } from '@/lib/storyImage';
+import { saveImage, shareImage } from '@/lib/storyImage';
 import { useStoryDefaultDay } from '@/lib/useStorySlots';
 import { t } from '@/i18n';
 
@@ -99,12 +99,11 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
   );
 }
 
-function VideoViewer({ load, version, file, url, onClose }: { load: () => Promise<BioVideoData>; version: string; file: string; url: string; onClose: () => void }) {
+function VideoViewer({ load, version, file, onClose }: { load: () => Promise<BioVideoData>; version: string; file: string; onClose: () => void }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const bar = useRef<HTMLElement | null>(null);
   const [video, setVideo] = useState<Blob | null>(() => made.get(version) ?? null);
   const [noVideo, setNoVideo] = useState(() => !bioVideoTypes().length);
-  const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   useFullScreen(onClose);
 
@@ -171,55 +170,53 @@ function VideoViewer({ load, version, file, url, onClose }: { load: () => Promis
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version]);
 
+  const name = video ? `${file}.${video.type.includes('mp4') ? 'mp4' : 'webm'}` : file;
   const share = async () => {
     if (!video || busy) return;
     setBusy(true);
     try {
-      await shareImage(video, `${file}.${video.type.includes('mp4') ? 'mp4' : 'webm'}`);
+      await shareImage(video, name);
     } finally {
       setBusy(false);
     }
   };
 
   return createPortal(
-    <div className="sv vid" role="dialog" aria-modal="true" aria-label={t('Votre lien en bio')}>
+    <div className="sv vid" role="dialog" aria-modal="true" aria-label={t('Ma vidéo')}>
       <div className="sv-b" aria-hidden>
         <i>
           <b ref={bar} className="live" />
         </i>
       </div>
       <header className="sv-h">
-        <span>{t('Votre lien en bio')}</span>
+        <span>{t('Ma vidéo')}</span>
         <button type="button" aria-label={t('Fermer')} onClick={onClose}>
           <I icon={X} size={22} />
         </button>
       </header>
       <div className="sv-v">
-        <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Vidéo de votre lien en bio')} />
+        <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Ma vidéo')} />
       </div>
       <div className="sv-a">
-        {!noVideo && (
-          <Button sm className="ag9-b" disabled={!video} loading={busy} onClick={() => void share()}>
-            <I icon={Share2} size={18} /> {video ? t('Partager la vidéo') : t('Création…')}
-          </Button>
+        {noVideo ? (
+          <p>{t('Ce téléphone ne sait pas créer la vidéo.')}</p>
+        ) : (
+          <>
+            <Button sm className="ag9-n" disabled={!video} onClick={() => video && void saveImage(video, name)}>
+              <I icon={Download} size={18} /> {video ? t('Télécharger') : t('Création…')}
+            </Button>
+            <Button sm className="ag9-b" disabled={!video} loading={busy} onClick={() => void share()}>
+              <I icon={Share2} size={18} /> {t('Partager')}
+            </Button>
+          </>
         )}
-        <Button
-          sm
-          className="ag9-n"
-          onClick={() => {
-            void navigator.clipboard?.writeText(url).catch(() => undefined);
-            setCopied(true);
-          }}
-        >
-          <I icon={Copy} size={18} /> {copied ? t('Lien copié') : t('Copier mon lien')}
-        </Button>
       </div>
     </div>,
     document.body,
   );
 }
 
-export function ProStoryRail({ salon, url, short, pending }: { salon: SalonOwnerView; url: string; short: string; pending: number }) {
+export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView; short: string; pending: number }) {
   const today = toLocalDateKey();
   const { date, hours } = useStoryDefaultDay(salon);
   const [open, setOpen] = useState<'tips' | 'video' | null>(null);
@@ -247,14 +244,14 @@ export function ProStoryRail({ salon, url, short, pending }: { salon: SalonOwner
   return (
     <>
       <div className="h12-rail" role="group" aria-label={t('Stories')}>
-        <button type="button" onClick={() => document.getElementById('ma-story')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
-          <span className="h12-sv on">
-            <small>
-              {date === today ? t("Aujourd'hui") : date === addDaysToKey(today, 1) ? t('Demain') : ''}
-              <b>{hours.length ? t('{n} dispos', { n: hours.length }) : t('Complet')}</b>
-            </small>
+        <button type="button" onClick={() => see('video')}>
+          <span className={`h12-sv${readSeen(videoKey) === version ? '' : ' on'}`}>
+            <img src={photos[0]} alt="" />
+            <i>
+              <I icon={Play} size={18} />
+            </i>
           </span>
-          {t('Ma story')}
+          {t('Ma vidéo')}
         </button>
         <button type="button" onClick={() => see('tips')}>
           <span className={`h12-sv${readSeen(tipsKey) === today ? '' : ' on'}`}>
@@ -262,15 +259,9 @@ export function ProStoryRail({ salon, url, short, pending }: { salon: SalonOwner
           </span>
           {t('Conseil')}
         </button>
-        <button type="button" onClick={() => see('video')}>
-          <span className={`h12-sv${readSeen(videoKey) === version ? '' : ' on'}`}>
-            <I icon={Star} size={22} />
-          </span>
-          {t('Nouveau')}
-        </button>
       </div>
       {open === 'tips' && <TipsViewer tips={tips} photos={photos} onClose={close} />}
-      {open === 'video' && <VideoViewer load={loadVideo} version={version} file={`salondz-lien-en-bio-${salon.slug}`} url={url} onClose={close} />}
+      {open === 'video' && <VideoViewer load={loadVideo} version={version} file={`salondz-video-${salon.slug}`} onClose={close} />}
     </>
   );
 }

@@ -129,7 +129,7 @@ export function ProHome() {
             {nonLues > 0 && <i aria-hidden />}
           </button>
         </div>
-        {salon && <ProStoryRail salon={salon} url={link.url} short={link.short} pending={pending.data?.items.length ?? 0} />}
+        {salon && <ProStoryRail salon={salon} short={link.short} pending={pending.data?.items.length ?? 0} />}
         <div className="h12-mid">
           <Link to="/pro/agenda" className={`h12-day${upcoming.length ? ' col' : ''}`}>
             <span className="h12-ring">

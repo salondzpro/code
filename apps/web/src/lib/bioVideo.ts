@@ -1,8 +1,8 @@
 /**
- * Vidéo « lien en bio » propre à chaque professionnel, dessinée sur le téléphone à partir de ses vraies
- * données. Elle raconte ce que vit son client : la question en message, sa page avec ses photos et ses
- * prix, le choix d'un créneau, la confirmation, puis comment mettre le lien dans sa bio. Rien n'est
- * stocké sur un serveur. `bioVideoVersion` change avec ces données : la story redevient nouvelle.
+ * « Ma vidéo » : comment réserver chez ce professionnel, à publier sur ses réseaux. Un modèle aux couleurs
+ * de Salon DZ, rempli avec ses vraies données : la question reçue selon son métier, ses photos, ses
+ * prestations, ses prix, ses heures libres, son lien. Dessinée sur le téléphone, rien sur un serveur.
+ * `bioVideoVersion` change avec ces données : le rond se rallume et la vidéo est refaite.
  */
 import { formatDA } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
@@ -28,6 +28,8 @@ export type BioVideoData = {
   salon: string;
   link: string;
   question: string;
+  /** Sans validation manuelle, le rendez-vous est pris tout de suite. */
+  confirmed: boolean;
   services: { name: string; price: string }[];
   /** La prestation que le client de la vidéo choisit, et son rendez-vous. */
   picked: { name: string; price: string };
@@ -48,6 +50,7 @@ export async function loadBioVideo(salon: SalonOwnerView, link: string, day: str
     salon: salon.name,
     link,
     question: profileQuestion(proProfile(salon)),
+    confirmed: salon.autoConfirm,
     services,
     picked: services[0] ?? { name: salon.name, price: '' },
     day,
@@ -64,7 +67,7 @@ export function bioVideoVersion(salon: SalonOwnerView, link: string): string {
     .filter((s) => s.isActive)
     .map((s) => `${s.id}:${s.name}:${s.priceDa}`)
     .sort();
-  return JSON.stringify([link, salon.coverUrl, services]);
+  return JSON.stringify([link, salon.coverUrl, salon.autoConfirm, services]);
 }
 
 /**
@@ -137,138 +140,168 @@ function bar(g: CanvasRenderingContext2D, label: string, action: string, ready: 
   write(g, action, W - M - 114, y + 61, 600, 28, '#ffffff', 'center', 160);
 }
 
-/** Ce que le pro reçoit tous les jours en message, et le lien qui y répond. */
+/** Le fond de marque, l'étape en clair, et l'écran du téléphone qui monte du bas. */
+function screen(g: CanvasRenderingContext2D, ms: number, caption: string, draw: () => void) {
+  g.fillStyle = ACCENT;
+  g.fillRect(0, 0, W, H);
+  write(g, 'Salon DZ', W / 2, 62, 600, 28, '#ffffff', 'center');
+  enter(g, ms, 0, () => write(g, caption, W / 2, 144, 600, 40, '#ffffff', 'center'));
+  const x = 52;
+  const y = 196;
+  const k = (W - x * 2) / W;
+  g.save();
+  g.beginPath();
+  g.roundRect(x, y, W - x * 2, H, 44);
+  g.clip();
+  g.translate(x, y);
+  g.scale(k, k);
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, 0, W, H);
+  draw();
+  g.restore();
+}
+
+/** Ce que ses clients lui écrivent, et le lien qui y répond. */
 function sceneMessage(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   photo(g, d.hook, 0, 0, W, H);
   g.fillStyle = 'rgba(20,16,36,.62)';
   g.fillRect(0, 0, W, H);
-  enter(g, ms, 200, () => bubble(g, d.question, 420, false, '#ffffff', INK));
-  enter(g, ms, 1300, () => bubble(g, d.link, 540, true, ACCENT, '#ffffff'));
-  enter(g, ms, 2300, () => write(g, t('Votre lien répond à votre place'), W / 2, 800, 600, 46, '#ffffff', 'center'));
-}
-
-/** Sa page, comme son client la voit. */
-function scenePage(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
-  const chosen = ms > 2400;
-  g.fillStyle = '#ffffff';
-  g.fillRect(0, 0, W, H);
-  photo(g, d.cover, 0, 0, W, 380);
-  box(g, 0, 340, W, 60, '#ffffff', 40);
-  write(g, d.salon, M, 450, 600, 46, INK);
-  write(g, t('Prestations'), M, 530, 600, 30, INK);
-  d.services.forEach((s, i) => {
-    const y = 556 + i * 92;
-    enter(g, ms, 200 + i * 160, () => {
-      const on = chosen && i === 0;
-      box(g, M, y, W - M * 2, 80, on ? SOFT : '#ffffff', 20);
-      write(g, s.name, M + 18, y + 50, 500, 29, INK, 'left', 330);
-      write(g, s.price, W - M - 78, y + 50, 600, 28, INK, 'right', 180);
-      g.fillStyle = on ? ACCENT : FILL;
-      g.beginPath();
-      g.arc(W - M - 38, y + 40, 22, 0, Math.PI * 2);
-      g.fill();
-      write(g, on ? '✓' : '+', W - M - 38, y + 50, 600, 28, on ? '#ffffff' : ACCENT, 'center', 30);
-    });
+  write(g, 'Salon DZ', W / 2, 62, 600, 28, '#ffffff', 'center');
+  enter(g, ms, 200, () => bubble(g, d.question, 400, false, '#ffffff', INK));
+  enter(g, ms, 1200, () => bubble(g, d.link, 520, true, ACCENT, '#ffffff'));
+  enter(g, ms, 2100, () => {
+    write(g, t('Plus besoin de demander'), W / 2, 770, 600, 48, '#ffffff', 'center');
+    write(g, t('Réservez en ligne chez {salon}', { salon: d.salon }), W / 2, 826, 500, 30, 'rgba(255,255,255,.92)', 'center');
   });
-  bar(g, chosen ? d.picked.name : t('Choisissez un service'), t('Réserver'), chosen);
 }
 
-/** Le choix du jour et de l'heure, avec ses vraies heures libres. */
+function scenePage(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  const chosen = ms > 2200;
+  screen(g, ms, t('1. Choisissez votre prestation'), () => {
+    photo(g, d.cover, 0, 0, W, 340);
+    box(g, 0, 300, W, 60, '#ffffff', 40);
+    write(g, d.salon, M, 410, 600, 44, INK);
+    d.services.forEach((s, i) => {
+      const y = 450 + i * 92;
+      enter(g, ms, 200 + i * 160, () => {
+        const on = chosen && i === 0;
+        box(g, M, y, W - M * 2, 80, on ? SOFT : '#ffffff', 20);
+        write(g, s.name, M + 18, y + 50, 500, 29, INK, 'left', 330);
+        write(g, s.price, W - M - 78, y + 50, 600, 28, INK, 'right', 180);
+        g.fillStyle = on ? ACCENT : FILL;
+        g.beginPath();
+        g.arc(W - M - 38, y + 40, 22, 0, Math.PI * 2);
+        g.fill();
+        write(g, on ? '✓' : '+', W - M - 38, y + 50, 600, 28, on ? '#ffffff' : ACCENT, 'center', 30);
+      });
+    });
+    bar(g, chosen ? d.picked.name : t('Choisissez un service'), t('Réserver'), chosen);
+  });
+}
+
+/** Le jour et l'heure, avec ses vraies heures libres. */
 function sceneSlot(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   const pick = Math.min(2, d.hours.length - 1);
-  const chosen = ms > 2600;
-  g.fillStyle = '#ffffff';
-  g.fillRect(0, 0, W, H);
-  write(g, t('Choisir un créneau'), M, 130, 600, 46, INK);
-  box(g, M, 170, W - M * 2, 110, SOFT, 26);
-  write(g, d.picked.name, M + 26, 218, 600, 30, INK, 'left', W - M * 2 - 52);
-  write(g, d.picked.price, M + 26, 256, 500, 26, MUTED);
-  enter(g, ms, 300, () => {
-    write(g, t('Quel jour ?'), M, 350, 600, 32, INK);
-    const w = (W - M * 2 - 40) / 5;
-    d.days.slice(0, 5).forEach((x, i) => {
-      const px = M + i * (w + 10);
-      box(g, px, 376, w, 96, i === 0 ? INK : FILL, 22);
-      write(g, x, px + w / 2, 434, 600, 24, i === 0 ? '#ffffff' : INK, 'center', w - 12);
+  const chosen = ms > 2400;
+  screen(g, ms, t('2. Choisissez votre créneau'), () => {
+    box(g, M, 50, W - M * 2, 110, SOFT, 26);
+    write(g, d.picked.name, M + 26, 98, 600, 30, INK, 'left', W - M * 2 - 52);
+    write(g, d.picked.price, M + 26, 136, 500, 26, MUTED);
+    enter(g, ms, 300, () => {
+      write(g, t('Quel jour ?'), M, 226, 600, 32, INK);
+      const w = (W - M * 2 - 40) / 5;
+      d.days.slice(0, 5).forEach((x, i) => {
+        const px = M + i * (w + 10);
+        box(g, px, 250, w, 96, i === 0 ? INK : FILL, 22);
+        write(g, x, px + w / 2, 308, 600, 24, i === 0 ? '#ffffff' : INK, 'center', w - 12);
+      });
     });
-  });
-  enter(g, ms, 900, () => {
-    write(g, t('À quelle heure ?'), M, 548, 600, 32, INK);
-    const w = (W - M * 2 - 24) / 3;
-    d.hours.forEach((x, i) => {
-      const px = M + (i % 3) * (w + 12);
-      const py = 574 + Math.floor(i / 3) * 94;
-      const on = chosen && i === pick;
-      box(g, px, py, w, 80, on ? ACCENT : FILL, 20);
-      write(g, x, px + w / 2, py + 51, 600, 30, on ? '#ffffff' : INK, 'center', w - 16);
+    enter(g, ms, 800, () => {
+      write(g, t('À quelle heure ?'), M, 420, 600, 32, INK);
+      const w = (W - M * 2 - 24) / 3;
+      d.hours.forEach((x, i) => {
+        const px = M + (i % 3) * (w + 12);
+        const py = 446 + Math.floor(i / 3) * 94;
+        const on = chosen && i === pick;
+        box(g, px, py, w, 80, on ? ACCENT : FILL, 20);
+        write(g, x, px + w / 2, py + 51, 600, 30, on ? '#ffffff' : INK, 'center', w - 16);
+      });
     });
+    bar(g, chosen ? `${d.day} · ${d.hours[pick] ?? ''}` : t('Choisissez un créneau'), t('Continuer'), chosen);
   });
-  bar(g, chosen ? `${d.day} · ${d.hours[pick] ?? ''}` : t('Choisissez un créneau'), t('Continuer'), chosen);
 }
 
-/** Le rendez-vous est pris, sans un message. */
+/** Les champs restent vides : aucune donnée de client dans une vidéo qu'on publie. */
+function sceneContact(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  const hour = d.hours[Math.min(2, d.hours.length - 1)] ?? '';
+  screen(g, ms, t('3. Laissez votre numéro'), () => {
+    box(g, M, 50, W - M * 2, 110, SOFT, 26);
+    write(g, d.picked.name, M + 26, 98, 600, 30, INK, 'left', W - M * 2 - 52);
+    write(g, `${d.day} · ${hour}`, M + 26, 136, 500, 26, MUTED);
+    enter(g, ms, 300, () => {
+      write(g, t('Votre nom'), M, 232, 600, 30, INK);
+      box(g, M, 252, W - M * 2, 96, FILL, 22);
+    });
+    enter(g, ms, 700, () => {
+      write(g, t('Numéro de téléphone'), M, 412, 600, 30, INK);
+      box(g, M, 432, W - M * 2, 96, FILL, 22);
+      write(g, '+213', M + 26, 492, 500, 30, MUTED);
+    });
+    bar(g, `${t('Total')} · ${d.picked.price}`, t('Confirmer'), ms > 1800);
+  });
+}
+
 function sceneDone(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   const hour = d.hours[Math.min(2, d.hours.length - 1)] ?? '';
-  g.fillStyle = '#ffffff';
-  g.fillRect(0, 0, W, H);
-  const k = ease(ms / 400);
-  g.fillStyle = SOFT;
-  g.beginPath();
-  g.arc(W / 2, 300, 104 * k, 0, Math.PI * 2);
-  g.fill();
-  g.fillStyle = ACCENT;
-  g.beginPath();
-  g.arc(W / 2, 300, 76 * k, 0, Math.PI * 2);
-  g.fill();
-  if (k > 0.8) write(g, '✓', W / 2, 330, 600, 84, '#ffffff', 'center', 100);
-  enter(g, ms, 300, () => write(g, t('Rendez-vous réservé'), W / 2, 480, 600, 48, INK, 'center'));
-  enter(g, ms, 500, () => write(g, d.salon, W / 2, 530, 500, 30, MUTED, 'center'));
-  enter(g, ms, 800, () => {
-    box(g, M, 590, W - M * 2, 300, FILL, 28);
-    [
-      [t('Prestation'), d.picked.name],
-      [t('Jour'), d.day],
-      [t('Heure'), hour],
-      [t('Total'), d.picked.price],
-    ].forEach(([a, b], i) => {
-      write(g, a!, M + 28, 650 + i * 66, 500, 28, MUTED, 'left', 200);
-      write(g, b!, W - M - 28, 650 + i * 66, 600, 28, INK, 'right', 340);
+  screen(g, ms, d.confirmed ? t("Et c'est réservé") : t('Le salon vous confirme'), () => {
+    const k = ease(ms / 400);
+    g.fillStyle = SOFT;
+    g.beginPath();
+    g.arc(W / 2, 170, 100 * k, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = ACCENT;
+    g.beginPath();
+    g.arc(W / 2, 170, 72 * k, 0, Math.PI * 2);
+    g.fill();
+    if (k > 0.8) write(g, '✓', W / 2, 200, 600, 80, '#ffffff', 'center', 100);
+    enter(g, ms, 300, () => write(g, d.confirmed ? t('Rendez-vous réservé') : t('Demande envoyée'), W / 2, 346, 600, 46, INK, 'center'));
+    enter(g, ms, 500, () => write(g, d.salon, W / 2, 396, 500, 30, MUTED, 'center'));
+    enter(g, ms, 700, () => {
+      box(g, M, 440, W - M * 2, 300, FILL, 28);
+      [
+        [t('Prestation'), d.picked.name],
+        [t('Jour'), d.day],
+        [t('Heure'), hour],
+        [t('Total'), d.picked.price],
+      ].forEach(([a, b], i) => {
+        write(g, a!, M + 28, 500 + i * 66, 500, 28, MUTED, 'left', 200);
+        write(g, b!, W - M - 28, 500 + i * 66, 600, 28, INK, 'right', 340);
+      });
     });
   });
 }
 
-/** Ce qu'il lui reste à faire : mettre le lien dans sa bio. */
-function sceneBio(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
-  const steps = [t('Modifier le profil'), t('Liens'), t('Ajouter un lien externe'), t('Collez votre lien')];
-  g.fillStyle = ACCENT;
+/** La fin : où réserver. */
+function sceneEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  photo(g, d.cover, 0, 0, W, H);
+  g.fillStyle = 'rgba(20,16,36,.66)';
   g.fillRect(0, 0, W, H);
-  enter(g, ms, 100, () => write(g, t('Mettez-le dans votre bio'), W / 2, 240, 600, 50, '#ffffff', 'center'));
-  enter(g, ms, 300, () => write(g, t('Dans Instagram'), W / 2, 296, 500, 32, 'rgba(255,255,255,.9)', 'center'));
-  steps.forEach((s, i) => {
-    const y = 350 + i * 128;
-    enter(g, ms, 600 + i * 600, () => {
-      box(g, M, y, W - M * 2, 110, '#ffffff', 26);
-      g.fillStyle = ACCENT;
-      g.beginPath();
-      g.arc(M + 58, y + 55, 32, 0, Math.PI * 2);
-      g.fill();
-      write(g, String(i + 1), M + 58, y + 67, 600, 34, '#ffffff', 'center', 40);
-      write(g, s, M + 108, y + 66, 600, 32, INK, 'left', W - M * 2 - 130);
-    });
+  enter(g, ms, 100, () => write(g, d.salon, W / 2, 500, 600, 56, '#ffffff', 'center'));
+  enter(g, ms, 500, () => write(g, t('Réservez en ligne, à toute heure'), W / 2, 566, 500, 34, 'rgba(255,255,255,.92)', 'center'));
+  enter(g, ms, 900, () => {
+    box(g, M, 620, W - M * 2, 104, ACCENT, 28);
+    write(g, d.link, W / 2, 684, 600, 34, '#ffffff', 'center', W - M * 2 - 48);
   });
-  enter(g, ms, 3200, () => {
-    box(g, M, 900, W - M * 2, 100, INK, 26);
-    write(g, d.link, W / 2, 962, 600, 32, '#ffffff', 'center', W - M * 2 - 40);
-  });
-  enter(g, ms, 3600, () => write(g, 'Salon DZ', W / 2, 1120, 600, 38, '#ffffff', 'center'));
+  enter(g, ms, 1400, () => write(g, 'Salon DZ', W / 2, 1140, 600, 40, '#ffffff', 'center'));
 }
 
 const SCENES: [(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) => void, number][] = [
-  [sceneMessage, 4200],
-  [scenePage, 4800],
-  [sceneSlot, 5000],
-  [sceneDone, 3400],
-  [sceneBio, 5600],
+  [sceneMessage, 3800],
+  [scenePage, 4400],
+  [sceneSlot, 4600],
+  [sceneContact, 3400],
+  [sceneDone, 3000],
+  [sceneEnd, 3600],
 ];
 export const BIO_VIDEO_MS = SCENES.reduce((a, s) => a + s[1], 0);
 
@@ -277,7 +310,7 @@ export function drawBioFrame(g: CanvasRenderingContext2D, ms: number, d: BioVide
   g.textBaseline = 'alphabetic';
   let rest = Math.max(0, ms);
   for (const [draw, length] of SCENES) {
-    if (rest < length || draw === sceneBio) {
+    if (rest < length || draw === sceneEnd) {
       draw(g, rest, d);
       return;
     }
