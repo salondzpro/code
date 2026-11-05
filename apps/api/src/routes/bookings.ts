@@ -136,6 +136,11 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
         .from('bookings')
         .update({ booked_by: profile.id, booked_by_name: profile.fullName ?? null })
         .eq('id', created.id);
+    // Jamais bloquant : le rendez-vous est pris, la provenance n'est qu'un renseignement.
+    if (body.origin) {
+      const saved = await db.from('bookings').update({ origin: body.origin }).eq('id', created.id);
+      if (saved.error) req.log.warn({ err: saved.error.message }, 'provenance non enregistrée');
+    }
     pushAfterBooking(req.log, created.id);
     reply.status(201);
     return getBookingWithSalon(created.id);

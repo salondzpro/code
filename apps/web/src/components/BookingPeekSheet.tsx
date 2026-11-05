@@ -25,6 +25,7 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
+import { originLabel } from '@/lib/pageView';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
 import { BottomSheet, Button, Skeleton, Dim, cancelledLabel } from './ui';
@@ -141,6 +142,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 {t('Réservé par')} {b.bookedByName}
               </p>
             )}
+            {originLabel(b.origin) && <p className="ag9-sn">{originLabel(b.origin)}</p>}
             {b.notes && <p className="ag9-sn">« {b.notes} »</p>}
             {b.cancellationReason && <p className="ag9-sn">{b.cancellationReason}</p>}
 

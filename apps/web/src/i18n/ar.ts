@@ -1831,4 +1831,7 @@ export const ar: Record<string, string> = {
   "Lien dans notre bio": "الرابط في البايو",
   "réservation en ligne": "الحجز عبر الإنترنت",
   "Votre numéro": "رقمك",
+  "Réservé depuis Instagram": "تم الحجز من إنستغرام",
+  "Réservé depuis Snapchat": "تم الحجز من سناب شات",
+  "Réservé avec le code QR": "تم الحجز برمز QR",
 };

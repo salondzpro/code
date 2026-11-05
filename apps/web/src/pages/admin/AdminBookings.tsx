@@ -128,7 +128,7 @@ export function AdminBookings() {
                   {b.staffName ? ` · ${b.staffName}` : ''}
                 </span>
                 <span className="block text-[0.857rem] text-muted" dir="ltr">
-                  {quand(b.startsAt)} · {formatDA(b.priceDa)} · {b.source}
+                  {quand(b.startsAt)} · {formatDA(b.priceDa)} · {b.origin ?? b.source}
                 </span>
                 {b.cancelledAt && (
                   <span className="block text-[0.857rem] text-danger">

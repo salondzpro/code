@@ -309,7 +309,7 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       if (views.error) throw views.error;
       if (online.error) throw online.error;
       const byDay = new Map<string, number>();
-      const bySource = { link: 0, instagram: 0, qr: 0, other: 0 };
+      const bySource = { link: 0, instagram: 0, snapchat: 0, qr: 0, other: 0 };
       for (const r of views.data ?? []) {
         byDay.set(r.day, (byDay.get(r.day) ?? 0) + r.views);
         bySource[r.source as keyof typeof bySource] += r.views;

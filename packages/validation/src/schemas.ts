@@ -230,6 +230,8 @@ export const createBookingSchema = z
     beneficiary: z
       .object({ fullName: p.shortText(80), phone: p.phoneDZ })
       .optional(),
+    /** D'où vient la personne : le réseau seulement. */
+    origin: z.enum(['link', 'instagram', 'snapchat', 'qr']).optional(),
   })
   .refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, {
     message: 'Choisissez au moins une prestation',

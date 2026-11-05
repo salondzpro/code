@@ -172,7 +172,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       config: { rateLimit: { max: 30, timeWindow: '10 minutes' } },
       schema: {
         params: z.object({ id: z.string().uuid() }),
-        body: z.object({ source: z.enum(['link', 'instagram', 'qr', 'other']) }),
+        body: z.object({ source: z.enum(['link', 'instagram', 'snapchat', 'qr', 'other']) }),
       },
     },
     async (req, reply) => {

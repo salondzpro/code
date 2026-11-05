@@ -507,6 +507,7 @@ on('POST', '/bookings', (c) => {
   const first = services[0]!;
   const b = bookingRow(s, { ...first, name: services.map((x) => x.name).join(' + '), durationMinutes: duration, priceDa: services.reduce((a, x) => a + x.priceDa, 0) }, staff.id, new Date(startMs).toISOString(), s.autoConfirm ? 'confirmed' : 'pending', { id: who.id, name: clientName, phone: who.phone ?? body.clientPhone ?? null }, {
     source: 'online',
+    origin: body.origin ?? null,
     notes: body.notes ?? null,
     bookedBy: forOther ? u.id : null,
     bookedByName: forOther ? u.fullName : null,
@@ -661,7 +662,7 @@ on('GET', '/pro/page-stats', (c) => {
   }
   const total = byDay.reduce((n, x) => n + x.views, 0);
   const instagram = Math.round(total * 0.24), qr = Math.round(total * 0.12);
-  return ok({ total, byDay, bySource: { link: total - instagram - qr, instagram, qr, other: 0 }, bookings: Math.max(1, Math.round(total / 14)) });
+  return ok({ total, byDay, bySource: { link: total - instagram - qr, instagram, snapchat: 0, qr, other: 0 }, bookings: Math.max(1, Math.round(total / 14)) });
 });
 
 // ---------------------------------------------------------------------------------------------

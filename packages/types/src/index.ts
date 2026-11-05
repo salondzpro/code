@@ -172,6 +172,7 @@ export interface Booking {
   endsAt: ISODateTime;
   status: BookingStatus;
   source: BookingSource;
+  origin?: BookingOrigin | null;
   clientName: string;
   clientPhone: string | null;
   notes: string | null;
@@ -449,7 +450,9 @@ export interface ProDashboardStats {
 
 /** Statistiques d'une période (design « Chiffre d'affaires » jour / semaine / mois). */
 /** Visites de la page publique sur une période (carte « Votre page », 1er nov. 2026). */
-export type PageViewSource = 'link' | 'instagram' | 'qr' | 'other';
+export type PageViewSource = 'link' | 'instagram' | 'snapchat' | 'qr' | 'other';
+/** D'où vient une réservation en ligne. Le réseau seulement : jamais l'identité de la personne. */
+export type BookingOrigin = 'link' | 'instagram' | 'snapchat' | 'qr';
 export interface ProPageStats {
   total: number;
   byDay: { date: DateKey; views: number }[];

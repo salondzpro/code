@@ -1845,4 +1845,7 @@ export const en: Record<string, string> = {
   "Lien dans notre bio": "Link in our bio",
   "réservation en ligne": "online booking",
   "Votre numéro": "Your number",
+  "Réservé depuis Instagram": "Booked from Instagram",
+  "Réservé depuis Snapchat": "Booked from Snapchat",
+  "Réservé avec le code QR": "Booked with the QR code",
 };

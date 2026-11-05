@@ -23,6 +23,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import { PageLoading } from '@/components/PageLoading';
+import { bookingOrigin } from '@/lib/pageView';
 import { t } from '@/i18n';
 
 export function BookingReview() {
@@ -67,6 +68,7 @@ export function BookingReview() {
         notes: draft.notes || undefined,
         clientName: draft.name,
         clientPhone: draft.phone,
+        origin: bookingOrigin(s.id),
         beneficiary:
           draft.forOther && draft.otherName && draft.otherPhone
             ? { fullName: draft.otherName, phone: draft.otherPhone }

@@ -53,6 +53,7 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
+import { originLabel } from '@/lib/pageView';
 import { PageLoading } from '@/components/PageLoading';
 import { SlotSuggestions } from '@/components/SlotSuggestions';
 import { t } from '@/i18n';
@@ -140,6 +141,7 @@ export function ProBookingDetail() {
             {b.clientPhone && (
               <p className="mono text-[0.857rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
             )}
+            {originLabel(b.origin) && <p className="text-[0.857rem] text-muted">{originLabel(b.origin)}</p>}
             {!!b.bookedByName && (
               <p className="text-[0.857rem] text-muted">{t("Réservé par")}{' '}{b.bookedByName}</p>
             )}
