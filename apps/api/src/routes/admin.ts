@@ -224,7 +224,10 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
         }),
       ) as Record<string, unknown>[];
       const total = rows.length ? Number(rows[0]!.total_count) : 0;
-      const items = rows.map(({ total_count: _t, ...r }) => camelize(r));
+      // La provenance à part : la liste reste entière même si la colonne n'existe pas encore (0054).
+      const origins = await db.from('bookings').select('id, origin').in('id', rows.map((r) => r.id as string));
+      const originOf = new Map((origins.data ?? []).map((o) => [o.id as string, o.origin as string | null]));
+      const items = rows.map(({ total_count: _t, ...r }) => camelize({ ...r, origin: originOf.get(r.id as string) ?? null }));
       return { items, total, nextCursor: items.length === limit ? String(offset + limit) : null };
     },
   );

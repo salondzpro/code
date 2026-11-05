@@ -26,6 +26,7 @@ import {
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { originLabel } from '@/lib/pageView';
+import { remindedLabel, useReminded } from '@/lib/reminders';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
 import { BottomSheet, Button, Skeleton, Dim, cancelledLabel } from './ui';
@@ -38,6 +39,7 @@ const REBOOK_DAYS = 21;
 export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const navigate = useNavigate();
   const booking = useProBooking(id);
+  const reminded = useReminded();
   const salon = useProSalon().data?.salon ?? null;
   const meId = useMe().data?.profile?.id;
   const { setStatus, cancel } = useProBookingMutations();
@@ -143,6 +145,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
               </p>
             )}
             {originLabel(b.origin) && <p className="ag9-sn">{originLabel(b.origin)}</p>}
+            {reminded[b.id] && <p className="ag9-sn">{remindedLabel(reminded[b.id]!)}</p>}
             {b.notes && <p className="ag9-sn">« {b.notes} »</p>}
             {b.cancellationReason && <p className="ag9-sn">{b.cancellationReason}</p>}
 

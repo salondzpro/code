@@ -16,13 +16,12 @@ import { proProfile, profilePhotos, profileQuestion } from '@/lib/proProfile';
 import { proTips, type ProTip } from '@/lib/proTips';
 import { saveImage, shareImage } from '@/lib/storyImage';
 import { useStoryDefaultDay } from '@/lib/useStorySlots';
-import { encodeVideo } from '@/lib/videoEncode';
+import { isNativeApp } from '@/lib/nativeFile';
+import { loadVideoFonts, prepareVideo, provideVideo, useVideoFile } from '@/lib/bioVideoStore';
 import { t } from '@/i18n';
 
 const TIP_MS = 7000;
-
-/** La vidéo faite pendant la session : on ne la refait que si ses données changent. */
-const made = new Map<string, Blob>();
+const PREPARE_AFTER_MS = 3000;
 
 const seenKey = (kind: string, salonId: string) => `salondz:story:${kind}:${salonId}`;
 function readSeen(key: string): string | null {
@@ -104,14 +103,26 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
 function VideoViewer({ load, version, file, photo, women, name, onClose }: { load: () => Promise<BioVideoData>; version: string; file: string; photo: string; women: boolean; name: string; onClose: () => void }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const bar = useRef<HTMLElement | null>(null);
-  const [video, setVideo] = useState<Blob | null>(() => made.get(version) ?? null);
-  const [noVideo, setNoVideo] = useState(() => !bioVideoTypes().length);
+  const { blob: video, progress, failed } = useVideoFile();
+  const [noVideo, setNoVideo] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
+  // Le geste fait avant que le fichier soit fini : il s'exécute dès qu'il l'est.
+  const [wanted, setWanted] = useState<'share' | 'save' | null>(null);
+  const fallback = useRef<(() => void) | null>(null);
   useFullScreen(onClose);
 
-  // La vidéo se joue pendant que son fichier se fabrique image par image. Sans encodeur sur le téléphone,
-  // on retombe sur l'enregistrement de la lecture, moins fiable.
+  useEffect(() => {
+    prepareVideo(version, load);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version]);
+
+  // Sans encodeur sur le téléphone, on retombe sur l'enregistrement de la lecture, moins fiable.
+  useEffect(() => {
+    if (!failed) return;
+    if (bioVideoTypes().length) fallback.current?.();
+    else setNoVideo(true);
+  }, [failed]);
+
   useEffect(() => {
     const c = canvas.current;
     const g = c?.getContext('2d');
@@ -142,8 +153,7 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
             if (!types.length) setNoVideo(true);
             return;
           }
-          made.set(version, blob);
-          setVideo(blob);
+          provideVideo(version, blob);
         };
         recorder.start();
       }
@@ -181,22 +191,15 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
         }, 40);
         probe.start();
       });
-    const fonts = ['700 60px Outfit', '500 16px Inter', 'italic 400 70px "Instrument Serif"'].map((f) => document.fonts.load(f).catch(() => undefined));
-    void Promise.all([load(), ...fonts]).then(async ([d]) => {
+    void Promise.all([load(), loadVideoFonts()]).then(([d]) => {
       data = d;
-      if (dead) return;
-      play();
-      if (made.has(version)) return;
-      const blob = await encodeVideo(BIO_VIDEO_SIZE, BIO_VIDEO_MS, (x, ms) => drawBioFrame(x, ms, data), setProgress, () => dead).catch(() => null);
-      if (dead) return;
-      if (blob) {
-        made.set(version, blob);
-        setVideo(blob);
-        return;
-      }
-      await warmUp();
-      record = true;
+      if (!dead) play();
     });
+    fallback.current = () => {
+      void warmUp().then(() => {
+        record = true;
+      });
+    };
     return () => {
       dead = true;
       cancelAnimationFrame(raf);
@@ -206,8 +209,16 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
   }, [version]);
 
   const fileName = video ? `${file}.${video.type.includes('mp4') ? 'mp4' : 'webm'}` : file;
+  const download = () => {
+    if (!video) setWanted('save');
+    else void saveImage(video, fileName);
+  };
   const share = async () => {
-    if (!video || busy) return;
+    if (!video) {
+      setWanted('share');
+      return;
+    }
+    if (busy) return;
     setBusy(true);
     try {
       await shareImage(video, fileName);
@@ -215,6 +226,18 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (!video || !wanted) return;
+    setWanted(null);
+    if (wanted === 'save') {
+      void saveImage(video, fileName);
+      return;
+    }
+    // Sur le site, le navigateur n'ouvre le partage que juste après un toucher : il faudra retoucher.
+    void isNativeApp().then((native) => native && shareImage(video, fileName));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video, wanted]);
 
   return createPortal(
     <div className="sv vid" role="dialog" aria-modal="true" aria-label={t('Votre vidéo')}>
@@ -241,12 +264,13 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
           <p>{t('Ce téléphone ne sait pas créer la vidéo.')}</p>
         ) : (
           <div className="sv-c">
-            <button type="button" className="p" disabled={!video || busy} aria-busy={busy || undefined} onClick={() => void share()}>
-              {busy ? <span className="btn-spin" aria-hidden /> : <I icon={Share} size={20} />}
-              {video ? t('Partager') : `${t('Création…')} ${Math.round(progress * 100)} %`}
+            <button type="button" className="p" disabled={busy} aria-busy={busy || undefined} onClick={() => void share()}>
+              {busy || wanted === 'share' ? <span className="btn-spin" aria-hidden /> : <I icon={Share} size={20} />}
+              {wanted === 'share' ? `${Math.round(progress * 100)} %` : t('Partager')}
             </button>
-            <button type="button" disabled={!video} onClick={() => video && void saveImage(video, fileName)}>
-              <I icon={Download} size={20} /> {t('Télécharger')}
+            <button type="button" onClick={download}>
+              {wanted === 'save' ? <span className="btn-spin" aria-hidden /> : <I icon={Download} size={20} />}
+              {wanted === 'save' ? `${Math.round(progress * 100)} %` : t('Télécharger')}
             </button>
           </div>
         )}
@@ -258,7 +282,7 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
 
 export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView; short: string; pending: number }) {
   const today = toLocalDateKey();
-  const { date, hours } = useStoryDefaultDay(salon);
+  const { date, hours, ready } = useStoryDefaultDay(salon);
   const socials = useLabelSocials();
   const [open, setOpen] = useState<'tips' | 'video' | null>(null);
   const [, refresh] = useState(0);
@@ -273,6 +297,14 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
     return loadBioVideo(salon, short, date, hours.map((h) => minutesToTime(h.start)), instagram);
   };
   const version = useMemo(() => bioVideoVersion(salon, short), [salon, short]);
+  const fileKey = `${version}|${date}`;
+  // Le fichier se prépare en arrière-plan, quelques secondes après l'ouverture de l'accueil.
+  useEffect(() => {
+    if (!ready || !socials.isFetched) return;
+    const id = window.setTimeout(() => prepareVideo(fileKey, loadVideo), PREPARE_AFTER_MS);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileKey, ready, socials.isFetched]);
   const tipsKey = seenKey('tips', salon.id);
   const videoKey = seenKey('video', salon.id);
   const see = (kind: 'tips' | 'video') => {
@@ -301,7 +333,7 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
         </button>
       </div>
       {open === 'tips' && <TipsViewer tips={tips} photos={photos} onClose={close} />}
-      {open === 'video' && <VideoViewer load={loadVideo} version={version} file={`salondz-video-${salon.slug}`} photo={salon.logoUrl ?? photos[0]!} women={salon.genderTarget !== 'men'} name={salon.name} onClose={close} />}
+      {open === 'video' && <VideoViewer load={loadVideo} version={fileKey} file={`salondz-video-${salon.slug}`} photo={salon.logoUrl ?? photos[0]!} women={salon.genderTarget !== 'men'} name={salon.name} onClose={close} />}
     </>
   );
 }

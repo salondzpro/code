@@ -1,3 +1,4 @@
+import { ReminderConfirm } from '@/components/ReminderConfirm';
 import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProPendingUnseenCount, useProSalon } from '@salondz/api-client';
@@ -72,6 +73,7 @@ export function ProLayout() {
     // sur l'accueil, « + » dans l'agenda, gestion dans « Plus »). L'en-tête ne reste qu'avec le rail.
     <AppFrame className="pro-frame">
       <ActingAsBanner />
+      <ReminderConfirm />
       {desktop && <ProHeader />}
       <SalonSuspendedNotice />
       <div className="pro-shell">

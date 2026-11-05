@@ -1848,4 +1848,12 @@ export const en: Record<string, string> = {
   "Réservé depuis Instagram": "Booked from Instagram",
   "Réservé depuis Snapchat": "Booked from Snapchat",
   "Réservé avec le code QR": "Booked with the QR code",
+  "Avez-vous joint {name} ?": "Did you reach {name}?",
+  "Message envoyé à {name} ?": "Message sent to {name}?",
+  "Le rendez-vous sera noté comme prévenu, avec l’heure.": "The appointment will be marked as notified, with the time.",
+  "Déjà prévenus": "Already notified",
+  "Prévenu par WhatsApp à {h}": "Notified on WhatsApp at {h}",
+  "Prévenu par SMS à {h}": "Notified by SMS at {h}",
+  "Prévenu par appel à {h}": "Notified by call at {h}",
+  "Prévenu à {h}": "Notified at {h}",
 };

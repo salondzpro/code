@@ -200,6 +200,7 @@ export interface AdminProfileRow {
 }
 
 export interface AdminBookingRow {
+  origin: string | null;
   id: string;
   startsAt: string;
   endsAt: string;

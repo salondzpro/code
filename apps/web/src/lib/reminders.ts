@@ -1,5 +1,6 @@
 /**
- * Rappels manuels : ce qui est déjà parti et le message du salon. Gardés sur l'appareil.
+ * Rappels manuels : ce qui est parti, par quel moyen et à quelle heure, et le message du salon. Un rappel
+ * n'est compté qu'une fois confirmé par le pro. Gardés sur l'appareil.
  */
 import { useSyncExternalStore } from 'react';
 import { useProBookings } from '@salondz/api-client';
@@ -7,28 +8,70 @@ import { addDaysToKey, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
 import { t } from '@/i18n';
 
+export type ReminderChannel = 'whatsapp' | 'sms' | 'call';
+export type Reminded = { at: number; via: ReminderChannel | null };
+type Pending = { id: string; name: string; via: ReminderChannel; at: number };
+
 const SENT_KEY = 'salondz:reminded';
+const PENDING_KEY = 'salondz:reminder-pending';
 const KEEP_MS = 3 * 86_400_000;
+const PENDING_MS = 3600_000;
 const listeners = new Set<() => void>();
 let sent = load();
+let pending = loadPending();
 
-function load(): Record<string, number> {
+function load(): Record<string, Reminded> {
   try {
-    const all = JSON.parse(localStorage.getItem(SENT_KEY) ?? '{}') as Record<string, number>;
-    return Object.fromEntries(Object.entries(all).filter(([, at]) => Date.now() - at < KEEP_MS));
+    const all = JSON.parse(localStorage.getItem(SENT_KEY) ?? '{}') as Record<string, number | Reminded>;
+    const list = Object.entries(all).map(([id, v]): [string, Reminded] => [id, typeof v === 'number' ? { at: v, via: null } : v]);
+    return Object.fromEntries(list.filter(([, v]) => Date.now() - v.at < KEEP_MS));
   } catch {
     return {};
   }
 }
 
-export function markReminded(id: string): void {
-  sent = { ...sent, [id]: Date.now() };
+function loadPending(): Pending | null {
   try {
-    localStorage.setItem(SENT_KEY, JSON.stringify(sent));
+    const p = JSON.parse(localStorage.getItem(PENDING_KEY) ?? 'null') as Pending | null;
+    return p && Date.now() - p.at < PENDING_MS ? p : null;
   } catch {
-    /* navigation privée : marqué pour cette visite seulement */
+    return null;
   }
+}
+
+function keep(key: string, value: unknown) {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* navigation privée : gardé pour cette visite seulement */
+  }
+}
+
+/** Le geste est fait, pas encore le rappel : `ReminderConfirm` demandera au retour. */
+export function startReminder(b: { id: string; clientName: string }, via: ReminderChannel): void {
+  pending = { id: b.id, name: b.clientName.split(' ')[0] ?? b.clientName, via, at: Date.now() };
+  keep(PENDING_KEY, pending);
   listeners.forEach((l) => l());
+}
+
+export function answerReminder(done: boolean): void {
+  if (done && pending) {
+    sent = { ...sent, [pending.id]: { at: pending.at, via: pending.via } };
+    keep(SENT_KEY, sent);
+  }
+  pending = null;
+  keep(PENDING_KEY, null);
+  listeners.forEach((l) => l());
+}
+
+/** « Prévenu par WhatsApp à 14:32 ». */
+export function remindedLabel(r: Reminded): string {
+  const h = formatTimeDZ(new Date(r.at).toISOString());
+  if (r.via === 'whatsapp') return t('Prévenu par WhatsApp à {h}', { h });
+  if (r.via === 'sms') return t('Prévenu par SMS à {h}', { h });
+  if (r.via === 'call') return t('Prévenu par appel à {h}', { h });
+  return t('Prévenu à {h}', { h });
 }
 
 const subscribe = (l: () => void) => {
@@ -39,6 +82,7 @@ const subscribe = (l: () => void) => {
 };
 
 export const useReminded = () => useSyncExternalStore(subscribe, () => sent);
+export const usePendingReminder = () => useSyncExternalStore(subscribe, () => pending);
 
 /** Rendez-vous à rappeler : confirmés, à venir, aujourd'hui et demain. */
 export function useReminderBookings(enabled: boolean) {

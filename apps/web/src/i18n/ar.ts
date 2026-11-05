@@ -1834,4 +1834,12 @@ export const ar: Record<string, string> = {
   "Réservé depuis Instagram": "تم الحجز من إنستغرام",
   "Réservé depuis Snapchat": "تم الحجز من سناب شات",
   "Réservé avec le code QR": "تم الحجز برمز QR",
+  "Avez-vous joint {name} ?": "هل تواصلت مع {name}؟",
+  "Message envoyé à {name} ?": "هل أُرسلت الرسالة إلى {name}؟",
+  "Le rendez-vous sera noté comme prévenu, avec l’heure.": "سيُسجَّل الموعد كمُبلَّغ مع الساعة.",
+  "Déjà prévenus": "تم تبليغهم",
+  "Prévenu par WhatsApp à {h}": "تم التبليغ عبر واتساب على {h}",
+  "Prévenu par SMS à {h}": "تم التبليغ برسالة نصية على {h}",
+  "Prévenu par appel à {h}": "تم التبليغ بمكالمة على {h}",
+  "Prévenu à {h}": "تم التبليغ على {h}",
 };

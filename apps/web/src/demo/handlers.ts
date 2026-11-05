@@ -28,7 +28,7 @@ import {
   normalizeLabelSocials,
   normalizeLabelStyle,
 } from '@salondz/constants';
-import type { Booking, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
+import type { Booking, BookingOrigin, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
 import { availableSlots, clientKeyOf, clientStanding, concerns, dashboardStats, daysUntilMax, hm, nextAvailability, proClients, statsRange, summary, unaccent } from './engine';
 import { advance, bookingRow, fmtWhen, getWorld, notify, onBookingChange, refreshRating, resetWorld, saveWorld, uid, type DemoProfile, type World } from './world';
 
@@ -476,7 +476,7 @@ const mineBooking = (b: Booking, uid: string) => b.clientId === uid || b.bookedB
 
 on('POST', '/bookings', (c) => {
   const u = requireUser(c);
-  const body = c.body as { salonId: string; serviceId?: string; serviceIds?: string[]; staffId?: string | null; startsAt: string; notes?: string; clientName?: string; clientPhone?: string; beneficiary?: { fullName: string; phone: string } };
+  const body = c.body as { origin?: BookingOrigin; salonId: string; serviceId?: string; serviceIds?: string[]; staffId?: string | null; startsAt: string; notes?: string; clientName?: string; clientPhone?: string; beneficiary?: { fullName: string; phone: string } };
   const s = salonById(c.w, body.salonId);
   if (!s) throw notFound('Salon');
   if (!s.isPublished) throw conflict('SALON_NOT_PUBLISHED', "Ce salon n'accepte pas encore de réservations.");

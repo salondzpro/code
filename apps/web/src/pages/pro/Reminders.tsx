@@ -6,7 +6,7 @@
  * d'un toucher.
  */
 import { useState } from 'react';
-import { Pencil, Send } from 'lucide-react';
+import { Check, Pencil, Send } from 'lucide-react';
 import { useProSalon } from '@salondz/api-client';
 import { addDaysToKey, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
@@ -18,6 +18,7 @@ import { ClientContact } from '@/components/ClientContact';
 import {
   defaultReminderMessage,
   fillReminder,
+  remindedLabel,
   readReminderMessage,
   saveReminderMessage,
   useReminded,
@@ -88,6 +89,7 @@ export function Reminders() {
   const key = day === 'today' ? today : tomorrow;
   const ofDay = items.filter((b) => toLocalDateKey(new Date(b.startsAt)) === key);
   const waiting = ofDay.filter((b) => !sent[b.id]);
+  const notified = ofDay.filter((b) => sent[b.id]);
   const team = salon.staff.filter((m) => m.isActive).length > 1;
 
   return (
@@ -107,7 +109,7 @@ export function Reminders() {
       </div>
       {list.isError && <ErrorMessage error={list.error} retry={() => list.refetch()} />}
       {list.isPending && <Skeleton className="h-[9rem] w-full !rounded-[var(--radius-card-sm)]" />}
-      {list.data && waiting.length === 0 && (
+      {list.data && waiting.length === 0 && notified.length === 0 && (
         <div className="rp-empty">
           <I icon={Send} size={28} strokeWidth={1.6} />
           <span>{t('Aucun rappel à envoyer')}</span>
@@ -130,6 +132,19 @@ export function Reminders() {
           ) : (
             <span className="rp-no">{t('Sans numéro')}</span>
           )}
+        </article>
+      ))}
+      {notified.length > 0 && <h2 className="h12-h">{t('Déjà prévenus')}</h2>}
+      {notified.map((b) => (
+        <article key={b.id} className="rp-r">
+          <b className="rp-t" dir="ltr">
+            {formatTimeDZ(b.startsAt)}
+          </b>
+          <span className="min-w-0 flex-1">
+            <span className="rp-n">{b.clientName}</span>
+            <span className="rp-s">{remindedLabel(sent[b.id]!)}</span>
+          </span>
+          <I icon={Check} size={18} />
         </article>
       ))}
       {editing && <MessageSheet salon={salon} sample={waiting[0] ?? items[0]} onClose={() => setEditing(false)} />}

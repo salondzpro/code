@@ -78,6 +78,6 @@ export function useStoryDefaultDay(salon: SalonOwnerView) {
   const todayFree = useStorySlots(salon, today);
   const noneToday = todayFree.ready && !todayFree.slots.length;
   const date = noneToday ? addDaysToKey(today, 1) : today;
-  const { parts } = useStorySlots(salon, date);
-  return { date, noneToday, hours: hoursOf(parts) };
+  const { parts, ready } = useStorySlots(salon, date);
+  return { date, noneToday, hours: hoursOf(parts), ready: todayFree.ready && ready };
 }
