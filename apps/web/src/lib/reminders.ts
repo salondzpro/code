@@ -3,7 +3,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import { useProBookings } from '@salondz/api-client';
-import { addDaysToKey, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
 import { t } from '@/i18n';
 
@@ -81,12 +81,14 @@ export function saveReminderMessage(salonId: string, text: string): void {
 }
 
 export function fillReminder(text: string, b: BookingWithStaff, salon: SalonOwnerView): string {
-  const today = toLocalDateKey(new Date(b.startsAt)) === toLocalDateKey();
+  const key = toLocalDateKey(new Date(b.startsAt));
+  const today = toLocalDateKey();
+  const day = key === today ? t('aujourd’hui') : key === addDaysToKey(today, 1) ? t('demain') : relativeDayLabelDZ(key).toLowerCase();
   const vars: Record<string, string> = {
     prenom: b.clientName.split(' ')[0] ?? b.clientName,
     prestation: b.serviceName,
     salon: salon.name,
-    jour: today ? t('aujourd’hui') : t('demain'),
+    jour: day,
     heure: formatTimeDZ(b.startsAt),
   };
   return text.replace(/\{(prenom|prestation|salon|jour|heure)\}/g, (_, k: string) => vars[k]!);

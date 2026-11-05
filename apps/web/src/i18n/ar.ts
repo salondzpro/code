@@ -1721,4 +1721,7 @@ export const ar: Record<string, string> = {
   "Clair": "فاتح",
   "Photo": "صورة",
   "Statut": "الحالة",
+  "Fiche": "التفاصيل",
+  "Confier": "إسناد",
+  "Reprendre dans 3 semaines": "موعد جديد بعد 3 أسابيع",
 };

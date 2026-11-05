@@ -7531,19 +7531,69 @@ html:has(.auth-onglets) body {
     align-items: center;
     gap: 8px;
   }
-  .ag9-sl .ag9-sc {
-    margin-inline-end: auto;
+  .ag9-sl .ag9-st {
+    min-width: 0;
+    flex: 1;
+    font-size: 22px;
   }
-  .ag9-si {
-    width: 36px;
-    height: 36px;
-    flex: none;
+  /* Une ligne d'information : à gauche ce qui se lit, à droite l'état ou le prix. */
+  .ag9-sw {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 15px;
+  }
+  .ag9-sw b {
+    flex: none;
+    font-weight: 600;
+  }
+  .ag9-sw > b:first-child {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .ag9-sw .ag9-sc {
+    flex: none;
+    align-self: center;
+  }
+  .ag9-sw.sub {
+    align-items: flex-start;
+    margin-top: -6px;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .ag9-sw.sub b {
+    color: var(--color-ink);
+  }
+  /* Les actions de la fenêtre : petites, sur une rangée. */
+  .ag9-ac {
+    display: flex;
+    gap: 8px;
+  }
+  .ag9-ac .btn {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    padding-inline: 6px;
+  }
+  .ag9-ac .btn.wide {
+    flex: 2.4;
+  }
+  .btn.ag9-n {
+    min-height: 44px;
     background: var(--color-fill);
     color: var(--color-ink);
+    border-color: transparent;
+    background-image: none;
+    box-shadow: none;
+    font-size: 14px;
+  }
+  .btn.ag9-n.r {
+    color: var(--color-cancel-fg);
+  }
+  .ag9-ac .btn.ag9-b {
+    min-height: 44px;
+    font-size: 14px;
   }
 }
 

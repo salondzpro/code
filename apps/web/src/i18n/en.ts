@@ -1737,4 +1737,7 @@ export const en: Record<string, string> = {
   "Clair": "Light",
   "Photo": "Photo",
   "Statut": "Status",
+  "Fiche": "Details",
+  "Confier": "Reassign",
+  "Reprendre dans 3 semaines": "Rebook in 3 weeks",
 };

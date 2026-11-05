@@ -12,7 +12,6 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { AlarmClock, ArrowRight, CheckCircle2, MessageCircle, Phone, UserX } from 'lucide-react';
 import { useMarkBookingSeen, useMe, useProBooking, useProBookingMutations, useProSalon } from '@salondz/api-client';
 import {
   addDaysToKey,
@@ -28,7 +27,8 @@ import {
 import { formatDuration } from '@/lib/format';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
-import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
+import { BottomSheet, Button, Skeleton, Dim, cancelledLabel } from './ui';
+import { ClientContact } from './ClientContact';
 import { t } from '@/i18n';
 
 /** Délai proposé pour la prochaine visite d'une cliente dont le rendez-vous est terminé. */
@@ -79,19 +79,6 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
   const running = !!b && b.status === 'confirmed' && past && new Date(b.endsAt).getTime() > Date.now();
   const team = (salon?.staff ?? []).filter((m) => m.isActive).length;
   const mine = !!meId && salon?.staff.find((m) => m.id === b?.staffId)?.userId === meId;
-  const phone = b?.clientPhone?.replace(/\D/g, '');
-  const wa = phone ? `https://wa.me/${phone}` : null;
-  const reminder =
-    wa && b
-      ? `${wa}?text=${encodeURIComponent(
-          t('Bonjour {name}, petit rappel de votre rendez-vous {day} à {time}{salon}.', {
-            name: b.clientName,
-            day: relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt))).toLowerCase(),
-            time: formatTimeDZ(b.startsAt),
-            salon: salon ? ` · ${salon.name}` : '',
-          }),
-        )}`
-      : null;
   // L'état se lit d'un coup d'œil, avec les mêmes formes que dans l'agenda.
   const chip = !b
     ? null
@@ -127,43 +114,26 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
         )}
         {b && (
           <>
-            {/* L'état et les contacts, puis qui, quoi, quand. */}
+            {/* Qui et comment le joindre, puis quand, puis quoi. */}
             <div className="ag9-sl">
-              {chip && <span className={`ag9-sc ${chip.cls}`}>{chip.text}</span>}
-              {b.clientPhone && (
-                <a href={`tel:${b.clientPhone}`} className="ag9-si" aria-label={t('Appeler')}>
-                  <I icon={Phone} size={16} />
-                </a>
-              )}
-              {wa && (
-                <a href={wa} target="_blank" rel="noreferrer" className="ag9-si" aria-label={t('WhatsApp')}>
-                  <I icon={MessageCircle} size={16} />
-                </a>
-              )}
+              <span className="ag9-st">{b.clientName}</span>
+              <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
             </div>
-            <div className="ag9-sh">
-              <div className="min-w-0">
-                <span className="ag9-st">{b.clientName}</span>
-                <span className="ag9-sb">
-                  {b.serviceName} · {formatDuration(b.durationMinutes)}
+            <div className="ag9-sw">
+              <b dir="auto">
+                {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))} ·{' '}
+                <span dir="ltr">
+                  {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                 </span>
-              </div>
-              <span className="ag9-stm" dir="ltr">
-                {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
-              </span>
+              </b>
+              {chip && <span className={`ag9-sc ${chip.cls}`}>{chip.text}</span>}
             </div>
-            <div className="ag9-sr">
-              {b.staff && team > 1 ? (
-                <>
-                  <span className="text-subtle">{t('Avec')}</span>
-                  <b>{mine ? t('Vous') : b.staff.displayName}</b>
-                </>
-              ) : (
-                <b>{relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}</b>
-              )}
-              <span className="font-semibold" dir="ltr">
-                {formatDA(b.priceDa)}
+            <div className="ag9-sw sub">
+              <span>
+                {b.serviceName} · {formatDuration(b.durationMinutes)}
+                {b.staff && team > 1 ? ` · ${mine ? t('Vous') : b.staff.displayName}` : ''}
               </span>
+              <b dir="ltr">{formatDA(b.priceDa)}</b>
             </div>
             {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
             {!!b.bookedByName && (
@@ -176,75 +146,60 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 
-            {/* Une action principale selon l'état, les autres en dessous. */}
+            {/* Une rangée de petits boutons : l'action de l'état en premier, la fiche toujours au bout. */}
             {!cancelling && (
-              <div className="flex flex-col gap-2">
-                {confirmable && (
-                  <Button
-                    className="ag9-a"
-                    loading={setStatus.isPending}
-                    onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}
-                  >
-                    {t('Accepter')}
-                  </Button>
-                )}
-                {confirmable && team > 1 && (
-                  <Button variant="soft" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-                    {t('Confier à une autre personne')}
-                  </Button>
-                )}
-                {confirmable && (
-                  <Button variant="d" onClick={() => setCancelling(true)}>
-                    {t('Refuser')}
-                  </Button>
-                )}
-                {closable && (
-                  <>
-                    <Button
-                      className="ag9-b"
-                      disabled={setStatus.isPending}
-                      onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}
-                    >
-                      <I icon={CheckCircle2} size={18} /> {t('Terminé')}
+              <>
+                <div className="ag9-ac">
+                  {confirmable && (
+                    <Button sm className="ag9-b" loading={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}>
+                      {t('Accepter')}
                     </Button>
-                    <Button
-                      variant="d"
-                      disabled={setStatus.isPending}
-                      onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}
-                    >
-                      <I icon={UserX} size={18} /> {t('Absent')}
+                  )}
+                  {confirmable && team > 1 && (
+                    <Button sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                      {t('Confier')}
                     </Button>
-                  </>
-                )}
-                {late && (
-                  <Button
-                    variant="d"
-                    disabled={cancel.isPending}
-                    onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}
-                  >
-                    <I icon={AlarmClock} size={18} /> {t('Annuler pour retard (plus de')}{' '}
-                    {LATE_TOLERANCE_MINUTES} {t('min)')}
-                  </Button>
-                )}
-                {b.status === 'confirmed' && !past && (
-                  <>
-                    {reminder && (
-                      <a href={reminder} target="_blank" rel="noreferrer" className="btn ag9-b">
-                        {t('Rappel WhatsApp')}
-                      </a>
-                    )}
-                    <Button variant="soft" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                  )}
+                  {confirmable && (
+                    <Button sm className="ag9-n r" onClick={() => setCancelling(true)}>
+                      {t('Refuser')}
+                    </Button>
+                  )}
+                  {closable && (
+                    <>
+                      <Button sm className="ag9-b" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}>
+                        {t('Terminé')}
+                      </Button>
+                      <Button sm className="ag9-n r" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}>
+                        {t('Absent')}
+                      </Button>
+                    </>
+                  )}
+                  {b.status === 'confirmed' && !past && (
+                    <Button sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
                       {t('Reporter')}
                     </Button>
-                    <Button variant="d" onClick={() => setCancelling(true)}>
-                      {t('Annuler le rendez-vous')}
+                  )}
+                  {b.status === 'completed' && (
+                    <Button sm className="ag9-b wide" onClick={rebook}>
+                      {t('Reprendre dans 3 semaines')}
                     </Button>
-                  </>
+                  )}
+                  <Button sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
+                    {t('Fiche')}
+                  </Button>
+                  {b.status === 'confirmed' && !past && (
+                    <Button sm className="ag9-n r" onClick={() => setCancelling(true)}>
+                      {t('Annuler')}
+                    </Button>
+                  )}
+                </div>
+                {late && (
+                  <Button sm className="ag9-n r" disabled={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}>
+                    {t('Annuler pour retard (plus de')} {LATE_TOLERANCE_MINUTES} {t('min)')}
+                  </Button>
                 )}
-                {b.status === 'completed' && (
-                  <Button className="ag9-b" onClick={rebook}>{t('Reprendre rendez-vous dans 3 semaines')}</Button>
-                )}
-              </div>
+              </>
             )}
             {cancelling && (
               <div className="crd !gap-2.5 !border-danger-line">
@@ -265,28 +220,21 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 </div>
                 <div className="g2">
                   <Button
+                    sm
                     variant="d"
                     disabled={cancel.isPending}
                     onClick={() =>
                       void act(cancel.mutateAsync({ id: b.id, reason: reason || undefined }))
                     }
                   >
-                    {b.status === 'pending' ? t('Refuser') : t('Annuler le rendez-vous')}
+                    {b.status === 'pending' ? t('Refuser') : t('Annuler')}
                   </Button>
-                  <Button variant="g" onClick={() => setCancelling(false)}>
+                  <Button sm variant="g" onClick={() => setCancelling(false)}>
                     {t("Garder")}
                   </Button>
                 </div>
               </div>
             )}
-
-            <button
-              type="button"
-              className="flex items-center justify-center gap-1.5 py-1 text-[1rem] font-semibold"
-              onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}
-            >
-              {t("Fiche complète et historique")}{' '}<I icon={ArrowRight} size={16} />
-            </button>
           </>
         )}
       </BottomSheet>

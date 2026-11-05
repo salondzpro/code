@@ -6,7 +6,7 @@
  * d'un toucher.
  */
 import { useState } from 'react';
-import { Pencil, Phone, Send } from 'lucide-react';
+import { Pencil, Send } from 'lucide-react';
 import { useProSalon } from '@salondz/api-client';
 import { addDaysToKey, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
@@ -14,11 +14,10 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import { BottomSheet, Button, Dim, I, Skeleton, Textarea } from '@/components/ui';
-import { WhatsAppLogo } from '@/components/BrandIcons';
+import { ClientContact } from '@/components/ClientContact';
 import {
   defaultReminderMessage,
   fillReminder,
-  markReminded,
   readReminderMessage,
   saveReminderMessage,
   useReminded,
@@ -91,14 +90,6 @@ export function Reminders() {
   const waiting = ofDay.filter((b) => !sent[b.id]);
   const team = salon.staff.filter((m) => m.isActive).length > 1;
 
-  const message = (b: BookingWithStaff) => encodeURIComponent(fillReminder(readReminderMessage(salon.id), b, salon));
-  const whatsapp = (b: BookingWithStaff) => {
-    if (!b.clientPhone) return;
-    // Pas `wa.me` : sa redirection casse les émojis du message.
-    window.open(`https://api.whatsapp.com/send?phone=${b.clientPhone.replace(/\D/g, '')}&text=${message(b)}`, '_blank', 'noopener');
-    markReminded(b.id);
-  };
-
   return (
     <Screen bottom={NAV_PAD} gap={8}>
       <div className="rp-hd">
@@ -135,19 +126,7 @@ export function Reminders() {
             </span>
           </span>
           {b.clientPhone ? (
-            <span className="rp-a">
-              <button type="button" className="rp-i" aria-label={t('WhatsApp')} title={t('WhatsApp')} onClick={() => whatsapp(b)}>
-                <WhatsAppLogo size={20} />
-              </button>
-              {/* `?&body=` : la seule écriture comprise à la fois par Android et l'iPhone. */}
-              <a href={`sms:${b.clientPhone}?&body=${message(b)}`} className="rp-i sms" aria-label={t('SMS')} title={t('SMS')} onClick={() => markReminded(b.id)}>
-                <I icon={Send} size={18} />
-                <small>SMS</small>
-              </a>
-              <a href={`tel:${b.clientPhone}`} className="rp-i" aria-label={t('Appeler')} title={t('Appeler')}>
-                <I icon={Phone} size={18} />
-              </a>
-            </span>
+            <ClientContact booking={b} salon={salon} />
           ) : (
             <span className="rp-no">{t('Sans numéro')}</span>
           )}
