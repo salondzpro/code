@@ -1730,4 +1730,11 @@ export const en: Record<string, string> = {
   "Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉": "Salam 😊 My availability {day}: {times}. Book here 👉",
   "Autre date": "Other date",
   "Partager en story": "Share as a story",
+  "Créer ma story": "Create my story",
+  "Mes créneaux libres, prêts à publier": "My free slots, ready to post",
+  "Partager sur Instagram": "Share on Instagram",
+  "Violet": "Violet",
+  "Clair": "Light",
+  "Photo": "Photo",
+  "Statut": "Status",
 };

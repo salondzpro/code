@@ -7,14 +7,22 @@ import { isNativeApp, shareFileNative } from './nativeFile';
 const W = 1080;
 const H = 1920;
 
+export type StoryModel = 'photo' | 'violet' | 'clair';
+
+const cache = new Map<string, Promise<HTMLImageElement | null>>();
 function loadImage(src: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
+  let p = cache.get(src);
+  if (!p) {
+    p = new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+    cache.set(src, p);
+  }
+  return p;
 }
 
 const INK = '#1e1b30';
@@ -23,11 +31,63 @@ const ACCENT = '#6c5ce7';
 const SOFT = '#f0effe';
 const PANEL_TOP = 800;
 const MARGIN = 80;
+/** Instagram pose ses boutons en haut et en bas : le texte reste entre ces deux lignes. */
+const SAFE_TOP = 270;
+const LINK_Y = H - 340;
+const LINK_H = 136;
+
+/** Taille la plus grande qui tient sur la largeur : un long nom de salon ne se tasse pas. */
+function fit(g: CanvasRenderingContext2D, text: string, weight: number, size: number, max: number, family = 'Outfit, Inter, sans-serif') {
+  let px = size;
+  g.font = `${weight} ${px}px ${family}`;
+  while (px > 28 && g.measureText(text).width > max) {
+    px -= 2;
+    g.font = `${weight} ${px}px ${family}`;
+  }
+}
+
+function pills(g: CanvasRenderingContext2D, times: string[], y: number, h: number, bg: string, fg: string, radius: number) {
+  const cols = times.length > 1 ? 2 : 1;
+  const gap = 20;
+  const w = (W - MARGIN * 2 - gap * (cols - 1)) / cols;
+  g.textAlign = 'center';
+  g.font = `600 ${Math.round(h * 0.48)}px Outfit, Inter, sans-serif`;
+  times.forEach((x, i) => {
+    const px = MARGIN + (i % cols) * (w + gap);
+    const py = y + Math.floor(i / cols) * (h + gap);
+    g.fillStyle = bg;
+    g.beginPath();
+    g.roundRect(px, py, w, h, radius);
+    g.fill();
+    g.fillStyle = fg;
+    g.fillText(x, px + w / 2, py + h / 2 + h * 0.17);
+  });
+  g.textAlign = 'left';
+}
+
+function linkBar(g: CanvasRenderingContext2D, link: string, bg: string, fg: string) {
+  g.fillStyle = bg;
+  g.beginPath();
+  g.roundRect(MARGIN, LINK_Y, W - MARGIN * 2, LINK_H, 36);
+  g.fill();
+  g.fillStyle = fg;
+  g.textAlign = 'center';
+  fit(g, link, 600, 44, W - MARGIN * 2 - 64);
+  g.fillText(link, W / 2, LINK_Y + LINK_H / 2 + 16);
+  g.textAlign = 'left';
+}
+
+function cover(g: CanvasRenderingContext2D, img: HTMLImageElement, height: number) {
+  const r = Math.max(W / img.width, height / img.height);
+  const w = img.width * r, h = img.height * r;
+  g.drawImage(img, (W - w) / 2, (height - h) / 2, w, h);
+}
 
 export async function drawStory(o: {
+  model?: StoryModel;
   photo: string | null;
   dayLabel: string;
-  /** « Vendredi 6 novembre », au-dessus du jour. */
+  /** « Vendredi 6 novembre », avec le jour. */
   dateLabel?: string;
   subtitle: string;
   times: string[];
@@ -44,73 +104,89 @@ export async function drawStory(o: {
   } catch {
     /* polices indisponibles : repli système */
   }
-  // La photo du salon en haut, le nom posé dessus.
-  g.fillStyle = ACCENT;
-  g.fillRect(0, 0, W, H);
+  const model = o.model ?? 'clair';
   const img = o.photo ? await loadImage(o.photo) : null;
-  if (img) {
-    const box = PANEL_TOP + 80;
-    const r = Math.max(W / img.width, box / img.height);
-    const w = img.width * r, h = img.height * r;
-    g.drawImage(img, (W - w) / 2, (box - h) / 2, w, h);
-    const veil = g.createLinearGradient(0, box - 420, 0, box);
-    veil.addColorStop(0, 'rgba(30,27,48,0)');
-    veil.addColorStop(1, 'rgba(30,27,48,.72)');
-    g.fillStyle = veil;
-    g.fillRect(0, box - 420, W, 420);
-  }
-  g.fillStyle = '#ffffff';
+  const date = o.dateLabel && o.dateLabel !== o.dayLabel ? o.dateLabel : null;
   g.textBaseline = 'alphabetic';
-  g.font = '600 60px Outfit, Inter, sans-serif';
-  g.fillText(o.salon, MARGIN, PANEL_TOP - 44, W - MARGIN * 2);
 
-  // Le panneau blanc : le jour, puis les heures.
-  g.beginPath();
-  g.roundRect(0, PANEL_TOP, W, H - PANEL_TOP + 80, [72, 72, 0, 0]);
-  g.fill();
-  let y = PANEL_TOP + 104;
-  if (o.dateLabel && o.dateLabel !== o.dayLabel) {
-    g.fillStyle = MUTED;
-    g.font = '500 40px Inter, sans-serif';
-    g.fillText(o.dateLabel, MARGIN, y);
-    y += 96;
-  } else y += 40;
-  g.fillStyle = INK;
-  g.font = '600 104px Outfit, Inter, sans-serif';
-  g.fillText(o.dayLabel, MARGIN, y, W - MARGIN * 2);
-  y += 72;
-  g.fillStyle = ACCENT;
-  g.font = '600 48px Outfit, Inter, sans-serif';
-  g.fillText(o.subtitle, MARGIN, y);
-  y += 56;
-
-  const cols = o.times.length > 1 ? 2 : 1;
-  const gap = 20, pillH = 104;
-  const pillW = (W - MARGIN * 2 - gap * (cols - 1)) / cols;
-  g.textAlign = 'center';
-  g.font = '600 50px Outfit, Inter, sans-serif';
-  o.times.forEach((x, i) => {
-    const px = MARGIN + (i % cols) * (pillW + gap);
-    const py = y + Math.floor(i / cols) * (pillH + gap);
-    g.fillStyle = SOFT;
+  if (model === 'clair') {
+    // La photo en haut, le panneau blanc dessous.
+    g.fillStyle = ACCENT;
+    g.fillRect(0, 0, W, H);
+    if (img) {
+      const box = PANEL_TOP + 80;
+      cover(g, img, box);
+      const veil = g.createLinearGradient(0, box - 420, 0, box);
+      veil.addColorStop(0, 'rgba(30,27,48,0)');
+      veil.addColorStop(1, 'rgba(30,27,48,.72)');
+      g.fillStyle = veil;
+      g.fillRect(0, box - 420, W, 420);
+    }
+    g.fillStyle = '#ffffff';
+    fit(g, o.salon, 600, 60, W - MARGIN * 2);
+    g.fillText(o.salon, MARGIN, PANEL_TOP - 44);
     g.beginPath();
-    g.roundRect(px, py, pillW, pillH, 28);
+    g.roundRect(0, PANEL_TOP, W, H - PANEL_TOP + 80, [72, 72, 0, 0]);
     g.fill();
+    let y = PANEL_TOP + 104;
+    if (date) {
+      g.fillStyle = MUTED;
+      g.font = '500 40px Inter, sans-serif';
+      g.fillText(date, MARGIN, y);
+      y += 96;
+    } else y += 40;
     g.fillStyle = INK;
-    g.fillText(x, px + pillW / 2, py + pillH / 2 + 18);
-  });
-
-  // Le lien : au-dessus de la zone qu'Instagram recouvre, là où se pose le sticker « Lien ».
-  const barY = H - 340, barH = 136;
-  g.fillStyle = INK;
-  g.beginPath();
-  g.roundRect(MARGIN, barY, W - MARGIN * 2, barH, 36);
-  g.fill();
-  g.fillStyle = '#ffffff';
-  g.font = '600 44px Outfit, Inter, sans-serif';
-  g.fillText(o.link, W / 2, barY + barH / 2 + 16, W - MARGIN * 2 - 64);
-  g.textAlign = 'left';
+    fit(g, o.dayLabel, 600, 104, W - MARGIN * 2);
+    g.fillText(o.dayLabel, MARGIN, y);
+    y += 72;
+    g.fillStyle = ACCENT;
+    g.font = '600 48px Outfit, Inter, sans-serif';
+    g.fillText(o.subtitle, MARGIN, y);
+    pills(g, o.times, y + 56, 104, SOFT, INK, 28);
+    linkBar(g, o.link, INK, '#ffffff');
+  } else {
+    // Plein cadre : la photo sous un voile, ou le violet uni et ses deux grands disques.
+    if (model === 'photo' && img) {
+      cover(g, img, H);
+      g.fillStyle = 'rgba(20,16,36,.58)';
+      g.fillRect(0, 0, W, H);
+    } else {
+      g.fillStyle = ACCENT;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = '#7b6df0';
+      g.beginPath();
+      g.arc(W - 40, 300, 460, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#8d81f3';
+      g.beginPath();
+      g.arc(W - 40, 300, 250, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.fillStyle = '#ffffff';
+    fit(g, o.salon, 600, 52, W - MARGIN * 2);
+    g.fillText(o.salon, MARGIN, SAFE_TOP + 44);
+    fit(g, o.dayLabel, 600, 148, W - MARGIN * 2);
+    g.fillText(o.dayLabel, MARGIN, SAFE_TOP + 210);
+    g.font = '500 44px Inter, sans-serif';
+    g.fillStyle = 'rgba(255,255,255,.92)';
+    g.fillText(date ? `${date} · ${o.subtitle}` : o.subtitle, MARGIN, SAFE_TOP + 284, W - MARGIN * 2);
+    pills(g, o.times, SAFE_TOP + 360, 132, '#ffffff', INK, 36);
+    linkBar(g, o.link, model === 'photo' ? ACCENT : INK, '#ffffff');
+  }
   return new Promise((resolve) => c.toBlob((b) => resolve(b), 'image/png'));
+}
+
+/** Enregistre l'image : téléchargement sur le site, feuille du système dans l'application. */
+export async function saveImage(blob: Blob, name: string): Promise<void> {
+  if (await isNativeApp()) {
+    await shareFileNative(blob, name).catch(() => undefined);
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
 
 /**

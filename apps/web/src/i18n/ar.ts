@@ -1714,4 +1714,11 @@ export const ar: Record<string, string> = {
   "Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉": "سلام 😊 مواعيدي المتاحة {day}: {times}. احجزي هنا 👉",
   "Autre date": "تاريخ آخر",
   "Partager en story": "مشاركة في القصة",
+  "Créer ma story": "إنشاء قصتي",
+  "Mes créneaux libres, prêts à publier": "مواعيدي الشاغرة جاهزة للنشر",
+  "Partager sur Instagram": "مشاركة على إنستغرام",
+  "Violet": "بنفسجي",
+  "Clair": "فاتح",
+  "Photo": "صورة",
+  "Statut": "الحالة",
 };

@@ -8,10 +8,10 @@
  *   4. VOTRE PAGE : visites, réservations et visites par jour ;
  * Une carte = une heure, un nom, une prestation. Tout le reste est dans la fenêtre du rendez-vous.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { Bell, CalendarClock, Check, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
+import { Bell, CalendarClock, Check, ChevronRight, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
 import {
   useMe,
   useProBookings,
@@ -29,8 +29,7 @@ import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
-import { AvailabilitySheet } from '@/components/AvailabilitySheet';
-import { SocialShare } from '@/components/SocialShare';
+import { StoryStudio } from '@/components/StoryStudio';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
@@ -62,6 +61,7 @@ export function ProHome() {
   const [sheet, setSheet] = useState<Sheet>(null);
   const [peek, setPeek] = useState<string | null>(null);
   const [bell, setBell] = useState(false);
+  const closeSheet = useCallback(() => setSheet(null), []);
   const [toast, setToast] = useState<Toast>(null);
   const [, copy] = useCopy();
   const now = useNow();
@@ -234,10 +234,18 @@ export function ProHome() {
       )}
 
       {salon && (
-        <section className="h12-card" aria-label={t('Partager en story')}>
-          <span className="h12-cn">{t('Partager en story')}</span>
-          <SocialShare busy={null} onShare={() => setSheet({ kind: 'dispo' })} />
-        </section>
+        <button type="button" className="h12-story" onClick={() => setSheet({ kind: 'dispo' })}>
+          <span className="h12-mini" aria-hidden>
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="min-w-0 flex-1">
+            <b>{t('Créer ma story')}</b>
+            <span>{t('Mes créneaux libres, prêts à publier')}</span>
+          </span>
+          <I icon={ChevronRight} size={20} />
+        </button>
       )}
 
       {toast &&
@@ -252,16 +260,7 @@ export function ProHome() {
         )}
       {sheet?.kind === 'qr' && salon && <QrDialog url={`${link.url}?src=qr`} name={salon.name} slug={salon.slug} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'dispo' && salon && (
-        <AvailabilitySheet
-          salon={salon}
-          url={link.url}
-          short={link.short}
-          onClose={() => setSheet(null)}
-          onCopied={(text) => {
-            setSheet(null);
-            setToast({ text, kind: 'ok' });
-          }}
-        />
+        <StoryStudio salon={salon} url={link.url} short={link.short} onClose={closeSheet} />
       )}
       {bell && <NotificationsSheet onClose={() => setBell(false)} />}
       {peek && <BookingPeekSheet id={peek} onClose={() => setPeek(null)} />}
