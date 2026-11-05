@@ -66,17 +66,40 @@ export function InstagramLogo({ size }: LogoProps) {
   );
 }
 
-/**
- * Le fantôme de Snapchat est JAUNE VIF : posé sur un fond clair il disparaît. On lui met donc son
- * pastille noire, comme le fait Snapchat lui-même sur fond blanc.
- */
+/** Le vrai logo de Snapchat : le fantôme blanc cerclé de noir, sur son carré jaune. */
 export function SnapchatLogo({ size }: LogoProps) {
   return (
     <Logo size={size} label={t("Snapchat")}>
-      <rect width="24" height="24" rx="5.4" fill="#111214" />
+      <rect width="24" height="24" rx="5.4" fill={SNAPCHAT_COLOR} />
       <g transform="translate(3 3) scale(0.75)">
-        <path d={SNAPCHAT_PATH} fill={SNAPCHAT_COLOR} />
+        <path d={SNAPCHAT_PATH} fill="#ffffff" stroke="#111214" strokeWidth="1.3" strokeLinejoin="round" paintOrder="stroke" />
       </g>
+    </Logo>
+  );
+}
+
+/** Le fantôme seul, pour un bouton déjà jaune. */
+export function SnapchatGhost({ size }: LogoProps) {
+  return (
+    <Logo size={size} label={t("Snapchat")}>
+      <path d={SNAPCHAT_PATH} fill="#ffffff" stroke="#111214" strokeWidth="1" strokeLinejoin="round" paintOrder="stroke" />
+    </Logo>
+  );
+}
+
+/** Glyphes blancs, pour un bouton déjà à la couleur du réseau. */
+export function InstagramGlyph({ size }: LogoProps) {
+  return (
+    <Logo size={size} label={t("Instagram")}>
+      <path d={INSTAGRAM_PATH} fill="currentColor" />
+    </Logo>
+  );
+}
+
+export function WhatsAppGlyph({ size }: LogoProps) {
+  return (
+    <Logo size={size} label={t("WhatsApp")}>
+      <path d={WHATSAPP_PATH} fill="currentColor" />
     </Logo>
   );
 }

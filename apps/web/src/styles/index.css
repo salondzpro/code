@@ -7847,30 +7847,6 @@ html[data-kb] #root {
     font-size: 11px;
     color: var(--color-muted);
   }
-  .h12-sh {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .h12-sh button {
-    min-width: 0;
-    height: 64px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    border: 0;
-    border-radius: var(--radius-btn);
-    background: var(--color-fill);
-    color: var(--color-ink);
-    font: 600 13px var(--font-display);
-    cursor: pointer;
-  }
-  .h12-sh button:disabled {
-    opacity: 0.5;
-  }
 }
 @media (min-width: 1024px) {
   .h12-top {
@@ -7927,5 +7903,46 @@ html[data-kb] #root {
     flex: none;
     font-size: 13px;
     color: var(--color-muted);
+  }
+}
+
+/* Boutons de partage, à la couleur de chaque réseau (aplats). */
+@layer components {
+  .sc-r {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .sc-b {
+    min-width: 0;
+    height: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    border-radius: var(--radius-btn);
+    font: 600 13px var(--font-display);
+    cursor: pointer;
+  }
+  .sc-b.ig {
+    background: #e1306c;
+    color: #ffffff;
+  }
+  .sc-b.snap {
+    background: #fffc00;
+    color: #111214;
+  }
+  .sc-b.wa {
+    background: #128c4f;
+    color: #ffffff;
+  }
+  .sc-b:active {
+    opacity: 0.85;
+  }
+  .sc-b:disabled {
+    opacity: 0.5;
   }
 }

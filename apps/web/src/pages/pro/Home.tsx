@@ -32,7 +32,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { drawStory, shareImage } from '@/lib/storyImage';
-import { InstagramLogo, SnapchatLogo } from '@/components/BrandIcons';
+import { SocialShare, type SocialChannel } from '@/components/SocialShare';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
 
@@ -140,10 +140,10 @@ export function ProHome() {
     storySlots?.date === tomorrow || !storySlots?.date
       ? t('Demain')
       : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', timeZone: 'UTC' }).format(new Date(`${storySlots.date}T12:00:00Z`));
-  const [storyBusy, setStoryBusy] = useState(false);
-  const shareStory = async (text?: string) => {
+  const [storyBusy, setStoryBusy] = useState<SocialChannel | null>(null);
+  const shareStory = async (channel: SocialChannel) => {
     if (!salon || !storySlots?.times.length) return;
-    setStoryBusy(true);
+    setStoryBusy(channel);
     try {
       const blob = await drawStory({
         photo: salon.coverUrl ?? salon.photos[0]?.url ?? null,
@@ -154,14 +154,14 @@ export function ProHome() {
         link: link.short,
       });
       if (blob) {
+        const text = channel === 'whatsapp' ? `${t('Réservez ici')} 👉 ${link.url}` : undefined;
         const shared = await shareImage(blob, `salondz-creneaux-${salon.slug}.png`, text);
         if (!shared) setToast({ text: t('Image enregistrée'), kind: 'ok' });
       }
     } finally {
-      setStoryBusy(false);
+      setStoryBusy(null);
     }
   };
-  const storyOff = storyBusy || !storySlots?.times.length;
 
   return (
     <Screen bottom={NAV_PAD} gap={16} className="h12">
@@ -290,17 +290,7 @@ export function ProHome() {
           <span className="h12-cs" dir="ltr">
             {storyDay.charAt(0).toUpperCase() + storyDay.slice(1)} · {storySlots.times.join(' · ')}
           </span>
-          <div className="h12-sh">
-            <button type="button" disabled={storyOff} onClick={() => void shareStory()}>
-              <InstagramLogo size={20} /> Instagram
-            </button>
-            <button type="button" disabled={storyOff} onClick={() => void shareStory()}>
-              <SnapchatLogo size={20} /> Snapchat
-            </button>
-            <button type="button" disabled={storyOff} onClick={() => void shareStory(`${t('Réservez ici')} 👉 ${link.url}`)}>
-              <I icon={MessageCircle} size={20} className="text-[#128c4f]" /> WhatsApp
-            </button>
-          </div>
+          <SocialShare busy={storyBusy} onShare={(c) => void shareStory(c)} />
         </section>
       )}
 

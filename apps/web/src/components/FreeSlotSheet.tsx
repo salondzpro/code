@@ -17,7 +17,7 @@ import {
   toLocalDateKey,
 } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
-import { InstagramLogo, SnapchatLogo } from './BrandIcons';
+import { SocialShare, type SocialChannel } from './SocialShare';
 import { ErrorMessage } from './ErrorMessage';
 import { BottomSheet, Button, Dim } from './ui';
 import { formatDuration } from '@/lib/format';
@@ -95,12 +95,12 @@ export function FreeSlotSheet({
   const navigate = useNavigate();
   const { create } = useProBlockMutations();
   const link = usePublicUrl(salon.slug);
-  const [sharing, setSharing] = useState(false);
+  const [sharing, setSharing] = useState<SocialChannel | null>(null);
   const [saved, setSaved] = useState(false);
   const time = range(slot.start, slot.end);
 
-  const share = async () => {
-    setSharing(true);
+  const share = async (channel: SocialChannel) => {
+    setSharing(channel);
     setSaved(false);
     try {
       const blob = await drawStory({
@@ -113,9 +113,10 @@ export function FreeSlotSheet({
       });
       if (!blob) return;
       // Sans feuille de partage (ordinateur), l'image vient d'être téléchargée : on le dit.
-      if (!(await shareImage(blob, `salondz-creneau-${salon.slug}.png`))) setSaved(true);
+      const text = channel === 'whatsapp' ? `${t('Réservez ici')} 👉 ${link.url}` : undefined;
+      if (!(await shareImage(blob, `salondz-creneau-${salon.slug}.png`, text))) setSaved(true);
     } finally {
-      setSharing(false);
+      setSharing(null);
     }
   };
 
@@ -156,14 +157,7 @@ export function FreeSlotSheet({
           <Button className="ag9-b" onClick={add}>
             {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}
           </Button>
-          <div className="g2">
-            <Button variant="soft" loading={sharing} onClick={() => void share()}>
-              <InstagramLogo size={18} /> {t('Instagram')}
-            </Button>
-            <Button variant="soft" loading={sharing} onClick={() => void share()}>
-              <SnapchatLogo size={18} /> {t('Snapchat')}
-            </Button>
-          </div>
+          <SocialShare busy={sharing} onShare={(c) => void share(c)} />
           <Button variant="soft" loading={create.isPending} onClick={() => void block()}>
             {t('Bloquer {r}', { r: time })}
           </Button>

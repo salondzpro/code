@@ -869,11 +869,11 @@ function DayColumns({
                       onOpen(b.id);
                     }}
                     data-bk={b.id}
-                    className={`agb ${st}${h < 60 ? ' tight' : ''}${h < 32 ? ' one' : ''}${b.id === flash ? ' flash' : ''}`}
+                    className={`agb ${st}${h < 60 ? ' tight' : ''}${h < 42 ? ' one' : ''}${b.id === flash ? ' flash' : ''}`}
                     style={{ top: top(s), height: h }}
                     aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ` · ${t('À valider')}` : ''}`}
                   >
-                    {h < 32 ? (
+                    {h < 42 ? (
                       <span className="agb-n">
                         {narrow && <Avatar src={col.avatarUrl} name={col.name} size={14} />}
                         <span dir="ltr">{formatTimeDZ(b.startsAt)}</span> {b.clientName}
