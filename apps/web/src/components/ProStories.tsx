@@ -10,7 +10,7 @@ import { Copy, Share2, Sparkles, Star, X } from 'lucide-react';
 import { addDaysToKey, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { Button, I } from './ui';
-import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoData, bioVideoType, bioVideoVersion, drawBioFrame, type BioVideoData } from '@/lib/bioVideo';
+import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoData, bioVideoTypes, bioVideoVersion, drawBioFrame, type BioVideoData } from '@/lib/bioVideo';
 import { proTips, type ProTip } from '@/lib/proTips';
 import { shareImage } from '@/lib/storyImage';
 import { useStoryDefaultDay } from '@/lib/useStorySlots';
@@ -100,8 +100,8 @@ function TipsViewer({ tips, onClose }: { tips: ProTip[]; onClose: () => void }) 
 function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData; version: string; file: string; url: string; onClose: () => void }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const bar = useRef<HTMLElement | null>(null);
-  const type = useMemo(bioVideoType, []);
   const [video, setVideo] = useState<Blob | null>(() => made.get(version) ?? null);
+  const [noVideo, setNoVideo] = useState(() => !bioVideoTypes().length);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   useFullScreen(onClose);
@@ -114,8 +114,13 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
     let dead = false;
     let raf = 0;
     let recorder: MediaRecorder | null = null;
-    const play = (record: boolean) => {
-      if (record && type && c.captureStream) {
+    const types = bioVideoTypes();
+    let record = !made.has(version);
+    const play = () => {
+      recorder = null;
+      const type = record ? types[0] : undefined;
+      record = false;
+      if (type && c.captureStream) {
         const parts: Blob[] = [];
         recorder = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 2_500_000 });
         recorder.ondataavailable = (e) => {
@@ -124,6 +129,13 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
         recorder.onstop = () => {
           if (dead) return;
           const blob = new Blob(parts, { type: type.split(';')[0] });
+          // Un fichier vide ne se partage jamais : on passe au format suivant à la prochaine lecture.
+          if (!blob.size) {
+            types.shift();
+            record = true;
+            if (!types.length) setNoVideo(true);
+            return;
+          }
           made.set(version, blob);
           setVideo(blob);
         };
@@ -131,7 +143,8 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
       }
       const start = performance.now();
       const tick = (now: number) => {
-        const ms = Math.min(now - start, BIO_VIDEO_MS);
+        // Le premier instant peut précéder `start` de quelques millisecondes.
+        const ms = Math.min(Math.max(0, now - start), BIO_VIDEO_MS);
         drawBioFrame(g, ms, data);
         if (bar.current) bar.current.style.transform = `scaleX(${ms / BIO_VIDEO_MS})`;
         if (ms < BIO_VIDEO_MS) {
@@ -139,19 +152,19 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
           return;
         }
         if (recorder?.state === 'recording') recorder.stop();
-        play(false);
+        play();
       };
       raf = requestAnimationFrame(tick);
     };
     void document.fonts.load('600 60px Outfit').catch(() => undefined).then(() => {
-      if (!dead) play(!made.has(version));
+      if (!dead) play();
     });
     return () => {
       dead = true;
       cancelAnimationFrame(raf);
       if (recorder?.state === 'recording') recorder.stop();
     };
-  }, [data, version, type]);
+  }, [data, version]);
 
   const share = async () => {
     if (!video || busy) return;
@@ -180,7 +193,7 @@ function VideoViewer({ data, version, file, url, onClose }: { data: BioVideoData
         <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Vidéo de votre lien en bio')} />
       </div>
       <div className="sv-a">
-        {type && (
+        {!noVideo && (
           <Button sm className="ag9-b" disabled={!video} loading={busy} onClick={() => void share()}>
             <I icon={Share2} size={18} /> {video ? t('Partager la vidéo') : t('Création…')}
           </Button>

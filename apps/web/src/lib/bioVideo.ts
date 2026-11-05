@@ -45,10 +45,15 @@ export function bioVideoVersion(salon: SalonOwnerView, link: string): string {
   return JSON.stringify([link, services]);
 }
 
-/** Instagram et WhatsApp veulent du MP4 ; le WebM ne sert que de dernier recours. */
-export function bioVideoType(): string | null {
-  if (typeof MediaRecorder === 'undefined') return null;
-  return ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((x) => MediaRecorder.isTypeSupported(x)) ?? null;
+/**
+ * Formats à essayer, du meilleur au dernier recours : Instagram et WhatsApp veulent du MP4. Pas de H.264
+ * niveau 3.0 (`42E01E`) : il s'arrête à 720 × 576, et l'enregistrement sortait vide à 720 × 1280.
+ */
+export function bioVideoTypes(): string[] {
+  if (typeof MediaRecorder === 'undefined') return [];
+  return ['video/mp4;codecs=avc1.42E01F', 'video/mp4;codecs=avc1.640028', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].filter((x) =>
+    MediaRecorder.isTypeSupported(x),
+  );
 }
 
 const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
