@@ -30,6 +30,7 @@ const MUTED = '#636174';
 const ACCENT = '#6c5ce7';
 const SOFT = '#f0effe';
 const PANEL_TOP = 800;
+const PANEL_MIN_TOP = 400;
 const MARGIN = 80;
 /** Instagram pose ses boutons en haut et en bas : le texte reste entre ces deux lignes. */
 const SAFE_TOP = 270;
@@ -46,21 +47,29 @@ function fit(g: CanvasRenderingContext2D, text: string, weight: number, size: nu
   }
 }
 
-function pills(g: CanvasRenderingContext2D, times: string[], y: number, h: number, bg: string, fg: string, radius: number) {
-  const cols = times.length > 1 ? 2 : 1;
+const columns = (n: number) => (n > 3 ? 2 : 1);
+const rowsOf = (n: number) => Math.ceil(n / columns(n));
+
+/** Toutes les plages, sans exception : plus il y en a, plus les pastilles s'affinent pour tenir. */
+function pills(g: CanvasRenderingContext2D, times: string[], y: number, maxH: number, bg: string, fg: string, radius: number) {
+  const cols = columns(times.length);
+  const rows = rowsOf(times.length);
   const gap = 20;
   const w = (W - MARGIN * 2 - gap * (cols - 1)) / cols;
-  g.textAlign = 'center';
-  g.font = `600 ${Math.round(h * 0.48)}px Outfit, Inter, sans-serif`;
+  const room = LINK_Y - 36 - y;
+  const h = Math.min(maxH, (room - gap * (rows - 1)) / rows);
+  const size = Math.round(h * 0.46);
   times.forEach((x, i) => {
     const px = MARGIN + (i % cols) * (w + gap);
     const py = y + Math.floor(i / cols) * (h + gap);
     g.fillStyle = bg;
     g.beginPath();
-    g.roundRect(px, py, w, h, radius);
+    g.roundRect(px, py, w, h, Math.min(radius, h / 2));
     g.fill();
     g.fillStyle = fg;
-    g.fillText(x, px + w / 2, py + h / 2 + h * 0.17);
+    g.textAlign = 'center';
+    fit(g, x, 600, size, w - 32);
+    g.fillText(x, px + w / 2, py + h / 2 + h * 0.16);
   });
   g.textAlign = 'left';
 }
@@ -110,11 +119,13 @@ export async function drawStory(o: {
   g.textBaseline = 'alphabetic';
 
   if (model === 'clair') {
-    // La photo en haut, le panneau blanc dessous.
+    // La photo en haut, le panneau blanc dessous : il monte quand la journée compte beaucoup de plages,
+    // pour que les heures restent lisibles.
+    const top = Math.max(PANEL_MIN_TOP, PANEL_TOP - Math.max(0, rowsOf(o.times.length) - 3) * 100);
     g.fillStyle = ACCENT;
     g.fillRect(0, 0, W, H);
     if (img) {
-      const box = PANEL_TOP + 80;
+      const box = top + 80;
       cover(g, img, box);
       const veil = g.createLinearGradient(0, box - 420, 0, box);
       veil.addColorStop(0, 'rgba(30,27,48,0)');
@@ -124,11 +135,11 @@ export async function drawStory(o: {
     }
     g.fillStyle = '#ffffff';
     fit(g, o.salon, 600, 60, W - MARGIN * 2);
-    g.fillText(o.salon, MARGIN, PANEL_TOP - 44);
+    g.fillText(o.salon, MARGIN, top - 44);
     g.beginPath();
-    g.roundRect(0, PANEL_TOP, W, H - PANEL_TOP + 80, [72, 72, 0, 0]);
+    g.roundRect(0, top, W, H - top + 80, [72, 72, 0, 0]);
     g.fill();
-    let y = PANEL_TOP + 104;
+    let y = top + 104;
     if (date) {
       g.fillStyle = MUTED;
       g.font = '500 40px Inter, sans-serif';

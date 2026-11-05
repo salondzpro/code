@@ -1,23 +1,20 @@
 /**
  * Studio de story : plein écran, sombre comme l'éditeur d'Instagram. La story est au centre, en grand,
  * et chaque modèle est le vrai fichier : on les fait glisser au doigt, on choisit le jour, on retire une
- * heure, l'image suit. Une image ne peut pas porter de lien cliquable : pour une story, le lien est copié
- * d'office, à coller dans le sticker « Lien » d'Instagram ou de Snapchat.
+ * plage, l'image suit. Toutes les disponibilités y figurent, en plages « de telle heure à telle heure »,
+ * pour que le client comprenne d'un coup d'œil. Une image ne peut pas porter de lien cliquable : pour une
+ * story, le lien est copié d'office, à coller dans le sticker « Lien » d'Instagram ou de Snapchat.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Copy, Download, X } from 'lucide-react';
 import { useAvailability } from '@salondz/api-client';
-import { addDaysToKey, formatLocale, formatTimeDZ, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatLocale, formatTimeDZ, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, SnapchatGhost, WhatsAppGlyph } from './BrandIcons';
 import { I } from './ui';
 import { drawStory, saveImage, shareImage, type StoryModel } from '@/lib/storyImage';
 import { t } from '@/i18n';
-
-const MAX_ON_STORY = 6;
-/** Un créneau toutes les heures au plus : au quart d'heure, la liste ne se lirait plus. */
-const SPACING_MINUTES = 60;
 
 type Channel = 'instagram' | 'snapchat' | 'whatsapp';
 
@@ -64,16 +61,23 @@ export function StoryStudio({
   const [range, setRange] = useState(from !== undefined);
   const av = useAvailability(salon.id, { serviceId: shortest?.id ?? '', date });
 
+  // Les créneaux qui se suivent forment une plage : « 09:00 – 12:30 ». La fin est celle de la dernière
+  // prestation possible, donc l'heure où le pro redevient pris ou ferme.
   const slots = useMemo(() => {
-    const out: string[] = [];
+    const step = av.data?.slotIntervalMinutes || 15;
+    const duration = av.data?.durationMinutes || step;
+    const groups: { start: number; last: number }[] = [];
     for (const s of av.data?.slots ?? []) {
       if (new Date(s.startsAt).getTime() <= Date.now()) continue;
-      const time = formatTimeDZ(s.startsAt);
-      const m = timeToMinutes(time);
+      const m = timeToMinutes(formatTimeDZ(s.startsAt));
       if (range && from !== undefined && to !== undefined && (m < from || m >= to)) continue;
-      if (!out.length || m - timeToMinutes(out[out.length - 1]!) >= SPACING_MINUTES) out.push(time);
+      const g = groups[groups.length - 1];
+      if (g && m - g.last <= step) g.last = m;
+      else groups.push({ start: m, last: m });
     }
-    return out;
+    // Depuis un créneau de l'agenda, la plage ne déborde pas de ce créneau.
+    const end = (g: { last: number }) => (range && to !== undefined ? Math.min(g.last + duration, to) : g.last + duration);
+    return groups.map((g) => `${minutesToTime(g.start)} – ${minutesToTime(end(g))}`);
   }, [av.data, range, from, to]);
 
   const [off, setOff] = useState<string[]>([]);
@@ -83,7 +87,7 @@ export function StoryStudio({
     setOther(isOther);
     setDate(d);
   };
-  const times = slots.filter((x) => !off.includes(x)).slice(0, MAX_ON_STORY);
+  const times = slots.filter((x) => !off.includes(x));
 
   // Toutes les images d'avance : glisser d'un modèle à l'autre est immédiat, et le partage aussi.
   const [images, setImages] = useState<Partial<Record<StoryModel, { blob: Blob; src: string }>>>({});
@@ -98,7 +102,7 @@ export function StoryStudio({
           photo,
           dayLabel: label(date),
           dateLabel: fullDate(date),
-          subtitle: times.length > 1 ? t('créneaux libres') : t('créneau libre'),
+          subtitle: t('Disponibilités'),
           times,
           salon: salon.name,
           link: short,
@@ -228,7 +232,7 @@ export function StoryStudio({
 
         {slots.length > 0 && (
           <div className="st-t" role="group" aria-label={t('Heures')}>
-            {slots.slice(0, 10).map((x) => {
+            {slots.map((x) => {
               const on = !off.includes(x);
               return (
                 <button
