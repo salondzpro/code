@@ -3,10 +3,9 @@
  * « très facile, moins d'écriture ») :
  *
  *   1. l'en-tête violet : bonjour, cloche, et le grand rond du jour (rendez-vous, prochaine cliente) ;
- *   2. le LIEN de réservation, posé à cheval sur l'en-tête : copier, code QR, envoyer ses disponibilités ;
+ *   2. le LIEN de réservation, posé à cheval sur l'en-tête : copier, code QR, partager ses disponibilités ;
  *   3. les PROCHAINS RENDEZ-VOUS, en cartes à glisser ; une carte ouvre la fenêtre du rendez-vous ;
  *   4. VOTRE PAGE : visites, réservations et visites par jour ;
- *   5. les créneaux de demain à partager : Instagram, Snapchat, WhatsApp.
  * Une carte = une heure, un nom, une prestation. Tout le reste est dans la fenêtre du rendez-vous.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -14,7 +13,6 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
 import { Bell, CalendarClock, Check, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
 import {
-  useAvailability,
   useMe,
   useProBookings,
   useProPageStats,
@@ -31,8 +29,7 @@ import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
-import { drawStory, shareImage } from '@/lib/storyImage';
-import { SocialShare, type SocialChannel } from '@/components/SocialShare';
+import { AvailabilitySheet } from '@/components/AvailabilitySheet';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
 
@@ -45,17 +42,6 @@ function useNow(): number {
   }, []);
   return now;
 }
-
-/** « 14:30 » → « 14h30 », « 14:00 » → « 14h » (décalé de `add` minutes). */
-const hfr = (hm: string, add = 0) => {
-  const [h, m] = hm.split(':').map(Number);
-  const x = h! * 60 + (m ?? 0) + add;
-  const mm = ((x % 60) + 60) % 60;
-  return `${Math.floor(x / 60)}h${mm ? String(mm).padStart(2, '0') : ''}`;
-};
-/** « 10h, 13h30 et 16h ». */
-const joinTimes = (list: string[]) =>
-  list.length <= 1 ? list.join('') : `${list.slice(0, -1).join(', ')} ${t('et')} ${list[list.length - 1]}`;
 
 type Toast = { text: string; kind: 'ok' | 'call' | 'wa' } | null;
 type Sheet = { kind: 'qr' } | { kind: 'dispo' } | null;
@@ -100,10 +86,6 @@ export function ProHome() {
     !!salon && !todayList.isFetching && !pending.isFetching,
   );
 
-  // Créneaux libres : la prestation la plus courte (la plus « facile à caser ») sert d'étalon.
-  const services = (salon?.services ?? []).filter((s) => s.isActive);
-  const shortest = [...services].sort((a, b) => a.durationMinutes - b.durationMinutes)[0];
-  const freeTomorrow = useAvailability(salon?.id ?? '', { serviceId: shortest?.id ?? '', date: tomorrow });
 
   const dateLine = new Intl.DateTimeFormat(formatLocale(), {
     weekday: 'long',
@@ -126,42 +108,6 @@ export function ProHome() {
   const total = allToday.length;
   const done = total - upcoming.length;
   const next = upcoming[0];
-
-  const storySlots = (() => {
-    const d = freeTomorrow.data;
-    if (!d) return null;
-    const list = d.slots.length ? d.slots.map((s) => formatTimeDZ(s.startsAt)) : d.nextAvailable?.slots.map((s) => s.slice(0, 5)) ?? [];
-    const date = d.slots.length ? tomorrow : d.nextAvailable?.date ?? null;
-    // Trois heures étalées sur la journée : la première, celle du milieu, la dernière.
-    const pick = list.length <= 3 ? list : [list[0]!, list[Math.floor(list.length / 2)]!, list[list.length - 1]!];
-    return { times: pick, date };
-  })();
-  const storyDay =
-    storySlots?.date === tomorrow || !storySlots?.date
-      ? t('Demain')
-      : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', timeZone: 'UTC' }).format(new Date(`${storySlots.date}T12:00:00Z`));
-  const [storyBusy, setStoryBusy] = useState<SocialChannel | null>(null);
-  const shareStory = async (channel: SocialChannel) => {
-    if (!salon || !storySlots?.times.length) return;
-    setStoryBusy(channel);
-    try {
-      const blob = await drawStory({
-        photo: salon.coverUrl ?? salon.photos[0]?.url ?? null,
-        dayLabel: storyDay.charAt(0).toUpperCase() + storyDay.slice(1),
-        subtitle: t('créneaux libres'),
-        times: storySlots.times,
-        salon: salon.name,
-        link: link.short,
-      });
-      if (blob) {
-        const text = channel === 'whatsapp' ? `${t('Réservez ici')} 👉 ${link.url}` : undefined;
-        const shared = await shareImage(blob, `salondz-creneaux-${salon.slug}.png`, text);
-        if (!shared) setToast({ text: t('Image enregistrée'), kind: 'ok' });
-      }
-    } finally {
-      setStoryBusy(null);
-    }
-  };
 
   return (
     <Screen bottom={NAV_PAD} gap={16} className="h12">
@@ -223,7 +169,7 @@ export function ProHome() {
             </button>
           </div>
           <button type="button" className="h11-b out" onClick={() => setSheet({ kind: 'dispo' })}>
-            <I icon={CalendarClock} size={17} strokeWidth={2} /> {t('Envoyer mes disponibilités')}
+            <I icon={CalendarClock} size={17} strokeWidth={2} /> {t('Partager mes disponibilités')}
           </button>
         </section>
       )}
@@ -284,16 +230,6 @@ export function ProHome() {
         </section>
       )}
 
-      {salon && !!storySlots?.times.length && (
-        <section className="h12-card" aria-label={t('Partager mes créneaux')}>
-          <span className="h12-cn">{t('Partager mes créneaux')}</span>
-          <span className="h12-cs" dir="ltr">
-            {storyDay.charAt(0).toUpperCase() + storyDay.slice(1)} · {storySlots.times.join(' · ')}
-          </span>
-          <SocialShare busy={storyBusy} onShare={(c) => void shareStory(c)} />
-        </section>
-      )}
-
       {toast &&
         createPortal(
           <div role="status" className={`h11-toast ${toast.kind}`}>
@@ -306,13 +242,12 @@ export function ProHome() {
         )}
       {sheet?.kind === 'qr' && salon && <QrDialog url={`${link.url}?src=qr`} name={salon.name} slug={salon.slug} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'dispo' && salon && (
-        <DispoSheet
+        <AvailabilitySheet
           salon={salon}
           url={link.url}
-          today={today}
-          now={now}
+          short={link.short}
           onClose={() => setSheet(null)}
-          onDone={(text) => {
+          onCopied={(text) => {
             setSheet(null);
             setToast({ text, kind: 'ok' });
           }}
@@ -362,18 +297,6 @@ function SheetHead({ title, sub, onClose }: { title: string; sub?: string; onClo
   );
 }
 
-function Chips<T>({ items, value, onPick, label }: { items: { key: T; label: string }[]; value: T; onPick: (k: T) => void; label: (k: T) => string }) {
-  return (
-    <div className="h11-chips">
-      {items.map((c) => (
-        <button key={String(c.key)} type="button" className={`h11-chip${c.key === value ? ' on' : ''}`} aria-pressed={c.key === value} onClick={() => onPick(c.key)}>
-          {c.label || label(c.key)}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function QrDialog({ url, name, slug, onClose }: { url: string; name: string; slug: string; onClose: () => void }) {
   const qr = useQr(url, 520);
   return (
@@ -389,99 +312,6 @@ function QrDialog({ url, name, slug, onClose }: { url: string; name: string; slu
         <a className="h11-b grad h11-dl" href={qr ?? undefined} download={`salondz-qr-${slug}.png`}>
           <I icon={Download} size={20} strokeWidth={2} /> {t('Télécharger le QR Code')}
         </a>
-      </div>
-    </Overlay>
-  );
-}
-
-function DispoSheet({
-  salon,
-  url,
-  today,
-  now,
-  onClose,
-  onDone,
-}: {
-  salon: SalonOwnerView;
-  url: string;
-  today: string;
-  now: number;
-  onClose: () => void;
-  onDone: (toast: string) => void;
-}) {
-  const services = salon.services.filter((s) => s.isActive);
-  const [svc, setSvc] = useState(services[0]?.id ?? '');
-  const days = useMemo(() => [null, ...Array.from({ length: 7 }, (_, i) => addDaysToKey(today, i))], [today]);
-  const [day, setDay] = useState<string | null>(null);
-  const date = day ?? today;
-  const av = useAvailability(salon.id, { serviceId: svc, date });
-  const service = services.find((s) => s.id === svc);
-  const dayName = (d: string) =>
-    d === today ? t('aujourd’hui') : d === addDaysToKey(today, 1) ? t('demain') : new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
-  const dayChip = (d: string | null) =>
-    d === null
-      ? t('Prochaines dispos')
-      : d === today
-        ? t('Aujourd’hui')
-        : d === addDaysToKey(today, 1)
-          ? t('Demain')
-          : new Intl.DateTimeFormat(formatLocale(), { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
-  const slotsOf = (list: string[]) => joinTimes(list.slice(0, 5).map((x) => hfr(x)));
-  let parts = '';
-  if (av.data) {
-    const todaySlots = av.data.slots.filter((s) => new Date(s.startsAt).getTime() > now).map((s) => formatTimeDZ(s.startsAt));
-    if (day === null) {
-      const a = todaySlots.length ? `${dayName(today)} ${t('à')} ${slotsOf(todaySlots)}` : '';
-      const n = av.data.nextAvailable;
-      const b = n ? `${dayName(n.date)} ${t('à')} ${slotsOf(n.slots.map((x) => x.slice(0, 5)))}` : '';
-      parts = [a, b].filter(Boolean).join(`, ${t('puis')} `);
-    } else {
-      parts = todaySlots.length ? `${dayName(date)} ${t('à')} ${slotsOf(todaySlots)}` : '';
-    }
-  }
-  const message = parts
-    ? t('Salam 😊 Pour {svc}, mes disponibilités : {when}. Réservez directement ici 👉', { svc: service?.name ?? '', when: parts })
-    : t('Salam 😊 Pour {svc}, je n’ai plus de créneau ce jour-là. Réservez le prochain directement ici 👉', { svc: service?.name ?? '' });
-  const full = `${message} ${url}`;
-  return (
-    <Overlay onClose={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={t('Envoyer mes disponibilités')} className="h11-sheet">
-        <SheetHead title={t('Envoyer mes disponibilités')} sub={t('Un message prêt à envoyer aux clientes qui vous demandent vos dispos en DM.')} onClose={onClose} />
-        <span className="h11-sh-l">{t('Prestation')}</span>
-        <Chips items={services.map((s) => ({ key: s.id, label: s.name }))} value={svc} onPick={setSvc} label={() => ''} />
-        <span className="h11-sh-l">{t('Jour')}</span>
-        <Chips items={days.map((d) => ({ key: d, label: dayChip(d) }))} value={day} onPick={setDay} label={() => ''} />
-        <span className="h11-sh-l">{t('Message')}</span>
-        <p className="h11-msg">
-          {av.isPending ? '…' : message} <span className="whitespace-nowrap" dir="ltr">{url}</span>
-        </p>
-        <div className="h11-sh-a">
-          <button
-            type="button"
-            className="h11-b lg soft"
-            onClick={() => {
-              void navigator.clipboard?.writeText(full);
-              onDone(t('Message copié'));
-            }}
-          >
-            <I icon={Copy} size={20} strokeWidth={2} /> {t('Copier')}
-          </button>
-          <button
-            type="button"
-            className="h11-b lg grad"
-            onClick={() => {
-              if (navigator.share) {
-                void navigator.share({ text: full }).catch(() => undefined);
-                onClose();
-              } else {
-                void navigator.clipboard?.writeText(full);
-                onDone(t('Message copié'));
-              }
-            }}
-          >
-            <I icon={Send} size={20} strokeWidth={2} /> {t('Partager')}
-          </button>
-        </div>
       </div>
     </Overlay>
   );

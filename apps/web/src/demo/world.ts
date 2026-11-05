@@ -268,7 +268,7 @@ function baseSalon(id: string, ownerId: string, s: { slug: string; name: string;
     isPublished: true,
     slotIntervalMinutes: 15,
     bookingLeadTimeMinutes: 30,
-    bookingHorizonDays: 30,
+    bookingHorizonDays: 60,
     autoConfirm: s.autoConfirm,
     cancelMinHours: s.cancelMinHours,
     bufferMinutes: 0,

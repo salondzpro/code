@@ -7946,3 +7946,62 @@ html[data-kb] #root {
     opacity: 0.5;
   }
 }
+
+/* Partager mes disponibilités */
+@layer components {
+  .av-m {
+    display: flex;
+    gap: 12px;
+  }
+  .av-p {
+    width: 128px;
+    aspect-ratio: 9 / 16;
+    flex: none;
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-slot);
+  }
+  .av-p img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .av-s {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .av-s button {
+    height: 36px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-slot);
+    background: #ffffff;
+    color: var(--color-subtle);
+    font: 600 13px var(--font-display);
+    font-variant-numeric: tabular-nums;
+    text-decoration: line-through;
+    cursor: pointer;
+  }
+  .av-s button.on {
+    border-color: transparent;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    text-decoration: none;
+  }
+  .av-c {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px;
+    border: 0;
+    background: none;
+    color: var(--color-muted);
+    font: 600 14px var(--font-display);
+    cursor: pointer;
+  }
+  .av-c:disabled {
+    opacity: 0.5;
+  }
+}

@@ -12,6 +12,7 @@ import {
   DAY_LABELS_FR,
   addDaysToKey,
   dayOfWeekFromKey,
+  formatLocale,
   localDateTimeToISO,
   minutesToTime,
   toLocalDateKey,
@@ -53,6 +54,11 @@ function dayLabel(date: string) {
   if (date === addDaysToKey(today, 1)) return t('Demain');
   return t(DAY_LABELS_FR[dayOfWeekFromKey(date)]);
 }
+
+const longDate = (key: string) => {
+  const s = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${key}T12:00:00Z`));
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
 
 function SheetHead({ chip, title, sub, time }: { chip: string; title: string; sub: string; time?: string }) {
   return (
@@ -97,15 +103,21 @@ export function FreeSlotSheet({
   const link = usePublicUrl(salon.slug);
   const [sharing, setSharing] = useState<SocialChannel | null>(null);
   const [saved, setSaved] = useState(false);
+  const [hint, setHint] = useState(false);
   const time = range(slot.start, slot.end);
 
   const share = async (channel: SocialChannel) => {
     setSharing(channel);
     setSaved(false);
+    if (channel !== 'whatsapp') {
+      void navigator.clipboard?.writeText(link.url).catch(() => undefined);
+      setHint(true);
+    }
     try {
       const blob = await drawStory({
         photo: salon.coverUrl ?? salon.photos[0]?.url ?? null,
         dayLabel: dayLabel(slot.date),
+        dateLabel: longDate(slot.date),
         subtitle: t('créneau libre'),
         times: [time],
         salon: salon.name,
@@ -153,6 +165,7 @@ export function FreeSlotSheet({
         </p>
         <ErrorMessage error={create.error} />
         {saved && <p className="ag9-sn">{t('Image enregistrée')}</p>}
+        {hint && <p className="ag9-sn">{t('Lien copié : collez-le dans le sticker Lien de la story.')}</p>}
         <div className="flex flex-col gap-2">
           <Button className="ag9-b" onClick={add}>
             {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}

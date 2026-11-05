@@ -1720,4 +1720,12 @@ export const en: Record<string, string> = {
   "Prochains rendez-vous": "Upcoming appointments",
   "Partager mes créneaux": "Share my slots",
   "{a} sur 5 · {n} avis": "{a} out of 5 · {n} reviews",
+  "Partager mes disponibilités": "Share my availability",
+  "Aperçu de la story": "Story preview",
+  "Quel jour ?": "Which day?",
+  "Heures": "Times",
+  "Plus de créneau libre ce jour-là.": "No free slots left that day.",
+  "Lien copié : collez-le dans le sticker Lien de la story.": "Link copied: paste it into the story's Link sticker.",
+  "Copier le message": "Copy the message",
+  "Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉": "Salam 😊 My availability {day}: {times}. Book here 👉",
 };

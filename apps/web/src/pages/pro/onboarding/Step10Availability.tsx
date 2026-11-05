@@ -29,7 +29,7 @@ const LEAD = [
   { v: 1440, l: '24 h' },
 ];
 /** Jusqu'à combien de jours à l'avance un client peut réserver : du barbier de quartier (2 j) au salon très demandé (60 j). */
-const HORIZON = [2, 4, 7, 14, 30, 60];
+const HORIZON = [2, 4, 7, 14, 60];
 const CANCEL = [1, 2, 4, 12, 24];
 
 export function Step10Availability({ settings }: { settings?: boolean }) {
@@ -41,7 +41,7 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
   const [buffer, setBuffer] = useState(0);
   const [manual, setManual] = useState(false);
   const [lead, setLead] = useState(120);
-  const [horizon, setHorizon] = useState(30);
+  const [horizon, setHorizon] = useState(60);
   const [cancel, setCancel] = useState(2);
   const [report, setReport] = useState(true);
   const [deposit, setDeposit] = useState(false);
@@ -53,7 +53,8 @@ export function Step10Availability({ settings }: { settings?: boolean }) {
     setBuffer(salon.bufferMinutes ?? 0);
     setManual(!salon.autoConfirm);
     setLead(salon.bookingLeadTimeMinutes);
-    setHorizon(salon.bookingHorizonDays);
+    // 30 jours n'est plus proposé : l'ancienne valeur passe à 60 au prochain enregistrement.
+    setHorizon(salon.bookingHorizonDays === 30 ? 60 : salon.bookingHorizonDays);
     setCancel(salon.cancelMinHours ?? 2);
     setReport(salon.allowClientReschedule ?? true);
     setDeposit(salon.depositRequired ?? false);

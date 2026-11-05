@@ -1704,4 +1704,12 @@ export const ar: Record<string, string> = {
   "Prochains rendez-vous": "المواعيد القادمة",
   "Partager mes créneaux": "مشاركة مواعيدي",
   "{a} sur 5 · {n} avis": "{a} من 5 · {n} تقييم",
+  "Partager mes disponibilités": "مشاركة مواعيدي المتاحة",
+  "Aperçu de la story": "معاينة القصة",
+  "Quel jour ?": "أي يوم؟",
+  "Heures": "الأوقات",
+  "Plus de créneau libre ce jour-là.": "لا مواعيد شاغرة في ذلك اليوم.",
+  "Lien copié : collez-le dans le sticker Lien de la story.": "تم نسخ الرابط: ألصقيه في ملصق الرابط في القصة.",
+  "Copier le message": "نسخ الرسالة",
+  "Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉": "سلام 😊 مواعيدي المتاحة {day}: {times}. احجزي هنا 👉",
 };

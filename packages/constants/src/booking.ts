@@ -35,7 +35,7 @@ export const DEFAULT_SLOT_INTERVAL = 15;
 /** Délai minimum avant un RDV en ligne (minutes). */
 export const DEFAULT_LEAD_TIME_MINUTES = 60;
 /** Horizon de réservation en ligne (jours). */
-export const DEFAULT_BOOKING_HORIZON_DAYS = 30;
+export const DEFAULT_BOOKING_HORIZON_DAYS = 60;
 /** Durée max d'un service (minutes). */
 export const MAX_SERVICE_DURATION_MINUTES = 8 * 60;
 /** Délai d'annulation côté client (heures avant le RDV). */
