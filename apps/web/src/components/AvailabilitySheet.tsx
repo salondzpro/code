@@ -1,20 +1,18 @@
 /**
- * Partager mes disponibilités : on choisit le jour, on garde les heures voulues, et l'image de la story
+ * Partager mes disponibilités : aujourd'hui par défaut, demain ou une date précise, on garde les heures voulues, et l'image de la story
  * se dessine sous les yeux. Une image ne peut pas porter de lien cliquable : pour une story, le lien
  * est copié d'office, à coller dans le sticker « Lien » d'Instagram ou de Snapchat.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Copy } from 'lucide-react';
 import { useAvailability } from '@salondz/api-client';
-import { addDaysToKey, dayOfWeekFromKey, formatLocale, formatTimeDZ, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatLocale, formatTimeDZ, timeToMinutes, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
-import { PickerField } from './Picker';
 import { SocialShare, type SocialChannel } from './SocialShare';
 import { BottomSheet, Dim, I, Skeleton } from './ui';
 import { drawStory, shareImage } from '@/lib/storyImage';
 import { t } from '@/i18n';
 
-const MAX_DAYS = 3;
 const MAX_ON_STORY = 6;
 /** Un créneau toutes les heures au plus : au quart d'heure, la liste ne se lirait plus. */
 const SPACING_MINUTES = 60;
@@ -42,17 +40,9 @@ export function AvailabilitySheet({
   const tomorrow = addDaysToKey(today, 1);
   const label = (d: string) => (d === today ? t("Aujourd'hui") : d === tomorrow ? t('Demain') : fullDate(d));
 
-  // Les prochains jours d'ouverture : aujourd'hui, demain, ou après-demain si le salon ferme demain.
-  const days = useMemo(() => {
-    const open = new Set(salon.openingHours.filter((h) => !h.isClosed).map((h) => h.dayOfWeek));
-    return Array.from({ length: 14 }, (_, i) => addDaysToKey(today, i))
-      .filter((d) => open.has(dayOfWeekFromKey(d)))
-      .slice(0, MAX_DAYS);
-  }, [salon.openingHours, today]);
-
   const shortest = [...salon.services.filter((s) => s.isActive)].sort((a, b) => a.durationMinutes - b.durationMinutes)[0];
-  const [date, setDate] = useState(days[0] ?? today);
-  const chosen = useRef(false);
+  const [date, setDate] = useState(today);
+  const [other, setOther] = useState(false);
   const av = useAvailability(salon.id, { serviceId: shortest?.id ?? '', date });
 
   const slots = useMemo(() => {
@@ -64,13 +54,6 @@ export function AvailabilitySheet({
     }
     return out;
   }, [av.data]);
-
-  // Journée déjà pleine ou finie : on passe au jour suivant, sauf si la personne a choisi ce jour-là.
-  useEffect(() => {
-    if (!av.data || slots.length || chosen.current) return;
-    const next = days[days.indexOf(date) + 1];
-    if (next) setDate(next);
-  }, [av.data, slots.length, date, days]);
 
   const [off, setOff] = useState<string[]>([]);
   useEffect(() => setOff([]), [date]);
@@ -104,6 +87,11 @@ export function AvailabilitySheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
+  const pick = (d: string) => {
+    setOther(false);
+    setDate(d);
+  };
+
   const [busy, setBusy] = useState<SocialChannel | null>(null);
   const [hint, setHint] = useState(false);
   const message = `${t('Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉', { day: label(date).toLowerCase(), times: times.join(', ') })} ${url}`;
@@ -131,16 +119,27 @@ export function AvailabilitySheet({
         <div className="av-m">
           <div className="av-p">{image ? <img src={image.src} alt={t('Aperçu de la story')} /> : <Skeleton className="h-full w-full" />}</div>
           <div className="min-w-0 flex-1">
-            <PickerField
-              label={t('Jour')}
-              title={t('Quel jour ?')}
-              value={date}
-              onChange={(d: string) => {
-                chosen.current = true;
-                setDate(d);
-              }}
-              options={days.map((d) => ({ value: d, label: label(d) }))}
-            />
+            <div className="av-d" role="group" aria-label={t('Jour')}>
+              <button type="button" className={!other && date === today ? 'on' : ''} onClick={() => pick(today)}>
+                {t("Aujourd'hui")}
+              </button>
+              <button type="button" className={!other && date === tomorrow ? 'on' : ''} onClick={() => pick(tomorrow)}>
+                {t('Demain')}
+              </button>
+              <button type="button" className={other ? 'on' : ''} onClick={() => setOther(true)}>
+                {t('Autre date')}
+              </button>
+            </div>
+            {other && (
+              <input
+                type="date"
+                className="inp mt-2"
+                value={date}
+                min={today}
+                aria-label={t('Autre date')}
+                onChange={(e) => e.target.value && setDate(e.target.value)}
+              />
+            )}
             {av.isPending ? (
               <Skeleton className="mt-2 h-[6rem] w-full" />
             ) : slots.length ? (

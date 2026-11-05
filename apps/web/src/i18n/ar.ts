@@ -1712,4 +1712,6 @@ export const ar: Record<string, string> = {
   "Lien copié : collez-le dans le sticker Lien de la story.": "تم نسخ الرابط: ألصقيه في ملصق الرابط في القصة.",
   "Copier le message": "نسخ الرسالة",
   "Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉": "سلام 😊 مواعيدي المتاحة {day}: {times}. احجزي هنا 👉",
+  "Autre date": "تاريخ آخر",
+  "Partager en story": "مشاركة في القصة",
 };

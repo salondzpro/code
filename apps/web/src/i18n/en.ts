@@ -1728,4 +1728,6 @@ export const en: Record<string, string> = {
   "Lien copié : collez-le dans le sticker Lien de la story.": "Link copied: paste it into the story's Link sticker.",
   "Copier le message": "Copy the message",
   "Salam 😊 Mes disponibilités {day} : {times}. Réservez ici 👉": "Salam 😊 My availability {day}: {times}. Book here 👉",
+  "Autre date": "Other date",
+  "Partager en story": "Share as a story",
 };

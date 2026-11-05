@@ -30,6 +30,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { QuickCloseBanner } from '@/components/QuickClose';
 import { AvailabilitySheet } from '@/components/AvailabilitySheet';
+import { SocialShare } from '@/components/SocialShare';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
@@ -229,6 +230,13 @@ export function ProHome() {
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {salon && (
+        <section className="h12-card" aria-label={t('Partager en story')}>
+          <span className="h12-cn">{t('Partager en story')}</span>
+          <SocialShare busy={null} onShare={() => setSheet({ kind: 'dispo' })} />
         </section>
       )}
 
