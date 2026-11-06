@@ -1858,4 +1858,13 @@ export const en: Record<string, string> = {
   "Prévenu à {h}": "Notified at {h}",
   "Envoyé ?": "Sent?",
   "Joint ?": "Reached?",
+  "Prochain rendez-vous": "Next appointment",
+  "Dans {n} min": "In {n} min",
+  "Dans {h} h {m}": "In {h} h {m}",
+  "Dans {h} h": "In {h} h",
+  "{a} à venir · {d} terminé(s)": "{a} to come · {d} done",
+  "+{n} autres plus tard": "+{n} more later today",
+  "En ce moment": "Right now",
+  "Encore {n} min": "{n} min left",
+  "+1 autre plus tard": "+1 more later today",
 };

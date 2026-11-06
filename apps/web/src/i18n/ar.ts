@@ -1844,4 +1844,13 @@ export const ar: Record<string, string> = {
   "Prévenu à {h}": "تم التبليغ على {h}",
   "Envoyé ?": "أُرسلت؟",
   "Joint ?": "تم التواصل؟",
+  "Prochain rendez-vous": "الموعد القادم",
+  "Dans {n} min": "بعد {n} دقيقة",
+  "Dans {h} h {m}": "بعد {h} سا {m} د",
+  "Dans {h} h": "بعد {h} سا",
+  "{a} à venir · {d} terminé(s)": "{a} قادمة · {d} منتهية",
+  "+{n} autres plus tard": "+{n} مواعيد أخرى لاحقًا",
+  "En ce moment": "الآن",
+  "Encore {n} min": "باقي {n} دقيقة",
+  "+1 autre plus tard": "+1 موعد آخر لاحقًا",
 };
