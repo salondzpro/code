@@ -6,7 +6,7 @@
  * d'un toucher.
  */
 import { useState } from 'react';
-import { Check, Pencil, Send } from 'lucide-react';
+import { Check, Pencil, Send, X } from 'lucide-react';
 import { useProSalon } from '@salondz/api-client';
 import { addDaysToKey, formatTimeDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
@@ -17,10 +17,12 @@ import { BottomSheet, Button, Dim, I, Skeleton, Textarea } from '@/components/ui
 import { ClientContact } from '@/components/ClientContact';
 import {
   defaultReminderMessage,
+  answerReminder,
   fillReminder,
   remindedLabel,
   readReminderMessage,
   saveReminderMessage,
+  usePendingReminder,
   useReminded,
   useReminderBookings,
 } from '@/lib/reminders';
@@ -82,6 +84,7 @@ export function Reminders() {
   const tomorrow = addDaysToKey(today, 1);
   const { list, items } = useReminderBookings(!!salon);
   const sent = useReminded();
+  const pending = usePendingReminder();
   const [day, setDay] = useState<Day>('today');
   const [editing, setEditing] = useState(false);
   if (!salon) return <PageLoading />;
@@ -127,7 +130,17 @@ export function Reminders() {
               {team && b.staff ? ` · ${b.staff.displayName}` : ''}
             </span>
           </span>
-          {b.clientPhone ? (
+          {pending?.id === b.id ? (
+            <span className="rp-q">
+              <span>{pending.via === 'call' ? t('Joint ?') : t('Envoyé ?')}</span>
+              <button type="button" className="rp-i" aria-label={t('Non')} title={t('Non')} onClick={() => answerReminder(false)}>
+                <I icon={X} size={18} />
+              </button>
+              <button type="button" className="rp-i yes" aria-label={t('Oui')} title={t('Oui')} onClick={() => answerReminder(true)}>
+                <I icon={Check} size={18} />
+              </button>
+            </span>
+          ) : b.clientPhone ? (
             <ClientContact booking={b} salon={salon} />
           ) : (
             <span className="rp-no">{t('Sans numéro')}</span>

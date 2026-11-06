@@ -1842,4 +1842,6 @@ export const ar: Record<string, string> = {
   "Prévenu par SMS à {h}": "تم التبليغ برسالة نصية على {h}",
   "Prévenu par appel à {h}": "تم التبليغ بمكالمة على {h}",
   "Prévenu à {h}": "تم التبليغ على {h}",
+  "Envoyé ?": "أُرسلت؟",
+  "Joint ?": "تم التواصل؟",
 };

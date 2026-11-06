@@ -7328,6 +7328,19 @@ html:has(.auth-onglets) body {
   .rp-i:active {
     background: var(--color-line);
   }
+  /* La confirmation d'un rappel, à la place des ronds, sur la ligne du client. */
+  .rp-q {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font: 600 14px var(--font-display);
+    color: var(--color-ink);
+  }
+  .rp-i.yes {
+    background: var(--color-ink);
+    color: #ffffff;
+  }
   .rp-no {
     flex: none;
     font-size: 13px;

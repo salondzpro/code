@@ -1856,4 +1856,6 @@ export const en: Record<string, string> = {
   "Prévenu par SMS à {h}": "Notified by SMS at {h}",
   "Prévenu par appel à {h}": "Notified by call at {h}",
   "Prévenu à {h}": "Notified at {h}",
+  "Envoyé ?": "Sent?",
+  "Joint ?": "Reached?",
 };
