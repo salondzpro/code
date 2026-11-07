@@ -2,11 +2,12 @@
  * Au retour de WhatsApp, des messages ou du téléphone, on demande si le rappel est bien parti. L'application
  * n'a aucun moyen de le savoir seule : ni WhatsApp, ni les SMS, ni les appels ne lui répondent. Le rendez-vous
  * n'est marqué « prévenu » qu'après un oui, avec l'heure du geste. Sur la page Rappels, la question est sur la
- * ligne du client : cette fenêtre ne sert que depuis l'accueil ou la fenêtre d'un rendez-vous.
+ * ligne du client, et sur l'accueil sur la carte du prochain rendez-vous : cette fenêtre ne sert que
+ * pour les autres (fenêtre d'un rendez-vous, autre écran).
  */
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
-import { answerReminder, usePendingReminder } from '@/lib/reminders';
+import { answerReminder, askedInline, usePendingReminder } from '@/lib/reminders';
 import { BottomSheet, Button, Dim } from './ui';
 import { t } from '@/i18n';
 
@@ -43,7 +44,7 @@ export function ReminderConfirm() {
     };
   }, [pending]);
 
-  if (!pending || !ask || pathname === '/pro/rappels') return null;
+  if (!pending || !ask || pathname === '/pro/rappels' || askedInline(pending.id)) return null;
   const call = pending.via === 'call';
   return (
     <>

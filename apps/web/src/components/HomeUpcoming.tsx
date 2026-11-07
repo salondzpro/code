@@ -4,19 +4,21 @@
  *   1. le RÉSUMÉ du jour sur toute la largeur (anneau, à venir, terminés) : seul lien vers l'agenda ;
  *   2. LE prochain rendez-vous en grand, avec le temps qui reste (« Dans 25 min » ; pendant la
  *      prestation « En ce moment », « Encore 10 min » et sa barre d'avancement), puis sa seule action
- *      utile : valider une demande, sinon joindre le client ;
+ *      utile : valider une demande, sinon joindre le client. Le rappel se confirme SUR la carte, comme
+ *      sur la page Rappels : « Message envoyé à … ? » ✕ / ✓, puis « Prévenu par WhatsApp à 14:32 » ;
  *   3. ENSUITE, les suivants en lignes courtes ; au-delà de trois, un compte.
  *
  * La carte et chaque ligne ouvrent la fenêtre du rendez-vous, qui porte tout le reste.
  */
 import { Link } from 'react-router';
-import { ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, X } from 'lucide-react';
 import type { useProBookingMutations } from '@salondz/api-client';
 import { formatDA, formatTimeDZ } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
 import { Button, I } from './ui';
 import { ClientContact } from './ClientContact';
 import { formatDuration } from '@/lib/format';
+import { answerReminder, remindedLabel, useAskInline, usePendingReminder, useReminded } from '@/lib/reminders';
 import { t } from '@/i18n';
 
 const SHOWN_AFTER = 3;
@@ -112,6 +114,11 @@ function NextCard({
   const when = until(b, now);
   const pending = b.status === 'pending';
   const askable = pending && !when.live;
+  const remind = b.status === 'confirmed' && !when.live;
+  const ask = usePendingReminder();
+  const asking = ask?.id === b.id ? ask : null;
+  const done = useReminded()[b.id];
+  useAskInline(asking ? b.id : null);
   return (
     <article className={`h13-hero${when.live ? ' live' : ''}`}>
       <button type="button" className="h13-hb" onClick={() => onPeek(b.id)}>
@@ -159,9 +166,31 @@ function NextCard({
             {t('Accepter')}
           </Button>
         </div>
-      ) : (
-        <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !when.live} />
-      )}
+      ) : asking ? (
+        <div className="h13-ft">
+          <span className="h13-q" dir="auto">
+            {asking.via === 'call' ? t('Avez-vous joint {name} ?', { name: asking.name }) : t('Message envoyé à {name} ?', { name: asking.name })}
+          </span>
+          <span className="rp-q">
+            <button type="button" className="rp-i" aria-label={t('Non')} title={t('Non')} onClick={() => answerReminder(false)}>
+              <I icon={X} size={18} />
+            </button>
+            <button type="button" className="rp-i yes" aria-label={t('Oui')} title={t('Oui')} onClick={() => answerReminder(true)}>
+              <I icon={Check} size={18} />
+            </button>
+          </span>
+        </div>
+      ) : b.clientPhone ? (
+        <div className="h13-ft">
+          {done && (
+            <span className="h13-ok">
+              <I icon={Check} size={16} strokeWidth={2.4} />
+              <span>{remindedLabel(done)}</span>
+            </span>
+          )}
+          <ClientContact booking={b} salon={salon} remind={remind && !done} />
+        </div>
+      ) : null}
     </article>
   );
 }

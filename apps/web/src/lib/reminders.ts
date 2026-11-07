@@ -2,7 +2,7 @@
  * Rappels manuels : ce qui est parti, par quel moyen et à quelle heure, et le message du salon. Un rappel
  * n'est compté qu'une fois confirmé par le pro. Gardés sur l'appareil.
  */
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useProBookings } from '@salondz/api-client';
 import { addDaysToKey, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff, SalonOwnerView } from '@salondz/types';
@@ -82,6 +82,25 @@ const subscribe = (l: () => void) => {
 };
 
 export const useReminded = () => useSyncExternalStore(subscribe, () => sent);
+
+/**
+ * Rendez-vous dont la question « Envoyé ? » est posée SUR PLACE (carte du prochain rendez-vous de
+ * l'accueil) : `ReminderConfirm` ne la repose pas dans une fenêtre. Compté, pour qu'un écran qui se
+ * démonte ne retire pas la marque d'un autre.
+ */
+const inline = new Map<string, number>();
+export function useAskInline(id: string | null): void {
+  useEffect(() => {
+    if (!id) return;
+    inline.set(id, (inline.get(id) ?? 0) + 1);
+    return () => {
+      const n = (inline.get(id) ?? 1) - 1;
+      if (n > 0) inline.set(id, n);
+      else inline.delete(id);
+    };
+  }, [id]);
+}
+export const askedInline = (id: string) => (inline.get(id) ?? 0) > 0;
 export const usePendingReminder = () => useSyncExternalStore(subscribe, () => pending);
 
 /** Rendez-vous à rappeler : confirmés, à venir, aujourd'hui et demain. */
