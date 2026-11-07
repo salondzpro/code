@@ -7,12 +7,14 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Copy, Download, X } from 'lucide-react';
+import { Clapperboard, Copy, Download, Image as ImageIcon, X } from 'lucide-react';
 import { addDaysToKey, formatLocale, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, SnapchatGhost, WhatsAppGlyph } from './BrandIcons';
 import { I } from './ui';
-import { drawStory, saveImage, shareStory, storyMessage, type StoryChannel, type StoryModel } from '@/lib/storyImage';
+import { StoryLive } from './StoryLive';
+import { canMakeStoryVideo, saveImage, shareStory, storyMessage, type StoryChannel, type StoryInput, type StoryModel } from '@/lib/storyImage';
+import { storyFileName, useStoryFile } from '@/lib/useStoryFile';
 import { fullStoryDate as fullDate, useStorySlots } from '@/lib/useStorySlots';
 import { t } from '@/i18n';
 
@@ -61,39 +63,11 @@ export function StoryStudio({
   };
   const times = slots.filter((x) => !off.includes(x));
 
-  // Toutes les images d'avance : glisser d'un modèle à l'autre est immédiat, et le partage aussi.
-  const [images, setImages] = useState<Partial<Record<StoryModel, { blob: Blob; src: string }>>>({});
-  const key = `${date}|${times.join(',')}`;
-  useEffect(() => {
-    if (!times.length) return setImages({});
-    let dead = false;
-    const timer = window.setTimeout(() => {
-      for (const m of models)
-        void drawStory({
-          model: m.id,
-          photo,
-          dayLabel: label(date),
-          dateLabel: fullDate(date),
-          subtitle: t('Disponibilités'),
-          times,
-          salon: salon.name,
-          link: short,
-        }).then((blob) => {
-          if (dead || !blob) return;
-          const src = URL.createObjectURL(blob);
-          setImages((old) => {
-            const prev = old[m.id];
-            if (prev) URL.revokeObjectURL(prev.src);
-            return { ...old, [m.id]: { blob, src } };
-          });
-        });
-    }, 120);
-    return () => {
-      dead = true;
-      window.clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  // Vidéo animée par défaut quand le téléphone sait l'encoder ; sinon l'image fixe.
+  const canVideo = canMakeStoryVideo();
+  const [asVideo, setAsVideo] = useState(canVideo);
+  const input = (m: StoryModel): StoryInput | null =>
+    times.length ? { model: m, photo, logo: salon.logoUrl, dayLabel: label(date), dateLabel: fullDate(date), times, salon: salon.name, link: short } : null;
 
   // Le modèle affiché = celui qui est au centre de la rangée.
   const row = useRef<HTMLDivElement | null>(null);
@@ -137,16 +111,18 @@ export function StoryStudio({
 
   const [busy, setBusy] = useState<StoryChannel | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const image = images[model];
+  const ready = useStoryFile(input(model), asVideo);
+  const image = ready.blob;
   const message = storyMessage(label(date), times, url);
-  const file = `salondz-story-${salon.slug}.png`;
+  const file = image ? storyFileName(salon.slug, image) : '';
+  const preparing = !!times.length && !image && asVideo;
 
   const share = async (channel: StoryChannel) => {
     if (!image || busy) return;
     setBusy(channel);
     if (channel !== 'whatsapp') setNote(t('Lien copié : collez-le dans le sticker Lien de la story.'));
     try {
-      await shareStory({ blob: image.blob, name: file, channel, link: url, message });
+      await shareStory({ blob: image, name: file, channel, link: url, message });
     } finally {
       setBusy(null);
     }
@@ -159,12 +135,22 @@ export function StoryStudio({
           <I icon={X} size={20} />
         </button>
         <span>{t('Créer ma story')}</span>
+        {canVideo && (
+          <div className="st-f" role="group" aria-label={t('Format')}>
+            <button type="button" aria-pressed={asVideo} className={asVideo ? 'on' : ''} onClick={() => setAsVideo(true)}>
+              <I icon={Clapperboard} size={15} /> {t('Vidéo')}
+            </button>
+            <button type="button" aria-pressed={!asVideo} className={asVideo ? '' : 'on'} onClick={() => setAsVideo(false)}>
+              <I icon={ImageIcon} size={15} /> {t('Photo')}
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="st-row" ref={row} onScroll={onScroll}>
         {models.map((m) => (
           <button key={m.id} type="button" data-model={m.id} className={`st-s${m.id === model ? ' on' : ''}`} aria-label={m.name} onClick={() => goTo(m.id)}>
-            {images[m.id] ? <img src={images[m.id]!.src} alt={t('Aperçu de la story')} /> : <span className="st-e">{times.length ? '' : t('Plus de créneau libre ce jour-là.')}</span>}
+            {times.length ? <StoryLive input={input(m.id)} play={asVideo && m.id === model} /> : <span className="st-e">{t('Plus de créneau libre ce jour-là.')}</span>}
           </button>
         ))}
       </div>
@@ -219,8 +205,8 @@ export function StoryStudio({
         )}
 
         <button type="button" className="st-go" disabled={!image} aria-busy={busy === 'instagram' || undefined} onClick={() => void share('instagram')}>
-          {busy === 'instagram' ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={22} />}
-          {t('Partager sur Instagram')}
+          {busy === 'instagram' || preparing ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={22} />}
+          {preparing ? t('Préparation de la vidéo… {n} %', { n: Math.round(ready.progress * 100) }) : t('Partager sur Instagram')}
         </button>
 
         <div className="st-o">
@@ -249,7 +235,7 @@ export function StoryStudio({
             type="button"
             disabled={!image}
             onClick={() => {
-              if (image) void saveImage(image.blob, file).then(() => setNote(t('Image enregistrée')));
+              if (image) void saveImage(image, file).then(() => setNote(ready.video ? t('Vidéo enregistrée') : t('Image enregistrée')));
             }}
           >
             <i>

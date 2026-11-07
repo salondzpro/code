@@ -3,13 +3,15 @@
  * salon ou une photo du téléphone, et le jour dans une liste. Aujourd'hui par défaut s'il reste des
  * disponibilités, sinon demain. La photo ajoutée reste sur le téléphone.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ImagePlus } from 'lucide-react';
 import { addDaysToKey, formatLocale, minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { InstagramGlyph, WhatsAppLogo } from './BrandIcons';
 import { I, Skeleton } from './ui';
-import { drawStory, shareStory, storyMessage, type StoryChannel } from '@/lib/storyImage';
+import { StoryLive } from './StoryLive';
+import { canMakeStoryVideo, shareStory, storyMessage, type StoryChannel, type StoryInput } from '@/lib/storyImage';
+import { storyFileName, useStoryFile } from '@/lib/useStoryFile';
 import { fullStoryDate, hoursOf, rangesOf, useStoryDefaultDay, useStorySlots } from '@/lib/useStorySlots';
 import { t } from '@/i18n';
 
@@ -20,7 +22,7 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
   const [menu, setMenu] = useState(false);
   const { date: byDefault, noneToday } = useStoryDefaultDay(salon);
   const date = chosen ?? byDefault;
-  const { parts, ready } = useStorySlots(salon, date);
+  const { parts, ready: loaded } = useStorySlots(salon, date);
   // Toutes les heures libres par défaut : on retire celles qu'on ne veut pas montrer.
   const hours = hoursOf(parts);
   const [off, setOff] = useState<number[]>([]);
@@ -46,35 +48,12 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
     setUseOwn(true);
   };
 
-  const [image, setImage] = useState<{ blob: Blob; src: string } | null>(null);
-  const shown = useRef<string | null>(null);
-  const key = `${date}|${times.join(',')}|${photo}`;
-  useEffect(() => {
-    if (!times.length) {
-      setImage(null);
-      return;
-    }
-    let dead = false;
-    void drawStory({
-      model: 'photo',
-      photo,
-      dayLabel: label(date),
-      dateLabel: fullStoryDate(date),
-      subtitle: t('Disponibilités'),
-      times,
-      salon: salon.name,
-      link: short,
-    }).then((blob) => {
-      if (dead || !blob) return;
-      if (shown.current) URL.revokeObjectURL(shown.current);
-      shown.current = URL.createObjectURL(blob);
-      setImage({ blob, src: shown.current });
-    });
-    return () => {
-      dead = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  const input: StoryInput | null = times.length
+    ? { model: 'photo', photo, logo: salon.logoUrl, dayLabel: label(date), dateLabel: fullStoryDate(date), times, salon: salon.name, link: short }
+    : null;
+  const ready = useStoryFile(input, canMakeStoryVideo());
+  const image = ready.blob;
+  const preparing = !!input && !image;
 
   const [busy, setBusy] = useState<StoryChannel | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -83,7 +62,7 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
     setBusy(channel);
     if (channel !== 'whatsapp') setNote(t('Lien copié : collez-le dans le sticker Lien de la story.'));
     try {
-      await shareStory({ blob: image.blob, name: `salondz-story-${salon.slug}.png`, channel, link: url, message: storyMessage(label(date), times, url) });
+      await shareStory({ blob: image, name: storyFileName(salon.slug, image), channel, link: url, message: storyMessage(label(date), times, url) });
     } finally {
       setBusy(null);
     }
@@ -93,9 +72,9 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
     <section id="ma-story" className="h12-sc" aria-label={t('Créer ma story')}>
       <div className="h12-sl">
         <div className="h12-sp">
-          {image ? (
-            <img src={image.src} alt={t('Aperçu de la story')} />
-          ) : ready && !times.length ? (
+          {input ? (
+            <StoryLive input={input} play />
+          ) : loaded && !times.length ? (
             <span>{hours.length ? t('Choisissez au moins une heure.') : t('Plus de créneau libre ce jour-là.')}</span>
           ) : (
             <Skeleton className="h-full w-full" />
@@ -185,8 +164,8 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
         )}
         <div className="h12-sb">
           <button type="button" className="ig" disabled={!image} aria-busy={busy === 'instagram' || undefined} onClick={() => void share('instagram')}>
-            {busy === 'instagram' ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={20} />}
-            {t('Story Instagram')}
+            {busy === 'instagram' || preparing ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={20} />}
+            {preparing && ready.progress > 0 ? t('Vidéo… {n} %', { n: Math.round(ready.progress * 100) }) : t('Story Instagram')}
           </button>
           <button type="button" disabled={!image} aria-busy={busy === 'whatsapp' || undefined} onClick={() => void share('whatsapp')}>
             {busy === 'whatsapp' ? <span className="btn-spin" aria-hidden /> : <WhatsAppLogo size={20} />}
