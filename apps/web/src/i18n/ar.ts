@@ -1853,4 +1853,6 @@ export const ar: Record<string, string> = {
   "En ce moment": "الآن",
   "Encore {n} min": "باقي {n} دقيقة",
   "+1 autre plus tard": "+1 موعد آخر لاحقًا",
+  "Montrer ce créneau": "شارك هذا الموعد الشاغر",
+  "{d} de libre": "{d} شاغرة",
 };

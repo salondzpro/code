@@ -1,12 +1,14 @@
 /**
  * Fenêtre d'un créneau libre ou d'un blocage, ouverte depuis l'agenda (maquette 9).
  *
- * Un trou dans la journée est une occasion : on le partage en story tel quel, on y pose un
- * rendez-vous, ou on le ferme. Un blocage posé par erreur se retire ici aussi, sans passer par les
- * paramètres.
+ * Un trou dans la journée est une occasion : on y pose un rendez-vous (l'action principale, en
+ * accent), on le partage en story ou on le ferme (deux tuiles côte à côte). Une barre montre le trou
+ * entier et l'heure touchée dedans. Un blocage posé par erreur se retire ici aussi, sans passer par
+ * les paramètres.
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { Lock, LockOpen, Plus, Sparkles, X } from 'lucide-react';
 import { useProBlockMutations } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
@@ -20,7 +22,7 @@ import {
 import type { SalonOwnerView } from '@salondz/types';
 import { StoryStudio } from './StoryStudio';
 import { ErrorMessage } from './ErrorMessage';
-import { BottomSheet, Button, Dim } from './ui';
+import { BottomSheet, Button, Dim, I } from './ui';
 import { formatDuration } from '@/lib/format';
 import { usePublicUrl } from '@/pages/pro/Link';
 import { t } from '@/i18n';
@@ -47,31 +49,45 @@ export interface BlockedSlot {
 
 const range = (start: number, end: number) => `${minutesToTime(start)} – ${minutesToTime(end)}`;
 
-function SheetHead({ chip, title, sub, time }: { chip: string; title: string; sub: string; time?: string }) {
+/** En-tête commun : l'état et la personne sur une ligne, l'essentiel en grand, la croix pour fermer. */
+function SheetHead({ kind, title, staffName, onClose }: { kind: 'free' | 'closed'; title: string; staffName: string | null; onClose: () => void }) {
   return (
-    <>
-      <span className="ag9-sc off">{chip}</span>
-      <div className="ag9-sh">
-        <div className="min-w-0">
-          <span className="ag9-st">{title}</span>
-          <span className="ag9-sb">{sub}</span>
-        </div>
-        {time && (
-          <span className="ag9-stm" dir="ltr">
-            {time}
-          </span>
-        )}
+    <div className="fs-hd">
+      <div className="min-w-0">
+        <span className={`fs-k ${kind}`}>
+          <i aria-hidden />
+          {kind === 'free' ? t('Créneau libre') : t('Fermé')}
+          {staffName && (
+            <>
+              {' · '}
+              <b dir="auto">{staffName}</b>
+            </>
+          )}
+        </span>
+        <span className="fs-t" dir="auto">
+          {title}
+        </span>
       </div>
-    </>
+      <button type="button" className="rx" aria-label={t('Fermer')} onClick={onClose}>
+        <I icon={X} size={18} />
+      </button>
+    </div>
   );
 }
 
-function WithRow({ name }: { name: string | null }) {
-  if (!name) return null;
+/** Le trou de la journée en une barre : où l'on se place dedans, et combien de temps il reste libre. */
+function GapBand({ start, end, at }: { start: number; end: number; at?: number }) {
+  const pct = at === undefined ? null : Math.round(((at - start) / Math.max(1, end - start)) * 100);
   return (
-    <div className="ag9-sr">
-      <span className="text-subtle">{t('Avec')}</span>
-      <b>{name}</b>
+    <div className="fs-band">
+      <span className="fs-bar" aria-hidden>
+        {pct !== null && <i style={{ insetInlineStart: `${Math.min(100, Math.max(0, pct))}%` }} />}
+      </span>
+      <span className="fs-bl">
+        <b dir="ltr">{minutesToTime(start)}</b>
+        <span>{t('{d} de libre', { d: formatDuration(end - start) })}</span>
+        <b dir="ltr">{minutesToTime(end)}</b>
+      </span>
     </div>
   );
 }
@@ -113,23 +129,33 @@ export function FreeSlotSheet({
     <>
       <Dim onClose={onClose} />
       <BottomSheet modal className="max-h-[88vh] overflow-y-auto">
-        <SheetHead
-          chip={t('Libre')}
-          title={minutesToTime(slot.at)}
-          sub={t('Créneau libre de {a} à {b}', { a: minutesToTime(slot.start), b: minutesToTime(slot.end) })}
-        />
-        <WithRow name={slot.staffName} />
+        <SheetHead kind="free" title={minutesToTime(slot.at)} staffName={slot.staffName} onClose={onClose} />
+        <GapBand start={slot.start} end={slot.end} at={slot.at} />
         <ErrorMessage error={create.error} />
-        <div className="flex flex-col gap-2">
-          <Button className="ag9-b" onClick={add}>
-            {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}
-          </Button>
-          <Button variant="soft" onClick={() => setStudio(true)}>
-            {t('Créer ma story')}
-          </Button>
-          <Button variant="soft" loading={create.isPending} onClick={() => void block()}>
-            {t('Bloquer {r}', { r: time })}
-          </Button>
+        <Button className="ag9-a" onClick={add}>
+          <I icon={Plus} size={18} strokeWidth={2.2} /> {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}
+        </Button>
+        <div className="fs-tiles">
+          <button type="button" className="fs-tile" onClick={() => setStudio(true)}>
+            <span className="fs-ic">
+              <I icon={Sparkles} size={18} />
+            </span>
+            <span className="min-w-0">
+              <b>{t('Créer ma story')}</b>
+              <small>{t('Montrer ce créneau')}</small>
+            </span>
+          </button>
+          <button type="button" className="fs-tile" disabled={create.isPending} aria-busy={create.isPending} onClick={() => void block()}>
+            <span className="fs-ic">
+              <I icon={Lock} size={18} />
+            </span>
+            <span className="min-w-0">
+              <b>{t('Bloquer')}</b>
+              <small>
+                <span dir="ltr">{time}</span>
+              </small>
+            </span>
+          </button>
         </div>
       </BottomSheet>
       {studio && (
@@ -161,16 +187,18 @@ export function BlockedSlotSheet({ slot, onClose }: { slot: BlockedSlot; onClose
     <>
       <Dim onClose={onClose} />
       <BottomSheet modal className="max-h-[88vh] overflow-y-auto">
-        <SheetHead
-          chip={t('Fermé')}
-          title={slot.label}
-          sub={formatDuration(slot.end - slot.start)}
-          time={range(slot.start, slot.end)}
-        />
-        <WithRow name={slot.staffName} />
+        <SheetHead kind="closed" title={slot.label} staffName={slot.staffName} onClose={onClose} />
+        <div className="fs-band">
+          <span className="fs-bar closed" aria-hidden />
+          <span className="fs-bl">
+            <b dir="ltr">{minutesToTime(slot.start)}</b>
+            <span>{formatDuration(slot.end - slot.start)}</span>
+            <b dir="ltr">{minutesToTime(slot.end)}</b>
+          </span>
+        </div>
         <ErrorMessage error={remove.error} />
-        <Button className="ag9-b" loading={remove.isPending} onClick={() => void free()}>
-          {t('Rouvrir ce créneau')}
+        <Button className="ag9-a" loading={remove.isPending} onClick={() => void free()}>
+          <I icon={LockOpen} size={18} /> {t('Rouvrir ce créneau')}
         </Button>
       </BottomSheet>
     </>

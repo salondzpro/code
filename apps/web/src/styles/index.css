@@ -7673,6 +7673,151 @@ html[data-kb] #root {
   }
 }
 
+/* Fenêtre d'un créneau libre ou d'un blocage, ouverte depuis l'agenda (refonte du 7 nov. 2026) :
+   l'état et la personne, l'heure en grand, la barre du trou, l'action principale en accent, puis les
+   deux actions secondaires en tuiles côte à côte. */
+@layer components {
+  .fs-hd {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .fs-k {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font: 500 13px/18px Inter, sans-serif;
+    color: var(--color-muted);
+  }
+  .fs-k i {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--color-ok-fg);
+  }
+  .fs-k.closed i {
+    background: var(--color-subtle);
+  }
+  .fs-k b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .fs-t {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 600 32px/1.15 var(--font-display);
+    letter-spacing: -0.6px;
+    color: var(--color-ink);
+  }
+  .fs-band {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card-sm);
+  }
+  .fs-bar {
+    position: relative;
+    display: block;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-tint);
+  }
+  .fs-bar.closed {
+    background: repeating-linear-gradient(135deg, var(--color-line) 0 6px, var(--color-fill) 6px 12px);
+  }
+  .fs-bar i {
+    position: absolute;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    margin-inline-start: -9px;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 1px 4px rgb(30 27 48 / 0.25);
+    transform: translateY(-50%);
+  }
+  .fs-bl {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .fs-bl b {
+    font: 600 14px/1.2 var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink);
+  }
+  .fs-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .fs-tile {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-btn);
+    background: #ffffff;
+    color: var(--color-ink);
+    text-align: start;
+    cursor: pointer;
+  }
+  .fs-tile:active {
+    background: var(--color-fill);
+  }
+  .fs-tile:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .fs-tile > span:last-child {
+    width: 100%;
+  }
+  .fs-tile b,
+  .fs-tile small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fs-tile b {
+    font: 600 14px/1.25 var(--font-display);
+  }
+  .fs-tile small {
+    margin-top: 1px;
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+  .fs-ic {
+    width: 36px;
+    height: 36px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+  }
+}
+
 /* Accueil pro, sur le modèle de mew3id (4 nov. 2026). Violet uni, jamais de dégradé. */
 @layer components {
   .h12-top {

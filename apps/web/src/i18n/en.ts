@@ -1867,4 +1867,6 @@ export const en: Record<string, string> = {
   "En ce moment": "Right now",
   "Encore {n} min": "{n} min left",
   "+1 autre plus tard": "+1 more later today",
+  "Montrer ce créneau": "Show this slot",
+  "{d} de libre": "{d} free",
 };
