@@ -5,7 +5,7 @@
 import { isNativeApp, shareFileNative } from './nativeFile';
 import { STORY_H, STORY_MS, STORY_STILL, STORY_W, drawStoryFrame, type StoryArt, type StoryModel } from './storyArt';
 import { encodeVideo } from './videoEncode';
-import { t } from '@/i18n';
+import { getLocale, t } from '@/i18n';
 
 export type { StoryModel } from './storyArt';
 export type StoryChannel = 'instagram' | 'snapchat' | 'whatsapp';
@@ -56,6 +56,7 @@ export async function storyArtOf(o: StoryInput): Promise<StoryArt> {
     salon: o.salon,
     dayLabel: o.dayLabel,
     dateLabel: o.dateLabel && o.dateLabel !== o.dayLabel ? o.dateLabel : null,
+    rtl: getLocale() === 'ar',
     times: o.times,
     link: o.link,
   };

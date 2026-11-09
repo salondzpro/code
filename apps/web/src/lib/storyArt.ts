@@ -27,6 +27,8 @@ export interface StoryArt {
   dateLabel: string | null;
   times: string[];
   link: string;
+  /** Arabe : la story se lit de droite à gauche, tout est mis en miroir sauf les heures et le lien. */
+  rtl?: boolean;
 }
 
 const INK = '#1e1b30';
@@ -153,7 +155,7 @@ function background(g: CanvasRenderingContext2D, a: StoryArt, ms: number) {
     g.fillRect(0, 0, STORY_W, STORY_H);
     g.fillStyle = ACCENT_TINT;
     g.beginPath();
-    g.arc(STORY_W + 40 - 30 * drift, -60, 420, 0, Math.PI * 2);
+    g.arc(X(STORY_W + 40 - 30 * drift), -60, 420, 0, Math.PI * 2);
     g.fill();
     return;
   }
@@ -162,19 +164,34 @@ function background(g: CanvasRenderingContext2D, a: StoryArt, ms: number) {
   g.fillRect(0, 0, STORY_W, STORY_H);
   g.fillStyle = 'rgba(255,255,255,.08)';
   g.beginPath();
-  g.arc(STORY_W - 60 - 40 * drift, 260 + 30 * drift, 520, 0, Math.PI * 2);
+  g.arc(X(STORY_W - 60 - 40 * drift), 260 + 30 * drift, 520, 0, Math.PI * 2);
   g.fill();
   g.beginPath();
-  g.arc(-120 + 40 * drift, STORY_H - 420, 380, 0, Math.PI * 2);
+  g.arc(X(-120 + 40 * drift), STORY_H - 420, 380, 0, Math.PI * 2);
   g.fill();
 }
 
 /* ------------------------------------------------------------------ morceaux */
 
+/** Sens de lecture de la story en cours de dessin (posé par `drawStoryFrame`). */
+let R = false;
+/** Abscisse d'un point, en miroir en arabe. */
+const X = (x: number) => (R ? STORY_W - x : x);
+/** Abscisse de gauche d'une boîte de largeur `w`, en miroir en arabe. */
+const BX = (x: number, w: number) => (R ? STORY_W - x - w : x);
+/** Texte posé « au début » de la ligne : à gauche, ou à droite en arabe. */
+function lead(g: CanvasRenderingContext2D, text: string, x: number, y: number, ltr = false) {
+  g.textAlign = R ? 'right' : 'left';
+  g.direction = ltr || !R ? 'ltr' : 'rtl';
+  g.fillText(text, X(x), y);
+  g.textAlign = 'left';
+  g.direction = 'ltr';
+}
+
 function header(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number) {
   enter(g, step(ms, 0, 600), 0, -30, () => {
     const s = 104;
-    const x = M;
+    const x = BX(M, s);
     const y = SAFE_TOP;
     g.save();
     g.beginPath();
@@ -198,13 +215,12 @@ function header(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number)
     g.beginPath();
     g.arc(x + s / 2, y + s / 2, s / 2, 0, Math.PI * 2);
     g.stroke();
-    g.textAlign = 'left';
     g.fillStyle = th.text;
     fit(g, a.salon, 600, 46, STORY_W - M * 2 - s - 28);
-    g.fillText(a.salon, x + s + 28, y + 46);
+    lead(g, a.salon, M + s + 28, y + 46);
     g.fillStyle = th.sub;
     font(g, 500, 30, BODY);
-    g.fillText(t('Réservation en ligne'), x + s + 28, y + 88);
+    lead(g, t('Réservation en ligne'), M + s + 28, y + 88);
   });
 }
 
@@ -215,14 +231,14 @@ function kicker(g: CanvasRenderingContext2D, th: Theme, ms: number) {
     font(g, 600, 32, BODY);
     const w = g.measureText(label).width + 96;
     const y = 420;
-    rr(g, M, y, w, 66, 33);
+    rr(g, BX(M, w), y, w, 66, 33);
     g.fillStyle = th.chip;
     g.fill();
-    const cx = M + 38;
+    const cx = X(M + 38);
     const cy = y + 33;
     // Le point « en direct » : un anneau qui s'élargit en boucle dans la vidéo.
     if (ms !== STORY_STILL) {
-      const p = ((ms % 1400) / 1400);
+      const p = (ms % 1400) / 1400;
       g.beginPath();
       g.arc(cx, cy, 9 + 16 * p, 0, Math.PI * 2);
       g.fillStyle = `rgba(24,166,106,${0.45 * (1 - p)})`;
@@ -233,7 +249,7 @@ function kicker(g: CanvasRenderingContext2D, th: Theme, ms: number) {
     g.fillStyle = OK;
     g.fill();
     g.fillStyle = th.chipText;
-    g.fillText(label, M + 62, y + 44);
+    lead(g, label, M + 62, y + 44);
   });
 }
 
@@ -241,7 +257,7 @@ function headline(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: numbe
   enter(g, step(ms, 500, 620), 0, 40, () => {
     g.fillStyle = th.text;
     fit(g, a.dayLabel, 600, 150, STORY_W - M * 2);
-    g.fillText(a.dayLabel, M - 4, 610);
+    lead(g, a.dayLabel, M - 4, 610);
   });
   enter(g, step(ms, 800, 520), 0, 24, () => {
     const n = a.times.length;
@@ -249,7 +265,7 @@ function headline(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: numbe
     const line = a.dateLabel ? `${a.dateLabel} · ${left}` : left;
     g.fillStyle = th.sub;
     fit(g, line, 500, 40, STORY_W - M * 2, BODY);
-    g.fillText(line, M, 682);
+    lead(g, line, M, 682);
   });
 }
 
@@ -299,9 +315,11 @@ function slots(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number) 
   const used = cols === 1 ? n * h + (n - 1) * gap + gs.length * head : Math.ceil(n / 2) * (h + gap) - gap;
   let y = top + Math.max(0, room - used) * 0.4;
   let i = 0;
-  const card = (x: number, yy: number, range: string, idx: number) => {
+  /** `ox` : décalage de la carte depuis la marge de début (0 ou une colonne). */
+  const card = (ox: number, yy: number, range: string, idx: number) => {
     const k = step(ms, 1200 + idx * 150, 480);
-    enter(g, k, 70, 0, () => {
+    const x = BX(M + ox, w);
+    enter(g, k, R ? -70 : 70, 0, () => {
       rr(g, x, yy, w, h, 26);
       g.fillStyle = th.card;
       g.fill();
@@ -311,56 +329,64 @@ function slots(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number) 
         g.stroke();
       }
       const ir = h * 0.3;
-      const cx = x + 22 + ir;
       const cy = yy + h / 2;
       if (cols === 1) {
+        const cx = X(M + ox + 22 + ir);
         g.beginPath();
         g.arc(cx, cy, ir, 0, Math.PI * 2);
         g.fillStyle = th.icon;
         g.fill();
         clock(g, cx, cy, ir * 0.5, th.iconFg);
-      }
-      g.fillStyle = th.cardText;
-      const tx = cols === 1 ? cx + ir + 26 : x + w / 2;
-      g.textAlign = cols === 1 ? 'left' : 'center';
-      fit(g, range, 600, Math.round(h * 0.4), cols === 1 ? w - (tx - x) - 170 : w - 32);
-      g.fillText(range, tx, cy + h * 0.14);
-      g.textAlign = 'left';
-      if (cols === 1) {
-        // L'étiquette « Libre » à droite, avec son point vert.
+        // L'heure après l'horloge (toujours écrite de gauche à droite), l'étiquette « Libre » au bout.
+        g.fillStyle = th.cardText;
+        const off = 22 + ir * 2 + 26;
+        fit(g, range, 600, Math.round(h * 0.4), w - off - 170);
+        lead(g, range, M + ox + off, cy + h * 0.14, true);
         const lab = t('Libre');
         font(g, 600, 28, BODY);
         const lw = g.measureText(lab).width + 62;
-        const lx = x + w - 22 - lw;
+        const lx = BX(M + ox + w - 22 - lw, lw);
         rr(g, lx, cy - 25, lw, 50, 25);
         g.fillStyle = a.model === 'photo' ? 'rgba(255,255,255,.2)' : '#e2f6ec';
         g.fill();
+        const dot = R ? lx + lw - 24 : lx + 24;
         g.beginPath();
-        g.arc(lx + 24, cy, 7, 0, Math.PI * 2);
+        g.arc(dot, cy, 7, 0, Math.PI * 2);
         g.fillStyle = OK;
         g.fill();
         g.fillStyle = a.model === 'photo' ? '#ffffff' : '#0e7a4d';
-        g.fillText(lab, lx + 40, cy + 10);
+        g.textAlign = R ? 'right' : 'left';
+        g.direction = R ? 'rtl' : 'ltr';
+        g.fillText(lab, R ? lx + lw - 40 : lx + 40, cy + 10);
+        g.textAlign = 'left';
+        g.direction = 'ltr';
+      } else {
+        g.fillStyle = th.cardText;
+        g.textAlign = 'center';
+        fit(g, range, 600, Math.round(h * 0.4), w - 32);
+        g.fillText(range, x + w / 2, cy + h * 0.14);
+        g.textAlign = 'left';
       }
     });
   };
   if (cols === 1) {
     for (const grp of gs) {
       const k = step(ms, 1100 + i * 150, 420);
+      const yy = y;
       enter(g, k, 0, 10, () => {
         g.fillStyle = th.sub;
         font(g, 600, 30, BODY);
-        g.fillText(grp.label ?? '', M + 4, y + 34);
+        lead(g, grp.label ?? '', M + 4, yy + 34);
       });
       y += head;
       for (const r of grp.times) {
-        card(M, y, r, i);
+        card(0, y, r, i);
         y += h + gap;
         i += 1;
       }
     }
   } else {
-    a.times.forEach((r, idx) => card(M + (idx % 2) * (w + gap), y + Math.floor(idx / 2) * (h + gap), r, idx));
+    a.times.forEach((r, idx) => card((idx % 2) * (w + gap), y + Math.floor(idx / 2) * (h + gap), r, idx));
   }
 }
 
@@ -371,12 +397,12 @@ function steps(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number) 
   enter(g, step(ms, base - 150, 400), 0, 10, () => {
     g.fillStyle = th.sub;
     font(g, 600, 30, BODY);
-    g.fillText(t('Comment réserver'), M + 4, STEPS_Y + 6);
+    lead(g, t('Comment réserver'), M + 4, STEPS_Y + 6);
   });
   items.forEach((label, i) => {
     const k = step(ms, base + i * 180, 460);
     enter(g, k, 0, 24, () => {
-      const cx = M + colW * i + 44;
+      const cx = X(M + colW * i + 44);
       const cy = STEPS_Y + 74;
       g.beginPath();
       g.arc(cx, cy, 36, 0, Math.PI * 2);
@@ -389,16 +415,17 @@ function steps(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number) 
       g.textAlign = 'left';
       g.fillStyle = th.text;
       fit(g, label, 600, 30, colW - 128, BODY);
-      g.fillText(label, cx + 50, cy + 11);
+      lead(g, label, M + colW * i + 94, cy + 11);
       if (i < 2) {
-        // Une flèche fine vers l'étape suivante.
+        // Une flèche fine vers l'étape suivante, dans le sens de la lecture.
         g.strokeStyle = th.sub;
         g.lineWidth = 3;
-        const ax = M + colW * (i + 1) - 8;
+        const ax = X(M + colW * (i + 1) - 8);
+        const d = R ? -10 : 10;
         g.beginPath();
-        g.moveTo(ax - 10, cy - 9);
+        g.moveTo(ax - d, cy - 9);
         g.lineTo(ax, cy);
-        g.lineTo(ax - 10, cy + 9);
+        g.lineTo(ax - d, cy + 9);
         g.stroke();
       }
     });
@@ -414,11 +441,11 @@ function linkBar(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number
     rr(g, x, LINK_Y, w, LINK_H, 40);
     g.fillStyle = th.bar;
     g.fill();
-    // Un reflet qui traverse la barre toutes les 2 s, dans la vidéo seulement.
+    // Un reflet qui traverse la barre toutes les 2 s, dans le sens de la lecture, dans la vidéo seulement.
     if (ms !== STORY_STILL && ms > at + 600) {
       const p = ((ms - at - 600) % 2000) / 2000;
       if (p < 0.5) {
-        const sx = x - 200 + (w + 400) * (p / 0.5);
+        const sx = X(x - 200 + (w + 400) * (p / 0.5));
         g.save();
         rr(g, x, LINK_Y, w, LINK_H, 40);
         g.clip();
@@ -432,7 +459,7 @@ function linkBar(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number
       }
     }
     // Pastille à flèche, puis « Réserve ici » et le lien.
-    const cx = x + 30 + 38;
+    const cx = X(x + 68);
     const cy = LINK_Y + LINK_H / 2;
     g.beginPath();
     g.arc(cx, cy, 38, 0, Math.PI * 2);
@@ -441,19 +468,20 @@ function linkBar(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number
     g.strokeStyle = th.barText;
     g.lineWidth = 5;
     g.lineCap = 'round';
+    const d = R ? -1 : 1;
     g.beginPath();
-    g.moveTo(cx - 11, cy + 11);
-    g.lineTo(cx + 11, cy - 11);
-    g.moveTo(cx - 5, cy - 11);
-    g.lineTo(cx + 11, cy - 11);
-    g.lineTo(cx + 11, cy + 5);
+    g.moveTo(cx - 11 * d, cy + 11);
+    g.lineTo(cx + 11 * d, cy - 11);
+    g.moveTo(cx - 5 * d, cy - 11);
+    g.lineTo(cx + 11 * d, cy - 11);
+    g.lineTo(cx + 11 * d, cy + 5);
     g.stroke();
     g.fillStyle = 'rgba(255,255,255,.75)';
     font(g, 500, 28, BODY);
-    g.fillText(t('Réserve ici'), cx + 62, cy - 10);
+    lead(g, t('Réserve ici'), x + 130, cy - 10);
     g.fillStyle = th.barText;
-    fit(g, a.link, 600, 42, w - (cx + 62 - x) - 34);
-    g.fillText(a.link, cx + 62, cy + 34);
+    fit(g, a.link, 600, 42, w - 164);
+    lead(g, a.link, x + 130, cy + 34, true);
   });
 }
 
@@ -464,6 +492,7 @@ export function drawStoryFrame(g: CanvasRenderingContext2D, a: StoryArt, ms: num
   g.textBaseline = 'alphabetic';
   g.textAlign = 'left';
   g.direction = 'ltr';
+  R = !!a.rtl;
   background(g, a, ms);
   header(g, a, th, ms);
   kicker(g, th, ms);
