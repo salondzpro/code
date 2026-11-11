@@ -9562,3 +9562,18 @@ html.pro-theme .rq-c {
 html.pro-theme .rp-i.no {
   color: var(--color-danger);
 }
+
+/* Demandes : les deux gestes du quotidien en couleurs PLEINES (demande du propriétaire, 11 nov.) —
+   confirmer en vert, refuser en rouge, icône blanche. « … » reste neutre. */
+.rq-r .rp-i.yes,
+html.pro-theme .rq-r .rp-i.yes {
+  background: var(--color-ok-fg);
+  color: #ffffff;
+  box-shadow: none;
+}
+.rq-r .rp-i.no,
+html.pro-theme .rq-r .rp-i.no {
+  background: var(--color-danger);
+  color: #ffffff;
+  box-shadow: none;
+}
