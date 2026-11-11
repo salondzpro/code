@@ -9,6 +9,7 @@
 /* Outfit (titres, grands chiffres) : fichier VARIABLE, une seule requête pour 400 à 700. Alphabet latin seulement ;
    l'arabe retombe sur la police du texte. */
 @font-face { font-family: 'Outfit'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/outfit-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400 600; font-display: swap; src: url('/fonts/jakarta-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
 /* ------------------------------------------------------------------ */
 /* Marges système (barre d'état, barre de navigation, encoche, gestes)  */
@@ -9124,4 +9125,450 @@ html[data-kb] #root {
   .st {
     animation: none;
   }
+}
+
+/* ================================================================================================
+   THÈME PRO « minimal éditorial » (validé par le propriétaire le 11 nov. 2026)
+   Swiss Design / iOS natif : noir sur blanc cassé, Plus Jakarta Sans (400 / 500 / 600), cartes
+   blanches sans contour à ombre légère, liens soulignés, pastilles cerclées d'un trait fin, AUCUN
+   accent de couleur (le vert reste à WhatsApp et aux statuts). Posé par `useProTheme`
+   (`lib/proTheme.ts`) en classe `pro-theme` sur <html> : tout l'espace pro, portails compris.
+   Hors couche exprès : ces règles doivent l'emporter sur les composants qu'elles habillent.
+   Maquettes de référence : maquettes/pro-2026/shots-minimal/.
+   ================================================================================================ */
+html.pro-theme {
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --color-bg: #f7f7f9;
+  --color-canvas: #f7f7f9;
+  --color-surface: #ffffff;
+  --color-text: #111111;
+  --color-ink: #111111;
+  --color-muted: #6e6e76;
+  --color-subtle: #6e6e76;
+  --color-line: #ececef;
+  --color-line-soft: #f1f1f3;
+  --color-accent: #111111;
+  --color-accent-strong: #111111;
+  --color-accent-deep: #111111;
+  --color-accent-soft: #f1f1f3;
+  --color-accent-tint: #ececef;
+  --color-accent-line: #cfcfd4;
+  --bar-top-bg: #f7f7f9;
+  --pro-shadow: 0 10px 28px -16px rgb(0 0 0 / 0.16);
+  background: #f7f7f9;
+}
+html.pro-theme :is(b, strong, h1, h2, h3) {
+  font-weight: 600;
+}
+html.pro-theme .h1 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+}
+
+/* Barre du bas : blanche translucide, filet fin, actif noir, rond Agenda noir. */
+html.pro-theme .nvb {
+  background: rgb(255 255 255 / 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 -1px 0 #ececef;
+  border-radius: 0;
+}
+html.pro-theme :is(.nvb a, .nvb button) {
+  font-weight: 500;
+}
+html.pro-theme .nvc {
+  background: #111111;
+  box-shadow: 0 0 0 5px #f7f7f9;
+}
+html.pro-theme .fab {
+  background: #111111;
+  color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 12px 24px -12px rgb(0 0 0 / 0.45);
+}
+
+/* Boutons communs : principal noir, secondaire gris clair, troisième cerclé de noir. */
+html.pro-theme .h11-b {
+  font-weight: 500;
+}
+html.pro-theme .h11-b.grad {
+  background: #111111;
+  color: #ffffff;
+}
+html.pro-theme .h11-b.soft {
+  background: #f1f1f3;
+  color: #111111;
+}
+html.pro-theme .h11-b.out {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #111111;
+}
+
+/* ---------------------------------------------------------------- Accueil */
+html.pro-theme .h12-top {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  color: #111111;
+  border-radius: 0;
+  box-shadow: none;
+  padding-bottom: 28px;
+}
+/* La photo du salon, très floutée, qui se fond dans la page ; un voile clair garde le texte lisible. */
+html.pro-theme .h12-top.photo::before,
+html.pro-theme .h12-top.photo::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -40px -16px -10px;
+  pointer-events: none;
+}
+html.pro-theme .h12-top.photo::before {
+  background: var(--fond-salon) center / cover no-repeat;
+  filter: blur(36px) saturate(1.1);
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+}
+html.pro-theme .h12-top.photo::after {
+  background: linear-gradient(180deg, rgb(247 247 249 / 0.6) 0%, rgb(247 247 249 / 0.4) 40%, #f7f7f9 100%);
+}
+html.pro-theme .scr.h12 {
+  overflow-x: clip;
+}
+/* Ordinateur : l'en-tête est une carte arrondie dans la colonne ; le flou y reste contenu. */
+@media (min-width: 1024px) {
+  html.pro-theme .h12-top.photo {
+    overflow: hidden;
+    border-radius: 28px;
+  }
+  html.pro-theme .h12-top.photo::before,
+  html.pro-theme .h12-top.photo::after {
+    inset: 0;
+  }
+}
+html.pro-theme .h12-date {
+  color: #2c2c31;
+  font-size: 14px;
+  font-weight: 400;
+}
+html.pro-theme .h12-hi {
+  color: #111111;
+  font-size: 28px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: -0.6px;
+}
+html.pro-theme .h12-bell {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.18);
+}
+html.pro-theme .h12-bell i {
+  background: #111111;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+html.pro-theme .h12-rail > button {
+  color: #111111;
+  font-weight: 500;
+}
+html.pro-theme .h12-sv.on {
+  box-shadow: 0 0 0 1.5px #111111, 0 0 0 4px #f7f7f9;
+}
+html.pro-theme .h12-ring circle {
+  stroke: #e4e4e8;
+}
+html.pro-theme .h12-ring circle.on {
+  stroke: #111111;
+}
+html.pro-theme :is(.h12-day, .h12-day *) {
+  color: #111111;
+}
+html.pro-theme .h12-link {
+  margin-top: 0;
+}
+/* Les cartes de l'accueil, NOMMÉES : un sélecteur large (`.h12 > div`) blanchissait aussi le voile
+   des fenêtres, rendues dans la page. */
+html.pro-theme :is(.h12-card, .h12-sc, .h12 > div[role='status']) {
+  border: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow);
+}
+html.pro-theme .h12-nb {
+  background: transparent;
+  box-shadow: none;
+}
+/* « Dans 58 min » : pastille cerclée d'un trait fin, comme une note. */
+html.pro-theme .h12-nt em {
+  background: transparent;
+  color: #111111;
+  box-shadow: inset 0 0 0 1px #111111;
+  font-weight: 500;
+}
+html.pro-theme .h12-h {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: #111111;
+}
+html.pro-theme .h12-h span {
+  color: #111111;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+html.pro-theme .h12-l {
+  color: #6e6e76;
+  font-weight: 400;
+}
+html.pro-theme .h12-kp b {
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+html.pro-theme .h12-kp b.acc {
+  color: #111111;
+}
+html.pro-theme .h12-kp span {
+  font-weight: 400;
+}
+html.pro-theme .h12-bars > div {
+  align-items: center;
+}
+html.pro-theme .h12-bars i {
+  width: 8px;
+  margin-inline: auto;
+  border-radius: 4px;
+  background: #e8e8ec;
+}
+html.pro-theme .h12-bars i.on {
+  background: #111111;
+}
+html.pro-theme .h12-bars span {
+  color: #9a9aa2;
+  font-weight: 500;
+}
+html.pro-theme .h12-hs {
+  gap: 6px;
+}
+html.pro-theme .h12-hs button {
+  border: 1px solid #d9d9de;
+  background: #ffffff;
+  color: #9a9aa2;
+  border-radius: 999px;
+  font-weight: 500;
+}
+html.pro-theme .h12-hs button.on {
+  border-color: #111111;
+  color: #111111;
+}
+html.pro-theme .h12-sd > button {
+  background: transparent;
+  color: #111111;
+  padding-inline: 0;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+html.pro-theme .h12-sb button {
+  border-radius: 14px;
+  font-weight: 500;
+}
+html.pro-theme .h12-sb button.ig {
+  background: #111111;
+  color: #ffffff;
+}
+html.pro-theme .h12-sb button:not(.ig) {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: inset 0 0 0 1px #111111;
+}
+html.pro-theme .h12-st {
+  border-radius: 12px;
+}
+
+/* ---------------------------------------------------------------- Agenda */
+html.pro-theme .ag9-k {
+  color: #6e6e76;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+html.pro-theme .ag9-t {
+  color: #111111;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+}
+html.pro-theme .ag9-v {
+  background: #ececef;
+}
+html.pro-theme .ag9-v .on {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 2px 8px -3px rgb(0 0 0 / 0.18);
+}
+html.pro-theme .ag9-d {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html.pro-theme .ag9-d .ag9-dw {
+  color: #9a9aa2;
+  font-weight: 500;
+}
+html.pro-theme .ag9-d .ag9-dn {
+  color: #111111;
+  font-weight: 600;
+}
+html.pro-theme .ag9-d.on {
+  background: #111111;
+  border-radius: 14px;
+}
+html.pro-theme .ag9-d.on :is(.ag9-dw, .ag9-dn) {
+  color: #ffffff;
+}
+html.pro-theme .ag9-d.off .ag9-dn {
+  color: #c4c4ca;
+}
+html.pro-theme .ag9-dd :is(i, span) {
+  background: #c4c4ca;
+}
+html.pro-theme .ag9-d.on .ag9-dd :is(i, span) {
+  background: #ffffff;
+}
+html.pro-theme .ag9-mp {
+  border: 1px solid #dcdce1;
+  background: #ffffff;
+  box-shadow: none;
+}
+html.pro-theme .ag9-mp.on {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+}
+html.pro-theme .ag9-hr {
+  color: #9a9aa2;
+  font-weight: 500;
+}
+/* Rendez-vous : carte blanche à filet noir ; passé en gris ; à valider cerclé. */
+html.pro-theme .agb {
+  background: #ffffff;
+  border: 0;
+  border-radius: 12px;
+  color: #111111;
+  box-shadow: 0 8px 20px -14px rgb(0 0 0 / 0.28), inset 3px 0 0 #111111;
+}
+html.pro-theme .agb.s-done {
+  background: #f1f1f3;
+  color: #8a8a92;
+  box-shadow: none;
+}
+html.pro-theme .agb.s-pd {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #111111;
+}
+html.pro-theme .agb-n {
+  font-weight: 600;
+}
+html.pro-theme .ag9-f {
+  border: 1px dashed #d4d4d9;
+  border-radius: 12px;
+  background: transparent;
+  color: #b4b4ba;
+}
+html.pro-theme .ag9-nw {
+  height: 2px;
+  background: #111111;
+  border-color: #111111;
+}
+html.pro-theme .ag9-nw :is(span, b) {
+  background: #111111;
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------------- Rappels */
+html.pro-theme .rp-hd button {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.18);
+}
+html.pro-theme .rp-tabs {
+  border-color: #e4e4e8;
+}
+html.pro-theme .rp-tabs button {
+  color: #9a9aa2;
+  font-weight: 500;
+}
+html.pro-theme .rp-tabs .on {
+  color: #111111;
+  border-color: #111111;
+}
+html.pro-theme .rp-r {
+  margin-top: 12px;
+  padding: 14px;
+  border: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow);
+}
+html.pro-theme .rp-t {
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+html.pro-theme .rp-n {
+  font-weight: 600;
+}
+html.pro-theme .rp-s {
+  color: #6e6e76;
+  font-weight: 400;
+}
+html.pro-theme .rp-i {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: inset 0 0 0 1px #e4e4e8;
+}
+
+/* ---------------------------------------------------------------- Toutes les autres pages pro */
+/* Cartes et listes du système : blanches, sans contour, ombre légère. */
+html.pro-theme .lst {
+  border-color: transparent;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow);
+}
+
+/* Accueil : résumé du jour et prochains rendez-vous (`HomeUpcoming`), écrits en blanc pour l'ancien
+   en-tête violet ; ici en encre sur le flou clair. */
+html.pro-theme .h13-sum {
+  color: #111111;
+}
+html.pro-theme .h13-sum > span > span,
+html.pro-theme .h13-chev,
+html.pro-theme .h13-lbl {
+  color: #6e6e76;
+}
+html.pro-theme .h13-ring circle {
+  stroke: #e4e4e8;
+}
+html.pro-theme .h13-ring circle.on {
+  stroke: #111111;
+}
+html.pro-theme .h13-hero {
+  border-radius: 16px;
+  box-shadow: var(--pro-shadow);
+}
+html.pro-theme .h13-it {
+  border: 0;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: var(--pro-shadow);
+}
+html.pro-theme .h13-it:active {
+  background: #f1f1f3;
 }

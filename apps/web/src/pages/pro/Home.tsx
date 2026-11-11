@@ -99,21 +99,19 @@ export function ProHome() {
     timeZone: 'Africa/Algiers',
   }).format(new Date());
 
-  // La barre d'état prend la couleur de l'en-tête, le temps de cet écran.
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty('--bar-top-bg', 'var(--color-accent)');
-    return () => {
-      root.style.removeProperty('--bar-top-bg');
-    };
-  }, []);
+  // Thème « minimal éditorial » (11 nov. 2026) : le haut de l'accueil porte la photo du salon,
+  // très floutée (`.h12-top::before`). Sans photo, le fond uni de la page suffit.
+  const fondSalon = salon?.photos[0]?.url ?? salon?.works[0]?.url ?? null;
 
   const ps = pageStats.data;
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
 
   return (
     <Screen bottom={NAV_PAD} gap={16} className="h12">
-      <header className="h12-top">
+      <header
+        className={`h12-top${fondSalon ? ' photo' : ''}`}
+        style={fondSalon ? { ['--fond-salon' as string]: `url("${fondSalon}")` } : undefined}
+      >
         <div className="h12-hd">
           <div className="min-w-0 flex-1">
             <span className="h12-date">{dateLine}</span>

@@ -4,10 +4,13 @@
  */
 import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigationType } from 'react-router';
+import { useProTheme } from '@/lib/proTheme';
 
 export function ScrollToTop() {
   const { pathname } = useLocation();
   const type = useNavigationType();
+  // Racine de toutes les routes : seul endroit qui voit chaque changement de page.
+  useProTheme();
   useEffect(() => {
     if (type === 'POP') return;
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
