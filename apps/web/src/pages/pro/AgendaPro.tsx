@@ -47,7 +47,6 @@ import {
   Segmented,
   StatusBadge,
   cancelledLabel,
-  Pill,
 } from '@/components/ui';
 import { DayCarousel, DayScroller } from '@/components/DayCarousel';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -390,16 +389,10 @@ export function AgendaPro() {
               const nCancelled = showCancelled ? cancelled.length : cancelledOn(d);
               return (
                 <div className="flex flex-col gap-2.5">
-                  {/* Maquette 9 : plus de rangée de chiffres au-dessus du planning ; seule la pastille des
-                      annulations reste, quand il y en a. */}
-                  {nCancelled > 0 && (
-                    <div className="ags">
-                      <Pill on={showCancelled} onClick={() => setShowCancelled(!showCancelled)}>
-                        {t('{n} annulé(s)', { n: nCancelled })}
-                      </Pill>
-                    </div>
-                  )}
                   <DayColumns
+                    cancelledCount={nCancelled}
+                    showCancelled={showCancelled}
+                    onToggleCancelled={() => setShowCancelled(!showCancelled)}
                     date={d}
                     columns={columns}
                     items={live}
@@ -616,7 +609,14 @@ function DayColumns({
   onBlock,
   onFree,
   onStaff,
+  cancelledCount = 0,
+  showCancelled = false,
+  onToggleCancelled,
 }: {
+  /** Annulés du jour : un mot à toucher, au bout de la légende des statuts, qui les montre ou les cache. */
+  cancelledCount?: number;
+  showCancelled?: boolean;
+  onToggleCancelled?: () => void;
   /**
    * Équipe d'au moins deux personnes : l'en-tête des colonnes est le filtre. Toucher un nom ne garde
    * que sa colonne ; le retoucher (ou « Toute l'équipe ») les remet toutes.
@@ -765,14 +765,21 @@ function DayColumns({
   const present = (Object.keys(STATUTS) as StatutKey[]).filter((k) => items.some((b) => state(b) === k));
   return (
     <>
-    {present.length > 0 && (
-      <div className="ag9-lg" aria-hidden>
+    {(present.length > 0 || cancelledCount > 0) && (
+      <div className="ag9-lg">
         {present.map((k) => (
-          <span key={k}>
+          <span key={k} aria-hidden>
             <i className={k} />
             {t(STATUTS[k])}
           </span>
         ))}
+        {/* Sur la même ligne que les statuts : les annulés, cachés par défaut, à afficher d'un toucher. */}
+        {cancelledCount > 0 && onToggleCancelled && (
+          <button type="button" className={`ag9-lg-cn${showCancelled ? ' on' : ''}`} aria-pressed={showCancelled} onClick={onToggleCancelled}>
+            <i />
+            {t('{n} annulé(s)', { n: cancelledCount })}
+          </button>
+        )}
       </div>
     )}
     {/* Qui travaille dans quelle colonne : le nom en tête de SA colonne, et c'est aussi le filtre. */}

@@ -9453,9 +9453,11 @@ html.pro-theme .ag9-ch {
   border-bottom: 1px solid #ececef;
 }
 html.pro-theme .ag9-chc {
+  position: relative;
   min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   padding: 6px 2px 10px;
   border: 0;
@@ -9479,8 +9481,10 @@ html.pro-theme .ag9-chc > span {
   font: 500 13px/18px var(--font-sans);
   color: #9a9aa2;
 }
+/* Filtré : le nom reste centré, « Toute l'équipe » se range au bout. */
 html.pro-theme .ag9-chc em {
-  margin-inline-start: auto;
+  position: absolute;
+  inset-inline-end: 2px;
   font: 500 13px/18px var(--font-sans);
   font-style: normal;
   color: #111111;
@@ -9619,4 +9623,27 @@ html.pro-theme .agenda .agb.cn {
   color: #8a8a92;
   border: 1px dashed #d4d4d9;
   box-shadow: none;
+}
+/* Légende : les annulés au bout de la ligne, un rond en pointillés, à toucher pour les montrer. */
+html.pro-theme .ag9-lg-cn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #6e6e76;
+  font: 500 12px/16px var(--font-sans);
+  cursor: pointer;
+}
+html.pro-theme .ag9-lg-cn i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px dashed #aeaeb2;
+}
+html.pro-theme .ag9-lg-cn.on {
+  color: #111111;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
