@@ -88,6 +88,21 @@ const DOT: Record<string, string> = {
   lasr: '#d88c52',
 };
 
+/**
+ * Statuts d'un rendez-vous dans la grille du jour (11 nov. 2026) : une COULEUR vive chacun, la même
+ * dans le bloc et dans la légende (`.agb.s-*` / `.ag9-lg i.s-*` dans `index.css`).
+ */
+const STATUTS = {
+  's-pd': 'À valider',
+  's-cf': 'Confirmé',
+  's-cur': 'En cours',
+  's-ns': 'Absent',
+  's-done': 'Terminé',
+} as const;
+type StatutKey = keyof typeof STATUTS;
+/** Couleur de chaque membre de l'équipe, dans l'ordre de la liste : l'en-tête de SA colonne. */
+const STAFF_COLORS = ['#007aff', '#af52de', '#ff9500', '#34c759', '#ff2d55', '#5ac8fa', '#5856d6', '#a2845e'];
+
 /** Hauteur d'une heure : 60 px (maquette 9), une journée de travail tient sur un écran de téléphone. */
 const PX = 60 / 60;
 /** Espace entre deux blocs qui se suivent. */
@@ -113,6 +128,8 @@ interface Column {
   id: string | null;
   name: string;
   avatarUrl: string | null;
+  /** Couleur du membre (`STAFF_COLORS`), la même dans le filtre et l'en-tête de sa colonne. */
+  color: string;
 }
 
 export function AgendaPro() {
@@ -257,13 +274,16 @@ export function AgendaPro() {
   const picked = team.find((m) => m.id === staffId) ?? null;
   const nameOf = (m: { userId: string | null; displayName: string }) =>
     m.userId && m.userId === meId ? t('Vous') : m.displayName;
+  // Couleur d'un membre d'après sa place dans l'équipe : elle ne change pas quand on filtre.
+  const colorOf = (id: string) => STAFF_COLORS[Math.max(0, team.findIndex((m) => m.id === id)) % STAFF_COLORS.length]!;
   const columns: Column[] =
     team.length < 2
-      ? [{ id: null, name: salon.name, avatarUrl: null }]
+      ? [{ id: null, name: salon.name, avatarUrl: null, color: STAFF_COLORS[0]! }]
       : (picked ? [picked] : team).map((m) => ({
           id: m.id,
           name: nameOf(m),
           avatarUrl: m.avatarUrl,
+          color: colorOf(m.id),
         }));
 
   const shift = (n: number) =>
@@ -369,7 +389,14 @@ export function AgendaPro() {
                 <em>{(bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && localKey(b.startsAt) === date).length}</em>
               </button>
               {team.map((m) => (
-                <button key={m.id} type="button" className={`ag9-mp${staffId === m.id ? ' on' : ''}`} aria-pressed={staffId === m.id} onClick={() => setStaffId(staffId === m.id ? null : m.id)}>
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`ag9-mp${staffId === m.id ? ' on' : ''}`}
+                  style={{ ['--staff' as string]: colorOf(m.id) }}
+                  aria-pressed={staffId === m.id}
+                  onClick={() => setStaffId(staffId === m.id ? null : m.id)}
+                >
                   <Avatar src={m.avatarUrl} name={m.displayName} size={32} />
                   {nameOf(m)}
                   <em>
@@ -685,10 +712,14 @@ function DayColumns({
     if (e > s) closed.push({ s, e, label: bk.reason ?? t('Bloqué'), staffId: bk.staffId ?? null, blockId: bk.id });
   }
   const narrow = columns.length > 1;
-  /** État lu par la FORME (maquette 9) : en cours plein, confirmé en contour, demande en pointillé, passé en gris. */
-  const state = (b: BookingWithStaff) => {
+  /**
+   * État lu par la COULEUR (11 nov. 2026, `STATUTS`) : à valider orange, confirmé bleu, en cours vert,
+   * absent rouge, terminé gris. La légende au-dessus de la grille donne la clé.
+   */
+  const state = (b: BookingWithStaff): StatutKey => {
     const s0 = localMinutes(b.startsAt), e0 = localMinutes(b.endsAt);
-    if (b.status === 'completed' || b.status === 'no_show' || (isToday && e0 <= now) || date < toLocalDateKey()) return 's-done';
+    if (b.status === 'no_show') return 's-ns';
+    if (b.status === 'completed' || (isToday && e0 <= now) || date < toLocalDateKey()) return 's-done';
     if (b.status === 'pending') return 's-pd';
     if (isToday && s0 <= now && now < e0) return 's-cur';
     return 's-cf';
@@ -753,7 +784,35 @@ function DayColumns({
   };
 
   const nowShown = isToday && now >= startMin && now <= endMin;
+  // La légende ne nomme que les statuts PRÉSENTS ce jour-là : rien à apprendre de plus.
+  const present = (Object.keys(STATUTS) as StatutKey[]).filter((k) => items.some((b) => state(b) === k));
   return (
+    <>
+    {present.length > 0 && (
+      <div className="ag9-lg" aria-hidden>
+        {present.map((k) => (
+          <span key={k}>
+            <i className={k} />
+            {t(STATUTS[k])}
+          </span>
+        ))}
+      </div>
+    )}
+    {/* Qui travaille dans quelle colonne : un en-tête par membre, à sa couleur. Le nombre de
+        rendez-vous est déjà sur le filtre du haut : on ne le répète pas. */}
+    {narrow && (
+      <div
+        className="ag9-ch"
+        style={{ paddingInlineStart: GUTTER, gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+      >
+        {columns.map((col) => (
+          <div key={col.id ?? 'all'} className="ag9-chc" style={{ ['--staff' as string]: col.color }}>
+            <Avatar src={col.avatarUrl} name={col.name} size={26} />
+            <b>{col.name}</b>
+          </div>
+        ))}
+      </div>
+    )}
     <div className="ag9-g" style={{ height, paddingInlineStart: GUTTER }}>
       {hourMarks.map((m) => (
         <div key={m} className="ag9-hr" style={{ top: top(m) }}>
@@ -838,17 +897,10 @@ function DayColumns({
                 const e = localMinutes(b.endsAt);
                 const h = Math.max(22, (e - s) * PX - GAP);
                 const st = state(b);
-                const pending = b.status === 'pending';
-                const tag = pending
-                  ? t('À valider')
-                  : st === 's-cur'
-                    ? t('En cours')
-                    : st === 's-done' && !narrow
-                      ? t('Terminé')
-                      : null;
-                // Ce qui tient dans le bloc, dans l'ordre : heure, nom, état, puis prestation.
-                const showTag = !!tag && h >= 52;
-                const showService = h >= (showTag ? 72 : 52);
+                // L'ESSENTIEL seulement : l'heure et la cliente, puis la prestation si le bloc est
+                // assez haut. L'état se lit à la couleur ; prix, fin, membre et le reste sont dans
+                // la fenêtre du rendez-vous.
+                const showService = h >= 44;
                 return (
                   <button
                     key={b.id}
@@ -860,31 +912,15 @@ function DayColumns({
                     data-bk={b.id}
                     className={`agb ${st}${h < 60 ? ' tight' : ''}${h < 42 ? ' one' : ''}${b.id === flash ? ' flash' : ''}`}
                     style={{ top: top(s), height: h }}
-                    aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName}${pending ? ` · ${t('À valider')}` : ''}`}
+                    aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName} · ${t(STATUTS[st])}`}
                   >
-                    {h < 42 ? (
-                      <span className="agb-n">
-                        {narrow && <Avatar src={col.avatarUrl} name={col.name} size={14} />}
-                        <span dir="ltr">{formatTimeDZ(b.startsAt)}</span> {b.clientName}
-                      </span>
-                    ) : (
-                      <>
-                        <span className="agb-t" dir="ltr">
-                          {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
-                        </span>
-                        <span className="agb-n">
-                          {narrow && <Avatar src={col.avatarUrl} name={col.name} size={14} />}
-                          {b.clientName}
-                        </span>
-                        {showService && (
-                          <span className="agb-s">
-                            {b.serviceName}
-                            {!narrow && ` · ${formatDA(b.priceDa)}`}
-                          </span>
-                        )}
-                        {showTag && <span className={`ag9-tag${st === 's-done' ? ' done' : ''}`}>{tag}</span>}
-                      </>
-                    )}
+                    <span className="agb-n">
+                      <b className="agb-t" dir="ltr">
+                        {formatTimeDZ(b.startsAt)}
+                      </b>{' '}
+                      {b.clientName}
+                    </span>
+                    {showService && <span className="agb-s">{b.serviceName}</span>}
                   </button>
                 );
               })}
@@ -897,6 +933,7 @@ function DayColumns({
         </div>
       )}
     </div>
+    </>
   );
 }
 
