@@ -100,8 +100,6 @@ const STATUTS = {
   's-done': 'Terminé',
 } as const;
 type StatutKey = keyof typeof STATUTS;
-/** Couleur de chaque membre de l'équipe, dans l'ordre de la liste : l'en-tête de SA colonne. */
-const STAFF_COLORS = ['#007aff', '#af52de', '#ff9500', '#34c759', '#ff2d55', '#5ac8fa', '#5856d6', '#a2845e'];
 
 /** Hauteur d'une heure : 60 px (maquette 9), une journée de travail tient sur un écran de téléphone. */
 const PX = 60 / 60;
@@ -128,8 +126,6 @@ interface Column {
   id: string | null;
   name: string;
   avatarUrl: string | null;
-  /** Couleur du membre (`STAFF_COLORS`), la même dans le filtre et l'en-tête de sa colonne. */
-  color: string;
 }
 
 export function AgendaPro() {
@@ -274,16 +270,13 @@ export function AgendaPro() {
   const picked = team.find((m) => m.id === staffId) ?? null;
   const nameOf = (m: { userId: string | null; displayName: string }) =>
     m.userId && m.userId === meId ? t('Vous') : m.displayName;
-  // Couleur d'un membre d'après sa place dans l'équipe : elle ne change pas quand on filtre.
-  const colorOf = (id: string) => STAFF_COLORS[Math.max(0, team.findIndex((m) => m.id === id)) % STAFF_COLORS.length]!;
   const columns: Column[] =
     team.length < 2
-      ? [{ id: null, name: salon.name, avatarUrl: null, color: STAFF_COLORS[0]! }]
+      ? [{ id: null, name: salon.name, avatarUrl: null }]
       : (picked ? [picked] : team).map((m) => ({
           id: m.id,
           name: nameOf(m),
           avatarUrl: m.avatarUrl,
-          color: colorOf(m.id),
         }));
 
   const shift = (n: number) =>
@@ -381,31 +374,8 @@ export function AgendaPro() {
             onSelect={setDate}
             onView={setStripDay}
           />
-          {team.length >= 2 && (
-            <div className="ag9-m bleed" role="group" aria-label={t('Filtrer par membre')}>
-              <button type="button" className={`ag9-mp${!staffId ? ' on' : ''}`} aria-pressed={!staffId} onClick={() => setStaffId(null)}>
-                <span className="ag9-ma">{team.length}</span>
-                {t("Toute l'équipe")}
-                <em>{(bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && localKey(b.startsAt) === date).length}</em>
-              </button>
-              {team.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`ag9-mp${staffId === m.id ? ' on' : ''}`}
-                  style={{ ['--staff' as string]: colorOf(m.id) }}
-                  aria-pressed={staffId === m.id}
-                  onClick={() => setStaffId(staffId === m.id ? null : m.id)}
-                >
-                  <Avatar src={m.avatarUrl} name={m.displayName} size={32} />
-                  {nameOf(m)}
-                  <em>
-                    {(bookings.data?.items ?? []).filter((b) => b.staffId === m.id && b.status !== 'cancelled' && localKey(b.startsAt) === date).length}
-                  </em>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Le filtre par membre n'a plus sa rangée de puces : il EST l'en-tête des colonnes
+              (`DayColumns`, `onStaff`) — toucher un nom ne garde que sa colonne. */}
           <DayCarousel
             date={date}
             onChange={setDate}
@@ -448,6 +418,7 @@ export function AgendaPro() {
                         `/pro/rendez-vous/nouveau?date=${d}&time=${t}${sid ? `&staff=${sid}` : ''}`,
                       )
                     }
+                    onStaff={team.length >= 2 ? (id) => setStaffId(id && id !== staffId ? id : null) : undefined}
                   />
                 </div>
               );
@@ -644,7 +615,13 @@ function DayColumns({
   onGap,
   onBlock,
   onFree,
+  onStaff,
 }: {
+  /**
+   * Équipe d'au moins deux personnes : l'en-tête des colonnes est le filtre. Toucher un nom ne garde
+   * que sa colonne ; le retoucher (ou « Toute l'équipe ») les remet toutes.
+   */
+  onStaff?: (staffId: string | null) => void;
   date: string;
   columns: Column[];
   items: BookingWithStaff[];
@@ -798,18 +775,27 @@ function DayColumns({
         ))}
       </div>
     )}
-    {/* Qui travaille dans quelle colonne : un en-tête par membre, à sa couleur. Le nombre de
-        rendez-vous est déjà sur le filtre du haut : on ne le répète pas. */}
-    {narrow && (
+    {/* Qui travaille dans quelle colonne : le nom en tête de SA colonne, et c'est aussi le filtre. */}
+    {onStaff && (
       <div
         className="ag9-ch"
+        role="group"
+        aria-label={t('Filtrer par membre')}
         style={{ paddingInlineStart: GUTTER, gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
       >
         {columns.map((col) => (
-          <div key={col.id ?? 'all'} className="ag9-chc" style={{ ['--staff' as string]: col.color }}>
-            <Avatar src={col.avatarUrl} name={col.name} size={26} />
+          <button
+            key={col.id ?? 'all'}
+            type="button"
+            className={`ag9-chc${narrow ? '' : ' on'}`}
+            aria-pressed={!narrow}
+            onClick={() => onStaff(col.id)}
+          >
+            <Avatar src={col.avatarUrl} name={col.name} size={24} />
             <b>{col.name}</b>
-          </div>
+            <span>{items.filter((b) => inCol(col, b.staffId)).length}</span>
+            {!narrow && <em>{t("Toute l'équipe")}</em>}
+          </button>
         ))}
       </div>
     )}

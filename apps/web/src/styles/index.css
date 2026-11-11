@@ -6866,57 +6866,6 @@ html:has(.auth-onglets) body {
     background: var(--color-accent);
   }
 
-  /* Puces des membres (équipe seulement) */
-  .ag9-m {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .ag9-m::-webkit-scrollbar {
-    display: none;
-  }
-  .ag9-mp {
-    flex: none;
-    height: 42px;
-    border: 0;
-    border-radius: 999px;
-    padding: 0 13px 0 4px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    white-space: nowrap;
-    background: #ffffff;
-    color: var(--color-ink);
-    box-shadow: 0 0 0 0.5px rgb(30 27 48 / 0.12);
-    font: 600 14px Inter, sans-serif;
-    cursor: pointer;
-  }
-  .ag9-mp em {
-    font: 600 12px Inter, sans-serif;
-    font-style: normal;
-    opacity: 0.55;
-  }
-  .ag9-ma {
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
-    background: #f2f1f6;
-    font: 600 12px Outfit, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .ag9-mp.on {
-    background: var(--color-ink);
-    color: #ffffff;
-    box-shadow: none;
-  }
-  .ag9-mp.on .ag9-ma {
-    background: rgb(255 255 255 / 0.16);
-    color: #ffffff;
-  }
-
   /* Rendez-vous lus par la forme */
   .agenda .agb {
     border-radius: 14px;
@@ -9419,16 +9368,6 @@ html.pro-theme .ag9-dd :is(i, span) {
 html.pro-theme .ag9-d.on .ag9-dd :is(i, span) {
   background: #ffffff;
 }
-html.pro-theme .ag9-mp {
-  border: 1px solid #dcdce1;
-  background: #ffffff;
-  box-shadow: none;
-}
-html.pro-theme .ag9-mp.on {
-  background: #111111;
-  border-color: #111111;
-  color: #ffffff;
-}
 html.pro-theme .ag9-hr {
   color: #9a9aa2;
   font-weight: 500;
@@ -9506,44 +9445,47 @@ html.pro-theme .ag9-lg i {
   border-radius: 50%;
   background: var(--st);
 }
-/* En-tête des colonnes : un membre par colonne, avatar cerclé de SA couleur, nom et nombre. */
+/* En-tête des colonnes = le filtre par membre (11 nov.) : sobre, sans couleur — l'avatar, le nom,
+   le nombre en gris, et un filet sous la rangée. Filtré sur un membre, « Toute l'équipe » au bout. */
 html.pro-theme .ag9-ch {
-  position: sticky;
-  top: 0;
-  z-index: 5;
   display: grid;
   gap: 6px;
-  margin-top: 4px;
-  padding-block: 8px;
-  background: rgb(247 247 249 / 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #ececef;
 }
 html.pro-theme .ag9-chc {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: inset 0 -3px 0 var(--staff), var(--pro-shadow);
+  gap: 7px;
+  padding: 6px 2px 10px;
+  border: 0;
+  background: none;
+  color: #111111;
+  text-align: start;
+  cursor: pointer;
 }
 html.pro-theme .ag9-chc .av {
   flex: none;
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--staff);
 }
 html.pro-theme .ag9-chc b {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 600 13px/16px var(--font-sans);
-  color: #111111;
+  font: 600 14px/18px var(--font-sans);
 }
-/* Le filtre du haut reprend la couleur du membre autour de son avatar. */
-html.pro-theme .ag9-mp .av {
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3.5px var(--staff, transparent);
+html.pro-theme .ag9-chc > span {
+  flex: none;
+  font: 500 13px/18px var(--font-sans);
+  color: #9a9aa2;
+}
+html.pro-theme .ag9-chc em {
+  margin-inline-start: auto;
+  font: 500 13px/18px var(--font-sans);
+  font-style: normal;
+  color: #111111;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 /* Créneau libre : à peine marqué, le vide reste du vide ; il se révèle au toucher. */
 html.pro-theme .ag9-f {
