@@ -9563,17 +9563,17 @@ html.pro-theme .rp-i.no {
   color: var(--color-danger);
 }
 
-/* Demandes : les deux gestes du quotidien en couleurs PLEINES (demande du propriétaire, 11 nov.) —
+/* Demandes : les deux gestes du quotidien en couleurs PLEINES et VIVES, vert et rouge système d’iOS (demande du propriétaire, 11 nov.) —
    confirmer en vert, refuser en rouge, icône blanche. « … » reste neutre. */
 .rq-r .rp-i.yes,
 html.pro-theme .rq-r .rp-i.yes {
-  background: var(--color-ok-fg);
+  background: #34c759;
   color: #ffffff;
   box-shadow: none;
 }
 .rq-r .rp-i.no,
 html.pro-theme .rq-r .rp-i.no {
-  background: var(--color-danger);
+  background: #ff3b30;
   color: #ffffff;
   box-shadow: none;
 }
