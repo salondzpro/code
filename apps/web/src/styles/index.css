@@ -2356,55 +2356,6 @@ html:has(.auth-onglets) body {
     transition: width 0.6s ease;
   }
 
-  /* --- Demandes à valider ------------------------------------------------ */
-  .phr {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 0.875rem;
-    border-radius: var(--radius-card);
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-  }
-  /* L'heure et le jour en pavé : on lit QUAND avant QUI. Aujourd'hui = ambre. */
-  .phr-d {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 3.75rem;
-    padding: 0.4375rem 0.375rem;
-    border-radius: var(--radius-card-sm);
-    background: var(--color-fill);
-    line-height: 1.15;
-  }
-  .phr-d > span:first-child {
-    font-size: 1.143rem;
-    font-weight: 600;
-  }
-  .phr-d > span:last-child {
-    max-width: 4.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .phr-d.on {
-    background: var(--color-pending-bg);
-    color: var(--color-pending-fg);
-  }
-  .phr-d.on > span:last-child {
-    color: var(--color-pending-fg);
-  }
-  .phr-a {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr;
-    gap: 0.5rem;
-  }
-
   /* --- La journée en frise verticale ------------------------------------ */
   .phd {
     position: relative;
@@ -3503,13 +3454,6 @@ html:has(.auth-onglets) body {
   }
   .phn-ib:active {
     background: var(--color-fill);
-  }
-  .phr {
-    gap: 0.625rem;
-    padding: 0.75rem;
-  }
-  .phr-a .btn.sm {
-    padding-block: 0.5625rem;
   }
 }
 @media (max-width: 1023.98px) {
@@ -7342,6 +7286,39 @@ html:has(.auth-onglets) body {
     background: var(--color-ink);
     color: #ffffff;
   }
+  /* Demandes : la ligne de Rappels, ouvrable, avec ✓ ✕ « … ». */
+  .rq-main {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .rp-t small {
+    display: block;
+    margin-top: 2px;
+    font: 500 11px/14px var(--font-sans);
+    color: var(--color-muted);
+  }
+  .rp-i.no {
+    color: var(--color-danger);
+  }
+  .rp-i:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+  .rq-c {
+    margin-inline-start: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
   .rp-no {
     flex: none;
     font-size: 13px;
@@ -9571,4 +9548,17 @@ html.pro-theme .h13-it {
 }
 html.pro-theme .h13-it:active {
   background: #f1f1f3;
+}
+
+/* Rappels et Demandes : le rond « oui / confirmer » reste NOIR plein (le thème blanchit les autres). */
+html.pro-theme .rp-i.yes {
+  background: #111111;
+  color: #ffffff;
+  box-shadow: none;
+}
+html.pro-theme .rq-c {
+  color: inherit;
+}
+html.pro-theme .rp-i.no {
+  color: var(--color-danger);
 }

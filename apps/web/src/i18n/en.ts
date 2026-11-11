@@ -635,6 +635,7 @@ export const en: Record<string, string> = {
   'Vérifier': 'Verify',
   'Ville': 'City',
   'Voir le rendez-vous': 'View appointment',
+  'Autres actions': 'More actions',
   'Voir le salon →': 'View salon →',
   'Voir les': 'See the',
   'Voir ma page': 'View my page',

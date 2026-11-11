@@ -1,20 +1,22 @@
 /**
  * Cartes de rendez-vous de l'espace pro, PARTAGÉES par l'accueil et les réservations (28 oct. 2026).
  *
- * - `RequestCard` : une demande à valider. L'heure et le jour en pavé (on lit QUAND avant QUI),
- *   puis confirmer / reporter / refuser. Chaque carte a SA PROPRE mutation : confirmer une demande
- *   ne met en attente que son bouton, les autres restent utilisables.
+ * - `RequestCard` : une demande à valider, sur la ligne de Rappels (`rp-*`) : l'heure et le jour
+ *   (on lit QUAND avant QUI), puis trois ronds — ✓ confirmer, ✕ refuser, « … » pour reporter ou
+ *   ouvrir. Chaque carte a SA PROPRE mutation : confirmer une demande ne met en attente que son
+ *   rond, les autres restent utilisables.
  * - `TimelineList` / `TimelineRow` / `TimelineNow` : une journée en frise verticale (heure, point
  *   sur le rail de la couleur de la prestation, client, prix), avec le repère « maintenant ».
  *
  * Styles : préfixes `phr` et `phd` dans `styles/index.css`.
  */
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { CalendarClock, Check, Eye, MoreHorizontal, X } from 'lucide-react';
 import { useProBookingMutations } from '@salondz/api-client';
 import { formatDA, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff } from '@salondz/types';
-import { Button, StatusBadge } from './ui';
+import { BottomSheet, Button, Dim, I, StatusBadge } from './ui';
 import { ErrorMessage } from './ErrorMessage';
 import type { RefusedRequest } from './RefuseRequestSheet';
 import { t } from '@/i18n';
@@ -34,44 +36,81 @@ export function RequestCard({
 }) {
   const navigate = useNavigate();
   const { setStatus } = useProBookingMutations();
+  const [more, setMore] = useState(false);
   const day = toLocalDateKey(new Date(b.startsAt));
-  const isToday = day === today;
   return (
-    <div className="phr">
-      <button type="button" className="flex items-center gap-3 text-start" onClick={() => onOpen(b.id)}>
-        <span className={`phr-d ${isToday ? 'on' : ''}`}>
-          <span className="mono" dir="ltr">
+    <>
+      {/* Même ligne que Rappels (11 nov. 2026) : QUAND, QUI, puis les deux gestes du quotidien en
+          ronds — confirmer, refuser — et le reste derrière « … ». */}
+      <article className="rp-r rq-r">
+        <button type="button" className="rq-main" onClick={() => onOpen(b.id)}>
+          <b className="rp-t" dir="ltr">
             {formatTimeDZ(b.startsAt)}
+            <small>{relativeDayLabelDZ(day, today)}</small>
+          </b>
+          <span className="min-w-0 flex-1">
+            <span className="rp-n">{b.clientName}</span>
+            <span className="rp-s">
+              {b.serviceName}
+              {showStaff && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''} ·{' '}
+              <span dir="ltr">{formatDA(b.priceDa)}</span>
+            </span>
           </span>
-          <span>{relativeDayLabelDZ(day, today)}</span>
+        </button>
+        <span className="rp-a">
+          <button
+            type="button"
+            className="rp-i yes"
+            aria-label={t('Confirmer')}
+            title={t('Confirmer')}
+            disabled={setStatus.isPending}
+            aria-busy={setStatus.isPending || undefined}
+            onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
+          >
+            {setStatus.isPending ? <span className="btn-spin" aria-hidden /> : <I icon={Check} size={19} strokeWidth={2.4} />}
+          </button>
+          <button
+            type="button"
+            className="rp-i no"
+            aria-label={t('Refuser')}
+            title={t('Refuser')}
+            onClick={() => onRefuse({ id: b.id, clientName: b.clientName })}
+          >
+            <I icon={X} size={19} strokeWidth={2.4} />
+          </button>
+          <button type="button" className="rp-i" aria-label={t('Autres actions')} title={t('Autres actions')} onClick={() => setMore(true)}>
+            <I icon={MoreHorizontal} size={19} />
+          </button>
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[1.143rem] font-semibold">{b.clientName}</span>
-          <span className="block truncate text-[1rem] text-muted">
-            {b.serviceName}
-            {showStaff && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''}
-          </span>
-        </span>
-        <span className="flex-none text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
-      </button>
-      <div className="phr-a">
-        <Button
-          variant="ok"
-          sm
-          loading={setStatus.isPending}
-          onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
-        >
-          {t('Confirmer')}
-        </Button>
-        <Button variant="g" sm onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-          {t('Reporter')}
-        </Button>
-        <Button variant="d" sm onClick={() => onRefuse({ id: b.id, clientName: b.clientName })}>
-          {t('Refuser')}
-        </Button>
-      </div>
+      </article>
       <ErrorMessage error={setStatus.error} />
-    </div>
+      {more && (
+        <>
+          <Dim onClose={() => setMore(false)} />
+          <BottomSheet modal>
+            <div className="h2 !text-[1.286rem]">{b.clientName}</div>
+            <Button
+              variant="g"
+              onClick={() => {
+                setMore(false);
+                navigate(`/pro/rendez-vous/${b.id}/reporter`);
+              }}
+            >
+              <I icon={CalendarClock} size={18} /> {t('Reporter')}
+            </Button>
+            <Button
+              variant="g"
+              onClick={() => {
+                setMore(false);
+                onOpen(b.id);
+              }}
+            >
+              <I icon={Eye} size={18} /> {t('Voir le rendez-vous')}
+            </Button>
+          </BottomSheet>
+        </>
+      )}
+    </>
   );
 }
 

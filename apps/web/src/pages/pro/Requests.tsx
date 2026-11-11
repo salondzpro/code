@@ -1,8 +1,8 @@
 /**
  * Réservations (refonte du 28 oct. 2026) : deux onglets, « À valider » et « À venir ».
  *
- * - À valider : les demandes, en cartes partagées avec l'accueil (`RequestCard`) — l'heure et le
- *   jour en pavé, puis confirmer / reporter / refuser. Chaque carte a son propre état d'envoi.
+ * - À valider : les demandes, sur la ligne de Rappels (`RequestCard`) — l'heure et le
+ *   jour, puis ✓ confirmer, ✕ refuser, « … » pour le reste. Chaque ligne a son propre état d'envoi.
  * - À venir : les rendez-vous des 30 prochains jours, groupés par jour, chaque jour en frise
  *   (`TimelineList`) avec son en-tête : le jour, le nombre de rendez-vous et ce qu'il rapporte.
  *   C'est la liste chronologique que l'agenda ne donne qu'un jour à la fois.
@@ -20,7 +20,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { RequestCard, TimelineList, TimelineRow, toneVar } from '@/components/ProBookingCards';
-import { Button, EmptyState, I, Skeleton, Tabs } from '@/components/ui';
+import { Button, EmptyState, I, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
 
@@ -80,19 +80,30 @@ export function Requests() {
       {/* Nouveau rendez-vous : le « + » de l'en-tête, toujours à portée — pas de second bouton ici. */}
       <h1 className="h1">{t('Demandes')}</h1>
 
-      <Tabs
-        label={t('Demandes')}
-        className="rsv-tabs"
-        value={tab}
-        onChange={setChosen}
-        options={[
-          { value: 'pending', label: t('À valider'), count: items.length },
-          { value: 'upcoming', label: t('À venir'), count: upcoming.length },
-        ]}
-      />
+      {/* Mêmes onglets que Rappels : un mot souligné, le nombre à côté. */}
+      <div className="rp-tabs" role="tablist" aria-label={t('Demandes')}>
+        {(
+          [
+            ['pending', t('À valider'), items.length],
+            ['upcoming', t('À venir'), upcoming.length],
+          ] as const
+        ).map(([value, label, count]) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={tab === value}
+            className={tab === value ? 'on' : ''}
+            onClick={() => setChosen(value)}
+          >
+            {label}
+            {count > 0 && <span className="rq-c">{count}</span>}
+          </button>
+        ))}
+      </div>
 
       {/* ------------------------------------------------------------ À valider */}
-      <div className={`rsv-panel flex flex-col gap-2.5 ${tab === 'pending' ? '' : 'hidden'}`}>
+      <div className={`rsv-panel flex flex-col ${tab === 'pending' ? '' : 'hidden'}`}>
         {pending.isPending && <Skeleton className="h-[8rem] w-full !rounded-[var(--radius-card)]" />}
         {pending.isError && <ErrorMessage error={pending.error} retry={() => pending.refetch()} />}
         {items.map((b) => (

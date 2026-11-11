@@ -635,6 +635,7 @@ export const ar: Record<string, string> = {
   'Vérifier': 'تحقق',
   'Ville': 'المدينة',
   'Voir le rendez-vous': 'عرض الموعد',
+  'Autres actions': 'إجراءات أخرى',
   'Voir le salon →': 'عرض الصالون ←',
   'Voir les': 'عرض',
   'Voir ma page': 'عرض صفحتي',
