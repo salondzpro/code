@@ -9372,16 +9372,17 @@ html.pro-theme .ag9-hr {
   color: #9a9aa2;
   font-weight: 500;
 }
-/* Rendez-vous : la COULEUR dit le statut (11 nov. 2026, couleurs système d'iOS, vives) — fond
-   teinté, liseré plein à gauche, texte foncé. `--st` = la couleur du statut, reprise par la légende. */
+/* Rendez-vous : la COULEUR dit le statut (11 nov. 2026, couleurs système d'iOS, vives) — style
+   « C, teinté » choisi le 12 nov. : fond pâle de la couleur, HEURE écrite en couleur, sans liseré,
+   nom en encre. `--st` = la couleur du statut, reprise par la légende. */
 html.pro-theme .agenda .agb {
   --st: #007aff;
   border: 0;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--st) 14%, #ffffff);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--st) 16%, #ffffff);
   color: #111111;
-  box-shadow: inset 4px 0 0 var(--st);
-  padding-inline-start: 10px;
+  box-shadow: none;
+  padding-inline: 10px;
 }
 html.pro-theme .agb.s-pd,
 html.pro-theme .ag9-lg i.s-pd {
@@ -9407,7 +9408,6 @@ html.pro-theme .ag9-lg i.s-done {
 html.pro-theme .agenda .agb.s-cur {
   background: var(--st);
   color: #ffffff;
-  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--st) 70%, transparent);
 }
 /* Passé : effacé, la suite de la journée ressort. */
 html.pro-theme .agenda .agb.s-done {
@@ -9421,6 +9421,14 @@ html.pro-theme .agenda .agb-t {
   font: 600 12px/16px var(--font-sans);
   opacity: 1;
   margin-inline-end: 2px;
+  color: color-mix(in srgb, var(--st) 80%, #000000);
+}
+html.pro-theme .agenda .agb.s-cur .agb-t {
+  color: #ffffff;
+}
+html.pro-theme .agenda .agb.s-done .agb-t,
+html.pro-theme .agenda .agb.cn .agb-t {
+  color: #8a8a92;
 }
 html.pro-theme .agb-s {
   font: 400 12px/15px var(--font-sans);
