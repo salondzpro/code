@@ -33,8 +33,8 @@ const VERIFIER = arg('--verifier');
 /** Bundle déjà chez Google : on ne renvoie rien (Google refuserait le même numéro), on le place seulement. */
 const DEJA = val('--version', null);
 const NOTES = PRO
-  ? 'Nouveau rendez-vous : le soir ou un jour de fermeture, le formulaire s’ouvre directement sur le prochain jour d’ouverture, au premier créneau libre. Nouvel accueil et pastilles qui baissent dès qu’on regarde sa journée.'
-  : 'Réservation plus rapide : le soir, l’écran passe directement au prochain jour disponible. Le quartier des salons reste lisible dans la liste. Corrections et améliorations.';
+  ? 'Nouveau design, plus sobre et plus lisible. Agenda en couleurs selon l’état du rendez-vous, demandes à confirmer en un geste, rappels confirmés visibles sur la fiche cliente.'
+  : 'Réservations mieux suivies par votre salon, rappels confirmés et corrections diverses.';
 
 const SECRETS = path.resolve(import.meta.dirname, '..', 'secrets');
 const fichierCompte = ['play-service-account.json', 'fcm-service-account.json'].map((f) => path.join(SECRETS, f)).find((f) => fs.existsSync(f));
@@ -58,6 +58,7 @@ async function g(method, url, body, headers = {}) {
   if (!r.ok) {
     const m = j.error?.message ?? r.status;
     if (r.status === 403 && /has not been used|disabled/.test(m)) console.log('✖ API Google Play non activée sur le projet du compte de service (étape 1 de l’en-tête).');
+    else if (/targeting no countries/.test(m)) console.log('✖ La piste n’a aucun pays : Play Console → Production → Pays/régions → ajouter l’Algérie (réglage absent de l’API).');
     else if (r.status === 401 || r.status === 403) console.log(`✖ ${sa.client_email} n’a pas accès à ${PAQUET} dans Play Console (étape 2 de l’en-tête).`);
     throw new Error(`${method} ${url.replace(BASE, '')} → ${r.status} ${m}`);
   }
