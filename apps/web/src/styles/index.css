@@ -10935,3 +10935,64 @@ html.client-theme .tb-t ~ .pill {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---- Barre du bas des clientes : le panneau flottant d'origine (14 nov. 2026, demande du propriétaire) ---- */
+html.client-theme .nvb {
+  background: var(--color-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 1.75rem 1.75rem 0 0;
+  box-shadow:
+    0 -1px 0 rgb(0 0 0 / 0.05),
+    0 -14px 32px -8px rgb(0 0 0 / 0.1);
+}
+html.client-theme .nvi.on,
+html.client-theme .nvi.on .nvl {
+  color: #111111;
+}
+
+/* ---- Choix du marché : deux cartes blanches ---- */
+.mk-card {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16));
+  text-align: start;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.mk-card:active {
+  transform: scale(0.985);
+}
+.mk-ph {
+  width: 100%;
+  height: 9.5rem;
+  object-fit: cover;
+}
+.mk-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 44px 16px 16px;
+}
+.mk-t {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+.mk-s {
+  color: #6e6e76;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.mk-fl {
+  position: absolute;
+  inset-inline-end: 14px;
+  bottom: 18px;
+  color: #111111;
+}

@@ -1,4 +1,8 @@
-/** AUTH 15 — Choix du marché : « Pour Hommes » / « Pour Femmes » (modifiable depuis le profil). */
+/**
+ * AUTH 15 — Choix du marché : « Pour Hommes » / « Pour Femmes » (modifiable depuis le profil).
+ * Thème minimal éditorial (14 nov. 2026) : deux cartes blanches, la photo en haut, le nom et les
+ * métiers dessous — plus de texte posé sur la photo ni de pastille de crédit par-dessus.
+ */
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { MARKET_LABELS_FR, categoriesForMarket, type Market as MarketId } from '@salondz/constants';
@@ -6,6 +10,8 @@ import { useAuth } from '@/lib/auth';
 import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { I } from '@/components/ui';
+import { ChevronRight } from 'lucide-react';
 import { t } from '@/i18n';
 
 const CARDS: { id: MarketId; img: { src: string; credit: string } }[] = [
@@ -34,9 +40,8 @@ export function Market() {
   return (
     <Screen className="h-app" gap={16}>
       <div className="pt-4">
-        {/* « Alger » tenait lieu de sur-titre pour un nouveau compte : un lieu qui n'était pas le sien. */}
         {me.data?.profile.market && <div className="h3">{t('Changer de marché')}</div>}
-        <h1 className="h1 mt-2">{t("Que recherchez-vous ?")}</h1>
+        <h1 className="h1 mt-2">{t('Que recherchez-vous ?')}</h1>
       </div>
       {CARDS.map((c) => (
         <button
@@ -44,25 +49,24 @@ export function Market() {
           type="button"
           onClick={() => void choose(c.id)}
           disabled={update.isPending}
-          className="relative h-[12rem] w-full overflow-hidden rounded-[var(--radius-card)] text-start"
+          className="mk-card"
           aria-label={t(MARKET_LABELS_FR[c.id])}
         >
-          <img src={c.img.src} alt="" className="h-full w-full object-cover" />
-          <div className="ovl" />
-          <div className="ovl-t !bottom-9">
-            <div className="text-[1.714rem] font-semibold leading-[1.1] tracking-[-0.7px]">{t(MARKET_LABELS_FR[c.id])}</div>
-            <div className="mt-1.5 text-[1rem] leading-[1.35] text-white/85">
+          <img src={c.img.src} alt="" className="mk-ph" />
+          <span className="mk-txt">
+            <span className="mk-t">{t(MARKET_LABELS_FR[c.id])}</span>
+            <span className="mk-s">
               {categoriesForMarket(c.id)
-                .slice(0, c.id === 'men' ? 5 : 4)
+                .slice(0, c.id === 'men' ? 4 : 4)
                 .map((x) => t(x.labelFr))
                 .join(' · ')}
-            </div>
-          </div>
-          <span className="absolute bottom-2 start-3 rounded-[var(--radius-card-sm)] bg-black/45 px-1.5 py-0.5 text-[0.857rem] text-white/80">{c.img.credit}</span>
+            </span>
+          </span>
+          <I icon={ChevronRight} size={20} className="mk-fl rtl:-scale-x-100" />
         </button>
       ))}
       <ErrorMessage error={update.error} />
-      <p className="p text-center">{t("Modifiable à tout moment depuis le profil.")}</p>
+      <p className="p text-center">{t('Modifiable à tout moment depuis le profil.')}</p>
     </Screen>
   );
 }

@@ -20,7 +20,7 @@ export function BrandFooter() {
   return (
     <div className="mt-6 flex flex-col items-center gap-1.5 pb-2 text-center" aria-label={t("Salon DZ")}>
       <Wordmark size={1.714} className="!tracking-[-0.9px]" />
-      <div className="mono text-[0.857rem] tracking-[0.26em] text-subtle">{t("RÉSERVATION EN LIGNE")}</div>
+      <div className="text-[0.857rem] text-subtle">{t("Réservation en ligne")}</div>
       <div className="text-[0.857rem] text-subtle">© {year} {t("Salon DZ · Fait en Algérie")}</div>
       {build && <div className="text-[0.857rem] text-subtle">{t("Application")} {build}</div>}
       <nav className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[0.857rem] text-muted" aria-label={t("Informations légales")}>
