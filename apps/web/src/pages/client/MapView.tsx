@@ -19,7 +19,7 @@ import { arrondir, positionPrecise } from '@/lib/position';
 import { useAutoLocate } from '@/lib/useAutoLocate';
 import { enCoque, ouvrirReglagesApplication } from '@/lib/pushSettings';
 import { BottomNav } from '@/components/AppFrame';
-import { I, Img } from '@/components/ui';
+import { BackButton, I, Img } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
 import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
@@ -488,7 +488,7 @@ export function MapView() {
   const noun = market === 'men' ? 'barbier' : 'salon';
 
   return (
-    <div className="relative h-app">
+    <div className="map-page relative h-app">
       <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}
 .map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#111111;border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 "Plus Jakarta Sans",Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
 .map-bubble.on{background:#111111;color:#fff}
@@ -498,14 +498,21 @@ export function MapView() {
 .map-place{display:inline-flex;align-items:center;gap:6px;width:max-content;transform:translate(-11px,-50%);padding:3px 8px 3px 3px;border-radius:999px;background:#fff;border:1px solid #ececef;font:600 12px/1.2 "Plus Jakarta Sans",Inter,system-ui,sans-serif;color:#111111;white-space:nowrap}
 .map-place-d{width:10px;height:10px;border-radius:50%;background:#111111;border:2px solid #fff;outline:1px solid #111111}
 [dir=rtl] .map-place{transform:translate(calc(-100% + 11px),-50%);padding:3px 3px 3px 8px}`}</style>
-      <div ref={mapEl} className="absolute inset-0" aria-label={t("Carte des salons")} />
+      {/* `isolate` : les calques de Leaflet (z-index 200 à 700) restent DANS la carte. Sans lui, ils
+          passaient devant la barre du bas, qui disparaissait sous le plan (capture iPhone, 14 nov.). */}
+      <div ref={mapEl} className="absolute inset-0 isolate z-0" aria-label={t("Carte des salons")} />
 
       {/* Recherche et outils : les mêmes trois touches que la liste, la deuxième ramenant
           à la liste. Le tri est absent : sur une carte, il n'y a pas de premier résultat. */}
-      <div className="pointer-events-none absolute start-0 end-0 top-0 z-[400] flex flex-col gap-2 px-5 pt-3">
+      <div className="pointer-events-none absolute start-0 end-0 top-0 z-[400] flex flex-col gap-2">
+        {/* Bandeau STABLE (14 nov. 2026, demande du propriétaire) : posé sur le fond de page, pas
+            flottant sur le plan ; le retour à gauche de la recherche — on n'avait aucun moyen de
+            revenir en arrière depuis la carte. */}
+        <div className="map-top pointer-events-auto flex flex-col gap-2 px-5 pb-3 pt-3">
+        <div className="flex items-center gap-2.5">
+        <BackButton to={`/${category ? `?category=${category}` : ''}`} />
         <SearchField
-          shadow
-          className="pointer-events-auto"
+          className="min-w-0 flex-1"
           market={market}
           q=""
           place={area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
@@ -514,14 +521,16 @@ export function MapView() {
           // Chercher un nom depuis la carte ramène à la liste : c'est là que les noms se lisent.
           onQuery={(v) => navigate(v ? `/?q=${encodeURIComponent(v)}` : '/')}
         />
+        </div>
         <SearchTools
-          className="pointer-events-auto sh"
+          className="pointer-events-auto"
           market={market}
           category={category}
           onCategory={setCategory}
           view="map"
           onView={() => navigate(`/${category ? `?category=${category}` : ''}`)}
         />
+        </div>
         <div className="pointer-events-auto flex items-center justify-center gap-2">
           <span
             className="rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-medium text-muted shadow-card"
@@ -537,7 +546,7 @@ export function MapView() {
       </div>
 
       {/* Bouton de position : son icône dit l'état — suivie (point plein), refusée (barrée), en attente. */}
-      <div className="absolute bottom-[15.5rem] end-5 z-[400] flex flex-col items-end gap-2">
+      <div className="map-loc absolute end-5 z-[400] flex flex-col items-end gap-2">
         {geoMsg && (
           <p
             className="max-w-[min(17rem,calc(100vw-2.5rem))] rounded-[var(--radius-card)] border border-line bg-surface px-3 py-2 text-[0.857rem] leading-snug text-text"
@@ -562,7 +571,7 @@ export function MapView() {
       </div>
 
       {/* Feuille : fiches glissables (une par salon), synchronisées avec les bulles */}
-      <div className="sheet !bottom-[4.75rem] !z-[400] !gap-2 !pb-3 !pt-2">
+      <div className="sheet map-sheet !z-[400] !gap-2 !pt-3">
         {items.length === 0 ? (
           <p className="p py-2 text-center">
             {tooWide
