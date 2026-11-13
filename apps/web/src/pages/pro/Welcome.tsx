@@ -57,6 +57,11 @@ export function ProWelcome() {
       <div className="pwo-ph" aria-hidden>
         <HeroSlides photos={PHOTOS} intervalle={7000} />
       </div>
+      <span className="pwo-aura" aria-hidden>
+        <i />
+        <i />
+        <i />
+      </span>
       <span className="pwo-voile" aria-hidden />
 
       <header className="pwo-bar">
