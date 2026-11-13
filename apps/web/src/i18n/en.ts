@@ -1987,4 +1987,10 @@ export const en: Record<string, string> = {
   "Cette adresse sert déjà à un compte professionnel. Pour réserver, utilisez une autre adresse.": "This address is already used for a professional account. To book, use another address.",
   "En créant votre compte, vous acceptez les": "By creating your account, you accept the",
   "Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.": "This link is no longer valid. Sign in, or request a new link.",
+  "Voir Pour Femmes": "See Women",
+  "Voir Pour Hommes": "See Men",
+  "Vos réservations, à venir et passées.": "Your bookings, upcoming and past.",
+  "Vos informations, vos réglages et votre activité.": "Your details, settings and activity.",
+  "{n} salon(s) gardé(s) sous la main.": "{n} salon(s) kept close at hand.",
+  "Les salons que vous gardez sous la main.": "The salons you keep close at hand.",
 };

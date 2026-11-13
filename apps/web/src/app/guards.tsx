@@ -23,9 +23,13 @@ export function ClientLayout() {
   // La position se détecte d'office à la première ouverture : sans cela l'application démarre sur
   // Alger, sa valeur par défaut, pour quelqu'un qui est à Oran.
   useAutoLocate();
+  // Comme l'espace pro (refonte du 1er nov., étendue aux clientes le 14 nov. 2026) : sur téléphone,
+  // plus d'en-tête ni de tiroir — le titre est dans la page, la cloche sur l'accueil. L'en-tête ne
+  // reste que sur ordinateur, où il porte la navigation.
+  const desktop = useDesktop();
   return (
-    <AppFrame>
-      <PublicHeader />
+    <AppFrame className="cl-frame">
+      {desktop && <PublicHeader />}
       <AccountSuspendedNotice />
       <Outlet />
       <BottomNav kind="client" />
@@ -40,9 +44,10 @@ export function ClientLayout() {
  * pro, où cet en-tête n'aurait rien à faire.
  */
 export function ClientPlainLayout() {
+  const desktop = useDesktop();
   return (
-    <AppFrame>
-      <PublicHeader />
+    <AppFrame className="cl-frame">
+      {desktop && <PublicHeader />}
       <Outlet />
     </AppFrame>
   );

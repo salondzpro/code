@@ -10,10 +10,14 @@
  * L'avatar a disparu d'ici : l'en-tête client porte déjà le bouton de compte à droite, et la
  * même destination deux fois sur un écran ne sert personne. C-H 08 — aucun résultat.
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { ArrowLeftRight, Search } from 'lucide-react';
-import { pagesItems, useSalonSearchInfinite } from '@salondz/api-client';
+import { Bell, Search, User } from 'lucide-react';
+import { pagesItems, useMe, useSalonSearchInfinite, useUnreadNotifications } from '@salondz/api-client';
+import { formatLocale } from '@salondz/constants';
+import { useAuth } from '@/lib/auth';
+import { useDesktop } from '@/lib/breakpoint';
+import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { LoadMore } from '@/components/LoadMore';
 import {
   MARKET_LABELS_FR,
@@ -23,7 +27,7 @@ import {
 } from '@salondz/constants';
 import { useLocationPrefs } from '@/lib/clientPrefs';
 import { useClientMarket } from '@/lib/useClientMarket';
-import { I, IconButton, Pill, Skeleton } from '@/components/ui';
+import { I, Pill, Skeleton } from '@/components/ui';
 import { SearchField, SearchTools } from '@/components/SearchTools';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { SalonListCard } from '@/components/SalonListCard';
@@ -38,6 +42,11 @@ const NOUN: Record<Market, [string, string]> = {
 export function Marketplace() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const { session } = useAuth();
+  const me = useMe(!!session);
+  const nonLues = useUnreadNotifications(!!session);
+  const desktop = useDesktop();
+  const [bell, setBell] = useState(false);
   const { market, setMarket, ready } = useClientMarket();
   const [prefs, setPrefs] = useLocationPrefs();
   const category = params.get('category') ?? '';
@@ -101,8 +110,37 @@ export function Marketplace() {
       ? t('{n} {noun} disponible(s) aujourd’hui', { n: todayCount, noun: t(NOUN[market][todayCount > 1 ? 1 : 0]) })
       : t('{n} {noun} · prochaines disponibilités ci-dessous', { n: total, noun });
 
+  // ACCUEIL CLIENT = ACCUEIL PRO (14 nov. 2026) : la date, « Bonjour », la cloche, sur la photo du
+  // premier salon proposé, très floutée (`.h12-top.photo`, thème minimal éditorial). Sur ordinateur,
+  // l'en-tête de la coque porte déjà la cloche : on ne la répète pas.
+  const firstName = (me.data?.profile.fullName ?? '').split(' ')[0];
+  const fond = items[0]?.photoUrls?.[0] ?? items[0]?.coverUrl ?? null;
+  const dateLine = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date());
+
   return (
-    <Screen bottom={NAV_PAD} gap={10} width="page">
+    <Screen bottom={NAV_PAD} gap={12} width="page" className="h12 cl-home">
+      <header className={`h12-top${fond ? ' photo' : ''}`} style={fond ? { ['--fond-salon' as string]: `url("${fond}")` } : undefined}>
+        <div className="h12-hd">
+          <div className="min-w-0 flex-1">
+            <span className="h12-date">{dateLine}</span>
+            <span className="h12-hi">
+              {t('Bonjour')} {firstName}
+            </span>
+          </div>
+          {!desktop &&
+            (session ? (
+              <button type="button" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
+                <I icon={Bell} size={20} strokeWidth={1.8} />
+                {nonLues > 0 && <i aria-hidden />}
+              </button>
+            ) : (
+              <Link to="/intro?next=%2F" className="h12-bell" aria-label={t('Se connecter ou créer un compte')}>
+                <I icon={User} size={20} strokeWidth={1.8} />
+              </Link>
+            ))}
+        </div>
+      </header>
+      {bell && <NotificationsSheet onClose={() => setBell(false)} />}
       <SearchField
         market={market}
         q={q}
@@ -119,26 +157,14 @@ export function Marketplace() {
         onView={() => navigate(`/carte${category ? `?category=${category}` : ''}`)}
       />
 
-      {/* Titre du marché affiché, au-dessus des résultats qu'il commande. */}
-      <div className="flex items-center justify-between gap-3 border-t border-line pt-2.5">
-        <h1 className="h1">
-          {/* Mode femmes : titre en rose pour lever toute ambiguïté sur le catalogue affiché. */}
-          {market === 'women' ? (
-            <>
-              {t("Pour")}{' '}<span className="text-women">{t("Femmes")}</span>
-            </>
-          ) : (
-            t(MARKET_LABELS_FR[market])
-          )}
-        </h1>
-        <IconButton
-          aria-label={t("Changer de marché")}
-          onClick={swapMarket}
-          className="!h-9 !w-9 !rounded-[var(--radius-card-sm)]"
-        >
-          <I icon={ArrowLeftRight} size={16} />
-        </IconButton>
-      </div>
+      {/* Titre du marché affiché, au-dessus des résultats qu'il commande — comme « Ma page » sur
+          l'accueil pro : le titre de section, et le changement en lien souligné. */}
+      <h2 className="h12-h mt-1">
+        {t(MARKET_LABELS_FR[market])}
+        <button type="button" onClick={swapMarket}>
+          {market === 'men' ? t('Voir Pour Femmes') : t('Voir Pour Hommes')}
+        </button>
+      </h2>
 
       {/* Résultats */}
       {query.isPending ? (
@@ -184,7 +210,7 @@ export function Marketplace() {
         </div>
       ) : (
         <>
-          <p className="text-[1rem] font-semibold text-text">{countLabel}</p>
+          <p className="cl-count">{countLabel}</p>
           {/* `gr` : la liste se range en colonnes dès qu'il y a la place (rien en dessous de 768 px). */}
           <div className="gr flex flex-col gap-3.5">
             {items.map((s) => (

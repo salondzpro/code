@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 import { Heart } from 'lucide-react';
 import { useFavorites, useToggleFavorite } from '@salondz/api-client';
 import { categoryLabel, salonMarkets, type Market, relativeDayLabelDZ } from '@salondz/constants';
-import { Avatar, LinkButton, Pill, Skeleton } from '@/components/ui';
+import { Avatar, LinkButton, PageHead, Pill, Skeleton } from '@/components/ui';
 import { RatingPill } from '@/components/SalonListCard';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -20,10 +20,10 @@ export function Favorites() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <div className="flex items-end justify-between gap-3">
-        <h1 className="h1">{t("Mes favoris")}</h1>
-        {all.length > 0 && <span className="text-[1rem] text-muted">{all.length}</span>}
-      </div>
+      <PageHead
+        title={t('Mes favoris')}
+        sub={all.length > 0 ? t('{n} salon(s) gardé(s) sous la main.', { n: all.length }) : t('Les salons que vous gardez sous la main.')}
+      />
       {/* Le filtre par marché n'a de sens que s'il y a des favoris des deux côtés. */}
       {all.some((s) => salonMarkets(s.genderTarget).includes('men')) &&
         all.some((s) => salonMarkets(s.genderTarget).includes('women')) && (

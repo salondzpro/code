@@ -1973,4 +1973,10 @@ export const ar: Record<string, string> = {
   "Cette adresse sert déjà à un compte professionnel. Pour réserver, utilisez une autre adresse.": "هذا العنوان مستعمل لحساب مهني. للحجز، استعمل عنوانًا آخر.",
   "En créant votre compte, vous acceptez les": "بإنشاء حسابك، فإنك توافق على",
   "Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.": "هذا الرابط لم يعد صالحًا. سجّل الدخول أو اطلب رابطًا جديدًا.",
+  "Voir Pour Femmes": "عرض قسم النساء",
+  "Voir Pour Hommes": "عرض قسم الرجال",
+  "Vos réservations, à venir et passées.": "حجوزاتك القادمة والسابقة.",
+  "Vos informations, vos réglages et votre activité.": "معلوماتك وإعداداتك ونشاطك.",
+  "{n} salon(s) gardé(s) sous la main.": "{n} صالون محفوظ في متناولك.",
+  "Les salons que vous gardez sous la main.": "الصالونات التي تحتفظ بها في متناولك.",
 };

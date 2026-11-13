@@ -26,7 +26,7 @@ import {
   Search,
   Star,
 } from 'lucide-react';
-import { EmptyState, I, Img, LinkButton, Segmented, Skeleton, StatusBadge } from '@/components/ui';
+import { EmptyState, I, Img, LinkButton, PageHead, Segmented, Skeleton, StatusBadge } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -282,8 +282,8 @@ export function Bookings() {
     <Screen bottom={NAV_PAD} gap={16}>
       {/* Un rappel non reçu, c'est un rendez-vous oublié. Reproposé bien plus rarement que côté
           professionnel : un client n'y perd pas son activité. */}
+      <PageHead title={t('Rendez-vous')} sub={t('Vos réservations, à venir et passées.')} />
       <NotificationsNudge role="client" />
-      <h1 className="h1">{t("Rendez-vous")}</h1>
       <Segmented
         label={t("Période")}
         value={scope}

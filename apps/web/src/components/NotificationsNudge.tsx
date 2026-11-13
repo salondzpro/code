@@ -46,7 +46,7 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
   // en ordre.
   if (reussi)
     return (
-      <div className="flex items-center gap-2.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5 text-ok-fg" role="status">
+      <div className="flex items-center gap-2.5 rounded-[var(--radius-card)] bg-surface p-3.5 shadow-[var(--pro-shadow)] text-ok-fg" role="status">
         <I icon={Check} size={18} /> <span className="font-semibold">{t('Notifications activées sur cet appareil.')}</span>
       </div>
     );
@@ -77,7 +77,7 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
   };
 
   return (
-    <div className="flex gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-3.5" role="status">
+    <div className="flex gap-3 rounded-[var(--radius-card)] bg-surface p-3.5 shadow-[var(--pro-shadow)]" role="status">
       <span className="mt-0.5 flex size-10 flex-none items-center justify-center rounded-[var(--radius-card-sm)] bg-fill">
         <I icon={BellRing} size={20} strokeWidth={1.7} />
       </span>

@@ -17,7 +17,7 @@ import {
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
-import { Avatar, Badge, Button, I } from '@/components/ui';
+import { Avatar, Badge, Button, I, PageHead } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
@@ -54,7 +54,7 @@ function Stat({ value, label, to }: { value: string; label: string; to: string }
   return (
     <Link
       to={to}
-      className="flex min-w-0 flex-col rounded-[var(--radius-card-sm)] bg-fill px-3 py-2.5"
+      className="flex min-w-0 flex-col rounded-[var(--radius-card-sm)] bg-surface px-3 py-2.5 shadow-[var(--pro-shadow)]"
       aria-label={`${value} ${label}`}
     >
       <span className="truncate text-[1.429rem] font-semibold leading-tight tracking-[-0.5px]">{value}</span>
@@ -82,7 +82,7 @@ export function Profile() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <h1 className="h1">{t("Mon compte")}</h1>
+      <PageHead title={t('Mon compte')} sub={t('Vos informations, vos réglages et votre activité.')} />
 
       {/* Qui : photo, nom, e-mail vérifié, numéro — et le bouton pour corriger. */}
       <div className="crd !gap-3">
@@ -143,7 +143,6 @@ export function Profile() {
         />
       </div>
 
-      <span className="h3">{t("Mon compte")}</span>
       <div className="crd !gap-0 !py-1">
         <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
       </div>

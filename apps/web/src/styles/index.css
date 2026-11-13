@@ -10996,3 +10996,57 @@ html.client-theme .nvi.on .nvl {
   bottom: 18px;
   color: #111111;
 }
+
+/* ============================================================================================
+   ESPACE CLIENT = MÊME ORGANISATION QUE L'ESPACE PRO (14 nov. 2026, demande du propriétaire :
+   « accueil, marketplace, tiroirs, profil, rendez-vous… même police, même écriture, même graphisme »).
+   Sur téléphone, plus d'en-tête ni de tiroir (`ClientLayout` ne monte `PublicHeader` que sur
+   ordinateur) ; l'accueil reprend le haut de l'accueil pro (`.h12-top.photo`, date, « Bonjour »,
+   cloche) ; chaque page s'ouvre sur `PageHead` (titre + une phrase), comme les pages pro.
+   ============================================================================================ */
+@media (max-width: 1023.98px) {
+  .cl-frame {
+    --hdr-h: 0rem;
+  }
+}
+/* L'accueil client n'a pas de rangée de stories sous le bonjour : le haut est plus court. */
+.cl-home .h12-top {
+  gap: 12px;
+}
+html.pro-theme .cl-home .h12-top {
+  padding-bottom: 12px;
+}
+.h12-h button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #111111;
+  font: 500 13px var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.cl-count {
+  margin: -4px 0 0;
+  color: #6e6e76;
+  font-size: 14px;
+  font-weight: 400;
+}
+/* Monochrome, comme le pro : le mot « Femmes » n'est plus en rose. */
+html.client-theme .text-women {
+  color: inherit;
+}
+/* Heures libres : graisse 500, comme les pastilles du pro. */
+html.client-theme .pill.\!border-hour {
+  font-weight: 500;
+}
+/* Titres de page client : la même échelle que le pro (28 px / 600, phrase grise 15 px). */
+html.client-theme .pgh-s {
+  font-size: 15px;
+  color: #6e6e76;
+}
+/* Tiroir (ordinateur) et feuilles : blancs, ombre légère, liens en encre. */
+html.client-theme .drw {
+  background: #ffffff;
+  box-shadow: 0 0 40px -12px rgb(0 0 0 / 0.25);
+}
