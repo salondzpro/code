@@ -49,7 +49,7 @@ function LogoCanal({ k }: { k: BookingOrigin }) {
 
 export function MaPage() {
   const salon = useProSalon().data?.salon ?? null;
-  const [periode, setPeriode] = useState<Periode>('30');
+  const [periode, setPeriode] = useState<Periode>('7');
   const to = toLocalDateKey();
   const from = addDaysToKey(to, -(Number(periode) - 1));
   const stats = useProPageStats(from, to, !!salon);
