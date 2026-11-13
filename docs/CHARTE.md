@@ -128,6 +128,15 @@ absent/annulé).
 - **Langue** : toujours `LangSwitch` (drapeau + nom, liste déroulante). Jamais de pastilles d'abréviations.
 - **Chargement** : barre et squelette, jamais l'écran de marque en cours de route.
 
+## 7 bis. Ordinateur et tablette
+
+Mêmes écrans, mêmes couleurs, mêmes composants que sur téléphone ; seule la répartition change, et
+seulement à partir de 768 px (bloc « ORDINATEUR ET TABLETTE » d'`index.css`). Pages d'entrée (ouverture
+pro) : fond sur toute la largeur, contenu centré. Écrans d'accès : bloc centré, boutons juste sous le
+formulaire. Barre d'action basse : ronds regroupés au centre (28 rem), bouton principal 30 rem au plus.
+Fenêtre du bas = fenêtre centrée. Vérifier à 1 280 et 820 px (`node_modules/.shots/desktop.mjs`) ET à
+390 px (`mobilecheck.mjs`) avant de livrer.
+
 ## 8. Erreurs déjà commises — à ne plus refaire
 
 | Erreur | Règle |

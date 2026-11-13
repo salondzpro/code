@@ -10688,3 +10688,42 @@ a.h12-card {
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* ORDINATEUR ET TABLETTE (13 nov. 2026, « la version web pareille que le mobile ») : mêmes écrans,
+   mêmes couleurs ; seule la répartition change. Rien ici ne s'applique sous 768 px. */
+@media (min-width: 768px) {
+  /* Ouverture : le fond flouté couvre toute la fenêtre, le contenu reste au centre. */
+  .pwo {
+    width: 100%;
+  }
+  .pwo-bar {
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding-top: 24px;
+  }
+  /* Accès pro : un bloc centré dans la page, les boutons juste sous le formulaire. */
+  .pa {
+    justify-content: center;
+    padding-top: 6vh;
+    padding-bottom: 10vh;
+  }
+  .pa-main {
+    flex: 0 0 auto;
+  }
+  .pa-actions {
+    margin-top: 0;
+    padding-top: 28px;
+  }
+  /* Ronds d'action dans une barre basse : regroupés au centre, pas éparpillés sur toute la largeur. */
+  .sheet:not(.modal) .ag-acts {
+    width: 100%;
+    max-width: 28rem;
+    margin-inline: auto;
+  }
+  .sheet:not(.modal) > .btn {
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+  }
+}

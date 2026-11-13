@@ -53,7 +53,7 @@ export function ProWelcome() {
   const demos = DEMO_ACCOUNTS.filter((a) => a.role === 'pro' && a.login);
 
   return (
-    <div className="pwo rd h-app">
+    <div className="pwo h-app">
       <div className="pwo-ph" aria-hidden>
         <HeroSlides photos={PHOTOS} intervalle={7000} />
       </div>
