@@ -1931,4 +1931,7 @@ export const en: Record<string, string> = {
   "arrivée {a}, retard toléré jusqu’à {b}": "arrive {a}, late until {b} tolerated",
   "Dans 3 semaines": "In 3 weeks",
   "vous": "you",
+  "Nouveau client « {q} »": "New client “{q}”",
+  "Aucun client ne correspond.": "No matching client.",
+  "Aucun client pour l’instant.": "No clients yet.",
 };

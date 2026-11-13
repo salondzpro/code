@@ -1917,4 +1917,7 @@ export const ar: Record<string, string> = {
   "arrivée {a}, retard toléré jusqu’à {b}": "الحضور {a}، التأخر مقبول حتى {b}",
   "Dans 3 semaines": "بعد 3 أسابيع",
   "vous": "أنت",
+  "Nouveau client « {q} »": "زبون جديد « {q} »",
+  "Aucun client ne correspond.": "لا يوجد زبون مطابق.",
+  "Aucun client pour l’instant.": "لا يوجد زبائن حتى الآن.",
 };

@@ -57,6 +57,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { SuccessSplash } from '@/components/SuccessSplash';
 import { formatDuration } from '@/lib/format';
+import { LoadMore } from '@/components/LoadMore';
 import { SlotSuggestions } from '@/components/SlotSuggestions';
 import { flashInAgenda, saveAgendaMemory } from '@/lib/agendaMemory';
 import { t } from '@/i18n';
@@ -88,9 +89,11 @@ function ClientSheet({
     const t = window.setTimeout(() => setNeedle(q.trim()), 250);
     return () => window.clearTimeout(t);
   }, [q]);
-  const clients = useProClientsInfinite(needle, mode === 'find' && !!needle);
-  const rows = pagesItems(clients.data).slice(0, 8);
-  const searching = !!q.trim() && (q.trim() !== needle || clients.isPending);
+  // La clientèle s'affiche DÈS l'ouverture (les plus récents d'abord) et se filtre pendant la frappe :
+  // on choisit souvent sans rien taper. Liste complète, qui défile et se charge au fil du défilement.
+  const clients = useProClientsInfinite(needle, mode === 'find');
+  const rows = pagesItems(clients.data);
+  const searching = q.trim() !== needle || clients.isPending;
   const create = () => {
     const typed = q.trim();
     const isPhone = /^[\d\s+]+$/.test(typed);
@@ -112,14 +115,22 @@ function ClientSheet({
   return (
     <>
       <Dim onClose={onClose} className="!z-[45]" />
-      <BottomSheet modal className="!z-50 max-h-[90vh] overflow-y-auto">
+      {/* FENÊTRE DE RECHERCHE STABLE (13 nov. 2026) : toujours en HAUT de l'écran, à la hauteur de
+          ce qui est visible (clavier ouvert ou non) ; le champ reste en tête, seule la liste défile. */}
+      <BottomSheet modal className={`!z-50 ${mode === 'find' ? 'cherche' : 'max-h-[90vh] overflow-y-auto'}`}>
         <div className="h2 !text-[1.286rem]">{mode === 'find' ? t('Client existant') : t('Nouveau client')}</div>
         {mode === 'find' ? (
           <>
             <SearchBox value={q} onChange={setQ} placeholder={t('Nom ou téléphone')} />
-            {searching ? (
+            <div className="cherche-liste">
+            {q.trim() && (
+              <Button icon={ICONE.creerCompte} variant="soft" sm onClick={create}>
+                {t('Nouveau client « {q} »', { q: q.trim() })}
+              </Button>
+            )}
+            {searching && rows.length === 0 ? (
               <Skeleton className="h-[4rem] w-full !rounded-[var(--radius-card-sm)]" />
-            ) : !needle ? null : rows.length > 0 ? (
+            ) : rows.length > 0 ? (
               <div className="crd !gap-0 !py-1">
                 {rows.map((c) => (
                   <button
@@ -141,10 +152,17 @@ function ClientSheet({
                 ))}
               </div>
             ) : (
-              <Button variant="soft" onClick={create}>
-                <I icon={UserPlus} size={18} /> {t('Créer « {q} »', { q: needle })}
-              </Button>
+              <p className="p py-3 text-center">
+                {needle ? t('Aucun client ne correspond.') : t('Aucun client pour l’instant.')}
+              </p>
             )}
+            <LoadMore
+              hasMore={clients.hasNextPage}
+              loading={clients.isFetchingNextPage}
+              onMore={() => void clients.fetchNextPage()}
+              label={t('Voir plus de clients')}
+            />
+            </div>
           </>
         ) : (
           <>

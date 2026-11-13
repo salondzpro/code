@@ -117,6 +117,10 @@ absent/annulé).
 
 - **Clavier** : rien de ce qu'on utilise ne finit dessous ; fenêtres du bas en haut de la zone
   visible (règle complète dans CLAUDE.md, « RÈGLE CLAVIER »). Aucun focus automatique.
+- **Fenêtre de recherche** (choisir un client, une prestation…) : classe `cherche` sur la fenêtre, liste
+  dans `.cherche-liste`. TOUJOURS en haut de l'écran, à la hauteur de la zone visible (clavier ouvert ou
+  non, elle ne saute pas), champ en tête, seule la liste défile ; la liste s'affiche dès l'ouverture
+  et se filtre pendant la frappe ; « Nouveau … » toujours proposé dès qu'on tape.
 - **Langue** : toujours `LangSwitch` (drapeau + nom, liste déroulante). Jamais de pastilles d'abréviations.
 - **Chargement** : barre et squelette, jamais l'écran de marque en cours de route.
 
@@ -134,6 +138,7 @@ absent/annulé).
 | Couleur par membre dans l'agenda | Couleur = statut seulement (§ 2) |
 | Pastilles FR / AR / EN | `LangSwitch` (§ 7) |
 | Ronds d'action blancs, pastille d'état grise | Ronds et états en couleur (§ 6) |
+| Recherche vide à l'ouverture, 8 résultats, liste figée, fenêtre qui saute avec le clavier | Fenêtre `cherche` stable (§ 7) |
 | Pavé rectangulaire sur le jour choisi | Cercle noir sur le numéro (§ 2) |
 | Points gris sans sens sous les jours | Un point par rendez-vous, couleur du statut (§ 2) |
 | Violet, dégradés, halos colorés | Monochrome + couleurs de sens (§ 2, § 3) |

@@ -10424,3 +10424,43 @@ html.pro-theme .ag9-sc.no { --st: #ff3b30; }
 .ag-fait-p {
   margin-inline-start: auto;
 }
+
+/* FENÊTRE DE RECHERCHE STABLE (13 nov. 2026, « Client existant ») : sur téléphone, elle est TOUJOURS
+   en haut de l'écran, à la hauteur de la zone visible — clavier ouvert ou fermé, elle ne saute pas.
+   Le titre et le champ restent en tête ; seule la liste défile. `--vv-*` : `lib/keyboard.ts`. */
+@media (max-width: 767.98px) {
+  html .sheet.modal.cherche,
+  html[data-kb] .sheet.modal.cherche {
+    top: calc(var(--vv-top, 0px) + 8px);
+    bottom: auto;
+    height: calc(var(--vv-h, 100dvh) - 16px);
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+    border-radius: var(--radius-sheet, 1.75rem);
+    padding-bottom: 0.75rem;
+  }
+  .sheet.modal.cherche .grab {
+    display: none;
+  }
+}
+.sheet.modal.cherche {
+  display: flex;
+  flex-direction: column;
+}
+.cherche-liste {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+@media (min-width: 768px) {
+  .sheet.modal.cherche {
+    height: min(40rem, calc(100dvh - 4rem));
+  }
+}
