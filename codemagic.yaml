@@ -131,7 +131,7 @@ workflows:
         auth: integration
         # PRODUCTION DIRECTE (29 oct. 2026, décision du propriétaire) : chaque compilation est
         # soumise à la revue d'Apple et mise en vente dès l'approbation, sans passer par lui.
-        submit_to_testflight: true
+        submit_to_testflight: false  # la bêta externe exigeait des contacts jamais remplis et bloquait la soumission (13 nov.)
         submit_to_app_store: true
         release_type: AFTER_APPROVAL
         cancel_previous_submissions: true
@@ -252,7 +252,7 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        submit_to_testflight: true
+        submit_to_testflight: false  # la bêta externe exigeait des contacts jamais remplis et bloquait la soumission (13 nov.)
         submit_to_app_store: true
         release_type: AFTER_APPROVAL
         cancel_previous_submissions: true

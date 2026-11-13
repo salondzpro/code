@@ -29,8 +29,8 @@ if (!NUMERO) {
 /** Texte des nouveautés, par langue de fiche. Une langue absente d'ici reçoit le texte français. */
 const NOUVEAUTES = {
   'fr-FR': PRO
-    ? 'Accueil plus compact : votre journée, le prochain client et les demandes à valider, sans rien d’autre.\nInscription : l’adresse du salon se choisit en trois étapes (wilaya, adresse, emplacement exact sur la carte) et se confirme avant de continuer.\nUne adresse e-mail déjà associée à un compte professionnel est signalée dès la saisie.\nAgenda et réservations redessinés. L’application ne zoome plus par erreur.'
-    : 'L’application ne zoome plus par erreur (pincement, taille de police du téléphone).\nEspace professionnel : accueil, agenda et réservations redessinés.\nCorrections et améliorations.',
+    ? 'Nouveau design, plus clair. Agenda en couleurs, actions rapides en un toucher (accepter, reporter, confier), connexion simplifiée, et « Ma page » : d’où viennent vos clientes et ce que Salon DZ vous rapporte.\nL’application se met désormais à jour toute seule.'
+    : 'Nouveau design, réservation plus simple et plus rapide.\nL’application se met désormais à jour toute seule.\nCorrections et améliorations.',
 };
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
