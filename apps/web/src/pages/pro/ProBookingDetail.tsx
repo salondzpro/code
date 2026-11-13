@@ -11,7 +11,6 @@ import {
   useProBookingMutations,
   useProBookings,
   useProSalon,
-  useAvailability,
   ApiError,
 } from '@salondz/api-client';
 import { Pencil } from 'lucide-react';
@@ -392,38 +391,15 @@ export function ProBookingReschedule() {
         )}
       </div>
 
-      {/* Verdict tout de suite : libre (vert) ou déjà pris (rouge). */}
-      {sid && (
-        <p className={`rp-etat ${busy ? 'non' : 'oui'}`} role="status">
-          <I icon={busy ? XCircle : CheckCircle2} size={18} />
-          {busy
-            ? t('{name} a déjà un rendez-vous à {h}', { name: staff.find((m) => m.id === sid)?.displayName ?? t('Ce membre'), h: tm })
-            : t('{name} est libre à {h}', { name: staff.find((m) => m.id === sid)?.displayName ?? t('Le salon'), h: tm })}
+      {/* Un message SEULEMENT s'il y a un problème (13 nov. 2026, demande du propriétaire) : rien quand
+          le créneau est libre ; sinon le motif en rouge, puis les propositions les plus proches. */}
+      {sid && busy && (
+        <p className="rp-etat non" role="alert">
+          <I icon={XCircle} size={18} />
+          {t('{name} a déjà un rendez-vous à {h}', { name: staff.find((m) => m.id === sid)?.displayName ?? t('Ce membre'), h: tm })}
         </p>
       )}
 
-      {sid && serviceIds.length > 0 && (
-        <ChoixRapides
-          salonId={salon.id}
-          serviceIds={serviceIds}
-          date={d}
-          time={tm}
-          staffId={sid}
-          team={staff.map((m) => ({ id: m.id, name: m.displayName }))}
-          onDate={(x) => {
-            reschedule.reset();
-            setDate(x);
-          }}
-          onTime={(x) => {
-            reschedule.reset();
-            setTime(x);
-          }}
-          onStaff={(x) => {
-            reschedule.reset();
-            setStaffId(x);
-          }}
-        />
-      )}
       {busy && sid && serviceIds.length > 0 && (
         <SlotSuggestions
           salonId={salon.id}
@@ -461,97 +437,5 @@ export function ProBookingReschedule() {
         </Button>
       </BottomSheet>
     </Screen>
-  );
-}
-
-/**
- * CHOIX RAPIDES DU REPORT (13 nov. 2026, demande du propriétaire : « une facilité rapide pour prendre,
- * échanger, confier ou modifier un rendez-vous ») — tout se fait d'un toucher :
- *   - jours proches (aujourd'hui, demain, après-demain, dans une semaine) ;
- *   - les heures LIBRES du membre ce jour-là (créneaux de l'API, jamais calculés ici) ;
- *   - CONFIER : qui, dans l'équipe, est libre à l'heure choisie (et qui ne l'est pas).
- */
-function ChoixRapides({
-  salonId,
-  serviceIds,
-  date,
-  time,
-  staffId,
-  team,
-  onDate,
-  onTime,
-  onStaff,
-}: {
-  salonId: string;
-  serviceIds: string[];
-  date: string;
-  time: string;
-  staffId: string;
-  team: { id: string; name: string }[];
-  onDate: (d: string) => void;
-  onTime: (t: string) => void;
-  onStaff: (id: string) => void;
-}) {
-  const ids = serviceIds.join(',');
-  const mine = useAvailability(salonId, { serviceIds: ids, date, staffId });
-  const all = useAvailability(salonId, { serviceIds: ids, date });
-  const today = toLocalDateKey();
-  const jours = [
-    { key: today, label: t("Aujourd'hui") },
-    { key: addDaysToKey(today, 1), label: t('Demain') },
-    { key: addDaysToKey(today, 2), label: relativeDayLabelDZ(addDaysToKey(today, 2)) },
-    { key: addDaysToKey(date, 7), label: t('+1 semaine') },
-  ];
-  const heures = [...new Set((mine.data?.slots ?? []).map((s) => formatTimeDZ(s.startsAt)))];
-  const aCetteHeure = (all.data?.slots ?? []).find((s) => formatTimeDZ(s.startsAt) === time);
-  return (
-    <div className="rp-rapide">
-      <span className="rp-titre">{t('Jour')}</span>
-      <div className="pills bleed">
-        {jours.map((j) => (
-          <button key={j.key} type="button" className={`rp-puce ${j.key === date ? 'on' : ''}`} onClick={() => onDate(j.key)}>
-            {j.label}
-          </button>
-        ))}
-      </div>
-
-      <span className="rp-titre">{t('Heures libres')}</span>
-      {mine.isPending ? (
-        <Skeleton className="h-[2.5rem] w-full" />
-      ) : heures.length ? (
-        <div className="pills bleed">
-          {heures.map((h) => (
-            <button key={h} type="button" dir="ltr" className={`rp-puce ${h === time ? 'on' : ''}`} onClick={() => onTime(h)}>
-              {h}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p className="rp-vide">{t('Plus aucun créneau libre ce jour-là.')}</p>
-      )}
-
-      {team.length > 1 && (
-        <>
-          <span className="rp-titre">{t('Confier à · à {h}', { h: time })}</span>
-          <div className="pills bleed">
-            {team.map((m) => {
-              const libre = !!aCetteHeure?.staffIds.includes(m.id) || m.id === staffId;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`rp-puce ${m.id === staffId ? 'on' : ''} ${libre ? '' : 'pris'}`}
-                  onClick={() => onStaff(m.id)}
-                >
-                  <i className={`rp-point ${libre ? 'oui' : 'non'}`} aria-hidden />
-                  {m.name}
-                  {!libre && <span className="sr-only"> · {t('pris')}</span>}
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
   );
 }
