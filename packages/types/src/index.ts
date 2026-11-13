@@ -450,15 +450,21 @@ export interface ProDashboardStats {
 
 /** Statistiques d'une période (design « Chiffre d'affaires » jour / semaine / mois). */
 /** Visites de la page publique sur une période (carte « Votre page », 1er nov. 2026). */
-export type PageViewSource = 'link' | 'instagram' | 'snapchat' | 'qr' | 'other';
+export type PageViewSource = 'link' | 'instagram' | 'snapchat' | 'qr' | 'marketplace' | 'other';
 /** D'où vient une réservation en ligne. Le réseau seulement : jamais l'identité de la personne. */
-export type BookingOrigin = 'link' | 'instagram' | 'snapchat' | 'qr';
+export type BookingOrigin = 'link' | 'instagram' | 'snapchat' | 'qr' | 'marketplace';
 export interface ProPageStats {
   total: number;
   byDay: { date: DateKey; views: number }[];
   bySource: Record<PageViewSource, number>;
   /** Réservations EN LIGNE reçues sur la période. */
   bookings: number;
+  /**
+   * Par provenance (13 nov. 2026) : réservations en ligne, NOUVEAUX clients (première réservation dans
+   * ce salon) et chiffre d'affaires (rendez-vous non annulés) — ce que chaque canal rapporte, place de
+   * marché Salon DZ comprise. Une réservation sans provenance connue compte en « lien ».
+   */
+  origins?: Record<BookingOrigin, { bookings: number; newClients: number; revenueDa: number }>;
 }
 
 export interface ProStatsRange {

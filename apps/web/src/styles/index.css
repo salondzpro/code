@@ -10539,3 +10539,152 @@ html.pro-theme .ag9-sc.no { --st: #ff3b30; }
   border-radius: 999px;
   box-shadow: 0 0 0 3px #ffffff;
 }
+
+/* MA PAGE — D'OÙ VIENNENT VOS CLIENTES (13 nov. 2026) : ce que Salon DZ rapporte, et chaque canal. */
+.h12-h a {
+  color: #111111;
+  font: 500 13px var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+a.h12-card {
+  color: inherit;
+  text-decoration: none;
+}
+.mp-sdz {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: #111111;
+  color: #ffffff;
+  font: 700 14px/1 var(--font-sans);
+}
+.mp-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 18px;
+  background: color-mix(in srgb, #34c759 12%, #ffffff);
+}
+.mp-hero-k {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f7a3a;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mp-hero-v {
+  color: #111111;
+  font: 600 36px/1.05 var(--font-sans);
+  letter-spacing: -0.03em;
+}
+.mp-hero-s {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  color: #111111;
+  font-size: 15px;
+  font-weight: 500;
+}
+.mp-hero-s > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mp-hero-n {
+  color: #3a6b47;
+  font-size: 13px;
+}
+.mp-flux {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16));
+}
+.mp-flux > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+}
+.mp-flux b {
+  color: #111111;
+  font: 600 22px/1.1 var(--font-sans);
+}
+.mp-flux span {
+  color: #6e6e76;
+  font-size: 13px;
+}
+.mp-flux i {
+  color: #c4c4ca;
+  font-style: normal;
+  font-size: 18px;
+}
+.mp-canal {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f1f3;
+}
+.mp-canal:last-child {
+  border-bottom: 0;
+}
+.mp-canal-i {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f1f1f3;
+  color: #111111;
+}
+.mp-canal-t {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 15px;
+}
+.mp-canal-t b {
+  font-weight: 600;
+}
+.mp-canal-s,
+.mp-canal-c {
+  display: block;
+  color: #6e6e76;
+  font-size: 13px;
+}
+.mp-barre {
+  display: block;
+  height: 6px;
+  margin: 8px 0 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f1f1f3;
+}
+.mp-barre i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #8e8e93;
+}
+.mp-barre i.sdz {
+  background: #34c759;
+}
+.mp-note {
+  margin: 0;
+  color: #6e6e76;
+  font-size: 12px;
+  line-height: 1.5;
+}

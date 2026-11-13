@@ -17,6 +17,18 @@ import { t } from '@/i18n';
 const ORIGIN_MS = 24 * 3600 * 1000;
 const originKey = (salonId: string) => `salondz:origine:${salonId}`;
 
+/**
+ * PLACE DE MARCHÉ (13 nov. 2026) : une page de salon ouverte APRÈS avoir navigué dans Salon DZ
+ * (accueil de la place de marché, carte, favoris, mes rendez-vous…) est une visite APPORTÉE PAR SALON
+ * DZ. Ouverte directement (lien partagé, story, QR), elle garde sa provenance. Noté par `ScrollToTop`
+ * à chaque page ; en mémoire de l'onglet seulement.
+ */
+const PAGES_SALONDZ = /^\/(?:$|carte|favoris|rendez-vous|profil|notifications|localisation|marche)(?:\/|$)/;
+let parSalonDz = false;
+export function noterPage(pathname: string) {
+  if (PAGES_SALONDZ.test(pathname)) parSalonDz = true;
+}
+
 export function pageViewSource(): PageViewSource {
   try {
     const q = new URLSearchParams(location.search);
@@ -26,6 +38,7 @@ export function pageViewSource(): PageViewSource {
     if (src === 'snap' || src.includes('snapchat')) return 'snapchat';
     if (/instagram/i.test(navigator.userAgent) || /instagram\.com/i.test(document.referrer)) return 'instagram';
     if (/snapchat/i.test(navigator.userAgent) || /snapchat\.com/i.test(document.referrer)) return 'snapchat';
+    if (parSalonDz) return 'marketplace';
   } catch {
     /* lecture impossible : provenance par défaut */
   }
@@ -57,6 +70,7 @@ export function originLabel(origin: BookingOrigin | null | undefined): string | 
   if (origin === 'instagram') return t('Réservé depuis Instagram');
   if (origin === 'snapchat') return t('Réservé depuis Snapchat');
   if (origin === 'qr') return t('Réservé avec le code QR');
+  if (origin === 'marketplace') return t('Trouvé sur Salon DZ');
   return null;
 }
 

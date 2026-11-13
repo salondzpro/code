@@ -8,6 +8,7 @@
  *   3. MA PAGE : visites, réservations et visites par jour ;
  *   4. MA STORY : préparée sur place.
  */
+import { Link } from 'react-router';
 import { WhatsAppGlyph } from '@/components/BrandIcons';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -165,9 +166,10 @@ export function ProHome() {
       {ps && (
         <section className="flex flex-col gap-2" aria-label={t('Ma page')}>
           <h2 className="h12-h">
-            {t('Ma page')} <span>{t('Cette semaine')}</span>
+            {t('Ma page')} <Link to="/pro/ma-page">{t('D’où viennent vos clientes')}</Link>
           </h2>
-          <div className="h12-card">
+          {/* Toucher la carte ouvre le détail : provenances, nouvelles clientes, ce que Salon DZ rapporte. */}
+          <Link to="/pro/ma-page" className="h12-card block" aria-label={t('Voir le détail de ma page')}>
             <div className="h12-kp">
               <div>
                 <b>{ps.total}</b>
@@ -188,7 +190,7 @@ export function ProHome() {
                 </div>
               ))}
             </div>
-          </div>
+          </Link>
         </section>
       )}
 

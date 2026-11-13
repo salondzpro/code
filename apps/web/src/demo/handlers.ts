@@ -661,8 +661,26 @@ on('GET', '/pro/page-stats', (c) => {
     byDay.push({ date: d, views: d > toLocalDateKey() ? 0 : 8 + (seed % 19) });
   }
   const total = byDay.reduce((n, x) => n + x.views, 0);
-  const instagram = Math.round(total * 0.24), qr = Math.round(total * 0.12);
-  return ok({ total, byDay, bySource: { link: total - instagram - qr, instagram, snapchat: 0, qr, other: 0 }, bookings: Math.max(1, Math.round(total / 14)) });
+  const marketplace = Math.round(total * 0.38), instagram = Math.round(total * 0.22), qr = Math.round(total * 0.1), snapchat = Math.round(total * 0.06);
+  const bookings = Math.max(1, Math.round(total / 14));
+  // Ce que chaque canal rapporte (démonstration) : la place de marché amène la plupart des nouvelles clientes.
+  const part = (p: number, prix: number, nouveaux: number) => {
+    const n = Math.round(bookings * p);
+    return { bookings: n, newClients: Math.round(n * nouveaux), revenueDa: n * prix };
+  };
+  return ok({
+    total,
+    byDay,
+    bySource: { link: total - marketplace - instagram - qr - snapchat, instagram, snapchat, qr, marketplace, other: 0 },
+    bookings,
+    origins: {
+      marketplace: part(0.45, 2600, 0.8),
+      instagram: part(0.25, 2400, 0.5),
+      link: part(0.15, 2200, 0.2),
+      qr: part(0.1, 2000, 0.1),
+      snapchat: part(0.05, 2400, 0.5),
+    },
+  });
 });
 
 // ---------------------------------------------------------------------------------------------

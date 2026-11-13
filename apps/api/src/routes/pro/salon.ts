@@ -308,8 +308,49 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       ]);
       if (views.error) throw views.error;
       if (online.error) throw online.error;
+
+      /*
+       * CE QUE CHAQUE CANAL RAPPORTE (13 nov. 2026) : réservations en ligne de la période par provenance,
+       * nouveaux clients (aucune réservation antérieure dans CE salon, par compte ou par numéro) et
+       * chiffre d'affaires des rendez-vous non annulés. Sans provenance connue = « lien ».
+       */
+      const period = await db
+        .from('bookings')
+        .select('client_id, client_phone, price_da, status, origin, created_at')
+        .eq('salon_id', salonId)
+        .eq('source', 'online')
+        .gte('created_at', localDateTimeToISO(from, '00:00'))
+        .lt('created_at', localDateTimeToISO(addDaysToKey(to, 1), '00:00'))
+        .order('created_at', { ascending: true })
+        .limit(2000);
+      if (period.error) throw period.error;
+      const rows = period.data ?? [];
+      const ids = [...new Set(rows.map((r) => r.client_id).filter((x): x is string => !!x))];
+      const phones = [...new Set(rows.map((r) => r.client_phone).filter((x): x is string => !!x))];
+      const known = new Set<string>();
+      const debut = localDateTimeToISO(from, '00:00');
+      if (ids.length) {
+        const prev = await db.from('bookings').select('client_id').eq('salon_id', salonId).in('client_id', ids).lt('created_at', debut).limit(5000);
+        if (prev.error) throw prev.error;
+        for (const p of prev.data ?? []) if (p.client_id) known.add(`c:${p.client_id}`);
+      }
+      if (phones.length) {
+        const prev = await db.from('bookings').select('client_phone').eq('salon_id', salonId).in('client_phone', phones).lt('created_at', debut).limit(5000);
+        if (prev.error) throw prev.error;
+        for (const p of prev.data ?? []) if (p.client_phone) known.add(`p:${p.client_phone}`);
+      }
+      const vide = () => ({ bookings: 0, newClients: 0, revenueDa: 0 });
+      const origins = { link: vide(), instagram: vide(), snapchat: vide(), qr: vide(), marketplace: vide() };
+      for (const r of rows) {
+        const o = origins[(r.origin as keyof typeof origins) ?? 'link'] ?? origins.link;
+        o.bookings += 1;
+        const cles = [r.client_id ? `c:${r.client_id}` : null, r.client_phone ? `p:${r.client_phone}` : null].filter((x): x is string => !!x);
+        if (cles.length && !cles.some((k) => known.has(k))) o.newClients += 1;
+        cles.forEach((k) => known.add(k));
+        if (r.status !== 'cancelled' && r.status !== 'no_show') o.revenueDa += r.price_da ?? 0;
+      }
       const byDay = new Map<string, number>();
-      const bySource = { link: 0, instagram: 0, snapchat: 0, qr: 0, other: 0 };
+      const bySource = { link: 0, instagram: 0, snapchat: 0, qr: 0, marketplace: 0, other: 0 };
       for (const r of views.data ?? []) {
         byDay.set(r.day, (byDay.get(r.day) ?? 0) + r.views);
         bySource[r.source as keyof typeof bySource] += r.views;
@@ -322,6 +363,7 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
         byDay: days,
         bySource,
         bookings: online.count ?? 0,
+        origins,
       };
     },
   );
