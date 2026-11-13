@@ -182,48 +182,47 @@ export function Salon() {
 
   return (
     <div className="rd salon-pg h-app pb-6">
-      {/* Onglets AVANT la couverture, et collants : on garde la main sur la page pendant
-          qu'on descend dans les prestations, sans avoir à remonter tout en haut. */}
-      <Tabs
-        label={t("Sections du salon")}
-        value={tab}
-        onChange={setTab}
-        // L'en-tête fait 3,5 rem et reste collé : les onglets se posent juste dessous.
-        className="salon-tabs sticky top-[3.5rem] z-20"
-        options={[
-          { value: 'book', label: t("Prendre RDV") },
-          { value: 'reviews', label: t("Avis") },
-          { value: 'about', label: t("À propos") },
-        ]}
-      />
-      {/* Album : couverture, photos du salon et réalisations réunies. */}
-      <SalonGallery images={gallery} alt={`Photos de ${s.name}`} className="salon-album h-[14rem]">
-        <div className="absolute start-4 end-4 top-4 z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <IconButton lg aria-label={t("Retour")} onClick={back}>
-              <I icon={ChevronLeft} />
-            </IconButton>
-          </div>
-          <div className="flex gap-2.5">
-            <IconButton lg aria-label={t("Partager")} onClick={() => void partager()}>
-              <I icon={Share2} size={20} />
-            </IconButton>
-            <IconButton
-              lg
-              aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-              aria-pressed={isFav}
-              disabled={toggle.isPending}
-              onClick={() =>
-                session
-                  ? toggle.mutate({ salonId: s.id, on: !isFav })
-                  : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}`)}`)
-              }
-            >
-              <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
-            </IconButton>
-          </div>
+      {/* EN-TÊTE FIXE (14 nov. 2026, capture iPhone du propriétaire : « la nav d'en haut doit être
+          stable et ne pas bouger ») : retour, nom du salon, partager, favori, puis les onglets —
+          tout dans une seule bande opaque collée en haut. Les boutons ne flottent plus sur la photo
+          et plus aucun bout de photo ne passe au-dessus des onglets. */}
+      <div className="salon-hd sticky z-20">
+        <div className="salon-hd-r">
+          <IconButton lg aria-label={t("Retour")} onClick={back}>
+            <I icon={ChevronLeft} className="rtl:-scale-x-100" />
+          </IconButton>
+          <span className="salon-hd-t">{s.name}</span>
+          <IconButton lg aria-label={t("Partager")} onClick={() => void partager()}>
+            <I icon={Share2} size={20} />
+          </IconButton>
+          <IconButton
+            lg
+            aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+            aria-pressed={isFav}
+            disabled={toggle.isPending}
+            onClick={() =>
+              session
+                ? toggle.mutate({ salonId: s.id, on: !isFav })
+                : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}`)}`)
+            }
+          >
+            <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
+          </IconButton>
         </div>
-      </SalonGallery>
+        <Tabs
+          label={t("Sections du salon")}
+          value={tab}
+          onChange={setTab}
+          className="salon-tabs"
+          options={[
+            { value: 'book', label: t("Prendre RDV") },
+            { value: 'reviews', label: t("Avis") },
+            { value: 'about', label: t("À propos") },
+          ]}
+        />
+      </div>
+      {/* Album : couverture, photos du salon et réalisations réunies. */}
+      <SalonGallery images={gallery} alt={`Photos de ${s.name}`} className="salon-album h-[14rem]" />
 
       {/* Contenu à plat sous la photo : le chevauchement arrondi rognait l'image et
           n'apportait rien, la référence enchaîne les deux bord à bord. */}

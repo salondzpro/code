@@ -1499,7 +1499,7 @@ body::before {
   }
   .salon-pg > .salon-album {
     position: sticky;
-    top: calc(var(--hdr-h) + 3.5rem);
+    top: calc(var(--hdr-h) + 7.5rem);
     height: min(34rem, calc(100dvh - var(--hdr-h) - 5rem));
     margin-top: 1rem;
     border-radius: var(--radius-card);
@@ -11106,4 +11106,35 @@ html.client-theme .nvl {
 /* Sur la carte, la barre flottante passe devant la fiche des salons (z 400), sous les panneaux. */
 .map-page .nvb {
   z-index: 450;
+}
+
+/* ---- Page d'un salon : en-tête FIXE (14 nov. 2026) ---- */
+.salon-hd {
+  top: var(--hdr-h, 0px);
+  background: #f7f7f9;
+  box-shadow: 0 1px 0 #ececef;
+}
+.salon-hd-r {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
+}
+.salon-hd-t {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.salon-hd .salon-tabs {
+  background: transparent;
+}
+@media (min-width: 1024px) {
+  .salon-pg > .salon-hd {
+    grid-column: 1 / -1;
+  }
 }
