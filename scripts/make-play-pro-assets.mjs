@@ -181,12 +181,12 @@ try {
     const ctx = await navigateur.newContext({ viewport: { width: 360, height: 640 }, locale: 'fr-FR', timezoneId: 'Africa/Algiers' });
     const page = await ctx.newPage();
     page.setDefaultTimeout(30_000);
-    // Portail PROFESSIONNEL : `/connexion` sans `role=pro` renvoie sur `/intro`.
-    await page.goto(`${BASE}/connexion?role=pro`, { waitUntil: 'domcontentloaded' });
+    // Portail PROFESSIONNEL « e-mail d'abord » (13 nov. 2026) : on va droit à l'écran du mot de passe,
+    // adresse déjà choisie ; la démonstration s'ouvre avec le même mot de passe que l'adresse.
+    await page.goto(`${BASE}/pro/acces/mot-de-passe?next=%2Fpro&email=pro-homme%40salondz.com`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2600); // l'animation d'ouverture dure 1,6 s
-    await page.locator('input[type="email"], input[name="email"]').first().fill('pro-homme@salondz.com');
     await page.locator('input[type="password"]').first().fill('pro-homme@salondz.com');
-    await page.locator('form button[type="submit"]').first().click();
+    await page.getByRole('button', { name: /^Se connecter$/ }).first().click();
     await page.waitForTimeout(3400);
     const ou = new URL(page.url()).pathname;
     // Sans session, les captures seraient toutes le même formulaire de connexion — et le défaut ne
