@@ -10066,3 +10066,56 @@ html[data-kb] .pa-actions {
   width: 18px;
   height: 18px;
 }
+
+/* FICHE CLIENT (13 nov. 2026) : l'essentiel du moment en haut, le reste replié. */
+.cd-alerte {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: var(--color-cancel-bg, #fdecec);
+  color: var(--color-cancel-fg, #b22f33);
+  font-size: 13px;
+  font-weight: 500;
+}
+.cd-ajout {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 4px 2px;
+  color: var(--color-ink, #111111);
+  font: 500 14px/1.4 var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.cd-plus {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cd-plus > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  list-style: none;
+  color: var(--color-muted, #6e6e76);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.cd-plus > summary::-webkit-details-marker {
+  display: none;
+}
+.cd-plus[open] > summary {
+  margin-bottom: 10px;
+}
+.cd-plus[open] .cd-plus-c {
+  transform: rotate(180deg);
+}
