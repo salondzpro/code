@@ -1,68 +1,58 @@
 /**
- * `/home` — page de PRÉSENTATION de Salon DZ, et page d'accueil du site.
+ * `/home` — page de PRÉSENTATION de Salon DZ (refaite le 14 nov. 2026, demande du propriétaire :
+ * « ultra élégant et premium, style Apple »).
  *
- * RÈGLE DE CONTENU (resserrée le 28 oct. 2026) : MONTRER plutôt qu'expliquer. Des photos, des
- * icônes, des titres de deux ou trois mots ; une ligne au plus. Ancienne règle : des BÉNÉFICES, pas de la prose. Chaque carte tient en un titre court et une
- * ligne, et ne décrit que ce qui existe VRAIMENT (lien à partager, QR code, confirmation
- * automatique ou manuelle, agenda par membre, fichier clients, avis, chiffre d'affaires,
- * fermetures). Une promesse qu'on ne tient pas coûte plus cher qu'une case vide.
+ * PARTI PRIS : une page produit. Beaucoup de blanc, de très grands titres serrés, et le PRODUIT au
+ * centre — de VRAIS écrans de l'application (`public/home/*.webp`, capturés sur salondz.com avec
+ * les comptes de démonstration par `node_modules/.shots/home-shots.mjs`) posés dans des téléphones
+ * dessinés en CSS. Rien n'est inventé : chaque carte montre un écran qui existe.
  *
- * Elle est délibérément HORS du cadre d'application (`AppFrame`) : celui-ci borne la largeur à la
- * colonne du téléphone, ce qui convient aux écrans de travail mais pas à une page qui doit
- * respirer sur un grand écran. Les marges système restent assurées par `#root`.
+ * RÈGLE DE CONTENU (inchangée) : MONTRER plutôt qu'expliquer. Un titre court, une ligne au plus,
+ * et seulement ce qui existe VRAIMENT. Une promesse qu'on ne tient pas coûte plus cher qu'une case
+ * vide. Un écran de l'application qui change doit être recapturé ici.
  *
- * Les photos sont celles de la démonstration (`/demo/*.webp`) : de VRAIES photos de métier, déjà
- * dans le projet, déjà optimisées en WebP. Aucune image nouvelle, aucun poids ajouté au reste de
- * l'application — cette page est chargée à la demande.
+ * Elle reste HORS du cadre d'application (`AppFrame`) et hors du thème posé sur `<html>` : ses
+ * couleurs et sa police vivent dans `.hx` (bloc « PAGE DE PRÉSENTATION » en fin d'`index.css`).
  *
- * Les animations n'utilisent AUCUNE bibliothèque : un seul `IntersectionObserver` (`lib/reveal.ts`)
- * et des transitions CSS sur `opacity` / `transform`, les deux seules propriétés qu'un navigateur
- * anime sans refaire la mise en page. `prefers-reduced-motion` est respecté.
+ * ANIMATIONS, sans bibliothèque : apparitions au défilement (`lib/reveal.ts`, un seul
+ * `IntersectionObserver`), entrée en scène des téléphones en CSS, et UNE variable `--s` (0 → 1)
+ * posée au défilement sur la scène d'ouverture — les téléphones s'écartent pendant qu'on descend.
+ * Uniquement `transform` et `opacity`. Tout s'arrête sous `prefers-reduced-motion`.
  */
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import {
-  ArrowRight,
-  BellRing,
-  CalendarCheck,
-  CalendarDays,
-  CheckCheck,
-  MapPin,
-  Share2,
-  Store,
-  Users,
-  Wallet,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, BellRing, CalendarCheck, CalendarDays, MapPin, Share2, Store, Users, Wallet, type LucideIcon } from 'lucide-react';
 import { InstagramLogo, SnapchatLogo, TikTokLogo, WhatsAppLogo } from '@/components/BrandIcons';
 import { useReveal } from '@/lib/reveal';
 import { Wordmark } from '@/components/Wordmark';
-import { ProPreview } from '@/components/AuthShell';
 import { LangSwitch } from '@/components/LangSwitch';
-import { HERO_MIXTE, HeroSlides, useDefile } from '@/components/HeroSlides';
+import { useDefile } from '@/components/HeroSlides';
 import { I } from '@/components/ui';
 import { t } from '@/i18n';
 
-const img = (cle: string) => `/demo/${cle}.webp`;
+const photo = (cle: string) => `/demo/${cle}.webp`;
+const ecran = (cle: string) => `/home/${cle}.webp`;
 
-/** Les métiers servis. L'ORDRE compte : sur quatre colonnes, chaque rangée doit faire 4 (2+1+1). */
-const METIERS: { nom: string; photo: string; large?: boolean }[] = [
-  // D'abord les métiers les plus présents sur Salon DZ (ongles, cils, barbiers), femmes et hommes
-  // en alternance ; puis la coiffure, l'événement et les instituts.
-  { nom: 'Ongles', photo: 'f-pose-gel', large: true },
+/** Les métiers servis, femmes et hommes en alternance, les plus présents d'abord. */
+const METIERS: { nom: string; photo: string }[] = [
+  { nom: 'Ongles', photo: 'f-pose-gel' },
   { nom: 'Barbiers', photo: 'h-barbe' },
   { nom: 'Cils', photo: 'f-extension-cils' },
-  { nom: 'Coiffeurs', photo: 'h-coupe', large: true },
+  { nom: 'Coiffeurs', photo: 'h-coupe' },
   { nom: 'Sourcils et tatouage', photo: 'f-sourcils' },
   { nom: 'Coiffeuses', photo: 'f-balayage' },
-  { nom: 'Mariage', photo: 'f-chignon-mariee', large: true },
-  { nom: 'Instituts', photo: 'cover-femmes', large: true },
+  { nom: 'Mariage', photo: 'f-chignon-mariee' },
+  { nom: 'Instituts', photo: 'cover-femmes' },
 ];
 
-/**
- * Côté professionnel : QUATRE tuiles, un mot ou deux chacune (28 oct. 2026, « montrer plutôt
- * qu'expliquer »). Chaque tuile correspond à un écran qui existe.
- */
+/** Côté client : trois cartes, chacune montre l'écran dont elle parle. */
+const CLIENT: { icone: LucideIcon; titre: string; texte: string; ecran: string }[] = [
+  { icone: MapPin, titre: 'Autour de vous', texte: 'Les créneaux libres du jour, près de chez vous.', ecran: 'client-accueil' },
+  { icone: CalendarCheck, titre: 'En 3 taps', texte: 'Une prestation, une heure : c’est réservé. Prix en dinars.', ecran: 'client-quand' },
+  { icone: BellRing, titre: 'Rappel avant', texte: '1 h puis 30 min avant le rendez-vous.', ecran: 'client-rdv' },
+];
+
+/** Côté professionnel : quatre tuiles, un écran qui existe derrière chacune. */
 const PRO: { icone: LucideIcon; titre: string; marques?: boolean }[] = [
   { icone: Share2, titre: 'Votre lien partout', marques: true },
   { icone: CalendarDays, titre: 'Agenda d’équipe' },
@@ -70,249 +60,234 @@ const PRO: { icone: LucideIcon; titre: string; marques?: boolean }[] = [
   { icone: Wallet, titre: 'Chiffre d’affaires' },
 ];
 
-/** Côté client : trois promesses, trois mots. Les rappels partent 1 h et 30 min avant. */
-const CLIENT: { icone: LucideIcon; titre: string; texte: string }[] = [
-  { icone: MapPin, titre: 'Autour de vous', texte: 'Créneaux libres du jour' },
-  { icone: CalendarCheck, titre: 'En 3 taps', texte: 'Prix en dinars' },
-  { icone: BellRing, titre: 'Rappel avant', texte: '1 h et 30 min avant' },
-];
+/** Le métier du titre tourne : « Votre onglerie », « Votre barbier »… traduit d'un bloc. */
+const MOTS = ['Votre onglerie', 'Votre barbier', 'Vos cils', 'Votre coiffeur', 'Vos sourcils', 'Votre coiffeuse'];
 
-/** Section pleine largeur, avec une colonne de lecture centrée. */
-function Section({ children, sombre = false }: { children: ReactNode; sombre?: boolean }) {
+/** Un téléphone dessiné en CSS, avec un vrai écran de l'application dedans. */
+function Phone({ src, className = '', lazy = true }: { src: string; className?: string; lazy?: boolean }) {
   return (
-    <section className={sombre ? 'bg-ink text-white' : 'bg-bg'}>
-      <div className="mx-auto w-full max-w-[72rem] px-5 py-14 sm:px-8 sm:py-16">{children}</div>
-    </section>
+    <span className={`hx-ph ${className}`} aria-hidden>
+      <img src={ecran(src)} alt="" width={585} height={1266} loading={lazy ? 'lazy' : 'eager'} decoding="async" draggable={false} />
+    </span>
   );
 }
 
-function Titre({ sur, children, sombre = false }: { sur: string; children: ReactNode; sombre?: boolean }) {
+function Titre({ sur, children }: { sur: string; children: ReactNode }) {
   return (
-    <>
-      <p data-reveal className={`h3 ${sombre ? '!text-white/50' : ''}`}>
+    <div className="hx-hd">
+      <p data-reveal className="hx-k">
         {t(sur)}
       </p>
-      <h2
-        data-reveal
-        style={{ ['--d' as string]: '80ms' }}
-        className="mt-3 max-w-[22ch] text-[1.714rem] font-semibold leading-[1.12] tracking-[-0.8px] sm:text-[2.286rem]"
-      >
+      <h2 data-reveal style={{ ['--d' as string]: '80ms' }} className="hx-h2">
         {children}
       </h2>
-    </>
-  );
-}
-
-/** Tuile : une icône (ou les logos des réseaux), un titre de deux mots, au plus une ligne courte. */
-function Tuile({
-  icone,
-  titre,
-  texte,
-  marques = false,
-  sombre = false,
-  delai = 0,
-}: {
-  icone: LucideIcon;
-  titre: string;
-  texte?: string;
-  /** Les logos des réseaux à la place de l'icône : ils se comprennent avant d'être lus. */
-  marques?: boolean;
-  sombre?: boolean;
-  delai?: number;
-}) {
-  return (
-    <div
-      data-reveal
-      style={{ ['--d' as string]: `${delai}ms` }}
-      className={`group flex min-w-0 flex-col items-start gap-3 rounded-[var(--radius-card)] border p-3 transition-colors sm:p-4 duration-300 ${
-        sombre ? 'border-white/10 bg-white/[0.04] hover:border-white/25' : 'border-line bg-surface hover:border-ink/30'
-      }`}
-    >
-      {marques ? (
-        <span className="flex h-11 items-center gap-1.5">
-          {[InstagramLogo, WhatsAppLogo, SnapchatLogo, TikTokLogo].map((Logo, i) => (
-            <span key={i} className="transition-transform duration-300 group-hover:-translate-y-0.5" style={{ transitionDelay: `${i * 45}ms` }}>
-              <Logo size={26} />
-            </span>
-          ))}
-        </span>
-      ) : (
-        <span
-          className={`flex size-11 items-center justify-center rounded-[var(--radius-card-sm)] transition-transform duration-300 group-hover:-translate-y-0.5 ${
-            sombre ? 'bg-white/10' : 'bg-ink text-white'
-          }`}
-        >
-          <I icon={icone} size={21} strokeWidth={1.8} />
-        </span>
-      )}
-      <span>
-        <span className="block text-[1.143rem] font-semibold leading-tight tracking-[-0.2px]">{t(titre)}</span>
-        {texte && <span className={`mt-1 block text-[0.857rem] sm:text-[0.938rem] ${sombre ? 'text-white/60' : 'text-muted'}`}>{t(texte)}</span>}
-      </span>
     </div>
   );
 }
 
-/**
- * Le métier du titre, ALIGNÉ sur la photo de fond (`HERO_MIXTE`, même ordre) : « Votre onglerie »
- * s'affiche sur des ongles, « Votre barbier » sur un barbier. Un seul minuteur pilote les deux.
- */
-const MOTS = ['Votre onglerie', 'Votre barbier', 'Vos cils', 'Votre coiffeur', 'Vos sourcils', 'Votre coiffeuse'];
+/** `--s` (0 → 1) sur la scène d'ouverture, d'après le défilement : une écriture par image au plus. */
+function useScene() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let attente = 0;
+    const maj = () => {
+      attente = 0;
+      const s = Math.min(1, Math.max(0, window.scrollY / 520));
+      el.style.setProperty('--s', s.toFixed(3));
+    };
+    const surDefilement = () => {
+      if (!attente) attente = window.requestAnimationFrame(maj);
+    };
+    window.addEventListener('scroll', surDefilement, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', surDefilement);
+      if (attente) window.cancelAnimationFrame(attente);
+    };
+  }, []);
+  return ref;
+}
 
 export function Home() {
   useReveal();
-  const mot = useDefile(MOTS.length, 4200);
+  const mot = useDefile(MOTS.length, 3600);
+  const scene = useScene();
 
   return (
-    <div className="bg-bg">
-      {/* ------------------------------------------------------------------ Ouverture */}
-      <header className="relative isolate flex min-h-[32rem] flex-col justify-end overflow-hidden text-white sm:min-h-[38rem]">
-        {/* Femmes ET hommes : les photos alternent en fondu enchaîné. */}
-        <HeroSlides className="-z-10" photos={HERO_MIXTE} index={mot} />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/70 to-ink/30" />
-
-        {/* Barre du haut : la marque, la langue, l'accès à son compte. */}
-        <div className="hm-bar">
-          <Wordmark size={1.429} light />
-          <div className="flex items-center gap-2">
-            <LangSwitch />
-            <Link to="/intro" className="hm-bar-a">
+    <div className="hx">
+      {/* ------------------------------------------------------------------ Barre du haut, en verre */}
+      <nav className="hx-nav" aria-label={t('Navigation')}>
+        <div className="hx-nav-i">
+          <Link to="/home" aria-label="Salon DZ">
+            <Wordmark size={1.357} />
+          </Link>
+          <div className="hx-nav-l">
+            <a href="#metiers">{t('Métiers')}</a>
+            <a href="#clientes">{t('Clientes')}</a>
+            <a href="#pros">{t('Professionnels')}</a>
+          </div>
+          <div className="hx-nav-r">
+            <LangSwitch tone="light" />
+            <Link to="/intro" className="hx-nav-c">
               {t('Connexion')}
             </Link>
           </div>
         </div>
-        {/* Deux pastilles qui flottent : ce que l'on reçoit après avoir réservé. */}
-        <div className="hm-float" aria-hidden>
-          <span className="hm-chip">
-            <I icon={CheckCheck} size={16} className="text-[#b6a5ff]" /> {t('Rendez-vous confirmé')}
+      </nav>
+
+      {/* ------------------------------------------------------------------ Ouverture */}
+      <header className="hx-hero">
+        <p className="hx-in hx-k">{t('La réservation beauté en Algérie.')}</p>
+        <h1 className="hx-in hx-h1" style={{ ['--d' as string]: '120ms' }}>
+          <span className="hm-mot">
+            <span key={mot} className="hm-mot-i">
+              {t(MOTS[mot]!)}
+            </span>
           </span>
-          <span className="hm-chip b">
-            <I icon={BellRing} size={16} className="text-[#ffb877]" /> {t('Rappel 1 h avant')}
-          </span>
+          <br />
+          <span className="hx-h1-b">{t('en 3 taps.')}</span>
+        </h1>
+        <p className="hx-in hx-sub" style={{ ['--d' as string]: '240ms' }}>
+          {t('Partout en Algérie. Sans appeler.')}
+        </p>
+        <div className="hx-in hx-cta" style={{ ['--d' as string]: '360ms' }}>
+          <Link to="/" className="hx-btn">
+            {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
+          </Link>
+          <Link to="/pro/bienvenue" className="hx-btn o">
+            <I icon={Store} size={18} /> {t('Je suis pro')}
+          </Link>
         </div>
 
-        <div className="mx-auto w-full max-w-[72rem] px-5 pb-14 pt-28 sm:px-8 sm:pb-16">
-          <h1
-            className="hm-in max-w-[16ch] text-[2.286rem] font-semibold leading-[1.05] tracking-[-1.4px] sm:text-[3.4rem]"
-            style={{ ['--d' as string]: '200ms' }}
-          >
-            {/* La phrase entière tourne (« Votre barbier ») : traduite d'un bloc, l'ordre des mots
-                reste juste en arabe (« حلاقك »). */}
-            <span className="hm-mot">
-              <span key={mot} className="hm-mot-i">
-                {t(MOTS[mot]!)}
-              </span>
-            </span>
-            <br />
-            <span className="text-[#e8dacb]">{t('en 3 taps.')}</span>
-          </h1>
-          <p className="hm-in mt-4 text-[1.143rem] text-white/75 sm:text-[1.286rem]" style={{ ['--d' as string]: '320ms' }}>
-            {t('Partout en Algérie. Sans appeler.')}
-          </p>
-          <div className="hm-in mt-8 flex flex-wrap gap-3" style={{ ['--d' as string]: '440ms' }}>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-white px-6 py-3.5 font-semibold text-ink transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
-            >
-              {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
-            </Link>
-            <Link
-              to="/pro/bienvenue"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] border border-white/35 px-6 py-3.5 font-semibold text-white transition-colors duration-200 hover:bg-white/10"
-            >
-              <I icon={Store} size={18} /> {t('Je suis pro')}
-            </Link>
+        {/* La scène : trois écrans de l'application. Celui du centre monte, les deux autres
+            s'écartent quand on descend (`--s`). */}
+        <div ref={scene} className="hx-stage" aria-hidden>
+          <span className="hx-aura">
+            <i />
+            <i />
+            <i />
+          </span>
+          <div className="hx-slot g">
+            <Phone src="client-salon" lazy={false} />
+          </div>
+          <div className="hx-slot d">
+            <Phone src="client-quand" lazy={false} />
+          </div>
+          <div className="hx-slot c">
+            <Phone src="client-accueil" lazy={false} />
           </div>
         </div>
       </header>
 
+      {/* ------------------------------------------------------------------ Une phrase, en grand */}
+      <section className="hx-sec">
+        <p data-reveal className="hx-dit">
+          <b>{t('Coiffure, ongles, cils, barbe.')}</b> {t('Tous les salons et leurs créneaux libres, au même endroit.')}
+        </p>
+      </section>
+
       {/* ------------------------------------------------------------------ Les métiers : des photos, un mot */}
-      <Section sombre>
-        <Titre sur="Les professionnels" sombre>
-          {t('Toute la beauté, au même endroit.')}
-        </Titre>
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {METIERS.map((m, i) => (
-            <Link
-              key={m.nom}
-              to="/"
-              data-reveal
-              style={{ ['--d' as string]: `${(i % 4) * 80}ms` }}
-              className={`hm-cat ${m.large ? 'col-span-2 aspect-[16/10]' : 'aspect-[3/4] sm:aspect-auto sm:h-full'}`}
-              aria-label={t(m.nom)}
-            >
-              <img src={img(m.photo)} alt="" loading="lazy" decoding="async" />
-              <span className="hm-cat-txt">
-                <span className="block text-[1.143rem] font-semibold leading-tight">{t(m.nom)}</span>
-              </span>
+      <section id="metiers" className="hx-sec plein">
+        <div className="hx-col">
+          <Titre sur="Les professionnels">{t('Toute la beauté, au même endroit.')}</Titre>
+        </div>
+        <div className="hx-rail" data-reveal>
+          {METIERS.map((m) => (
+            <Link key={m.nom} to="/" className="hx-met" aria-label={t(m.nom)}>
+              <img src={photo(m.photo)} alt="" loading="lazy" decoding="async" draggable={false} />
+              <span>{t(m.nom)}</span>
             </Link>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* ------------------------------------------------------------------ Pour les professionnels : on MONTRE */}
-      <Section>
-        <div className="grid items-center gap-8 lg:grid-cols-[1fr_1.1fr]">
-          <div>
-            <Titre sur="Pour les professionnels">{t('Votre salon se remplit pendant que vous coiffez.')}</Titre>
-            <Link
-              data-reveal
-              to="/pro/bienvenue"
-              className="mt-7 inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-ink px-6 py-3.5 font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
-            >
+      {/* ------------------------------------------------------------------ Pour les clientes */}
+      <section id="clientes" className="hx-sec gris">
+        <div className="hx-col">
+          <Titre sur="Pour les clients">{t('Trouvez. Réservez. C’est tout.')}</Titre>
+          <div className="hx-bento">
+            {CLIENT.map((c, i) => (
+              <article key={c.titre} data-reveal style={{ ['--d' as string]: `${i * 90}ms` }} className="hx-carte">
+                <span className="hx-ico">
+                  <I icon={c.icone} size={20} strokeWidth={1.8} />
+                </span>
+                <h3>{t(c.titre)}</h3>
+                <p>{t(c.texte)}</p>
+                <Phone src={c.ecran} className="pt" />
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ Pour les professionnels */}
+      <section id="pros" className="hx-sec nuit">
+        <div className="hx-col">
+          <Titre sur="Pour les professionnels">{t('Votre salon se remplit pendant que vous coiffez.')}</Titre>
+          <p data-reveal className="hx-sub centre">
+            {t('Les réservations arrivent toutes seules, jour et nuit.')}
+          </p>
+          <div data-reveal className="hx-cta centre">
+            <Link to="/pro/bienvenue" className="hx-btn b">
               {t('Ouvrir mon espace pro — gratuit')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
             </Link>
           </div>
-          {/* L'aperçu : ce que le professionnel reçoit, dessiné avec les jetons de l'application. */}
-          <div data-reveal className="hm-pro-show">
-            <ProPreview />
+          <div className="hx-duo" data-reveal>
+            <Phone src="pro-accueil" className="a" />
+            <Phone src="pro-agenda" className="b" />
+            <Phone src="pro-demandes" className="c" />
+          </div>
+          <div className="hx-tuiles">
+            {PRO.map((c, i) => (
+              <div key={c.titre} data-reveal style={{ ['--d' as string]: `${i * 70}ms` }} className="hx-tuile">
+                {c.marques ? (
+                  <span className="hx-marques">
+                    {[InstagramLogo, WhatsAppLogo, SnapchatLogo, TikTokLogo].map((Logo, n) => (
+                      <Logo key={n} size={26} />
+                    ))}
+                  </span>
+                ) : (
+                  <span className="hx-ico n">
+                    <I icon={c.icone} size={20} strokeWidth={1.8} />
+                  </span>
+                )}
+                <span className="hx-tuile-t">{t(c.titre)}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {PRO.map((c, i) => (
-            <Tuile key={c.titre} {...c} delai={(i % 4) * 70} />
-          ))}
-        </div>
-      </Section>
+      </section>
 
-      {/* ------------------------------------------------------------------ Pour les clients */}
-      <Section sombre>
-        <Titre sur="Pour les clients" sombre>
-          {t('Trouvez. Réservez. C’est tout.')}
-        </Titre>
-        <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-3">
-          {CLIENT.map((c, i) => (
-            <Tuile key={c.titre} {...c} sombre delai={(i % 3) * 70} />
-          ))}
-        </div>
-      </Section>
-
-      {/* ------------------------------------------------------------------ Pied */}
-      <Section>
-        <div data-reveal className="flex flex-col items-center gap-5 text-center">
-          <Wordmark size={1.714} />
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-ink px-6 py-3.5 font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
-            >
+      {/* ------------------------------------------------------------------ Fin : un seul geste */}
+      <section className="hx-sec fin">
+        <div className="hx-col">
+          <h2 data-reveal className="hx-h1 petit">
+            {t('Votre prochain rendez-vous commence ici.')}
+          </h2>
+          <div data-reveal className="hx-cta centre" style={{ ['--d' as string]: '100ms' }}>
+            <Link to="/" className="hx-btn">
               {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
             </Link>
-            <Link
-              to="/pro/bienvenue"
-              className="inline-flex items-center gap-2 rounded-[var(--radius-btn)] border border-line px-6 py-3.5 font-semibold transition-colors duration-200 hover:border-ink"
-            >
+            <Link to="/pro/bienvenue" className="hx-btn o">
               <I icon={Store} size={18} /> {t('Espace professionnel')}
             </Link>
           </div>
-          <nav className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[0.875rem] text-muted">
-            <Link to="/cgu">{t('CGU')}</Link>
-            <Link to="/confidentialite">{t('Confidentialité')}</Link>
-            <Link to="/mentions-legales">{t('Mentions légales')}</Link>
-            <Link to="/aide">{t('Aide')}</Link>
-          </nav>
         </div>
-      </Section>
+      </section>
+
+      <footer className="hx-pied">
+        <Wordmark size={1.286} />
+        <nav>
+          <Link to="/cgu">{t('CGU')}</Link>
+          <Link to="/confidentialite">{t('Confidentialité')}</Link>
+          <Link to="/mentions-legales">{t('Mentions légales')}</Link>
+          <Link to="/aide">{t('Aide')}</Link>
+        </nav>
+        <p>
+          © {new Date().getFullYear()} {t('Salon DZ · Fait en Algérie')}
+        </p>
+      </footer>
     </div>
   );
 }

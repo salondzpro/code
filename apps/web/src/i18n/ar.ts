@@ -1979,4 +1979,12 @@ export const ar: Record<string, string> = {
   "Vos informations, vos réglages et votre activité.": "معلوماتك وإعداداتك ونشاطك.",
   "{n} salon(s) gardé(s) sous la main.": "{n} صالون محفوظ في متناولك.",
   "Les salons que vous gardez sous la main.": "الصالونات التي تحتفظ بها في متناولك.",
+  "Métiers": "المهن",
+  "Coiffure, ongles, cils, barbe.": "تصفيف، أظافر، رموش، لحية.",
+  "Tous les salons et leurs créneaux libres, au même endroit.": "كل الصالونات وأوقاتها المتاحة في مكان واحد.",
+  "Les créneaux libres du jour, près de chez vous.": "الأوقات المتاحة اليوم، بالقرب منك.",
+  "Une prestation, une heure : c’est réservé. Prix en dinars.": "خدمة، ساعة: تمّ الحجز. الأسعار بالدينار.",
+  "1 h puis 30 min avant le rendez-vous.": "ساعة ثم 30 دقيقة قبل الموعد.",
+  "Les réservations arrivent toutes seules, jour et nuit.": "الحجوزات تصلك وحدها، ليلًا ونهارًا.",
+  "Votre prochain rendez-vous commence ici.": "موعدك القادم يبدأ من هنا.",
 };

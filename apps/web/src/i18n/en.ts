@@ -1993,4 +1993,12 @@ export const en: Record<string, string> = {
   "Vos informations, vos réglages et votre activité.": "Your details, settings and activity.",
   "{n} salon(s) gardé(s) sous la main.": "{n} salon(s) kept close at hand.",
   "Les salons que vous gardez sous la main.": "The salons you keep close at hand.",
+  "Métiers": "Services",
+  "Coiffure, ongles, cils, barbe.": "Hair, nails, lashes, beard.",
+  "Tous les salons et leurs créneaux libres, au même endroit.": "Every salon and its open slots, in one place.",
+  "Les créneaux libres du jour, près de chez vous.": "Today’s open slots, near you.",
+  "Une prestation, une heure : c’est réservé. Prix en dinars.": "Pick a service and a time: you’re booked. Prices in dinars.",
+  "1 h puis 30 min avant le rendez-vous.": "1 h, then 30 min before your appointment.",
+  "Les réservations arrivent toutes seules, jour et nuit.": "Bookings come in on their own, day and night.",
+  "Votre prochain rendez-vous commence ici.": "Your next appointment starts here.",
 };

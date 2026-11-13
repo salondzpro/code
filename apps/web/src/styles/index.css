@@ -11138,3 +11138,584 @@ html.client-theme .nvl {
     grid-column: 1 / -1;
   }
 }
+
+/* ============================================================================================
+   PAGE DE PRÉSENTATION `/home` (14 nov. 2026, refaite « style Apple » à la demande du propriétaire)
+   `pages/Home.tsx`. Page produit : blanc, gris très clair et un passage de nuit ; Plus Jakarta Sans ;
+   de vrais écrans de l'application dans des téléphones dessinés ici. Tout est préfixé `hx-` et
+   vit sous `.hx` : rien ne déborde sur l'application, qui n'emprunte pas cette page.
+   ============================================================================================ */
+.hx {
+  --hx-ink: #111111;
+  --hx-gris: #6e6e76;
+  --hx-fond: #ffffff;
+  --hx-doux: #f5f5f7;
+  --hx-w: 72rem;
+  overflow-x: clip;
+  background: var(--hx-fond);
+  color: var(--hx-ink);
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.hx a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---- Barre du haut : verre dépoli, collée ---- */
+.hx-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: saturate(1.8) blur(20px);
+  -webkit-backdrop-filter: saturate(1.8) blur(20px);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.06);
+}
+.hx-nav-i {
+  display: flex;
+  height: 56px;
+  max-width: var(--hx-w);
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px;
+}
+.hx-nav-l {
+  display: none;
+  gap: 32px;
+  font-size: 13px;
+  color: #3a3a40;
+}
+.hx-nav-l a:hover {
+  color: #000000;
+}
+.hx-nav-r {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hx-nav-c {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--hx-ink);
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+@media (min-width: 768px) {
+  .hx-nav-l {
+    display: flex;
+  }
+}
+
+/* ---- Typographie ---- */
+.hx-k {
+  margin: 0;
+  color: var(--hx-gris);
+  font-size: 15px;
+  font-weight: 500;
+}
+.hx-h1 {
+  margin: 14px 0 0;
+  font-size: clamp(44px, 9.2vw, 104px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.048em;
+  text-wrap: balance;
+}
+.hx-h1.petit {
+  margin: 0 auto;
+  max-width: 14ch;
+  font-size: clamp(38px, 7vw, 80px);
+}
+.hx-h1-b {
+  color: #a1a1a8;
+}
+.hx-h2 {
+  margin: 10px 0 0;
+  max-width: 18ch;
+  font-size: clamp(32px, 5.4vw, 64px);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.hx-sub {
+  margin: 18px 0 0;
+  color: var(--hx-gris);
+  font-size: clamp(17px, 2vw, 22px);
+  line-height: 1.4;
+}
+.hx-sub.centre {
+  margin-inline: auto;
+  max-width: 32rem;
+  text-align: center;
+}
+.hx-dit {
+  max-width: 20ch;
+  margin: 0 auto;
+  color: #a1a1a8;
+  font-size: clamp(30px, 5vw, 60px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  text-align: center;
+  text-wrap: balance;
+}
+.hx-dit b {
+  color: var(--hx-ink);
+  font-weight: 600;
+}
+
+/* ---- Boutons : pilules, aplats ---- */
+.hx-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 30px;
+}
+.hx-btn {
+  display: inline-flex;
+  height: 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: var(--hx-ink);
+  color: #ffffff !important;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.hx-btn:hover {
+  transform: scale(1.03);
+}
+.hx-btn:active {
+  transform: scale(0.98);
+}
+.hx-btn.o {
+  background: transparent;
+  color: var(--hx-ink) !important;
+  box-shadow: inset 0 0 0 1px #d2d2d7;
+}
+.hx-btn.o:hover {
+  background: var(--hx-doux);
+}
+.hx-btn.b {
+  background: #ffffff;
+  color: #000000 !important;
+}
+
+/* ---- Entrée en scène de l'ouverture ---- */
+@keyframes hx-monte {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hx-in {
+  animation: hx-monte 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* ---- Ouverture ---- */
+.hx-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(48px, 9vw, 104px) 20px 0;
+  text-align: center;
+  background: linear-gradient(180deg, #ffffff 0%, #ffffff 46%, var(--hx-doux) 100%);
+}
+
+/* Téléphone : un cadre d'encre, l'écran dedans. La largeur vient de `--pw`. */
+.hx-ph {
+  display: block;
+  width: var(--pw, 300px);
+  aspect-ratio: 585 / 1266;
+  overflow: hidden;
+  border: calc(var(--pw, 300px) * 0.03) solid #0b0b0c;
+  border-radius: calc(var(--pw, 300px) * 0.155);
+  background: #0b0b0c;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.12) inset,
+    0 2px 0 1px #2a2a2d,
+    0 50px 80px -30px rgb(0 0 0 / 0.38),
+    0 24px 40px -24px rgb(0 0 0 / 0.3);
+}
+.hx-ph img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  border-radius: calc(var(--pw, 300px) * 0.125);
+}
+
+/* La scène : le téléphone du centre monte, les deux autres s'écartent au défilement (`--s`). */
+.hx-stage {
+  --s: 0;
+  --pw: clamp(210px, 27vw, 330px);
+  position: relative;
+  width: 100vw;
+  height: calc(var(--pw) * 1.72);
+  margin-top: clamp(40px, 6vw, 72px);
+  perspective: 1800px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+}
+.hx-slot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  margin-left: calc(var(--pw) / -2);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.hx-slot .hx-ph {
+  animation: hx-monte 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hx-slot.c {
+  transform: translate3d(0, calc(46px - var(--s) * 46px), 0);
+}
+.hx-slot.c .hx-ph {
+  animation-delay: 0.45s;
+}
+.hx-slot.g {
+  transform: translate3d(calc(var(--pw) * (-0.86 - var(--s) * 0.22)), calc(var(--pw) * 0.3), 0) rotateY(calc(26deg - var(--s) * 12deg)) scale(0.86);
+}
+.hx-slot.d {
+  transform: translate3d(calc(var(--pw) * (0.86 + var(--s) * 0.22)), calc(var(--pw) * 0.3), 0) rotateY(calc(-26deg + var(--s) * 12deg)) scale(0.86);
+}
+.hx-slot:is(.g, .d) .hx-ph {
+  animation-delay: 0.65s;
+}
+/* Halos derrière les téléphones : beige de la marque et gris, qui dérivent lentement. */
+.hx-aura {
+  position: absolute;
+  left: 50%;
+  top: -6%;
+  width: min(72rem, 100%);
+  height: 90%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.hx-aura i {
+  position: absolute;
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform;
+}
+.hx-aura i:nth-child(1) {
+  left: 6%;
+  top: 12%;
+  background: #ecdcc8;
+  animation: hx-halo-a 13s ease-in-out infinite alternate;
+}
+.hx-aura i:nth-child(2) {
+  right: 4%;
+  top: 4%;
+  background: #dfe3ec;
+  animation: hx-halo-b 16s ease-in-out infinite alternate;
+}
+.hx-aura i:nth-child(3) {
+  left: 30%;
+  top: 34%;
+  width: 40%;
+  background: #f3e9df;
+  animation: hx-halo-a 19s ease-in-out infinite alternate-reverse;
+}
+@keyframes hx-halo-a {
+  to {
+    transform: translate3d(18%, 10%, 0) scale(1.15);
+  }
+}
+@keyframes hx-halo-b {
+  to {
+    transform: translate3d(-16%, 14%, 0) scale(0.9);
+  }
+}
+
+/* ---- Sections ---- */
+.hx-sec {
+  padding: clamp(72px, 11vw, 150px) 20px;
+}
+.hx-sec.plein {
+  padding-inline: 0;
+}
+.hx-sec.gris {
+  background: var(--hx-doux);
+}
+.hx-sec.nuit {
+  background: #000000;
+  color: #f5f5f7;
+}
+.hx-sec.fin {
+  text-align: center;
+}
+.hx-col {
+  max-width: var(--hx-w);
+  margin: 0 auto;
+}
+.hx-sec.plein .hx-col {
+  padding: 0 20px;
+}
+.hx-sec.nuit .hx-hd,
+.hx-sec.gris .hx-hd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.hx-sec.nuit .hx-k {
+  color: #86868b;
+}
+.hx-sec.nuit .hx-sub {
+  color: #a1a1a6;
+}
+.hx-cta.centre {
+  justify-content: center;
+}
+
+/* ---- Métiers : une rangée de photos qu'on fait glisser ---- */
+.hx-rail {
+  display: flex;
+  gap: 16px;
+  margin-top: clamp(28px, 4vw, 48px);
+  padding: 4px max(20px, calc((100vw - var(--hx-w)) / 2 + 20px)) 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: max(20px, calc((100vw - var(--hx-w)) / 2 + 20px));
+  scrollbar-width: none;
+}
+.hx-rail::-webkit-scrollbar {
+  display: none;
+}
+.hx-met {
+  position: relative;
+  flex: none;
+  width: clamp(210px, 26vw, 300px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #0b0b0c;
+  scroll-snap-align: start;
+  isolation: isolate;
+}
+.hx-met img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hx-met:hover img,
+.hx-met:active img {
+  transform: scale(1.06);
+}
+.hx-met::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.62));
+}
+.hx-met span {
+  position: absolute;
+  z-index: 1;
+  inset-inline: 20px;
+  bottom: 18px;
+  color: #ffffff;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Clientes : trois cartes, l'écran dont elles parlent dépasse du bas ---- */
+.hx-bento {
+  display: grid;
+  gap: 16px;
+  margin-top: clamp(32px, 5vw, 56px);
+}
+.hx-carte {
+  --pw: clamp(200px, 60vw, 250px);
+  display: flex;
+  height: 30rem;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 32px 24px 0;
+  border-radius: 28px;
+  background: #ffffff;
+  text-align: center;
+}
+.hx-carte h3 {
+  margin: 14px 0 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.hx-carte p {
+  max-width: 22ch;
+  margin: 6px 0 0;
+  color: var(--hx-gris);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.hx-carte .hx-ph {
+  flex: none;
+  margin-top: 28px;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hx-carte:hover .hx-ph {
+  transform: translateY(-10px);
+}
+.hx-ico {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--hx-ink);
+  color: #ffffff;
+}
+.hx-ico.n {
+  background: rgb(255 255 255 / 0.1);
+}
+@media (min-width: 900px) {
+  .hx-bento {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hx-carte {
+    --pw: clamp(190px, 19vw, 240px);
+    height: 32rem;
+  }
+}
+
+/* ---- Professionnels : trois écrans en éventail, puis quatre tuiles ---- */
+.hx-duo {
+  --pw: clamp(170px, 24vw, 290px);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: calc(var(--pw) * 1.55);
+  margin-top: clamp(40px, 6vw, 72px);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+}
+.hx-duo .hx-ph {
+  position: absolute;
+  top: 0;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.16),
+    0 40px 80px -20px rgb(0 0 0 / 0.8);
+}
+.hx-duo .hx-ph.a {
+  transform: translateX(-78%) translateY(11%) rotate(-7deg);
+}
+.hx-duo .hx-ph.c {
+  transform: translateX(78%) translateY(11%) rotate(7deg);
+}
+.hx-duo .hx-ph.b {
+  z-index: 1;
+}
+.hx-tuiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: clamp(28px, 4vw, 48px);
+}
+.hx-tuile {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 24px;
+  background: #161617;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+.hx-tuile-t {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.hx-marques {
+  display: flex;
+  height: 44px;
+  align-items: center;
+  gap: 8px;
+}
+@media (min-width: 900px) {
+  .hx-tuiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Pied ---- */
+.hx-pied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 36px 20px max(40px, var(--safe-bottom, 0px));
+  border-top: 1px solid #e8e8ed;
+  background: var(--hx-doux);
+  color: var(--hx-gris);
+  font-size: 13px;
+}
+.hx-pied nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+}
+.hx-pied p {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-in,
+  .hx-slot .hx-ph,
+  .hx-aura i {
+    animation: none;
+  }
+}
+
+/* Le métier qui tourne dans le titre : il sort du flou en montant. */
+.hx .hm-mot {
+  overflow: visible;
+  color: inherit;
+}
+.hx .hm-mot-i {
+  animation: hx-mot 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes hx-mot {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.28em, 0);
+    filter: blur(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx .hm-mot-i {
+    animation: none;
+  }
+}
