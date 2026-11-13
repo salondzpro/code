@@ -33,8 +33,8 @@ const VERIFIER = arg('--verifier');
 /** Bundle déjà chez Google : on ne renvoie rien (Google refuserait le même numéro), on le place seulement. */
 const DEJA = val('--version', null);
 const NOTES = PRO
-  ? 'Nouveau design, plus sobre et plus lisible. Agenda en couleurs selon l’état du rendez-vous, demandes à confirmer en un geste, rappels confirmés visibles sur la fiche cliente.'
-  : 'Réservations mieux suivies par votre salon, rappels confirmés et corrections diverses.';
+  ? 'Nouveau design, plus clair. Agenda en couleurs, actions rapides en un toucher (accepter, reporter, confier), connexion simplifiée, et « Ma page » : d’où viennent vos clientes et ce que Salon DZ vous rapporte.'
+  : 'Réservation plus simple et plus rapide, corrections et améliorations.';
 
 const SECRETS = path.resolve(import.meta.dirname, '..', 'secrets');
 const fichierCompte = ['play-service-account.json', 'fcm-service-account.json'].map((f) => path.join(SECRETS, f)).find((f) => fs.existsSync(f));
@@ -77,6 +77,14 @@ try {
   if (VERIFIER) {
     const pistes = await g('GET', `${BASE}/edits/${edit.id}/tracks`);
     for (const p of pistes.tracks ?? []) for (const rel of p.releases ?? []) console.log(`  ${p.track} · ${rel.status} · ${(rel.versionCodes ?? []).join(',')}`);
+    // Pays de la production tels que Google les voit (réglés dans Play Console, pas par l'API).
+    try {
+      const pays = await g('GET', `${BASE}/edits/${edit.id}/countryAvailability/production`);
+      const liste = (pays.countries ?? []).map((c) => c.countryCode);
+      console.log(`  pays de la production : ${liste.length ? liste.join(', ') : 'AUCUN'}${pays.restOfWorld ? ' + reste du monde' : ''}`);
+    } catch (e) {
+      console.log(`  pays de la production : illisibles (${e.message.slice(0, 80)})`);
+    }
     console.log('✔ accès en écriture confirmé (rien envoyé)');
   } else {
     let up = { versionCode: DEJA };
@@ -89,6 +97,8 @@ try {
       up = await g('POST', `https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/${PAQUET}/edits/${edit.id}/bundles?uploadType=media`, fs.readFileSync(path.join(dossier, aab[0])), { 'Content-Type': 'application/octet-stream' });
       console.log(`✔ bundle reçu : versionCode ${up.versionCode}`);
     }
+    // Les pays de la production se règlent dans Play Console (Production → Pays/régions) : l'API ne
+    // peut ni les écrire sur la piste, ni cibler des pays sur une PREMIÈRE version (essayé le 13 nov.).
     await g('PUT', `${BASE}/edits/${edit.id}/tracks/${PISTE}`, {
       track: PISTE,
       releases: [{ versionCodes: [String(up.versionCode)], status: 'completed', releaseNotes: [{ language: 'fr-FR', text: NOTES }] }],
