@@ -235,8 +235,8 @@ export function ProBookingDetail() {
                 onClick={() => cancel.mutate({ id: b.id, late: true })}
               />
             )}
-            {active && !past && <ActionRond icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />}
-            {b.status === 'confirmed' && !past && <ActionRond icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />}
+            {active && !past && <ActionRond ton="orange" icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />}
+            {b.status === 'confirmed' && !past && <ActionRond ton="non" icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />}
           </div>
         </BottomSheet>
       )}

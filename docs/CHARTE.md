@@ -99,9 +99,19 @@ l'agenda, page du rendez-vous, carte du prochain rendez-vous. Pas de gros bouton
 | Lien | texte souligné (« Voir tout », « Modifier ») — pas de pilule |
 | Danger | rouge, réservé à l'irréversible (supprimer, bloquer) |
 
-**Ronds d'action** (`components/ActionRond.tsx`, grille `.ag-acts`) pour décider d'un rendez-vous :
-vert plein = oui (Accepter, Terminé), rouge plein = non (Refuser, Absent, Retard), blanc cerclé =
-le reste (Reporter, Annuler, Confier, Fiche), le mot dessous. Les mêmes que les Demandes.
+**Ronds d'action EN COULEUR** (`components/ActionRond.tsx`, grille `.ag-acts`), icône blanche, le mot
+dessous — la couleur dit l'action avant le mot (13 nov.) : **vert** `#34c759` = Accepter, Terminé ;
+**rouge** `#ff3b30` = Refuser, Annuler, Absent, Retard ; **orange** `#ff9500` = Reporter (icône
+`CalendarSync`) ; **bleu** `#007aff` = Fiche (icône `IdCard`), Reprendre ; **violet** `#af52de` =
+Confier. Les mêmes que les Demandes.
+
+**État TOUJOURS en couleur**, jamais une pastille noir et blanc : fond teinté + point + texte de la
+couleur du statut (orange à valider, bleu confirmé, vert en cours, gris `#8e8e93` terminé, rouge
+absent/annulé).
+
+**Un rendez-vous se lit d'un coup d'œil** (fenêtre de l'agenda) : nom + ronds de contact ; HEURE en
+32 px dans un pavé teinté de la couleur de l'état, jour dessous, pastille d'état ; puis prestation
+(ciseaux), durée, prix, et « Avec <membre> » (si équipe) avec leur icône.
 
 ## 7. Clavier, langue, chargement
 
@@ -123,6 +133,7 @@ le reste (Reporter, Annuler, Confier, Fiche), le mot dessous. Les mêmes que les
 | Heure ou durée répétées | Une seule fois (§ 1) |
 | Couleur par membre dans l'agenda | Couleur = statut seulement (§ 2) |
 | Pastilles FR / AR / EN | `LangSwitch` (§ 7) |
+| Ronds d'action blancs, pastille d'état grise | Ronds et états en couleur (§ 6) |
 | Pavé rectangulaire sur le jour choisi | Cercle noir sur le numéro (§ 2) |
 | Points gris sans sens sous les jours | Un point par rendez-vous, couleur du statut (§ 2) |
 | Violet, dégradés, halos colorés | Monochrome + couleurs de sens (§ 2, § 3) |

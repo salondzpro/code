@@ -31,6 +31,7 @@ import { remindedLabel, useReminded } from '@/lib/reminders';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
 import { ActionRond } from './ActionRond';
+import { Scissors, UserRound } from 'lucide-react';
 import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { ClientContact } from './ClientContact';
 import { t } from '@/i18n';
@@ -92,9 +93,9 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
       : running
         ? { text: t('En cours · fin à {h}', { h: formatTimeDZ(b.endsAt) }), cls: 'cur' }
         : b.status === 'confirmed'
-          ? { text: t('Confirmé'), cls: '' }
+          ? { text: t('Confirmé'), cls: 'cf' }
           : b.status === 'completed'
-            ? { text: t('Terminé'), cls: '' }
+            ? { text: t('Terminé'), cls: 'done' }
             : b.status === 'no_show'
               ? { text: t('Absent'), cls: 'no' }
               : { text: cancelledLabel(b.cancelledBy, 'pro', b.cancellationKind), cls: 'no' };
@@ -119,26 +120,41 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
         )}
         {b && (
           <>
-            {/* Qui et comment le joindre, puis quand, puis quoi. */}
+            {/* LISIBLE D'UN COUP D'ŒIL (13 nov. 2026, demande du propriétaire : « les barbers doivent
+                comprendre vite quel rendez-vous, quelle heure, quelle prestation, quel client et avec
+                qui ») : le nom et de quoi le joindre ; l'HEURE en très grand dans un pavé teinté de la
+                couleur de l'état ; puis la prestation et le membre, chacun avec son icône. */}
             <div className="ag9-sl">
               <span className="ag9-st">{b.clientName}</span>
               <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
             </div>
-            <div className="ag9-sw">
-              <b dir="auto">
-                {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))} ·{' '}
-                <span dir="ltr">
-                  {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
+            <div className={`ag-quand ${chip?.cls ?? ''}`}>
+              <span className="min-w-0">
+                <span className="ag-quand-h" dir="ltr">
+                  {formatTimeDZ(b.startsAt)}
+                  <small> – {formatTimeDZ(b.endsAt)}</small>
                 </span>
-              </b>
+                <span className="ag-quand-j" dir="auto">
+                  {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
+                </span>
+              </span>
               {chip && <span className={`ag9-sc ${chip.cls}`}>{chip.text}</span>}
             </div>
-            <div className="ag9-sw sub">
-              <span>
-                {b.serviceName} · {formatDuration(b.durationMinutes)}
-                {b.staff && team > 1 ? ` · ${mine ? t('Vous') : b.staff.displayName}` : ''}
+            <div className="ag-faits">
+              <span className="ag-fait">
+                <I icon={Scissors} size={18} />
+                <b>{b.serviceName}</b>
+                <span className="ag-fait-s">{formatDuration(b.durationMinutes)}</span>
+                <b className="ag-fait-p" dir="ltr">{formatDA(b.priceDa)}</b>
               </span>
-              <b dir="ltr">{formatDA(b.priceDa)}</b>
+              {b.staff && team > 1 && (
+                <span className="ag-fait">
+                  <I icon={UserRound} size={18} />
+                  <span>
+                    {t('Avec')} <b>{mine ? t('vous') : b.staff.displayName}</b>
+                  </span>
+                </span>
+              )}
             </div>
             {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
             {!!b.bookedByName && (
@@ -165,7 +181,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />
                 )}
                 {confirmable && team > 1 && (
-                  <ActionRond icon={ICONE.confier} label={t('Confier')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
+                  <ActionRond ton="violet" icon={ICONE.confier} label={t('Confier')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
                 )}
                 {closable && (
                   <>
@@ -174,18 +190,18 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   </>
                 )}
                 {b.status === 'confirmed' && !past && (
-                  <ActionRond icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
+                  <ActionRond ton="orange" icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
                 )}
                 {b.status === 'completed' && (
-                  <ActionRond icon={ICONE.reprendre} label={t('Dans 3 semaines')} onClick={rebook} />
+                  <ActionRond ton="bleu" icon={ICONE.reprendre} label={t('Dans 3 semaines')} onClick={rebook} />
                 )}
                 {late && (
                   <ActionRond ton="non" icon={ICONE.annulerRetard} label={t('Retard')} title={`${t('Annuler pour retard (plus de')} ${LATE_TOLERANCE_MINUTES} ${t('min)')}`} busy={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))} />
                 )}
                 {b.status === 'confirmed' && !past && (
-                  <ActionRond icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />
+                  <ActionRond ton="non" icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />
                 )}
-                <ActionRond icon={ICONE.fiche} label={t('Fiche')} onClick={() => navigate(`/pro/rendez-vous/${b.id}`)} />
+                <ActionRond ton="bleu" icon={ICONE.fiche} label={t('Fiche')} onClick={() => navigate(`/pro/rendez-vous/${b.id}`)} />
               </div>
             )}
             {cancelling && (
