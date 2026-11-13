@@ -11,8 +11,10 @@ import {
   useProBookingMutations,
   useProBookings,
   useProSalon,
+  useAvailability,
   ApiError,
 } from '@salondz/api-client';
+import { Pencil } from 'lucide-react';
 import {
   addDaysToKey,
   formatDA,
@@ -49,7 +51,7 @@ import {
   UserX,
   XCircle,
 } from 'lucide-react';
-import { Avatar, BottomSheet, Button, I, Input, StatusBadge, TopBar, Dim } from '@/components/ui';
+import { Avatar, BottomSheet, Button, I, Input, Skeleton, StatusBadge, TopBar, Dim } from '@/components/ui';
 import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -331,52 +333,97 @@ export function ProBookingReschedule() {
         {t("Actuel ·")}{' '}{formatDateShortDZ(b.startsAt)}, {formatTimeDZ(b.startsAt)} · {b.clientName} ·{' '}
         {b.serviceName}
       </div>
+      {/* Chaque ligne se modifie d'un toucher (crayon), et les choix rapides sont dessous :
+          jours proches, heures LIBRES du membre, et à qui confier à cette heure (13 nov. 2026). */}
       <div className="crd !gap-0 !py-1">
-        <label className="li">
+        <label className="li rp-ligne">
           <span className="text-[1rem] font-semibold">{t("Date")}</span>
-          <input
-            type="date"
-            className="bg-transparent text-end text-[1rem] outline-none"
-            value={d}
-            min={toLocalDateKey()}
-            onChange={(e) => {
-              reschedule.reset();
-              setDate(e.target.value);
-            }}
-            aria-label={t("Nouvelle date")}
-          />
+          <span className="rp-val">
+            <input
+              type="date"
+              className="bg-transparent text-end text-[1rem] outline-none"
+              value={d}
+              min={toLocalDateKey()}
+              onChange={(e) => {
+                reschedule.reset();
+                setDate(e.target.value);
+              }}
+              aria-label={t("Nouvelle date")}
+            />
+            <I icon={Pencil} size={16} className="rp-crayon" />
+          </span>
         </label>
-        <label className="li">
+        <label className="li rp-ligne">
           <span className="text-[1rem] font-semibold">{t("Heure")}</span>
-          <input
-            type="time"
-            step={300}
-            min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
-            className="bg-transparent text-end text-[1rem] outline-none"
-            value={tm}
-            onChange={(e) => {
-              reschedule.reset();
-              setTime(e.target.value);
-            }}
-            aria-label={t("Nouvelle heure")}
-          />
+          <span className="rp-val">
+            <input
+              type="time"
+              step={300}
+              min={d === toLocalDateKey() ? ceilToStep(nowTimeDZ(), 5) : undefined}
+              className="bg-transparent text-end text-[1rem] outline-none"
+              value={tm}
+              onChange={(e) => {
+                reschedule.reset();
+                setTime(e.target.value);
+              }}
+              aria-label={t("Nouvelle heure")}
+            />
+            <I icon={Pencil} size={16} className="rp-crayon" />
+          </span>
         </label>
         {staff.length > 1 && (
-          <label className="li">
+          <label className="li rp-ligne">
             <span className="text-[1rem] font-semibold">{t("Membre")}</span>
-            <PickerField
-              inline
-              label={t("Membre")}
-              value={sid}
-              onChange={(v) => {
-                reschedule.reset();
-                setStaffId(v);
-              }}
-              options={staff.map((m) => ({ value: m.id, label: m.displayName }))}
-            />
+            <span className="rp-val">
+              <PickerField
+                inline
+                className="!max-w-none whitespace-nowrap"
+                label={t("Membre")}
+                value={sid}
+                onChange={(v) => {
+                  reschedule.reset();
+                  setStaffId(v);
+                }}
+                options={staff.map((m) => ({ value: m.id, label: m.displayName }))}
+              />
+              <I icon={Pencil} size={16} className="rp-crayon" />
+            </span>
           </label>
         )}
       </div>
+
+      {/* Verdict tout de suite : libre (vert) ou déjà pris (rouge). */}
+      {sid && (
+        <p className={`rp-etat ${busy ? 'non' : 'oui'}`} role="status">
+          <I icon={busy ? XCircle : CheckCircle2} size={18} />
+          {busy
+            ? t('{name} a déjà un rendez-vous à {h}', { name: staff.find((m) => m.id === sid)?.displayName ?? t('Ce membre'), h: tm })
+            : t('{name} est libre à {h}', { name: staff.find((m) => m.id === sid)?.displayName ?? t('Le salon'), h: tm })}
+        </p>
+      )}
+
+      {sid && serviceIds.length > 0 && (
+        <ChoixRapides
+          salonId={salon.id}
+          serviceIds={serviceIds}
+          date={d}
+          time={tm}
+          staffId={sid}
+          team={staff.map((m) => ({ id: m.id, name: m.displayName }))}
+          onDate={(x) => {
+            reschedule.reset();
+            setDate(x);
+          }}
+          onTime={(x) => {
+            reschedule.reset();
+            setTime(x);
+          }}
+          onStaff={(x) => {
+            reschedule.reset();
+            setStaffId(x);
+          }}
+        />
+      )}
       {busy && sid && serviceIds.length > 0 && (
         <SlotSuggestions
           salonId={salon.id}
@@ -414,5 +461,97 @@ export function ProBookingReschedule() {
         </Button>
       </BottomSheet>
     </Screen>
+  );
+}
+
+/**
+ * CHOIX RAPIDES DU REPORT (13 nov. 2026, demande du propriétaire : « une facilité rapide pour prendre,
+ * échanger, confier ou modifier un rendez-vous ») — tout se fait d'un toucher :
+ *   - jours proches (aujourd'hui, demain, après-demain, dans une semaine) ;
+ *   - les heures LIBRES du membre ce jour-là (créneaux de l'API, jamais calculés ici) ;
+ *   - CONFIER : qui, dans l'équipe, est libre à l'heure choisie (et qui ne l'est pas).
+ */
+function ChoixRapides({
+  salonId,
+  serviceIds,
+  date,
+  time,
+  staffId,
+  team,
+  onDate,
+  onTime,
+  onStaff,
+}: {
+  salonId: string;
+  serviceIds: string[];
+  date: string;
+  time: string;
+  staffId: string;
+  team: { id: string; name: string }[];
+  onDate: (d: string) => void;
+  onTime: (t: string) => void;
+  onStaff: (id: string) => void;
+}) {
+  const ids = serviceIds.join(',');
+  const mine = useAvailability(salonId, { serviceIds: ids, date, staffId });
+  const all = useAvailability(salonId, { serviceIds: ids, date });
+  const today = toLocalDateKey();
+  const jours = [
+    { key: today, label: t("Aujourd'hui") },
+    { key: addDaysToKey(today, 1), label: t('Demain') },
+    { key: addDaysToKey(today, 2), label: relativeDayLabelDZ(addDaysToKey(today, 2)) },
+    { key: addDaysToKey(date, 7), label: t('+1 semaine') },
+  ];
+  const heures = [...new Set((mine.data?.slots ?? []).map((s) => formatTimeDZ(s.startsAt)))];
+  const aCetteHeure = (all.data?.slots ?? []).find((s) => formatTimeDZ(s.startsAt) === time);
+  return (
+    <div className="rp-rapide">
+      <span className="rp-titre">{t('Jour')}</span>
+      <div className="pills bleed">
+        {jours.map((j) => (
+          <button key={j.key} type="button" className={`rp-puce ${j.key === date ? 'on' : ''}`} onClick={() => onDate(j.key)}>
+            {j.label}
+          </button>
+        ))}
+      </div>
+
+      <span className="rp-titre">{t('Heures libres')}</span>
+      {mine.isPending ? (
+        <Skeleton className="h-[2.5rem] w-full" />
+      ) : heures.length ? (
+        <div className="pills bleed">
+          {heures.map((h) => (
+            <button key={h} type="button" dir="ltr" className={`rp-puce ${h === time ? 'on' : ''}`} onClick={() => onTime(h)}>
+              {h}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="rp-vide">{t('Plus aucun créneau libre ce jour-là.')}</p>
+      )}
+
+      {team.length > 1 && (
+        <>
+          <span className="rp-titre">{t('Confier à · à {h}', { h: time })}</span>
+          <div className="pills bleed">
+            {team.map((m) => {
+              const libre = !!aCetteHeure?.staffIds.includes(m.id) || m.id === staffId;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`rp-puce ${m.id === staffId ? 'on' : ''} ${libre ? '' : 'pris'}`}
+                  onClick={() => onStaff(m.id)}
+                >
+                  <i className={`rp-point ${libre ? 'oui' : 'non'}`} aria-hidden />
+                  {m.name}
+                  {!libre && <span className="sr-only"> · {t('pris')}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

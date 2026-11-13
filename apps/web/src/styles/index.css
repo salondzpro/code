@@ -10464,3 +10464,85 @@ html.pro-theme .ag9-sc.no { --st: #ff3b30; }
     height: min(40rem, calc(100dvh - 4rem));
   }
 }
+
+/* REPORT D'UN RENDEZ-VOUS (13 nov. 2026) : crayon sur chaque ligne, verdict coloré, choix rapides. */
+.rp-ligne {
+  cursor: pointer;
+}
+.rp-val {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rp-crayon {
+  flex: none;
+  color: #6e6e76;
+}
+.rp-etat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.rp-etat.oui {
+  background: color-mix(in srgb, #34c759 14%, #ffffff);
+  color: #1f7a3a;
+}
+.rp-etat.non {
+  background: color-mix(in srgb, #ff3b30 12%, #ffffff);
+  color: #b3261e;
+}
+.rp-rapide {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rp-titre {
+  margin-top: 4px;
+  color: #6e6e76;
+  font-size: 13px;
+  font-weight: 500;
+}
+.rp-puce {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #e2e2e6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111111;
+  font: 500 14px/1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rp-puce.on {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+}
+.rp-puce.pris:not(.on) {
+  color: #8a8a92;
+}
+.rp-point {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.rp-point.oui {
+  background: #34c759;
+}
+.rp-point.non {
+  background: #ff3b30;
+}
+.rp-vide {
+  margin: 0;
+  color: #6e6e76;
+  font-size: 14px;
+}

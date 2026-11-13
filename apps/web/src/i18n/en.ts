@@ -1934,4 +1934,13 @@ export const en: Record<string, string> = {
   "Nouveau client « {q} »": "New client “{q}”",
   "Aucun client ne correspond.": "No matching client.",
   "Aucun client pour l’instant.": "No clients yet.",
+  "{name} a déjà un rendez-vous à {h}": "{name} already has an appointment at {h}",
+  "{name} est libre à {h}": "{name} is free at {h}",
+  "Ce membre": "This member",
+  "Le salon": "The salon",
+  "Heures libres": "Free times",
+  "Plus aucun créneau libre ce jour-là.": "No free slot left that day.",
+  "Confier à · à {h}": "Hand over to · at {h}",
+  "pris": "busy",
+  "+1 semaine": "+1 week",
 };

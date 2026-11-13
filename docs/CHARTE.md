@@ -121,6 +121,10 @@ absent/annulé).
   dans `.cherche-liste`. TOUJOURS en haut de l'écran, à la hauteur de la zone visible (clavier ouvert ou
   non, elle ne saute pas), champ en tête, seule la liste défile ; la liste s'affiche dès l'ouverture
   et se filtre pendant la frappe ; « Nouveau … » toujours proposé dès qu'on tape.
+- **Modifier un rendez-vous (report, confier)** : crayon sur chaque ligne modifiable ; verdict
+  immédiat coloré (« X est libre à 16:30 » en vert, « X a déjà un rendez-vous » en rouge) ; choix
+  rapides d'un toucher : jours proches, heures LIBRES du membre (créneaux de l'API), « Confier à »
+  avec un point vert/rouge par membre libre/pris ; propositions les plus proches quand c'est pris.
 - **Langue** : toujours `LangSwitch` (drapeau + nom, liste déroulante). Jamais de pastilles d'abréviations.
 - **Chargement** : barre et squelette, jamais l'écran de marque en cours de route.
 

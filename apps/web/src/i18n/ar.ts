@@ -1920,4 +1920,13 @@ export const ar: Record<string, string> = {
   "Nouveau client « {q} »": "زبون جديد « {q} »",
   "Aucun client ne correspond.": "لا يوجد زبون مطابق.",
   "Aucun client pour l’instant.": "لا يوجد زبائن حتى الآن.",
+  "{name} a déjà un rendez-vous à {h}": "لدى {name} موعد في {h}",
+  "{name} est libre à {h}": "{name} متاح في {h}",
+  "Ce membre": "هذا العضو",
+  "Le salon": "الصالون",
+  "Heures libres": "الأوقات المتاحة",
+  "Plus aucun créneau libre ce jour-là.": "لا يوجد وقت متاح في هذا اليوم.",
+  "Confier à · à {h}": "إسناد إلى · في {h}",
+  "pris": "مشغول",
+  "+1 semaine": "+ أسبوع",
 };
