@@ -10,6 +10,7 @@
  */
 import type { LucideIcon } from 'lucide-react';
 import { I } from './ui';
+import { ICONES_DETAILLEES } from '@/lib/customIcons';
 
 export function ActionRond({
   icon,
@@ -29,7 +30,7 @@ export function ActionRond({
   return (
     <button type="button" className={`ag-act ${ton ?? ''}`} title={title ?? label} aria-label={title ?? label} disabled={busy} onClick={onClick}>
       <span className="ag-act-r" aria-hidden>
-        {busy ? <span className="btn-spin" /> : <I icon={icon} size={22} strokeWidth={2} />}
+        {busy ? <span className="btn-spin" /> : <I icon={icon} size={ICONES_DETAILLEES.has(icon) ? 28 : 22} strokeWidth={ICONES_DETAILLEES.has(icon) ? 1.5 : 2} />}
       </span>
       <span className="ag-act-l">{label}</span>
     </button>

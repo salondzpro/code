@@ -22,3 +22,9 @@ export const UsersEchange = createLucideIcon('users-echange', [
   ['circle', { cx: '15.2', cy: '10', r: '1.3', key: 'tete-2' }],
   ['path', { d: 'M13.2 14.6a2 2 0 0 1 4 0', key: 'corps-2' }],
 ]);
+
+/**
+ * Icônes détaillées (plusieurs éléments dans le rond) : dans un rond d'action, elles s'affichent PLUS
+ * GRANDES et au trait FIN, sinon elles deviennent une tache grasse (demande du propriétaire, 13 nov.).
+ */
+export const ICONES_DETAILLEES = new Set<unknown>([UsersEchange]);
