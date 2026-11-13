@@ -1872,7 +1872,6 @@ export const ar: Record<string, string> = {
   "Cette adresse sert déjà à un compte client. Pour votre salon, utilisez une autre adresse.": "هذا البريد مستعمل في حساب زبون. لصالونك، استعمل بريدًا آخر.",
   "Quelle est votre adresse e-mail ?": "ما هو بريدك الإلكتروني؟",
   "Pour vous connecter, ou créer votre espace si c’est votre première fois.": "للدخول، أو لإنشاء فضائك إن كانت هذه أول مرة.",
-  "Nous vérifions si un espace existe déjà pour cette adresse.": "نتحقق إن كان هناك فضاء مرتبط بهذا البريد.",
   "nom@exemple.com": "nom@exemple.com",
   "Utiliser une autre adresse": "استعمال بريد آخر",
   "Bon retour": "مرحبًا بعودتك",

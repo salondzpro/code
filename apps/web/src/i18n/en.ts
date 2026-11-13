@@ -1886,7 +1886,6 @@ export const en: Record<string, string> = {
   "Cette adresse sert déjà à un compte client. Pour votre salon, utilisez une autre adresse.": "This address is already used by a client account. For your salon, use another address.",
   "Quelle est votre adresse e-mail ?": "What’s your email address?",
   "Pour vous connecter, ou créer votre espace si c’est votre première fois.": "To sign in, or to create your space if it’s your first time.",
-  "Nous vérifions si un espace existe déjà pour cette adresse.": "We check whether a space already exists for this address.",
   "nom@exemple.com": "name@example.com",
   "Utiliser une autre adresse": "Use another address",
   "Bon retour": "Welcome back",

@@ -106,12 +106,9 @@ export function ProAccesEmail() {
       titre={t('Quelle est votre adresse e-mail ?')}
       sous={t('Pour vous connecter, ou créer votre espace si c’est votre première fois.')}
       actions={
-        <>
-          <Button icon={ICONE.continuer} type="submit" form="pa-email" loading={busy} disabled={busy}>
-            {t('Continuer')}
-          </Button>
-          <p className="pa-note">{t('Nous vérifions si un espace existe déjà pour cette adresse.')}</p>
-        </>
+        <Button icon={ICONE.continuer} type="submit" form="pa-email" loading={busy} disabled={busy}>
+          {t('Continuer')}
+        </Button>
       }
     >
       <form id="pa-email" onSubmit={continuer} noValidate className="pa-form">
