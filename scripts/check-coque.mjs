@@ -68,18 +68,20 @@ try {
   ok(await rempli(), 'l’écran est rendu — c’est l’écran blanc du 25 sept. que ce contrôle surveille');
 
   console.log('\n2. Les écrans d’entrée répondent');
-  await page.goto(`${BASE}/connexion?role=client`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${BASE}/acces`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
   ok(await rempli(), 'l’écran de connexion est rendu');
-  ok((await page.locator('form input').count()) >= 2, 'ses champs sont là');
+  ok((await page.locator('form input').count()) >= 1, 'son champ e-mail est là');
 
   console.log('\n3. Une session s’ouvre et l’application se charge');
+  // Parcours « e-mail d'abord » (14 nov. 2026) : l'adresse, puis le mot de passe sur l'écran suivant.
   await page.locator('input[type="email"]').first().fill('client@salondz.com');
+  await page.getByRole('button', { name: /Continuer/ }).first().click();
   await page.locator('input[type="password"]').first().fill('client@salondz.com');
-  await page.locator('form button[type="submit"]').first().click();
+  await page.getByRole('button', { name: /Se connecter/ }).first().click();
   await page.waitForTimeout(5000);
   const apres = new URL(page.url()).pathname;
-  ok(!/connexion|intro/.test(apres), `on a quitté l’entrée (${apres})`);
+  ok(!/connexion|intro|acces/.test(apres), `on a quitté l’entrée (${apres})`);
   ok(await rempli(), 'la place de marché est rendue');
   const barre = await page.locator('nav, .nvb').count();
   ok(barre > 0, 'la barre d’onglets est en place');

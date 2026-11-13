@@ -98,13 +98,15 @@ async function prendre(nom) {
  */
 async function connexion(adresse) {
   await page.goto(`${BASE}/intro`, { waitUntil: 'domcontentloaded' });
-  await calme(2000); // l'animation d'ouverture dure 1,6 s
+  await calme(2500); // l'animation d'ouverture
+  await page.getByRole('button', { name: /Commencer/ }).first().click();
   await page.locator('input[type="email"], input[name="email"]').first().fill(adresse);
+  await page.getByRole('button', { name: /Continuer/ }).first().click();
   await page.locator('input[type="password"]').first().fill(adresse);
-  await page.locator('form button[type="submit"]').first().click();
+  await page.getByRole('button', { name: /Se connecter/ }).first().click();
   await calme(3000);
   const ou = new URL(page.url()).pathname;
-  if (/connexion|intro|inscription/.test(ou)) {
+  if (/connexion|intro|inscription|acces/.test(ou)) {
     const erreur = await page.locator('[role="alert"], .err, .error').first().textContent().catch(() => null);
     throw new Error(`connexion refusée pour ${adresse} — resté sur ${ou}${erreur ? ` (${erreur.trim()})` : ''}`);
   }
