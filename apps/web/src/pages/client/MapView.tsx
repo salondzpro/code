@@ -490,13 +490,13 @@ export function MapView() {
   return (
     <div className="relative h-app">
       <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}
-.map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#1e1b30;border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
-.map-bubble.on{background:#6c5ce7;color:#fff}
-.map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #e6e5ee;transform:translateX(-50%)}
-.map-bubble.on::after{background:#6c5ce7;border-color:#6c5ce7}
+.map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#111111;border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 "Plus Jakarta Sans",Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
+.map-bubble.on{background:#111111;color:#fff}
+.map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #ececef;transform:translateX(-50%)}
+.map-bubble.on::after{background:#111111;border-color:#111111}
 .leaflet-container{background:#e9e9ef;font-family:inherit}
-.map-place{display:inline-flex;align-items:center;gap:6px;width:max-content;transform:translate(-11px,-50%);padding:3px 8px 3px 3px;border-radius:999px;background:#fff;border:1px solid #e6e5ee;font:600 12px/1.2 Inter,system-ui,sans-serif;color:#1e1b30;white-space:nowrap}
-.map-place-d{width:10px;height:10px;border-radius:50%;background:#1e1b30;border:2px solid #fff;outline:1px solid #1e1b30}
+.map-place{display:inline-flex;align-items:center;gap:6px;width:max-content;transform:translate(-11px,-50%);padding:3px 8px 3px 3px;border-radius:999px;background:#fff;border:1px solid #ececef;font:600 12px/1.2 "Plus Jakarta Sans",Inter,system-ui,sans-serif;color:#111111;white-space:nowrap}
+.map-place-d{width:10px;height:10px;border-radius:50%;background:#111111;border:2px solid #fff;outline:1px solid #111111}
 [dir=rtl] .map-place{transform:translate(calc(-100% + 11px),-50%);padding:3px 3px 3px 8px}`}</style>
       <div ref={mapEl} className="absolute inset-0" aria-label={t("Carte des salons")} />
 

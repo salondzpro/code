@@ -5,13 +5,11 @@
  * lumière, « Bienvenue sur / Salon DZ », une phrase, UN bouton.
  *
  * Le libre accès (4 nov. 2026) reste : « Découvrir les salons » ouvre la place de marché sans
- * compte, la connexion ne se demande qu'à la validation d'un créneau. Le professionnel a sa porte à
+ * compte (aucune démonstration côté client), la connexion ne se demande qu'à la validation d'un créneau. Le professionnel a sa porte à
  * lui, un lien en bas. L'animation d'entrée (titre mot à mot, bouton qui monte, reflet) vit dans
  * les classes `.pwo-*` d'`index.css` et s'arrête sous `prefers-reduced-motion`.
  */
-import { useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { DEMO_ACCOUNTS } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { writeAuthFlow } from '@/lib/authFlow';
 import { HOME, PRO_ONLY } from '@/lib/flavor';
@@ -24,12 +22,10 @@ import { Store } from 'lucide-react';
 import { t } from '@/i18n';
 
 export function ClientWelcome() {
-  const { session, demoLogin } = useAuth();
+  const { session } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get('next') ?? HOME;
-  const [demo, setDemo] = useState(false);
-  const [busy, setBusy] = useState<string | null>(null);
 
   // L'application professionnelle n'a pas d'espace client : sa porte est la sienne.
   if (PRO_ONLY) return <Navigate to="/pro/bienvenue" replace />;
@@ -40,18 +36,6 @@ export function ClientWelcome() {
     navigate(`/acces?next=${encodeURIComponent(next)}`);
   };
 
-  const ouvrirDemo = async (email: string) => {
-    setBusy(email);
-    try {
-      writeAuthFlow({ role: 'client', next: '/', identifier: email, channel: 'email' });
-      await demoLogin(email);
-      navigate('/connexion/retour?next=%2F', { replace: true });
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const demos = DEMO_ACCOUNTS.filter((a) => a.role === 'client' && a.login);
   const mots = t('Salon DZ').split(' ');
 
   return (
@@ -94,21 +78,6 @@ export function ClientWelcome() {
             {t('Découvrir les salons')}
           </Link>
         )}
-        {!session &&
-          (demo ? (
-            <div className="pwo-demos">
-              {demos.map((a) => (
-                <button key={a.key} type="button" className="pa-btn g" disabled={busy !== null} onClick={() => void ouvrirDemo(a.email)}>
-                  <I icon={ICONE.apercu} size={18} />
-                  {busy === a.email ? t('Ouverture…') : t('Démonstration · Cliente')}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <button type="button" className="pa-lien" onClick={() => setDemo(true)}>
-              {t('Voir une démonstration')}
-            </button>
-          ))}
         <Link to="/pro/bienvenue" className="pa-lien pwo-pro">
           <I icon={Store} size={16} /> {t('Vous êtes professionnel ?')}
         </Link>
