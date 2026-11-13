@@ -9948,7 +9948,7 @@ html[data-kb] .pa-actions {
   inset: -60px;
   filter: blur(30px) saturate(0.85);
   will-change: transform;
-  animation: pwo-derive 9s ease-in-out infinite alternate;
+  animation: pwo-derive 7s ease-in-out infinite alternate;
 }
 /* Le fond BOUGE (13 nov. 2026, demande du propriétaire, d'après un fond animé de grande marque) :
    la photo floutée dérive franchement, et trois halos de lumière — encre, blanc, gris — glissent
@@ -9956,13 +9956,13 @@ html[data-kb] .pa-actions {
    (fluide sur téléphone) ; tout s'arrête sous prefers-reduced-motion. */
 @keyframes pwo-derive {
   0% {
-    transform: translate3d(-10%, -6%, 0) scale(1.2) rotate(-5deg);
+    transform: translate3d(-14%, -8%, 0) scale(1.25) rotate(-7deg);
   }
   50% {
-    transform: translate3d(9%, 4%, 0) scale(1.38) rotate(3deg);
+    transform: translate3d(12%, 6%, 0) scale(1.45) rotate(5deg);
   }
   100% {
-    transform: translate3d(-4%, 9%, 0) scale(1.25) rotate(6deg);
+    transform: translate3d(-6%, 12%, 0) scale(1.3) rotate(8deg);
   }
 }
 .pwo-aura {
@@ -9982,27 +9982,27 @@ html[data-kb] .pa-actions {
 .pwo-aura i:nth-child(1) {
   left: -35%;
   top: -25%;
-  background: radial-gradient(circle, rgb(17 17 17 / 0.55), transparent 65%);
-  animation: pwo-halo-a 11s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgb(17 17 17 / 0.65), transparent 65%);
+  animation: pwo-halo-a 8s ease-in-out infinite alternate;
 }
 .pwo-aura i:nth-child(2) {
   right: -40%;
   top: 0;
-  background: radial-gradient(circle, rgb(255 255 255 / 0.75), transparent 62%);
-  animation: pwo-halo-b 8s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.85), transparent 62%);
+  animation: pwo-halo-b 6s ease-in-out infinite alternate;
 }
 .pwo-aura i:nth-child(3) {
   left: 0;
   top: 25%;
-  background: radial-gradient(circle, rgb(110 110 118 / 0.5), transparent 64%);
-  animation: pwo-halo-c 13s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgb(110 110 118 / 0.6), transparent 64%);
+  animation: pwo-halo-c 9s ease-in-out infinite alternate;
 }
 @keyframes pwo-halo-a {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
   }
   100% {
-    transform: translate3d(45%, 30%, 0) scale(1.25);
+    transform: translate3d(60%, 40%, 0) scale(1.35);
   }
 }
 @keyframes pwo-halo-b {
@@ -10011,7 +10011,7 @@ html[data-kb] .pa-actions {
     opacity: 0.9;
   }
   100% {
-    transform: translate3d(-55%, 25%, 0) scale(0.85);
+    transform: translate3d(-70%, 35%, 0) scale(0.8);
     opacity: 0.6;
   }
 }
@@ -10020,7 +10020,7 @@ html[data-kb] .pa-actions {
     transform: translate3d(-20%, 10%, 0) scale(0.9);
   }
   100% {
-    transform: translate3d(35%, -30%, 0) scale(1.2);
+    transform: translate3d(50%, -40%, 0) scale(1.3);
   }
 }
 @media (prefers-reduced-motion: reduce) {
