@@ -39,6 +39,7 @@ import {
   LogIn,
   Mail,
   MapPin,
+  Pencil,
   Plus,
   RotateCw,
   Search,
@@ -84,6 +85,7 @@ export const ICONE = {
   // Formulaires et fenêtres
   valider: Check,
   enregistrer: Check,
+  modifier: Pencil,
   ajouter: Plus,
   continuer: ArrowRight,
   retour: ArrowLeft,

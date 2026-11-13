@@ -10496,3 +10496,46 @@ html.pro-theme .ag9-sc.no { --st: #ff3b30; }
   background: color-mix(in srgb, #ff3b30 12%, #ffffff);
   color: #b3261e;
 }
+
+/* MON SALON (13 nov. 2026) : aperçu du salon tel que le voient les clientes, en tête de page. */
+.ms-apercu {
+  display: block;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16));
+  color: #111111;
+  text-decoration: none;
+}
+.ms-couv {
+  display: block;
+  height: 132px;
+  background: #ebebee;
+}
+.ms-couv img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ms-couv-vide {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #6e6e76;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ms-id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 14px;
+}
+.ms-logo {
+  flex: none;
+  margin-top: -34px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px #ffffff;
+}
