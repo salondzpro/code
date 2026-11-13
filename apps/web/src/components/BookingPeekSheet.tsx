@@ -30,7 +30,8 @@ import { originLabel } from '@/lib/pageView';
 import { remindedLabel, useReminded } from '@/lib/reminders';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
-import { BottomSheet, Button, Skeleton, Dim, cancelledLabel } from './ui';
+import type { LucideIcon } from 'lucide-react';
+import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { ClientContact } from './ClientContact';
 import { t } from '@/i18n';
 
@@ -152,60 +153,40 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 
-            {/* Une rangée de petits boutons : l'action de l'état en premier, la fiche toujours au bout. */}
+            {/* RONDS D'ACTION (13 nov. 2026, demande du propriétaire) : les mêmes que les Demandes —
+                Accepter en rond VERT ✓, Refuser en rond ROUGE ✕ — et les autres gestes en ronds
+                blancs cerclés, le mot dessous. L'action de l'état en premier, la fiche au bout. */}
             {!cancelling && (
-              <>
-                <div className="ag9-ac">
-                  {confirmable && (
-                    <Button icon={ICONE.accepter} sm className="ag9-b" loading={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}>
-                      {t('Accepter')}
-                    </Button>
-                  )}
-                  {confirmable && team > 1 && (
-                    <Button icon={ICONE.confier} sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-                      {t('Confier')}
-                    </Button>
-                  )}
-                  {confirmable && (
-                    <Button icon={ICONE.refuser} sm className="ag9-n r" onClick={() => setCancelling(true)}>
-                      {t('Refuser')}
-                    </Button>
-                  )}
-                  {closable && (
-                    <>
-                      <Button icon={ICONE.terminer} sm className="ag9-b" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}>
-                        {t('Terminé')}
-                      </Button>
-                      <Button icon={ICONE.absent} sm className="ag9-n r" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}>
-                        {t('Absent')}
-                      </Button>
-                    </>
-                  )}
-                  {b.status === 'confirmed' && !past && (
-                    <Button icon={ICONE.reporter} sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-                      {t('Reporter')}
-                    </Button>
-                  )}
-                  {b.status === 'completed' && (
-                    <Button icon={ICONE.reprendre} sm className="ag9-b wide" onClick={rebook}>
-                      {t('Reprendre dans 3 semaines')}
-                    </Button>
-                  )}
-                  <Button icon={ICONE.fiche} sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
-                    {t('Fiche')}
-                  </Button>
-                  {b.status === 'confirmed' && !past && (
-                    <Button icon={ICONE.annulerRdv} sm className="ag9-n r" onClick={() => setCancelling(true)}>
-                      {t('Annuler')}
-                    </Button>
-                  )}
-                </div>
-                {late && (
-                  <Button icon={ICONE.annulerRetard} sm className="ag9-n r" disabled={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}>
-                    {t('Annuler pour retard (plus de')} {LATE_TOLERANCE_MINUTES} {t('min)')}
-                  </Button>
+              <div className="ag-acts">
+                {confirmable && (
+                  <Rond ton="oui" icon={ICONE.accepter} label={t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
                 )}
-              </>
+                {confirmable && (
+                  <Rond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />
+                )}
+                {confirmable && team > 1 && (
+                  <Rond icon={ICONE.confier} label={t('Confier')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
+                )}
+                {closable && (
+                  <>
+                    <Rond ton="oui" icon={ICONE.terminer} label={t('Terminé')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))} />
+                    <Rond ton="non" icon={ICONE.absent} label={t('Absent')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))} />
+                  </>
+                )}
+                {b.status === 'confirmed' && !past && (
+                  <Rond icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
+                )}
+                {b.status === 'completed' && (
+                  <Rond icon={ICONE.reprendre} label={t('Dans 3 semaines')} onClick={rebook} />
+                )}
+                {late && (
+                  <Rond ton="non" icon={ICONE.annulerRetard} label={t('Retard')} title={`${t('Annuler pour retard (plus de')} ${LATE_TOLERANCE_MINUTES} ${t('min)')}`} busy={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))} />
+                )}
+                {b.status === 'confirmed' && !past && (
+                  <Rond icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />
+                )}
+                <Rond icon={ICONE.fiche} label={t('Fiche')} onClick={() => navigate(`/pro/rendez-vous/${b.id}`)} />
+              </div>
             )}
             {cancelling && (
               <div className="crd !gap-2.5 !border-danger-line">
@@ -245,5 +226,34 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
         )}
       </BottomSheet>
     </>
+  );
+}
+
+/**
+ * Rond d'action de la fenêtre du rendez-vous : l'icône dans un rond, le mot dessous. `oui` = vert
+ * plein, `non` = rouge plein (les ronds des Demandes), sinon blanc cerclé de gris.
+ */
+function Rond({
+  icon,
+  label,
+  title,
+  ton,
+  busy,
+  onClick,
+}: {
+  icon: LucideIcon;
+  label: string;
+  title?: string;
+  ton?: 'oui' | 'non';
+  busy?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className={`ag-act ${ton ?? ''}`} title={title ?? label} aria-label={title ?? label} disabled={busy} onClick={onClick}>
+      <span className="ag-act-r" aria-hidden>
+        {busy ? <span className="btn-spin" /> : <I icon={icon} size={22} strokeWidth={2} />}
+      </span>
+      <span className="ag-act-l">{label}</span>
+    </button>
   );
 }

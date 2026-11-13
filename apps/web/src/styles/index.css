@@ -10180,3 +10180,81 @@ html[data-kb] .pa-actions {
 .cd-plus[open] .cd-plus-c {
   transform: rotate(180deg);
 }
+
+/* RONDS D'ACTION de la fenêtre du rendez-vous (13 nov. 2026) : comme les Demandes. Vert plein = oui,
+   rouge plein = non, blanc cerclé = le reste ; le mot dessous. Ils se répartissent sur la largeur. */
+.ag-acts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+.ag-act {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #111111;
+  font: 500 12px/1.2 var(--font-sans);
+  cursor: pointer;
+}
+.ag-act-r {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: inset 0 0 0 1px #e4e4e8;
+  transition: transform 0.12s ease;
+}
+.ag-act:active .ag-act-r {
+  transform: scale(0.94);
+}
+.ag-act.oui .ag-act-r {
+  background: #34c759;
+  color: #ffffff;
+  box-shadow: none;
+}
+.ag-act.non .ag-act-r {
+  background: #ff3b30;
+  color: #ffffff;
+  box-shadow: none;
+}
+.ag-act:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ag-act-l {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ag-act .btn-spin {
+  border-color: currentColor;
+  border-right-color: transparent;
+}
+
+/* FENÊTRES DU BAS PLUS HAUTES (13 nov. 2026, demande du propriétaire : « lève un peu la pop-up, et
+   pareil pour les autres, pour mieux utiliser l'espace ») : sur téléphone, une fenêtre de l'espace
+   pro occupe au moins la moitié de l'écran, avec plus d'air ; ses actions finales vont en bas.
+   Clavier ouvert, la règle du clavier reprend la main (hauteur libre). */
+@media (max-width: 767.98px) {
+  html.pro-theme .sheet.modal {
+    min-height: 50dvh;
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: calc(1.75rem + var(--safe-bottom, 0px));
+  }
+  html[data-kb] .sheet.modal {
+    min-height: 0;
+  }
+}
