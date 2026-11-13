@@ -86,7 +86,7 @@ l'agenda, page du rendez-vous, carte du prochain rendez-vous. Pas de gros bouton
   (`ICONE.reporter`, `ICONE.annulerRdv`…). `<Button icon={ICONE.x}>`, `<LinkButton icon={…}>`.
 - Être précis : « Annuler » un rendez-vous (calendrier barré) ≠ « Annuler » une fenêtre (croix).
 - Aucune icône lucide ne dit exactement l'action ? On la **dessine** (24 × 24, trait 1,6, bouts
-  ronds) et on l'ajoute au vocabulaire.
+  ronds) dans `lib/customIcons.ts` (`createLucideIcon`) et on l'ajoute au vocabulaire.
 - Flèches et chevrons se retournent en arabe (automatique avec `icon=`).
 
 ## 6. Boutons
@@ -103,7 +103,7 @@ l'agenda, page du rendez-vous, carte du prochain rendez-vous. Pas de gros bouton
 dessous — la couleur dit l'action avant le mot (13 nov.) : **vert** `#34c759` = Accepter, Terminé ;
 **rouge** `#ff3b30` = Refuser, Annuler, Absent, Retard ; **orange** `#ff9500` = Reporter (icône
 `CalendarSync`) ; **bleu** `#007aff` = Fiche (icône `IdCard`), Reprendre ; **violet** `#af52de` =
-Confier. Les mêmes que les Demandes.
+Confier (icône DESSINÉE `UsersEchange` : deux personnes dans deux flèches circulaires, `lib/customIcons.ts`). Les mêmes que les Demandes.
 
 **État TOUJOURS en couleur**, jamais une pastille noir et blanc : fond teinté + point + texte de la
 couleur du statut (orange à valider, bleu confirmé, vert en cours, gris `#8e8e93` terminé, rouge

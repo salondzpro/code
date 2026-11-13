@@ -57,12 +57,13 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
+import { UsersEchange } from './customIcons';
 
 export const ICONE = {
   // Rendez-vous
   accepter: Check,
   refuser: X,
-  confier: Users,
+  confier: UsersEchange,
   terminer: UserCheck,
   absent: UserX,
   reporter: CalendarSync,
