@@ -5,7 +5,7 @@
  *
  * Une photo de salon très floutée qui se fond dans le blanc cassé du thème, « Bienvenue sur /
  * Salon DZ Pro », une phrase, et UN bouton : « Commencer ». Le reste — se connecter ou créer son
- * espace — se décide sur l'écran suivant, d'après l'adresse e-mail (`pages/pro/Acces.tsx`).
+ * espace — se décide sur l'écran suivant, d'après l'adresse e-mail (`pages/auth/Acces.tsx`).
  * Remplace la page du 28 oct. (bandeau animé, carte d'accès à deux portes, promesses, étapes).
  *
  * Langue : le sélecteur commun « drapeau + langue » en liste déroulante (`LangSwitch`).

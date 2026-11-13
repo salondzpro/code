@@ -25,7 +25,8 @@ import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 import { Market } from '@/pages/auth/Market';
 import { ProWelcome } from '@/pages/pro/Welcome';
-import { ProAccesCreer, ProAccesEmail, ProAccesEnvoye, ProAccesMotDePasse, ProAccesOubli } from '@/pages/pro/Acces';
+import { AccesCreer, AccesEmail, AccesEnvoye, AccesMotDePasse, AccesOubli } from '@/pages/auth/Acces';
+import { ClientWelcome } from '@/pages/auth/Welcome';
 // Client (design C-H / C-F)
 import { Marketplace } from '@/pages/client/Marketplace';
 import { Localisation } from '@/pages/client/Localisation';
@@ -200,7 +201,7 @@ export const router = createBrowserRouter([
         children: [
           // Ex-« Intro » + « Bienvenue » : un visiteur non connecté n'a rien d'autre à faire que se
           // connecter, autant l'y amener directement plutôt que deux écrans intermédiaires.
-          { path: '/intro', element: <Login landing /> },
+          { path: '/intro', element: <ClientWelcome /> },
           { path: '/bienvenue', element: <Navigate to="/intro" replace /> },
           { path: '/connexion', element: <Login /> },
           { path: '/inscription', element: <SignUp /> },
@@ -211,11 +212,17 @@ export const router = createBrowserRouter([
           { path: '/connexion/retour', element: <WelcomeBack /> },
           { path: '/pro/bienvenue', element: <ProWelcome /> },
           // Accès professionnel en un seul chemin, l'e-mail d'abord (13 nov. 2026).
-          { path: '/pro/acces', element: <ProAccesEmail /> },
-          { path: '/pro/acces/mot-de-passe', element: <ProAccesMotDePasse /> },
-          { path: '/pro/acces/creer', element: <ProAccesCreer /> },
-          { path: '/pro/acces/envoye', element: <ProAccesEnvoye /> },
-          { path: '/pro/acces/oubli', element: <ProAccesOubli /> },
+          { path: '/pro/acces', element: <AccesEmail /> },
+          { path: '/pro/acces/mot-de-passe', element: <AccesMotDePasse /> },
+          { path: '/pro/acces/creer', element: <AccesCreer /> },
+          { path: '/pro/acces/envoye', element: <AccesEnvoye /> },
+          { path: '/pro/acces/oubli', element: <AccesOubli /> },
+          // Accès client : le même parcours, l'e-mail d'abord (14 nov. 2026).
+          { path: '/acces', element: <AccesEmail /> },
+          { path: '/acces/mot-de-passe', element: <AccesMotDePasse /> },
+          { path: '/acces/creer', element: <AccesCreer /> },
+          { path: '/acces/envoye', element: <AccesEnvoye /> },
+          { path: '/acces/oubli', element: <AccesOubli /> },
           {
             element: <RequireAuth />,
             children: [

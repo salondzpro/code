@@ -1,102 +1,46 @@
 /**
  * Mot de passe oublié (envoi du lien) et nouveau mot de passe (après le lien : Supabase ouvre
  * une session de récupération, on remplace le mot de passe puis on continue).
+ *
+ * L'envoi du lien vit dans `pages/auth/Acces.tsx` (`/acces/oubli`, `/pro/acces/oubli`) ; l'ancienne
+ * adresse `/connexion/oubli` reste branchée et y renvoie. Le NOUVEAU mot de passe prend le cadre
+ * commun des écrans d'accès (14 nov. 2026) : un seul champ, l'œil pour le voir, le bouton en bas.
  */
 import { ICONE } from '@/lib/actionIcons';
 import { useState, type FormEvent } from 'react';
+import { Check } from 'lucide-react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
-import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { KeyRound, LockKeyhole } from 'lucide-react';
-import { Button, Field, Input } from '@/components/ui';
-import { AuthError, AuthShell, MatchHint, PasswordField, matchState } from '@/components/AuthShell';
-import { EMAIL_RE } from './Login';
+import { readAuthFlow } from '@/lib/authFlow';
+import { Button, I } from '@/components/ui';
+import { AuthError, PasswordField } from '@/components/AuthShell';
+import { AuthScreen } from '@/components/AuthKit';
 import { PASSWORD_MIN } from './SignUp';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
 export function ForgotPassword() {
-  const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { sendPasswordReset } = useAuth();
-  const [email, setEmail] = useState(params.get('email') ?? readAuthFlow()?.identifier ?? '');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Espace pro : son propre écran (`pages/pro/Acces.tsx`, 13 nov. 2026).
-  if (readAuthFlow()?.role === 'pro') {
-    const q = new URLSearchParams(email ? { email } : {});
-    return <Navigate to={`/pro/acces/oubli${q.size ? `?${q.toString()}` : ''}`} replace />;
-  }
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    const id = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(id)) return setError(t("Adresse e-mail invalide."));
-    setBusy(true);
-    setError(null);
-    try {
-      writeAuthFlow({ identifier: id, channel: 'email', sentAt: Date.now() });
-      await sendPasswordReset(id);
-      navigate('/connexion/envoye?mode=reset', { replace: true });
-    } catch (err) {
-      setError(authErrorText(err));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <AuthShell
-      role={readAuthFlow()?.role === 'pro' ? 'pro' : 'client'}
-      back={readAuthFlow()?.role === 'pro' ? '/connexion?role=pro' : '/connexion'}
-      icone={KeyRound}
-      titre="Mot de passe oublié"
-      sous={t('Indiquez votre adresse : vous recevrez un lien pour en choisir un nouveau.')}
-    >
-      <form onSubmit={submit} noValidate>
-        <Field label={t('E-mail')} htmlFor="fp-email">
-          <Input
-            id="fp-email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            placeholder={t('vous@exemple.dz')}
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            err={!!error}
-          />
-        </Field>
-        {error && <AuthError texte={error} />}
-        <Button icon={ICONE.envoyer} type="submit" loading={busy}>
-          {t('Envoyer le lien')}
-        </Button>
-      </form>
-    </AuthShell>
-  );
+  const email = params.get('email') ?? readAuthFlow()?.identifier ?? '';
+  const q = new URLSearchParams(email ? { email } : {});
+  const base = readAuthFlow()?.role === 'pro' ? '/pro/acces' : '/acces';
+  return <Navigate to={`${base}/oubli${q.size ? `?${q.toString()}` : ''}`} replace />;
 }
 
 export function NewPassword() {
   const navigate = useNavigate();
   const { session, updatePassword, loading } = useAuth();
   const [password, setPassword] = useState('');
-  const [confirmation, setConfirmation] = useState('');
-  const accord = matchState(password, confirmation);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const next = readAuthFlow()?.next ?? '/';
+  const flow = readAuthFlow();
+  const next = flow?.next ?? '/';
+  const base = flow?.role === 'pro' ? '/pro/acces' : '/acces';
+  const assez = password.length >= PASSWORD_MIN;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password.length < PASSWORD_MIN) return setError(t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }));
-    // Garde-fou : le bouton est désactivé, mais la touche Entrée ne passe pas par lui.
-    if (password !== confirmation) return setError(t('Les deux mots de passe ne correspondent pas.'));
+    if (!assez) return setError(t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }));
     setBusy(true);
     setError(null);
     try {
@@ -113,50 +57,49 @@ export function NewPassword() {
   // pendant une seconde avant de montrer le formulaire.
   if (loading) return <PageLoading />;
 
+  if (!session)
+    return (
+      <AuthScreen
+        titre={t('Nouveau mot de passe')}
+        sous={t('Le lien a expiré ou a déjà servi. Demandez-en un nouveau.')}
+        actions={
+          <Button icon={ICONE.recevoirLien} onClick={() => navigate(`${base}/oubli`)}>
+            {t('Demander un nouveau lien')}
+          </Button>
+        }
+      />
+    );
+
   return (
-    <AuthShell
-      role={readAuthFlow()?.role === 'pro' ? 'pro' : 'client'}
-      icone={LockKeyhole}
-      titre="Nouveau mot de passe"
-      sous={
-        session
-          ? t('Choisissez un nouveau mot de passe pour votre compte.')
-          : t('Le lien a expiré ou a déjà servi. Demandez-en un nouveau.')
+    <AuthScreen
+      titre={t('Nouveau mot de passe')}
+      sous={t('Choisissez un nouveau mot de passe pour votre compte.')}
+      actions={
+        <Button icon={ICONE.enregistrer} type="submit" form="pa-nouveau" loading={busy} disabled={busy}>
+          {t('Enregistrer')}
+        </Button>
       }
     >
-      {session ? (
-        <form onSubmit={submit} noValidate>
-          <PasswordField
-            id="np-password"
-            label={t('Nouveau mot de passe')}
-            autoComplete="new-password"
-            hint={t('{n} caractères au minimum.', { n: PASSWORD_MIN })}
-            value={password}
-            onChange={(v) => {
-              setPassword(v);
-              // Le mot de passe change : la confirmation déjà saisie ne veut plus rien dire.
-              setConfirmation('');
-              setError(null);
-            }}
-            err={!!error}
-          />
-          <PasswordField
-            id="np-confirm"
-            label={t('Confirmer le mot de passe')}
-            autoComplete="new-password"
-            value={confirmation}
-            onChange={setConfirmation}
-            err={accord === 'different'}
-          />
-          <MatchHint etat={accord} />
-          {error && <AuthError texte={error} />}
-          <Button icon={ICONE.enregistrer} type="submit" loading={busy} disabled={accord !== 'ok'}>
-            {t('Enregistrer')}
-          </Button>
-        </form>
-      ) : (
-        <Button icon={ICONE.recevoirLien} onClick={() => navigate('/connexion/oubli')}>{t('Demander un nouveau lien')}</Button>
-      )}
-    </AuthShell>
+      <form id="pa-nouveau" onSubmit={submit} noValidate className="pa-form">
+        <PasswordField
+          id="pa-nouveau-i"
+          label={t('Nouveau mot de passe')}
+          autoComplete="new-password"
+          value={password}
+          onChange={(v) => {
+            setPassword(v);
+            setError(null);
+          }}
+          err={!!error}
+        />
+        <p className={`pa-regle ${assez ? 'ok' : ''}`}>
+          <span className="pa-regle-r" aria-hidden>
+            {assez && <I icon={Check} size={11} strokeWidth={3} />}
+          </span>
+          {t('{n} caractères au minimum', { n: PASSWORD_MIN })}
+        </p>
+        {error && <AuthError texte={error} />}
+      </form>
+    </AuthScreen>
   );
 }

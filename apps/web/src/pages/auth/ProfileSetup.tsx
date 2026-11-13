@@ -15,7 +15,7 @@ import { useAuth } from '@/lib/auth';
 import { groupLocalDigits } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
 import { Button, Field, I, Input } from '@/components/ui';
-import { AuthShell } from '@/components/AuthShell';
+import { AuthScreen } from '@/components/AuthKit';
 import { t } from '@/i18n';
 
 export function ProfileSetup() {
@@ -62,14 +62,16 @@ export function ProfileSetup() {
   };
 
   return (
-    <AuthShell
-      role={isPro ? 'pro' : 'client'}
-      marque={false}
-      surtitre="Dernière étape"
-      titre="Vos coordonnées"
+    <AuthScreen
+      titre={t('Vos coordonnées')}
       sous={isPro ? t('Pour que Salon DZ puisse vous joindre au sujet de votre espace.') : t('Le salon s’en sert pour vous joindre au sujet de votre rendez-vous.')}
+      actions={
+        <Button icon={ICONE.valider} type="submit" form="pa-profil" loading={update.isPending} disabled={me.isPending}>
+          {t('Terminer')}
+        </Button>
+      }
     >
-      <form onSubmit={submit} noValidate>
+      <form id="pa-profil" onSubmit={submit} noValidate className="pa-form">
         <Field label={t("Prénom et nom")} htmlFor="full-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
             id="full-name"
@@ -88,7 +90,7 @@ export function ProfileSetup() {
             {t("Numéro de téléphone")}
           </label>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-1.5 rounded-[var(--radius-input)] border border-line bg-fill px-3 text-[1rem] font-medium" dir="ltr" aria-label={t("Indicatif +213")}>
+            <div className="pa-indicatif" dir="ltr" aria-label={t("Indicatif +213")}>
               +213 <I icon={ChevronDown} size={15} className="text-subtle" />
             </div>
             <Input
@@ -115,10 +117,7 @@ export function ProfileSetup() {
             {error.msg}
           </p>
         )}
-        <Button icon={ICONE.valider} type="submit" loading={update.isPending} disabled={me.isPending}>
-          {t('Terminer')}
-        </Button>
       </form>
-    </AuthShell>
+    </AuthScreen>
   );
 }

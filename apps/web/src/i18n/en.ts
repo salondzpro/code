@@ -1980,4 +1980,11 @@ export const en: Record<string, string> = {
   "Vos stories Snapchat": "Your Snapchat stories",
   "{n} nouvelle cliente": "{n} new client",
   "{n} nouvelles clientes": "{n} new clients",
+  "Les meilleurs salons près de chez vous, réservés en quelques secondes.": "The best salons near you, booked in seconds.",
+  "Découvrir les salons": "Browse salons",
+  "Démonstration · Cliente": "Demo · Client",
+  "Pour vous connecter, ou créer votre compte si c’est votre première fois.": "To sign in, or to create your account if it is your first time.",
+  "Cette adresse sert déjà à un compte professionnel. Pour réserver, utilisez une autre adresse.": "This address is already used for a professional account. To book, use another address.",
+  "En créant votre compte, vous acceptez les": "By creating your account, you accept the",
+  "Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.": "This link is no longer valid. Sign in, or request a new link.",
 };

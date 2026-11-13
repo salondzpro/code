@@ -10727,3 +10727,211 @@ a.h12-card {
     margin-inline: auto;
   }
 }
+
+/* ============================================================================================
+   PORTAIL CLIENT ET THÈME CLIENT (14 nov. 2026, demande du propriétaire : « le nouveau thème sur le
+   portail des clients, puis sur toutes les pages clientes, comme pour les professionnels »).
+   Le portail client reprend les écrans pro (`.pwo-*`, `.pa-*`) : ouverture animée de
+   `pages/auth/Welcome.tsx`, parcours « e-mail d'abord » de `pages/auth/Acces.tsx`. Le reste de
+   l'espace client reçoit les jetons du thème (`html.pro-theme`, posé partout sauf /admin et /home)
+   et, ci-dessous, ses cartes, champs et boutons (`html.client-theme`, posé hors espace pro).
+   ============================================================================================ */
+
+/* ---- Ouverture : entrée en scène, puis la photo respire ---- */
+.pwo-anim .pwo-k,
+.pwo-anim .pwo-s,
+.pwo-anim .pwo-bas > * {
+  opacity: 0;
+  animation: pwo-monte 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.pwo-anim .pwo-k {
+  animation-delay: 0.1s;
+}
+.pwo-anim .pwo-s {
+  animation-delay: 0.65s;
+}
+.pwo-anim .pwo-bas > :nth-child(1) {
+  animation-delay: 0.8s;
+}
+.pwo-anim .pwo-bas > :nth-child(2) {
+  animation-delay: 0.9s;
+}
+.pwo-anim .pwo-bas > :nth-child(3) {
+  animation-delay: 1s;
+}
+.pwo-anim .pwo-bas > :nth-child(4) {
+  animation-delay: 1.1s;
+}
+.pwo-anim .pwo-bas > :nth-child(5) {
+  animation-delay: 1.2s;
+}
+@keyframes pwo-monte {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Le titre arrive mot à mot : il sort du flou en montant. */
+.pwo-mot {
+  display: inline-block;
+  margin-inline: 0.12em;
+  opacity: 0;
+  animation: pwo-mot 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes pwo-mot {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+/* Le bouton principal : un reflet le traverse, une fois, quand il est en place. */
+.pwo-cta {
+  position: relative;
+  overflow: hidden;
+}
+.pwo-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.28) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: pwo-reflet 1.3s ease 1.6s 1 forwards;
+}
+@keyframes pwo-reflet {
+  to {
+    transform: translateX(120%);
+  }
+}
+[dir='rtl'] .pwo-cta::after {
+  transform: translateX(120%);
+  animation-name: pwo-reflet-rtl;
+}
+@keyframes pwo-reflet-rtl {
+  to {
+    transform: translateX(-120%);
+  }
+}
+.pwo-sec {
+  text-decoration: none;
+}
+.pwo-pro {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pa-lien {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pwo-anim .pwo-k,
+  .pwo-anim .pwo-s,
+  .pwo-anim .pwo-bas > *,
+  .pwo-mot {
+    opacity: 1;
+    animation: none;
+  }
+  .pwo-cta::after {
+    display: none;
+  }
+}
+
+/* ---- Écrans d'accès : le contenu monte en douceur à chaque écran ---- */
+.pa-main > * {
+  animation: pwo-monte 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pa-main > :nth-child(2) {
+  animation-delay: 0.05s;
+}
+.pa-main > :nth-child(3) {
+  animation-delay: 0.1s;
+}
+.pa-main > :nth-child(4) {
+  animation-delay: 0.15s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pa-main > * {
+    animation: none;
+  }
+}
+/* Indicatif du numéro (+213) : même gabarit que les champs. */
+.pa-indicatif {
+  display: flex;
+  height: 54px;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid #e2e2e6;
+  border-radius: 14px;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+.pa .flex.gap-2\.5 {
+  align-items: stretch;
+}
+
+/* ---- Thème client : cartes blanches sans contour, ombre légère, arrondis de 16 px ---- */
+html.client-theme {
+  --color-hour: #111111;
+  --radius-card: 1.143rem;
+  --radius-sheet: 1.714rem;
+}
+html.client-theme .crd,
+html.client-theme .lst {
+  border-color: transparent;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow);
+}
+html.client-theme .srch {
+  border-color: transparent;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow);
+}
+html.client-theme .tool {
+  border-color: transparent;
+  background: #ffffff;
+  box-shadow: 0 8px 20px -14px rgb(0 0 0 / 0.22);
+}
+html.client-theme .ib.lg {
+  border-color: transparent;
+  box-shadow: 0 6px 18px -12px rgb(0 0 0 / 0.3);
+}
+/* Boutons : principal noir ; secondaire gris clair ; le contour d'accent des « g » devient un gris doux. */
+html.client-theme .btn.g {
+  background: #ebebee;
+  border-color: transparent;
+  color: #111111;
+}
+html.client-theme .pill:not(.soft) {
+  border-color: #111111;
+}
+html.client-theme .hdr {
+  background: rgb(247 247 249 / 0.9);
+}
+/* Titre sur la ligne du retour : il garde sa place, c'est la pastille d'à côté qui s'abrège. */
+html.client-theme .tb-t {
+  flex: 1 0 auto;
+  max-width: 62%;
+  font-size: 24px;
+}
+html.client-theme .tb-t ~ .pill {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 48%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

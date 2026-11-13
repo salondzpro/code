@@ -1,276 +1,29 @@
 /**
- * Connexion par e-mail et mot de passe (comme les outils du métier), avec un lien de
- * connexion par e-mail en secours et la réinitialisation du mot de passe. Les actions qui
- * comptent sont de VRAIS boutons, pas des liens discrets : créer un compte, recevoir un lien.
- * Chaque erreur est dite en français et propose la suite (créer un compte, renvoyer le lien).
- * Comptes de DÉMONSTRATION : plus rien ne les annonce à l'écran. Ils s'ouvrent en se connectant
- * normalement, avec l'adresse ET le même mot de passe qu'elle (`pro-homme@`, `pro-femme@`,
- * `client@salondz.com`), puis chacun atterrit dans l'espace qui lui convient. Un visiteur ne peut
- * donc pas tomber dessus, et une démonstration se montre en tapant une seule chose.
+ * ANCIENNE PORTE DE CONNEXION, DEVENUE UN RELAIS (14 nov. 2026). Le portail client est refait sur le
+ * modèle du portail pro : une ouverture (`pages/auth/Welcome.tsx`, `/intro`), puis l'adresse e-mail
+ * d'abord (`pages/auth/Acces.tsx`, `/acces/*`). Cette adresse, `/connexion`, reste branchée partout
+ * (gardes, liens d'e-mails, anciens signets) : elle garde la destination visée, l'adresse déjà
+ * tapée et l'erreur d'un lien périmé, puis envoie au bon parcours — celui du pro pour `?role=pro`.
  *
- * UNE SEULE PORTE D'ENTRÉE : `/intro`. `/connexion` y renvoie en gardant la destination visée, et
- * toute déconnexion y ramène. Seule exception, la porte PROFESSIONNELLE (`?role=pro`), qui vient de
- * `/pro/bienvenue` et garde son bouton retour vers cette page.
- *
- * L'écran tient SANS DÉFILEMENT, y compris sur un petit téléphone (360×740) et clavier ouvert pour
- * le formulaire : c'est une contrainte, pas un constat. Plus de focus automatique sur le premier
- * champ : le clavier recouvrait la moitié de l'écran avant même qu'on ait lu le titre. Toute addition ici doit être mesurée — le portail est la première chose que voit
- * quelqu'un qui installe l'application, et il ne doit rien cacher sous la ligne de flottaison.
- * Le lien de connexion par e-mail a SA page (`/connexion/lien`) : il a besoin de son propre champ.
+ * `EMAIL_RE` reste exporté d'ici : les écrans d'accès s'en servent.
  */
-import { ICONE } from '@/lib/actionIcons';
-import { useRef, useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { MailOpen, Store, UserPlus } from 'lucide-react';
-import { demoAccountFor, demoAccountForCredentials } from '@salondz/constants';
-import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
-import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, Field, I, Input, LinkButton } from '@/components/ui';
-import { AuthError, AuthOu, AuthShell, PasswordField } from '@/components/AuthShell';
+import { Navigate, useSearchParams } from 'react-router';
+import { readAuthFlow } from '@/lib/authFlow';
+import { useAuth } from '@/lib/auth';
 import { HOME, PRO_ONLY } from '@/lib/flavor';
-import { api } from '@/lib/api';
-import { t } from '@/i18n';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Erreur remontée par un lien e-mail (fragment traduit par « Bon retour »). */
-const LINK_ERRORS: Record<string, string> = {
-  otp_expired: 'Ce lien a expiré ou a déjà servi. Connectez-vous, ou demandez un nouveau lien.',
-  access_denied: 'Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.',
-  lien: 'Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.',
-};
-
-export function Login({ landing }: { landing?: boolean } = {}) {
-  const { session, signInWithPassword, resendConfirmation, demoLogin, signOut } = useAuth();
+export function Login() {
+  const { session } = useAuth();
   const [params] = useSearchParams();
-  const navigate = useNavigate();
-  // Le portail est TOUJOURS celui du client : jamais de rôle hérité d'une visite précédente
-  // (l'état de authFlow ne survit pas au rechargement, mais autant ne dépendre de rien ici —
-  // c'est la première porte). En revanche, une DESTINATION passée explicitement est respectée :
-  // quelqu'un renvoyé ici depuis « Mes favoris » doit y retourner une fois connecté.
-  const role = PRO_ONLY ? 'pro' : landing ? 'client' : params.get('role') === 'pro' ? 'pro' : (readAuthFlow()?.role ?? 'client');
-  const next = landing ? (params.get('next') ?? HOME) : (params.get('next') ?? readAuthFlow()?.next ?? (role === 'pro' ? '/pro' : '/'));
-  const linkErr = params.get('erreur');
-  // `?email=` : on arrive de l'inscription (« cette adresse a déjà un compte ») — l'adresse est déjà là.
-  const [email, setEmail] = useState(() => params.get('email') ?? (landing ? '' : (readAuthFlow()?.identifier ?? '')));
-  const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState<'password' | 'resend' | 'demo' | null>(null);
-  /**
-   * Connexion en cours. UNE RÉFÉRENCE, pas un état : React regroupe les mises à jour, et l'état
-   * de session changeait parfois AVANT que `busy` ne soit commité — la redirection partait alors
-   * en pleine vérification, et le compte du mauvais portail entrait quand même, une fois sur deux.
-   * Une référence s'écrit tout de suite.
-   */
-  const connexionEnCours = useRef(false);
-  // Démonstration déjà jouée sur cet appareil : on propose de repartir d'un monde neuf.
-  const [error, setError] = useState<{ kind: AuthErrorKind | 'form'; text: string } | null>(
-    linkErr ? { kind: 'expired', text: LINK_ERRORS[linkErr] ?? LINK_ERRORS.lien! } : null,
-  );
-
-  /**
-   * Session déjà ouverte : on entre. MAIS pas pendant qu'une connexion est en cours — le contrôle
-   * du portail a besoin de la session pour lire le rôle, et cette redirection, pilotée par l'état
-   * de session, se déclenchait AVANT lui. Le compte du mauvais portail entrait quand même.
-   */
-  if (session && !connexionEnCours.current) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
-
-  /**
-   * UNE SEULE PORTE D'ENTRÉE. `/connexion` et `/intro` servaient le même écran sous deux allures,
-   * et l'on pouvait donc atterrir tantôt sur l'un, tantôt sur l'autre selon d'où l'on venait.
-   * `/connexion` renvoie désormais sur le portail, en gardant la destination visée. Seule
-   * exception, la porte PROFESSIONNELLE (`?role=pro`), qui vient de `/pro/bienvenue` et garde son
-   * retour vers cette page.
-   */
-  // PORTAIL PRO (13 nov. 2026) : l'e-mail d'abord, dans `pages/pro/Acces.tsx`. L'application pro
-  // s'ouvre sur sa page d'accueil ; l'ancienne porte pro du site mène au nouveau parcours.
-  if (PRO_ONLY && landing) return <Navigate to="/pro/bienvenue" replace />;
-  if (role === 'pro') {
-    const q = new URLSearchParams({ next });
-    if (params.get('email')) q.set('email', params.get('email')!);
-    return <Navigate to={`/pro/acces?${q.toString()}`} replace />;
-  }
-
-  if (!landing && params.get('role') !== 'pro') {
-    const q = params.toString();
-    return <Navigate to={`/intro${q ? `?${q}` : ''}`} replace />;
-  }
-
-  const id = () => email.trim().toLowerCase();
-  const fail = (err: unknown) => setError(describeAuthError(err));
-
-  /** Compte de démonstration : session ouverte directement, sans mot de passe. */
-  const demo = async (identifier: string) => {
-    const acct = demoAccountFor(identifier);
-    if (!acct) return;
-    setError(null);
-    setBusy('demo');
-    try {
-      const dest = acct.role === 'pro' ? '/pro' : '/';
-      writeAuthFlow({ role: acct.role, next: dest, identifier: acct.email, channel: 'email' });
-      await demoLogin(acct.email);
-      navigate(`/connexion/retour?next=${encodeURIComponent(dest)}`, { replace: true });
-    } catch (err) {
-      fail(err);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  /**
-   * UN COMPTE APPARTIENT À UN PORTAIL. Le mot de passe peut être juste et l'accès refusé : un
-   * compte professionnel ne s'ouvre pas sur le portail client, et réciproquement. Sans ce
-   * contrôle, se connecter au mauvais endroit « marchait », puis le garde renvoyait aussitôt vers
-   * l'autre espace — on croyait à un bug plutôt qu'à une règle.
-   *
-   * Le contrôle se fait APRÈS la connexion : c'est la seule façon de connaître le rôle. On referme
-   * donc la session ouverte à tort, pour ne laisser personne à moitié connecté.
-   */
-  const portailCorrect = async (): Promise<boolean> => {
-    try {
-      const { profile } = await api.me.get();
-      if (profile.role === role) return true;
-      await signOut({ voile: false });
-      setError({
-        kind: 'wrong_portal',
-        text: t('Ce compte est un compte professionnel. Créez un compte client avec une autre adresse.'),
-      });
-      return false;
-    } catch {
-      // Profil illisible (réseau) : on n'invente pas un refus. Les gardes trancheront à l'entrée.
-      return true;
-    }
-  };
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    // Démonstration : adresse ET mot de passe identiques (pro-homme@, pro-femme@, client@). Rien
-    // ne l'annonce à l'écran — on se connecte normalement, et l'espace qui convient s'ouvre.
-    if (demoAccountForCredentials(id(), password)) return demo(id());
-    if (!EMAIL_RE.test(id())) return setError({ kind: 'form', text: t("Adresse e-mail invalide.") });
-    if (!password) return setError({ kind: 'form', text: t("Saisissez votre mot de passe.") });
-    setError(null);
-    setBusy('password');
-    connexionEnCours.current = true;
-    try {
-      writeAuthFlow({ role, next, identifier: id(), channel: 'email' });
-      await signInWithPassword(id(), password);
-      if (!(await portailCorrect())) return;
-      navigate(`/connexion/retour?next=${encodeURIComponent(next)}`, { replace: true });
-    } catch (err) {
-      fail(err);
-    } finally {
-      connexionEnCours.current = false;
-      setBusy(null);
-    }
-  };
-
-  const resend = async () => {
-    setBusy('resend');
-    try {
-      writeAuthFlow({ role, next, identifier: id(), channel: 'email', sentAt: Date.now() });
-      await resendConfirmation(id(), next);
-      navigate('/connexion/envoye?mode=confirm');
-    } catch (err) {
-      fail(err);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const lienEmail = `/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`;
-  const inscription = `/inscription?role=${role}&next=${encodeURIComponent(next)}`;
-  const connexion = `/intro?next=${encodeURIComponent(next)}`;
-
-  return (
-    <AuthShell
-      role={role}
-      back={landing ? next.replace('/reserver/coordonnees', '/reserver/quand') : '/'}
-      onglets={{ actif: 'connexion', liens: { connexion, inscription } }}
-      titre="Connexion"
-      sous={next.includes('/reserver/') ? t('Connectez-vous pour valider votre créneau.') : t('Vos rendez-vous, en un instant.')}
-      pied={
-        // Créer un compte : c'est l'onglet « Inscription », en tête (toucher ou glisser).
-        landing && !PRO_ONLY ? (
-          <Link to="/pro/bienvenue" className="auth-lien discret">
-            <I icon={Store} size={17} /> {t('Portail des professionnels')}
-          </Link>
-        ) : undefined
-      }
-    >
-      <form onSubmit={submit} noValidate>
-        <Field label={t('E-mail')} htmlFor="login-email">
-          <Input
-            id="login-email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="next"
-            placeholder={t('vous@exemple.dz')}
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            err={error?.kind === 'email' || error?.kind === 'no_account'}
-          />
-        </Field>
-        <PasswordField
-          id="login-password"
-          label={t('Mot de passe')}
-          autoComplete="current-password"
-          placeholder={t('Votre mot de passe')}
-          value={password}
-          onChange={(v) => {
-            setPassword(v);
-            setError(null);
-          }}
-          err={error?.kind === 'credentials'}
-          action={
-            <Link
-              to={`/connexion/oubli${email ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
-              className="text-[0.857rem] font-semibold underline underline-offset-2"
-            >
-              {t('Mot de passe oublié ?')}
-            </Link>
-          }
-        />
-        {error && (
-          <AuthError texte={error.text}>
-            {/* La suite logique de l'erreur, à portée de pouce. */}
-            {error.kind === 'no_account' && (
-              <Link to={inscription} className="btn sm">
-                <I icon={UserPlus} size={16} /> {t('Créer un compte avec cette adresse')}
-              </Link>
-            )}
-            {error.kind === 'unconfirmed' && (
-              <Button icon={ICONE.renvoyer} sm variant="g" loading={busy === 'resend'} onClick={() => void resend()} disabled={busy !== null}>
-                {t('Renvoyer le lien de confirmation')}
-              </Button>
-            )}
-            {error.kind === 'wrong_portal' && (
-              <Link to={inscription} className="btn sm">
-                <I icon={UserPlus} size={16} /> {t('Créer un compte client')}
-              </Link>
-            )}
-            {error.kind === 'credentials' && (
-              <LinkButton to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} variant="g" sm icon={ICONE.motDePasse}>
-                {t('Réinitialiser mon mot de passe')}
-              </LinkButton>
-            )}
-          </AuthError>
-        )}
-        <Button icon={ICONE.seConnecter} type="submit" loading={busy === 'password' || busy === 'demo'} disabled={busy !== null}>
-          {t('Se connecter')}
-        </Button>
-      </form>
-      {/* Sans mot de passe : la seconde façon d'entrer, juste sous la première. */}
-      <AuthOu />
-      <Link to={lienEmail} className="btn g">
-        <I icon={MailOpen} size={18} /> {t('Recevoir un lien de connexion')}
-      </Link>
-    </AuthShell>
-  );
+  const pro = PRO_ONLY || params.get('role') === 'pro';
+  const next = params.get('next') ?? readAuthFlow()?.next ?? (pro ? '/pro' : HOME);
+  if (session) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
+  const q = new URLSearchParams({ next });
+  const email = params.get('email');
+  if (email) q.set('email', email);
+  const erreur = params.get('erreur');
+  if (erreur) q.set('erreur', erreur);
+  return <Navigate to={`${pro ? '/pro/acces' : '/acces'}?${q.toString()}`} replace />;
 }

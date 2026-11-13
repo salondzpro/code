@@ -11,7 +11,7 @@ import { BackButton } from './ui';
 import { mailAppFor, ouvrirMessagerie, proposable, type MailAppId } from '@/lib/mailApp';
 import { t } from '@/i18n';
 
-export function ProAuthScreen({
+export function AuthScreen({
   back,
   titre,
   sous,

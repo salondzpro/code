@@ -11,7 +11,7 @@
  */
 export const RESERVED_ROOT_SEGMENTS: readonly string[] = [
   // Pages du site (apps/web/src/app/router.tsx)
-  'admin', 'aide', 'bienvenue', 'carte', 'categorie', 'cgu', 'compte', 'confidentialite', 'connexion',
+  'acces', 'admin', 'aide', 'bienvenue', 'carte', 'categorie', 'cgu', 'compte', 'confidentialite', 'connexion',
   'favoris', 'home', 'inscription', 'intro', 'localisation', 'marche', 'mentions-legales', 'notifications',
   'pro', 'profil', 'reglages', 'rendez-vous', 's', 'supprimer',
   // Réécritures et fichiers servis par le site ou l'API

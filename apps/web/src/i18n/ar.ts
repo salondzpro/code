@@ -1966,4 +1966,11 @@ export const ar: Record<string, string> = {
   "Vos stories Snapchat": "قصص سناب شات",
   "{n} nouvelle cliente": "{n} زبونة جديدة",
   "{n} nouvelles clientes": "{n} زبائن جدد",
+  "Les meilleurs salons près de chez vous, réservés en quelques secondes.": "أفضل الصالونات قريبة منك، احجز في ثوانٍ.",
+  "Découvrir les salons": "استكشف الصالونات",
+  "Démonstration · Cliente": "عرض تجريبي · زبونة",
+  "Pour vous connecter, ou créer votre compte si c’est votre première fois.": "لتسجيل الدخول، أو لإنشاء حسابك إن كانت أول مرة.",
+  "Cette adresse sert déjà à un compte professionnel. Pour réserver, utilisez une autre adresse.": "هذا العنوان مستعمل لحساب مهني. للحجز، استعمل عنوانًا آخر.",
+  "En créant votre compte, vous acceptez les": "بإنشاء حسابك، فإنك توافق على",
+  "Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.": "هذا الرابط لم يعد صالحًا. سجّل الدخول أو اطلب رابطًا جديدًا.",
 };

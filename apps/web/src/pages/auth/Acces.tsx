@@ -1,6 +1,7 @@
 /**
- * ACCÈS PROFESSIONNEL EN UN SEUL CHEMIN (13 nov. 2026, maquette validée par le propriétaire :
- * canevas « Salon DZ Pro — ouverture et connexion »).
+ * ACCÈS EN UN SEUL CHEMIN, PRO (13 nov. 2026, maquette validée) ET CLIENT (14 nov. 2026, même parcours) :
+ * `/pro/acces/*` pour les professionnels, `/acces/*` pour les clientes. Canevas « Salon DZ Pro —
+ * ouverture et connexion ».
  *
  *   /pro/acces               « Quelle est votre adresse e-mail ? » — l'adresse D'ABORD, comme les
  *                            grands services. `POST /auth/email-check` dit la suite :
@@ -20,7 +21,7 @@
  */
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Check, MailCheck } from 'lucide-react';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
@@ -28,37 +29,56 @@ import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { api } from '@/lib/api';
 import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { AuthError, PasswordField } from '@/components/AuthShell';
-import { MailAppButton, ProAuthScreen } from '@/components/ProAuthKit';
-import { EMAIL_RE } from '@/pages/auth/Login';
-import { PASSWORD_MIN } from '@/pages/auth/SignUp';
+import { MailAppButton, AuthScreen } from '@/components/AuthKit';
+import { EMAIL_RE } from './Login';
+import { PASSWORD_MIN } from './SignUp';
 import { t } from '@/i18n';
 
 type Err = { kind: AuthErrorKind | 'form' | 'client' | 'pending'; text: string } | null;
 
+/**
+ * LE MÊME PARCOURS POUR LES DEUX PORTAILS (14 nov. 2026) : l'espace pro (`/pro/acces/*`) et l'espace
+ * client (`/acces/*`) partagent ces écrans ; seuls changent le rôle, la base des adresses, la porte
+ * d'ouverture et quelques phrases. Le rôle se lit dans l'adresse de la page.
+ */
+function usePortail() {
+  const pro = useLocation().pathname.startsWith('/pro/');
+  return {
+    role: (pro ? 'pro' : 'client') as 'pro' | 'client',
+    base: pro ? '/pro/acces' : '/acces',
+    ouverture: pro ? '/pro/bienvenue' : '/intro',
+    defaut: pro ? '/pro' : '/',
+  };
+}
+
 /** Où aller une fois entré, et l'adresse en cours : lus dans l'adresse, puis dans le parcours. */
 function useParcours() {
   const [params] = useSearchParams();
+  const { role, base, ouverture, defaut } = usePortail();
   const flow = readAuthFlow();
-  const next = params.get('next') ?? (flow?.role === 'pro' ? flow.next : null) ?? '/pro';
-  const email = (params.get('email') ?? (flow?.role === 'pro' ? flow.identifier : '') ?? '').trim().toLowerCase();
+  const next = params.get('next') ?? (flow?.role === role ? flow.next : null) ?? defaut;
+  const email = (params.get('email') ?? (flow?.role === role ? flow.identifier : '') ?? '').trim().toLowerCase();
   const q = (extra: Record<string, string> = {}) => {
     const p = new URLSearchParams({ next, ...extra });
     return `?${p.toString()}`;
   };
-  return { next, email, q };
+  return { next, email, q, role, base, ouverture };
 }
 
 const retour = (next: string) => `/connexion/retour?next=${encodeURIComponent(next)}`;
 
 /* -------------------------------------------------------------------- 1. Adresse e-mail */
 
-export function ProAccesEmail() {
+export function AccesEmail() {
   const { session, resendConfirmation } = useAuth();
   const navigate = useNavigate();
-  const { next, email: initial, q } = useParcours();
+  const { next, email: initial, q, role, base, ouverture } = useParcours();
+  const [params] = useSearchParams();
   const [email, setEmail] = useState(initial);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<Err>(null);
+  const [error, setError] = useState<Err>(() =>
+    params.get('erreur') ? { kind: 'expired', text: t('Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.') } : null,
+  );
 
   if (session) return <Navigate to={retour(next)} replace />;
 
@@ -69,16 +89,22 @@ export function ProAccesEmail() {
     const adresse = id();
     if (!EMAIL_RE.test(adresse)) return setError({ kind: 'email', text: t('Adresse e-mail invalide.') });
     setError(null);
-    writeAuthFlow({ role: 'pro', next, identifier: adresse, channel: 'email' });
+    writeAuthFlow({ role, next, identifier: adresse, channel: 'email' });
     // Démonstration : elle s'ouvre par le mot de passe, sans interroger le serveur.
-    if (isDemoEmail(adresse)) return navigate(`/pro/acces/mot-de-passe${q({ email: adresse })}`);
+    if (isDemoEmail(adresse)) return navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
     setBusy(true);
     try {
-      const { status } = await api.auth.emailCheck({ email: adresse, role: 'pro' });
-      if (status === 'pro') navigate(`/pro/acces/mot-de-passe${q({ email: adresse })}`);
-      else if (status === 'available') navigate(`/pro/acces/creer${q({ email: adresse })}`);
-      else if (status === 'client')
-        setError({ kind: 'client', text: t('Cette adresse sert déjà à un compte client. Pour votre salon, utilisez une autre adresse.') });
+      const { status } = await api.auth.emailCheck({ email: adresse, role });
+      if (status === role) navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
+      else if (status === 'available') navigate(`${base}/creer${q({ email: adresse })}`);
+      else if (status === 'client' || status === 'pro')
+        setError({
+          kind: 'client',
+          text:
+            role === 'pro'
+              ? t('Cette adresse sert déjà à un compte client. Pour votre salon, utilisez une autre adresse.')
+              : t('Cette adresse sert déjà à un compte professionnel. Pour réserver, utilisez une autre adresse.'),
+        });
       else setError({ kind: 'pending', text: t('Une inscription est déjà en cours avec cette adresse : ouvrez le lien de confirmation reçu par e-mail.') });
     } catch (err) {
       setError(describeAuthError(err));
@@ -90,9 +116,9 @@ export function ProAccesEmail() {
   const renvoyer = async () => {
     setBusy(true);
     try {
-      writeAuthFlow({ role: 'pro', next, identifier: id(), channel: 'email', sentAt: Date.now() });
+      writeAuthFlow({ role, next, identifier: id(), channel: 'email', sentAt: Date.now() });
       await resendConfirmation(id(), next);
-      navigate('/pro/acces/envoye?mode=confirm');
+      navigate(`${base}/envoye?mode=confirm`);
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
@@ -101,10 +127,10 @@ export function ProAccesEmail() {
   };
 
   return (
-    <ProAuthScreen
-      back="/pro/bienvenue"
+    <AuthScreen
+      back={ouverture}
       titre={t('Quelle est votre adresse e-mail ?')}
-      sous={t('Pour vous connecter, ou créer votre espace si c’est votre première fois.')}
+      sous={role === 'pro' ? t('Pour vous connecter, ou créer votre espace si c’est votre première fois.') : t('Pour vous connecter, ou créer votre compte si c’est votre première fois.')}
       actions={
         <Button icon={ICONE.continuer} type="submit" form="pa-email" loading={busy} disabled={busy}>
           {t('Continuer')}
@@ -146,16 +172,16 @@ export function ProAccesEmail() {
           </AuthError>
         )}
       </form>
-    </ProAuthScreen>
+    </AuthScreen>
   );
 }
 
 /* -------------------------------------------------------------------- 2a. Compte existant */
 
-export function ProAccesMotDePasse() {
+export function AccesMotDePasse() {
   const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { next, email, q } = useParcours();
+  const { next, email, q, role, base } = useParcours();
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState<'password' | 'link' | 'resend' | null>(null);
   const [error, setError] = useState<Err>(null);
@@ -164,7 +190,7 @@ export function ProAccesMotDePasse() {
   const enCours = useRef(false);
 
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
-  if (!email) return <Navigate to={`/pro/acces${q()}`} replace />;
+  if (!email) return <Navigate to={`${base}${q()}`} replace />;
 
   const connecter = async (e: FormEvent) => {
     e.preventDefault();
@@ -187,14 +213,20 @@ export function ProAccesMotDePasse() {
     setBusy('password');
     enCours.current = true;
     try {
-      writeAuthFlow({ role: 'pro', next, identifier: email, channel: 'email' });
+      writeAuthFlow({ role, next, identifier: email, channel: 'email' });
       await signInWithPassword(email, password);
       // Une adresse = un rôle : un compte client ne s'ouvre pas sur le portail pro.
       try {
         const { profile } = await api.me.get();
-        if (profile.role !== 'pro') {
+        if (profile.role !== role) {
           await signOut({ voile: false });
-          setError({ kind: 'wrong_portal', text: t('Ce compte n’est pas un compte professionnel. Créez un espace pro avec une autre adresse.') });
+          setError({
+            kind: 'wrong_portal',
+            text:
+              role === 'pro'
+                ? t('Ce compte n’est pas un compte professionnel. Créez un espace pro avec une autre adresse.')
+                : t('Ce compte est un compte professionnel. Créez un compte client avec une autre adresse.'),
+          });
           return;
         }
       } catch {
@@ -213,9 +245,9 @@ export function ProAccesMotDePasse() {
     setBusy('link');
     setError(null);
     try {
-      writeAuthFlow({ role: 'pro', next, identifier: email, channel: 'email', sentAt: Date.now() });
+      writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
       await sendMagicLink(email, next);
-      navigate('/pro/acces/envoye?mode=link');
+      navigate(`${base}/envoye?mode=link`);
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
@@ -226,9 +258,9 @@ export function ProAccesMotDePasse() {
   const renvoyer = async () => {
     setBusy('resend');
     try {
-      writeAuthFlow({ role: 'pro', next, identifier: email, channel: 'email', sentAt: Date.now() });
+      writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
       await resendConfirmation(email, next);
-      navigate('/pro/acces/envoye?mode=confirm');
+      navigate(`${base}/envoye?mode=confirm`);
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
@@ -239,8 +271,8 @@ export function ProAccesMotDePasse() {
   const demo = demoAccountFor(email);
 
   return (
-    <ProAuthScreen
-      back={`/pro/acces${q({ email })}`}
+    <AuthScreen
+      back={`${base}${q({ email })}`}
       titre={t('Bon retour')}
       sous={t('Entrez votre mot de passe pour ouvrir votre espace.')}
       actions={
@@ -256,7 +288,7 @@ export function ProAccesMotDePasse() {
         </>
       }
     >
-      <CompteCarte email={email} modifier={`/pro/acces${q({ email })}`} />
+      <CompteCarte email={email} modifier={`${base}${q({ email })}`} />
       <form id="pa-mdp" onSubmit={connecter} noValidate className="pa-form">
         <PasswordField
           id="pa-mdp-i"
@@ -269,7 +301,7 @@ export function ProAccesMotDePasse() {
           }}
           err={error?.kind === 'credentials'}
         />
-        <Link to={`/pro/acces/oubli${q({ email })}`} className="pa-lien">
+        <Link to={`${base}/oubli${q({ email })}`} className="pa-lien">
           {t('Mot de passe oublié ?')}
         </Link>
         {error && (
@@ -280,14 +312,14 @@ export function ProAccesMotDePasse() {
               </Button>
             )}
             {error.kind === 'credentials' && (
-              <LinkButton to={`/pro/acces/oubli${q({ email })}`} variant="g" sm icon={ICONE.motDePasse}>
+              <LinkButton to={`${base}/oubli${q({ email })}`} variant="g" sm icon={ICONE.motDePasse}>
                 {t('Réinitialiser mon mot de passe')}
               </LinkButton>
             )}
           </AuthError>
         )}
       </form>
-    </ProAuthScreen>
+    </AuthScreen>
   );
 }
 
@@ -310,16 +342,16 @@ function CompteCarte({ email, modifier }: { email: string; modifier: string }) {
 
 /* -------------------------------------------------------------------- 2b. Nouveau compte */
 
-export function ProAccesCreer() {
+export function AccesCreer() {
   const { session, signUpWithPassword } = useAuth();
   const navigate = useNavigate();
-  const { next, email, q } = useParcours();
+  const { next, email, q, role, base } = useParcours();
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Err>(null);
 
   if (session) return <Navigate to={retour(next)} replace />;
-  if (!email) return <Navigate to={`/pro/acces${q()}`} replace />;
+  if (!email) return <Navigate to={`${base}${q()}`} replace />;
 
   const assez = password.length >= PASSWORD_MIN;
 
@@ -329,10 +361,10 @@ export function ProAccesCreer() {
     setError(null);
     setBusy(true);
     try {
-      writeAuthFlow({ role: 'pro', next, identifier: email, channel: 'email', sentAt: Date.now() });
-      const ouverte = await signUpWithPassword(email, password, 'pro', next);
+      writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
+      const ouverte = await signUpWithPassword(email, password, role, next);
       if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
-      else navigate('/pro/acces/envoye?mode=confirm', { replace: true });
+      else navigate(`${base}/envoye?mode=confirm`, { replace: true });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
@@ -341,17 +373,17 @@ export function ProAccesCreer() {
   };
 
   return (
-    <ProAuthScreen
-      back={`/pro/acces${q({ email })}`}
+    <AuthScreen
+      back={`${base}${q({ email })}`}
       titre={t('Créez votre mot de passe')}
       sous={t('C’est votre première fois. Choisissez un mot de passe, puis nous vous envoyons un lien de confirmation.')}
       actions={
         <>
-          <Button icon={ICONE.creerEspace} type="submit" form="pa-creer" loading={busy} disabled={busy}>
-            {t('Créer mon espace')}
+          <Button icon={role === 'pro' ? ICONE.creerEspace : ICONE.creerCompte} type="submit" form="pa-creer" loading={busy} disabled={busy}>
+            {role === 'pro' ? t('Créer mon espace') : t('Créer mon compte')}
           </Button>
           <p className="pa-note">
-            {t('En créant votre espace, vous acceptez les')}{' '}
+            {role === 'pro' ? t('En créant votre espace, vous acceptez les') : t('En créant votre compte, vous acceptez les')}{' '}
             <Link to="/cgu">{t('conditions d’utilisation')}</Link>.
           </p>
         </>
@@ -359,7 +391,7 @@ export function ProAccesCreer() {
     >
       <div className="pa-puce">
         <span dir="ltr">{email}</span>
-        <Link to={`/pro/acces${q({ email })}`}>{t('Modifier')}</Link>
+        <Link to={`${base}${q({ email })}`}>{t('Modifier')}</Link>
       </div>
       <form id="pa-creer" onSubmit={creer} noValidate className="pa-form">
         <PasswordField
@@ -382,14 +414,14 @@ export function ProAccesCreer() {
         {error && (
           <AuthError texte={error.text}>
             {error.kind === 'exists' && (
-              <LinkButton to={`/pro/acces/mot-de-passe${q({ email })}`} sm icon={ICONE.seConnecter}>
+              <LinkButton to={`${base}/mot-de-passe${q({ email })}`} sm icon={ICONE.seConnecter}>
                 {t('Se connecter')}
               </LinkButton>
             )}
           </AuthError>
         )}
       </form>
-    </ProAuthScreen>
+    </AuthScreen>
   );
 }
 
@@ -404,14 +436,15 @@ const TEXTES: Record<Mode, { titre: string; sous: string }> = {
   reset: { titre: 'Vérifiez votre boîte mail', sous: 'Touchez le lien reçu pour choisir un nouveau mot de passe.' },
 };
 
-export function ProAccesEnvoye() {
+export function AccesEnvoye() {
   const { session, resendConfirmation, sendMagicLink, sendPasswordReset } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const flow = readAuthFlow();
+  const { base, defaut } = usePortail();
   const mode = (['confirm', 'link', 'reset'].includes(params.get('mode') ?? '') ? params.get('mode') : 'confirm') as Mode;
   const email = flow?.identifier ?? '';
-  const next = flow?.next ?? '/pro';
+  const next = flow?.next ?? defaut;
   const [dans, setDans] = useState(() => Math.max(0, RENVOI_S - Math.floor((Date.now() - (flow?.sentAt ?? 0)) / 1000)));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -424,7 +457,7 @@ export function ProAccesEnvoye() {
 
   // Le lien a été ouvert dans cet onglet : la session existe, on continue.
   if (session && mode !== 'reset') return <Navigate to={retour(next)} replace />;
-  if (!email) return <Navigate to="/pro/acces" replace />;
+  if (!email) return <Navigate to={base} replace />;
 
   const renvoyer = async () => {
     setBusy(true);
@@ -446,8 +479,8 @@ export function ProAccesEnvoye() {
   const txt = TEXTES[mode];
 
   return (
-    <ProAuthScreen
-      back="/pro/acces"
+    <AuthScreen
+      back={base}
       haut={
         <span className="pa-rond" aria-hidden>
           <I icon={MailCheck} size={34} strokeWidth={1.5} />
@@ -466,7 +499,7 @@ export function ProAccesEnvoye() {
           <Button icon={ICONE.renvoyer} variant="g" loading={busy} disabled={busy || dans > 0} onClick={() => void renvoyer()}>
             {dans > 0 ? t('Renvoyer le lien dans {temps}', { temps: minutes }) : t('Renvoyer le lien')}
           </Button>
-          <button type="button" className="pa-lien centre" onClick={() => navigate('/pro/acces')}>
+          <button type="button" className="pa-lien centre" onClick={() => navigate(base)}>
             {t('Changer d’adresse')}
           </button>
         </>
@@ -474,16 +507,16 @@ export function ProAccesEnvoye() {
     >
       <p className="pa-note centre">{t('Rien reçu ? Regardez dans les courriers indésirables.')}</p>
       {error && <AuthError texte={error} />}
-    </ProAuthScreen>
+    </AuthScreen>
   );
 }
 
 /* -------------------------------------------------------------------- Mot de passe oublié */
 
-export function ProAccesOubli() {
+export function AccesOubli() {
   const { sendPasswordReset } = useAuth();
   const navigate = useNavigate();
-  const { next, email: initial, q } = useParcours();
+  const { next, email: initial, q, role, base } = useParcours();
   const [email, setEmail] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -495,9 +528,9 @@ export function ProAccesOubli() {
     setBusy(true);
     setError(null);
     try {
-      writeAuthFlow({ role: 'pro', next, identifier: id, channel: 'email', sentAt: Date.now() });
+      writeAuthFlow({ role, next, identifier: id, channel: 'email', sentAt: Date.now() });
       await sendPasswordReset(id);
-      navigate('/pro/acces/envoye?mode=reset', { replace: true });
+      navigate(`${base}/envoye?mode=reset`, { replace: true });
     } catch (err) {
       setError(describeAuthError(err).text);
     } finally {
@@ -506,8 +539,8 @@ export function ProAccesOubli() {
   };
 
   return (
-    <ProAuthScreen
-      back={initial ? `/pro/acces/mot-de-passe${q({ email: initial })}` : '/pro/acces'}
+    <AuthScreen
+      back={initial ? `${base}/mot-de-passe${q({ email: initial })}` : base}
       titre={t('Mot de passe oublié')}
       sous={t('Nous vous envoyons un lien pour en choisir un nouveau.')}
       actions={
@@ -537,6 +570,6 @@ export function ProAccesOubli() {
         </Field>
         {error && <AuthError texte={error} />}
       </form>
-    </ProAuthScreen>
+    </AuthScreen>
   );
 }
