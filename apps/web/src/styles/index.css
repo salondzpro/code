@@ -7564,12 +7564,31 @@ html[data-kb] .sheet:not(.modal) {
 html[data-kb] #root {
   padding-bottom: var(--kb, 0px);
 }
+/* RÈGLE (13 nov. 2026) : clavier ouvert, une fenêtre du bas se place EN HAUT de la zone visible,
+   jamais collée au clavier. Sur iPhone, la barre flottante « ↑ ↓ ✓ » d'iOS passe par-dessus ce qui
+   touche le clavier et cachait le champ de recherche. `--vv-top` / `--vv-h` viennent de
+   `lib/keyboard.ts` (zone réellement visible, barre d'iOS déduite). */
 @media (max-width: 767.98px) {
   html[data-kb] .sheet.modal,
   html[data-kb] .h11-sheet-w {
-    bottom: var(--kb, 0px);
-    max-height: calc(100dvh - var(--kb, 0px) - 12px);
+    top: calc(var(--vv-top, 0px) + 8px);
+    bottom: auto;
+    max-height: calc(var(--vv-h, 100dvh) - 16px);
     overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  html[data-kb] .sheet.modal,
+  html[data-kb] .h11-sheet-w > * {
+    border-radius: var(--radius-sheet, 1.5rem);
+  }
+  html[data-kb] .sheet.modal .grab {
+    display: none;
+  }
+  /* Panneau plein écran (filtres, recherche) : il se réduit à la zone visible, pied compris. */
+  html[data-kb] .pnl {
+    top: var(--vv-top, 0px);
+    bottom: auto;
+    height: var(--vv-h, 100dvh);
   }
 }
 
