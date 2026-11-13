@@ -2,6 +2,7 @@
  * C-F 04 — Page du salon : couverture (retour, favori), nom, catégories — quartier, note, ouverture,
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
@@ -382,7 +383,7 @@ export function Salon() {
                         </span>
                       </div>
                     </div>
-                    <Button
+                    <Button icon={ICONE.ajouter}
                       sm
                       auto
                       className="mt-0.5 flex-none !rounded-full !px-5"
@@ -454,7 +455,7 @@ export function Salon() {
               </div>
             ))}
             {reviewItems.length > 0 && (
-              <LinkButton to={`/s/${s.slug}/avis`} variant="g">
+              <LinkButton icon={ICONE.avis} to={`/s/${s.slug}/avis`} variant="g">
                 {t("Tous les avis")}
               </LinkButton>
             )}
@@ -553,7 +554,7 @@ export function Salon() {
             {/* 5. Réalisations : elles sont désormais DANS l'album en haut de page, donc
                 pas de seconde grille ici — seulement l'accès à la planche complète. */}
             {works.length > 0 && (
-              <LinkButton to={`/s/${s.slug}/realisations`} variant="g">
+              <LinkButton icon={ICONE.photos} to={`/s/${s.slug}/realisations`} variant="g">
                 {t("Voir les")}{' '}{works.length} {t("réalisation")}{works.length > 1 ? 's' : ''}
               </LinkButton>
             )}

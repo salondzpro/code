@@ -3,6 +3,7 @@
  * suppression du compte. Aide, CGU et confidentialité sont dans le pied de page ; la liste des
  * notifications est sur la cloche de l'accueil ; « Se déconnecter » est dans le menu « Plus ».
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { DevicePushRow } from '@/components/DevicePushRow';
@@ -129,10 +130,10 @@ export function ProAccount() {
                 {deleting}
               </p>
             )}
-            <Button variant="d" onClick={() => void deleteAccount()} disabled={deleting === '…'}>
+            <Button icon={ICONE.supprimer} variant="d" onClick={() => void deleteAccount()} disabled={deleting === '…'}>
               {deleting === '…' ? t('Suppression…') : t('Supprimer définitivement')}
             </Button>
-            <Button variant="g" onClick={() => setConfirmDelete(false)} disabled={deleting === '…'}>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setConfirmDelete(false)} disabled={deleting === '…'}>
               {t("Garder mon compte")}
             </Button>
           </BottomSheet>

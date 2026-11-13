@@ -19,6 +19,8 @@ import { writeAuthFlow } from '@/lib/authFlow';
 import { HeroSlides } from '@/components/HeroSlides';
 import { LangSwitch } from '@/components/LangSwitch';
 import { Wordmark } from '@/components/Wordmark';
+import { I } from '@/components/ui';
+import { ICONE } from '@/lib/actionIcons';
 import { t } from '@/i18n';
 
 const PHOTOS = ['cover-femmes', 'cover-hommes'];
@@ -73,6 +75,7 @@ export function ProWelcome() {
 
       <footer className="pwo-bas">
         <button type="button" className="pa-btn" onClick={commencer}>
+          <I icon={ICONE.continuer} size={18} className="rtl:-scale-x-100" />
           {session ? t('Ouvrir mon espace') : t('Commencer')}
         </button>
         {!session &&
@@ -80,6 +83,7 @@ export function ProWelcome() {
             <div className="pwo-demos">
               {demos.map((a) => (
                 <button key={a.key} type="button" className="pa-btn g" disabled={busy !== null} onClick={() => void ouvrirDemo(a.email)}>
+                  <I icon={ICONE.apercu} size={18} />
                   {busy === a.email ? t('Ouverture…') : a.key === 'hommes' ? t('Démonstration · Barbier') : t('Démonstration · Salon de beauté')}
                 </button>
               ))}

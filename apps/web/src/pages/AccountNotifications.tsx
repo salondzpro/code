@@ -5,6 +5,7 @@
  * La cloche l'ouvre dans une fenêtre qui monte du bas (`NotificationsSheet`) : on ne quitte pas l'écran.
  * L'adresse `/notifications` reste servie pour les liens déjà envoyés.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
@@ -223,10 +224,10 @@ function ViderSheet({ onClose }: { onClose: () => void }) {
           <div className="h1 !text-[1.429rem]">{t('Vider les notifications')}</div>
           <p className="p">{t('Elles disparaissent de la liste. Vos rendez-vous ne changent pas.')}</p>
         </div>
-        <Button variant="g" loading={lues.isPending} disabled={lues.isPending || tout.isPending} onClick={() => go(lues, 'read')}>
+        <Button icon={ICONE.supprimer} variant="g" loading={lues.isPending} disabled={lues.isPending || tout.isPending} onClick={() => go(lues, 'read')}>
           {t('Effacer celles déjà lues')}
         </Button>
-        <Button variant="d" loading={tout.isPending} disabled={lues.isPending || tout.isPending} onClick={() => go(tout, 'all')}>
+        <Button icon={ICONE.supprimer} variant="d" loading={tout.isPending} disabled={lues.isPending || tout.isPending} onClick={() => go(tout, 'all')}>
           {t('Tout effacer')}
         </Button>
         {erreur && <ErrorMessage error={erreur} />}

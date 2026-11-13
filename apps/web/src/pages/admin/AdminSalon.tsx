@@ -11,6 +11,7 @@
  * Ce qui relève vraiment de la plateforme est ici : geler les réservations, masquer le salon,
  * masquer un avis, annuler un rendez-vous en son nom. Chacun avec un motif.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { EyeOff, ExternalLink, LogIn, Pause, Play, X } from 'lucide-react';
@@ -260,7 +261,7 @@ export function AdminSalon() {
             </span>
             <span className="flex flex-none items-center gap-2">
               <span className="text-[0.857rem] text-muted">{formatDateShortDZ(r.createdAt)}</span>
-              <Button
+              <Button icon={r.hiddenAt ? ICONE.retablir : ICONE.masquer}
                 variant="g"
                 sm
                 auto

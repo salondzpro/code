@@ -1,4 +1,5 @@
 /** C-F 20 — Noter la prestation : étoiles, « Ce qui vous a plu », commentaire, publication sous prénom + initiale. */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Star } from 'lucide-react';
@@ -97,7 +98,7 @@ export function Rate() {
       </div>
       <ErrorMessage error={review.error} />
       <BottomSheet>
-        <Button disabled={!rating || review.isPending} onClick={() => void send()}>
+        <Button icon={ICONE.envoyer} disabled={!rating || review.isPending} onClick={() => void send()}>
           {review.isPending ? 'Envoi…' : 'Envoyer mon avis'}
         </Button>
       </BottomSheet>

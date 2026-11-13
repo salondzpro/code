@@ -1,3 +1,4 @@
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect } from 'react';
 import { SearchX, Store } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -43,7 +44,7 @@ export function NotFoundState({
         icon={icon}
         title={title}
         description={description}
-        action={<LinkButton to={to}>{label}</LinkButton>}
+        action={<LinkButton icon={ICONE.accueil} to={to}>{label}</LinkButton>}
       />
     </Screen>
   );

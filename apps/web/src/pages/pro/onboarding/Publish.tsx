@@ -1,4 +1,5 @@
 /** PRO-F 16 — « Tout est prêt » : liste de contrôle, lien public, prévisualiser, publier. */
+import { ICONE } from '@/lib/actionIcons';
 import { useNavigate } from 'react-router';
 import { Check, Rocket } from 'lucide-react';
 import { ApiError, useProSalon, useProSalonMutations } from '@salondz/api-client';
@@ -73,7 +74,7 @@ export function Publish() {
           {host}{t("/s/")}{salon.slug}
         </div>
       </div>
-      <Button variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
+      <Button icon={ICONE.apercu} variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
         {t("Prévisualiser la page")}
       </Button>
       {error && (
@@ -85,7 +86,7 @@ export function Publish() {
         label={salon.isPublished ? t('Accéder à mon espace pro') : t('Publier ma page')}
         onClick={() => (salon.isPublished ? navigate('/pro', { replace: true }) : void publish())}
         busy={updateSalon.isPending}
-        secondary={salon.isPublished ? <Button variant="g" onClick={() => navigate('/pro/lien')}>{t('Voir et partager mon lien')}</Button> : undefined}
+        secondary={salon.isPublished ? <Button icon={ICONE.partager} variant="g" onClick={() => navigate('/pro/lien')}>{t('Voir et partager mon lien')}</Button> : undefined}
       />
     </Screen>
   );

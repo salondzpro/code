@@ -2,6 +2,7 @@
  * « Vérifiez votre e-mail » : après l'inscription (lien de confirmation), une demande de lien
  * de connexion, ou une réinitialisation de mot de passe. Renvoi possible après un délai.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
@@ -102,7 +103,7 @@ export function EmailSent() {
       {error && <AuthError texte={error} />}
 
       <div className="flex flex-col gap-1">
-        <Button variant="g" loading={busy} onClick={() => void resend()} disabled={busy || resendIn > 0}>
+        <Button icon={ICONE.renvoyer} variant="g" loading={busy} onClick={() => void resend()} disabled={busy || resendIn > 0}>
           {resendIn > 0 ? `${t(txt.resend)} (${resendIn} s)` : sent ? t('Renvoyé') : t(txt.resend)}
         </Button>
         {/* La seule porte de sortie quand l'adresse a été mal tapée : deux mots, mais indispensables. */}

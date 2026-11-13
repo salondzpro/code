@@ -7,6 +7,7 @@
  * seul : un opérateur décide (`/admin/signalements`). Sans compte, on est renvoyé à la connexion et ramené ici :
  * un signalement anonyme ne pourrait ni être limité ni être suivi.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { CheckCircle2, Flag } from 'lucide-react';
@@ -57,7 +58,7 @@ export function ReportReviewButton({ reviewId }: { reviewId: string }) {
                 </span>
                 <div className="h1 !text-[1.429rem]">{t('Merci, nous examinons cet avis.')}</div>
                 <p className="p">{t("Vous ne serez pas cité. Si l’avis ne respecte pas nos règles, il sera masqué.")}</p>
-                <Button onClick={close}>{t('Fermer')}</Button>
+                <Button icon={ICONE.fermerFenetre} onClick={close}>{t('Fermer')}</Button>
               </>
             ) : (
               <>
@@ -78,7 +79,7 @@ export function ReportReviewButton({ reviewId }: { reviewId: string }) {
                     {errorText(report.error)}
                   </p>
                 )}
-                <Button variant="g" onClick={close} disabled={report.isPending}>
+                <Button icon={ICONE.fermerFenetre} variant="g" onClick={close} disabled={report.isPending}>
                   {t('Annuler')}
                 </Button>
               </>

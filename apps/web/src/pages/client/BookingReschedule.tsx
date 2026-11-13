@@ -1,4 +1,5 @@
 /** C-F 16 — Reporter le rendez-vous : créneau actuel, semaine, créneaux du jour, « Demander le report ». */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Clock } from 'lucide-react';
@@ -84,7 +85,7 @@ export function BookingReschedule() {
       <InfoBox>{t("Le professionnel reçoit la demande et confirme le nouveau créneau.")}</InfoBox>
       <ErrorMessage error={reschedule.error} />
       <BottomSheet>
-        <Button
+        <Button icon={ICONE.validerReport}
           disabled={!slot || reschedule.isPending}
           onClick={async () => {
             await reschedule.mutateAsync({ id: b.id, startsAt: slot!, staffId: b.staffId });

@@ -1,4 +1,5 @@
 /** C-F 23 — Réglages client : notifications, préférences (langue, catalogue, ville), compte (session, confidentialité, données, déconnexion). */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { PickerField } from '@/components/Picker';
@@ -192,10 +193,10 @@ export function Settings() {
                 {deleting}
               </p>
             )}
-            <Button variant="d" onClick={() => void deleteAccount()} disabled={deleting === '…'}>
+            <Button icon={ICONE.supprimer} variant="d" onClick={() => void deleteAccount()} disabled={deleting === '…'}>
               {deleting === '…' ? t('Suppression…') : t('Supprimer définitivement')}
             </Button>
-            <Button variant="g" onClick={() => setConfirmDelete(false)} disabled={deleting === '…'}>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setConfirmDelete(false)} disabled={deleting === '…'}>
               {t("Garder mon compte")}
             </Button>
           </BottomSheet>

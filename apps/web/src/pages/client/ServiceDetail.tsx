@@ -1,4 +1,5 @@
 /** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver ». */
+import { ICONE } from '@/lib/actionIcons';
 import { useBack } from '@/lib/useBack';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, Heart } from 'lucide-react';
@@ -85,7 +86,7 @@ export function ServiceDetail() {
       <BottomSheet grab={false}>
         {/* Même geste que sur la page du salon : la prestation entre dans le brouillon, puis l'horaire.
             L'ancienne adresse (`?services=`) n'était lue par personne : il fallait la recocher. */}
-        <Button
+        <Button icon={ICONE.reserver}
           onClick={() => {
             writeDraft(s.slug, { serviceIds: [sv.id] });
             navigate(`/s/${s.slug}/reserver/quand`);

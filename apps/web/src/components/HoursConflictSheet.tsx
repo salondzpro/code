@@ -3,6 +3,7 @@
  * nouvelles plages. Ils sont conservés — le professionnel les déplace ou les annule depuis l'agenda,
  * ou élargit les horaires. Même liste que l'écran Fermetures, sans action destructrice.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useNavigate } from 'react-router';
 import type { OutsideBooking } from '@salondz/types';
 import { formatDateShortDZ, formatTimeDZ } from '@salondz/constants';
@@ -30,8 +31,8 @@ export function HoursConflictSheet({ items, onClose }: { items: OutsideBooking[]
             </div>
           ))}
         </div>
-        <Button onClick={() => navigate('/pro/agenda')}>{t("Voir l'agenda")}</Button>
-        <Button variant="g" onClick={onClose}>
+        <Button icon={ICONE.agenda} onClick={() => navigate('/pro/agenda')}>{t("Voir l'agenda")}</Button>
+        <Button icon={ICONE.valider} variant="g" onClick={onClose}>
           {t('Compris')}
         </Button>
       </BottomSheet>

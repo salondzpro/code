@@ -10,6 +10,7 @@
  * Le rendez-vous est relu par son identifiant plutôt que passé en entier : la fenêtre
  * affiche donc toujours l'état courant, même si l'agenda a été chargé il y a dix minutes.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useMarkBookingSeen, useMe, useProBooking, useProBookingMutations, useProSalon } from '@salondz/api-client';
@@ -156,51 +157,51 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
               <>
                 <div className="ag9-ac">
                   {confirmable && (
-                    <Button sm className="ag9-b" loading={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}>
+                    <Button icon={ICONE.accepter} sm className="ag9-b" loading={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}>
                       {t('Accepter')}
                     </Button>
                   )}
                   {confirmable && team > 1 && (
-                    <Button sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                    <Button icon={ICONE.confier} sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
                       {t('Confier')}
                     </Button>
                   )}
                   {confirmable && (
-                    <Button sm className="ag9-n r" onClick={() => setCancelling(true)}>
+                    <Button icon={ICONE.refuser} sm className="ag9-n r" onClick={() => setCancelling(true)}>
                       {t('Refuser')}
                     </Button>
                   )}
                   {closable && (
                     <>
-                      <Button sm className="ag9-b" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}>
+                      <Button icon={ICONE.terminer} sm className="ag9-b" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}>
                         {t('Terminé')}
                       </Button>
-                      <Button sm className="ag9-n r" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}>
+                      <Button icon={ICONE.absent} sm className="ag9-n r" disabled={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}>
                         {t('Absent')}
                       </Button>
                     </>
                   )}
                   {b.status === 'confirmed' && !past && (
-                    <Button sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                    <Button icon={ICONE.reporter} sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
                       {t('Reporter')}
                     </Button>
                   )}
                   {b.status === 'completed' && (
-                    <Button sm className="ag9-b wide" onClick={rebook}>
+                    <Button icon={ICONE.reprendre} sm className="ag9-b wide" onClick={rebook}>
                       {t('Reprendre dans 3 semaines')}
                     </Button>
                   )}
-                  <Button sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
+                  <Button icon={ICONE.fiche} sm className="ag9-n" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
                     {t('Fiche')}
                   </Button>
                   {b.status === 'confirmed' && !past && (
-                    <Button sm className="ag9-n r" onClick={() => setCancelling(true)}>
+                    <Button icon={ICONE.annulerRdv} sm className="ag9-n r" onClick={() => setCancelling(true)}>
                       {t('Annuler')}
                     </Button>
                   )}
                 </div>
                 {late && (
-                  <Button sm className="ag9-n r" disabled={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}>
+                  <Button icon={ICONE.annulerRetard} sm className="ag9-n r" disabled={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}>
                     {t('Annuler pour retard (plus de')} {LATE_TOLERANCE_MINUTES} {t('min)')}
                   </Button>
                 )}
@@ -224,7 +225,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   />
                 </div>
                 <div className="g2">
-                  <Button
+                  <Button icon={b.status === 'pending' ? ICONE.refuser : ICONE.annulerRdv}
                     sm
                     variant="d"
                     disabled={cancel.isPending}
@@ -234,7 +235,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                   >
                     {b.status === 'pending' ? t('Refuser') : t('Annuler')}
                   </Button>
-                  <Button sm variant="g" onClick={() => setCancelling(false)}>
+                  <Button icon={ICONE.garder} sm variant="g" onClick={() => setCancelling(false)}>
                     {t("Garder")}
                   </Button>
                 </div>

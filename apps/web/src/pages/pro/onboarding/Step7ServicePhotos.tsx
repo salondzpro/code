@@ -2,6 +2,7 @@
  * PRO-F 09 — Étape 7 : LA photo de la prestation (une seule image représentative, recadrée en carré).
  * Les photos du travail réel (plusieurs) vont dans « Réalisations » (étape 8 / Mon salon).
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Camera, Trash2 } from 'lucide-react';
@@ -119,7 +120,7 @@ export function Step7ServicePhotos() {
         }
         busy={busy || setPhotos.isPending}
         secondary={
-          <Button
+          <Button icon={ICONE.ajouter}
             variant="g"
             onClick={() => void save().then((ok) => ok && navigate(stepPath(6)))}
             disabled={busy}

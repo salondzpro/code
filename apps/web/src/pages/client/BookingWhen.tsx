@@ -3,6 +3,7 @@
  * Seuls les créneaux libres sont affichés (pas de grille grisée à faire défiler) ; journée complète →
  * carte « Complet » avec le dernier créneau du jour et un bouton vers la prochaine disponibilité.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { useAvailability, useSalon } from '@salondz/api-client';
@@ -219,7 +220,7 @@ export function BookingWhen() {
               : t('Aucune disponibilité ce jour.')}
           </span>
           {next ? (
-            <Button auto sm onClick={goNext} className="mt-1">
+            <Button icon={ICONE.prochaineDispo} auto sm onClick={goNext} className="mt-1">
               {t("Prochaine disponibilité ·")}{' '}{relativeDayLabelDZ(next.date)} {t("à")}{' '}{next.slots[0]}
             </Button>
           ) : (
@@ -237,7 +238,7 @@ export function BookingWhen() {
                 </button>
               </div>
             ) : (
-              <Button variant="g" auto sm onClick={() => void toggleAlert()} disabled={alertBusy} className="mt-1">
+              <Button icon={ICONE.alerter} variant="g" auto sm onClick={() => void toggleAlert()} disabled={alertBusy} className="mt-1">
                 {t("M'alerter si un créneau se libère")}
               </Button>
             ))}
@@ -276,7 +277,7 @@ export function BookingWhen() {
       )}
 
       <BottomSheet>
-        <Button
+        <Button icon={ICONE.continuer}
           disabled={!slot}
           onClick={() => {
             writeDraft(slug, { date, startsAt: slot! });

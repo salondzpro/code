@@ -4,6 +4,7 @@
  * le numéro que le salon appelle en cas de retard ou de question, et celui qui rattache les
  * rendez-vous pris par quelqu'un d'autre à ce compte.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState, type FormEvent } from 'react';
 import { guestMarket } from '@/lib/useClientMarket';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
@@ -114,7 +115,7 @@ export function ProfileSetup() {
             {error.msg}
           </p>
         )}
-        <Button type="submit" loading={update.isPending} disabled={me.isPending}>
+        <Button icon={ICONE.valider} type="submit" loading={update.isPending} disabled={me.isPending}>
           {t('Terminer')}
         </Button>
       </form>

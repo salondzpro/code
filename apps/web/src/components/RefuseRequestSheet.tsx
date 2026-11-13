@@ -5,6 +5,7 @@
  * confirmer, reporter ou refuser partout où une demande lui est présentée, et la formulation
  * comme le comportement ne doivent exister qu'à un seul endroit.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { useProBookingMutations } from '@salondz/api-client';
 import { REFUSAL_REASONS_FR, reasonOptions } from '@salondz/constants';
@@ -48,7 +49,7 @@ export function RefuseRequestSheet({
           />
         </div>
         <ErrorMessage error={cancel.error} />
-        <Button
+        <Button icon={ICONE.refuser}
           className="!bg-danger !text-white"
           disabled={cancel.isPending}
           onClick={async () => {
@@ -58,7 +59,7 @@ export function RefuseRequestSheet({
         >
           {t("Refuser la demande")}
         </Button>
-        <Button variant="g" onClick={onClose}>
+        <Button icon={ICONE.garder} variant="g" onClick={onClose}>
           {t("Garder")}
         </Button>
       </BottomSheet>

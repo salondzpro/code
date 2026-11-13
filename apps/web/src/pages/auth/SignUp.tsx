@@ -20,6 +20,7 @@
  * suite proposée (se connecter, récupérer l'accès, renvoyer le lien). Le serveur refait le contrôle
  * à la création : l'écran informe, il ne protège pas.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { isDemoEmail } from '@salondz/constants';
@@ -28,7 +29,7 @@ import { PRO_EMAIL_EXISTS_TEXT, describeAuthError, useAuth, type AuthErrorKind }
 import { api } from '@/lib/api';
 import { useDebounced } from '@/lib/useDebounced';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, Field, Input } from '@/components/ui';
+import { Button, Field, Input, LinkButton } from '@/components/ui';
 import { AuthError, AuthShell, MatchHint, PasswordField, matchState } from '@/components/AuthShell';
 import { EMAIL_RE } from './Login';
 import { t } from '@/i18n';
@@ -157,17 +158,17 @@ export function SignUp() {
         {taken && takenText && (
           <AuthError texte={takenText}>
             {taken === 'pending' ? (
-              <Button sm variant="g" loading={busy} onClick={() => void renvoyer()}>
+              <Button icon={ICONE.renvoyer} sm variant="g" loading={busy} onClick={() => void renvoyer()}>
                 {t('Renvoyer le lien de confirmation')}
               </Button>
             ) : (
               <div className="g2">
-                <Link to={`${connexion}&email=${encodeURIComponent(id())}`} className="btn sm">
+                <LinkButton to={`${connexion}&email=${encodeURIComponent(id())}`} sm icon={ICONE.seConnecter}>
                   {t('Se connecter')}
-                </Link>
-                <Link to={`/connexion/oubli?email=${encodeURIComponent(id())}`} className="btn g sm">
+                </LinkButton>
+                <LinkButton to={`/connexion/oubli?email=${encodeURIComponent(id())}`} variant="g" sm icon={ICONE.motDePasse}>
                   {t('Récupérer mon accès')}
-                </Link>
+                </LinkButton>
               </div>
             )}
           </AuthError>
@@ -210,18 +211,18 @@ export function SignUp() {
           <AuthError texte={error.text}>
             {error.kind === 'exists' && (
               <div className="g2">
-                <Link to={connexion} className="btn sm">
+                <LinkButton to={connexion} sm icon={ICONE.seConnecter}>
                   {t('Se connecter')}
-                </Link>
-                <Link to={`/connexion/oubli?email=${encodeURIComponent(id())}`} className="btn g sm">
+                </LinkButton>
+                <LinkButton to={`/connexion/oubli?email=${encodeURIComponent(id())}`} variant="g" sm icon={ICONE.motDePasse}>
                   {t('Mot de passe oublié')}
-                </Link>
+                </LinkButton>
               </div>
             )}
           </AuthError>
         )}
 
-        <Button type="submit" loading={busy && !taken} disabled={busy || !!taken || (confirmation !== '' && accord !== 'ok')}>
+        <Button icon={ICONE.creerCompte} type="submit" loading={busy && !taken} disabled={busy || !!taken || (confirmation !== '' && accord !== 'ok')}>
           {t('Créer mon compte')}
         </Button>
 

@@ -8,6 +8,7 @@
  *
  * L'adresse déjà saisie sur le portail est reprise en paramètre : on ne la fait pas retaper.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { MailOpen } from 'lucide-react';
@@ -73,7 +74,7 @@ export function MagicLink() {
           />
         </Field>
         {error && <AuthError texte={error} />}
-        <Button type="submit" loading={busy}>
+        <Button icon={ICONE.recevoirLien} type="submit" loading={busy}>
           {t('Recevoir le lien')}
         </Button>
       </form>

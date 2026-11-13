@@ -4,6 +4,7 @@
  * en « Sans catégorie ». Une prestation déjà réservée n'est jamais effacée : elle est archivée, l'historique
  * financier (chiffre d'affaires, fiches client) reste intact.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-react';
@@ -156,7 +157,7 @@ export function ProCategories() {
                     : `La catégorie disparaît, ses ${del.count} prestation${del.count > 1 ? 's' : ''} restent réservables dans « Sans catégorie ».`}
                 </p>
                 <div className="g2">
-                  <Button variant="g" onClick={() => setDel({ ...del, mode: undefined })}>
+                  <Button icon={ICONE.retour} variant="g" onClick={() => setDel({ ...del, mode: undefined })}>
                     {t("Retour")}
                   </Button>
                   <Button
@@ -171,13 +172,13 @@ export function ProCategories() {
               </>
             ) : (
               <>
-                <Button variant="g" onClick={() => setDel({ ...del, mode: 'keep-services' })}>
+                <Button icon={ICONE.supprimer} variant="g" onClick={() => setDel({ ...del, mode: 'keep-services' })}>
                   {t("Supprimer la catégorie seulement")}
                 </Button>
                 <p className="s -mt-2 text-center">
                   {t("Les prestations restent réservables, sans catégorie.")}
                 </p>
-                <Button variant="d" onClick={() => setDel({ ...del, mode: 'with-services' })}>
+                <Button icon={ICONE.supprimer} variant="d" onClick={() => setDel({ ...del, mode: 'with-services' })}>
                   {t("Supprimer avec les")}{' '}{del.count} {t("prestation")}{del.count > 1 ? 's' : ''}
                 </Button>
                 <button type="button" className="py-2 text-[1rem]" onClick={() => setDel(null)}>

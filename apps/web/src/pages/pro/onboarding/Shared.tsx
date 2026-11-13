@@ -2,6 +2,7 @@
  * Éléments communs de l'onboarding pro, façon Planity Pro : en-tête « Étape n sur 9 » avec barre de
  * progression segmentée, titre en question + sous-titre, feuille d'action basse.
  */
+import { ICONE } from '@/lib/actionIcons';
 import type { ReactNode } from 'react';
 import { ONBOARDING_STEPS } from '@/lib/proDraft';
 import type { LucideIcon } from 'lucide-react';
@@ -85,7 +86,7 @@ export function StepSheet({
     <BottomSheet>
       {hint && <p className="p -mt-1 text-center text-[0.857rem]">{hint}</p>}
       {secondary}
-      <Button onClick={onClick} disabled={disabled || busy}>
+      <Button icon={ICONE.continuer} onClick={onClick} disabled={disabled || busy}>
         {busy ? t('Enregistrement…') : (label ?? t('Continuer'))}
       </Button>
     </BottomSheet>

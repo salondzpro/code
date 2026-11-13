@@ -1,4 +1,5 @@
 /** Espace pro — Nouveau membre (page dédiée) : prénom, prestations réalisées (toutes ou une sélection). */
+import { ICONE } from '@/lib/actionIcons';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useProSalon, useProStaffMutations } from '@salondz/api-client';
@@ -73,7 +74,7 @@ export function TeamNew() {
         </p>
       )}
       <BottomSheet grab={false}>
-        <Button onClick={() => void add()} disabled={create.isPending || invalid}>
+        <Button icon={ICONE.ajouterMembre} onClick={() => void add()} disabled={create.isPending || invalid}>
           {create.isPending ? 'Ajout…' : 'Ajouter le membre'}
         </Button>
       </BottomSheet>

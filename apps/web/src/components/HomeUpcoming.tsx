@@ -10,6 +10,7 @@
  *
  * La carte et chaque ligne ouvrent la fenêtre du rendez-vous, qui porte tout le reste.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { Link } from 'react-router';
 import { Check, ChevronRight, X } from 'lucide-react';
 import type { useProBookingMutations } from '@salondz/api-client';
@@ -154,10 +155,10 @@ function NextCard({
       </button>
       {askable ? (
         <div className="ag9-ac h13-ac">
-          <Button sm className="ag9-n r" onClick={() => onPeek(b.id)}>
+          <Button icon={ICONE.refuser} sm className="ag9-n r" onClick={() => onPeek(b.id)}>
             {t('Refuser')}
           </Button>
-          <Button
+          <Button icon={ICONE.accepter}
             sm
             className="ag9-b"
             loading={setStatus.isPending && setStatus.variables?.id === b.id}

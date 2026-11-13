@@ -4,6 +4,7 @@
  *   /pro/equipe/:id/prestations   prestations réalisées (toutes ou une sélection)
  *   /pro/equipe/:id/horaires      horaires du salon ou personnalisés (pauses par jour)
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Camera, ChevronRight, Clock, Phone, Scissors } from 'lucide-react';
@@ -290,7 +291,7 @@ export function TeamMember() {
       )}
       {!isOwner &&
         (confirmRemove ? (
-          <Button
+          <Button icon={ICONE.retirerMembre}
             className="!bg-danger !text-white"
             disabled={remove.isPending}
             onClick={async () => {
@@ -388,7 +389,7 @@ export function TeamMemberServices() {
         </p>
       )}
       <BottomSheet grab={false}>
-        <Button onClick={() => void save()} disabled={update.isPending || invalid}>
+        <Button icon={ICONE.enregistrer} onClick={() => void save()} disabled={update.isPending || invalid}>
           {update.isPending ? 'Enregistrement…' : 'Enregistrer'}
         </Button>
       </BottomSheet>
@@ -502,7 +503,7 @@ export function TeamMemberHours() {
         </p>
       )}
       <BottomSheet grab={false}>
-        <Button
+        <Button icon={ICONE.enregistrer}
           onClick={() => void save()}
           disabled={setHours.isPending || invalid || hours.isPending || hours.isError}
         >

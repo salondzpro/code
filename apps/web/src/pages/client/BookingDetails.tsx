@@ -8,6 +8,7 @@
  * règles la concernent : plafond de rendez-vous à venir, doublon d'horaire, suspension pour
  * annulations. C'est dit en une ligne sous le choix, parce que ça change qui est engagé.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { BellRing, ChevronDown, Pencil } from 'lucide-react';
@@ -283,7 +284,7 @@ export function BookingDetails() {
               {formatTimeDZ(draft.startsAt)}
             </div>
           </div>
-          <Button type="submit" form="details" auto className="!rounded-full !px-7 !py-3.5">
+          <Button icon={ICONE.continuer} type="submit" form="details" auto className="!rounded-full !px-7 !py-3.5">
             {t("Vérifier")}
           </Button>
         </div>

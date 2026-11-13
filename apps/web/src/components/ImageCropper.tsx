@@ -3,6 +3,7 @@
  * doigt / à la souris dans un cadre au bon format, un curseur règle le zoom, « Valider » produit le fichier
  * recadré (WebP) qui est ensuite compressé et envoyé comme d'habitude. Sans dépendance : canvas natif.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { BottomSheet, Button, Dim } from './ui';
 import { t } from '@/i18n';
@@ -177,10 +178,10 @@ export function ImageCropper({
           />
         </label>
         <div className="g2">
-          <Button variant="g" onClick={onCancel} disabled={busy}>
+          <Button icon={ICONE.fermerFenetre} variant="g" onClick={onCancel} disabled={busy}>
             {t("Annuler")}
           </Button>
-          <Button onClick={() => void validate()} disabled={busy || !img}>
+          <Button icon={ICONE.valider} onClick={() => void validate()} disabled={busy || !img}>
             {busy ? 'Recadrage…' : 'Valider'}
           </Button>
         </div>

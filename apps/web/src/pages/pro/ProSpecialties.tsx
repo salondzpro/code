@@ -1,4 +1,5 @@
 /** Mon salon → Spécialités : les catégories dans lesquelles le salon apparaît (filtres de la marketplace, suggestions du catalogue). */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useProSalon, useProSalonMutations } from '@salondz/api-client';
@@ -44,7 +45,7 @@ export function ProSpecialties() {
         </p>
       )}
       <BottomSheet grab={false}>
-        <Button onClick={() => void save()} disabled={!dirty || chosen.length === 0 || updateSalon.isPending}>
+        <Button icon={ICONE.enregistrer} onClick={() => void save()} disabled={!dirty || chosen.length === 0 || updateSalon.isPending}>
           {updateSalon.isPending ? t('Enregistrement…') : t('Enregistrer')}
         </Button>
       </BottomSheet>

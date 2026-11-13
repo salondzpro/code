@@ -3,6 +3,7 @@
  * (Aujourd'hui / Demain / date, heure, prix) et la liste des prestations — même lecture que la fiche pro.
  * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » (avec la règle anti-abus) ; C-F 18 — annulation confirmée.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import {
@@ -313,7 +314,7 @@ export function BookingDetail() {
               />
             </div>
             <ErrorMessage error={cancel.error} />
-            <Button
+            <Button icon={ICONE.annulerRdv}
               className="!bg-danger !text-white"
               disabled={cancel.isPending}
               onClick={async () => {
@@ -324,7 +325,7 @@ export function BookingDetail() {
             >
               {cancel.isPending ? 'Annulation…' : 'Annuler le rendez-vous'}
             </Button>
-            <Button variant="g" onClick={() => setCancelling(false)}>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setCancelling(false)}>
               {t("Garder le rendez-vous")}
             </Button>
           </BottomSheet>

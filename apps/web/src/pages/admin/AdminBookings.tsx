@@ -5,6 +5,7 @@
  * que non ». On montre donc ce qui tranche — qui a annulé, quand, avec quel motif — plutôt qu'un
  * bel agenda.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Search } from 'lucide-react';
@@ -141,7 +142,7 @@ export function AdminBookings() {
                 )}
               </span>
               {(b.status === 'pending' || b.status === 'confirmed') && (
-                <Button variant="g" sm auto onClick={() => setAnnuler(b.id)}>
+                <Button icon={ICONE.annulerRdv} variant="g" sm auto onClick={() => setAnnuler(b.id)}>
                   {t('Annuler')}
                 </Button>
               )}

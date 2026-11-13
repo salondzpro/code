@@ -5,6 +5,7 @@
  * ligne du client, et sur l'accueil sur la carte du prochain rendez-vous : cette fenêtre ne sert que
  * pour les autres (fenêtre d'un rendez-vous, autre écran).
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { answerReminder, askedInline, usePendingReminder } from '@/lib/reminders';
@@ -55,10 +56,10 @@ export function ReminderConfirm() {
           <p className="ds-p">{t('Le rendez-vous sera noté comme prévenu, avec l’heure.')}</p>
         </div>
         <div className="g2">
-          <Button sm className="ag9-n" onClick={() => answerReminder(false)}>
+          <Button icon={ICONE.non} sm className="ag9-n" onClick={() => answerReminder(false)}>
             {t('Non')}
           </Button>
-          <Button sm className="ag9-b" onClick={() => answerReminder(true)}>
+          <Button icon={ICONE.oui} sm className="ag9-b" onClick={() => answerReminder(true)}>
             {t('Oui')}
           </Button>
         </div>

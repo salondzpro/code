@@ -10041,3 +10041,28 @@ html[data-kb] .pa-actions {
     font-size: 56px;
   }
 }
+
+/* ICÔNE D'UN BOUTON (13 nov. 2026, `BtnIcon` dans `components/ui.tsx`) : elle ne rétrécit JAMAIS.
+   Dans une rangée étroite (fenêtre du rendez-vous), le navigateur l'écrasait pour loger le texte —
+   jusqu'à 0 px. Le texte, lui, peut passer sur deux lignes. */
+.btn-i,
+.btn > svg,
+.btn-primary > svg,
+.btn-ghost > svg,
+.pa-btn > svg {
+  flex: none;
+}
+/* Rangée d'actions de la fenêtre du rendez-vous : icône AU-DESSUS du libellé (boutons d'action
+   façon iOS) — quatre actions tiennent côte à côte sans couper un mot. */
+.ag9-ac .btn {
+  flex-direction: column;
+  gap: 4px;
+  min-height: 58px;
+  padding: 8px 4px;
+  font-size: 13px;
+  line-height: 1.15;
+}
+.ag9-ac .btn .btn-i {
+  width: 18px;
+  height: 18px;
+}

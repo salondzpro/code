@@ -18,6 +18,7 @@
  * qui décide. Les anciennes portes pro (`/connexion?role=pro`, `/inscription?role=pro`) mènent ici.
  * Le serveur refait tous les contrôles : l'écran oriente, il ne protège pas.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { Check, MailCheck } from 'lucide-react';
@@ -25,7 +26,7 @@ import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { api } from '@/lib/api';
-import { Button, Field, I, Input } from '@/components/ui';
+import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { AuthError, PasswordField } from '@/components/AuthShell';
 import { MailAppButton, ProAuthScreen } from '@/components/ProAuthKit';
 import { EMAIL_RE } from '@/pages/auth/Login';
@@ -106,7 +107,7 @@ export function ProAccesEmail() {
       sous={t('Pour vous connecter, ou créer votre espace si c’est votre première fois.')}
       actions={
         <>
-          <Button type="submit" form="pa-email" loading={busy} disabled={busy}>
+          <Button icon={ICONE.continuer} type="submit" form="pa-email" loading={busy} disabled={busy}>
             {t('Continuer')}
           </Button>
           <p className="pa-note">{t('Nous vérifions si un espace existe déjà pour cette adresse.')}</p>
@@ -136,12 +137,12 @@ export function ProAccesEmail() {
         {error && (
           <AuthError texte={error.text}>
             {error.kind === 'client' && (
-              <button type="button" className="btn g sm" onClick={() => (setEmail(''), setError(null))}>
+              <Button variant="g" sm icon={ICONE.autreAdresse} onClick={() => (setEmail(''), setError(null))}>
                 {t('Utiliser une autre adresse')}
-              </button>
+              </Button>
             )}
             {error.kind === 'pending' && (
-              <Button sm variant="g" loading={busy} onClick={() => void renvoyer()}>
+              <Button icon={ICONE.renvoyer} sm variant="g" loading={busy} onClick={() => void renvoyer()}>
                 {t('Renvoyer le lien de confirmation')}
               </Button>
             )}
@@ -247,11 +248,11 @@ export function ProAccesMotDePasse() {
       sous={t('Entrez votre mot de passe pour ouvrir votre espace.')}
       actions={
         <>
-          <Button type="submit" form="pa-mdp" loading={busy === 'password'} disabled={busy !== null}>
+          <Button icon={ICONE.seConnecter} type="submit" form="pa-mdp" loading={busy === 'password'} disabled={busy !== null}>
             {t('Se connecter')}
           </Button>
           {!demo && (
-            <Button variant="g" loading={busy === 'link'} disabled={busy !== null} onClick={() => void lien()}>
+            <Button icon={ICONE.recevoirLien} variant="g" loading={busy === 'link'} disabled={busy !== null} onClick={() => void lien()}>
               {t('Recevoir un lien de connexion')}
             </Button>
           )}
@@ -277,14 +278,14 @@ export function ProAccesMotDePasse() {
         {error && (
           <AuthError texte={error.text}>
             {error.kind === 'unconfirmed' && (
-              <Button sm variant="g" loading={busy === 'resend'} onClick={() => void renvoyer()} disabled={busy !== null}>
+              <Button icon={ICONE.renvoyer} sm variant="g" loading={busy === 'resend'} onClick={() => void renvoyer()} disabled={busy !== null}>
                 {t('Renvoyer le lien de confirmation')}
               </Button>
             )}
             {error.kind === 'credentials' && (
-              <Link to={`/pro/acces/oubli${q({ email })}`} className="btn g sm">
+              <LinkButton to={`/pro/acces/oubli${q({ email })}`} variant="g" sm icon={ICONE.motDePasse}>
                 {t('Réinitialiser mon mot de passe')}
-              </Link>
+              </LinkButton>
             )}
           </AuthError>
         )}
@@ -349,7 +350,7 @@ export function ProAccesCreer() {
       sous={t('C’est votre première fois. Choisissez un mot de passe, puis nous vous envoyons un lien de confirmation.')}
       actions={
         <>
-          <Button type="submit" form="pa-creer" loading={busy} disabled={busy}>
+          <Button icon={ICONE.creerEspace} type="submit" form="pa-creer" loading={busy} disabled={busy}>
             {t('Créer mon espace')}
           </Button>
           <p className="pa-note">
@@ -384,9 +385,9 @@ export function ProAccesCreer() {
         {error && (
           <AuthError texte={error.text}>
             {error.kind === 'exists' && (
-              <Link to={`/pro/acces/mot-de-passe${q({ email })}`} className="btn sm">
+              <LinkButton to={`/pro/acces/mot-de-passe${q({ email })}`} sm icon={ICONE.seConnecter}>
                 {t('Se connecter')}
-              </Link>
+              </LinkButton>
             )}
           </AuthError>
         )}
@@ -465,7 +466,7 @@ export function ProAccesEnvoye() {
       actions={
         <>
           <MailAppButton email={email} />
-          <Button variant="g" loading={busy} disabled={busy || dans > 0} onClick={() => void renvoyer()}>
+          <Button icon={ICONE.renvoyer} variant="g" loading={busy} disabled={busy || dans > 0} onClick={() => void renvoyer()}>
             {dans > 0 ? t('Renvoyer le lien dans {temps}', { temps: minutes }) : t('Renvoyer le lien')}
           </Button>
           <button type="button" className="pa-lien centre" onClick={() => navigate('/pro/acces')}>
@@ -513,7 +514,7 @@ export function ProAccesOubli() {
       titre={t('Mot de passe oublié')}
       sous={t('Nous vous envoyons un lien pour en choisir un nouveau.')}
       actions={
-        <Button type="submit" form="pa-oubli" loading={busy} disabled={busy}>
+        <Button icon={ICONE.envoyer} type="submit" form="pa-oubli" loading={busy} disabled={busy}>
           {t('Envoyer le lien')}
         </Button>
       }

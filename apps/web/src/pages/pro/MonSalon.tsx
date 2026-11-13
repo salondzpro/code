@@ -2,6 +2,7 @@
  * Profil → Mon salon : ce qui fait la présence du salon sur Salon DZ — informations (nom, description),
  * photos de couverture, réalisations, adresse. Horaires et lien public sont sur Profil, à portée de main.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import {
   FileText,
@@ -103,7 +104,7 @@ export function MonSalon() {
               aria-label={t("Description du salon")}
             />
             <div className="g2">
-              <Button variant="g" sm onClick={() => setDesc(null)}>
+              <Button icon={ICONE.fermerFenetre} variant="g" sm onClick={() => setDesc(null)}>
                 {t("Annuler")}
               </Button>
               <Button

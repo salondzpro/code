@@ -1,4 +1,5 @@
 /** C-F 21 — Salons favoris : filtre Tous / Pour Femmes / Pour Hommes, cœur plein pour retirer. */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Heart } from 'lucide-react';
@@ -52,7 +53,7 @@ export function Favorites() {
           </span>
           <div className="text-[1.143rem] font-semibold">{t("Aucun salon en favori")}</div>
           <p className="p">{t("Touchez le cœur sur la page d'un salon pour le retrouver ici et réserver plus vite.")}</p>
-          <LinkButton to="/" className="mt-2">
+          <LinkButton icon={ICONE.explorer} to="/" className="mt-2">
             {t("Explorer les salons")}
           </LinkButton>
         </div>

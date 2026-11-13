@@ -1,6 +1,6 @@
 import { ApiError } from '@salondz/api-client';
 import { Link } from 'react-router';
-import { Clock, Lock, RefreshCw, ServerCrash, TriangleAlert, WifiOff, type LucideIcon } from 'lucide-react';
+import { Clock, House, Lock, RefreshCw, ServerCrash, TriangleAlert, WifiOff, type LucideIcon } from 'lucide-react';
 import { t } from '@/i18n';
 
 const FALLBACKS: Record<string, string> = {
@@ -118,7 +118,8 @@ export function ErrorState({
           </button>
         )}
         {accueil && (
-          <Link to="/" className="btn-ghost">
+          <Link to="/" className="btn-ghost flex items-center justify-center gap-2">
+            <House size={18} strokeWidth={1.8} aria-hidden />
             {t("Retour à l'accueil")}
           </Link>
         )}

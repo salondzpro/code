@@ -3,6 +3,7 @@
  * prestations, le salon, « Bon à savoir » (retard, annulation), « Confirmer la réservation ».
  * Blocage par le salon ou suspension anti-abus : dit tout en haut, bouton grisé — jamais découvert après un clic.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Ban, CalendarCheck, Phone, StickyNote, UserRound } from 'lucide-react';
@@ -149,14 +150,14 @@ export function BookingReview() {
       {slotError && (
         <div className="flex flex-col gap-3">
           <ErrorMessage error={new Error(slotError)} />
-          <Button variant="g" onClick={() => navigate(`/s/${slug}/reserver/quand`)}>
+          <Button icon={ICONE.autreCreneau} variant="g" onClick={() => navigate(`/s/${slug}/reserver/quand`)}>
             {t("Choisir un autre créneau")}
           </Button>
         </div>
       )}
       {!slotError && <ErrorMessage error={create.error} />}
       <BottomSheet>
-        <Button
+        <Button icon={ICONE.confirmerRdv}
           onClick={() => void confirm()}
           loading={create.isPending}
           disabled={create.isPending || cannotBook || standing.isPending}

@@ -14,6 +14,7 @@
  * marché — les prestations pour hommes et pour femmes n'ont rien à voir, mélanger les deux
  * listes obligeait la cliente à faire le tri elle-même.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation } from 'react-router';
@@ -22,7 +23,7 @@ import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/con
 import { useMe, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { guestMarket } from '@/lib/useClientMarket';
-import { I, Dim } from './ui';
+import { I, Dim, LinkButton } from './ui';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { t } from '@/i18n';
 
@@ -89,9 +90,9 @@ export function PublicHeader() {
         </button>
 
         {!session && (
-          <Link to={`/connexion?next=${next}`} className="btn">
+          <LinkButton to={`/connexion?next=${next}`} icon={ICONE.seConnecter}>
             {t("Se connecter")}
-          </Link>
+          </LinkButton>
         )}
 
         {/* Chaque marché est une section qui s'ouvre et se ferme, titre en gras : côte à

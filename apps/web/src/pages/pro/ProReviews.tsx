@@ -9,6 +9,7 @@
  * professionnel répond ; il ne corrige ni la note ni le texte, qui ne lui sont pas modifiables —
  * l'écran ne propose donc rien de tel.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { MessageSquareQuote, Star } from 'lucide-react';
 import {
@@ -78,7 +79,7 @@ function ReplySheet({
             {error}
           </p>
         )}
-        <Button onClick={() => void envoyer()} loading={reply.isPending}>
+        <Button icon={review.reply && !texte.trim() ? ICONE.supprimer : ICONE.envoyer} onClick={() => void envoyer()} loading={reply.isPending}>
           {review.reply && !texte.trim()
             ? t('Retirer ma réponse')
             : review.reply

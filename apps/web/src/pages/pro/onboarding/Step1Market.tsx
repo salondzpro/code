@@ -4,13 +4,14 @@
  * ou cheveux, barbe, lissage, soins…). Le reste de l'inscription s'adapte à ce choix : suggestions de
  * prestations, catégories du catalogue, textes.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Check, Sparkles, Users } from 'lucide-react';
 import { MARKET_LABELS_FR, categoriesForMarket, type Market } from '@salondz/constants';
 import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { readProDraft, writeProDraft } from '@/lib/proDraft';
-import { I } from '@/components/ui';
+import { Button, I } from '@/components/ui';
 import { MAX_SPECIALTIES, SpecialtiesGrid } from '@/components/SpecialtiesGrid';
 import { Screen, SHEET_PAD, SHEET_PAD_2 } from '@/components/AppFrame';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
@@ -41,9 +42,9 @@ export function Step1Market() {
         <StepSheet
           disabled={chosen.length === 0}
           secondary={
-            <button type="button" className="btn g" onClick={() => setPhase('market')}>
+            <Button variant="g" icon={ICONE.changer} onClick={() => setPhase('market')}>
               {t("Changer de marché")}
-            </button>
+            </Button>
           }
           onClick={() => {
             writeProDraft({ market, categoryIds: chosen });

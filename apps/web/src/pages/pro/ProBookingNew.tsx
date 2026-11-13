@@ -11,6 +11,7 @@
  * Le client se cherche AVANT de se saisir : la moitié des rendez-vous pris au téléphone
  * sont ceux d'habitués, et retaper leur nom crée des doublons dans la clientèle.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Check, Search, StickyNote, UserPlus, MessageCircle } from 'lucide-react';
@@ -176,7 +177,7 @@ function ClientSheet({
                 {err}
               </p>
             )}
-            <Button onClick={validate}>{t("Valider")}</Button>
+            <Button icon={ICONE.valider} onClick={validate}>{t("Valider")}</Button>
           </>
         )}
       </BottomSheet>
@@ -571,7 +572,7 @@ export function ProBookingNew() {
           subtitle={`${name.trim()} · ${relativeDayLabelDZ(date)} · ${time}`}
           actions={
             <>
-              <Button
+              <Button icon={ICONE.agenda}
                 sm
                 auto
                 className="ag9-b"
@@ -617,7 +618,7 @@ export function ProBookingNew() {
               ) : null}
             </div>
           </div>
-          <Button auto className="!px-6" onClick={() => void submit()} loading={createWalkIn.isPending}>
+          <Button icon={ICONE.confirmerRdv} auto className="!px-6" onClick={() => void submit()} loading={createWalkIn.isPending}>
             {t('Enregistrer')}
           </Button>
         </div>

@@ -26,6 +26,7 @@
  * une liste servie par le serveur, chaque touche appliquée immédiatement relance une
  * requête et fait sauter les résultats sous le doigt.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
@@ -412,7 +413,7 @@ function Panel({
       </div>
       <div className="pnl-bd">{children}</div>
       <div className="pnl-ft">
-        <Button onClick={onSave}>{t("Enregistrer")}</Button>
+        <Button icon={ICONE.enregistrer} onClick={onSave}>{t("Enregistrer")}</Button>
       </div>
     </div>,
     document.body,

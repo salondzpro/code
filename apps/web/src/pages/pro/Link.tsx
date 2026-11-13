@@ -5,6 +5,7 @@
  *   génériques du design : demandé explicitement, à conserver lors d'une resynchronisation du design.
  * PRO-F 21 — QR code à imprimer.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import QRCode from 'qrcode';
@@ -214,8 +215,8 @@ export function ProLink() {
         </div>
       </div>
       <div className="g2">
-        <Button onClick={() => setSheet(true)}>{t("Partager")}</Button>
-        <Button variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
+        <Button icon={ICONE.partager} onClick={() => setSheet(true)}>{t("Partager")}</Button>
+        <Button icon={ICONE.apercu} variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
           {t("Aperçu")}
         </Button>
       </div>

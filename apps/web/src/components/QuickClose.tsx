@@ -5,6 +5,7 @@
  * une bannière « Fermé jusqu'à … » s'affiche sous les chiffres du jour avec « Rouvrir maintenant ». Le calcul des
  * créneaux (SQL) ignore déjà les blocages : rien d'autre à faire côté client.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { PickerSheet } from './Picker';
 import { DoorClosed, DoorOpen, Siren } from 'lucide-react';
@@ -123,10 +124,10 @@ export function QuickCloseButton({ openingHours }: { openingHours: OpeningHour[]
             <p className="p">
               {t('{n} rendez-vous sont prévus d’ici là. Les annuler préviendra leurs clients ; sinon, laissez le salon ouvert et prévenez-les vous-même.', { n: conflit.n || '…' })}
             </p>
-            <Button variant="d" disabled={create.isPending} onClick={() => void closeFor(conflit.endsAt, conflit.reason, true)}>
+            <Button icon={ICONE.annulerRdv} variant="d" disabled={create.isPending} onClick={() => void closeFor(conflit.endsAt, conflit.reason, true)}>
               {t('Annuler ces rendez-vous et fermer')}
             </Button>
-            <Button variant="g" onClick={() => setConflit(null)}>{t('Rester ouvert')}</Button>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setConflit(null)}>{t('Rester ouvert')}</Button>
           </BottomSheet>
         </>
       )}

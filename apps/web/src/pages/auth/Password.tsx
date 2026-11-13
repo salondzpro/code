@@ -2,6 +2,7 @@
  * Mot de passe oublié (envoi du lien) et nouveau mot de passe (après le lien : Supabase ouvre
  * une session de récupération, on remplace le mot de passe puis on continue).
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
@@ -73,7 +74,7 @@ export function ForgotPassword() {
           />
         </Field>
         {error && <AuthError texte={error} />}
-        <Button type="submit" loading={busy}>
+        <Button icon={ICONE.envoyer} type="submit" loading={busy}>
           {t('Envoyer le lien')}
         </Button>
       </form>
@@ -149,12 +150,12 @@ export function NewPassword() {
           />
           <MatchHint etat={accord} />
           {error && <AuthError texte={error} />}
-          <Button type="submit" loading={busy} disabled={accord !== 'ok'}>
+          <Button icon={ICONE.enregistrer} type="submit" loading={busy} disabled={accord !== 'ok'}>
             {t('Enregistrer')}
           </Button>
         </form>
       ) : (
-        <Button onClick={() => navigate('/connexion/oubli')}>{t('Demander un nouveau lien')}</Button>
+        <Button icon={ICONE.recevoirLien} onClick={() => navigate('/connexion/oubli')}>{t('Demander un nouveau lien')}</Button>
       )}
     </AuthShell>
   );

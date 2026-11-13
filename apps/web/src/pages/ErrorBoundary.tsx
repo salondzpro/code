@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { House, RefreshCw } from 'lucide-react';
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router';
 import { env } from '@/lib/env';
 import { errorText } from '@/components/ErrorMessage';
@@ -17,10 +18,12 @@ export function ErrorBoundary() {
       <h1 className="text-xl font-semibold">{is404 ? t('Page introuvable') : t('Oups, quelque chose a cassé')}</h1>
       {!is404 && <p className="text-sm text-muted">{errorText(error)}</p>}
       <div className="flex gap-2">
-        <button type="button" className="btn-ghost" onClick={() => window.location.reload()}>
+        <button type="button" className="btn-ghost flex items-center justify-center gap-2" onClick={() => window.location.reload()}>
+          <RefreshCw size={18} strokeWidth={1.8} aria-hidden />
           {t("Recharger")}
         </button>
-        <Link to="/" className="btn-primary">
+        <Link to="/" className="btn-primary flex items-center justify-center gap-2">
+          <House size={18} strokeWidth={1.8} aria-hidden />
           {t("Accueil")}
         </Link>
       </div>

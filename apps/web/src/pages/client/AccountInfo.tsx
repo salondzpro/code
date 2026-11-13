@@ -3,6 +3,7 @@
  * comme à l'inscription), adresse e-mail en lecture seule (c'est l'identifiant du compte).
  * Sert au client comme au professionnel.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronDown } from 'lucide-react';
@@ -116,7 +117,7 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
             {error.msg}
           </p>
         )}
-        <Button type="submit" disabled={update.isPending || (!dirty && !saved)}>
+        <Button icon={ICONE.enregistrer} type="submit" disabled={update.isPending || (!dirty && !saved)}>
           {saved ? t('Enregistré') : update.isPending ? t('Enregistrement…') : t('Enregistrer')}
         </Button>
       </form>

@@ -3,6 +3,7 @@
  * message privé. On choisit la prestation et le jour, le texte se fait tout seul avec les vraies
  * disponibilités, puis Copier ou Partager. Une prestation choisie mène directement à sa réservation.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { addDaysToKey, dayChipLabelDZ, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
@@ -88,10 +89,10 @@ export function DispoSheet({ salon, url, onCopy, onClose }: { salon: SalonOwnerV
         </div>
 
         <div className="g2">
-          <Button sm className="ag9-b" disabled={!message} onClick={() => onCopy(message)}>
+          <Button icon={ICONE.copier} sm className="ag9-b" disabled={!message} onClick={() => onCopy(message)}>
             {t('Copier')}
           </Button>
-          <Button sm className="ag9-n" disabled={!message} onClick={() => void share()}>
+          <Button icon={ICONE.partager} sm className="ag9-n" disabled={!message} onClick={() => void share()}>
             {t('Partager')}
           </Button>
         </div>

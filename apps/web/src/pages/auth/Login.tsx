@@ -18,13 +18,14 @@
  * quelqu'un qui installe l'application, et il ne doit rien cacher sous la ligne de flottaison.
  * Le lien de connexion par e-mail a SA page (`/connexion/lien`) : il a besoin de son propre champ.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { MailOpen, Store, UserPlus } from 'lucide-react';
 import { demoAccountFor, demoAccountForCredentials } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
-import { Button, Field, I, Input } from '@/components/ui';
+import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { AuthError, AuthOu, AuthShell, PasswordField } from '@/components/AuthShell';
 import { HOME, PRO_ONLY } from '@/lib/flavor';
 import { api } from '@/lib/api';
@@ -245,7 +246,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
               </Link>
             )}
             {error.kind === 'unconfirmed' && (
-              <Button sm variant="g" loading={busy === 'resend'} onClick={() => void resend()} disabled={busy !== null}>
+              <Button icon={ICONE.renvoyer} sm variant="g" loading={busy === 'resend'} onClick={() => void resend()} disabled={busy !== null}>
                 {t('Renvoyer le lien de confirmation')}
               </Button>
             )}
@@ -255,13 +256,13 @@ export function Login({ landing }: { landing?: boolean } = {}) {
               </Link>
             )}
             {error.kind === 'credentials' && (
-              <Link to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} className="btn g sm">
+              <LinkButton to={`/connexion/oubli?email=${encodeURIComponent(email.trim())}`} variant="g" sm icon={ICONE.motDePasse}>
                 {t('Réinitialiser mon mot de passe')}
-              </Link>
+              </LinkButton>
             )}
           </AuthError>
         )}
-        <Button type="submit" loading={busy === 'password' || busy === 'demo'} disabled={busy !== null}>
+        <Button icon={ICONE.seConnecter} type="submit" loading={busy === 'password' || busy === 'demo'} disabled={busy !== null}>
           {t('Se connecter')}
         </Button>
       </form>

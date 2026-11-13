@@ -6,6 +6,7 @@
  * professionnels (toutes wilayas), les wilayas elles-mêmes, et des adresses géocodées (OpenStreetMap)
  * qui deviennent un point + rayon. Le nombre de résultats se met à jour en direct.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { useBack } from '@/lib/useBack';
 import { Building2, Check, Clock, MapPin, Navigation, Settings, Smartphone } from 'lucide-react';
@@ -180,7 +181,7 @@ export function Localisation() {
         <Button onClick={() => void ouvrirReglagesApplication().then((ok) => ok || locate())}>
           <I icon={Settings} size={18} /> {t("Ouvrir les réglages")}
         </Button>
-        <Button variant="g" onClick={() => setChoice({ kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) })}>
+        <Button icon={ICONE.lieu} variant="g" onClick={() => setChoice({ kind: 'wilaya', wilaya: prefs.wilaya, label: wilayaName(prefs.wilaya) })}>
           {t("Choisir un quartier")}
         </Button>
       </Screen>
@@ -314,7 +315,7 @@ export function Localisation() {
               {label} · {withRadius ? `${radius} km` : choice.kind === 'wilaya' ? 'toute la wilaya' : 'quartier'}
             </div>
           </div>
-          <Button auto className="!rounded-full !px-7 !py-3.5" onClick={apply}>
+          <Button icon={ICONE.valider} auto className="!rounded-full !px-7 !py-3.5" onClick={apply}>
             {t("Appliquer")}
           </Button>
         </div>

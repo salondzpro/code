@@ -2,6 +2,7 @@
  * C-F 15 — Détail du rendez-vous côté pro : client (appeler, WhatsApp), lignes, note, historique,
  * Confirmer / Reporter / Annuler ; Terminé / Absent après l'heure. Report : nouvelle date, heure, membre.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
@@ -299,7 +300,7 @@ export function ProBookingDetail() {
                 inline
               />
             </div>
-            <Button
+            <Button icon={ICONE.annulerRdv}
               className="!bg-danger !text-white"
               disabled={cancel.isPending}
               onClick={async () => {
@@ -314,7 +315,7 @@ export function ProBookingDetail() {
               {t("Annuler le rendez-vous")}
             </Button>
             <ErrorMessage error={cancel.error} />
-            <Button variant="g" onClick={() => setCancelling(false)}>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setCancelling(false)}>
               {t("Garder le rendez-vous")}
             </Button>
           </BottomSheet>
@@ -429,7 +430,7 @@ export function ProBookingReschedule() {
       )}
       {!refused && <ErrorMessage error={reschedule.error} />}
       <BottomSheet>
-        <Button
+        <Button icon={ICONE.validerReport}
           disabled={reschedule.isPending || busy}
           onClick={async () => {
             try {

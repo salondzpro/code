@@ -2,6 +2,7 @@
  * Pagination « Voir plus » : le serveur n'envoie jamais toute une liste. Le bouton charge la page suivante ;
  * quand il entre dans l'écran (défilement), la page suivante se charge d'elle-même (`auto`).
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef } from 'react';
 import { Button } from './ui';
 
@@ -35,7 +36,7 @@ export function LoadMore({
   if (!hasMore) return null;
   return (
     <div ref={ref} className="flex justify-center py-2">
-      <Button variant="g" auto sm onClick={onMore} disabled={loading}>
+      <Button icon={ICONE.plus} variant="g" auto sm onClick={onMore} disabled={loading}>
         {loading ? 'Chargement…' : label}
       </Button>
     </div>

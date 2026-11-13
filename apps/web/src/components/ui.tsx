@@ -17,6 +17,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ArrowLeft,
+  ArrowRight,
   Info,
   X,
   type LucideIcon,
@@ -49,11 +51,23 @@ export function I({
 
 // ---------- Boutons ----------
 type Variant = 'ink' | 'g' | 'd' | 'ok' | 'off' | 'soft';
+/**
+ * ICÔNE D'UN BOUTON (13 nov. 2026, consigne du propriétaire) : chaque bouton porte l'icône de SON
+ * action, toujours la même pour la même action (vocabulaire unique : `lib/actionIcons.ts`). Posée
+ * avant le libellé, à la taille du bouton ; une flèche ou un chevron se retourne en arabe.
+ */
+function BtnIcon({ icon, sm }: { icon?: LucideIcon; sm?: boolean }) {
+  if (!icon) return null;
+  const sens = icon === ArrowRight || icon === ArrowLeft || icon === ChevronRight || icon === ChevronLeft;
+  return <I icon={icon} size={sm ? 16 : 18} className={`btn-i${sens ? ' rtl:-scale-x-100' : ''}`} />;
+}
+
 export function Button({
   variant = 'ink',
   sm,
   auto,
   loading,
+  icon,
   className = '',
   children,
   ...props
@@ -61,6 +75,8 @@ export function Button({
   variant?: Variant;
   sm?: boolean;
   auto?: boolean;
+  /** Icône de l'action (`lib/actionIcons.ts`), avant le libellé. */
+  icon?: LucideIcon;
   /**
    * Action en cours : un disque tourne DANS le bouton, qui garde sa taille et son libellé.
    * Remplacer le texte par « Envoi… » faisait sauter la mise en page et perdait l'information
@@ -74,7 +90,7 @@ export function Button({
     .join(' ');
   return (
     <button type="button" {...props} disabled={props.disabled || loading} aria-busy={loading || undefined} className={cls}>
-      {loading && <span className="btn-spin" aria-hidden />}
+      {loading ? <span className="btn-spin" aria-hidden /> : <BtnIcon icon={icon} sm={sm} />}
       {children}
     </button>
   );
@@ -85,11 +101,13 @@ export function LinkButton({
   variant = 'ink',
   sm,
   auto,
+  icon,
   className = '',
   children,
   ...props
 }: {
   to: string;
+  icon?: LucideIcon;
   variant?: Variant;
   sm?: boolean;
   auto?: boolean;
@@ -108,6 +126,7 @@ export function LinkButton({
     .join(' ');
   return (
     <Link to={to} className={cls} {...props}>
+      <BtnIcon icon={icon} sm={sm} />
       {children}
     </Link>
   );

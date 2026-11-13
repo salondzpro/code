@@ -8,6 +8,7 @@
  *   • SANS SUITE — l'avis reste, le signalement est classé « rejeté ».
  * Rien ne se supprime : un avis masqué reste en base, et un signalement classé aussi.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { EyeOff, ExternalLink, X } from 'lucide-react';
@@ -81,7 +82,7 @@ export function AdminReports() {
                       <I icon={EyeOff} size={16} /> {t('Masquer l’avis')}
                     </Button>
                   ) : (
-                    <Button
+                    <Button icon={ICONE.classer}
                       variant="g"
                       onClick={() => actions.closeReport.mutate({ id: r.id, outcome: 'handled' })}
                       disabled={enCours}

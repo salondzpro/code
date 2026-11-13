@@ -9,6 +9,7 @@
  * Elle rappelle aussi ce que l'action FAIT — « le salon disparaît de la place de marché » — parce
  * qu'un bouton nommé « Masquer » ne dit pas si les rendez-vous déjà pris tiennent.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState, type ReactNode } from 'react';
 import { BottomSheet, Button, Dim, Field, Textarea } from '@/components/ui';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -70,10 +71,10 @@ export function ReasonSheet({
               maxLength={300}
             />
           </Field>
-          <Button variant={danger ? 'd' : 'ink'} disabled={bloque} onClick={() => onConfirm(motif.trim())}>
+          <Button icon={ICONE.valider} variant={danger ? 'd' : 'ink'} disabled={bloque} onClick={() => onConfirm(motif.trim())}>
             {pending ? t('Un instant…') : confirmLabel}
           </Button>
-          <Button variant="g" onClick={onClose} disabled={pending}>
+          <Button icon={ICONE.fermerFenetre} variant="g" onClick={onClose} disabled={pending}>
             {t('Annuler')}
           </Button>
         </div>

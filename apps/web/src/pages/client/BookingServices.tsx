@@ -2,6 +2,7 @@
  * C-F 08 / C-H 10 — Prestations cumulées : formule(s) et prestations à la carte cochables,
  * feuille de synthèse (durées, total, « Choisir un créneau »).
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSalon } from '@salondz/api-client';
@@ -75,7 +76,7 @@ export function BookingServices() {
           </span>
         </span>
       </div>
-      <Button sm auto className="mt-0.5 flex-none !rounded-full !px-5" onClick={() => chooseService(sv.id)}>
+      <Button icon={ICONE.ajouter} sm auto className="mt-0.5 flex-none !rounded-full !px-5" onClick={() => chooseService(sv.id)}>
         {t("Choisir")}
       </Button>
     </div>

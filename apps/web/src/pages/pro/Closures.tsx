@@ -3,6 +3,7 @@
  * (jours fermés ou horaires réduits, pour tout le salon ou un membre).
  * Un blocage retire des créneaux réservables ; les rendez-vous déjà confirmés ne sont pas annulés.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useMemo, useState } from 'react';
 import { ApiError, useProBlockMutations, useProBlocks, useProSalon } from '@salondz/api-client';
 import {
@@ -309,7 +310,7 @@ export function Closures() {
       )}
 
       <BottomSheet>
-        <Button onClick={() => void submit()} disabled={create.isPending}>
+        <Button icon={ICONE.fermer} onClick={() => void submit()} disabled={create.isPending}>
           {create.isPending ? 'Ajout…' : "Ajouter l'exception"}
         </Button>
       </BottomSheet>
@@ -326,7 +327,7 @@ export function Closures() {
                 {describeBlock(del)} {t("— les créneaux redeviennent réservables.")}
               </p>
             </div>
-            <Button
+            <Button icon={ICONE.supprimer}
               className="!bg-danger !text-white"
               disabled={remove.isPending}
               onClick={async () => {
@@ -341,7 +342,7 @@ export function Closures() {
             >
               {t("Supprimer")}
             </Button>
-            <Button variant="g" onClick={() => setDel(null)}>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setDel(null)}>
               {t("Garder")}
             </Button>
           </BottomSheet>
@@ -364,10 +365,10 @@ export function Closures() {
                 </div>
               ))}
             </div>
-            <Button variant="d" onClick={() => void submit(true)} disabled={create.isPending}>
+            <Button icon={ICONE.annulerRdv} variant="d" onClick={() => void submit(true)} disabled={create.isPending}>
               {create.isPending ? t('Annulation…') : t('Annuler ces rendez-vous et fermer')}
             </Button>
-            <Button variant="g" onClick={() => setConflict(null)} disabled={create.isPending}>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setConflict(null)} disabled={create.isPending}>
               {t("Garder les rendez-vous")}
             </Button>
           </BottomSheet>

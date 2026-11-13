@@ -5,6 +5,7 @@
  * il peut rester sans réponse. Par défaut, les prochains rendez-vous d'aujourd'hui ; demain se prépare
  * d'un toucher.
  */
+import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Check, Pencil, Send, X } from 'lucide-react';
 import { useProSalon } from '@salondz/api-client';
@@ -61,7 +62,7 @@ function MessageSheet({
           ))}
         </div>
         {sample && <p className="rp-prev">{fillReminder(text, sample, salon)}</p>}
-        <Button
+        <Button icon={ICONE.enregistrer}
           className="ag9-b"
           onClick={() => {
             saveReminderMessage(salon.id, text);
