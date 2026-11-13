@@ -65,10 +65,12 @@ export function SignUp() {
   }, [typed, role]);
 
   if (session) return <Navigate to={`/connexion/retour?next=${encodeURIComponent(next)}`} replace />;
+  // Espace pro : parcours « e-mail d'abord » (`pages/pro/Acces.tsx`, 13 nov. 2026).
+  if (role === 'pro') return <Navigate to={`/pro/acces?next=${encodeURIComponent(next)}`} replace />;
 
   const id = () => email.trim().toLowerCase();
   const accord = matchState(password, confirmation);
-  const connexion = role === 'pro' ? `/connexion?role=pro&next=${encodeURIComponent(next)}` : `/intro?next=${encodeURIComponent(next)}`;
+  const connexion = `/intro?next=${encodeURIComponent(next)}`;
   const inscription = `/inscription?role=${role}&next=${encodeURIComponent(next)}`;
 
   // L'adresse affichée est-elle déjà prise ? (Le résultat ne vaut que pour l'adresse vérifiée.)
@@ -77,9 +79,7 @@ export function SignUp() {
     taken === 'pro'
       ? t(PRO_EMAIL_EXISTS_TEXT)
       : taken === 'client'
-        ? role === 'pro'
-          ? t('Cette adresse est déjà utilisée par un compte client. Choisissez une autre adresse pour votre espace professionnel, ou connectez-vous.')
-          : t('Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.')
+        ? t('Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.')
         : taken === 'pending'
           ? t('Une inscription est déjà en cours avec cette adresse : ouvrez le lien de confirmation reçu par e-mail.')
           : null;
@@ -123,16 +123,10 @@ export function SignUp() {
   return (
     <AuthShell
       role={role}
-      back={role === 'pro' ? '/pro/bienvenue' : next.replace('/reserver/coordonnees', '/reserver/quand')}
+      back={next.replace('/reserver/coordonnees', '/reserver/quand')}
       onglets={{ actif: 'inscription', liens: { connexion, inscription } }}
-      titre={role === 'pro' ? 'Créer mon espace pro' : 'Créer un compte'}
-      sous={
-        role === 'pro'
-          ? t('Gratuit · Prêt en 5 min')
-          : next.includes('/reserver/')
-            ? t('Créez votre compte pour valider votre créneau.')
-            : t('Réservez sans appeler.')
-      }
+      titre="Créer un compte"
+      sous={next.includes('/reserver/') ? t('Créez votre compte pour valider votre créneau.') : t('Réservez sans appeler.')}
     >
       <form onSubmit={creer} noValidate>
         <Field
@@ -228,7 +222,7 @@ export function SignUp() {
         )}
 
         <Button type="submit" loading={busy && !taken} disabled={busy || !!taken || (confirmation !== '' && accord !== 'ok')}>
-          {role === 'pro' ? t('Créer mon espace pro') : t('Créer mon compte')}
+          {t('Créer mon compte')}
         </Button>
 
         <p className="t3 text-center leading-[1.45]">

@@ -80,6 +80,15 @@ export function Login({ landing }: { landing?: boolean } = {}) {
    * exception, la porte PROFESSIONNELLE (`?role=pro`), qui vient de `/pro/bienvenue` et garde son
    * retour vers cette page.
    */
+  // PORTAIL PRO (13 nov. 2026) : l'e-mail d'abord, dans `pages/pro/Acces.tsx`. L'application pro
+  // s'ouvre sur sa page d'accueil ; l'ancienne porte pro du site mène au nouveau parcours.
+  if (PRO_ONLY && landing) return <Navigate to="/pro/bienvenue" replace />;
+  if (role === 'pro') {
+    const q = new URLSearchParams({ next });
+    if (params.get('email')) q.set('email', params.get('email')!);
+    return <Navigate to={`/pro/acces?${q.toString()}`} replace />;
+  }
+
   if (!landing && params.get('role') !== 'pro') {
     const q = params.toString();
     return <Navigate to={`/intro${q ? `?${q}` : ''}`} replace />;
@@ -122,10 +131,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
       await signOut({ voile: false });
       setError({
         kind: 'wrong_portal',
-        text:
-          role === 'pro'
-            ? t('Ce compte n’est pas un compte professionnel. Créez un espace pro avec une autre adresse.')
-            : t('Ce compte est un compte professionnel. Créez un compte client avec une autre adresse.'),
+        text: t('Ce compte est un compte professionnel. Créez un compte client avec une autre adresse.'),
       });
       return false;
     } catch {
@@ -172,21 +178,15 @@ export function Login({ landing }: { landing?: boolean } = {}) {
 
   const lienEmail = `/connexion/lien?role=${role}&next=${encodeURIComponent(next)}${email.trim() ? `&email=${encodeURIComponent(email.trim())}` : ''}`;
   const inscription = `/inscription?role=${role}&next=${encodeURIComponent(next)}`;
-  const connexion = role === 'pro' ? `/connexion?role=pro&next=${encodeURIComponent(next)}` : `/intro?next=${encodeURIComponent(next)}`;
+  const connexion = `/intro?next=${encodeURIComponent(next)}`;
 
   return (
     <AuthShell
       role={role}
-      back={landing ? next.replace('/reserver/coordonnees', '/reserver/quand') : role === 'pro' ? '/pro/bienvenue' : '/'}
+      back={landing ? next.replace('/reserver/coordonnees', '/reserver/quand') : '/'}
       onglets={{ actif: 'connexion', liens: { connexion, inscription } }}
-      titre={role === 'pro' ? 'Connexion à votre espace' : 'Connexion'}
-      sous={
-        role === 'pro'
-          ? t('Votre agenda vous attend.')
-          : next.includes('/reserver/')
-            ? t('Connectez-vous pour valider votre créneau.')
-            : t('Vos rendez-vous, en un instant.')
-      }
+      titre="Connexion"
+      sous={next.includes('/reserver/') ? t('Connectez-vous pour valider votre créneau.') : t('Vos rendez-vous, en un instant.')}
       pied={
         // Créer un compte : c'est l'onglet « Inscription », en tête (toucher ou glisser).
         landing && !PRO_ONLY ? (
@@ -251,7 +251,7 @@ export function Login({ landing }: { landing?: boolean } = {}) {
             )}
             {error.kind === 'wrong_portal' && (
               <Link to={inscription} className="btn sm">
-                <I icon={UserPlus} size={16} /> {role === 'pro' ? t('Créer un espace professionnel') : t('Créer un compte client')}
+                <I icon={UserPlus} size={16} /> {t('Créer un compte client')}
               </Link>
             )}
             {error.kind === 'credentials' && (

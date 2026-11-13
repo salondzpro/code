@@ -61,6 +61,8 @@ export function EmailSent() {
 
   // Le lien a été ouvert dans cet onglet : la session existe, on continue.
   if (session && mode !== 'reset') return <Navigate to={`/connexion/retour?next=${encodeURIComponent(flow?.next ?? '/')}`} replace />;
+  // Espace pro : son propre écran, avec le bouton au logo de la messagerie (13 nov. 2026).
+  if (flow?.role === 'pro') return <Navigate to={`/pro/acces/envoye?mode=${mode}`} replace />;
   if (!email) return <Navigate to="/connexion" replace />;
   const txt = TEXT[mode];
 
@@ -83,8 +85,8 @@ export function EmailSent() {
 
   return (
     <AuthShell
-      role={flow?.role === 'pro' ? 'pro' : 'client'}
-      back={flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion'}
+      role="client"
+      back="/connexion"
       icone={MailCheck}
       titre={txt.title}
       sous={
@@ -107,7 +109,7 @@ export function EmailSent() {
         <button
           type="button"
           className="auth-lien discret"
-          onClick={() => navigate(flow?.role === 'pro' ? '/connexion?role=pro' : '/connexion')}
+          onClick={() => navigate('/connexion')}
         >
           {t('Changer d’adresse')}
         </button>

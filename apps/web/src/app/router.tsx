@@ -25,6 +25,7 @@ import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 import { Market } from '@/pages/auth/Market';
 import { ProWelcome } from '@/pages/pro/Welcome';
+import { ProAccesCreer, ProAccesEmail, ProAccesEnvoye, ProAccesMotDePasse, ProAccesOubli } from '@/pages/pro/Acces';
 // Client (design C-H / C-F)
 import { Marketplace } from '@/pages/client/Marketplace';
 import { Localisation } from '@/pages/client/Localisation';
@@ -208,6 +209,12 @@ export const router = createBrowserRouter([
           { path: '/connexion/mot-de-passe', element: <NewPassword /> },
           { path: '/connexion/retour', element: <WelcomeBack /> },
           { path: '/pro/bienvenue', element: <ProWelcome /> },
+          // Accès professionnel en un seul chemin, l'e-mail d'abord (13 nov. 2026).
+          { path: '/pro/acces', element: <ProAccesEmail /> },
+          { path: '/pro/acces/mot-de-passe', element: <ProAccesMotDePasse /> },
+          { path: '/pro/acces/creer', element: <ProAccesCreer /> },
+          { path: '/pro/acces/envoye', element: <ProAccesEnvoye /> },
+          { path: '/pro/acces/oubli', element: <ProAccesOubli /> },
           {
             element: <RequireAuth />,
             children: [

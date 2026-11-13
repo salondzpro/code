@@ -89,7 +89,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
   });
 
   if (!settings && (!draft.market || !draft.name)) return <Navigate to={stepPath(1)} replace />;
-  if (!session) return <Navigate to="/connexion?role=pro" replace />;
+  if (!session) return <Navigate to="/pro/acces" replace />;
 
   const wName = wilaya ? wilayaName(wilaya) : '';
   const outside = !!pos && !!box && !dansZone(pos, box);

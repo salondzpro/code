@@ -65,4 +65,16 @@
     <!-- Position : à l'ouverture seulement, pour trouver les salons proches. Jamais en arrière-plan. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- « Ouvrir Gmail » (ReglagesNotificationsPlugin.ouvrirMessagerie) : Android 11+ cache les
+         applications non déclarées ici, et l'ouverture par paquet échouerait. -->
+    <queries>
+        <package android:name="com.google.android.gm" />
+        <package android:name="com.microsoft.office.outlook" />
+        <package android:name="com.yahoo.mobile.client.android.mail" />
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.APP_EMAIL" />
+        </intent>
+    </queries>
 </manifest>

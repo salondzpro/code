@@ -269,9 +269,11 @@ export function useSignOut(): { seDeconnecter: (avant?: () => void) => Promise<v
   const navigate = useNavigate();
   const seDeconnecter = useCallback(
     async (avant?: () => void) => {
+      // Quitter l'espace pro ramène à SA porte (13 nov. 2026) : l'ouverture « Salon DZ Pro ».
+      const pro = window.location.pathname === '/pro' || window.location.pathname.startsWith('/pro/');
       await signOut();
       avant?.();
-      navigate('/intro', { replace: true });
+      navigate(pro ? '/pro/bienvenue' : '/intro', { replace: true });
     },
     [signOut, navigate],
   );

@@ -66,6 +66,24 @@ public class ReglagesNotificationsPlugin extends Plugin {
     resoudre(call, lancer(fiche(getContext().getPackageName())) || lancer(new Intent(Settings.ACTION_SETTINGS)));
   }
 
+  /**
+   * MESSAGERIE (13 nov. 2026) : « Ouvrir Gmail » après une inscription ou un lien de connexion.
+   * `paquet` = l'application déduite de l'adresse (Gmail, Outlook, Yahoo) ; absente ou non
+   * installée, l'application de messagerie par défaut du téléphone. Les paquets visés sont déclarés
+   * dans `<queries>` du manifeste : sans cela, Android 11+ les cache et l'ouverture échoue.
+   */
+  @PluginMethod
+  public void ouvrirMessagerie(PluginCall call) {
+    String paquet = call.getString("paquet");
+    Intent appli = null;
+    if (paquet != null && !paquet.isEmpty()) {
+      appli = getContext().getPackageManager().getLaunchIntentForPackage(paquet);
+    }
+    boolean ouvert = appli != null && lancer(appli);
+    if (!ouvert) ouvert = lancer(Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_EMAIL));
+    resoudre(call, ouvert);
+  }
+
   private static Intent fiche(String paquet) {
     return new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + paquet));
   }

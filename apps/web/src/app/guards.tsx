@@ -186,7 +186,7 @@ export function RequirePro() {
   if (loading) return <PageLoading />;
   if (!session) {
     const next = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/connexion?role=pro&next=${next}`} replace />;
+    return <Navigate to={`/pro/bienvenue?next=${next}`} replace />;
   }
   if (salonQuery.isPending || me.isPending) return <PageLoading />;
   // Le professionnel aussi complète nom et numéro avant d'entrer : ses clients l'appellent.

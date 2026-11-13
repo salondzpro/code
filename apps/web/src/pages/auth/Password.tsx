@@ -3,7 +3,7 @@
  * une session de récupération, on remplace le mot de passe puis on continue).
  */
 import { useState, type FormEvent } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { authErrorText, useAuth } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { KeyRound, LockKeyhole } from 'lucide-react';
@@ -21,6 +21,12 @@ export function ForgotPassword() {
   const [email, setEmail] = useState(params.get('email') ?? readAuthFlow()?.identifier ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Espace pro : son propre écran (`pages/pro/Acces.tsx`, 13 nov. 2026).
+  if (readAuthFlow()?.role === 'pro') {
+    const q = new URLSearchParams(email ? { email } : {});
+    return <Navigate to={`/pro/acces/oubli${q.size ? `?${q.toString()}` : ''}`} replace />;
+  }
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();

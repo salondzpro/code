@@ -9655,3 +9655,350 @@ html.pro-theme .ag9-lg-cn.on {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* ============================================================================================
+   PORTAIL PRO (13 nov. 2026, maquette validée) : ouverture `pages/pro/Welcome.tsx` (.pwo-*) et
+   écrans d'accès `pages/pro/Acces.tsx` + `components/ProAuthKit.tsx` (.pa-*). Thème minimal :
+   blanc cassé, Plus Jakarta Sans, boutons noirs en PILULE en bas d'écran, liens soulignés.
+   ============================================================================================ */
+.pa-btn {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font: 600 16px/1 var(--font-sans);
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.pa-btn:active {
+  transform: scale(0.98);
+}
+.pa-btn:disabled {
+  opacity: 0.6;
+}
+.pa-btn.g {
+  background: #ebebee;
+  color: #111111;
+  font-size: 15px;
+}
+.pa-mail-i {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ffffff;
+}
+.pa-lien {
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: #111111;
+  font: 500 14px/1.4 var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.pa-lien.centre {
+  align-self: center;
+}
+.pa-note {
+  margin: 0;
+  color: #6e6e76;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+.pa-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ écrans d'accès */
+.pa {
+  display: flex;
+  flex-direction: column;
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 12px 20px max(24px, var(--sab, 0px));
+  background: #f7f7f9;
+  color: #111111;
+  font-family: var(--font-sans);
+}
+.pa-top {
+  min-height: 44px;
+}
+.pa-top .ib {
+  background: #ffffff;
+  border: 0;
+  box-shadow: 0 6px 18px -12px rgb(0 0 0 / 0.3);
+}
+.pa-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding-top: 24px;
+}
+.pa-t {
+  margin: 0;
+  text-wrap: balance;
+  hyphens: none;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+.pa-s {
+  margin: 8px 0 0;
+  color: #6e6e76;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.pa-s b {
+  color: #111111;
+  font-weight: 500;
+}
+.pa-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+.pa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pa :is(.inp, input.inp) {
+  height: 54px;
+  border: 1px solid #e2e2e6;
+  border-radius: 14px;
+  background: #ffffff;
+}
+.pa .inp:focus {
+  border-color: #111111;
+}
+.pa .inp.err {
+  border-color: #ff3b30;
+}
+.pa-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 28px;
+}
+.pa-actions > .btn {
+  height: 56px;
+  border-radius: 999px;
+  font-size: 16px;
+}
+.pa-actions > .btn.g {
+  background: #ebebee;
+  border-color: transparent;
+  color: #111111;
+}
+/* Clavier ouvert : les boutons restent sous le formulaire, sans grand vide au-dessus. */
+html[data-kb] .pa-actions {
+  margin-top: 8px;
+}
+.pa-compte {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16));
+}
+.pa-compte-av {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 600;
+}
+.pa-compte-e {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pa-compte-m,
+.pa-puce a {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6e6e76;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pa-puce {
+  display: flex;
+  align-self: flex-start;
+  max-width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid #111111;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.pa-puce span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pa-regle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+  color: #6e6e76;
+  font-size: 13px;
+}
+.pa-regle-r {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #c9c9cf;
+  border-radius: 999px;
+  color: #ffffff;
+}
+.pa-regle.ok {
+  color: #111111;
+}
+.pa-regle.ok .pa-regle-r {
+  border-color: #111111;
+  background: #111111;
+}
+.pa-rond {
+  display: flex;
+  width: 88px;
+  height: 88px;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  margin: 48px 0 24px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px -16px rgb(0 0 0 / 0.2);
+}
+.pa-rond ~ .pa-t,
+.pa-rond ~ .pa-s {
+  text-align: center;
+}
+.pa-note.centre {
+  align-self: center;
+  max-width: 19rem;
+}
+
+/* ------------------------------------------------------------------ ouverture */
+.pwo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f7f7f9;
+  color: #111111;
+  font-family: var(--font-sans);
+}
+.pwo-ph {
+  position: absolute;
+  inset: -60px;
+  filter: blur(30px) saturate(0.85);
+}
+.pwo-voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(247 247 249 / 0.1) 0%, rgb(247 247 249 / 0.25) 38%, rgb(247 247 249 / 0.88) 60%, #f7f7f9 76%);
+}
+.pwo-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px 0;
+}
+.pwo-copy {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 24px 36px;
+  text-align: center;
+}
+.pwo-k {
+  margin: 0;
+  color: #3a3a40;
+  font-size: 15px;
+  font-weight: 500;
+}
+.pwo-t {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.pwo-s {
+  max-width: 18rem;
+  margin: 6px 0 0;
+  color: #6e6e76;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.pwo-bas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 0 20px max(32px, var(--sab, 0px));
+}
+.pwo-bas .pa-lien {
+  align-self: center;
+}
+.pwo-demos {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  .pwo-copy {
+    flex: 0 0 auto;
+    margin-top: 28vh;
+  }
+  .pwo-t {
+    font-size: 56px;
+  }
+}
