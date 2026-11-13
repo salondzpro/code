@@ -9371,15 +9371,14 @@ html.pro-theme .ag9-d .ag9-dn {
   color: #111111;
   font-weight: 600;
 }
-/* JOUR CHOISI (13 nov. 2026) : plus de pavé noir — le numéro dans un CERCLE BLEU iOS (#007aff), le nom
-   du jour en bleu, comme les applis Apple ; aujourd'hui, non choisi, s'écrit en bleu. Les points de
+/* JOUR CHOISI (13 nov. 2026) : plus de pavé rectangulaire — le numéro dans un CERCLE NOIR (le bleu iOS a été essayé puis écarté par le propriétaire), nom du jour en noir ; aujourd'hui, non choisi, en gras. Les points de
    couleur restent lisibles dessous. */
 html.pro-theme .ag9-d.on {
   background: transparent;
   box-shadow: none;
 }
 html.pro-theme .ag9-d.on .ag9-dw {
-  color: #007aff;
+  color: #111111;
   font-weight: 600;
 }
 html.pro-theme .ag9-d.on .ag9-dn {
@@ -9389,14 +9388,15 @@ html.pro-theme .ag9-d.on .ag9-dn {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #007aff;
+  background: #111111;
   color: #ffffff;
 }
 html.pro-theme .ag9-d.td:not(.on) {
   box-shadow: none;
 }
 html.pro-theme .ag9-d.td:not(.on) :is(.ag9-dw, .ag9-dn) {
-  color: #007aff;
+  color: #111111;
+  font-weight: 600;
 }
 html.pro-theme .ag9-d.off .ag9-dn {
   color: #c4c4ca;
