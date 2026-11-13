@@ -563,7 +563,16 @@ function WeekStrip({
         const list = (byDay.get(d) ?? []).filter((b) => b.status !== 'cancelled');
         const on = d === selected;
         const closed = closedDays.includes(dayOfWeekFromKey(d));
-        const dots = list.slice(0, 3).map((b, i) => (b.status === 'pending' || (!!marks?.[d] && i === Math.min(list.length, 3) - 1) ? 'a' : ''));
+        // UN POINT PAR RENDEZ-VOUS, dans la couleur de son statut (13 nov. 2026, demande du
+        // propriétaire) — la même que les blocs et la légende : on lit d'un coup d'œil combien il y
+        // en a et ce qui reste à valider. Quatre au plus ; une nouveauté non vue ajoute un point rouge.
+        const passe = d < today;
+        const dots: string[] = list
+          .slice(0, 4)
+          .map((b) =>
+            b.status === 'no_show' ? 's-ns' : b.status === 'completed' || passe ? 's-done' : b.status === 'pending' ? 's-pd' : 's-cf',
+          );
+        if (marks?.[d]) dots.push('nv');
         return (
           <button
             key={d}

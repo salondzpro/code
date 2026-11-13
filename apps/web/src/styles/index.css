@@ -9371,12 +9371,32 @@ html.pro-theme .ag9-d .ag9-dn {
   color: #111111;
   font-weight: 600;
 }
+/* JOUR CHOISI (13 nov. 2026) : plus de pavé noir — le numéro dans un CERCLE BLEU iOS (#007aff), le nom
+   du jour en bleu, comme les applis Apple ; aujourd'hui, non choisi, s'écrit en bleu. Les points de
+   couleur restent lisibles dessous. */
 html.pro-theme .ag9-d.on {
-  background: #111111;
-  border-radius: 14px;
+  background: transparent;
+  box-shadow: none;
 }
-html.pro-theme .ag9-d.on :is(.ag9-dw, .ag9-dn) {
+html.pro-theme .ag9-d.on .ag9-dw {
+  color: #007aff;
+  font-weight: 600;
+}
+html.pro-theme .ag9-d.on .ag9-dn {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #007aff;
   color: #ffffff;
+}
+html.pro-theme .ag9-d.td:not(.on) {
+  box-shadow: none;
+}
+html.pro-theme .ag9-d.td:not(.on) :is(.ag9-dw, .ag9-dn) {
+  color: #007aff;
 }
 html.pro-theme .ag9-d.off .ag9-dn {
   color: #c4c4ca;
@@ -10257,4 +10277,36 @@ html[data-kb] .pa-actions {
   html[data-kb] .sheet.modal {
     min-height: 0;
   }
+}
+
+/* POINTS DE LA FRISE DES JOURS (13 nov. 2026) : un point par rendez-vous, couleur de son statut
+   (charte : orange à valider, bleu confirmé, gris passé, rouge absent) ; rouge cerclé = nouveauté. */
+html.pro-theme .ag9-dd {
+  gap: 3px;
+  height: 5px;
+}
+html.pro-theme .ag9-dd i {
+  width: 5px;
+  height: 5px;
+}
+html.pro-theme .ag9-dd i.s-pd,
+html.pro-theme .ag9-d.on .ag9-dd i.s-pd {
+  background: #ff9500;
+}
+html.pro-theme .ag9-dd i.s-cf,
+html.pro-theme .ag9-d.on .ag9-dd i.s-cf {
+  background: #007aff;
+}
+html.pro-theme .ag9-dd i.s-done,
+html.pro-theme .ag9-d.on .ag9-dd i.s-done {
+  background: #aeaeb2;
+}
+html.pro-theme .ag9-dd i.s-ns,
+html.pro-theme .ag9-d.on .ag9-dd i.s-ns {
+  background: #ff3b30;
+}
+html.pro-theme .ag9-dd i.nv,
+html.pro-theme .ag9-d.on .ag9-dd i.nv {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px #ff3b30;
 }

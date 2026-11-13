@@ -47,6 +47,10 @@
 Agenda : fond teinté de la couleur du statut (16 %), heure écrite dans cette couleur, sans liseré.
 **Jamais de couleur par membre de l'équipe** (refusé le 11 nov.) : le nom en tête de colonne suffit.
 
+Frise des jours : **un point par rendez-vous** (quatre au plus) dans la couleur de son statut, point
+rouge cerclé = nouveauté non vue. **Jour choisi = numéro dans un cercle bleu iOS **, nom du
+jour en bleu (jamais un pavé noir) ; aujourd'hui non choisi s'écrit en bleu.
+
 ## 3. Typographie, formes, ombres
 
 - **Plus Jakarta Sans**, graisses **400 / 500 / 600 seulement**. Grand titre 28 px 600, interlettrage
@@ -120,6 +124,8 @@ le reste (Reporter, Annuler, Confier, Fiche), le mot dessous. Les mêmes que les
 | Heure ou durée répétées | Une seule fois (§ 1) |
 | Couleur par membre dans l'agenda | Couleur = statut seulement (§ 2) |
 | Pastilles FR / AR / EN | `LangSwitch` (§ 7) |
+| Pavé noir sur le jour choisi | Cercle bleu iOS sur le numéro (§ 2) |
+| Points gris sans sens sous les jours | Un point par rendez-vous, couleur du statut (§ 2) |
 | Violet, dégradés, halos colorés | Monochrome + couleurs de sens (§ 2, § 3) |
 
 ## 9. Avant de livrer un écran pro — liste de contrôle
