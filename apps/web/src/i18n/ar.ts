@@ -1913,4 +1913,7 @@ export const ar: Record<string, string> = {
   "{n} annulation": "{n} إلغاء",
   "{n} visites": "{n} زيارات",
   "{n} visite": "{n} زيارة",
+  "Sur place": "في الصالون",
+  "arrivée {a}, retard toléré jusqu’à {b}": "الحضور {a}، التأخر مقبول حتى {b}",
+  "Dans 3 semaines": "بعد 3 أسابيع",
 };

@@ -7,6 +7,7 @@
  *
  * Un rendez-vous passé encore « Confirmé » se règle sur place : Terminé ou Client absent.
  */
+import { WhatsAppLogo } from '@/components/BrandIcons';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
@@ -278,7 +279,7 @@ export function ClientDetail() {
           )}
           {wa && (
             <a href={wa} target="_blank" rel="noreferrer" className="ib lg" aria-label={`WhatsApp ${c.name}`}>
-              <I icon={MessageCircle} size={20} />
+              <WhatsAppLogo size={20} />
             </a>
           )}
         </div>

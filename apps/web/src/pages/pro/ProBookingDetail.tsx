@@ -54,6 +54,8 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
+import { ClientContact } from '@/components/ClientContact';
+import { ActionRond } from '@/components/ActionRond';
 import { originLabel } from '@/lib/pageView';
 import { PageLoading } from '@/components/PageLoading';
 import { SlotSuggestions } from '@/components/SlotSuggestions';
@@ -119,7 +121,6 @@ export function ProBookingDetail() {
           priceDa: b.priceDa,
         },
       ];
-  const wa = b.clientPhone ? `https://wa.me/${b.clientPhone.replace(/\D/g, '')}` : null;
   const initials = b.clientName
     .split(' ')
     .map((p, i) => (i === 0 ? p : `${p.charAt(0)}.`))
@@ -127,70 +128,49 @@ export function ProBookingDetail() {
 
   const dayKey = toLocalDateKey(new Date(b.startsAt));
   const dayLabel = relativeDayLabelDZ(dayKey);
-  const dateLong = formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase());
+  // « Demain · sam. 14 nov. » : le jour relatif, puis la date courte — jamais l'année de l'année en cours.
+  const quand = /^\p{L}+\. \d/u.test(dayLabel) ? dayLabel : `${dayLabel} · ${formatDateShortDZ(b.startsAt)}`;
+  const team = (salon.staff ?? []).filter((m) => m.isActive).length > 1;
+  const confirmable = b.status === 'pending' && !past;
+  const closable = b.status === 'confirmed' && past;
+  const aActions = confirmable || closable || late || (active && !past);
 
   return (
-    <Screen bottom={SHEET_PAD} gap={12}>
+    <Screen bottom={aActions ? SHEET_PAD : undefined} gap={12}>
       <TopBar backTo="/pro/agenda" title={t('Rendez-vous')} />
-      {/* Qui : le client d'abord, avec de quoi le joindre — c'est ce que le salon cherche
-          en ouvrant la fiche (un retard, une question, une confirmation). */}
+      {/* L'ESSENTIEL DU MOMENT (13 nov. 2026, charte `docs/CHARTE.md`) : qui, comment la joindre
+          (ronds WhatsApp au logo officiel, SMS, appel — les mêmes que l'agenda), son état, puis
+          quand en grand. Le détail suit en lignes, sans rien répéter. */}
       <div className="crd !gap-3">
-        <div className="flex items-center gap-3.5">
-          <Avatar name={b.clientName} size={56} />
+        <div className="flex items-center gap-3">
+          <Avatar name={b.clientName} size={48} />
           <div className="min-w-0 flex-1">
-            <h1 className="h1 !text-[1.429rem]">{initials}</h1>
+            <h1 className="h1 truncate !text-[1.286rem]">{initials}</h1>
             {b.clientPhone && (
-              <p className="mono text-[0.857rem] text-muted">{formatDZPhone(b.clientPhone)}</p>
-            )}
-            {originLabel(b.origin) && <p className="text-[0.857rem] text-muted">{originLabel(b.origin)}</p>}
-            {!!b.bookedByName && (
-              <p className="text-[0.857rem] text-muted">{t("Réservé par")}{' '}{b.bookedByName}</p>
+              <p className="mono text-[0.857rem] text-muted" dir="ltr">{formatDZPhone(b.clientPhone)}</p>
             )}
           </div>
-          <StatusBadge
-            status={b.status}
-            md
-            cancelledBy={b.cancelledBy}
-            kind={b.cancellationKind}
-            viewer="pro"
-          />
+          <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
         </div>
-        {b.clientPhone && (
-          <div className="g2">
-            <a href={`tel:${b.clientPhone}`} className="btn g sm">
-              <I icon={Phone} size={18} /> {t("Appeler")}
-            </a>
-            {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-                <I icon={MessageCircle} size={18} /> {t("WhatsApp")}
-              </a>
-            )}
-          </div>
-        )}
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0">
+            <b className="block text-[1.143rem] font-semibold" dir="auto">{quand}</b>
+            <span className="mono block text-[1rem] text-muted" dir="ltr">
+              {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
+            </span>
+          </span>
+          <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} viewer="pro" />
+        </div>
       </div>
 
-      {/* Quoi, quand, avec qui, combien : une ligne par fait, comme une fiche de caisse. */}
+      {/* Quoi, avec qui, combien : une ligne par fait, sans répéter l'heure ni la durée. */}
       <div className="crd !gap-0 !py-1">
-        <FactRow
-          icon={CalendarDays}
-          title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : `${dayLabel} · ${dateLong}`}
-          sub={`${formatTimeDZ(b.startsAt)} – ${formatTimeDZ(b.endsAt)} · ${formatDuration(b.durationMinutes)}`}
-          right={
-            <span className="mono text-[1.429rem] font-semibold tracking-[-0.5px]">
-              {formatTimeDZ(b.startsAt)}
-            </span>
-          }
-        />
         {lines.map((it) => (
           <FactRow
             key={it.id}
             icon={Scissors}
             title={it.serviceName}
-            sub={
-              'durationMinutes' in it && it.durationMinutes
-                ? formatDuration(it.durationMinutes)
-                : undefined
-            }
+            sub={'durationMinutes' in it && it.durationMinutes ? formatDuration(it.durationMinutes) : undefined}
             // Une seule prestation : son prix est le total, dit une ligne plus bas.
             right={
               lines.length > 1 && 'priceDa' in it && it.priceDa != null ? (
@@ -199,12 +179,19 @@ export function ProBookingDetail() {
             }
           />
         ))}
-        {b.staff && <FactRow icon={UserRound} title={`Avec ${b.staff.displayName}`} />}
+        {b.staff && team && <FactRow icon={UserRound} title={`${t('Avec')} ${b.staff.displayName}`} />}
         <FactRow
           icon={Banknote}
           title={formatDA(b.priceDa)}
-          sub={`Paiement sur place · arrivée à ${rule.arriveAt}, retard toléré jusqu'à ${rule.lateUntil}`}
+          sub={`${t('Sur place')} · ${t('arrivée {a}, retard toléré jusqu’à {b}', { a: rule.arriveAt, b: rule.lateUntil })}`}
         />
+        {(originLabel(b.origin) || b.bookedByName) && (
+          <FactRow
+            icon={CalendarDays}
+            title={b.bookedByName ? `${t('Réservé par')} ${b.bookedByName}` : originLabel(b.origin)!}
+            sub={b.bookedByName ? (originLabel(b.origin) ?? undefined) : undefined}
+          />
+        )}
         {b.notes && (
           <FactRow
             icon={StickyNote}
@@ -223,58 +210,36 @@ export function ProBookingDetail() {
       </div>
       <ErrorMessage error={setStatus.error ?? cancel.error} />
 
-      <BottomSheet grab={false}>
-        {b.status === 'pending' && !past && (
-          <Button
-            disabled={setStatus.isPending}
-            onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
-          >
-            <I icon={Check} size={18} /> {t("Confirmer le rendez-vous")}
-          </Button>
-        )}
-        {b.status === 'confirmed' && past && (
-          <div className="g2">
-            <Button
-              disabled={setStatus.isPending}
-              onClick={() => setStatus.mutate({ id: b.id, status: 'completed' })}
-            >
-              <I icon={CheckCircle2} size={18} /> {t("Terminé")}
-            </Button>
-            <Button
-              variant="g"
-              disabled={setStatus.isPending}
-              onClick={() => setStatus.mutate({ id: b.id, status: 'no_show' })}
-            >
-              <I icon={UserX} size={18} /> {t("Client absent")}
-            </Button>
+      {/* Les gestes en ronds (les mêmes que la fenêtre de l'agenda) : vert = oui, rouge = non, blanc
+          = le reste. Rien quand il n'y a rien à faire : le retour est la flèche en haut. */}
+      {aActions && (
+        <BottomSheet grab={false}>
+          <div className="ag-acts">
+            {confirmable && (
+              <ActionRond ton="oui" icon={ICONE.accepter} label={t('Accepter')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })} />
+            )}
+            {confirmable && <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />}
+            {closable && (
+              <>
+                <ActionRond ton="oui" icon={ICONE.terminer} label={t('Terminé')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'completed' })} />
+                <ActionRond ton="non" icon={ICONE.absent} label={t('Absent')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'no_show' })} />
+              </>
+            )}
+            {late && (
+              <ActionRond
+                ton="non"
+                icon={ICONE.annulerRetard}
+                label={t('Retard')}
+                title={`${t('Annuler pour retard (plus de')} ${LATE_TOLERANCE_MINUTES} ${t('min)')}`}
+                busy={cancel.isPending}
+                onClick={() => cancel.mutate({ id: b.id, late: true })}
+              />
+            )}
+            {active && !past && <ActionRond icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />}
+            {b.status === 'confirmed' && !past && <ActionRond icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />}
           </div>
-        )}
-        {late && (
-          <Button
-            variant="d"
-            disabled={cancel.isPending}
-            onClick={() => cancel.mutate({ id: b.id, late: true })}
-          >
-            <I icon={AlarmClock} size={18} /> {t("Annuler pour retard (plus de")}{' '}{LATE_TOLERANCE_MINUTES}{' '}
-            {t("min)")}
-          </Button>
-        )}
-        {active && !past && (
-          <div className="g2">
-            <Button variant="g" onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
-              <I icon={CalendarClock} size={18} /> {t("Reporter")}
-            </Button>
-            <Button variant="d" onClick={() => setCancelling(true)}>
-              <I icon={XCircle} size={18} /> {t("Annuler")}
-            </Button>
-          </div>
-        )}
-        {(!active || (past && b.status === 'pending')) && (
-          <Button variant="g" onClick={() => navigate('/pro/agenda')}>
-            <I icon={ArrowLeft} size={18} /> {t("Retour à l'agenda")}
-          </Button>
-        )}
-      </BottomSheet>
+        </BottomSheet>
+      )}
 
       {cancelling && (
         <>
@@ -282,7 +247,7 @@ export function ProBookingDetail() {
           <BottomSheet modal className="!z-50">
             <div className="text-center">
               <div className="text-[1.429rem] font-semibold tracking-[-0.4px]">
-                {t("Annuler ce rendez-vous ?")}
+                {b.status === 'pending' ? t('Refuser cette demande ?') : t('Annuler ce rendez-vous ?')}
               </div>
               <p className="p mt-2">
                 {t("Le client sera prévenu sur WhatsApp et le créneau sera libéré.")}

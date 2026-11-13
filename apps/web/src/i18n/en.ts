@@ -1927,4 +1927,7 @@ export const en: Record<string, string> = {
   "{n} annulation": "{n} cancellation",
   "{n} visites": "{n} visits",
   "{n} visite": "{n} visit",
+  "Sur place": "Pay on site",
+  "arrivée {a}, retard toléré jusqu’à {b}": "arrive {a}, late until {b} tolerated",
+  "Dans 3 semaines": "In 3 weeks",
 };

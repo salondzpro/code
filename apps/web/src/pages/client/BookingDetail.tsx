@@ -3,6 +3,7 @@
  * (Aujourd'hui / Demain / date, heure, prix) et la liste des prestations — même lecture que la fiche pro.
  * Reporter / Annuler. C-F 17 — feuille « Annuler ce rendez-vous ? » (avec la règle anti-abus) ; C-F 18 — annulation confirmée.
  */
+import { WhatsAppLogo } from '@/components/BrandIcons';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
@@ -231,7 +232,7 @@ export function BookingDetail() {
           </a>
           {wa && (
             <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-              <I icon={MessageCircle} size={18} /> {t("WhatsApp")}
+              <WhatsAppLogo size={18} /> {t("WhatsApp")}
             </a>
           )}
         </div>

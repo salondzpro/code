@@ -8,6 +8,7 @@
  *   3. MA PAGE : visites, réservations et visites par jour ;
  *   4. MA STORY : préparée sur place.
  */
+import { WhatsAppGlyph } from '@/components/BrandIcons';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, CalendarClock, Check, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
@@ -197,7 +198,7 @@ export function ProHome() {
         createPortal(
           <div role="status" className={`h11-toast ${toast.kind}`}>
             <span>
-              <I icon={toast.kind === 'call' ? Phone : toast.kind === 'wa' ? MessageCircle : Check} size={13} strokeWidth={3} />
+              {toast.kind === 'wa' ? <WhatsAppGlyph size={13} /> : <I icon={toast.kind === 'call' ? Phone : Check} size={13} strokeWidth={3} />}
             </span>
             {toast.text}
           </div>,

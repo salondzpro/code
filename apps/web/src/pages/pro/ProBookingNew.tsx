@@ -11,6 +11,7 @@
  * Le client se cherche AVANT de se saisir : la moitié des rendez-vous pris au téléphone
  * sont ceux d'habitués, et retaper leur nom crée des doublons dans la clientèle.
  */
+import { WhatsAppLogo } from '@/components/BrandIcons';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -585,7 +586,7 @@ export function ProBookingNew() {
               </Button>
               {phone && (
                 <a href={confirmation} target="_blank" rel="noreferrer" className="btn soft sm auto">
-                  <I icon={MessageCircle} size={16} /> {t('Prévenir sur WhatsApp')}
+                  <WhatsAppLogo size={16} /> {t('Prévenir sur WhatsApp')}
                 </a>
               )}
             </>
