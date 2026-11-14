@@ -108,45 +108,47 @@ export function AdminBookings() {
       ) : (
         <div className="crd !gap-0 !py-1">
           {rows.map((b) => (
-            <div key={b.id} className="li !items-start">
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[1rem]">
-                  <b>{b.clientName}</b>
-                  {b.clientPhone && (
-                    <span className="mono text-muted" dir="ltr"> · {formatDZPhone(b.clientPhone)}</span>
-                  )}
-                </span>
-                <span className="block truncate text-[0.857rem] text-muted">
-                  {b.salonSlug ? (
-                    <Link to={`/admin/salons/${b.salonId}`} className="underline">
-                      {b.salonName}
-                    </Link>
-                  ) : (
-                    b.salonName
-                  )}
-                  {' · '}
-                  {b.serviceName}
-                  {b.staffName ? ` · ${b.staffName}` : ''}
-                </span>
-                <span className="block text-[0.857rem] text-muted" dir="ltr">
-                  {quand(b.startsAt)} · {formatDA(b.priceDa)} · {b.origin ?? b.source}
-                </span>
-                {b.cancelledAt && (
-                  <span className="block text-[0.857rem] text-danger">
-                    {t('Annulé par {qui} le {quand}', {
-                      qui: parQui(b.cancelledBy),
-                      quand: quand(b.cancelledAt),
-                    })}
-                    {b.cancellationReason ? ` · ${b.cancellationReason}` : ''}
-                  </span>
-                )}
+            // MOBILE D'ABORD (14 nov. 2026) : le statut sur la ligne du nom, les détails dessous, et
+            // « Annuler » sous le texte — à côté, il écrasait le nom et le salon sur un téléphone.
+            <div key={b.id} className="ad-rdv">
+              <span className="ad-rdv-h">
+                <b className="min-w-0 flex-1 truncate">{b.clientName}</b>
+                <StatusBadge status={b.status as BookingStatus} />
               </span>
+              {b.clientPhone && (
+                <span className="mono block text-[0.857rem] text-muted" dir="ltr">
+                  {formatDZPhone(b.clientPhone)}
+                </span>
+              )}
+              <span className="block text-[0.857rem] text-muted">
+                {b.salonSlug ? (
+                  <Link to={`/admin/salons/${b.salonId}`} className="underline">
+                    {b.salonName}
+                  </Link>
+                ) : (
+                  b.salonName
+                )}
+                {' · '}
+                {b.serviceName}
+                {b.staffName ? ` · ${b.staffName}` : ''}
+              </span>
+              <span className="block text-[0.857rem] text-muted" dir="ltr">
+                {quand(b.startsAt)} · {formatDA(b.priceDa)} · {b.origin ?? b.source}
+              </span>
+              {b.cancelledAt && (
+                <span className="block text-[0.857rem] text-danger">
+                  {t('Annulé par {qui} le {quand}', {
+                    qui: parQui(b.cancelledBy),
+                    quand: quand(b.cancelledAt),
+                  })}
+                  {b.cancellationReason ? ` · ${b.cancellationReason}` : ''}
+                </span>
+              )}
               {(b.status === 'pending' || b.status === 'confirmed') && (
-                <Button icon={ICONE.annulerRdv} variant="g" sm auto onClick={() => setAnnuler(b.id)}>
-                  {t('Annuler')}
+                <Button icon={ICONE.annulerRdv} variant="g" sm onClick={() => setAnnuler(b.id)}>
+                  {t('Annuler au nom de la plateforme')}
                 </Button>
               )}
-              <StatusBadge status={b.status as BookingStatus} />
             </div>
           ))}
         </div>

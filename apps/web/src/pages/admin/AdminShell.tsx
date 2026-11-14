@@ -8,9 +8,10 @@
  * produit, c'est le même outil vu de l'autre côté du comptoir. Seul l'en-tête change, pour qu'on
  * sache à tout instant qu'on agit en tant que plateforme et non en tant que salon.
  */
-import { useEffect } from 'react';
-import { NavLink, Outlet, Navigate } from 'react-router';
-import { Activity, CalendarSearch, ContactRound, Flag, LayoutGrid, LockKeyhole, LogOut, QrCode, ScrollText, ShieldCheck, Store } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { NavLink, Outlet, Navigate, useLocation } from 'react-router';
+import { Activity, CalendarSearch, ChevronRight, ContactRound, Flag, LayoutGrid, LockKeyhole, LogOut, Menu, QrCode, ScrollText, ShieldCheck, Store } from 'lucide-react';
 import { ApiError, useAdminMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { Button, I } from '@/components/ui';
@@ -30,6 +31,18 @@ const NAV: { to: string; label: string; icon: typeof Store; end?: boolean; owner
   { to: '/admin/etiquettes', label: 'Étiquettes', icon: QrCode, section: 'Outils' },
   { to: '/admin/equipe', label: 'Équipe', icon: ShieldCheck, owner: true, section: 'Sécurité' },
   { to: '/admin/journal', label: 'Journal', icon: ScrollText, section: 'Sécurité' },
+];
+
+/**
+ * MOBILE D'ABORD (14 nov. 2026, demande du propriétaire) : sur téléphone, une barre en bas, à portée
+ * de pouce — les quatre écrans du quotidien et « Plus », qui ouvre tout le reste en feuille. Sur
+ * ordinateur, le rail. Les libellés courts sont ceux de la barre ; les sections restent celles du rail.
+ */
+const BAS: { to: string; label: string; icon: typeof Store; end?: boolean }[] = [
+  { to: '/admin', label: 'Accueil', icon: LayoutGrid, end: true },
+  { to: '/admin/salons', label: 'Pros', icon: Store },
+  { to: '/admin/comptes', label: 'Comptes', icon: ContactRound },
+  { to: '/admin/rendez-vous', label: 'RDV', icon: CalendarSearch },
 ];
 
 /** Verrouillage après inactivité (14 nov. 2026) : un poste laissé ouvert ne garde pas les clés. */
@@ -93,6 +106,9 @@ export function actionLabel(action: string): string {
 export function AdminLayout() {
   const { session, loading, signOut } = useAuth();
   const me = useAdminMe(!!session);
+  const { pathname } = useLocation();
+  const [plus, setPlus] = useState(false);
+  useEffect(() => setPlus(false), [pathname]);
 
   // Verrouillage : sans geste pendant 20 min, la session se ferme et l'on revient à la
   // connexion, avec retour ici. Le serveur borne aussi la session d'administration à 12 h.
@@ -138,6 +154,7 @@ export function AdminLayout() {
   const owner = me.data?.level === 'owner';
   const liens = NAV.filter((n) => owner || !n.owner);
   const sections = [...new Set(liens.map((n) => n.section))];
+  const reste = liens.filter((n) => !BAS.some((x) => x.to === n.to));
 
   return (
     <div className="ad h-app">
@@ -176,13 +193,49 @@ export function AdminLayout() {
           <AdminSearch owner={owner} />
           <span className="ad-niv">{owner ? t('Propriétaire') : t('Support')}</span>
         </header>
-        <nav className="ad-pills" aria-label={t('Administration')}>
-          {liens.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `ad-pill${isActive ? ' on' : ''}`}>
-              <I icon={n.icon} size={15} /> {t(n.label)}
+        <nav className="ad-bas" aria-label={t('Administration')}>
+          {BAS.map((n) => (
+            <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `ad-bas-i${isActive ? ' on' : ''}`}>
+              <I icon={n.icon} size={21} />
+              <span>{t(n.label)}</span>
             </NavLink>
           ))}
+          <button type="button" className={`ad-bas-i${plus || !BAS.some((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to))) ? ' on' : ''}`} onClick={() => setPlus(true)} aria-expanded={plus}>
+            <I icon={Menu} size={21} />
+            <span>{t('Plus')}</span>
+          </button>
         </nav>
+        {plus &&
+          createPortal(
+            <div className="ad-plus-w" onMouseDown={(e) => e.target === e.currentTarget && setPlus(false)}>
+              <div className="ad-plus" role="dialog" aria-modal="true" aria-label={t('Administration')}>
+                <span className="ad-plus-poignee" aria-hidden />
+                {/* Zéro doublon : la feuille ne répète pas ce que la barre du bas donne déjà. */}
+                {[...new Set(reste.map((n) => n.section))].map((sec) => (
+                  <div key={sec} className="ad-plus-sec">
+                    <span className="ad-sec-t">{t(sec)}</span>
+                    <div className="lst">
+                      {reste
+                        .filter((n) => n.section === sec)
+                        .map((n) => (
+                          <NavLink key={n.to} to={n.to} end={n.end} className="lst-r">
+                            <span className="ad-pal-i">
+                              <I icon={n.icon} size={18} />
+                            </span>
+                            <span className="lst-t">{t(n.label)}</span>
+                            <I icon={ChevronRight} size={18} className="text-muted rtl:-scale-x-100" />
+                          </NavLink>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+                <button type="button" className="ad-plus-out" onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'))}>
+                  <I icon={LogOut} size={18} /> {t('Se déconnecter')} · {owner ? t('Propriétaire') : t('Support')}
+                </button>
+              </div>
+            </div>,
+            document.body,
+          )}
         <Outlet />
       </div>
     </div>

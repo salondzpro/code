@@ -14,7 +14,7 @@
 import { ICONE } from '@/lib/actionIcons';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { EyeOff, ExternalLink, LogIn, Pause, Play, X } from 'lucide-react';
+import { EyeOff, ExternalLink, LogIn, Pause, Play } from 'lucide-react';
 import { useAdminActions, useAdminSalon } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
@@ -226,14 +226,8 @@ export function AdminSalon() {
               </span>
             </span>
             {(b.status === 'pending' || b.status === 'confirmed') && (
-              <Button
-                variant="g"
-                sm
-                auto
-                onClick={() => setGeste({ quoi: 'cancelBooking', id: b.id })}
-                aria-label={t('Annuler ce rendez-vous au nom de la plateforme')}
-              >
-                <I icon={X} size={14} />
+              <Button icon={ICONE.annulerRdv} variant="g" sm auto onClick={() => setGeste({ quoi: 'cancelBooking', id: b.id })}>
+                {t('Annuler')}
               </Button>
             )}
             <StatusBadge status={b.status as BookingStatus} />

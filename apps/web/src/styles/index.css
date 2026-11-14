@@ -12352,3 +12352,200 @@ html.client-theme .nvl {
 .ad-lock .btn {
   width: 100%;
 }
+
+/* ---- ADMINISTRATION, MOBILE D'ABORD (14 nov. 2026) ---- */
+/* Barre du bas : la pilule flottante en verre des clientes, cinq destinations. */
+.ad-bas {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + var(--safe-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  width: calc(100% - 24px);
+  max-width: 26rem;
+  height: 64px;
+  padding: 6px;
+  gap: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.76);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.65),
+    0 0 0 0.5px rgb(0 0 0 / 0.08),
+    0 14px 34px -12px rgb(0 0 0 / 0.3);
+}
+.ad-bas-i {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #6e6e76;
+  font: 500 11px/1 var(--font-sans);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.ad-bas-i:active {
+  transform: scale(0.94);
+}
+.ad-bas-i.on {
+  background: rgb(17 17 17 / 0.07);
+  color: #111111;
+}
+/* La barre flotte : le contenu garde de quoi passer dessous. */
+.ad-main {
+  padding-bottom: calc(96px + var(--safe-bottom, 0px));
+}
+html[data-kb] .ad-bas {
+  display: none;
+}
+
+/* Feuille « Plus » */
+.ad-plus-w {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: flex-end;
+  background: rgb(17 17 17 / 0.3);
+  animation: ad-voile 0.18s ease both;
+}
+.ad-plus {
+  display: flex;
+  width: 100%;
+  max-height: 86vh;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 16px calc(18px + var(--safe-bottom, 0px));
+  overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  background: #f7f7f9;
+  animation: ad-monte 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ad-monte {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+.ad-plus-poignee {
+  align-self: center;
+  width: 40px;
+  height: 5px;
+  border-radius: 999px;
+  background: #d2d2d7;
+}
+.ad-plus-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ad-plus .ad-sec-t {
+  padding: 0 4px;
+  color: #6e6e76;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ad-plus .lst-r {
+  min-height: 52px;
+}
+.ad-plus-out {
+  display: flex;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #ececef;
+  color: #d70015;
+  font: 500 15px var(--font-sans);
+  cursor: pointer;
+}
+
+/* En-tête du téléphone : la marque, puis la recherche sur toute la largeur. */
+@media (max-width: 1023.98px) {
+  .ad-top {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px 10px;
+  }
+  .ad-top .ad-srch {
+    order: 3;
+    flex: 1 0 100%;
+    height: 44px;
+  }
+  .ad-top .ad-niv {
+    display: inline-block;
+    margin-inline-start: auto;
+  }
+  .ad-srch kbd {
+    display: none;
+  }
+}
+
+/* Filtres des listes : la pastille choisie en noir plein, les autres en blanc. */
+html .ad .pill:not(.soft) {
+  border-color: #e2e2e6;
+  background: #ffffff;
+  color: #3a3a40;
+}
+html .ad .pill.on:not(.soft) {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+}
+
+/* Rendez-vous : une ligne par carte, l'action dessous. */
+.ad-rdv {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 2px;
+  border-bottom: 1px solid #f1f1f3;
+}
+.ad-rdv:last-child {
+  border-bottom: 0;
+}
+.ad-rdv-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+.ad-rdv .btn {
+  align-self: flex-start;
+  width: auto;
+  margin-top: 8px;
+}
+
+/* Ordinateur : le rail prend le relais, la barre du bas et sa marge disparaissent. */
+@media (min-width: 1024px) {
+  .ad-bas {
+    display: none;
+  }
+  .ad-main {
+    padding-bottom: 32px;
+  }
+}
+/* Une ligne de liste qui porte un bouton (avis à masquer, rendez-vous à annuler) : sur téléphone, le
+   texte prend toute la largeur et le bouton passe dessous — à côté, il écrasait le texte. */
+@media (max-width: 767.98px) {
+  .ad .li:has(.btn) {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .ad .li:has(.btn) > :first-child {
+    flex: 1 1 100%;
+  }
+}
