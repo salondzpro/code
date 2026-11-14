@@ -53,6 +53,8 @@ import { Screen } from '@/components/AppFrame';
 import { PickerField } from '@/components/Picker';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingSummary } from '@/components/BookingSummary';
+import { DepositCard } from '@/components/DepositCard';
+import { depositPayNote } from '@/lib/deposit';
 import { FactRow } from '@/components/BookingFacts';
 import { PageLoading } from '@/components/PageLoading';
 import { googleCalendarUrl } from './BookingConfirmed';
@@ -196,7 +198,7 @@ export function BookingDetail() {
         }
         staffName={b.staff?.displayName}
         priceDa={b.priceDa}
-        payNote={t('Paiement sur place')}
+        payNote={depositPayNote(b) ?? t('Paiement sur place')}
         showLate={active}
         muted={!active}
         extra={
@@ -218,7 +220,9 @@ export function BookingDetail() {
       />
       {/* Validation manuelle : le créneau est bloqué pour les autres tant que le salon n'a pas répondu, et
           la demande expire d'elle-même (le client est prévenu, le créneau libéré). */}
-      {b.status === 'pending' && (
+      {/* Versement demandé par le salon : la carte du virement prend la place de l'avis d'attente. */}
+      <DepositCard booking={b} />
+      {b.status === 'pending' && !b.depositStatus && (
         <InfoBox>
           {t('Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).', {
             when: formatDeadline(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())),

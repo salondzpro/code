@@ -55,6 +55,9 @@ export const NOTIFICATION_TYPES = [
   'slot_freed',
   /** Relance du professionnel : une demande attend sa réponse depuis PENDING_REMINDER_HOURS. */
   'request_pending',
+  /** Versement : justificatif reçu (au salon) et justificatif refusé (à la cliente). Migration 0056. */
+  'deposit_submitted',
+  'deposit_rejected',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

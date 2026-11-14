@@ -8,6 +8,10 @@ import type {
   NotificationType,
   UserRole,
   CancellationKind,
+  DepositMethod,
+  DepositMode,
+  DepositScope,
+  DepositStatus,
 } from '@salondz/constants';
 
 export type UUID = string;
@@ -80,6 +84,11 @@ export interface Salon {
   allowClientReschedule: boolean;
   /** Acompte demandé sur place (information affichée au client). */
   depositRequired: boolean;
+  /** Versement exigé pour réserver en ligne (migration 0057) : montant fixe (DA) ou pourcentage. Public : annoncé avant de réserver. */
+  depositMode: DepositMode;
+  depositValue: number;
+  /** Toutes les clientes, ou les nouvelles seulement (aucun rendez-vous terminé chez ce salon). */
+  depositScope: DepositScope;
   ratingAvg: number;
   ratingCount: number;
   categoryIds: string[];
@@ -191,6 +200,40 @@ export interface Booking {
   updatedAt: ISODateTime;
   /** Prestations cumulées (absent = une seule prestation, cf. serviceName). */
   items?: BookingItem[];
+  /** VERSEMENT (migration 0057) : montant demandé à la réservation, nul si aucun. */
+  depositAmount?: number | null;
+  depositStatus?: DepositStatus | null;
+  /** Nature du justificatif envoyé (type MIME) ; le fichier lui-même ne se lit que par adresse signée. */
+  depositProofType?: string | null;
+  depositSubmittedAt?: ISODateTime | null;
+  depositReviewedAt?: ISODateTime | null;
+  depositRejectReason?: string | null;
+}
+
+/** Compte sur lequel verser (jamais public : propriétaire, et cliente d'un rendez-vous qui attend son versement). */
+export interface DepositAccount {
+  method: DepositMethod;
+  holder: string | null;
+  account: string | null;
+  note: string | null;
+}
+
+/** Réglage complet du versement, côté professionnel. */
+export interface DepositSettings extends DepositAccount {
+  mode: DepositMode;
+  value: number;
+  scope: DepositScope;
+}
+
+/** Ce que la cliente voit pour verser : montant, compte, état, échéance. */
+export interface BookingDepositInfo {
+  amount: number;
+  status: DepositStatus;
+  account: DepositAccount | null;
+  rejectReason: string | null;
+  submittedAt: ISODateTime | null;
+  /** Le justificatif doit arriver avant cette heure, sinon la demande expire et le créneau est libéré. */
+  deadline: ISODateTime;
 }
 
 export interface Review {

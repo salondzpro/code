@@ -83,6 +83,7 @@ const Step6Service = lazyNamed(() => import('@/pages/pro/onboarding/Step6Service
 const Step7ServicePhotos = lazyNamed(() => import('@/pages/pro/onboarding/Step7ServicePhotos'), 'Step7ServicePhotos');
 const Step8Works = lazyNamed(() => import('@/pages/pro/onboarding/Step8Works'), 'Step8Works');
 const Step9Hours = lazyNamed(() => import('@/pages/pro/onboarding/Step9Hours'), 'Step9Hours');
+const ProDeposit = lazyNamed(() => import('@/pages/pro/ProDeposit'), 'ProDeposit');
 const Step10Availability = lazyNamed(() => import('@/pages/pro/onboarding/Step10Availability'), 'Step10Availability');
 const Publish = lazyNamed(() => import('@/pages/pro/onboarding/Publish'), 'Publish');
 const ProPhotos = lazyNamed(() => import('@/pages/pro/Photos'), 'ProPhotos');
@@ -285,6 +286,7 @@ export const router = createBrowserRouter([
               { path: 'qr', element: <ProQr /> },
               { path: 'profil/horaires', element: <Step9Hours settings /> },
               { path: 'profil/regles', element: <Step10Availability settings /> },
+              { path: 'profil/versement', element: <ProDeposit /> },
               { path: 'rendez-vous/nouveau', element: <ProBookingNew /> },
               { path: 'rendez-vous/:id', element: <ProBookingDetail /> },
               { path: 'rendez-vous/:id/reporter', element: <ProBookingReschedule /> },

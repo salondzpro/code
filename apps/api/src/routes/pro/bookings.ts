@@ -7,13 +7,15 @@ import {
   listBookingsQuerySchema,
   rescheduleBookingSchema,
   updateBookingStatusSchema,
+  depositDecisionSchema,
   uuid,
 } from '@salondz/validation';
 import { db } from '../../lib/supabase';
-import { conflict, notFound, unwrap } from '../../lib/errors';
+import { badRequest, conflict, notFound, unwrap } from '../../lib/errors';
 import { BOOKING_WITH_STAFF_SELECT, getBookingWithStaff, mapBookingWithStaff } from '../../lib/queries';
 import { pushAfterBooking } from '../../lib/push';
 import { notifySlotFreed } from '../../lib/waitlist';
+import { notifyDepositRejected, signedProofUrl } from '../../lib/deposit';
 
 /** Délai pendant lequel un rendez-vous clôturé automatiquement peut encore être marqué « Client absent ». */
 const NO_SHOW_GRACE_DAYS = 7;
@@ -192,6 +194,56 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     if (b.salonId !== req.salon!.id) throw notFound('Réservation');
     reply.header('Cache-Control', 'private, no-store');
     return b;
+  });
+
+  /** Justificatif de versement, par adresse signée de 10 minutes (seau privé). */
+  app.get('/bookings/:id/deposit-proof', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    const b = await getBookingWithStaff(req.params.id);
+    if (b.salonId !== req.salon!.id) throw notFound('Réservation');
+    const r = await db.from('bookings').select('deposit_proof_path, deposit_proof_type').eq('id', b.id).single();
+    const row = unwrap(r) as { deposit_proof_path: string | null; deposit_proof_type: string | null };
+    if (!row.deposit_proof_path) throw notFound('Justificatif');
+    reply.header('Cache-Control', 'private, no-store');
+    return { url: await signedProofUrl(row.deposit_proof_path), type: row.deposit_proof_type };
+  });
+
+  /**
+   * Décision sur le justificatif. ACCEPTER confirme le rendez-vous (la cliente reçoit la confirmation
+   * habituelle). REFUSER garde la demande ouverte : la cliente est prévenue avec le motif et peut renvoyer
+   * un justificatif avant l'heure limite. Refuser le rendez-vous lui-même reste « Refuser la demande ».
+   */
+  app.post('/bookings/:id/deposit', { schema: { params: z.object({ id: uuid }), body: depositDecisionSchema } }, async (req) => {
+    const b = await getBookingWithStaff(req.params.id);
+    if (b.salonId !== req.salon!.id) throw notFound('Réservation');
+    if (b.status !== 'pending' || b.depositStatus !== 'submitted')
+      throw conflict('DEPOSIT_NOT_SUBMITTED', 'Aucun justificatif n’attend votre vérification sur ce rendez-vous.');
+    const now = new Date().toISOString();
+    if (req.body.decision === 'accept') {
+      if (new Date(b.startsAt).getTime() < Date.now())
+        throw conflict('BOOKING_EXPIRED', "L'heure de cette demande est passée : elle ne peut plus être confirmée.");
+      const res = await db
+        .from('bookings')
+        .update({ deposit_status: 'accepted', deposit_reviewed_at: now, status: 'confirmed' })
+        .eq('id', b.id)
+        .eq('status', 'pending')
+        .select('id')
+        .maybeSingle();
+      if (!unwrap(res)) throw conflict('INVALID_TRANSITION', 'La réservation a changé entre-temps.');
+      pushAfterBooking(req.log, b.id);
+    } else {
+      const reason = req.body.reason?.trim() || null;
+      if (!reason) throw badRequest('REASON_REQUIRED', 'Dites à la cliente ce qui ne va pas (montant, nom, reçu illisible…).');
+      const res = await db
+        .from('bookings')
+        .update({ deposit_status: 'rejected', deposit_reviewed_at: now, deposit_reject_reason: reason })
+        .eq('id', b.id)
+        .eq('status', 'pending')
+        .select('id')
+        .maybeSingle();
+      if (!unwrap(res)) throw conflict('INVALID_TRANSITION', 'La réservation a changé entre-temps.');
+      void notifyDepositRejected(req.log, b, req.salon!.name, reason);
+    }
+    return getBookingWithStaff(b.id);
   });
 
   app.post('/bookings/:id/status', { schema: { params: z.object({ id: uuid }), body: updateBookingStatusSchema } }, async (req) => {

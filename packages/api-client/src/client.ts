@@ -1,6 +1,8 @@
 import type { LabelSettings, LabelSocial, LabelStyle } from '@salondz/constants';
 import type {
   ApiErrorBody,
+  BookingDepositInfo,
+  DepositSettings,
   PageViewSource,
   ProPageStats,
   AvailabilityResponse,
@@ -532,8 +534,16 @@ export function createApiClient(opts: ApiClientOptions) {
       /** Signaler un avis (Apple 1.2 / Google Play) : un motif, un mot facultatif. Un opérateur décide ensuite. */
       reportReview: (id: string, body: { reason: ReportReason; message?: string }) =>
         post<void>(`/reviews/${id}/report`, body),
+      /** Versement (migration 0057) : montant, compte du salon, état, heure limite. */
+      deposit: (id: string) => get<BookingDepositInfo>(`/bookings/${id}/deposit`),
+      depositUploadUrl: (id: string, body: { contentType: string; size: number }) =>
+        post<{ path: string; token: string; signedUrl: string }>(`/bookings/${id}/deposit/upload-url`, body),
+      depositProof: (id: string, path: string) => post<BookingWithSalon>(`/bookings/${id}/deposit/proof`, { path }),
     },
     pro: {
+      /** Versement à la réservation : montant (fixe ou %), portée, compte où verser. */
+      depositSettings: () => get<DepositSettings>('/pro/deposit-settings'),
+      saveDepositSettings: (body: DepositSettings) => put<DepositSettings>('/pro/deposit-settings', body),
       /** Réseaux sociaux de l'étiquette « Vitrine noire ». */
       labelSocials: () => get<LabelSocial[]>('/pro/label-socials'),
       saveLabelSocials: (body: LabelSocial[]) => put<LabelSocial[]>('/pro/label-socials', body),
@@ -640,6 +650,11 @@ export function createApiClient(opts: ApiClientOptions) {
         get: (id: string) => get<BookingWithStaff>(`/pro/bookings/${id}`),
         createWalkIn: (body: CreateWalkInBookingInput) =>
           post<BookingWithStaff>('/pro/bookings', body),
+        /** Justificatif de versement (adresse signée 10 min). */
+        depositProof: (id: string) => get<{ url: string; type: string | null }>(`/pro/bookings/${id}/deposit-proof`),
+        /** Valider (confirme le rendez-vous) ou refuser (avec motif) le justificatif. */
+        decideDeposit: (id: string, body: { decision: 'accept' | 'reject'; reason?: string }) =>
+          post<BookingWithStaff>(`/pro/bookings/${id}/deposit`, body),
         setStatus: (id: string, status: 'confirmed' | 'completed' | 'no_show') =>
           post<BookingWithStaff>(`/pro/bookings/${id}/status`, { status }),
         cancel: (id: string, reason?: string, late?: boolean) =>

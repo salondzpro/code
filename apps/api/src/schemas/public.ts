@@ -16,7 +16,7 @@
  * typecheck au lieu de disparaître en silence de la réponse.
  */
 import { z } from 'zod';
-import type { DayOfWeek, GenderTarget } from '@salondz/constants';
+import type { DayOfWeek, DepositMode, DepositScope, GenderTarget } from '@salondz/constants';
 import type {
   AvailabilityResponse,
   Category,
@@ -116,6 +116,9 @@ const salonBase = z.object({
   homeService: z.boolean(),
   allowClientReschedule: z.boolean(),
   depositRequired: z.boolean(),
+  depositMode: enumStr<DepositMode>(),
+  depositValue: num(),
+  depositScope: enumStr<DepositScope>(),
   ratingAvg: num(),
   ratingCount: num(),
   categoryIds: z.array(z.string()),

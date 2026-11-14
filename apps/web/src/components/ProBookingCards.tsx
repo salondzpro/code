@@ -17,6 +17,7 @@ import { useProBookingMutations } from '@salondz/api-client';
 import { formatDA, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import type { BookingWithStaff } from '@salondz/types';
 import { BottomSheet, Button, Dim, I, StatusBadge } from './ui';
+import { DepositChip } from './DepositReview';
 import { ErrorMessage } from './ErrorMessage';
 import type { RefusedRequest } from './RefuseRequestSheet';
 import { t } from '@/i18n';
@@ -55,6 +56,7 @@ export function RequestCard({
               {showStaff && b.staff?.displayName ? ` · ${b.staff.displayName}` : ''} ·{' '}
               <span dir="ltr">{formatDA(b.priceDa)}</span>
             </span>
+            <DepositChip booking={b} />
           </span>
         </button>
         <span className="rp-a">
@@ -65,7 +67,7 @@ export function RequestCard({
             title={t('Confirmer')}
             disabled={setStatus.isPending}
             aria-busy={setStatus.isPending || undefined}
-            onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}
+            onClick={() => (b.depositStatus ? onOpen(b.id) : setStatus.mutate({ id: b.id, status: 'confirmed' }))}
           >
             {setStatus.isPending ? <span className="btn-spin" aria-hidden /> : <I icon={Check} size={19} strokeWidth={2.4} />}
           </button>

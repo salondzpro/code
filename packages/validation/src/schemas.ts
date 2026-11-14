@@ -8,6 +8,11 @@ import {
   SALON_MAX_PHOTOS,
   USER_ROLES,
   SALON_MAX_WORKS,
+  DEPOSIT_METHODS,
+  DEPOSIT_MODES,
+  DEPOSIT_PROOF_MAX_BYTES,
+  DEPOSIT_PROOF_TYPES,
+  DEPOSIT_SCOPES,
 } from '@salondz/constants';
 import * as p from './primitives';
 
@@ -459,3 +464,50 @@ export const devLoginSchema = z
   })
   .refine((b) => !!b.email || (!!b.phone && !!b.code), { message: 'E-mail, ou numéro et code' });
 export type DevLoginInput = z.infer<typeof devLoginSchema>;
+
+// ---------- Versement à la réservation (migration 0057) ----------
+const optText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v.length ? v : null))
+    .nullable()
+    .optional();
+
+/** Réglage du versement. Un versement exigé sans compte où verser est refusé : la cliente serait bloquée. */
+export const depositSettingsSchema = z
+  .object({
+    mode: z.enum(DEPOSIT_MODES),
+    value: z.number().int().min(0).max(1_000_000),
+    scope: z.enum(DEPOSIT_SCOPES).default('all'),
+    method: z.enum(DEPOSIT_METHODS).default('ccp'),
+    holder: optText(80),
+    account: optText(60),
+    note: optText(200),
+  })
+  .superRefine((v, ctx) => {
+    if (v.mode === 'off') return;
+    if (v.value < 1) ctx.addIssue({ code: 'custom', path: ['value'], message: 'Indiquez le montant du versement.' });
+    if (v.mode === 'percent' && v.value > 100) ctx.addIssue({ code: 'custom', path: ['value'], message: 'Un pourcentage va de 1 à 100.' });
+    if (!v.holder) ctx.addIssue({ code: 'custom', path: ['holder'], message: 'Indiquez le titulaire du compte.' });
+    if (!v.account) ctx.addIssue({ code: 'custom', path: ['account'], message: 'Indiquez le numéro du compte.' });
+  });
+export type DepositSettingsInput = z.infer<typeof depositSettingsSchema>;
+
+/** Demande d'adresse d'envoi du justificatif. */
+export const depositUploadSchema = z.object({
+  contentType: z.enum(DEPOSIT_PROOF_TYPES),
+  size: z.number().int().min(1).max(DEPOSIT_PROOF_MAX_BYTES),
+});
+
+/** Justificatif envoyé : le chemin rendu par l'adresse d'envoi. */
+export const depositProofSchema = z.object({
+  path: z.string().min(10).max(200),
+});
+
+/** Décision du salon sur un justificatif. */
+export const depositDecisionSchema = z.object({
+  decision: z.enum(['accept', 'reject']),
+  reason: z.string().trim().max(200).optional(),
+});

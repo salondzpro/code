@@ -2,6 +2,8 @@
 import { useNavigate, useParams } from 'react-router';
 import { Calendar, CalendarCheck, Navigation } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
+import { DepositCard } from '@/components/DepositCard';
+import { depositPayNote } from '@/lib/deposit';
 import { formatDZPhone, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
 import { BottomSheet, Button, I } from '@/components/ui';
 import { BookingSummary, ConfirmHero } from '@/components/BookingSummary';
@@ -49,9 +51,12 @@ export function BookingConfirmed() {
  * (`BookingReview`) comme à l'ouverture de son adresse : même carte, à la même place, qui passe au
  * vert pendant que la coche se dessine — on ne change pas de page, on voit la réservation se faire.
  */
-export function ConfirmedView({ booking: b }: { booking: BookingWithSalon }) {
+export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon }) {
   const navigate = useNavigate();
+  // Le cache suit le rendez-vous (justificatif envoyé, versement validé) ; la réponse de la création sert d'amorce.
+  const b = useBooking(initial.id).data ?? initial;
   const confirmed = b.status === 'confirmed';
+  const deposit = b.status === 'pending' && !!b.depositAmount && !!b.depositStatus;
   const lines = b.items?.length
     ? b.items.map((it) => ({ id: it.id, name: it.serviceName, minutes: it.durationMinutes, priceDa: it.priceDa }))
     : [{ id: b.id, name: b.serviceName, minutes: b.durationMinutes, priceDa: b.priceDa }];
@@ -61,8 +66,14 @@ export function ConfirmedView({ booking: b }: { booking: BookingWithSalon }) {
     <Screen bottom={SHEET_PAD} gap={12}>
       <ConfirmHero
         pending={!confirmed}
-        title={confirmed ? t('Rendez-vous confirmé') : t('Demande envoyée')}
-        sub={confirmed ? t('Vous serez rappelé(e) 1 h puis 30 min avant.') : t('Le salon répond à votre demande. Vous recevrez une notification.')}
+        title={confirmed ? t('Rendez-vous confirmé') : deposit ? t('Créneau réservé') : t('Demande envoyée')}
+        sub={
+          confirmed
+            ? t('Vous serez rappelé(e) 1 h puis 30 min avant.')
+            : deposit
+              ? t('Il reste une étape : le versement demandé par le salon.')
+              : t('Le salon répond à votre demande. Vous recevrez une notification.')
+        }
       />
       <BookingSummary
         className="bk-flash"
@@ -73,8 +84,9 @@ export function ConfirmedView({ booking: b }: { booking: BookingWithSalon }) {
         lines={lines}
         staffName={b.staff?.displayName}
         priceDa={b.priceDa}
-        payNote={t('Paiement sur place')}
+        payNote={depositPayNote(b) ?? t('Paiement sur place')}
       />
+      <DepositCard booking={b} />
       <BottomSheet>
         <div className="bk-in-2 flex flex-col gap-2">
           <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>

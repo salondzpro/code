@@ -34,6 +34,7 @@ import { ActionRond } from './ActionRond';
 import { Scissors, UserRound } from 'lucide-react';
 import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { ClientContact } from './ClientContact';
+import { DepositReview } from './DepositReview';
 import { t } from '@/i18n';
 
 /** Délai proposé pour la prochaine visite d'une cliente dont le rendez-vous est terminé. */
@@ -89,7 +90,15 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
   const chip = !b
     ? null
     : b.status === 'pending'
-      ? { text: t('À valider'), cls: 'pd' }
+      ? {
+          text:
+            b.depositStatus === 'submitted'
+              ? t('Versement à vérifier')
+              : b.depositStatus === 'awaiting' || b.depositStatus === 'rejected'
+                ? t('Versement attendu')
+                : t('À valider'),
+          cls: 'pd',
+        }
       : running
         ? { text: t('En cours · fin à {h}', { h: formatTimeDZ(b.endsAt) }), cls: 'cur' }
         : b.status === 'confirmed'
@@ -166,6 +175,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
             {reminded[b.id] && <p className="ag9-sn">{remindedLabel(reminded[b.id]!)}</p>}
             {b.notes && <p className="ag9-sn">« {b.notes} »</p>}
             {b.cancellationReason && <p className="ag9-sn">{b.cancellationReason}</p>}
+            <DepositReview booking={b} />
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 
@@ -174,8 +184,8 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 blancs cerclés, le mot dessous. L'action de l'état en premier, la fiche au bout. */}
             {!cancelling && (
               <div className="ag-acts">
-                {confirmable && (
-                  <ActionRond ton="oui" icon={ICONE.accepter} label={t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
+                {confirmable && b.depositStatus !== 'submitted' && (
+                  <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
                 )}
                 {confirmable && (
                   <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />
