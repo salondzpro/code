@@ -3,8 +3,8 @@
  * aide et contact. Rédigées pour l'Algérie : loi 18-07 (données personnelles, ANPDP), loi 18-05 (commerce
  * électronique), loi 09-03 (protection du consommateur), loi 04-02 (pratiques commerciales, prix en DA),
  * ordonnance 03-05 (droits d'auteur), code civil. Aucune information technique ou confidentielle du projet
- * n'y figure : les prestataires sont décrits par catégorie. Identité de l'éditeur (dénomination, RC, NIF,
- * adresse) à compléter par le propriétaire ; relecture par un conseil recommandée avant l'ouverture.
+ * n'y figure : les prestataires sont décrits par catégorie. Identité de l'éditeur : `EDITOR` ci-dessous
+ * (celle de Coligo, même exploitant) ; relecture par un conseil recommandée avant l'ouverture.
  */
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -13,17 +13,23 @@ import { TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { BrandFooter } from '@/components/BrandFooter';
 
-const UPDATED = '18 septembre 2026';
+const UPDATED = '14 novembre 2026';
 const SUPPORT = 'support@salondz.com';
 const CONTACT = 'contact@salondz.com';
 
 /** Identité de l'éditeur : à renseigner par le propriétaire (registre de commerce, NIF, adresse). */
+/**
+ * Identité de l'éditeur (14 nov. 2026) : la même que pour Coligo (`coligo.app`, `lib/config/legal.ts`) —
+ * le même exploitant, en auto-entrepreneur. Un auto-entrepreneur est inscrit au Registre national de
+ * l'auto-entrepreneur, pas au registre du commerce : pas de numéro RC ni de NIF distinct à afficher.
+ */
 const EDITOR = {
   name: 'Salon DZ',
-  legal: '[dénomination sociale et forme juridique à compléter]',
-  rc: '[numéro de registre de commerce à compléter]',
-  nif: '[numéro d’identification fiscale à compléter]',
-  address: '[adresse du siège à compléter], Alger, Algérie',
+  owner: 'GACI Noufel',
+  legal: 'GACI Noufel, auto-entrepreneur (loi n° 22-23 du 18 décembre 2022 portant statut de l’auto-entrepreneur)',
+  registrationLabel: 'Registre national de l’auto-entrepreneur',
+  registrationNumber: '10981022005702687',
+  address: 'Akbou, Béjaïa 06001, Algérie',
 };
 
 function Doc({ title, children }: { title: string; children: ReactNode }) {
@@ -229,11 +235,11 @@ export function LegalNotice() {
     <Doc title="Mentions légales">
       <h2>Éditeur</h2>
       <p>
-        {EDITOR.name} — {EDITOR.legal}. Registre de commerce : {EDITOR.rc}. NIF : {EDITOR.nif}. Siège : {EDITOR.address}.
+        {EDITOR.name} — exploité par {EDITOR.legal}. {EDITOR.registrationLabel} : {EDITOR.registrationNumber}. Siège : {EDITOR.address}.
         Contact : <Mailto to={CONTACT} />.
       </p>
       <h2>Directeur de la publication</h2>
-      <p>Le représentant légal de l'Éditeur.</p>
+      <p>{EDITOR.owner}.</p>
       <h2>Hébergement</h2>
       <p>
         La Plateforme et ses données sont hébergées par des prestataires professionnels d'hébergement sur des serveurs sécurisés situés
