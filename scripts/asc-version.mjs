@@ -29,8 +29,8 @@ if (!NUMERO) {
 /** Texte des nouveautés, par langue de fiche. Une langue absente d'ici reçoit le texte français. */
 const NOUVEAUTES = {
   'fr-FR': PRO
-    ? 'Nouveau design, plus clair. Agenda en couleurs, actions rapides en un toucher (accepter, reporter, confier), connexion simplifiée, et « Ma page » : d’où viennent vos clientes et ce que Salon DZ vous rapporte.\nL’application se met désormais à jour toute seule.'
-    : 'Nouveau design, réservation plus simple et plus rapide.\nL’application se met désormais à jour toute seule.\nCorrections et améliorations.',
+    ? 'Nouveau design, plus clair et plus élégant.\nChoix de votre langue au premier lancement (français, arabe, anglais), gardé jusqu’à vos réglages.\nConnexion simplifiée : votre adresse e-mail, puis votre mot de passe.\nL’application se met à jour toute seule.'
+    : 'Nouveau design, plus clair et plus élégant.\nChoix de votre langue au premier lancement (français, arabe, anglais).\nConnexion simplifiée : votre adresse e-mail, puis votre mot de passe.\nNouvelle barre de navigation flottante, carte et pages de salon plus lisibles.\nL’application se met à jour toute seule.',
 };
 
 const lire = async (p) => (await asc('GET', p)).json?.data ?? null;
