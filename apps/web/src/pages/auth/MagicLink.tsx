@@ -6,11 +6,12 @@
  */
 import { Navigate, useSearchParams } from 'react-router';
 import { readAuthFlow } from '@/lib/authFlow';
+import { MARCHE } from '@/lib/flavor';
 
 export function MagicLink() {
   const [params] = useSearchParams();
   const pro = params.get('role') === 'pro';
-  const q = new URLSearchParams({ next: params.get('next') ?? readAuthFlow()?.next ?? (pro ? '/pro' : '/') });
+  const q = new URLSearchParams({ next: params.get('next') ?? readAuthFlow()?.next ?? (pro ? '/pro' : MARCHE) });
   const email = params.get('email') ?? readAuthFlow()?.identifier;
   if (email) q.set('email', email);
   return <Navigate to={`${pro ? '/pro/acces' : '/acces'}?${q.toString()}`} replace />;

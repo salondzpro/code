@@ -74,6 +74,7 @@ import { ReportReviewButton } from '@/components/ReportReview';
 import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 type Tab = 'book' | 'reviews' | 'about';
 
@@ -104,7 +105,7 @@ export function openingStatus(s: SalonPublic): { open: boolean; label: string } 
 export function Salon() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
-  const back = useBack('/');
+  const back = useBack(MARCHE);
   const { session } = useAuth();
   const salon = useSalon(slug);
   const { api } = useApi();

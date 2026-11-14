@@ -20,6 +20,7 @@ import { supabase } from './supabase';
 import { currentDemo, startDemo, stopDemo, DEMO_USER_IDS } from '@/demo/session';
 import { stopActingAs } from './actingAs';
 import { t } from '@/i18n';
+import { HOME } from './flavor';
 
 /** Session factice d'un compte de démonstration : même forme qu'une session Supabase pour le reste de l'app. */
 function demoSession(): Session | null {
@@ -134,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const sendPasswordReset = useCallback(async (email: string) => {
-    await api.auth.passwordReset({ email, next: '/' });
+    await api.auth.passwordReset({ email, next: HOME });
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {

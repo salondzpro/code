@@ -24,6 +24,7 @@ import { SearchField, SearchTools } from '@/components/SearchTools';
 import { RatingPill, NextSlots } from '@/components/SalonListCard';
 import type { SalonSummary } from '@salondz/types';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 const ALGIERS: [number, number] = [36.7538, 3.0588];
 type Area = { lat: number; lng: number; radiusKm: number };
@@ -510,7 +511,7 @@ export function MapView() {
             revenir en arrière depuis la carte. */}
         <div className="map-top pointer-events-auto flex flex-col gap-2 px-5 pb-3 pt-3">
         <div className="flex items-center gap-2.5">
-        <BackButton to={`/${category ? `?category=${category}` : ''}`} />
+        <BackButton to={`${MARCHE}${category ? `?category=${category}` : ''}`} />
         <SearchField
           className="min-w-0 flex-1"
           market={market}
@@ -519,7 +520,7 @@ export function MapView() {
           radiusKm={area?.radiusKm ?? prefs.radiusKm}
           wilaya={prefs.wilaya}
           // Chercher un nom depuis la carte ramène à la liste : c'est là que les noms se lisent.
-          onQuery={(v) => navigate(v ? `/?q=${encodeURIComponent(v)}` : '/')}
+          onQuery={(v) => navigate(v ? `${MARCHE}?q=${encodeURIComponent(v)}` : MARCHE)}
         />
         </div>
         <SearchTools
@@ -528,7 +529,7 @@ export function MapView() {
           category={category}
           onCategory={setCategory}
           view="map"
-          onView={() => navigate(`/${category ? `?category=${category}` : ''}`)}
+          onView={() => navigate(`${MARCHE}${category ? `?category=${category}` : ''}`)}
         />
         </div>
         <div className="pointer-events-auto flex items-center justify-center gap-2">

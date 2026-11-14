@@ -33,6 +33,7 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { SalonListCard } from '@/components/SalonListCard';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 const NOUN: Record<Market, [string, string]> = {
   men: ['barbier', 'barbiers'],
@@ -134,7 +135,7 @@ export function Marketplace() {
                 {nonLues > 0 && <i aria-hidden />}
               </button>
             ) : (
-              <Link to="/intro?next=%2F" className="h12-bell" aria-label={t('Se connecter ou créer un compte')}>
+              <Link to={`/intro?next=${encodeURIComponent(MARCHE)}`} className="h12-bell" aria-label={t('Se connecter ou créer un compte')}>
                 <I icon={User} size={20} strokeWidth={1.8} />
               </Link>
             ))}

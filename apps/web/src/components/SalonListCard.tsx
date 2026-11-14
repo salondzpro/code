@@ -137,7 +137,8 @@ export function NextSlots({
       </div>
     );
   }
-  const day = nextDayLabel(next.date);
+  // « Aujourd'hui » / « Demain » se traduisent ; un jour daté l'est déjà par le format de la langue.
+  const day = t(nextDayLabel(next.date));
   // Sur la carte, la fiche ne doit pas manger le plan : un seul rang de créneaux, le jour
   // devant, et pas de rangées Matin / Après-midi qui doublent la hauteur.
   if (compact) {

@@ -7,12 +7,13 @@
  */
 import { Navigate, useSearchParams } from 'react-router';
 import { readAuthFlow } from '@/lib/authFlow';
+import { MARCHE } from '@/lib/flavor';
 
 export const PASSWORD_MIN = 8;
 
 export function SignUp() {
   const [params] = useSearchParams();
   const pro = params.get('role') === 'pro';
-  const next = params.get('next') ?? readAuthFlow()?.next ?? (pro ? '/pro' : '/');
+  const next = params.get('next') ?? readAuthFlow()?.next ?? (pro ? '/pro' : MARCHE);
   return <Navigate to={`${pro ? '/pro/acces' : '/acces'}?next=${encodeURIComponent(next)}`} replace />;
 }

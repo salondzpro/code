@@ -14,6 +14,7 @@ import { PushToast } from './PushToast';
 import { ProPlusSheet } from './ProPlusSheet';
 import { useDesktop } from '@/lib/breakpoint';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 /**
  * Hauteur réservée sous le contenu quand une barre d'onglets ou une feuille est affichée.
@@ -99,7 +100,7 @@ interface NavItem {
 }
 
 const CLIENT_NAV: NavItem[] = [
-  { to: '/', label: t("Marketplace"), icon: LayoutGrid, end: true },
+  { to: MARCHE, label: t("Marketplace"), icon: LayoutGrid, end: true },
   { to: '/rendez-vous', label: t("Rendez-vous"), icon: Calendar },
   { to: '/profil', label: t("Profil"), icon: User },
 ];

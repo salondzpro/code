@@ -12,7 +12,7 @@ import {
 } from './guards';
 import { ScrollToTop } from './ScrollToTop';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
-import { PRO_ONLY } from '@/lib/flavor';
+import { NATIF, PRO_ONLY } from '@/lib/flavor';
 import { NotFound } from '@/pages/NotFound';
 import { RootSlug } from '@/pages/client/RootSlug';
 // Parcours de connexion (design AUTH 01 → 16)
@@ -141,7 +141,10 @@ const routesClient = PRO_ONLY
           {
             element: <ClientLayout />,
             children: [
-              { path: '/', element: <Marketplace /> },
+              // La place de marché : `/salons` partout, et aussi la racine DANS L'APPLICATION. Sur le
+              // site, la racine est la page de présentation (14 nov. 2026) — voir `MARCHE` (`lib/flavor.ts`).
+              { path: '/salons', element: <Marketplace /> },
+              ...(NATIF ? [{ path: '/', element: <Marketplace /> }] : []),
               { path: '/categorie/:category', element: <CategoryRedirect /> },
               { path: '/rendez-vous', element: <Bookings /> },
               { path: '/favoris', element: <Favorites /> },
@@ -239,6 +242,8 @@ export const router = createBrowserRouter([
         ? []
         : [
             { path: '/home', element: <Home /> },
+            // Sur le site, salondz.com EST la page de présentation (14 nov. 2026).
+            ...(NATIF ? [] : [{ path: '/', element: <Home /> }]),
             // Page d'accueil du site PROFESSIONNEL : sur le web, `/pro/bienvenue` y mène (14 nov. 2026).
             { path: '/professionnels', element: <ProSite /> },
           ]),

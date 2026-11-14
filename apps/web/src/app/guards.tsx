@@ -118,7 +118,7 @@ export function RequireAuth() {
  * pages de salon et le choix du créneau sont publics aussi (`routesPubliques`) ; la connexion se
  * demande quand on valide un créneau, à `/s/:slug/reserver/coordonnees`.
  */
-const LIBRE_ACCES = /^\/(carte|localisation|categorie\/[^/]+)?\/?$/;
+const LIBRE_ACCES = /^\/(salons|carte|localisation|categorie\/[^/]+)?\/?$/;
 
 /**
  * Espace client. Sans session : les pages en libre accès s'ouvrent, les autres mènent à la

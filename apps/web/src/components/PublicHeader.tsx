@@ -26,6 +26,7 @@ import { guestMarket } from '@/lib/useClientMarket';
 import { I, Dim, LinkButton } from './ui';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 /** Trois catégories par marché : au-delà, le tiroir devient une liste à faire défiler. */
 const PER_MARKET = 3;
@@ -61,12 +62,12 @@ export function PublicHeader() {
 
   const links = session
     ? [
-        { to: '/', icon: Home, label: t("Accueil") },
+        { to: MARCHE, icon: Home, label: t("Accueil") },
         { to: '/rendez-vous', icon: CalendarClock, label: t("Mes rendez-vous") },
         { to: '/profil', icon: User, label: t("Mon profil") },
       ]
     : [
-        { to: '/', icon: Home, label: t("Accueil") },
+        { to: MARCHE, icon: Home, label: t("Accueil") },
         {
           to: `/connexion?next=${encodeURIComponent('/rendez-vous')}`,
           icon: CalendarClock,
@@ -133,7 +134,7 @@ export function PublicHeader() {
                     .map((c) => (
                       <Link
                         key={c.id}
-                        to={`/?category=${c.id}&market=${market}`}
+                        to={`${MARCHE}?category=${c.id}&market=${market}`}
                         className="py-2 text-[1.143rem] text-muted"
                       >
                         {t(c.labelFr)}
@@ -187,7 +188,7 @@ export function PublicHeader() {
             <NavLink
               key={l.to}
               to={l.to}
-              end={l.to === '/'}
+              end={l.to === MARCHE}
               className={({ isActive }) =>
                 `flex items-center gap-2 rounded-[var(--radius-btn)] px-3 py-2 text-[1rem] ${
                   isActive ? 'bg-fill font-semibold' : 'text-muted'

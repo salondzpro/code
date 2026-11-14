@@ -23,6 +23,7 @@ import { MiniMap } from '@/components/MiniMap';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ouvrirReglagesApplication } from '@/lib/pushSettings';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 type GeoState = 'idle' | 'asking' | 'granted' | 'denied';
 /** Lieu sélectionné dans l'écran : quartier/ville (filtre `city`), wilaya entière, ou point géocodé (rayon). */
@@ -36,7 +37,7 @@ function normalize(s: string): string {
 }
 
 export function Localisation() {
-  const back = useBack('/');
+  const back = useBack(MARCHE);
   const { market } = useClientMarket();
   const [prefs, setPrefs] = useLocationPrefs();
   const [q, setQ] = useState('');

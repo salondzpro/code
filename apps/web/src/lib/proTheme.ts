@@ -13,12 +13,13 @@
  */
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
-import { PRO_ONLY } from './flavor';
+import { NATIF, PRO_ONLY } from './flavor';
 
 export function useProTheme() {
   const { pathname } = useLocation();
   // L'administration porte le thème aussi (14 nov. 2026) : même famille que les espaces pro et client.
-  const on = !(pathname === '/home' || pathname === '/professionnels');
+  // Les pages de présentation gardent leur propre style ; sur le site, la racine en est une.
+  const on = !(pathname === '/home' || pathname === '/professionnels' || (!NATIF && pathname === '/'));
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('pro-theme', on);

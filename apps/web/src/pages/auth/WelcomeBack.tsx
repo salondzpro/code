@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth';
 import { readAuthFlow } from '@/lib/authFlow';
 import { supabase } from '@/lib/supabase';
 import { PageLoading } from '@/components/PageLoading';
+import { MARCHE } from '@/lib/flavor';
 
 /**
  * Jetons arrivés par une PASSATION depuis le navigateur (`lib/appHandoff.ts`). Supabase ne lit le
@@ -59,7 +60,7 @@ export function WelcomeBack() {
   if (!me.data && !me.isError) return <PageLoading />;
 
   const profile = me.data?.profile;
-  const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : '/');
+  const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : MARCHE);
   const q = `?next=${encodeURIComponent(next)}`;
   // Sans profil (erreur réseau), on ne sait rien de la personne : la renvoyer sur « créer son profil »
   // montrait un formulaire vide à un compte existant. On entre, et le garde de la page tranchera.

@@ -2017,4 +2017,5 @@ export const en: Record<string, string> = {
   "Votre lien sur Instagram, vos clientes sur Salon DZ.": "Your link on Instagram, your clients on Salon DZ.",
   "Code QR et affiche": "QR code and poster",
   "Ouvrez votre espace en quelques minutes.": "Open your space in minutes.",
+  "Liste": "List",
 };

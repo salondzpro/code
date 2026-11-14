@@ -482,7 +482,7 @@ export function SearchTools({
         </button>
         <button type="button" className="tool" onClick={onView}>
           <I icon={view === 'list' ? MapIcon : List} size={18} className="text-muted" />
-          {view === 'list' ? 'Carte' : 'Liste'}
+          {view === 'list' ? t('Carte') : t('Liste')}
         </button>
         <button
           type="button"

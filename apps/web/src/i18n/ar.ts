@@ -2003,4 +2003,5 @@ export const ar: Record<string, string> = {
   "Votre lien sur Instagram, vos clientes sur Salon DZ.": "رابطك على إنستغرام، وزبوناتك على Salon DZ.",
   "Code QR et affiche": "رمز QR وملصق",
   "Ouvrez votre espace en quelques minutes.": "افتح فضاءك في دقائق.",
+  "Liste": "القائمة",
 };

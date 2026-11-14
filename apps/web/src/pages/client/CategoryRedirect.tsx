@@ -6,10 +6,11 @@
  */
 import { Navigate, useParams } from 'react-router';
 import { CATEGORY_BY_ID } from '@salondz/constants';
+import { MARCHE } from '@/lib/flavor';
 
 export function CategoryRedirect() {
   const { category = '' } = useParams();
   const def = CATEGORY_BY_ID.get(category);
-  if (!def) return <Navigate to="/" replace />;
-  return <Navigate to={`/?category=${encodeURIComponent(category)}&market=${def.market}`} replace />;
+  if (!def) return <Navigate to={MARCHE} replace />;
+  return <Navigate to={`${MARCHE}?category=${encodeURIComponent(category)}&market=${def.market}`} replace />;
 }

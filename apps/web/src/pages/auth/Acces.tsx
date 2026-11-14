@@ -34,6 +34,7 @@ import { isNative } from '@/lib/native';
 import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 type Err = { kind: AuthErrorKind | 'form'; text: string } | null;
 
@@ -47,8 +48,8 @@ function usePortail() {
   return {
     role: (pro ? 'pro' : 'client') as 'pro' | 'client',
     base: pro ? '/pro/acces' : '/acces',
-    ouverture: isNative() ? (pro ? '/pro/bienvenue' : '/intro') : pro ? '/professionnels' : '/home',
-    defaut: pro ? '/pro' : '/',
+    ouverture: isNative() ? (pro ? '/pro/bienvenue' : '/intro') : pro ? '/professionnels' : '/',
+    defaut: pro ? '/pro' : MARCHE,
   };
 }
 
@@ -172,7 +173,7 @@ export function AccesMotDePasse() {
       try {
         writeAuthFlow({ role: demo.role, next: demo.role === 'pro' ? '/pro' : '/', identifier: demo.email, channel: 'email' });
         await demoLogin(demo.email);
-        navigate(retour(demo.role === 'pro' ? '/pro' : '/'), { replace: true });
+        navigate(retour(demo.role === 'pro' ? '/pro' : MARCHE), { replace: true });
       } catch (err) {
         setError(describeAuthError(err));
       } finally {

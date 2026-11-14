@@ -10,6 +10,7 @@ import { RatingPill } from '@/components/SalonListCard';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 export function Favorites() {
   const favs = useFavorites();
@@ -53,7 +54,7 @@ export function Favorites() {
           </span>
           <div className="text-[1.143rem] font-semibold">{t("Aucun salon en favori")}</div>
           <p className="p">{t("Touchez le cœur sur la page d'un salon pour le retrouver ici et réserver plus vite.")}</p>
-          <LinkButton icon={ICONE.explorer} to="/" className="mt-2">
+          <LinkButton icon={ICONE.explorer} to={MARCHE} className="mt-2">
             {t("Explorer les salons")}
           </LinkButton>
         </div>

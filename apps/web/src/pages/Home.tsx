@@ -28,10 +28,12 @@ import { Wordmark } from '@/components/Wordmark';
 import { LangSwitch } from '@/components/LangSwitch';
 import { useDefile } from '@/components/HeroSlides';
 import { I } from '@/components/ui';
-import { t } from '@/i18n';
+import { getLocale, t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 const photo = (cle: string) => `/demo/${cle}.webp`;
-const ecran = (cle: string) => `/home/${cle}.webp`;
+/** L'écran de l'application DANS LA LANGUE du visiteur (14 nov. 2026) : arabe et anglais ont leurs captures (`scripts/make-home-screens.mjs`). */
+const ecran = (cle: string) => (getLocale() === 'fr' ? `/home/${cle}.webp` : `/home/${getLocale()}/${cle}.webp`);
 
 /** Les métiers servis, femmes et hommes en alternance, les plus présents d'abord. */
 const METIERS: { nom: string; photo: string }[] = [
@@ -119,7 +121,7 @@ export function Home() {
       {/* ------------------------------------------------------------------ Barre du haut, en verre */}
       <nav className="hx-nav" aria-label={t('Navigation')}>
         <div className="hx-nav-i">
-          <Link to="/home" aria-label="Salon DZ">
+          <Link to="/" aria-label="Salon DZ">
             <Wordmark size={1.357} />
           </Link>
           <div className="hx-nav-l">
@@ -152,7 +154,7 @@ export function Home() {
           {t('Partout en Algérie. Sans appeler.')}
         </p>
         <div className="hx-in hx-cta" style={{ ['--d' as string]: '360ms' }}>
-          <Link to="/" className="hx-btn">
+          <Link to={MARCHE} className="hx-btn">
             {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
           </Link>
           <Link to="/professionnels" className="hx-btn o">
@@ -194,7 +196,7 @@ export function Home() {
         </div>
         <div className="hx-rail" data-reveal>
           {METIERS.map((m) => (
-            <Link key={m.nom} to="/" className="hx-met" aria-label={t(m.nom)}>
+            <Link key={m.nom} to={MARCHE} className="hx-met" aria-label={t(m.nom)}>
               <img src={photo(m.photo)} alt="" loading="lazy" decoding="async" draggable={false} />
               <span>{t(m.nom)}</span>
             </Link>
@@ -266,7 +268,7 @@ export function Home() {
             {t('Votre prochain rendez-vous commence ici.')}
           </h2>
           <div data-reveal className="hx-cta centre" style={{ ['--d' as string]: '100ms' }}>
-            <Link to="/" className="hx-btn">
+            <Link to={MARCHE} className="hx-btn">
               {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
             </Link>
             <Link to="/professionnels" className="hx-btn o">

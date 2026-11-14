@@ -72,7 +72,7 @@ export function ProSite() {
           </Link>
           <div className="hx-nav-l">
             <a href="#outil">{t('L’outil')}</a>
-            <Link to="/home">{t('Pour les clients')}</Link>
+            <Link to="/">{t('Pour les clients')}</Link>
           </div>
           <div className="hx-nav-r">
             <LangSwitch tone="light" />
@@ -215,7 +215,7 @@ export function ProSite() {
           <span className="hx-pro">PRO</span>
         </span>
         <nav>
-          <Link to="/home">{t('Pour les clients')}</Link>
+          <Link to="/">{t('Pour les clients')}</Link>
           <Link to="/cgu">{t('CGU')}</Link>
           <Link to="/confidentialite">{t('Confidentialité')}</Link>
           <Link to="/mentions-legales">{t('Mentions légales')}</Link>

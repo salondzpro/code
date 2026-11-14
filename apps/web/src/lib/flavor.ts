@@ -14,5 +14,29 @@
  */
 export const PRO_ONLY = import.meta.env.VITE_APP_FLAVOR === 'pro';
 
+/**
+ * Coque native (application mobile) ? Lu sur l'objet que Capacitor injecte AVANT la page : connu dès
+ * le chargement des modules, donc utilisable pour construire le routeur.
+ */
+export const NATIF = (() => {
+  if (typeof window === 'undefined') return false;
+  const w = window as {
+    Capacitor?: { isNativePlatform?: () => boolean };
+    androidBridge?: unknown;
+    webkit?: { messageHandlers?: { bridge?: unknown } };
+  };
+  // Le pont natif (Android : `androidBridge`, iPhone : `webkit.messageHandlers.bridge`) existe avant
+  // tout script de la page — c'est lui que `@capacitor/core` regarde aussi.
+  return Boolean(w.Capacitor?.isNativePlatform?.() || w.androidBridge || w.webkit?.messageHandlers?.bridge);
+})();
+
+/**
+ * LA PLACE DE MARCHÉ (14 nov. 2026, demande du propriétaire). Sur le SITE, salondz.com affiche la page
+ * de présentation (`pages/Home.tsx`) et la place de marché vit sur `/salons`. Dans l'APPLICATION, rien
+ * ne change : elle s'ouvre sur la place de marché, à la racine. Tout lien vers la place de marché passe
+ * par cette constante, jamais par « / » écrit à la main.
+ */
+export const MARCHE = PRO_ONLY ? '/pro' : NATIF ? '/' : '/salons';
+
 /** Là où l'on atterrit quand on est connecté : l'accueil pro dans la variante pro, sinon la place de marché. */
-export const HOME = PRO_ONLY ? '/pro' : '/';
+export const HOME = PRO_ONLY ? '/pro' : MARCHE;

@@ -18,6 +18,7 @@ import { AuthScreen } from '@/components/AuthKit';
 import { PASSWORD_MIN } from './SignUp';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 export function ForgotPassword() {
   const [params] = useSearchParams();
@@ -34,7 +35,7 @@ export function NewPassword() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const flow = readAuthFlow();
-  const next = flow?.next ?? '/';
+  const next = flow?.next ?? MARCHE;
   const base = flow?.role === 'pro' ? '/pro/acces' : '/acces';
   const assez = password.length >= PASSWORD_MIN;
 

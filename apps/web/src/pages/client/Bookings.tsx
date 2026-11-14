@@ -32,6 +32,7 @@ import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import type { BookingWithSalon } from '@salondz/types';
 import { t } from '@/i18n';
+import { MARCHE } from '@/lib/flavor';
 
 export function directionsUrl(b: BookingWithSalon): string {
   const q = [b.salon.name, b.salon.address, b.salon.city].filter(Boolean).join(', ');
@@ -308,7 +309,7 @@ export function Bookings() {
           description={empty.text}
           action={
             scope === 'upcoming' ? (
-              <LinkButton to="/">
+              <LinkButton to={MARCHE}>
                 <I icon={Search} size={18} /> {t("Explorer les salons")}
               </LinkButton>
             ) : undefined

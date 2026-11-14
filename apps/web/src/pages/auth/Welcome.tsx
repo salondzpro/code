@@ -12,7 +12,7 @@
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@/lib/auth';
 import { writeAuthFlow } from '@/lib/authFlow';
-import { HOME, PRO_ONLY } from '@/lib/flavor';
+import { HOME, PRO_ONLY, MARCHE } from '@/lib/flavor';
 import { isNative } from '@/lib/native';
 import { HERO_MIXTE, HeroSlides } from '@/components/HeroSlides';
 import { LangSwitch } from '@/components/LangSwitch';
@@ -33,7 +33,7 @@ export function ClientWelcome() {
   // SUR LE WEB (14 nov. 2026, demande du propriétaire) : pas d'écran d'ouverture d'application.
   // Une destination à atteindre → directement l'adresse e-mail ; sinon → le site clients (`/home`).
   // Dans l'application, l'ouverture reste telle quelle, sans redirection.
-  if (!isNative()) return <Navigate to={params.get('next') ? `/acces?next=${encodeURIComponent(next)}` : session ? next : '/home'} replace />;
+  if (!isNative()) return <Navigate to={params.get('next') ? `/acces?next=${encodeURIComponent(next)}` : session ? next : '/'} replace />;
 
   const commencer = () => {
     if (session) return navigate(next);
@@ -78,7 +78,7 @@ export function ClientWelcome() {
           {session ? t('Ouvrir mon espace') : t('Commencer')}
         </button>
         {!session && (
-          <Link to="/" className="pa-btn g pwo-sec">
+          <Link to={MARCHE} className="pa-btn g pwo-sec">
             <I icon={ICONE.apercu} size={18} />
             {t('Découvrir les salons')}
           </Link>
