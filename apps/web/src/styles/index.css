@@ -12601,15 +12601,11 @@ html:not([data-native]) body::before {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-/* ESPACE PRO : tous les textes +15 % (14 nov. 2026, demande du propriétaire : « que les pros voient
-   mieux »). Une seule variable : la racine (donc tout ce qui est en rem) et chaque taille en px
+/* ESPACE PRO : tous les textes +5 % (14 nov. 2026, demande du propriétaire : « que les pros voient
+   mieux » ; +15 % puis ramené à +5 % le même soir). Une seule variable : la racine (donc tout ce qui est en rem) et chaque taille en px
    (`calc(Npx * var(--fz, 1))`) la suivent. Toute nouvelle taille de police en px s'écrit ainsi. */
 html.espace-pro {
-  --fz: 1.15;
-}
-/* La date de l'agenda tient sur une ligne : elle grandit un peu moins (24 px au lieu de 26). */
-html.espace-pro .ag9-t {
-  font-size: 24px;
+  --fz: 1.05;
 }
 /* Accueil pro et accueil clientes : la photo floutée du salon remonte derrière la barre d'état
    (téléphone et tablette ; sur ordinateur l'en-tête reste une carte). */
@@ -13061,3 +13057,42 @@ div.skx-card {
 @media (prefers-reduced-motion: reduce) {
   .dp, .dp-view { animation: none; }
 }
+
+/* =====================================================================================================
+   ESPACE PRO — TAILLES DE TEXTE DE MEW3ID (14 nov. 2026, demande du propriétaire : « inspire-toi à 100 %
+   des tailles de mew3id, la taille uniquement »). Mesurées sur son espace pro à 390 px : titre de page
+   24 (accueil 22), sous-titre 15, titre de section 20, nom dans une liste 17, ligne de réglage 16,
+   texte secondaire 14, étiquette / onglet / puce 13, bouton 15 (petit 13), barre du bas 12, grands
+   chiffres 40. Valeurs EXACTES (hors `--fz`) ; seule la taille change, jamais le style. Placé en fin de
+   fichier pour l'emporter sur le thème.
+   ===================================================================================================== */
+html.espace-pro .h1,
+html.espace-pro .tb-t { font-size: 24px; }
+html.espace-pro .h12-hi { font-size: 22px; }
+html.espace-pro .pgh-s { font-size: 15px; }
+html.espace-pro .h12-date,
+html.espace-pro .ag9-k { font-size: 14px; }
+html.espace-pro .h12-h,
+html.espace-pro .h12-sc h2,
+html.espace-pro .h13-sum b,
+html.espace-pro .ag9-t { font-size: 20px; }
+html.espace-pro .h3,
+html.espace-pro .h12-l,
+html.espace-pro .h12-h a { font-size: 13px; }
+html.espace-pro .h12-u { font-size: 18px; }
+html.espace-pro .h12-kp b { font-size: 40px; }
+html.espace-pro .h12-kp span,
+html.espace-pro .h13-sum > span > span { font-size: 14px; }
+html.espace-pro .btn,
+html.espace-pro .h11-b { font-size: 15px; }
+html.espace-pro .btn.sm,
+html.espace-pro .seg > button { font-size: 13px; }
+html.espace-pro .lst-t > span { font-size: 16px; }
+html.espace-pro .lst-t small { font-size: 14px; }
+html.espace-pro .cl-nom,
+html.espace-pro .sv-nom,
+html.espace-pro .rp-n { font-size: 17px; }
+html.espace-pro .cl-sub,
+html.espace-pro .sv-sub,
+html.espace-pro .rp-s { font-size: 14px; }
+html.espace-pro .nvl { font-size: 12px; }

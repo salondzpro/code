@@ -78,10 +78,10 @@ export function ProServices() {
                       </button>
                     )}
                     <span className="min-w-0">
-                      <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
+                      <span className="sv-nom block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
                         {sv.name}
                       </span>
-                      <span className="block text-[1rem] text-muted">
+                      <span className="sv-sub block text-[1rem] text-muted">
                         {formatDA(sv.priceDa)} · {formatDuration(sv.durationMinutes)}
                         {sv.isActive ? '' : ` · ${t('masquée')}`}
                       </span>

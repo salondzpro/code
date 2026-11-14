@@ -162,7 +162,7 @@ export function Clients() {
                 <span className="flex min-w-0 flex-1 items-center gap-3">
                   <Avatar name={c.name} size={40} />
                   <span className="min-w-0">
-                    <span className="flex items-center gap-1.5 text-[1rem] font-semibold">
+                    <span className="cl-nom flex items-center gap-1.5 text-[1rem] font-semibold">
                       <span className="truncate">{c.name}</span>
                       {c.blocked ? (
                         <Badge tone="cn" dot={false}>
@@ -176,7 +176,7 @@ export function Clients() {
                         <span className="cl-tag">{t('Nouveau')}</span>
                       ) : null}
                     </span>
-                    <span className="block truncate text-[0.857rem] text-muted">
+                    <span className="cl-sub block truncate text-[0.857rem] text-muted">
                       <span className="mono" dir="ltr">
                         {c.phone ? formatDZPhone(c.phone) : t('Sans numéro')}
                       </span>
