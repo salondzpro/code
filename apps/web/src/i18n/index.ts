@@ -85,9 +85,38 @@ export function setLocale(l: Locale): void {
  * dans la nouvelle langue ; c'est un geste rare, le rechargement ne gêne pas.
  */
 export function switchLocale(l: Locale): void {
+  marquerChoisie();
   if (l === current) return;
   setLocale(l);
   if (typeof window !== 'undefined') window.location.reload();
+}
+
+/**
+ * LANGUE CHOISIE (14 nov. 2026) : l'application la demande au PREMIER lancement
+ * (`components/LangChoice.tsx`), puis s'y tient jusqu'à un changement dans les réglages. Ce
+ * repère dit seulement qu'un choix a été fait ; la langue elle-même reste dans `salondz:locale`.
+ */
+const CHOISIE = 'salondz:locale:choisie';
+function marquerChoisie() {
+  try {
+    localStorage.setItem(CHOISIE, '1');
+  } catch {
+    /* ignore */
+  }
+}
+export function languageChosen(): boolean {
+  try {
+    return localStorage.getItem(CHOISIE) === '1';
+  } catch {
+    return true; // stockage indisponible : on ne bloque pas l'ouverture sur cet écran
+  }
+}
+/** Enregistre le choix du premier lancement. Rend `true` si la page va se recharger. */
+export function chooseLocale(l: Locale): boolean {
+  marquerChoisie();
+  if (l === current) return false;
+  switchLocale(l);
+  return true;
 }
 
 export function isRtl(): boolean {

@@ -78,7 +78,7 @@ export function LangSwitch({ className = '', tone = 'dark' }: { className?: stri
 }
 
 /** Drapeaux simplifiés, lisibles à 20 px. */
-function Flag({ l }: { l: Locale }) {
+export function Flag({ l }: { l: Locale }) {
   return (
     <svg className="lng-f" viewBox="0 0 30 20" width="22" height="15" aria-hidden>
       {l === 'fr' && (
