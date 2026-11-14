@@ -9592,6 +9592,11 @@ html.pro-theme .rp-s {
   color: #6e6e76;
   font-weight: 400;
 }
+/* Rappel fait : vert de sens iOS, version foncée lisible sur blanc (contraste 4,6:1). */
+html.pro-theme .rp-ok {
+  color: #248a3d;
+  font-weight: 500;
+}
 html.pro-theme .rp-i {
   background: #ffffff;
   color: #111111;

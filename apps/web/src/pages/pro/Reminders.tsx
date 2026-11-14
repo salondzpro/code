@@ -156,9 +156,9 @@ export function Reminders() {
           </b>
           <span className="min-w-0 flex-1">
             <span className="rp-n">{b.clientName}</span>
-            <span className="rp-s">{remindedLabel(sent[b.id]!)}</span>
+            <span className="rp-s rp-ok">{remindedLabel(sent[b.id]!)}</span>
           </span>
-          <I icon={Check} size={18} />
+          <I icon={Check} size={18} strokeWidth={2.4} className="rp-ok" />
         </article>
       ))}
       {editing && <MessageSheet salon={salon} sample={waiting[0] ?? items[0]} onClose={() => setEditing(false)} />}
