@@ -2,6 +2,11 @@
 
 Monorepo pnpm : `apps/api` (Fastify), `apps/web` (Vite/React), `apps/mobile` (Expo), `packages/*` (constants, types, validation, api-client), `supabase/migrations`.
 
+## Autonomie (consigne du propriétaire, 22 sept. puis 14 nov. 2026)
+- **Tout se lance sans demander** : migrations de base (`pnpm db:backup` PUIS `pnpm db:migrate`), déploiements Render (site et API), compilations Codemagic iOS/Android, envois et soumissions App Store / Google Play, scripts `check:*`. Ne jamais renvoyer au propriétaire une commande à taper : la faire, puis lui dire ce qui a été fait.
+- Ordre imposé par le déploiement automatique de `main` : une migration dont dépend le code de l'API s'applique AVANT de pousser ce code sur `main`.
+- Garde-fous conservés : sauvegarde avant migration, aucun secret dans git, aucune suppression de données réelles sans nécessité.
+
 ## Commandes
 - `pnpm install` · `pnpm typecheck` · `pnpm --filter @salondz/validation test` · `pnpm --filter @salondz/api test` (e2e réel contre Supabase, crée puis supprime des utilisateurs jetables)
 - `pnpm --filter @salondz/web test:e2e` : parcours complet pro + client dans Chromium headless (playwright-core) ; exige `pnpm dev:api` (8090) + `pnpm dev:web` (9000) lancés, `PLAYWRIGHT_CHROME` si Chrome n'est pas installé. Captures dans `apps/web/test/shots/`. **Le contexte pro tourne à 1 280 px, donc sur l'affichage ORDINATEUR** (rail permanent) : un libellé présent à la fois dans le rail et dans le contenu doit être visé via `.pro-main`. Ce scénario dérive vite du produit (libellés, étapes) : quand il échoue, ouvrir d'abord la capture `*-FAIL-*` — elle montre où l'on est réellement — avant de conclure à une régression ; le message d'échec donne aussi la ligne « waiting for … » de Playwright, qui dit ce qui était attendu. **Mémoire** : le navigateur ouvre trois contextes et prend des captures pleine page ; sur cette machine (8 Go), un passage complet demande de fermer VS Code ou JetBrains Toolbox, sinon il est tué en cours de route — ce n'est pas un échec du scénario.
