@@ -19,7 +19,8 @@ import {
   setSalonWorksSchema,
 } from '@salondz/validation';
 import { z } from 'zod';
-import { dateKey } from '@salondz/validation';
+import { dateKey, depositSettingsSchema } from '@salondz/validation';
+import { loadDepositSettings } from '../../lib/deposit';
 import type { ProDashboardStats, ProStatsRange } from '@salondz/types';
 import { db } from '../../lib/supabase';
 import { badRequest, conflict, unwrap } from '../../lib/errors';
@@ -106,6 +107,35 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.header('Cache-Control', 'private, no-cache');
     return readLabelSocials(req.salon!.id);
   });
+  /**
+   * VERSEMENT À LA RÉSERVATION (migration 0057). Le mode, le montant et la portée vont sur `salons`
+   * (publics : la cliente est prévenue avant de réserver) ; le compte va dans `salon_deposit_accounts`,
+   * que seule l'API lit.
+   */
+  app.get('/deposit-settings', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return loadDepositSettings(req.salon!.id);
+  });
+  app.put(
+    '/deposit-settings',
+    { preHandler: app.requireSalon, schema: { body: depositSettingsSchema } },
+    async (req) => {
+      const b = req.body;
+      const id = req.salon!.id;
+      const acc = await db.from('salon_deposit_accounts').upsert(
+        { salon_id: id, method: b.method, holder: b.holder ?? null, account: b.account ?? null, note: b.note ?? null, updated_at: new Date().toISOString() },
+        { onConflict: 'salon_id' },
+      );
+      if (acc.error) throw acc.error;
+      const s = await db
+        .from('salons')
+        .update({ deposit_mode: b.mode, deposit_value: b.mode === 'off' ? 0 : b.value, deposit_scope: b.scope })
+        .eq('id', id);
+      if (s.error) throw s.error;
+      return loadDepositSettings(id);
+    },
+  );
+
   app.put(
     '/label-socials',
     {

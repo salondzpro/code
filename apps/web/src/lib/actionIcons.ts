@@ -57,6 +57,10 @@ import {
   Users,
   X,
   type LucideIcon,
+  BadgeCheck,
+  FileUp,
+  FileX2,
+  ReceiptText,
 } from 'lucide-react';
 import { UsersEchange } from './customIcons';
 
@@ -120,6 +124,11 @@ export const ICONE = {
   lieu: MapPin,
   avis: Star,
   changer: ArrowLeftRight,
+  // Versement à la réservation (14 nov. 2026)
+  joindreJustificatif: FileUp,
+  voirJustificatif: ReceiptText,
+  validerVersement: BadgeCheck,
+  refuserJustificatif: FileX2,
 } satisfies Record<string, LucideIcon>;
 
 export type ActionIcone = keyof typeof ICONE;

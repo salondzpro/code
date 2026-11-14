@@ -19,6 +19,7 @@ import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
 import type { ReviewSort } from './client';
 import type { ReportReason } from '@salondz/constants';
+import type { DepositSettings } from '@salondz/types';
 
 interface ApiContextValue {
   api: ApiClient;
@@ -807,6 +808,49 @@ export function useProBlockMutations() {
     create: useMutation({ mutationFn: api.pro.blocks.create, onSuccess: done }),
     remove: useMutation({ mutationFn: api.pro.blocks.remove, onSuccess: done }),
   };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Versement à la réservation (migration 0057).
+// ---------------------------------------------------------------------------------------------
+export const useDepositSettings = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'deposit-settings'], queryFn: () => api.pro.depositSettings(), staleTime: 60_000, enabled });
+};
+export function useSaveDepositSettings() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: DepositSettings) => api.pro.saveDepositSettings(body),
+    onSuccess: (data) => {
+      qc.setQueryData(['pro', 'deposit-settings'], data);
+      qc.invalidateQueries({ queryKey: queryKeys.pro.salon });
+    },
+  });
+}
+/** Ce que la cliente voit pour verser (montant, compte, état, heure limite). */
+export const useBookingDeposit = (id: string, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['booking', id, 'deposit'], queryFn: () => api.bookings.deposit(id), enabled: !!id && enabled, staleTime: 15_000 });
+};
+/** Justificatif côté pro : adresse signée courte, jamais gardée longtemps en cache. */
+export const useDepositProof = (id: string, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'booking', id, 'proof'], queryFn: () => api.pro.bookings.depositProof(id), enabled: !!id && enabled, staleTime: 5 * 60_000, gcTime: 8 * 60_000 });
+};
+export function useDecideDeposit() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, decision, reason }: { id: string; decision: 'accept' | 'reject'; reason?: string }) =>
+      api.pro.bookings.decideDeposit(id, { decision, reason }),
+    onSuccess: (b) => {
+      qc.setQueryData(queryKeys.pro.booking(b.id), b);
+      qc.invalidateQueries({ queryKey: queryKeys.pro.bookingsAll });
+      qc.invalidateQueries({ queryKey: queryKeys.pro.unseen });
+      qc.invalidateQueries({ queryKey: queryKeys.pro.stats });
+    },
+  });
 }
 
 export function useProBookingMutations() {

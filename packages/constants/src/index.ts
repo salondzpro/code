@@ -17,6 +17,7 @@ export * from './reports';
 export * from './visibility';
 export * from './reviewSummary';
 export * from './labels';
+export * from './deposit';
 
 export const APP_NAME = 'SalonDZ';
 export const DEFAULT_LOCALE = 'fr' as const;
@@ -31,6 +32,6 @@ export const SALON_MAX_PHOTOS = 8;
 export const SALON_MAX_WORKS = 40;
 
 /** Buckets Supabase Storage. */
-export const STORAGE_BUCKETS = { salons: 'salons', avatars: 'avatars' } as const;
+export const STORAGE_BUCKETS = { salons: 'salons', avatars: 'avatars', deposits: 'deposits' } as const;
 export * from './serviceTemplates';
 export * from './publicLinks';

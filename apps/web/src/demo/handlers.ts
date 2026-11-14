@@ -27,7 +27,10 @@ import {
   DEFAULT_LABEL_SETTINGS,
   normalizeLabelSocials,
   normalizeLabelStyle,
+  PENDING_REQUEST_TTL_HOURS,
+  depositFor,
 } from '@salondz/constants';
+import type { DepositAccount, DepositSettings } from '@salondz/types';
 import type { Booking, BookingOrigin, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
 import { availableSlots, clientKeyOf, clientStanding, concerns, dashboardStats, daysUntilMax, hm, nextAvailability, proClients, statsRange, summary, unaccent } from './engine';
 import { advance, bookingRow, fmtWhen, getWorld, notify, onBookingChange, refreshRating, resetWorld, saveWorld, uid, type DemoProfile, type World } from './world';
@@ -505,13 +508,17 @@ on('POST', '/bookings', (c) => {
   if (upcoming.some((b) => b.salonId === s.id && b.startsAt < endIso && b.endsAt > body.startsAt)) throw conflict('ALREADY_BOOKED', 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.');
   const staff = pickStaffFor(c.w, s, body.startsAt, duration, body.staffId, ids, true, undefined, c.now);
   const first = services[0]!;
-  const b = bookingRow(s, { ...first, name: services.map((x) => x.name).join(' + '), durationMinutes: duration, priceDa: services.reduce((a, x) => a + x.priceDa, 0) }, staff.id, new Date(startMs).toISOString(), s.autoConfirm ? 'confirmed' : 'pending', { id: who.id, name: clientName, phone: who.phone ?? body.clientPhone ?? null }, {
+  const totalDa = services.reduce((a, x) => a + x.priceDa, 0);
+  const isNew = !c.w.bookings.some((x) => x.salonId === s.id && x.status === 'completed' && ((who.id && x.clientId === who.id) || (who.phone && x.clientPhone === who.phone)));
+  const deposit = s.depositScope === 'all' || isNew ? depositFor(totalDa, s.depositMode ?? 'off', s.depositValue ?? 0) : null;
+  const b = bookingRow(s, { ...first, name: services.map((x) => x.name).join(' + '), durationMinutes: duration, priceDa: totalDa }, staff.id, new Date(startMs).toISOString(), deposit != null ? 'pending' : s.autoConfirm ? 'confirmed' : 'pending', { id: who.id, name: clientName, phone: who.phone ?? body.clientPhone ?? null }, {
     source: 'online',
     origin: body.origin ?? null,
     notes: body.notes ?? null,
     bookedBy: forOther ? u.id : null,
     bookedByName: forOther ? u.fullName : null,
   });
+  if (deposit != null) Object.assign(b, { depositAmount: deposit, depositStatus: 'awaiting' });
   c.w.bookings.push(b);
   onBookingChange(c.w, null, b);
   saveWorld();
@@ -536,6 +543,71 @@ on('GET', '/bookings/:id', (c, p) => {
   const b = c.w.bookings.find((x) => x.id === p.id && mineBooking(x, u.id));
   if (!b) throw notFound('Réservation');
   return ok(withSalon(c.w, b));
+});
+
+// ---- Versement à la réservation (migration 0057), le temps de la session de démonstration.
+// Gardés DANS le monde (localStorage) : la démonstration passe d'un compte à l'autre dans le même navigateur.
+type DepositExtras = { depositAccount?: DepositAccount; depositProof?: { url: string; type: string } };
+const xs = (o: object) => o as DepositExtras;
+const depositSettingsOf = (s: SalonOwnerView): DepositSettings => {
+  const a = xs(s).depositAccount;
+  return { mode: s.depositMode ?? 'off', value: s.depositValue ?? 0, scope: s.depositScope ?? 'all', method: a?.method ?? 'ccp', holder: a?.holder ?? null, account: a?.account ?? null, note: a?.note ?? null };
+};
+on('GET', '/pro/deposit-settings', (c) => ok(depositSettingsOf(ownedSalon(c))));
+on('PUT', '/pro/deposit-settings', (c) => {
+  const s = ownedSalon(c);
+  const b = c.body as unknown as DepositSettings;
+  if (b.mode !== 'off' && (!b.holder || !b.account)) throw bad('VALIDATION', 'Indiquez le titulaire et le numéro du compte.');
+  xs(s).depositAccount = { method: b.method, holder: b.holder ?? null, account: b.account ?? null, note: b.note ?? null };
+  Object.assign(s, { depositMode: b.mode, depositValue: b.mode === 'off' ? 0 : b.value, depositScope: b.scope });
+  touch(c.w, s);
+  return ok(depositSettingsOf(s));
+});
+on('GET', '/bookings/:id/deposit', (c, p) => {
+  const u = requireUser(c);
+  const b = c.w.bookings.find((x) => x.id === p.id && mineBooking(x, u.id));
+  if (!b || !b.depositAmount || !b.depositStatus) throw notFound('Versement');
+  const s = salonById(c.w, b.salonId)!;
+  const open = b.status === 'pending' && (b.depositStatus === 'awaiting' || b.depositStatus === 'rejected');
+  const acc = xs(s).depositAccount ?? { method: 'ccp' as const, holder: s.name, account: '0012345678 clé 90', note: null };
+  const deadline = new Date(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())).toISOString();
+  return ok({ amount: b.depositAmount, status: b.depositStatus, account: open ? acc : null, rejectReason: b.depositRejectReason ?? null, submittedAt: b.depositSubmittedAt ?? null, deadline });
+});
+on('POST', '/bookings/:id/deposit/proof', (c, p) => {
+  const u = requireUser(c);
+  const b = c.w.bookings.find((x) => x.id === p.id && mineBooking(x, u.id));
+  if (!b || !b.depositStatus) throw notFound('Versement');
+  if (b.status !== 'pending') throw conflict('DEPOSIT_CLOSED', 'Ce versement n’attend plus de justificatif.');
+  const url = String(c.body.path ?? '');
+  const type = url.slice(5, url.indexOf(';')) || 'image/webp';
+  xs(b).depositProof = { url, type };
+  Object.assign(b, { depositStatus: 'submitted', depositProofType: type, depositSubmittedAt: new Date(c.now).toISOString(), depositRejectReason: null });
+  const s = salonById(c.w, b.salonId)!;
+  notify(c.w, s.ownerId, 'deposit_submitted', 'Justificatif de versement reçu', `${b.clientName} · à vérifier pour confirmer`, b);
+  saveWorld();
+  return ok(withSalon(c.w, b));
+});
+on('GET', '/pro/bookings/:id/deposit-proof', (c, p) => {
+  const { b } = proBooking(c, p.id!);
+  const proof = xs(b).depositProof;
+  if (!proof) throw notFound('Justificatif');
+  return ok(proof);
+});
+on('POST', '/pro/bookings/:id/deposit', (c, p) => {
+  const { s, b } = proBooking(c, p.id!);
+  if (b.status !== 'pending' || b.depositStatus !== 'submitted') throw conflict('DEPOSIT_NOT_SUBMITTED', 'Aucun justificatif n’attend votre vérification sur ce rendez-vous.');
+  const now = new Date(c.now).toISOString();
+  if (c.body.decision === 'accept') {
+    Object.assign(b, { depositStatus: 'accepted', depositReviewedAt: now });
+    setStatus(c.w, b, { status: 'confirmed' });
+  } else {
+    const reason = String(c.body.reason ?? '').trim();
+    if (!reason) throw bad('REASON_REQUIRED', 'Dites à la cliente ce qui ne va pas (montant, nom, reçu illisible…).');
+    Object.assign(b, { depositStatus: 'rejected', depositReviewedAt: now, depositRejectReason: reason });
+    if (b.clientId) notify(c.w, b.clientId, 'deposit_rejected', 'Justificatif à renvoyer', `${s.name} · ${reason}`, b);
+    saveWorld();
+  }
+  return ok(withStaff(c.w, b));
 });
 
 on('POST', '/bookings/:id/cancel', (c, p) => {

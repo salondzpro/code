@@ -5,6 +5,8 @@ import {
   cancelBookingSchema,
   createBookingSchema,
   createReviewSchema,
+  depositProofSchema,
+  depositUploadSchema,
   myBookingsQuerySchema,
   reportReviewSchema,
   rescheduleBookingSchema,
@@ -18,6 +20,9 @@ import { BOOKING_WITH_SALON_SELECT, getBookingWithSalon, mapBookingWithSalon } f
 import { pushAfterBooking } from '../lib/push';
 import { notifySlotFreed } from '../lib/waitlist';
 import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
+import { depositDeadline, loadDepositAccount, notifyDepositSubmitted, proofExt } from '../lib/deposit';
+import { STORAGE_BUCKETS } from '@salondz/constants';
+import type { BookingDepositInfo } from '@salondz/types';
 
 const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.requireProfile);
@@ -145,6 +150,83 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.status(201);
     return getBookingWithSalon(created.id);
   });
+
+  /**
+   * VERSEMENT (migration 0057) — ce que la cliente voit pour verser : montant, compte du salon, état,
+   * heure limite. Le compte n'est rendu que tant que le versement reste à faire (attendu ou refusé) :
+   * une fois le justificatif envoyé ou accepté, il n'a plus à circuler.
+   */
+  app.get('/bookings/:id/deposit', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    const b = await getBookingWithSalon(req.params.id);
+    if (!mine(b, req.user!.id) || !b.depositAmount || !b.depositStatus) throw notFound('Versement');
+    const open = b.status === 'pending' && (b.depositStatus === 'awaiting' || b.depositStatus === 'rejected');
+    const info: BookingDepositInfo = {
+      amount: b.depositAmount,
+      status: b.depositStatus,
+      account: open ? await loadDepositAccount(b.salonId) : null,
+      rejectReason: b.depositRejectReason ?? null,
+      submittedAt: b.depositSubmittedAt ?? null,
+      deadline: depositDeadline(b.createdAt, b.startsAt),
+    };
+    reply.header('Cache-Control', 'private, no-store');
+    return info;
+  });
+
+  /** Adresse d'envoi SIGNÉE du justificatif (image ou PDF, 8 Mo), dans le seau privé, sous le rendez-vous. */
+  app.post(
+    '/bookings/:id/deposit/upload-url',
+    { config: { rateLimit: { max: 10, timeWindow: '10 minutes' } }, schema: { params: z.object({ id: uuid }), body: depositUploadSchema } },
+    async (req) => {
+      const b = await getBookingWithSalon(req.params.id);
+      if (!mine(b, req.user!.id) || !b.depositStatus) throw notFound('Versement');
+      if (b.status !== 'pending' || !['awaiting', 'rejected', 'submitted'].includes(b.depositStatus))
+        throw conflict('DEPOSIT_CLOSED', 'Ce versement n’attend plus de justificatif.');
+      const path = `${b.id}/${crypto.randomUUID()}.${proofExt(req.body.contentType)}`;
+      const r = await db.storage.from(STORAGE_BUCKETS.deposits).createSignedUploadUrl(path);
+      if (r.error) throw r.error;
+      return { path, token: r.data.token, signedUrl: r.data.signedUrl };
+    },
+  );
+
+  /** Justificatif déposé : le rendez-vous passe « à vérifier » et le salon est prévenu. Renvoyer en remplace un précédent. */
+  app.post(
+    '/bookings/:id/deposit/proof',
+    { config: { rateLimit: { max: 10, timeWindow: '10 minutes' } }, schema: { params: z.object({ id: uuid }), body: depositProofSchema } },
+    async (req) => {
+      const b = await getBookingWithSalon(req.params.id);
+      if (!mine(b, req.user!.id) || !b.depositStatus) throw notFound('Versement');
+      if (b.status !== 'pending' || !['awaiting', 'rejected', 'submitted'].includes(b.depositStatus))
+        throw conflict('DEPOSIT_CLOSED', 'Ce versement n’attend plus de justificatif.');
+      const { path } = req.body;
+      if (!path.startsWith(`${b.id}/`) || path.includes('..')) throw badRequest('BAD_PROOF', 'Justificatif introuvable : renvoyez le fichier.');
+      const name = path.slice(b.id.length + 1);
+      const listed = await db.storage.from(STORAGE_BUCKETS.deposits).list(b.id, { search: name, limit: 1 });
+      if (listed.error) throw listed.error;
+      const obj = listed.data?.find((o) => o.name === name);
+      if (!obj) throw badRequest('BAD_PROOF', 'Le fichier n’est pas arrivé : renvoyez-le.');
+      const type = (obj.metadata as { mimetype?: string } | null)?.mimetype ?? null;
+      const previous = await db.from('bookings').select('deposit_proof_path').eq('id', b.id).single();
+      const up = await db
+        .from('bookings')
+        .update({
+          deposit_status: 'submitted',
+          deposit_proof_path: path,
+          deposit_proof_type: type,
+          deposit_submitted_at: new Date().toISOString(),
+          deposit_reject_reason: null,
+        })
+        .eq('id', b.id)
+        .eq('status', 'pending')
+        .select('id')
+        .maybeSingle();
+      if (!unwrap(up)) throw conflict('DEPOSIT_CLOSED', 'Ce versement n’attend plus de justificatif.');
+      // L'ancien justificatif (renvoi après refus) ne sert plus : on ne garde pas de pièces inutiles.
+      const old = (previous.data as { deposit_proof_path: string | null } | null)?.deposit_proof_path;
+      if (old && old !== path) await db.storage.from(STORAGE_BUCKETS.deposits).remove([old]);
+      void notifyDepositSubmitted(req.log, { id: b.id, salonId: b.salonId, clientName: b.clientName, startsAt: b.startsAt, depositAmount: b.depositAmount ?? null });
+      return getBookingWithSalon(b.id);
+    },
+  );
 
   app.get('/me/bookings', { schema: { querystring: myBookingsQuerySchema } }, async (req, reply) => {
     const { scope, cursor, limit } = req.query;

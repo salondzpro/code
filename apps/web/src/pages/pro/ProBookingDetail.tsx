@@ -55,6 +55,8 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
+import { DepositReview } from '@/components/DepositReview';
+import { depositPayNote } from '@/lib/deposit';
 import { ClientContact } from '@/components/ClientContact';
 import { ActionRond } from '@/components/ActionRond';
 import { originLabel } from '@/lib/pageView';
@@ -184,7 +186,7 @@ export function ProBookingDetail() {
         <FactRow
           icon={Banknote}
           title={formatDA(b.priceDa)}
-          sub={`${t('Sur place')} · ${t('arrivée {a}, retard toléré jusqu’à {b}', { a: rule.arriveAt, b: rule.lateUntil })}`}
+          sub={`${depositPayNote(b) ?? t('Sur place')} · ${t('arrivée {a}, retard toléré jusqu’à {b}', { a: rule.arriveAt, b: rule.lateUntil })}`}
         />
         {(originLabel(b.origin) || b.bookedByName) && (
           <FactRow
@@ -209,6 +211,7 @@ export function ProBookingDetail() {
           sub={lastVisit ? `Dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : 'Première visite'}
         />
       </div>
+      <DepositReview booking={b} />
       <ErrorMessage error={setStatus.error ?? cancel.error} />
 
       {/* Les gestes en ronds (les mêmes que la fenêtre de l'agenda) : vert = oui, rouge = non, blanc
@@ -216,8 +219,8 @@ export function ProBookingDetail() {
       {aActions && (
         <BottomSheet grab={false}>
           <div className="ag-acts">
-            {confirmable && (
-              <ActionRond ton="oui" icon={ICONE.accepter} label={t('Accepter')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })} />
+            {confirmable && b.depositStatus !== 'submitted' && (
+              <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })} />
             )}
             {confirmable && <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />}
             {closable && (

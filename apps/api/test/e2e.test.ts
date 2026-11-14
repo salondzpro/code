@@ -199,7 +199,7 @@ test('public : la fiche salon ne renvoie que les clés prévues', async () => {
     [
       'address', 'allowClientReschedule', 'autoConfirm', 'bookingHorizonDays',
       'bookingLeadTimeMinutes', 'bufferMinutes', 'cancelMinHours', 'categoryIds', 'city',
-      'coverUrl', 'createdAt', 'depositRequired', 'description', 'genderTarget', 'homeService',
+      'coverUrl', 'createdAt', 'depositMode', 'depositRequired', 'depositScope', 'depositValue', 'description', 'genderTarget', 'homeService',
       'id', 'isPublished', 'lat', 'lng', 'logoUrl', 'name', 'openingHours', 'phone', 'photos',
       'ratingAvg', 'ratingCount', 'services', 'slotIntervalMinutes', 'slug', 'staff', 'updatedAt',
       'wilayaCode', 'works', 'zone',

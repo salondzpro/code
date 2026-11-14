@@ -4,7 +4,8 @@
  * « Rendez-vous » du tiroir. « Équipe » n'est proposée en avant qu'à partir de deux personnes ; une
  * indépendante la trouve sous « Travailler à plusieurs ».
  */
-import { CalendarClock, CalendarOff, Clock, Store, UserCircle, Users } from 'lucide-react';
+import { CalendarClock, CalendarOff, Clock, Landmark, Store, UserCircle, Users } from 'lucide-react';
+import { formatDA } from '@salondz/constants';
 import { useProSalon } from '@salondz/api-client';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageHead, SettingRow } from '@/components/ui';
@@ -28,6 +29,18 @@ export function Parametres() {
         <SettingRow to="/pro/profil/horaires" icon={Clock} title={t("Horaires d'ouverture")} sub={t('Jours et heures où l’on peut réserver')} />
         <SettingRow to="/pro/blocages" icon={CalendarOff} title={t('Fermetures')} sub={t('Congés, jours fermés')} />
         <SettingRow to="/pro/profil/regles" icon={CalendarClock} title={t('Règles de réservation')} sub={t('Délais, annulation, validation')} />
+        <SettingRow
+          to="/pro/profil/versement"
+          icon={Landmark}
+          title={t('Versement à la réservation')}
+          sub={
+            (salon?.depositMode ?? 'off') === 'off'
+              ? t('Désactivé · CCP, banque ou BaridiMob')
+              : salon.depositMode === 'percent'
+                ? t('{n} % du total, justificatif à valider', { n: salon.depositValue })
+                : t('{montant}, justificatif à valider', { montant: formatDA(salon.depositValue) })
+          }
+        />
       </div>
       <div className="lst">
         {/* À plusieurs, « Équipe » est dans le menu « Plus » : une seule entrée. */}

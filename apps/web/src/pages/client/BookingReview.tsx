@@ -15,7 +15,8 @@ import {
   useSalon,
   useUpdateProfile,
 } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS, formatDZPhone, wilayaName, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
+import { CLIENT_CANCEL_MIN_HOURS, depositFor, formatDA, formatDZPhone, wilayaName, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
+import { Landmark } from 'lucide-react';
 import { clearDraft, readDraft } from '@/lib/bookingDraft';
 import { BottomSheet, Button, I, TopBar } from '@/components/ui';
 import { BookingSummary } from '@/components/BookingSummary';
@@ -52,6 +53,8 @@ export function BookingReview() {
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);
   const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);
+  // Même calcul que la base (`depositFor`) : la cliente sait avant de réserver ce qu'on lui demandera.
+  const deposit = s ? depositFor(price, s.depositMode ?? 'off', s.depositValue ?? 0) : null;
   // La suspension du compte connecté ne concerne QUE ses propres rendez-vous : pour
   // quelqu'un d'autre, ce sont les règles de cette personne qui comptent, et le serveur
   // les applique sur son compte ou son numéro.
@@ -128,7 +131,7 @@ export function BookingReview() {
         endsAt={endsAt}
         lines={chosen.map((sv) => ({ id: sv!.id, name: sv!.name, minutes: sv!.durationMinutes, priceDa: sv!.priceDa }))}
         priceDa={price}
-        payNote={s.depositRequired ? t('Acompte demandé sur place') : t('Paiement sur place, aucun acompte')}
+        payNote={deposit != null ? t('Versement de {montant} à la réservation · reste {reste} sur place', { montant: formatDA(deposit), reste: formatDA(price - deposit) }) : s.depositRequired ? t('Acompte demandé sur place') : t('Paiement sur place, aucun acompte')}
         extra={
           <>
             {draft.forOther && !!draft.otherName && (
@@ -142,6 +145,22 @@ export function BookingReview() {
           </>
         }
       />
+      {/* Versement exigé par le salon : annoncé AVANT de réserver, jamais découvert après. */}
+      {deposit != null && (
+        <div className="dp-pre">
+          <span className="dp-pro-ic" aria-hidden>
+            <I icon={Landmark} size={18} />
+          </span>
+          <span>
+            <b>{t('Versement de {montant} demandé', { montant: formatDA(deposit) })}</b>
+            <small>
+              {s.depositScope === 'new'
+                ? t('Pour une première visite chez ce salon. Après la réservation, virez la somme (CCP, BaridiMob ou banque) et joignez le reçu : le salon confirme votre rendez-vous.')
+                : t('Après la réservation, virez la somme (CCP, BaridiMob ou banque) et joignez le reçu : le salon confirme votre rendez-vous.')}
+            </small>
+          </span>
+        </div>
+      )}
       <p className="flex items-start gap-2 px-1 text-[0.857rem] text-muted">
         <I icon={CalendarCheck} size={16} className="mt-0.5 flex-none" />
         {t("Annulation ou report gratuits jusqu'à {h} h avant. Rappel 1 h puis 30 min avant.", { h: s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS })}

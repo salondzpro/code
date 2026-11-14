@@ -149,6 +149,8 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .select('id, client_name, service_name, starts_at, salons(owner_id, name)')
       .eq('status', 'pending')
       .is('pro_reminded_at', null)
+      // Versement pas encore envoyé : c'est la cliente qui doit agir, relancer le salon n'a pas de sens.
+      .or('deposit_status.is.null,deposit_status.neq.awaiting')
       .lt('created_at', new Date(now - PENDING_REMINDER_HOURS * 3_600_000).toISOString())
       .gt('starts_at', new Date(now).toISOString())
       .limit(200);

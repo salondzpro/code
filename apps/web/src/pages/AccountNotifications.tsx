@@ -18,6 +18,8 @@ import {
   CalendarPlus,
   CalendarX,
   Inbox,
+  Landmark,
+  ReceiptText,
   Star,
   Trash2,
   UserX,
@@ -49,6 +51,8 @@ const KIND: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   booking_no_show: { icon: UserX, tone: 'bg-danger/10 text-danger' },
   slot_freed: { icon: BellRing, tone: 'bg-ok/10 text-ok' },
   request_pending: { icon: Inbox, tone: 'bg-danger/10 text-danger' },
+  deposit_submitted: { icon: ReceiptText, tone: 'bg-fill text-ink' },
+  deposit_rejected: { icon: Landmark, tone: 'bg-danger/10 text-danger' },
 };
 
 export function AccountNotifications() {
