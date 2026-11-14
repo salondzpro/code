@@ -34,7 +34,7 @@ import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
 import { t } from '@/i18n';
 
-type Err = { kind: AuthErrorKind | 'form' | 'client' | 'pending'; text: string } | null;
+type Err = { kind: AuthErrorKind | 'form'; text: string } | null;
 
 /**
  * LE MÊME PARCOURS POUR LES DEUX PORTAILS (14 nov. 2026) : l'espace pro (`/pro/acces/*`) et l'espace
@@ -70,7 +70,7 @@ const retour = (next: string) => `/connexion/retour?next=${encodeURIComponent(ne
 /* -------------------------------------------------------------------- 1. Adresse e-mail */
 
 export function AccesEmail() {
-  const { session, resendConfirmation } = useAuth();
+  const { session } = useAuth();
   const navigate = useNavigate();
   const { next, email: initial, q, role, base, ouverture } = useParcours();
   const [params] = useSearchParams();
@@ -94,31 +94,14 @@ export function AccesEmail() {
     if (isDemoEmail(adresse)) return navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
     setBusy(true);
     try {
+      // ADRESSE CONNUE = MOT DE PASSE, quel que soit le portail (14 nov. 2026, demande du
+      // propriétaire) : plus d'alerte « cette adresse sert déjà à un compte client / pro », qui
+      // perdait les gens. Le compte s'ouvre ensuite dans SON espace. Adresse inconnue = inscription.
+      // Inscription jamais confirmée : le mot de passe aussi — la connexion le dira et proposera
+      // de renvoyer le lien.
       const { status } = await api.auth.emailCheck({ email: adresse, role });
-      if (status === role) navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
-      else if (status === 'available') navigate(`${base}/creer${q({ email: adresse })}`);
-      else if (status === 'client' || status === 'pro')
-        setError({
-          kind: 'client',
-          text:
-            role === 'pro'
-              ? t('Cette adresse sert déjà à un compte client. Pour votre salon, utilisez une autre adresse.')
-              : t('Cette adresse sert déjà à un compte professionnel. Pour réserver, utilisez une autre adresse.'),
-        });
-      else setError({ kind: 'pending', text: t('Une inscription est déjà en cours avec cette adresse : ouvrez le lien de confirmation reçu par e-mail.') });
-    } catch (err) {
-      setError(describeAuthError(err));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const renvoyer = async () => {
-    setBusy(true);
-    try {
-      writeAuthFlow({ role, next, identifier: id(), channel: 'email', sentAt: Date.now() });
-      await resendConfirmation(id(), next);
-      navigate(`${base}/envoye?mode=confirm`);
+      if (status === 'available') navigate(`${base}/creer${q({ email: adresse })}`);
+      else navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
@@ -157,20 +140,7 @@ export function AccesEmail() {
             err={!!error}
           />
         </Field>
-        {error && (
-          <AuthError texte={error.text}>
-            {error.kind === 'client' && (
-              <Button variant="g" sm icon={ICONE.autreAdresse} onClick={() => (setEmail(''), setError(null))}>
-                {t('Utiliser une autre adresse')}
-              </Button>
-            )}
-            {error.kind === 'pending' && (
-              <Button icon={ICONE.renvoyer} sm variant="g" loading={busy} onClick={() => void renvoyer()}>
-                {t('Renvoyer le lien de confirmation')}
-              </Button>
-            )}
-          </AuthError>
-        )}
+        {error && <AuthError texte={error.text} />}
       </form>
     </AuthScreen>
   );
@@ -179,7 +149,7 @@ export function AccesEmail() {
 /* -------------------------------------------------------------------- 2a. Compte existant */
 
 export function AccesMotDePasse() {
-  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin, signOut } = useAuth();
+  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin } = useAuth();
   const navigate = useNavigate();
   const { next, email, q, role, base } = useParcours();
   const [password, setPassword] = useState('');
@@ -215,24 +185,19 @@ export function AccesMotDePasse() {
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email' });
       await signInWithPassword(email, password);
-      // Une adresse = un rôle : un compte client ne s'ouvre pas sur le portail pro.
+      // Le compte s'ouvre dans SON espace, quel que soit le portail par lequel on est passé : un
+      // professionnel entré par le portail client arrive sur son accueil pro, et l'inverse. Plus de
+      // refus ni de déconnexion (14 nov. 2026).
+      let dest = next;
       try {
         const { profile } = await api.me.get();
-        if (profile.role !== role) {
-          await signOut({ voile: false });
-          setError({
-            kind: 'wrong_portal',
-            text:
-              role === 'pro'
-                ? t('Ce compte n’est pas un compte professionnel. Créez un espace pro avec une autre adresse.')
-                : t('Ce compte est un compte professionnel. Créez un compte client avec une autre adresse.'),
-          });
-          return;
-        }
+        if (profile.role === 'pro' && !next.startsWith('/pro')) dest = '/pro';
+        else if (profile.role !== 'pro' && next.startsWith('/pro')) dest = '/';
+        if (profile.role !== role) writeAuthFlow({ role: profile.role === 'pro' ? 'pro' : 'client', next: dest });
       } catch {
-        // Profil illisible (réseau) : on n'invente pas un refus, les gardes trancheront.
+        // Profil illisible (réseau) : on entre, les gardes trancheront.
       }
-      navigate(retour(next), { replace: true });
+      navigate(retour(dest), { replace: true });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
