@@ -8,6 +8,7 @@
  * Sous la décision, la trace complète : réservation, envoi, décision.
  */
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FileText, Landmark, X } from 'lucide-react';
 import { useDecideDeposit, useDepositProof } from '@salondz/api-client';
 import { PENDING_REQUEST_TTL_HOURS, formatDA } from '@salondz/constants';
@@ -89,9 +90,7 @@ export function DepositReview({ booking: b }: { booking: Booking }) {
   const status = b.depositStatus ?? null;
   const submitted = status === 'submitted' && b.status === 'pending';
   const proof = useDepositProof(b.id, !!b.depositSubmittedAt && (submitted || status === 'accepted' || status === 'rejected'));
-  const decide = useDecideDeposit();
   const [view, setView] = useState(false);
-  const [rejecting, setRejecting] = useState(false);
   if (!b.depositAmount || !status) return null;
   const amount = formatDA(b.depositAmount);
   const isPdf = proof.data?.type === 'application/pdf';
@@ -119,7 +118,8 @@ export function DepositReview({ booking: b }: { booking: Booking }) {
           <small>{t('Versement')}</small>
           <b dir="ltr">{amount}</b>
         </span>
-        <span className={`dp-chip ${status}`}>{t(LABEL[status])}</span>
+        {/* « À vérifier » est déjà dit par l'état du rendez-vous et le liseré orange : pas de doublon. */}
+        {!submitted && <span className={`dp-chip ${status}`}>{t(LABEL[status])}</span>}
       </div>
 
       {proof.data && (
@@ -142,27 +142,48 @@ export function DepositReview({ booking: b }: { booking: Booking }) {
       )}
       {proof.isPending && !!b.depositSubmittedAt && submitted && <div className="dp-proof sk" aria-hidden />}
 
-      {submitted && (
-        <>
-          <p className="t3">{t('Vérifiez sur votre compte que {montant} est bien arrivé avant de valider.', { montant: amount })}</p>
-          <div className="ag-acts dp-acts">
-            <ActionRond ton="non" icon={ICONE.refuserJustificatif} label={t('Refuser')} title={t('Refuser le reçu')} busy={decide.isPending} onClick={() => setRejecting(true)} />
-            <ActionRond
-              ton="oui"
-              icon={ICONE.validerVersement}
-              label={t('Valider')}
-              title={t('Valider et confirmer')}
-              busy={decide.isPending}
-              onClick={() => decide.mutate({ id: b.id, decision: 'accept' })}
-            />
-          </div>
-          <ErrorMessage error={decide.error} />
-        </>
-      )}
+      {submitted && <p className="t3">{t('Vérifiez sur votre compte que {montant} est bien arrivé avant de valider.', { montant: amount })}</p>}
 
       <DepositTrace steps={steps} />
       {view && proof.data && <ProofViewer url={proof.data.url} onClose={() => setView(false)} />}
-      {rejecting && <RejectSheet id={b.id} onClose={() => setRejecting(false)} />}
     </section>
+  );
+}
+
+/**
+ * Décision sur un reçu, dans la rangée de ronds de l'écran qui l'accueille (fenêtre de l'agenda, page
+ * du rendez-vous) : « Refuser » (le reçu, motif demandé) et « Valider » (confirme le rendez-vous).
+ * UNE seule rangée de décisions par écran : la carte du versement ne montre que le reçu et le suivi.
+ */
+export function DepositDecision({ id, onDone }: { id: string; onDone?: () => void }) {
+  const decide = useDecideDeposit();
+  const [rejecting, setRejecting] = useState(false);
+  return (
+    <>
+      <ActionRond
+        ton="oui"
+        icon={ICONE.validerVersement}
+        label={t('Valider')}
+        title={t('Valider et confirmer')}
+        busy={decide.isPending}
+        onClick={() => decide.mutate({ id, decision: 'accept' }, { onSuccess: () => onDone?.() })}
+      />
+      <ActionRond ton="non" icon={ICONE.refuserJustificatif} label={t('Refuser le reçu')} busy={decide.isPending} onClick={() => setRejecting(true)} />
+      {decide.error && (
+        <div style={{ gridColumn: '1 / -1' }}>
+          <ErrorMessage error={decide.error} />
+        </div>
+      )}
+      {rejecting &&
+        createPortal(
+          <RejectSheet
+            id={id}
+            onClose={() => {
+              setRejecting(false);
+            }}
+          />,
+          document.body,
+        )}
+    </>
   );
 }

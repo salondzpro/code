@@ -34,7 +34,7 @@ import { ActionRond } from './ActionRond';
 import { Scissors, UserRound } from 'lucide-react';
 import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { ClientContact } from './ClientContact';
-import { DepositReview } from './DepositReview';
+import { DepositDecision, DepositReview } from './DepositReview';
 import { t } from '@/i18n';
 
 /** Délai proposé pour la prochaine visite d'une cliente dont le rendez-vous est terminé. */
@@ -187,7 +187,8 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 {confirmable && b.depositStatus !== 'submitted' && (
                   <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
                 )}
-                {confirmable && (
+                {confirmable && b.depositStatus === 'submitted' && <DepositDecision id={b.id} onDone={onClose} />}
+                {confirmable && b.depositStatus !== 'submitted' && (
                   <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />
                 )}
                 {confirmable && team > 1 && (

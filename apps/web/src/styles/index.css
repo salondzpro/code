@@ -12970,7 +12970,6 @@ div.skx-card {
 .dp-proof.pdf span { display: flex; flex-direction: column; }
 .dp-proof.pdf b { font-weight: 600; }
 .dp-proof.pdf small { font-size: 0.786rem; color: var(--color-muted); text-decoration: underline; }
-.dp-acts { grid-template-columns: repeat(2, 72px); justify-content: center; gap: 40px; margin-top: 0; padding-top: 2px; }
 .dp-view {
   position: fixed;
   inset: 0;
@@ -13096,3 +13095,8 @@ html.espace-pro .cl-sub,
 html.espace-pro .sv-sub,
 html.espace-pro .rp-s { font-size: 14px; }
 html.espace-pro .nvl { font-size: 12px; }
+
+/* Fenêtre du rendez-vous : l'heure ne se coupe jamais ; une étiquette d'état longue (« Versement à
+   vérifier ») passe sous l'heure plutôt que de la casser en deux (14 nov. 2026). */
+.ag-quand { flex-wrap: wrap; row-gap: 8px; }
+.ag-quand-h { white-space: nowrap; }

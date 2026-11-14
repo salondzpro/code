@@ -55,7 +55,7 @@ import { PickerField } from '@/components/Picker';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
-import { DepositReview } from '@/components/DepositReview';
+import { DepositDecision, DepositReview } from '@/components/DepositReview';
 import { depositPayNote } from '@/lib/deposit';
 import { ClientContact } from '@/components/ClientContact';
 import { ActionRond } from '@/components/ActionRond';
@@ -222,7 +222,8 @@ export function ProBookingDetail() {
             {confirmable && b.depositStatus !== 'submitted' && (
               <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })} />
             )}
-            {confirmable && <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />}
+            {confirmable && b.depositStatus === 'submitted' && <DepositDecision id={b.id} />}
+            {confirmable && b.depositStatus !== 'submitted' && <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />}
             {closable && (
               <>
                 <ActionRond ton="oui" icon={ICONE.terminer} label={t('Terminé')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'completed' })} />
