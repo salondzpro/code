@@ -96,7 +96,7 @@ export async function initLiveUpdate(): Promise<void> {
   if (!actif()) return;
   window.addEventListener('pointerdown', () => (touched = true), { once: true, capture: true });
   window.addEventListener('keydown', () => (touched = true), { once: true, capture: true });
-  const { App } = await import('@capacitor/app');
+  const [{ App }, { CapacitorUpdater }] = await Promise.all([import('@capacitor/app'), import('@capgo/capacitor-updater')]);
   void App.addListener('appStateChange', ({ isActive }) => {
     if (isActive) void check();
     else if (pending) void CapacitorUpdater.set({ id: pending }).catch(() => undefined);
