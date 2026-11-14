@@ -5,6 +5,7 @@
  *   node scripts/make-store-visuals.mjs            → captures fraîches de la PRODUCTION, puis visuels
  *   node scripts/make-store-visuals.mjs --sans-captures   → recompose seulement (captures déjà prises)
  *   node scripts/make-store-visuals.mjs --url http://localhost:9000
+ *   node scripts/make-store-visuals.mjs --controle         → captures + garde-fou seulement
  *
  * PARTI PRIS (celui de la page `/home`) : fond clair, halos beige et gris, très grands titres en Plus
  * Jakarta Sans serrée, deuxième ligne en gris — et le PRODUIT au centre : de vrais écrans de
@@ -35,6 +36,8 @@ const arg = (n, d) => {
 };
 const BASE = arg('--url', 'https://salondz.com').replace(/\/$/, '');
 const CAPTURER = !process.argv.includes('--sans-captures');
+/** `--controle` : captures et garde-fou seulement, sans recomposer les visuels (rien n'est réécrit dans le dépôt). */
+const CONTROLE = process.argv.includes('--controle');
 const ECRANS = path.join(ROOT, '.store-ecrans');
 
 /** iPhone 6,7 pouces : 430×932 points, densité 3. Marges de l'iPhone à Dynamic Island. */
@@ -82,6 +85,23 @@ async function capturer() {
     // remplacée par le parseur. Les marges de l'iPhone sont donc réinjectées APRÈS chargement.
     await p.addStyleTag({ content: `:root{--sat:${PT.haut}px !important;--sab:${PT.bas}px !important}` });
     await p.waitForTimeout(500);
+    // GARDE-FOU (14 nov. 2026) : aucun texte de l'application dans la zone de la barre d'état. La
+    // première génération montrait « 9:41 » par-dessus « Samedi 14 novembre » : les marges n'avaient
+    // pas été appliquées et rien ne l'avait vu. Désormais le script S'ARRÊTE au lieu de produire —
+    // et donc d'envoyer en boutique — un visuel où l'heure du téléphone recouvre l'écran.
+    const fautes = await p.evaluate((haut) => {
+      const out = [];
+      for (const el of document.querySelectorAll('body *')) {
+        const texte = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim()).map((n) => n.textContent.trim()).join(' ');
+        if (!texte) continue;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width && r.height && r.bottom > 0 && r.top < haut - 1) out.push(`« ${texte.slice(0, 40)} » à ${Math.round(r.top)} pt`);
+      }
+      return out;
+    }, PT.haut);
+    if (fautes.length) throw new Error(`${app}/${nom} : du texte passe sous la barre d'état (marge ${PT.haut} pt) — ${fautes.slice(0, 4).join(' ; ')}`);
     await p.screenshot({ path: path.join(ECRANS, app, `${nom}.png`), clip: { x: 0, y: 0, width: PT.l, height: PT.h } });
     console.log('  ✔ écran', app, nom);
   };
@@ -325,4 +345,5 @@ async function composer() {
 }
 
 if (CAPTURER) await capturer();
-await composer();
+if (!CONTROLE) await composer();
+else console.log("✔ garde-fou : aucun texte sous la barre d’état sur les 12 écrans");
