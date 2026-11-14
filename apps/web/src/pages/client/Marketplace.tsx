@@ -169,10 +169,15 @@ export function Marketplace() {
 
       {/* Résultats */}
       {query.isPending ? (
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-5 w-56" />
-          <Skeleton className="h-[23.75rem] w-full !rounded-[var(--radius-card)]" />
-          <Skeleton className="h-[12.5rem] w-full !rounded-[var(--radius-card)]" />
+        // La silhouette de deux cartes de salon : photo, nom, lieu — à la place exacte des vraies.
+        <div className="flex flex-col gap-5">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex flex-col gap-2.5">
+              <Skeleton className="h-[11.5rem] w-full !rounded-[var(--radius-card)]" />
+              <Skeleton className="h-[1.05rem] w-[58%] !rounded-[8px]" />
+              <Skeleton className="h-[0.8rem] w-[38%] !rounded-[8px]" />
+            </div>
+          ))}
         </div>
       ) : query.isError ? (
         <ErrorMessage error={query.error} retry={() => query.refetch()} />

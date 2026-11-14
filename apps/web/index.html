@@ -17,6 +17,32 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      SQUELETTE D'ACTUALISATION (14 nov. 2026) : pendant que le code du site arrive, la silhouette d'une
+      page à la place d'un écran vide — seulement si l'attente dépasse 300 ms (sinon rien), jamais dans
+      l'application (son ouverture s'en charge) ni sur les pages de présentation. React la remplace au
+      premier rendu ; `PageLoading` prend alors le relais sans fondu (`data-skx`).
+    -->
+    <style>
+      #skx0{position:fixed;inset:0;z-index:0;background:#f7f7f9;padding:calc(18px + env(safe-area-inset-top)) 16px 0;display:flex;flex-direction:column;gap:14px;opacity:0;animation:skx0-in .28s ease-out .3s forwards}
+      #skx0 i{display:block;background:#ececf0 linear-gradient(100deg,#fff0 30%,#ffffff9e 50%,#fff0 70%) no-repeat fixed;background-size:220vw 100%;animation:skx0-sw 1.7s cubic-bezier(.4,0,.2,1) infinite;border-radius:22px}
+      #skx0 .t{height:28px;width:46%;border-radius:8px}#skx0 .s{height:13px;width:64%;border-radius:8px;margin-top:-6px}
+      #skx0 .c{height:136px}#skx0 .p{height:240px;margin:calc(-18px - env(safe-area-inset-top)) -16px 0;border-radius:0}
+      @keyframes skx0-in{to{opacity:1}}@keyframes skx0-sw{from{background-position:160vw 0}to{background-position:-160vw 0}}
+      @media (prefers-reduced-motion:reduce){#skx0,#skx0 i{animation:none;opacity:1}}
+    </style>
+    <script>
+      (function () {
+        var w = window, p = location.pathname;
+        if (w.androidBridge || (w.webkit && w.webkit.messageHandlers && w.webkit.messageHandlers.bridge) || (w.Capacitor && w.Capacitor.isNativePlatform && w.Capacitor.isNativePlatform())) return;
+        if (/^\/(home|professionnels)?\/?$/.test(p)) return;
+        var salon = /^\/s\/[^/]+\/?$/.test(p);
+        var html = salon ? '<i class="p"></i><i class="t"></i><i class="s"></i><i class="c"></i>' : '<i class="t"></i><i class="s"></i><i class="c"></i><i class="c"></i><i class="c" style="opacity:.6"></i>';
+        var r = document.getElementById('root');
+        r.innerHTML = '<div id="skx0" aria-hidden="true">' + html + '</div>';
+        setTimeout(function () { if (document.getElementById('skx0')) document.documentElement.setAttribute('data-skx', 'on'); }, 300);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
