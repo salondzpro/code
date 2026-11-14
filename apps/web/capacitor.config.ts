@@ -27,7 +27,7 @@ const config: CapacitorConfig = {
     // Origine `https://localhost` (et non `http://`) : sans cela, Chrome traite l'app comme non sécurisée
     // et refuse notamment la géolocalisation et le stockage persistant.
     allowMixedContent: false,
-    backgroundColor: '#f7f7f9',
+    backgroundColor: '#111214',
   },
   /**
    * BORD À BORD SUR IPHONE (14 nov. 2026) : `contentInset: 'never'` — la page occupe TOUT l'écran,
@@ -37,7 +37,7 @@ const config: CapacitorConfig = {
    */
   ios: {
     contentInset: 'never',
-    backgroundColor: '#f7f7f9',
+    backgroundColor: '#111214',
   },
   server: {
     androidScheme: 'https',

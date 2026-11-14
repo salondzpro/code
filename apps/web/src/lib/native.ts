@@ -139,7 +139,9 @@ async function setupChrome(): Promise<void> {
     import('@capacitor/status-bar'),
     import('@capacitor/splash-screen'),
   ]);
-  await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+  // Pendant l'ouverture (fond d'encre), le texte de la barre reste blanc : c'est `launchAnimation.ts`
+  // qui le repasse en sombre à sa sortie.
+  if (!document.getElementById('sdz-launch')) await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
   await StatusBar.setOverlaysWebView({ overlay: true }).catch(() => undefined);
   await StatusBar.setBackgroundColor({ color: '#00000000' }).catch(() => undefined);
   await SplashScreen.hide().catch(() => undefined);
