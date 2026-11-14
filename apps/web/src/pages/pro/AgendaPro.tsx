@@ -278,6 +278,11 @@ export function AgendaPro() {
           avatarUrl: m.avatarUrl,
         }));
 
+  // Rendez-vous du jour par membre, pour la liste déroulante du filtre (annulés exclus).
+  const dayLive = (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && localKey(b.startsAt) === date);
+  const staffCounts: Record<string, number> = { all: dayLive.length };
+  for (const m of team) staffCounts[m.id] = dayLive.filter((b) => b.staffId === m.id).length;
+
   const shift = (n: number) =>
     setDate(
       view === 'month'
@@ -373,8 +378,8 @@ export function AgendaPro() {
             onSelect={setDate}
             onView={setStripDay}
           />
-          {/* Le filtre par membre n'a plus sa rangée de puces : il EST l'en-tête des colonnes
-              (`DayColumns`, `onStaff`) — toucher un nom ne garde que sa colonne. */}
+          {/* Filtre par membre (15 nov. 2026) : une liste déroulante, « Toute l'équipe » par défaut. */}
+          <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} counts={staffCounts} nameOf={nameOf} />
           <DayCarousel
             date={date}
             onChange={setDate}
@@ -411,7 +416,6 @@ export function AgendaPro() {
                         `/pro/rendez-vous/nouveau?date=${d}&time=${t}${sid ? `&staff=${sid}` : ''}`,
                       )
                     }
-                    onStaff={team.length >= 2 ? (id) => setStaffId(id && id !== staffId ? id : null) : undefined}
                   />
                 </div>
               );
@@ -421,7 +425,7 @@ export function AgendaPro() {
       )}
 
       {view !== 'day' && (
-        <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} />
+        <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} nameOf={nameOf} />
       )}
 
       {view === 'week' && (
@@ -617,7 +621,6 @@ function DayColumns({
   onGap,
   onBlock,
   onFree,
-  onStaff,
   cancelledCount = 0,
   showCancelled = false,
   onToggleCancelled,
@@ -626,11 +629,6 @@ function DayColumns({
   cancelledCount?: number;
   showCancelled?: boolean;
   onToggleCancelled?: () => void;
-  /**
-   * Équipe d'au moins deux personnes : l'en-tête des colonnes est le filtre. Toucher un nom ne garde
-   * que sa colonne ; le retoucher (ou « Toute l'équipe ») les remet toutes.
-   */
-  onStaff?: (staffId: string | null) => void;
   date: string;
   columns: Column[];
   items: BookingWithStaff[];
@@ -681,6 +679,9 @@ function DayColumns({
   const height = (endMin - startMin) * PX + 16;
   const hourMarks: number[] = [];
   for (let m = Math.ceil(startMin / 60) * 60; m <= endMin; m += 60) hourMarks.push(m);
+  // Demi-heures en pointillés (15 nov. 2026) : on lit l'heure d'un rendez-vous sans compter les pixels.
+  const halfMarks: number[] = [];
+  for (let m = Math.ceil((startMin + 1) / 30) * 30; m < endMin; m += 30) if (m % 60) halfMarks.push(m);
 
   // Plages fermées : pauses (toutes colonnes) et blocages (tout le salon, ou un seul membre).
   const closed: { s: number; e: number; label: string; staffId: string | null; blockId?: string }[] = [];
@@ -791,31 +792,22 @@ function DayColumns({
         )}
       </div>
     )}
-    {/* Qui travaille dans quelle colonne : le nom en tête de SA colonne, et c'est aussi le filtre. */}
-    {onStaff && (
-      <div
-        className="ag9-ch"
-        role="group"
-        aria-label={t('Filtrer par membre')}
-        style={{ paddingInlineStart: GUTTER, gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
-      >
+    {/* Qui travaille dans quelle colonne : le nom en tête de SA colonne (le filtre est la liste déroulante). */}
+    {narrow && (
+      <div className="ag9-ch" style={{ paddingInlineStart: GUTTER, gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
         {columns.map((col) => (
-          <button
-            key={col.id ?? 'all'}
-            type="button"
-            className={`ag9-chc${narrow ? '' : ' on'}`}
-            aria-pressed={!narrow}
-            onClick={() => onStaff(col.id)}
-          >
+          <div key={col.id ?? 'all'} className="ag9-chc">
             <Avatar src={col.avatarUrl} name={col.name} size={24} />
             <b>{col.name}</b>
             <span>{items.filter((b) => inCol(col, b.staffId)).length}</span>
-            {!narrow && <em>{t("Toute l'équipe")}</em>}
-          </button>
+          </div>
         ))}
       </div>
     )}
     <div className="ag9-g" style={{ height, paddingInlineStart: GUTTER }}>
+      {halfMarks.map((m) => (
+        <div key={`h${m}`} className="ag9-hr half" style={{ top: top(m) }} aria-hidden />
+      ))}
       {hourMarks.map((m) => (
         <div key={m} className="ag9-hr" style={{ top: top(m) }}>
           <span><bdi dir="ltr">{hm(m)}</bdi></span>

@@ -46,6 +46,7 @@
 
 Agenda : fond teinté de la couleur du statut (16 %), heure écrite dans cette couleur, sans liseré.
 **Jamais de couleur par membre de l'équipe** (refusé le 11 nov.) : le nom en tête de colonne suffit.
+Filtrer par membre : une LISTE DÉROULANTE « Toute l'équipe » par défaut (15 nov.), jamais une rangée de puces. Grille : trait plein à chaque heure, demi-heures en pointillés.
 
 Frise des jours : **un point par rendez-vous** (quatre au plus) dans la couleur de son statut, point
 rouge cerclé = nouveauté non vue. **Jour choisi = numéro dans un cercle NOIR**, nom du jour en noir (le bleu iOS a été essayé puis écarté le 13 nov.) ; jamais un pavé rectangulaire.
