@@ -91,3 +91,6 @@ apps/web/dist-pro/
 
 # Fichiers de session du compilateur Kotlin (Gradle), jamais versionnés.
 apps/web/android/.kotlin/
+
+# Écrans bruts capturés par scripts/make-store-visuals.mjs (refaits à chaque passage).
+.store-ecrans/
