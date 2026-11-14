@@ -46,12 +46,17 @@ const inNativeShell = Boolean((window as { Capacitor?: { isNativePlatform?: () =
  */
 if (!inNativeShell) void import('./lib/appHandoff').then((m) => m.handOffToApp());
 if (inNativeShell) void import('./lib/launchAnimation').then((m) => m.startLaunchAnimation());
+// Applications embarquées : cherche et télécharge la dernière version du site dès l'ouverture
+// (`lib/liveUpdate.ts`), pendant l'animation, au lieu d'attendre la fin de l'initialisation.
+if (inNativeShell) void import('./lib/liveUpdate').then((m) => m.initLiveUpdate()).catch(() => undefined);
 
 void loadDictionary(getLocale())
   .catch(() => undefined)
   .then(() => import('./app/boot'))
   .then((m) => m.render())
   .then(async () => {
+    // L'interface est rendue : la version en cours est bonne, on la garde (voir `confirmBundleReady`).
+    if (inNativeShell) void import('./lib/liveUpdate').then((m) => m.confirmBundleReady()).catch(() => undefined);
     if (inNativeShell) void import('./lib/launchAnimation').then((m) => m.endLaunchAnimation());
     // Coque native (application mobile) : position, partage, bouton retour, liens profonds, barre d'état.
     // Sans effet — et sans téléchargement — pour un visiteur du site.
@@ -62,6 +67,4 @@ void loadDictionary(getLocale())
     await initNative(go);
     const { wireNativePushTaps } = await import('./lib/nativePush');
     await wireNativePushTaps(go);
-    // Applications embarquées : télécharge en silence la dernière version du site (`lib/liveUpdate.ts`).
-    void import('./lib/liveUpdate').then((m) => m.initLiveUpdate());
   });

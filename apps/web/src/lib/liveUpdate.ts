@@ -36,6 +36,13 @@ interface Latest {
 
 let pending: string | null = null;
 let busy = false;
+/**
+ * La personne a-t-elle déjà touché l'écran depuis l'ouverture ? Tant que non, une version téléchargée
+ * s'applique TOUT DE SUITE (on est encore sur l'ouverture ou le premier écran) : sans cela, il fallait
+ * ouvrir l'application, la quitter puis la rouvrir pour voir la nouvelle version — et la plupart des
+ * gens ne voyaient jamais rien changer (14 nov. 2026, retour du propriétaire sur iPhone).
+ */
+let touched = false;
 
 /** Coque native qui sert sa copie embarquée (et non salondz.com en direct). */
 function embedded(): boolean {
@@ -62,6 +69,7 @@ async function check(): Promise<void> {
     // Appliquée au prochain passage en arrière-plan (ou au prochain lancement).
     await CapacitorUpdater.next({ id: bundle.id });
     pending = bundle.id;
+    if (!touched) await CapacitorUpdater.set({ id: bundle.id });
   } catch (err) {
     console.warn('[mise à jour] vérification impossible', err);
   } finally {
@@ -69,12 +77,25 @@ async function check(): Promise<void> {
   }
 }
 
-/** À appeler une fois l'application affichée. Sans effet sur le site et l'Android en ligne. */
-export async function initLiveUpdate(): Promise<void> {
-  if (!embedded() || !Capacitor.isPluginAvailable('CapacitorUpdater')) return;
+const actif = () => embedded() && Capacitor.isPluginAvailable('CapacitorUpdater');
+
+/**
+ * Le paquet en cours a DÉMARRÉ : il est gardé. Sans ce signal dans les 10 s, le greffon revient de
+ * lui-même à la version d'avant. Appelé dès que l'interface est rendue, et SEULEMENT de là : il était
+ * envoyé au bout de toute l'initialisation native (barre d'état, liens, notifications) — qu'une seule
+ * de ces étapes traîne sur iPhone, et la nouvelle version était abandonnée à chaque lancement.
+ */
+export async function confirmBundleReady(): Promise<void> {
+  if (!actif()) return;
   const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
-  // Le paquet en cours a démarré : il est gardé (sinon retour automatique à la version d'avant).
   await CapacitorUpdater.notifyAppReady().catch(() => undefined);
+}
+
+/** Dès le démarrage, sans attendre le rendu : la vérification et le téléchargement partent tout de suite. */
+export async function initLiveUpdate(): Promise<void> {
+  if (!actif()) return;
+  window.addEventListener('pointerdown', () => (touched = true), { once: true, capture: true });
+  window.addEventListener('keydown', () => (touched = true), { once: true, capture: true });
   const { App } = await import('@capacitor/app');
   void App.addListener('appStateChange', ({ isActive }) => {
     if (isActive) void check();
