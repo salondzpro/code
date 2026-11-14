@@ -36,9 +36,9 @@ export function Parametres() {
           sub={
             (salon?.depositMode ?? 'off') === 'off'
               ? t('Désactivé · CCP, banque ou BaridiMob')
-              : salon.depositMode === 'percent'
-                ? t('{n} % du total, justificatif à valider', { n: salon.depositValue })
-                : t('{montant}, justificatif à valider', { montant: formatDA(salon.depositValue) })
+              : salon?.depositMode === 'percent'
+                ? t('{n} % du total, justificatif à valider', { n: salon?.depositValue ?? 0 })
+                : t('{montant}, justificatif à valider', { montant: formatDA(salon?.depositValue ?? 0) })
           }
         />
       </div>
