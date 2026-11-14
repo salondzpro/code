@@ -27,7 +27,9 @@ import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { api } from '@/lib/api';
-import { Button, Field, I, Input, LinkButton } from '@/components/ui';
+import { Button, Field, I, Input, LinkButton, Segmented } from '@/components/ui';
+import { guestMarket, setGuestMarket } from '@/lib/useClientMarket';
+import { choisirEspace } from '@/lib/espaceClient';
 import { AuthError, PasswordField } from '@/components/AuthShell';
 import { MailAppButton, AuthScreen } from '@/components/AuthKit';
 import { isNative } from '@/lib/native';
@@ -160,7 +162,33 @@ export function AccesMotDePasse() {
   // Voir `Login.tsx` : une référence, pour que la redirection de session n'arrive pas avant le
   // contrôle du portail.
   const enCours = useRef(false);
+  // Compte PRO entré par le portail CLIENT : il choisit son espace (14 nov. 2026).
+  const [choix, setChoix] = useState(false);
 
+  if (choix && session) {
+    const aller = (espace: 'client' | 'pro') => {
+      choisirEspace(session.user.id, espace);
+      navigate(retour(espace === 'pro' ? '/pro' : next.startsWith('/pro') ? MARCHE : next), { replace: true });
+    };
+    return (
+      <AuthScreen
+        titre={t('Vous avez un espace professionnel')}
+        sous={t('Avec la même adresse, vous pouvez aussi réserver comme client dans les salons.')}
+        actions={
+          <>
+            <Button icon={ICONE.continuer} onClick={() => aller('client')}>
+              {t('Continuer comme client')}
+            </Button>
+            <Button icon={ICONE.seConnecter} variant="g" onClick={() => aller('pro')}>
+              {t('Ouvrir mon espace pro')}
+            </Button>
+          </>
+        }
+      >
+        <CompteCarte email={email} modifier={`${base}${q({ email })}`} />
+      </AuthScreen>
+    );
+  }
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
   if (!email) return <Navigate to={`${base}${q()}`} replace />;
 
@@ -193,6 +221,12 @@ export function AccesMotDePasse() {
       let dest = next;
       try {
         const { profile } = await api.me.get();
+        // Professionnel passé par le portail CLIENT : on lui laisse le choix, il n'est plus renvoyé
+        // d'office sur son espace pro (14 nov. 2026, demande du propriétaire).
+        if (profile.role === 'pro' && role === 'client') {
+          setChoix(true);
+          return;
+        }
         if (profile.role === 'pro' && !next.startsWith('/pro')) dest = '/pro';
         else if (profile.role !== 'pro' && next.startsWith('/pro')) dest = '/';
         if (profile.role !== role) writeAuthFlow({ role: profile.role === 'pro' ? 'pro' : 'client', next: dest });
@@ -316,25 +350,45 @@ export function AccesCreer() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Err>(null);
+  /**
+   * CLIENTE : UN SEUL ÉCRAN ET L'ON ENTRE (14 nov. 2026, demande du propriétaire). Nom, mot de passe
+   * et « Femme / Homme » ici, sous l'adresse déjà donnée ; le compte s'ouvre aussitôt et la place
+   * de marché s'ouvre sur le côté choisi. Ni lien à cliquer, ni numéro (demandé en réservant).
+   */
+  const client = role === 'client';
+  const [name, setName] = useState('');
+  const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
+    const m = guestMarket();
+    return m === 'women' ? 'female' : m === 'men' ? 'male' : '';
+  });
+  // Une session ouverte ICI est la nôtre : on navigue nous-mêmes, sans relais.
+  const enCours = useRef(false);
 
-  if (session) return <Navigate to={retour(next)} replace />;
+  if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
   if (!email) return <Navigate to={`${base}${q()}`} replace />;
 
   const assez = password.length >= PASSWORD_MIN;
 
   const creer = async (e: FormEvent) => {
     e.preventDefault();
+    if (client && name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
     if (!assez) return setError({ kind: 'password', text: t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }) });
+    if (client && !gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
     setError(null);
     setBusy(true);
+    enCours.current = true;
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      const ouverte = await signUpWithPassword(email, password, role, next);
-      if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
+      const ouverte = await signUpWithPassword(email, password, role, next, client && gender ? { fullName: name.trim(), gender } : undefined);
+      if (ouverte && client && gender) {
+        setGuestMarket(gender === 'female' ? 'women' : 'men');
+        navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
+      } else if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(`${base}/envoye?mode=confirm`, { replace: true });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
+      enCours.current = false;
       setBusy(false);
     }
   };
@@ -342,8 +396,12 @@ export function AccesCreer() {
   return (
     <AuthScreen
       back={`${base}${q({ email })}`}
-      titre={t('Créez votre mot de passe')}
-      sous={t('C’est votre première fois. Choisissez un mot de passe, puis nous vous envoyons un lien de confirmation.')}
+      titre={client ? t('Créez votre compte') : t('Créez votre mot de passe')}
+      sous={
+        client
+          ? t('C’est votre première fois. Trois réponses et vous entrez.')
+          : t('C’est votre première fois. Choisissez un mot de passe, puis nous vous envoyons un lien de confirmation.')
+      }
       actions={
         <>
           <Button icon={role === 'pro' ? ICONE.creerEspace : ICONE.creerCompte} type="submit" form="pa-creer" loading={busy} disabled={busy}>
@@ -361,6 +419,21 @@ export function AccesCreer() {
         <Link to={`${base}${q({ email })}`}>{t('Modifier')}</Link>
       </div>
       <form id="pa-creer" onSubmit={creer} noValidate className="pa-form">
+        {client && (
+          <Field label={t('Prénom et nom')} htmlFor="pa-creer-nom">
+            <Input
+              id="pa-creer-nom"
+              autoComplete="name"
+              enterKeyHint="next"
+              placeholder={t('Inès Rahmani')}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setError(null);
+              }}
+            />
+          </Field>
+        )}
         <PasswordField
           id="pa-creer-i"
           label={t('Mot de passe')}
@@ -378,6 +451,23 @@ export function AccesCreer() {
           </span>
           {t('{n} caractères au minimum', { n: PASSWORD_MIN })}
         </p>
+        {client && (
+          <div>
+            <span className="lbl">{t('Vous êtes')}</span>
+            <Segmented
+              label={t('Vous êtes')}
+              value={gender}
+              onChange={(v) => {
+                setGender(v);
+                setError(null);
+              }}
+              options={[
+                { value: 'female' as const, label: t('Une femme') },
+                { value: 'male' as const, label: t('Un homme') },
+              ]}
+            />
+          </div>
+        )}
         {error && (
           <AuthError texte={error.text}>
             {error.kind === 'exists' && (

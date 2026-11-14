@@ -42,8 +42,11 @@ export function ProfileSetup() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) return setError({ field: 'name', msg: t("Indiquez votre prénom et votre nom.") });
-    const parsed = phoneDZ.safeParse(`0${digits.replace(/\D/g, '')}`);
-    if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
+    // Numéro obligatoire pour le professionnel ; FACULTATIF pour la cliente (14 nov. 2026), qui le
+    // donne au moment de réserver. S'il est tapé, il doit être valide.
+    const brut = digits.replace(/\D/g, '');
+    const parsed = phoneDZ.safeParse(`0${brut}`);
+    if ((isPro || brut) && !parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
       // Les rappels sont ACQUIS, pas proposés : un interrupteur sur l'écran d'inscription demandait un
@@ -52,7 +55,7 @@ export function ProfileSetup() {
       // défaut en base, donc l'écrire ne servirait qu'à rallumer, en silence, ce que quelqu'un
       // aurait éteint.
       const market = !isPro && !me.data?.profile.market ? guestMarket() : null;
-      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, ...(market ? { market } : {}) });
+      await update.mutateAsync({ fullName: name.trim(), ...(parsed.success ? { phone: parsed.data } : {}), ...(market ? { market } : {}) });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market && !market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });
@@ -109,7 +112,7 @@ export function ProfileSetup() {
             />
           </div>
           <p className={`mt-1 text-[0.857rem] ${error?.field === 'phone' ? 'text-danger' : 'text-subtle'}`}>
-            {error?.field === 'phone' ? error.msg : t('Format algérien · aucun SMS envoyé.')}
+            {error?.field === 'phone' ? error.msg : isPro ? t('Format algérien · aucun SMS envoyé.') : t('Facultatif · demandé au moment de réserver.')}
           </p>
         </div>
         {error?.field === 'form' && (

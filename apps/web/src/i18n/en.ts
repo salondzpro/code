@@ -2143,4 +2143,15 @@ export const en: Record<string, string> = {
   "Envoyez {montant} par BaridiMob ou au bureau de poste.": "Send {montant} via BaridiMob or at the post office.",
   "Joignez la capture du reçu : le salon valide, c’est confirmé.": "Attach a screenshot of the receipt: the salon accepts, you're confirmed.",
   "Désactivé · CCP (BaridiMob)": "Off · CCP (BaridiMob)",
+  // Inscription cliente en un écran, pro en client (14 nov. 2026)
+  "Choisissez Femme ou Homme.": "Choose Woman or Man.",
+  "Créez votre compte": "Create your account",
+  "C’est votre première fois. Trois réponses et vous entrez.": "First time here. Three answers and you’re in.",
+  "Vous êtes": "You are",
+  "Une femme": "A woman",
+  "Un homme": "A man",
+  "Vous avez un espace professionnel": "You have a professional space",
+  "Avec la même adresse, vous pouvez aussi réserver comme client dans les salons.": "With the same address, you can also book salons as a client.",
+  "Continuer comme client": "Continue as a client",
+  "Facultatif · demandé au moment de réserver.": "Optional · asked when you book.",
 };

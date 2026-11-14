@@ -67,7 +67,13 @@ interface AuthContextValue {
    * le lien de confirmation. Renvoie `true` si une session est ouverte tout de suite (projet
    * sans confirmation d'e-mail), `false` s'il faut d'abord cliquer le lien reçu.
    */
-  signUpWithPassword: (email: string, password: string, role: UserRole, next: string) => Promise<boolean>;
+  signUpWithPassword: (
+    email: string,
+    password: string,
+    role: UserRole,
+    next: string,
+    extra?: { fullName: string; gender: 'male' | 'female' },
+  ) => Promise<boolean>;
   /** Lien de connexion par e-mail (sans mot de passe). */
   sendMagicLink: (email: string, next: string) => Promise<void>;
   /** Renvoie le lien de confirmation d'inscription. */
@@ -119,12 +125,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }, []);
 
-  const signUpWithPassword = useCallback(async (email: string, password: string, role: UserRole, next: string) => {
-    // Compte créé par l'API, qui envoie elle-même le lien de confirmation (nos e-mails, pas
-    // le SMTP de Supabase). Jamais de session tout de suite : il faut cliquer le lien.
-    await api.auth.signup({ email, password, role, next });
-    return false;
-  }, []);
+  const signUpWithPassword = useCallback(
+    async (email: string, password: string, role: UserRole, next: string, extra?: { fullName: string; gender: 'male' | 'female' }) => {
+      // Compte créé par l'API. Professionnel : elle envoie le lien de confirmation (nos e-mails, pas
+      // le SMTP de Supabase), pas de session avant le clic. Cliente avec nom et genre (14 nov. 2026) :
+      // le compte est ouvert d'office, on se connecte aussitôt avec le mot de passe saisi.
+      const res = await api.auth.signup({ email, password, role, next, ...(extra ?? {}) });
+      if (!res?.opened) return false;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return true;
+    },
+    [],
+  );
 
   const sendMagicLink = useCallback(async (email: string, next: string) => {
     await api.auth.magicLink({ email, next });

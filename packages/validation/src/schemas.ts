@@ -428,6 +428,12 @@ export const emailSignupSchema = z.object({
   password: z.string().min(8).max(200),
   role: z.enum(USER_ROLES).default('client'),
   next: nextPath,
+  /**
+   * INSCRIPTION CLIENTE DIRECTE (14 nov. 2026, demande du propriétaire) : nom + « femme / homme »
+   * donnés sur le même écran que l'adresse et le mot de passe ; le compte s'ouvre aussitôt.
+   */
+  fullName: z.string().trim().min(2).max(80).optional(),
+  gender: z.enum(['male', 'female']).optional(),
 });
 export type EmailSignupInput = z.infer<typeof emailSignupSchema>;
 /** Lien de connexion, renvoi de confirmation, mot de passe oublié : une adresse (+ retour). */

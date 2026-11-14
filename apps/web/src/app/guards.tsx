@@ -16,6 +16,7 @@ import { useDesktop } from '@/lib/breakpoint';
 import { useActingAs } from '@/lib/actingAs';
 import { useAutoLocate } from '@/lib/useAutoLocate';
 import { ActingAsBanner } from '@/components/ActingAsBanner';
+import { proEnClient } from '@/lib/espaceClient';
 import { AccountSuspendedNotice, SalonSuspendedNotice } from '@/components/SuspensionNotice';
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
@@ -155,11 +156,12 @@ export function RequireClient() {
    * passer tout le monde — un professionnel rouvrait donc son application en client, et devait
    * retrouver son espace à la main.
    */
-  if (p.role === 'pro') return <Navigate to="/pro" replace />;
+  // Sauf s'il a choisi, sur cet appareil, de continuer comme client (`lib/espaceClient.ts`).
+  if (p.role === 'pro' && !proEnClient(session.user.id)) return <Navigate to="/pro" replace />;
   const next = encodeURIComponent(location.pathname + location.search);
-  // Nom ET numéro obligatoires : le salon doit pouvoir joindre la personne.
-  if (!p.fullName || !p.phone) return <Navigate to={`/profil/creer?next=${next}`} replace />;
-  // Le rôle est forcément « client » ici (un professionnel a été renvoyé plus haut).
+  // Le NOM seul est exigé (14 nov. 2026, inscription simplifiée) : le numéro est demandé au moment
+  // de réserver, à l'étape des coordonnées, et enregistré sur le profil à ce moment-là.
+  if (!p.fullName) return <Navigate to={`/profil/creer?next=${next}`} replace />;
   if (!p.market) return <Navigate to={`/marche?next=${next}`} replace />;
   return <Outlet />;
 }

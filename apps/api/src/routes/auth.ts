@@ -171,8 +171,41 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
-    const { email, password, role, next } = req.body;
+    const { email, password, role, next, fullName, gender } = req.body;
     const existing = await findUser(email);
+    /**
+     * CLIENTE : COMPTE OUVERT TOUT DE SUITE (14 nov. 2026, demande du propriétaire : « être
+     * facilitateur »). Adresse, mot de passe, nom et « femme / homme », et l'on entre — pas de lien
+     * à aller cliquer. Choix assumé : l'adresse n'est pas vérifiée (un compte client ne donne accès
+     * qu'à ses propres réservations ; « Mot de passe oublié » rend la main au vrai titulaire).
+     * Les professionnels gardent la confirmation par e-mail.
+     */
+    if (role === 'client' && fullName && !existing) {
+      const created = await db.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { role, full_name: fullName },
+      });
+      if (created.error || !created.data.user) {
+        const msg = created.error?.message ?? '';
+        if (/already|registered|exists/i.test(msg))
+          throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
+        if (/invalid|valid email/i.test(msg)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
+        throw created.error ?? new Error('createUser');
+      }
+      // Le profil vient du déclencheur (rôle + nom) ; on y ajoute le choix femme / homme, qui ouvre
+      // la place de marché sur le bon côté.
+      if (gender) {
+        const upd = await db
+          .from('profiles')
+          .update({ gender, market: gender === 'female' ? 'women' : 'men' })
+          .eq('id', created.data.user.id);
+        if (upd.error) req.log.error({ err: upd.error }, 'signup profil');
+      }
+      reply.header('Cache-Control', 'private, no-store');
+      return { opened: true };
+    }
     // Compte confirmé : AUCUNE seconde inscription. Le serveur décide, quoi qu'ait affiché l'écran
     // (un ancien bundle, un appel direct). L'unicité elle-même est tenue par la base : l'adresse
     // est unique dans `auth.users`, enregistrée en minuscules — deux inscriptions simultanées de

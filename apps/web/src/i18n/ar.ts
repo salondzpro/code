@@ -2129,4 +2129,15 @@ export const ar: Record<string, string> = {
   "Envoyez {montant} par BaridiMob ou au bureau de poste.": "أرسل {montant} عبر بريدي موب أو من مكتب البريد.",
   "Joignez la capture du reçu : le salon valide, c’est confirmé.": "أرفق صورة الوصل: يقبلها الصالون ويُؤكَّد موعدك.",
   "Désactivé · CCP (BaridiMob)": "معطّل · CCP (بريدي موب)",
+  // Inscription cliente en un écran, pro en client (14 nov. 2026)
+  "Choisissez Femme ou Homme.": "اختاري: امرأة أو رجل.",
+  "Créez votre compte": "أنشئ حسابك",
+  "C’est votre première fois. Trois réponses et vous entrez.": "هذه أول مرة لك. ثلاث إجابات وتدخل.",
+  "Vous êtes": "أنت",
+  "Une femme": "امرأة",
+  "Un homme": "رجل",
+  "Vous avez un espace professionnel": "لديك فضاء مهني",
+  "Avec la même adresse, vous pouvez aussi réserver comme client dans les salons.": "بنفس العنوان، يمكنك أيضًا الحجز كزبون في الصالونات.",
+  "Continuer comme client": "المتابعة كزبون",
+  "Facultatif · demandé au moment de réserver.": "اختياري · يُطلب عند الحجز.",
 };
