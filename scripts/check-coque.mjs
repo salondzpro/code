@@ -67,6 +67,16 @@ try {
   ok(chemin === '/', `la racine ouvre la place de marché sans compte (${chemin})`);
   ok(await rempli(), 'l’écran est rendu — c’est l’écran blanc du 25 sept. que ce contrôle surveille');
 
+  // Premier lancement (14 nov. 2026) : l'application demande d'abord la langue, puis s'y tient.
+  console.log('\n1 bis. Le choix de la langue au premier lancement');
+  ok((await page.locator('.lgc').count()) === 1, 'l’écran de choix de la langue est affiché');
+  await page.locator('.lgc .pwo-cta').click();
+  await page.waitForTimeout(1500);
+  ok((await page.locator('.lgc').count()) === 0, '« Continuer » le referme et ouvre l’application');
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3000);
+  ok((await page.locator('.lgc').count()) === 0, 'il ne revient pas au relancement');
+
   console.log('\n2. Les écrans d’entrée répondent');
   await page.goto(`${BASE}/acces`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
