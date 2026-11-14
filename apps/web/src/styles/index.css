@@ -12584,6 +12584,22 @@ body:has(.pwo, .map-page)::before {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
+/* En haut de page, AUCUN voile : la barre d'état est transparente, le fond (ou la photo de l'accueil)
+   passe derrière l'heure. Le voile de verre revient seulement quand on défile (`html[data-defile]`,
+   posé par `lib/native.ts`). */
+html:not([data-defile]) body::before {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Accueil pro et accueil clientes : la photo floutée du salon remonte derrière la barre d'état
+   (téléphone et tablette ; sur ordinateur l'en-tête reste une carte). */
+@media (max-width: 1023.98px) {
+  html.pro-theme .h12-top.photo {
+    margin-top: calc(-0.75rem - var(--safe-top));
+    padding-top: calc(16px + var(--safe-top));
+  }
+}
 /* Ouverture et choix de la langue : la photo et ses halos remontent derrière la barre d'état. */
 .pwo.h-app {
   min-height: 100dvh;

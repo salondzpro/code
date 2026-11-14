@@ -33,7 +33,8 @@ const config: CapacitorConfig = {
    * BORD À BORD SUR IPHONE (14 nov. 2026) : `contentInset: 'never'` — la page occupe TOUT l'écran,
    * derrière la barre d'état et l'indicateur d'accueil ; ce sont `env(safe-area-inset-*)` qui écartent
    * les éléments qu'on touche. Le fond natif est celui du thème : l'élastique d'iOS ne montre jamais
-   * une autre couleur.
+   * une autre couleur. (Compilé pour la première fois le 14 nov. au soir : les deux envois d'avant
+   * portaient [skip ci], les iPhone gardaient une bande noire sous l'heure.)
    */
   ios: {
     contentInset: 'never',

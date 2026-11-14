@@ -179,11 +179,32 @@ function lockViewport(): void {
   window.visualViewport?.addEventListener('resize', recadrer);
 }
 
+/**
+ * BORD À BORD (14 nov. 2026, demande du propriétaire) : en haut de page, la barre d'état est
+ * entièrement transparente — la photo de l'accueil passe derrière l'heure. Dès qu'on défile,
+ * `html[data-defile]` rallume le voile de verre (`body::before`) pour que le texte qui glisse
+ * dessous ne se mélange pas à l'heure.
+ */
+function watchScrollForStatusBar(): void {
+  const root = document.documentElement;
+  let pose = false;
+  const maj = () => {
+    const defile = window.scrollY > 4;
+    if (defile === pose) return;
+    pose = defile;
+    if (defile) root.dataset.defile = '';
+    else delete root.dataset.defile;
+  };
+  window.addEventListener('scroll', maj, { passive: true });
+  maj();
+}
+
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */
 export async function initNative(navigate: (path: string) => void): Promise<void> {
   if (!isNative()) return;
   document.documentElement.dataset.native = 'true';
   lockViewport();
+  watchScrollForStatusBar();
   await Promise.all([
     patchGeolocation(),
     patchShare(),
