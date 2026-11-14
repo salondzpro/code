@@ -35,7 +35,7 @@ export function Parametres() {
           title={t('Versement à la réservation')}
           sub={
             (salon?.depositMode ?? 'off') === 'off'
-              ? t('Désactivé · CCP, banque ou BaridiMob')
+              ? t('Désactivé · CCP (BaridiMob)')
               : salon?.depositMode === 'percent'
                 ? t('{n} % du total, justificatif à valider', { n: salon?.depositValue ?? 0 })
                 : t('{montant}, justificatif à valider', { montant: formatDA(salon?.depositValue ?? 0) })

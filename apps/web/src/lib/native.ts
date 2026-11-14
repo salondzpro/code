@@ -139,9 +139,8 @@ async function setupChrome(): Promise<void> {
     import('@capacitor/status-bar'),
     import('@capacitor/splash-screen'),
   ]);
-  // Pendant l'ouverture (fond d'encre), le texte de la barre reste blanc : c'est `launchAnimation.ts`
-  // qui le repasse en sombre à sa sortie.
-  if (!document.getElementById('sdz-launch')) await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+  // Icônes de la barre d'état en BLANC, toujours : elles sont posées sur le fondu noir de `body::before`.
+  if (!document.getElementById('sdz-launch')) await StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
   await StatusBar.setOverlaysWebView({ overlay: true }).catch(() => undefined);
   await StatusBar.setBackgroundColor({ color: '#00000000' }).catch(() => undefined);
   await SplashScreen.hide().catch(() => undefined);
@@ -179,32 +178,11 @@ function lockViewport(): void {
   window.visualViewport?.addEventListener('resize', recadrer);
 }
 
-/**
- * BORD À BORD (14 nov. 2026, demande du propriétaire) : en haut de page, la barre d'état est
- * entièrement transparente — la photo de l'accueil passe derrière l'heure. Dès qu'on défile,
- * `html[data-defile]` rallume le voile de verre (`body::before`) pour que le texte qui glisse
- * dessous ne se mélange pas à l'heure.
- */
-function watchScrollForStatusBar(): void {
-  const root = document.documentElement;
-  let pose = false;
-  const maj = () => {
-    const defile = window.scrollY > 4;
-    if (defile === pose) return;
-    pose = defile;
-    if (defile) root.dataset.defile = '';
-    else delete root.dataset.defile;
-  };
-  window.addEventListener('scroll', maj, { passive: true });
-  maj();
-}
-
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */
 export async function initNative(navigate: (path: string) => void): Promise<void> {
   if (!isNative()) return;
   document.documentElement.dataset.native = 'true';
   lockViewport();
-  watchScrollForStatusBar();
   await Promise.all([
     patchGeolocation(),
     patchShare(),

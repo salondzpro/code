@@ -2128,4 +2128,5 @@ export const ar: Record<string, string> = {
   "Copier le numéro CCP": "نسخ رقم CCP",
   "Envoyez {montant} par BaridiMob ou au bureau de poste.": "أرسل {montant} عبر بريدي موب أو من مكتب البريد.",
   "Joignez la capture du reçu : le salon valide, c’est confirmé.": "أرفق صورة الوصل: يقبلها الصالون ويُؤكَّد موعدك.",
+  "Désactivé · CCP (BaridiMob)": "معطّل · CCP (بريدي موب)",
 };

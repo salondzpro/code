@@ -2142,4 +2142,5 @@ export const en: Record<string, string> = {
   "Copier le numéro CCP": "Copy the CCP number",
   "Envoyez {montant} par BaridiMob ou au bureau de poste.": "Send {montant} via BaridiMob or at the post office.",
   "Joignez la capture du reçu : le salon valide, c’est confirmé.": "Attach a screenshot of the receipt: the salon accepts, you're confirmed.",
+  "Désactivé · CCP (BaridiMob)": "Off · CCP (BaridiMob)",
 };

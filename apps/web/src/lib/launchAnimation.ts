@@ -134,7 +134,7 @@ export function endLaunchAnimation(): void {
   const wait = Math.max(0, MIN_VISIBLE_MS - (Date.now() - startedAt));
   setTimeout(() => {
     el.classList.add('out');
-    barreEtat(false);
+    barreEtat(true); // icônes blanches sur le fondu noir de la barre d'état (14 nov.)
     setTimeout(() => el.remove(), SORTIE_MS + 40);
   }, wait);
 }

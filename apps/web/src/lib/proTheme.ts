@@ -24,6 +24,9 @@ export function useProTheme() {
     const root = document.documentElement;
     root.classList.toggle('pro-theme', on);
     // L'espace client reçoit en plus ses propres réglages (cartes, champs) : `client-theme`.
-    root.classList.toggle('client-theme', on && !PRO_ONLY && !(pathname === '/pro' || pathname.startsWith('/pro/')));
+    const pro = PRO_ONLY || pathname === '/pro' || pathname.startsWith('/pro/');
+    root.classList.toggle('client-theme', on && !pro);
+    // Espace pro : textes +15 % (14 nov. 2026), `--fz` dans `index.css`.
+    root.classList.toggle('espace-pro', pro);
   }, [on, pathname]);
 }
