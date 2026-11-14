@@ -846,3 +846,26 @@ export function useProBookingMutations() {
     invalidateAll: () => invalidatePro(qc),
   };
 }
+
+// ---------------------------------------------------------------------------------------------
+// Administration — santé de la plateforme et équipe (14 nov. 2026).
+// ---------------------------------------------------------------------------------------------
+export const useAdminHealth = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['admin', 'health'], queryFn: () => api.admin.health(), staleTime: 15_000, refetchInterval: 60_000, enabled });
+};
+
+export const useAdminMembers = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['admin', 'members'], queryFn: () => api.admin.admins(), staleTime: 15_000, retry: false, enabled });
+};
+
+export function useAdminTeamMutations() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  const done = () => qc.invalidateQueries({ queryKey: ['admin'] });
+  return {
+    grant: useMutation({ mutationFn: (b: { email: string; level: 'support' | 'owner'; reason: string }) => api.admin.grantAdmin(b), onSuccess: done }),
+    revoke: useMutation({ mutationFn: (b: { id: string; reason: string }) => api.admin.revokeAdmin(b.id, b.reason), onSuccess: done }),
+  };
+}

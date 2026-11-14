@@ -8,23 +8,32 @@
  * produit, c'est le même outil vu de l'autre côté du comptoir. Seul l'en-tête change, pour qu'on
  * sache à tout instant qu'on agit en tant que plateforme et non en tant que salon.
  */
+import { useEffect } from 'react';
 import { NavLink, Outlet, Navigate } from 'react-router';
-import { CalendarSearch, ContactRound, Flag, LayoutGrid, QrCode, ScrollText, Store } from 'lucide-react';
-import { useAdminMe } from '@salondz/api-client';
+import { Activity, CalendarSearch, ContactRound, Flag, LayoutGrid, LockKeyhole, LogOut, QrCode, ScrollText, ShieldCheck, Store } from 'lucide-react';
+import { ApiError, useAdminMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
-import { I } from '@/components/ui';
+import { Button, I } from '@/components/ui';
+import { ICONE } from '@/lib/actionIcons';
+import { AdminSearch } from './AdminSearch';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
 
-const NAV = [
-  { to: '/admin', label: 'Vue d’ensemble', icon: LayoutGrid, end: true },
-  { to: '/admin/salons', label: 'Professionnels', icon: Store },
-  { to: '/admin/comptes', label: 'Comptes', icon: ContactRound },
-  { to: '/admin/rendez-vous', label: 'Rendez-vous', icon: CalendarSearch },
-  { to: '/admin/signalements', label: 'Signalements', icon: Flag },
-  { to: '/admin/etiquettes', label: 'Étiquettes', icon: QrCode },
-  { to: '/admin/journal', label: 'Journal', icon: ScrollText },
+/** Navigation en SECTIONS (14 nov. 2026) : piloter, la place de marché, modérer, outils, sécurité. */
+const NAV: { to: string; label: string; icon: typeof Store; end?: boolean; owner?: boolean; section: string }[] = [
+  { to: '/admin', label: 'Vue d’ensemble', icon: LayoutGrid, end: true, section: 'Piloter' },
+  { to: '/admin/sante', label: 'Santé', icon: Activity, section: 'Piloter' },
+  { to: '/admin/salons', label: 'Professionnels', icon: Store, section: 'Place de marché' },
+  { to: '/admin/comptes', label: 'Comptes', icon: ContactRound, section: 'Place de marché' },
+  { to: '/admin/rendez-vous', label: 'Rendez-vous', icon: CalendarSearch, section: 'Place de marché' },
+  { to: '/admin/signalements', label: 'Signalements', icon: Flag, section: 'Modérer' },
+  { to: '/admin/etiquettes', label: 'Étiquettes', icon: QrCode, section: 'Outils' },
+  { to: '/admin/equipe', label: 'Équipe', icon: ShieldCheck, owner: true, section: 'Sécurité' },
+  { to: '/admin/journal', label: 'Journal', icon: ScrollText, section: 'Sécurité' },
 ];
+
+/** Verrouillage après inactivité (14 nov. 2026) : un poste laissé ouvert ne garde pas les clés. */
+const INACTIVITE_MIN = 20;
 
 /**
  * Le journal enregistre une clé technique — c'est ce qu'on veut y garder, stable et cherchable —
@@ -67,6 +76,10 @@ export function actionLabel(action: string): string {
       return t('Signalement classé sans suite');
     case 'booking_cancelled':
       return t('Rendez-vous annulé au nom de la plateforme');
+    case 'admin_granted':
+      return t('Administrateur nommé');
+    case 'admin_revoked':
+      return t('Accès administrateur retiré');
     default:
       return action;
   }
@@ -78,45 +91,100 @@ export function actionLabel(action: string): string {
  * quelqu'un qu'une porte existe.
  */
 export function AdminLayout() {
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
   const me = useAdminMe(!!session);
+
+  // Verrouillage : sans geste pendant 20 min, la session se ferme et l'on revient à la
+  // connexion, avec retour ici. Le serveur borne aussi la session d'administration à 12 h.
+  useEffect(() => {
+    if (!session) return;
+    let dernier = Date.now();
+    const geste = () => (dernier = Date.now());
+    const evts = ['pointerdown', 'keydown', 'scroll', 'visibilitychange'] as const;
+    evts.forEach((e) => window.addEventListener(e, geste, { passive: true }));
+    const id = window.setInterval(() => {
+      if (Date.now() - dernier > INACTIVITE_MIN * 60_000) {
+        window.clearInterval(id);
+        void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'));
+      }
+    }, 30_000);
+    return () => {
+      window.clearInterval(id);
+      evts.forEach((e) => window.removeEventListener(e, geste));
+    };
+  }, [session, signOut]);
+
   if (loading || (!!session && me.isPending)) return <PageLoading />;
-  // Personne de connecté : l'écran de connexion, et on revient ici ensuite. Cela n'apprend rien —
-  // `/rendez-vous`, `/favoris` et tout l'espace pro demandent aussi de se connecter.
+  // Personne de connecté : l'écran de connexion, et on revient ici ensuite.
   if (!session) return <Navigate to="/connexion?next=%2Fadmin" replace />;
-  // Connecté mais pas administrateur : l'accueil, sans un mot. C'est le cas qui compte — on
-  // n'apprend pas à un client curieux qu'une porte existe.
+  // Connexion trop ancienne (plus de 12 h, `ADMIN_REAUTH`) : on redemande le mot de passe, sans
+  // renvoyer à l'accueil — c'est bien un administrateur.
+  if (me.isError && me.error instanceof ApiError && me.error.code === 'ADMIN_REAUTH')
+    return (
+      <div className="ad-lock h-app">
+        <span className="ad-lock-i">
+          <I icon={LockKeyhole} size={30} strokeWidth={1.6} />
+        </span>
+        <h1>{t('Reconnectez-vous')}</h1>
+        <p>{t('Pour votre sécurité, l’administration demande de se reconnecter toutes les 12 heures.')}</p>
+        <Button icon={ICONE.seConnecter} onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'))}>
+          {t('Se reconnecter')}
+        </Button>
+      </div>
+    );
+  // Connecté mais pas administrateur : l'accueil, sans un mot.
   if (me.isError) return <Navigate to="/" replace />;
 
+  const owner = me.data?.level === 'owner';
+  const liens = NAV.filter((n) => owner || !n.owner);
+  const sections = [...new Set(liens.map((n) => n.section))];
+
   return (
-    <div className="mx-auto h-app w-full max-w-[var(--shell-w)] bg-bg">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className="mx-auto flex h-[3.5rem] max-w-[var(--page-w)] items-center gap-3 px-[calc(1rem+var(--shell-px))]">
-          <span className="flex items-center gap-2 text-[1.143rem] leading-none tracking-[-0.4px]">
+    <div className="ad h-app">
+      <aside className="ad-rail" aria-label={t('Administration')}>
+        <span className="ad-marque">
+          <span className="font-semibold">Salon</span>
+          <span className="font-light text-muted">DZ</span>
+          <span className="ad-badge">{t('Plateforme')}</span>
+        </span>
+        {sections.map((sec) => (
+          <div key={sec} className="ad-sec">
+            <span className="ad-sec-t">{t(sec)}</span>
+            {liens
+              .filter((n) => n.section === sec)
+              .map((n) => (
+                <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `ad-lien${isActive ? ' on' : ''}`}>
+                  <I icon={n.icon} size={18} /> {t(n.label)}
+                </NavLink>
+              ))}
+          </div>
+        ))}
+        <div className="ad-qui">
+          <span>{owner ? t('Propriétaire') : t('Support')}</span>
+          <button type="button" onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'))}>
+            <I icon={LogOut} size={16} /> {t('Se déconnecter')}
+          </button>
+        </div>
+      </aside>
+      <div className="ad-main">
+        <header className="ad-top">
+          <span className="ad-marque ad-marque-m">
             <span className="font-semibold">Salon</span>
             <span className="font-light text-muted">DZ</span>
-            <span className="rounded-[var(--radius-btn)] bg-ink px-1.5 py-0.5 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-on-ink">
-              {t('Plateforme')}
-            </span>
+            <span className="ad-badge">{t('Plateforme')}</span>
           </span>
-          <span className="ms-auto text-[0.857rem] text-muted">
-            {me.data?.level === 'owner' ? t('Propriétaire') : t('Support')}
-          </span>
-        </div>
-        <nav className="pills mx-auto max-w-[var(--page-w)] px-[calc(1rem+var(--shell-px))] pb-2" aria-label={t('Administration')}>
-          {NAV.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
-              className={({ isActive }) => `pill${isActive ? ' on' : ''} !gap-1.5`}
-            >
-              <I icon={n.icon} size={16} /> {t(n.label)}
+          <AdminSearch owner={owner} />
+          <span className="ad-niv">{owner ? t('Propriétaire') : t('Support')}</span>
+        </header>
+        <nav className="ad-pills" aria-label={t('Administration')}>
+          {liens.map((n) => (
+            <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `ad-pill${isActive ? ' on' : ''}`}>
+              <I icon={n.icon} size={15} /> {t(n.label)}
             </NavLink>
           ))}
         </nav>
-      </header>
-      <Outlet />
+        <Outlet />
+      </div>
     </div>
   );
 }

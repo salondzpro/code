@@ -17,7 +17,8 @@ import { PRO_ONLY } from './flavor';
 
 export function useProTheme() {
   const { pathname } = useLocation();
-  const on = !(pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/home' || pathname === '/professionnels');
+  // L'administration porte le thème aussi (14 nov. 2026) : même famille que les espaces pro et client.
+  const on = !(pathname === '/home' || pathname === '/professionnels');
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('pro-theme', on);

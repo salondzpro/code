@@ -24,6 +24,8 @@ import { trace } from '../lib/audit';
 import { readLabelSettings, readLabelSocials, readLabelStyle, writeLabelSettings } from '../lib/labelSettings';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
+import { config } from '../config';
+import { forbidden } from '../lib/errors';
 
 const page = z.object({
   q: z.string().trim().max(120).optional(),
@@ -43,8 +45,11 @@ const SUSPENSION_COLS = 'id, name, slug, is_published, suspended_at, suspension_
 const adminRoutes: FastifyPluginAsyncZod = async (app) => {
   // Limite propre à l'administration, plus serrée que la limite générale : trois personnes
   // travaillent ici, et un balayage de `/v1/admin/*` doit buter bien avant la limite d'un client.
+  // Les ÉCRITURES ont leur propre plafond, bien plus bas (14 nov. 2026) : personne ne suspend,
+  // n'annule ni ne nomme trente fois par minute — au-delà, c'est un script ou un compte volé.
   app.addHook('onRoute', (route) => {
-    route.config = { ...(route.config ?? {}), rateLimit: { max: 120, timeWindow: '1 minute' } };
+    const lecture = [route.method].flat().every((m) => m === 'GET' || m === 'HEAD');
+    route.config = { ...(route.config ?? {}), rateLimit: { max: lecture ? 120 : 30, timeWindow: '1 minute' } };
   });
   app.addHook('preHandler', app.requireAdmin);
   app.addHook('onSend', async (_req, reply) => {
@@ -533,6 +538,127 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       await trace(req, req.body.outcome === 'handled' ? 'report_handled' : 'report_rejected', 'review', (res.data as { review_id: string }).review_id, req.body.note ?? null);
       reply.status(204);
       return null;
+    },
+  );
+
+  // ------------------------------------------------------------------ santé de la plateforme
+  /**
+   * SANTÉ DE LA PLATEFORME (14 nov. 2026) : d'un coup d'œil, ce qui tourne et ce qui coince — base,
+   * site, services branchés (e-mail, notifications Android / iPhone / navigateur, IA), livraison des
+   * notifications sur 24 h, demandes qui attendent depuis plus d'un jour, activité du jour. Lecture
+   * seule ; rien de nominatif, donc rien au journal.
+   */
+  app.get('/health', async () => {
+    const depuis = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const t0 = Date.now();
+    const ping = await db.from('app_settings').select('key').limit(1);
+    const dbMs = Date.now() - t0;
+    const site = await (async () => {
+      const url = config.WEB_URL ?? 'https://salondz.com';
+      const t = Date.now();
+      try {
+        const r = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+        return { ok: r.ok, status: r.status, ms: Date.now() - t, url };
+      } catch {
+        return { ok: false, status: 0, ms: Date.now() - t, url };
+      }
+    })();
+    const compte = async (q: PromiseLike<{ count: number | null }>) => (await q).count ?? 0;
+    const [notifs, pendingOld, pendingAll, bookings24, signups24, openReports] = await Promise.all([
+      db.from('notifications').select('push_outcome, pushed_at').gte('created_at', depuis).limit(5000),
+      compte(db.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending').lt('created_at', depuis)),
+      compte(db.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending')),
+      compte(db.from('bookings').select('id', { count: 'exact', head: true }).gte('created_at', depuis)),
+      compte(db.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', depuis)),
+      compte(db.from('review_reports').select('id', { count: 'exact', head: true }).eq('status', 'open')),
+    ]);
+    const push = { sent: 0, no_device: 0, opted_out: 0, failed: 0, waiting: 0 };
+    for (const n of (notifs.data ?? []) as { push_outcome: keyof typeof push | null; pushed_at: string | null }[]) {
+      if (n.push_outcome && n.push_outcome in push) push[n.push_outcome] += 1;
+      else if (!n.pushed_at) push.waiting += 1;
+    }
+    return {
+      checkedAt: new Date().toISOString(),
+      uptimeS: Math.round(process.uptime()),
+      services: [
+        { key: 'db', ok: !ping.error, ms: dbMs },
+        { key: 'site', ok: site.ok, ms: site.ms, status: site.status, url: site.url },
+        { key: 'email', ok: !!config.RESEND_API_KEY },
+        { key: 'fcm', ok: !!process.env.FCM_SERVICE_ACCOUNT },
+        { key: 'apns', ok: !!process.env.APNS_KEY },
+        { key: 'webpush', ok: !!(config.VAPID_PUBLIC_KEY && config.VAPID_PRIVATE_KEY) },
+        { key: 'ia', ok: !!config.ANTHROPIC_API_KEY },
+      ],
+      push,
+      activity: { bookings24, signups24, pendingAll, pendingOld, openReports },
+    };
+  });
+
+  // ------------------------------------------------------------------ administrateurs (owner)
+  /**
+   * L'ÉQUIPE DE LA PLATEFORME (14 nov. 2026) : qui a accès, à quel niveau, depuis quand. Nommer et
+   * retirer se faisaient en ligne de commande (`scripts/admin.mjs`) ; c'est désormais un écran,
+   * réservé au niveau `owner`, avec motif et journal. On RETIRE (`disabled_at`), on ne supprime
+   * jamais : la ligne explique le journal laissé derrière. On ne peut pas se retirer soi-même —
+   * la plateforme ne doit jamais se retrouver sans propriétaire par une fausse manœuvre.
+   */
+  const owner = (req: { admin: { level: string } | null }) => {
+    if (req.admin?.level !== 'owner') throw forbidden('Cette action demande le niveau propriétaire.');
+  };
+
+  app.get('/admins', async (req) => {
+    owner(req);
+    const res = await db
+      .from('platform_admins')
+      .select('user_id, level, created_at, disabled_at, profiles!platform_admins_user_id_fkey(full_name)')
+      .order('created_at');
+    const rows = unwrap(res) as unknown as { user_id: string; level: string; created_at: string; disabled_at: string | null; profiles: { full_name: string | null } | { full_name: string | null }[] | null }[];
+    const items = await Promise.all(
+      rows.map(async (r) => {
+        const u = await db.auth.admin.getUserById(r.user_id).catch(() => null);
+        return {
+          id: r.user_id,
+          level: r.level,
+          createdAt: r.created_at,
+          disabledAt: r.disabled_at,
+          fullName: (Array.isArray(r.profiles) ? r.profiles[0]?.full_name : r.profiles?.full_name) ?? null,
+          email: u?.data.user?.email ?? null,
+          lastSignInAt: u?.data.user?.last_sign_in_at ?? null,
+          me: r.user_id === req.admin!.id,
+        };
+      }),
+    );
+    return { items };
+  });
+
+  app.post(
+    '/admins',
+    { schema: { body: z.object({ email: z.string().trim().toLowerCase().email().max(200), level: z.enum(['support', 'owner']), reason: motif }) } },
+    async (req) => {
+      owner(req);
+      const { email, level, reason } = req.body;
+      const found = await db.rpc('auth_user_by_email', { p_email: email });
+      if (found.error) throw found.error;
+      const data = found.data as { id: string }[] | { id: string } | null;
+      const id = Array.isArray(data) ? data[0]?.id : data?.id;
+      if (!id) throw notFound('Aucun compte avec cette adresse. La personne doit d’abord s’inscrire sur Salon DZ.');
+      const up = await db.from('platform_admins').upsert({ user_id: id, level, disabled_at: null }, { onConflict: 'user_id' });
+      if (up.error) throw up.error;
+      await trace(req, 'admin_granted', 'profile', id, `${level} · ${reason}`);
+      return { id, level };
+    },
+  );
+
+  app.post(
+    '/admins/:id/revoke',
+    { schema: { params: z.object({ id: uuid }), body: z.object({ reason: motif }) } },
+    async (req) => {
+      owner(req);
+      if (req.params.id === req.admin!.id) throw badRequest('SELF_REVOKE', 'Vous ne pouvez pas retirer votre propre accès.');
+      const up = await db.from('platform_admins').update({ disabled_at: new Date().toISOString() }).eq('user_id', req.params.id);
+      if (up.error) throw up.error;
+      await trace(req, 'admin_revoked', 'profile', req.params.id, req.body.reason);
+      return { id: req.params.id };
     },
   );
 

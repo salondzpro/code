@@ -11821,3 +11821,534 @@ html.client-theme .nvl {
 .lgc .pwo-cta {
   margin-top: 6px;
 }
+
+/* ============================================================================================
+   ADMINISTRATION (14 nov. 2026, « même thème que les espaces pro et client ») — `pages/admin/*`.
+   Thème minimal éditorial : fond #f7f7f9, cartes blanches à ombre légère, encre #111. Sur
+   ordinateur, un RAIL de navigation en sections ; sur téléphone, des pastilles qui défilent.
+   La barre de recherche (⌘K) est en tête de toutes les pages.
+   ============================================================================================ */
+.ad {
+  display: flex;
+  min-height: 100%;
+  background: #f7f7f9;
+}
+.ad-main {
+  min-width: 0;
+  flex: 1;
+}
+.ad-rail {
+  display: none;
+}
+.ad-marque {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+.ad-badge {
+  margin-inline-start: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.ad-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  height: 60px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: rgb(247 247 249 / 0.86);
+  backdrop-filter: saturate(1.8) blur(18px);
+  -webkit-backdrop-filter: saturate(1.8) blur(18px);
+}
+.ad-niv {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px #d2d2d7;
+  color: #3a3a40;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ad-niv.ink {
+  background: #111111;
+  box-shadow: none;
+  color: #ffffff;
+}
+.ad-top .ad-niv {
+  display: none;
+}
+
+/* Barre de recherche (bouton qui ouvre la palette) */
+.ad-srch {
+  display: flex;
+  min-width: 0;
+  height: 40px;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #ececef, 0 6px 16px -12px rgb(0 0 0 / 0.25);
+  color: #6e6e76;
+  font: 400 14px/1 var(--font-sans);
+  text-align: start;
+  cursor: text;
+}
+.ad-srch-t {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ad-srch kbd,
+.ad-pal kbd {
+  flex: none;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #f1f1f3;
+  color: #6e6e76;
+  font: 500 11px/1 var(--font-sans);
+}
+.ad-pills {
+  display: flex;
+  gap: 8px;
+  padding: 4px 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ad-pills::-webkit-scrollbar {
+  display: none;
+}
+.ad-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #ececef;
+  color: #3a3a40;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ad-pill.on {
+  background: #111111;
+  box-shadow: none;
+  color: #ffffff;
+}
+
+/* Palette de recherche */
+.ad-pal-w {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: max(12px, var(--safe-top, 0px)) 12px 12px;
+  background: rgb(17 17 17 / 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: ad-voile 0.18s ease both;
+}
+@keyframes ad-voile {
+  from {
+    opacity: 0;
+  }
+}
+.ad-pal {
+  display: flex;
+  width: 100%;
+  max-width: 40rem;
+  max-height: min(34rem, calc(var(--vv-h, 100dvh) - 24px));
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(0 0 0 / 0.06);
+  animation: ad-pal 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ad-pal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+@media (min-width: 768px) {
+  .ad-pal-w {
+    padding-top: 12vh;
+  }
+}
+.ad-pal-in {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f1f3;
+  color: #6e6e76;
+}
+.ad-pal-in input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #111111;
+  font: 400 16px/1.2 var(--font-sans);
+}
+.ad-pal-in kbd {
+  cursor: pointer;
+}
+.ad-pal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #111111;
+  animation: ad-dot 0.9s ease-in-out infinite alternate;
+}
+@keyframes ad-dot {
+  to {
+    opacity: 0.2;
+  }
+}
+.ad-pal-tags {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ad-pal-tags button {
+  flex: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f1f3;
+  color: #3a3a40;
+  font: 500 13px/1 var(--font-sans);
+  cursor: pointer;
+}
+.ad-pal-tags button.on {
+  background: #111111;
+  color: #ffffff;
+}
+.ad-pal-l {
+  margin: 0;
+  padding: 4px 8px 10px;
+  overflow-y: auto;
+  list-style: none;
+}
+.ad-pal-h {
+  padding: 8px 8px 4px;
+  color: #6e6e76;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ad-pal-v {
+  padding: 18px 8px;
+  color: #6e6e76;
+  font-size: 14px;
+  text-align: center;
+}
+.ad-pal-l button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #111111;
+  text-align: start;
+  cursor: pointer;
+}
+.ad-pal-l button.on {
+  background: #f1f1f3;
+}
+.ad-pal-i {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f7f7f9;
+  box-shadow: inset 0 0 0 1px #ececef;
+}
+.ad-pal-l button.on .ad-pal-i {
+  background: #111111;
+  box-shadow: none;
+  color: #ffffff;
+}
+.ad-pal-t {
+  display: block;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ad-pal-s {
+  display: block;
+  overflow: hidden;
+  color: #6e6e76;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ad-pal-g {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px #e2e2e6;
+  color: #6e6e76;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Ordinateur : le rail à gauche, la recherche au centre de la barre */
+@media (min-width: 1024px) {
+  .ad-rail {
+    position: sticky;
+    top: 0;
+    display: flex;
+    width: 248px;
+    height: 100vh;
+    flex: none;
+    flex-direction: column;
+    gap: 18px;
+    padding: 20px 14px;
+    overflow-y: auto;
+    background: #ffffff;
+    box-shadow: 1px 0 0 #ececef;
+  }
+  .ad-rail .ad-marque {
+    padding: 4px 10px 6px;
+  }
+  .ad-sec {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ad-sec-t {
+    padding: 0 10px 4px;
+    color: #6e6e76;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .ad-lien {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    color: #3a3a40;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .ad-lien:hover {
+    background: #f7f7f9;
+  }
+  .ad-lien.on {
+    background: #111111;
+    color: #ffffff;
+  }
+  .ad-qui {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    padding: 12px 10px 0;
+    border-top: 1px solid #f1f1f3;
+    color: #6e6e76;
+    font-size: 12px;
+  }
+  .ad-qui button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    background: none;
+    padding: 0;
+    color: #111111;
+    font: 500 14px var(--font-sans);
+    cursor: pointer;
+  }
+  .ad-marque-m,
+  .ad-pills {
+    display: none;
+  }
+  .ad-top {
+    padding: 0 28px;
+  }
+  .ad-top .ad-srch {
+    max-width: 34rem;
+    margin: 0 auto;
+  }
+  .ad-top .ad-niv {
+    display: inline-block;
+  }
+}
+
+/* Écrans de l'administration : cartes, chiffres, états */
+.ad-etat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16));
+  font-size: 16px;
+  font-weight: 600;
+}
+.ad-etat.ok {
+  color: #1f8a4c;
+}
+.ad-etat.ko {
+  color: #d70015;
+}
+.ad-pt {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.ad-pt.ok {
+  background: #e8f7ee;
+  color: #1f8a4c;
+}
+.ad-pt.ko {
+  background: #ffecec;
+  color: #d70015;
+}
+.ad-pt.off {
+  background: #f1f1f3;
+  color: #8e8e93;
+}
+.ad-val {
+  flex: none;
+  color: #3a3a40;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.ad-val.alerte {
+  color: #d70015;
+  font-weight: 600;
+}
+.ad-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16));
+}
+.ad-kpi b {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.ad-kpi span {
+  color: #6e6e76;
+  font-size: 13px;
+}
+.ad-kpi.alerte b {
+  color: #d70015;
+}
+.ad-av {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 600;
+}
+.ad-ic {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e2e2e6;
+  color: #d70015;
+  cursor: pointer;
+}
+.ad-off {
+  opacity: 0.6;
+}
+.ad .lst-r small {
+  display: block;
+}
+
+/* Reconnexion exigée (session d'administration de plus de 12 h) */
+.ad-lock {
+  display: flex;
+  max-width: 26rem;
+  margin: 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+.ad-lock-i {
+  display: flex;
+  width: 72px;
+  height: 72px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 10px 28px -16px rgb(0 0 0 / 0.3);
+}
+.ad-lock h1 {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.ad-lock p {
+  margin: 0 0 12px;
+  color: #6e6e76;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.ad-lock .btn {
+  width: 100%;
+}

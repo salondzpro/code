@@ -3,7 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify, type JWTPayload } from 'jose';
 import { config } from '../config';
 import { db } from '../lib/supabase';
-import { forbidden, unauthorized } from '../lib/errors';
+import { AppError, forbidden, unauthorized } from '../lib/errors';
 import { camelize } from '../lib/mappers';
 import { trace } from '../lib/audit';
 import { readControlToken } from '../lib/control';
@@ -14,7 +14,17 @@ export interface AuthUser {
   email: string | null;
   phone: string | null;
   token: string;
+  /** Heure (secondes) de la dernière AUTHENTIFICATION réelle — mot de passe, lien — lue dans `amr`.
+   *  Un rafraîchissement de jeton ne la change pas : c'est l'âge de la connexion, pas du jeton. */
+  authAt: number | null;
 }
+
+/**
+ * SESSION D'ADMINISTRATION BORNÉE (14 nov. 2026) : au-delà de ce délai depuis la dernière connexion
+ * réelle, l'administration exige de se reconnecter. Un téléphone oublié ouvert ne garde pas les clés
+ * de la plateforme pendant des semaines (le jeton Supabase, lui, se rafraîchit indéfiniment).
+ */
+export const ADMIN_SESSION_MAX_HOURS = 12;
 
 /**
  * Administrateur de la PLACE DE MARCHÉ — pas un type d'utilisateur : son compte reste un compte
@@ -121,11 +131,14 @@ export default fp(async (app) => {
     try {
       const payload = await verifySupabaseJwt(token);
       if (!payload.sub) return;
+      const amr = Array.isArray(payload.amr) ? (payload.amr as { timestamp?: number }[]) : [];
+      const authAt = amr.reduce<number | null>((m, x) => (typeof x?.timestamp === 'number' && (m === null || x.timestamp > m) ? x.timestamp : m), null);
       req.user = {
         id: payload.sub,
         email: (payload.email as string | undefined) ?? null,
         phone: (payload.phone as string | undefined) ?? null,
         token,
+        authAt,
       };
     } catch (err) {
       req.log.debug({ err }, 'JWT invalide');
@@ -230,6 +243,16 @@ export default fp(async (app) => {
         'admin refusé',
       );
       throw forbidden("Accès réservé à l'administration.");
+    }
+    // Un compte suspendu n'administre rien, même s'il figure encore dans la liste.
+    if (req.profile?.suspendedAt) {
+      req.log.warn({ user: req.user!.id, ip: req.ip }, 'admin refusé : compte suspendu');
+      throw forbidden("Accès réservé à l'administration.");
+    }
+    // Connexion trop ancienne : on redemande le mot de passe (code dédié, l'écran sait quoi proposer).
+    const authAt = req.user!.authAt;
+    if (authAt && Date.now() / 1000 - authAt > ADMIN_SESSION_MAX_HOURS * 3600) {
+      throw new AppError(403, 'ADMIN_REAUTH', 'Pour votre sécurité, reconnectez-vous pour continuer dans l’administration.');
     }
     req.admin = { id: req.user!.id, level: row.level };
   });

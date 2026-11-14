@@ -694,6 +694,12 @@ export function createApiClient(opts: ApiClientOptions) {
       editProfile: (id: string, body: { fullName?: string; phone?: string; reason: string }) =>
         patch<{ id: string; fullName: string | null; phone: string | null }>(`/admin/profiles/${id}`, body),
       deleteProfile: (id: string, reason: string) => del<void>(`/admin/profiles/${id}`, { reason }),
+      /** Santé de la plateforme (14 nov. 2026) : services branchés, notifications 24 h, activité. */
+      health: () => get<AdminHealth>('/admin/health'),
+      /** Équipe de la plateforme (niveau owner). */
+      admins: () => get<{ items: AdminMember[] }>('/admin/admins'),
+      grantAdmin: (body: { email: string; level: AdminLevel; reason: string }) => post<{ id: string; level: AdminLevel }>('/admin/admins', body),
+      revokeAdmin: (id: string, reason: string) => post<{ id: string }>(`/admin/admins/${id}/revoke`, { reason }),
       hideReview: (id: string, reason: string) =>
         post<{ id: string; hiddenAt: string | null }>(`/admin/reviews/${id}/hide`, { reason }),
       unhideReview: (id: string, reason?: string) =>
@@ -706,3 +712,24 @@ export function createApiClient(opts: ApiClientOptions) {
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 export type { Booking };
+
+/** Santé de la plateforme, vue par l'administration (`GET /admin/health`). */
+export interface AdminHealth {
+  checkedAt: string;
+  uptimeS: number;
+  services: { key: 'db' | 'site' | 'email' | 'fcm' | 'apns' | 'webpush' | 'ia'; ok: boolean; ms?: number; status?: number; url?: string }[];
+  push: { sent: number; no_device: number; opted_out: number; failed: number; waiting: number };
+  activity: { bookings24: number; signups24: number; pendingAll: number; pendingOld: number; openReports: number };
+}
+
+/** Un membre de l'équipe de la plateforme (`GET /admin/admins`). */
+export interface AdminMember {
+  id: string;
+  level: AdminLevel;
+  createdAt: string;
+  disabledAt: string | null;
+  fullName: string | null;
+  email: string | null;
+  lastSignInAt: string | null;
+  me: boolean;
+}
