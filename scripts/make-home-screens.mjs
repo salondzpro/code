@@ -49,4 +49,7 @@ await p.waitForURL((u) => u.pathname.startsWith('/pro')); await p.waitForTimeout
 await p.goto(B + '/pro', { waitUntil: 'networkidle' }); await save(p, 'pro-accueil');
 await p.goto(B + '/pro/agenda', { waitUntil: 'networkidle' }); await save(p, 'pro-agenda');
 await p.goto(B + '/pro/reservations', { waitUntil: 'networkidle' }); await save(p, 'pro-demandes');
+await p.goto(B + '/pro/rappels', { waitUntil: 'networkidle' }); await save(p, 'pro-rappels');
+await p.goto(B + '/pro/ma-page', { waitUntil: 'networkidle' }); await save(p, 'pro-mapage');
+await p.goto(B + '/pro/clients', { waitUntil: 'networkidle' }); await save(p, 'pro-clients');
 await b.close();

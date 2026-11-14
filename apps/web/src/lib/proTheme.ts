@@ -17,7 +17,7 @@ import { PRO_ONLY } from './flavor';
 
 export function useProTheme() {
   const { pathname } = useLocation();
-  const on = !(pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/home');
+  const on = !(pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/home' || pathname === '/professionnels');
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('pro-theme', on);

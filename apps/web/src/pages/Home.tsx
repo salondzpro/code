@@ -64,7 +64,7 @@ const PRO: { icone: LucideIcon; titre: string; marques?: boolean }[] = [
 const MOTS = ['Votre onglerie', 'Votre barbier', 'Vos cils', 'Votre coiffeur', 'Vos sourcils', 'Votre coiffeuse'];
 
 /** Un téléphone dessiné en CSS, avec un vrai écran de l'application dedans. */
-function Phone({ src, className = '', lazy = true }: { src: string; className?: string; lazy?: boolean }) {
+export function Phone({ src, className = '', lazy = true }: { src: string; className?: string; lazy?: boolean }) {
   return (
     <span className={`hx-ph ${className}`} aria-hidden>
       <img src={ecran(src)} alt="" width={585} height={1266} loading={lazy ? 'lazy' : 'eager'} decoding="async" draggable={false} />
@@ -86,7 +86,7 @@ function Titre({ sur, children }: { sur: string; children: ReactNode }) {
 }
 
 /** `--s` (0 → 1) sur la scène d'ouverture, d'après le défilement : une écriture par image au plus. */
-function useScene() {
+export function useScene() {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = ref.current;
@@ -129,7 +129,7 @@ export function Home() {
           </div>
           <div className="hx-nav-r">
             <LangSwitch tone="light" />
-            <Link to="/intro" className="hx-nav-c">
+            <Link to="/acces" className="hx-nav-c">
               {t('Connexion')}
             </Link>
           </div>
@@ -155,7 +155,7 @@ export function Home() {
           <Link to="/" className="hx-btn">
             {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
           </Link>
-          <Link to="/pro/bienvenue" className="hx-btn o">
+          <Link to="/professionnels" className="hx-btn o">
             <I icon={Store} size={18} /> {t('Je suis pro')}
           </Link>
         </div>
@@ -229,7 +229,7 @@ export function Home() {
             {t('Les réservations arrivent toutes seules, jour et nuit.')}
           </p>
           <div data-reveal className="hx-cta centre">
-            <Link to="/pro/bienvenue" className="hx-btn b">
+            <Link to="/professionnels" className="hx-btn b">
               {t('Ouvrir mon espace pro — gratuit')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
             </Link>
           </div>
@@ -269,7 +269,7 @@ export function Home() {
             <Link to="/" className="hx-btn">
               {t('Réserver')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
             </Link>
-            <Link to="/pro/bienvenue" className="hx-btn o">
+            <Link to="/professionnels" className="hx-btn o">
               <I icon={Store} size={18} /> {t('Espace professionnel')}
             </Link>
           </div>

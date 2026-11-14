@@ -12,7 +12,8 @@
  * Démonstration : deux salons à ouvrir sans compte, dépliés sous le bouton.
  */
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
+import { isNative } from '@/lib/native';
 import { DEMO_ACCOUNTS } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { writeAuthFlow } from '@/lib/authFlow';
@@ -51,6 +52,14 @@ export function ProWelcome() {
   };
 
   const demos = DEMO_ACCOUNTS.filter((a) => a.role === 'pro' && a.login);
+
+  // SUR LE WEB (14 nov. 2026, demande du propriétaire) : la page d'accueil du site professionnel
+  // (`/professionnels`) ; une destination à atteindre → directement l'adresse e-mail. Dans
+  // l'application (Salon DZ Pro ou grand public), l'ouverture reste telle quelle.
+  if (!isNative()) {
+    if (session) return <Navigate to={next} replace />;
+    return <Navigate to={params.get('next') ? `/pro/acces?next=${encodeURIComponent(next)}` : '/professionnels'} replace />;
+  }
 
   return (
     <div className="pwo h-app">

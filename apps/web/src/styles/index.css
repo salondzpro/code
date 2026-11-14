@@ -11719,3 +11719,44 @@ html.client-theme .nvl {
     animation: none;
   }
 }
+
+/* ---- Site professionnel `/professionnels` (14 nov. 2026, `pages/ProSite.tsx`) : mêmes classes `hx-*` ---- */
+.hx-pro {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.hx-h1.pro {
+  max-width: 15ch;
+  font-size: clamp(40px, 7.4vw, 88px);
+}
+.hx-demos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  animation: hx-monte 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hx-demos .hx-btn {
+  height: 44px;
+  font-size: 14px;
+}
+.hx button.hx-btn {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+@media (min-width: 900px) {
+  .hx-bento.quatre {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hx-bento.quatre .hx-carte {
+    --pw: clamp(220px, 22vw, 270px);
+    height: 36rem;
+  }
+}

@@ -30,6 +30,7 @@ import { api } from '@/lib/api';
 import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { AuthError, PasswordField } from '@/components/AuthShell';
 import { MailAppButton, AuthScreen } from '@/components/AuthKit';
+import { isNative } from '@/lib/native';
 import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
 import { t } from '@/i18n';
@@ -46,7 +47,7 @@ function usePortail() {
   return {
     role: (pro ? 'pro' : 'client') as 'pro' | 'client',
     base: pro ? '/pro/acces' : '/acces',
-    ouverture: pro ? '/pro/bienvenue' : '/intro',
+    ouverture: isNative() ? (pro ? '/pro/bienvenue' : '/intro') : pro ? '/professionnels' : '/home',
     defaut: pro ? '/pro' : '/',
   };
 }
