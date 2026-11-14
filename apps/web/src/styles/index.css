@@ -9912,6 +9912,62 @@ html[data-kb] .pa-actions {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* « Vous êtes » (15 nov. 2026, demande du propriétaire) : deux grandes tuiles, une icône de couleur
+   chacune — rose pour femme, bleu pour homme ; la tuile choisie est cerclée d'encre. */
+.pa-genre {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.pa-genre-t {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 12px 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), inset 0 0 0 1px #e6e6ea;
+  color: #111111;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 600;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.pa-genre-t:active {
+  transform: scale(0.98);
+}
+.pa-genre-t.on {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), inset 0 0 0 2px #111111;
+}
+.pa-genre-i {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+}
+.pa-genre-t.f .pa-genre-i {
+  background: #fde7ef;
+  color: #e0457f;
+}
+.pa-genre-t.h .pa-genre-i {
+  background: #e3efff;
+  color: #007aff;
+}
+.pa-genre-t.f.on .pa-genre-i {
+  background: #e0457f;
+  color: #ffffff;
+}
+.pa-genre-t.h.on .pa-genre-i {
+  background: #007aff;
+  color: #ffffff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pa-genre-t {
+    transition: none;
+  }
+}
 .pa-regle {
   display: flex;
   align-items: center;

@@ -2140,4 +2140,8 @@ export const ar: Record<string, string> = {
   "Avec la même adresse, vous pouvez aussi réserver comme client dans les salons.": "بنفس العنوان، يمكنك أيضًا الحجز كزبون في الصالونات.",
   "Continuer comme client": "المتابعة كزبون",
   "Facultatif · demandé au moment de réserver.": "اختياري · يُطلب عند الحجز.",
+  // Inscription cliente (14-15 nov. 2026)
+  "C’est votre première fois. Choisissez un mot de passe.": "هذه أول مرة لك. اختر كلمة سر.",
+  "Faisons connaissance": "لنتعرّف",
+  "Votre nom pour le salon, et ce que vous recherchez.": "اسمك للصالون، وما تبحث عنه.",
 };

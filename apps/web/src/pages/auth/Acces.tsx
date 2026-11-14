@@ -22,12 +22,12 @@
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Check, MailCheck } from 'lucide-react';
+import { Check, MailCheck, Mars, Venus } from 'lucide-react';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { api } from '@/lib/api';
-import { Button, Field, I, Input, LinkButton, Segmented } from '@/components/ui';
+import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { guestMarket, setGuestMarket } from '@/lib/useClientMarket';
 import { choisirEspace } from '@/lib/espaceClient';
 import { AuthError, PasswordField } from '@/components/AuthShell';
@@ -351,44 +351,31 @@ export function AccesCreer() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Err>(null);
   /**
-   * CLIENTE : UN SEUL ÉCRAN ET L'ON ENTRE (14 nov. 2026, demande du propriétaire). Nom, mot de passe
-   * et « Femme / Homme » ici, sous l'adresse déjà donnée ; le compte s'ouvre aussitôt et la place
-   * de marché s'ouvre sur le côté choisi. Ni lien à cliquer, ni numéro (demandé en réservant).
+   * CLIENTE (15 nov. 2026, demande du propriétaire) : ici le mot de passe SEUL, puis une page à part
+   * pour le prénom, le nom et « femme / homme » (`AccesVous`), qui crée le compte et fait entrer.
+   * Le mot de passe y voyage dans l'état de navigation (mémoire), jamais dans l'adresse.
    */
   const client = role === 'client';
-  const [name, setName] = useState('');
-  const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
-    const m = guestMarket();
-    return m === 'women' ? 'female' : m === 'men' ? 'male' : '';
-  });
-  // Une session ouverte ICI est la nôtre : on navigue nous-mêmes, sans relais.
-  const enCours = useRef(false);
 
-  if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
+  if (session) return <Navigate to={retour(next)} replace />;
   if (!email) return <Navigate to={`${base}${q()}`} replace />;
 
   const assez = password.length >= PASSWORD_MIN;
 
   const creer = async (e: FormEvent) => {
     e.preventDefault();
-    if (client && name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
     if (!assez) return setError({ kind: 'password', text: t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }) });
-    if (client && !gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
     setError(null);
+    if (client) return navigate(`${base}/vous${q({ email })}`, { state: { password } });
     setBusy(true);
-    enCours.current = true;
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      const ouverte = await signUpWithPassword(email, password, role, next, client && gender ? { fullName: name.trim(), gender } : undefined);
-      if (ouverte && client && gender) {
-        setGuestMarket(gender === 'female' ? 'women' : 'men');
-        navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
-      } else if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
+      const ouverte = await signUpWithPassword(email, password, role, next);
+      if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(`${base}/envoye?mode=confirm`, { replace: true });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
-      enCours.current = false;
       setBusy(false);
     }
   };
@@ -396,21 +383,22 @@ export function AccesCreer() {
   return (
     <AuthScreen
       back={`${base}${q({ email })}`}
-      titre={client ? t('Créez votre compte') : t('Créez votre mot de passe')}
+      titre={t('Créez votre mot de passe')}
       sous={
         client
-          ? t('C’est votre première fois. Trois réponses et vous entrez.')
+          ? t('C’est votre première fois. Choisissez un mot de passe.')
           : t('C’est votre première fois. Choisissez un mot de passe, puis nous vous envoyons un lien de confirmation.')
       }
       actions={
         <>
-          <Button icon={role === 'pro' ? ICONE.creerEspace : ICONE.creerCompte} type="submit" form="pa-creer" loading={busy} disabled={busy}>
-            {role === 'pro' ? t('Créer mon espace') : t('Créer mon compte')}
+          <Button icon={client ? ICONE.continuer : ICONE.creerEspace} type="submit" form="pa-creer" loading={busy} disabled={busy}>
+            {client ? t('Continuer') : t('Créer mon espace')}
           </Button>
-          <p className="pa-note">
-            {role === 'pro' ? t('En créant votre espace, vous acceptez les') : t('En créant votre compte, vous acceptez les')}{' '}
-            <Link to="/cgu">{t('conditions d’utilisation')}</Link>.
-          </p>
+          {!client && (
+            <p className="pa-note">
+              {t('En créant votre espace, vous acceptez les')} <Link to="/cgu">{t('conditions d’utilisation')}</Link>.
+            </p>
+          )}
         </>
       }
     >
@@ -419,21 +407,6 @@ export function AccesCreer() {
         <Link to={`${base}${q({ email })}`}>{t('Modifier')}</Link>
       </div>
       <form id="pa-creer" onSubmit={creer} noValidate className="pa-form">
-        {client && (
-          <Field label={t('Prénom et nom')} htmlFor="pa-creer-nom">
-            <Input
-              id="pa-creer-nom"
-              autoComplete="name"
-              enterKeyHint="next"
-              placeholder={t('Inès Rahmani')}
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setError(null);
-              }}
-            />
-          </Field>
-        )}
         <PasswordField
           id="pa-creer-i"
           label={t('Mot de passe')}
@@ -451,23 +424,126 @@ export function AccesCreer() {
           </span>
           {t('{n} caractères au minimum', { n: PASSWORD_MIN })}
         </p>
-        {client && (
-          <div>
-            <span className="lbl">{t('Vous êtes')}</span>
-            <Segmented
-              label={t('Vous êtes')}
-              value={gender}
-              onChange={(v) => {
-                setGender(v);
-                setError(null);
-              }}
-              options={[
-                { value: 'female' as const, label: t('Une femme') },
-                { value: 'male' as const, label: t('Un homme') },
-              ]}
-            />
-          </div>
+        {error && (
+          <AuthError texte={error.text}>
+            {error.kind === 'exists' && (
+              <LinkButton to={`${base}/mot-de-passe${q({ email })}`} sm icon={ICONE.seConnecter}>
+                {t('Se connecter')}
+              </LinkButton>
+            )}
+          </AuthError>
         )}
+      </form>
+    </AuthScreen>
+  );
+}
+
+/* -------------------------------------------------------------------- 2c. Faisons connaissance (cliente) */
+
+/**
+ * PRÉNOM, NOM ET « FEMME / HOMME », SUR UNE PAGE À PART (15 nov. 2026, demande du propriétaire).
+ * Deux grandes tuiles à icône de couleur (rose pour femme, bleu pour homme). « Entrer » crée le
+ * compte déjà confirmé, ouvre la session et la place de marché sur le côté choisi.
+ */
+export function AccesVous() {
+  const { session, signUpWithPassword } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { next, email, q, base } = useParcours();
+  const password = (location.state as { password?: string } | null)?.password ?? '';
+  const [name, setName] = useState('');
+  const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
+    const m = guestMarket();
+    return m === 'women' ? 'female' : m === 'men' ? 'male' : '';
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<Err>(null);
+  const enCours = useRef(false);
+
+  if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
+  if (!email) return <Navigate to={`${base}${q()}`} replace />;
+  // Page rechargée : le mot de passe (gardé en mémoire seulement) est perdu, on le redemande.
+  if (!password) return <Navigate to={`${base}/creer${q({ email })}`} replace />;
+
+  const entrer = async (e: FormEvent) => {
+    e.preventDefault();
+    if (name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
+    if (!gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
+    setError(null);
+    setBusy(true);
+    enCours.current = true;
+    try {
+      writeAuthFlow({ role: 'client', next, identifier: email, channel: 'email', sentAt: Date.now() });
+      const ouverte = await signUpWithPassword(email, password, 'client', next, { fullName: name.trim(), gender });
+      setGuestMarket(gender === 'female' ? 'women' : 'men');
+      if (ouverte) navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
+      else navigate(`${base}/envoye?mode=confirm`, { replace: true });
+    } catch (err) {
+      setError(describeAuthError(err));
+    } finally {
+      enCours.current = false;
+      setBusy(false);
+    }
+  };
+
+  const tuiles = [
+    { value: 'female' as const, label: t('Femme'), icon: Venus, cls: 'f' },
+    { value: 'male' as const, label: t('Homme'), icon: Mars, cls: 'h' },
+  ];
+
+  return (
+    <AuthScreen
+      back={`${base}/creer${q({ email })}`}
+      titre={t('Faisons connaissance')}
+      sous={t('Votre nom pour le salon, et ce que vous recherchez.')}
+      actions={
+        <>
+          <Button icon={ICONE.creerCompte} type="submit" form="pa-vous" loading={busy} disabled={busy}>
+            {t('Créer mon compte')}
+          </Button>
+          <p className="pa-note">
+            {t('En créant votre compte, vous acceptez les')} <Link to="/cgu">{t('conditions d’utilisation')}</Link>.
+          </p>
+        </>
+      }
+    >
+      <form id="pa-vous" onSubmit={entrer} noValidate className="pa-form">
+        <Field label={t('Prénom et nom')} htmlFor="pa-vous-nom">
+          <Input
+            id="pa-vous-nom"
+            autoComplete="name"
+            enterKeyHint="done"
+            placeholder={t('Inès Rahmani')}
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError(null);
+            }}
+          />
+        </Field>
+        <div>
+          <span className="lbl">{t('Vous êtes')}</span>
+          <div className="pa-genre" role="radiogroup" aria-label={t('Vous êtes')}>
+            {tuiles.map((x) => (
+              <button
+                key={x.value}
+                type="button"
+                role="radio"
+                aria-checked={gender === x.value}
+                className={`pa-genre-t ${x.cls}${gender === x.value ? ' on' : ''}`}
+                onClick={() => {
+                  setGender(x.value);
+                  setError(null);
+                }}
+              >
+                <span className="pa-genre-i" aria-hidden>
+                  <I icon={x.icon} size={26} strokeWidth={2} />
+                </span>
+                {x.label}
+              </button>
+            ))}
+          </div>
+        </div>
         {error && (
           <AuthError texte={error.text}>
             {error.kind === 'exists' && (

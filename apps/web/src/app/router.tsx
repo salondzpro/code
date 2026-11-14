@@ -25,7 +25,7 @@ import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 import { Market } from '@/pages/auth/Market';
 import { ProWelcome } from '@/pages/pro/Welcome';
-import { AccesCreer, AccesEmail, AccesEnvoye, AccesMotDePasse, AccesOubli } from '@/pages/auth/Acces';
+import { AccesCreer, AccesVous, AccesEmail, AccesEnvoye, AccesMotDePasse, AccesOubli } from '@/pages/auth/Acces';
 import { ClientWelcome } from '@/pages/auth/Welcome';
 // Client (design C-H / C-F)
 import { Marketplace } from '@/pages/client/Marketplace';
@@ -228,6 +228,7 @@ export const router = createBrowserRouter([
           { path: '/acces', element: <AccesEmail /> },
           { path: '/acces/mot-de-passe', element: <AccesMotDePasse /> },
           { path: '/acces/creer', element: <AccesCreer /> },
+          { path: '/acces/vous', element: <AccesVous /> },
           { path: '/acces/envoye', element: <AccesEnvoye /> },
           { path: '/acces/oubli', element: <AccesOubli /> },
           {
