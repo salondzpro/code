@@ -126,17 +126,22 @@ async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
   });
 }
 
-/** Barre d'état : texte sombre sur fond clair, et l'application dessine sous elle (encoches). */
+/**
+ * BORD À BORD (14 nov. 2026, « comme TikTok et Snapchat ») : barre d'état TRANSPARENTE, texte
+ * sombre, et l'application dessine dessous. Le fond de chaque écran passe derrière l'heure, le Wi-Fi
+ * et la batterie ; ce sont les marges MESURÉES qui écartent les éléments qu'on touche — `--sat` /
+ * `--sab` écrites par `MainActivity` sur Android, `env(safe-area-inset-*)` sur iPhone (où la page
+ * passe déjà sous la barre d'état). Aucune valeur fixe : encoche, poinçon, barre gestuelle ou trois
+ * boutons, chaque appareil donne ses propres marges.
+ */
 async function setupChrome(): Promise<void> {
   const [{ StatusBar, Style }, { SplashScreen }] = await Promise.all([
     import('@capacitor/status-bar'),
     import('@capacitor/splash-screen'),
   ]);
   await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
-  // L'application ne dessine PAS sous les barres du téléphone : c'est le système qui leur réserve
-  // la place (`android:fitsSystemWindows`), donc l'affichage s'adapte tout seul à chaque appareil —
-  // encoche, barre gestuelle ou trois boutons. Le contraire cachait des boutons en haut et en bas.
-  await StatusBar.setOverlaysWebView({ overlay: false }).catch(() => undefined);
+  await StatusBar.setOverlaysWebView({ overlay: true }).catch(() => undefined);
+  await StatusBar.setBackgroundColor({ color: '#00000000' }).catch(() => undefined);
   await SplashScreen.hide().catch(() => undefined);
 }
 

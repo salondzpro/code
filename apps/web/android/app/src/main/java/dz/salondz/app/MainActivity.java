@@ -39,6 +39,18 @@ public class MainActivity extends BridgeActivity {
     // De bord à bord : le fond de l'application occupe tout l'écran, et c'est le CSS qui écarte le
     // contenu des barres. Sans cela, on perdrait deux bandes grises en haut et en bas.
     WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+    // Barres TRANSPARENTES (14 nov. 2026, « bord à bord immersif ») : le fond de la page se voit
+    // derrière l'heure et derrière la barre de navigation. Android ajoute sinon un voile de
+    // « contraste » translucide sur la barre de navigation à trois boutons : on le retire, la page
+    // gère elle-même la lisibilité. Texte des barres en sombre, sur nos fonds clairs.
+    getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+    getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      getWindow().setNavigationBarContrastEnforced(false);
+      getWindow().setStatusBarContrastEnforced(false);
+    }
+    WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightStatusBars(true);
+    WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightNavigationBars(true);
 
     bloquerZoom();
 

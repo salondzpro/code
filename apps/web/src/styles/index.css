@@ -12549,3 +12549,57 @@ html .ad .pill.on:not(.soft) {
     flex: 1 1 100%;
   }
 }
+
+/* ============================================================================================
+   BORD À BORD, IMMERSIF (14 nov. 2026, demande du propriétaire : « comme TikTok et Snapchat sur
+   iPhone »). Le fond occupe TOUT l'écran, derrière la barre d'état et jusqu'en bas ; la barre d'état
+   est transparente ; seuls les éléments qu'on touche respectent les marges (`--safe-*`, posées par
+   le natif sur Android, `env(safe-area-inset-*)` sur iPhone).
+     • Le fond de la page est aussi celui de <html> : l'élastique d'iOS et les zones système ne
+       montrent jamais une autre couleur.
+     • Sous la barre d'état, plus de bandeau OPAQUE : un voile de verre (translucide et flouté),
+       comme les barres d'iOS. En haut de page il se confond avec le fond ; au défilement, le
+       contenu passe dessous, flouté, lisible.
+     • Écrans IMMERSIFS (ouverture, choix de la langue, carte) : le visuel lui-même remonte
+       derrière la barre d'état, et le voile s'efface. Leur contenu interactif garde sa marge.
+   ============================================================================================ */
+html {
+  background: var(--color-bg);
+}
+html.pro-theme {
+  --bar-top-bg: rgb(247 247 249 / 0.72);
+  background: #f7f7f9;
+}
+body::before {
+  -webkit-backdrop-filter: saturate(1.8) blur(18px);
+  backdrop-filter: saturate(1.8) blur(18px);
+}
+body:has(.pwo, .map-page)::before {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Ouverture et choix de la langue : la photo et ses halos remontent derrière la barre d'état. */
+.pwo.h-app {
+  min-height: 100dvh;
+  margin-top: calc(-1 * var(--safe-top));
+}
+.pwo-bar {
+  padding-top: calc(14px + var(--safe-top));
+}
+.pwo-bas {
+  padding-bottom: max(32px, calc(16px + var(--safe-bottom)));
+}
+@media (min-width: 768px) {
+  .pwo-bar {
+    padding-top: calc(24px + var(--safe-top));
+  }
+}
+/* Carte : le plan occupe tout l'écran ; le bandeau de recherche couvre la barre d'état d'un seul tenant. */
+.map-page.h-app {
+  min-height: 100dvh;
+  margin-top: calc(-1 * var(--safe-top));
+}
+.map-top {
+  padding-top: calc(12px + var(--safe-top));
+}

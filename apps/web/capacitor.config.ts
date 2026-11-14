@@ -27,6 +27,17 @@ const config: CapacitorConfig = {
     // Origine `https://localhost` (et non `http://`) : sans cela, Chrome traite l'app comme non sécurisée
     // et refuse notamment la géolocalisation et le stockage persistant.
     allowMixedContent: false,
+    backgroundColor: '#f7f7f9',
+  },
+  /**
+   * BORD À BORD SUR IPHONE (14 nov. 2026) : `contentInset: 'never'` — la page occupe TOUT l'écran,
+   * derrière la barre d'état et l'indicateur d'accueil ; ce sont `env(safe-area-inset-*)` qui écartent
+   * les éléments qu'on touche. Le fond natif est celui du thème : l'élastique d'iOS ne montre jamais
+   * une autre couleur.
+   */
+  ios: {
+    contentInset: 'never',
+    backgroundColor: '#f7f7f9',
   },
   server: {
     androidScheme: 'https',
