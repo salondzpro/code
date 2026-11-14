@@ -12749,57 +12749,37 @@ div.skx-card {
 }
 .dp-sub { font-size: 0.929rem; color: var(--color-muted); line-height: 1.45; }
 
-/* La carte d'encre : le compte, le numéro en grand, deux copies d'un toucher. */
+/* Le compte où verser : lignes sur fond gris clair, numéro en chiffres alignés, copie d'un toucher
+   (bouton secondaire gris, comme partout dans le thème). Plus de carte noire (14 nov. 2026). */
 .dp-acc {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-radius: calc(var(--radius-card) - 2px);
-  background: #111214;
-  color: #fff;
-  min-height: 9.5rem;
+  border-radius: 14px;
+  background: #f7f7f9;
+  min-height: 7.5rem;
 }
 .dp-acc.sk { background: var(--color-fill); }
-.dp-acc-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.786rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: rgb(255 255 255 / 0.62);
-}
-.dp-acc-num {
-  font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
-  font-size: 1.357rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  word-break: break-all;
-  line-height: 1.25;
-}
-.dp-acc-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.dp-acc-sum { padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.12); }
+.dp-acc-li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 14px; }
+.dp-acc-li + .dp-acc-li { border-top: 1px solid #e4e4e8; }
 .dp-acc-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.dp-acc-who small { font-size: 0.714rem; color: rgb(255 255 255 / 0.55); }
-.dp-acc-who b { font-size: 1rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dp-acc-who small { font-size: 0.786rem; color: var(--color-muted); }
+.dp-acc-who b { font-size: 1.143rem; font-weight: 600; color: var(--color-ink); letter-spacing: 0.01em; word-break: break-all; font-variant-numeric: tabular-nums; }
+.dp-acc-who > span { font-size: 0.857rem; color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dp-acc-note {
   font-size: 0.857rem;
-  color: rgb(255 255 255 / 0.72);
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgb(255 255 255 / 0.07);
+  color: var(--color-muted);
+  padding: 0 14px 14px;
 }
 .dp-copy {
   flex: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 2.143rem;
-  padding: 0 12px;
+  height: 2.286rem;
+  padding: 0 14px;
   border-radius: 9999px;
-  background: rgb(255 255 255 / 0.12);
-  color: #fff;
+  background: #ebebee;
+  color: var(--color-ink);
   font-size: 0.857rem;
   font-weight: 600;
   transition: background 0.18s ease, color 0.18s ease;
@@ -12959,8 +12939,7 @@ div.skx-card {
 .dp-proof.pdf span { display: flex; flex-direction: column; }
 .dp-proof.pdf b { font-weight: 600; }
 .dp-proof.pdf small { font-size: 0.786rem; color: var(--color-muted); text-decoration: underline; }
-.dp-dec { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
-.btn.dp-yes { background: #34c759; color: #fff; }
+.dp-acts { grid-template-columns: repeat(2, 72px); justify-content: center; gap: 40px; margin-top: 0; padding-top: 2px; }
 .dp-view {
   position: fixed;
   inset: 0;
@@ -12988,27 +12967,47 @@ div.skx-card {
   color: #fff;
 }
 
-/* Réglage pro. */
-.dp-set-hero { padding: 16px; }
-.dp-amount-in { position: relative; }
-.dp-amount-in .inp { font-size: 1.571rem !important; font-weight: 600; height: 3.714rem; padding-inline-end: 7rem; }
-.dp-amount-in > span {
-  position: absolute;
-  inset-inline-end: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-muted);
-  font-size: 0.929rem;
-  font-weight: 600;
-  pointer-events: none;
+/* Réglage pro : choix prédéfinis en tuiles (choisi = trait noir + coche), « Autre » pour une valeur libre. */
+.dp-set-hero { padding: 16px; flex-direction: row !important; align-items: center; gap: 12px !important; }
+.dp-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.dp-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 4.571rem;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16)), inset 0 0 0 1px #ebebee;
+  text-align: start;
+  transition: box-shadow 0.15s ease, transform 0.12s ease;
 }
+.dp-tile:active { transform: scale(0.97); }
+.dp-tile b { font-size: 1.143rem; font-weight: 600; letter-spacing: -0.02em; color: var(--color-ink); white-space: nowrap; }
+.dp-tile small { font-size: 0.786rem; color: var(--color-muted); white-space: nowrap; }
+.dp-tile.on { box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16)), inset 0 0 0 2px #111; }
+.dp-tile-ok {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  width: 1.286rem;
+  height: 1.286rem;
+  padding: 3px;
+  border-radius: 9999px;
+  background: #111;
+  color: #fff;
+}
+.dp-custom { flex-direction: row !important; align-items: center; gap: 10px !important; padding: 10px !important; }
+.dp-custom .inp { flex: 1; min-width: 0; font-size: 1.286rem !important; font-weight: 600; }
+.dp-custom .seg { flex: none; width: 7.5rem; }
+.dp-rip { font-size: 1.143rem !important; letter-spacing: 0.04em; }
 .dp-example {
   margin-top: -4px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--color-fill);
+  padding: 0 4px;
   font-size: 0.857rem;
-  color: var(--color-ink);
+  color: var(--color-muted);
 }
 
 /* Récapitulatif avant de réserver : le versement est annoncé, jamais découvert après. */

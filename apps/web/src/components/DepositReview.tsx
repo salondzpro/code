@@ -14,6 +14,7 @@ import { PENDING_REQUEST_TTL_HOURS, formatDA } from '@salondz/constants';
 import type { Booking } from '@salondz/types';
 import { BottomSheet, Button, Dim, I, Textarea } from '@/components/ui';
 import { DepositTrace } from '@/components/DepositCard';
+import { ActionRond } from '@/components/ActionRond';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { ICONE } from '@/lib/actionIcons';
 import { REJECT_REASONS, formatWhen } from '@/lib/deposit';
@@ -144,18 +145,16 @@ export function DepositReview({ booking: b }: { booking: Booking }) {
       {submitted && (
         <>
           <p className="t3">{t('Vérifiez sur votre compte que {montant} est bien arrivé avant de valider.', { montant: amount })}</p>
-          <div className="dp-dec">
-            <Button variant="g" icon={ICONE.refuserJustificatif} onClick={() => setRejecting(true)} disabled={decide.isPending}>
-              {t('Refuser le reçu')}
-            </Button>
-            <Button
-              className="dp-yes"
+          <div className="ag-acts dp-acts">
+            <ActionRond ton="non" icon={ICONE.refuserJustificatif} label={t('Refuser')} title={t('Refuser le reçu')} busy={decide.isPending} onClick={() => setRejecting(true)} />
+            <ActionRond
+              ton="oui"
               icon={ICONE.validerVersement}
-              loading={decide.isPending}
+              label={t('Valider')}
+              title={t('Valider et confirmer')}
+              busy={decide.isPending}
               onClick={() => decide.mutate({ id: b.id, decision: 'accept' })}
-            >
-              {t('Valider et confirmer')}
-            </Button>
+            />
           </div>
           <ErrorMessage error={decide.error} />
         </>

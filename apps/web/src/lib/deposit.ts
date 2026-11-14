@@ -14,24 +14,15 @@ import { supabase } from './supabase';
 import { isDemo } from '@/demo/session';
 import { t } from '@/i18n';
 
+/** Un seul moyen proposé depuis le 14 nov. 2026 : le compte CCP, qui reçoit aussi les envois BaridiMob. */
 export const METHOD_LABEL: Record<DepositMethod, string> = {
-  ccp: 'CCP · Algérie Poste',
+  ccp: 'CCP · BaridiMob',
   bank: 'Virement bancaire',
-  baridimob: 'BaridiMob',
+  baridimob: 'CCP · BaridiMob',
 };
 
-/** Ce qu'on demande au professionnel de saisir, selon le moyen. */
-export const ACCOUNT_LABEL: Record<DepositMethod, string> = {
-  ccp: 'Numéro de compte CCP et clé',
-  bank: 'RIB (20 chiffres)',
-  baridimob: 'RIP (20 chiffres)',
-};
-
-export const ACCOUNT_PLACEHOLDER: Record<DepositMethod, string> = {
-  ccp: '0012345678 clé 90',
-  bank: '00400123012345678901',
-  baridimob: '00799999001234567890',
-};
+/** Le seul champ demandé au professionnel. */
+export const ACCOUNT_PLACEHOLDER = 'Numéro CCP (BaridiMob)';
 
 /** Motifs de refus proposés d'un toucher (le professionnel peut en écrire un autre). */
 export const REJECT_REASONS = [

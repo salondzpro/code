@@ -3,7 +3,7 @@
  *
  * Une seule carte, à la confirmation de la réservation ET sur la fiche du rendez-vous :
  * - versement à faire (ou justificatif refusé) : le montant en grand, l'heure limite, le compte du salon
- *   sur une carte d'encre (numéro et montant à copier d'un toucher), trois étapes, et « Joindre le
+ *   en lignes blanches (numéro CCP et montant à copier d'un toucher), deux étapes, et « Joindre le
  *   justificatif » (image ou PDF) ;
  * - justificatif envoyé : le suivi, étape par étape, jusqu'à la validation du salon ;
  * - versement validé : une ligne, verte.
@@ -175,19 +175,15 @@ export function DepositCard({ booking: b }: { booking: BookingWithSalon }) {
         <div className="dp-acc sk" aria-hidden />
       ) : acc?.account ? (
         <div className="dp-acc">
-          <div className="dp-acc-top">
-            <span>{t(METHOD_LABEL[acc.method])}</span>
-            <I icon={Landmark} size={18} />
-          </div>
-          <div className="dp-acc-num" dir="ltr">{acc.account}</div>
-          <div className="dp-acc-row">
+          <div className="dp-acc-li">
             <span className="dp-acc-who">
-              <small>{t('Titulaire')}</small>
-              <b dir="auto">{acc.holder}</b>
+              <small>{t(METHOD_LABEL[acc.method])}</small>
+              <b className="mono" dir="ltr">{acc.account}</b>
+              <span dir="auto">{acc.holder || b.salon.name}</span>
             </span>
-            <CopyChip value={acc.account} label={t('Copier le numéro de compte')} />
+            <CopyChip value={acc.account.replace(/\s/g, '')} label={t('Copier le numéro CCP')} />
           </div>
-          <div className="dp-acc-row dp-acc-sum">
+          <div className="dp-acc-li">
             <span className="dp-acc-who">
               <small>{t('Montant exact')}</small>
               <b dir="ltr">{amount}</b>
@@ -203,15 +199,11 @@ export function DepositCard({ booking: b }: { booking: BookingWithSalon }) {
       <ol className="dp-steps">
         <li>
           <span>1</span>
-          {t('Virez {montant} sur ce compte (CCP, BaridiMob ou banque).', { montant: amount })}
+          {t('Envoyez {montant} par BaridiMob ou au bureau de poste.', { montant: amount })}
         </li>
         <li>
           <span>2</span>
-          {t('Faites une capture d’écran du reçu, ou gardez le PDF.')}
-        </li>
-        <li>
-          <span>3</span>
-          {t('Joignez-la ici : le salon valide et votre rendez-vous est confirmé.')}
+          {t('Joignez la capture du reçu : le salon valide, c’est confirmé.')}
         </li>
       </ol>
 

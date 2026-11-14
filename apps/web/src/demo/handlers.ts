@@ -557,7 +557,7 @@ on('GET', '/pro/deposit-settings', (c) => ok(depositSettingsOf(ownedSalon(c))));
 on('PUT', '/pro/deposit-settings', (c) => {
   const s = ownedSalon(c);
   const b = c.body as unknown as DepositSettings;
-  if (b.mode !== 'off' && (!b.holder || !b.account)) throw bad('VALIDATION', 'Indiquez le titulaire et le numéro du compte.');
+  if (b.mode !== 'off' && !b.account) throw bad('VALIDATION', 'Indiquez votre numéro CCP (BaridiMob).');
   xs(s).depositAccount = { method: b.method, holder: b.holder ?? null, account: b.account ?? null, note: b.note ?? null };
   Object.assign(s, { depositMode: b.mode, depositValue: b.mode === 'off' ? 0 : b.value, depositScope: b.scope });
   touch(c.w, s);
@@ -569,7 +569,7 @@ on('GET', '/bookings/:id/deposit', (c, p) => {
   if (!b || !b.depositAmount || !b.depositStatus) throw notFound('Versement');
   const s = salonById(c.w, b.salonId)!;
   const open = b.status === 'pending' && (b.depositStatus === 'awaiting' || b.depositStatus === 'rejected');
-  const acc = xs(s).depositAccount ?? { method: 'ccp' as const, holder: s.name, account: '0012345678 clé 90', note: null };
+  const acc = xs(s).depositAccount ?? { method: 'ccp' as const, holder: s.name, account: '00799999001234567890', note: null };
   const deadline = new Date(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())).toISOString();
   return ok({ amount: b.depositAmount, status: b.depositStatus, account: open ? acc : null, rejectReason: b.depositRejectReason ?? null, submittedAt: b.depositSubmittedAt ?? null, deadline });
 });

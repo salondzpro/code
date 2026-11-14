@@ -490,8 +490,7 @@ export const depositSettingsSchema = z
     if (v.mode === 'off') return;
     if (v.value < 1) ctx.addIssue({ code: 'custom', path: ['value'], message: 'Indiquez le montant du versement.' });
     if (v.mode === 'percent' && v.value > 100) ctx.addIssue({ code: 'custom', path: ['value'], message: 'Un pourcentage va de 1 à 100.' });
-    if (!v.holder) ctx.addIssue({ code: 'custom', path: ['holder'], message: 'Indiquez le titulaire du compte.' });
-    if (!v.account) ctx.addIssue({ code: 'custom', path: ['account'], message: 'Indiquez le numéro du compte.' });
+    if (!v.account) ctx.addIssue({ code: 'custom', path: ['account'], message: 'Indiquez votre numéro CCP (BaridiMob).' });
   });
 export type DepositSettingsInput = z.infer<typeof depositSettingsSchema>;
 
