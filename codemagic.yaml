@@ -29,15 +29,13 @@ workflows:
       # → Apple Developer Portal). S'il diffère, la compilation s'arrête au moment de signer.
       # Relevé le 29 sept. 2026 dans l'interface : « salondz_asc », clé GZ7CF8ABHX.
       app_store_connect: salondz_asc
-    # Une compilation iOS se paie à la minute : elle part sur une poussée sur main QUI TOUCHE AU
-    # NATIF (voir `when` plus bas), ou sur une ÉTIQUETTE `ios-…` posée exprès.
+    # Une compilation iOS se paie à la minute.
+    # PLUS AUCUNE COMPILATION AUTOMATIQUE (14 nov. 2026, consigne du propriétaire) : rien ne part sur
+    # une poussée sur main ; on compile seulement quand il dit « version finie », à la main
+    # (`scripts/codemagic.mjs --lancer`) ou par une étiquette posée exprès.
     triggering:
       events:
-        - push
         - tag
-      branch_patterns:
-        - pattern: main
-          include: true
       tag_patterns:
         - pattern: 'ios-*'
           include: true
@@ -45,7 +43,7 @@ workflows:
         # PRO lançait en plus une compilation grand public (minutes macOS payées pour rien).
         - pattern: 'ios-pro-*'
           include: false
-    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # Ancien filtre (29 oct. 2026), inactif depuis le 14 nov. : une poussée relançait ce flux si
     # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
     # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
     when:
@@ -159,17 +157,16 @@ workflows:
     max_build_duration: 60
     integrations:
       app_store_connect: salondz_asc
+    # PLUS AUCUNE COMPILATION AUTOMATIQUE (14 nov. 2026, consigne du propriétaire) : rien ne part sur
+    # une poussée sur main ; on compile seulement quand il dit « version finie », à la main
+    # (`scripts/codemagic.mjs --lancer`) ou par une étiquette posée exprès.
     triggering:
       events:
-        - push
         - tag
-      branch_patterns:
-        - pattern: main
-          include: true
       tag_patterns:
         - pattern: 'ios-pro-*'
           include: true
-    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # Ancien filtre (29 oct. 2026), inactif depuis le 14 nov. : une poussée relançait ce flux si
     # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
     # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
     when:
@@ -279,13 +276,10 @@ workflows:
     # même machine que les flux iOS, qui a Java et le SDK Android. Minutes macOS : ne lancer que pour publier.
     instance_type: mac_mini_m2
     max_build_duration: 45
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # PLUS AUCUNE COMPILATION AUTOMATIQUE (14 nov. 2026, consigne du propriétaire) : rien ne part sur
+    # une poussée sur main ; on compile seulement quand il dit « version finie », à la main
+    # (`scripts/codemagic.mjs --lancer`).
+    # Ancien filtre (29 oct. 2026), inactif depuis le 14 nov. : une poussée relançait ce flux si
     # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
     # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
     when:
@@ -356,13 +350,10 @@ workflows:
     # même machine que les flux iOS, qui a Java et le SDK Android. Minutes macOS : ne lancer que pour publier.
     instance_type: mac_mini_m2
     max_build_duration: 45
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-    # PUBLICATION AUTOMATIQUE (29 oct. 2026) : une poussée sur main relance ce flux SEULEMENT si
+    # PLUS AUCUNE COMPILATION AUTOMATIQUE (14 nov. 2026, consigne du propriétaire) : rien ne part sur
+    # une poussée sur main ; on compile seulement quand il dit « version finie », à la main
+    # (`scripts/codemagic.mjs --lancer`).
+    # Ancien filtre (29 oct. 2026), inactif depuis le 14 nov. : une poussée relançait ce flux si
     # elle touche au NATIF (coque, greffons, configuration). Un changement d'écran ou de texte
     # n'a pas besoin des boutiques : il arrive par la mise à jour automatique (`lib/liveUpdate.ts`).
     when:
