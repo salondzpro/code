@@ -296,12 +296,6 @@ export function Closures() {
             />
           </label>
         </div>
-        <p className="text-[1rem] leading-[1.45] text-muted">
-          {mode === 'closed'
-            ? `Les clients ne verront aucun créneau ${daysText}.`
-            : `Les clients ne pourront pas réserver entre ${from} et ${to} ${daysText}.`}{' '}
-          {t("Les rendez-vous déjà confirmés ne sont pas annulés automatiquement.")}
-        </p>
       </div>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
@@ -324,7 +318,7 @@ export function Closures() {
                 {t("Supprimer cette exception ?")}
               </div>
               <p className="p mt-2">
-                {describeBlock(del)} {t("— les créneaux redeviennent réservables.")}
+                {describeBlock(del)}
               </p>
             </div>
             <Button icon={ICONE.supprimer}
@@ -353,7 +347,7 @@ export function Closures() {
           <Dim onClose={() => setConflict(null)} className="!z-[45]" />
           <BottomSheet modal className="!z-50">
             <div className="h1 !text-[1.429rem]">{t('{n} rendez-vous dans cette période', { n: conflict.length })}</div>
-            <p className="p">{t("Fermer quand même les annule : chaque client est prévenu et le créneau est libéré pour lui ailleurs.")}</p>
+            <p className="p">{t("Les clients concernés seront prévenus.")}</p>
             <div className="crd !gap-0 !py-1 max-h-[40vh] overflow-y-auto">
               {conflict.map((b) => (
                 <div key={b.id} className="li">

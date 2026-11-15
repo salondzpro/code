@@ -10,7 +10,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Check, Landmark, ShieldCheck } from 'lucide-react';
+import { Check, Landmark } from 'lucide-react';
 import { useDepositSettings, useProSalon, useSaveDepositSettings } from '@salondz/api-client';
 import { depositFor, formatDA, type DepositMode, type DepositScope } from '@salondz/constants';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -104,10 +104,7 @@ export function ProDeposit() {
         <span className="dp-pro-ic" aria-hidden>
           <I icon={Landmark} size={20} />
         </span>
-        <span className="min-w-0 flex-1">
-          <b className="block text-[1.071rem] font-semibold">{t('Demander un versement')}</b>
-          <span className="t3 block">{t('Le rendez-vous est confirmé quand vous validez le reçu.')}</span>
-        </span>
+        <b className="min-w-0 flex-1 text-[1.071rem] font-semibold">{t('Demander un versement')}</b>
         <Toggle on={on} onChange={setOn} label={t('Demander un versement')} />
       </div>
 
@@ -192,10 +189,6 @@ export function ProDeposit() {
             placeholder={t(ACCOUNT_PLACEHOLDER)}
             aria-label={t('Numéro CCP (BaridiMob)')}
           />
-          <p className="flex items-start gap-2 px-1 text-[0.857rem] text-muted">
-            <I icon={ShieldCheck} size={16} className="mt-0.5 flex-none" />
-            {t('Jamais affiché sur votre page : seule la personne qui réserve le voit, le temps de verser.')}
-          </p>
         </>
       )}
 

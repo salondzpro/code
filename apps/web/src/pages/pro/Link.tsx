@@ -279,7 +279,6 @@ export function ProQr() {
   return (
     <Screen bottom={24} gap={14} className="narrow">
       <TopBar backTo="/pro/lien" title={t('Étiquettes à imprimer')} />
-      <p className="p text-[0.857rem]">{t('En vitrine ou au comptoir : le scan ouvre votre page de réservation.')}</p>
       <LabelStudio
         input={{
           name: salon.name,

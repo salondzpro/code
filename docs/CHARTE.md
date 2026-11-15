@@ -22,7 +22,7 @@ d'œil, entre deux clientes**, et ne réapprenne jamais un geste.
 1. **L'essentiel du moment d'abord, le reste sur demande** (replié : « Plus d'informations », « Voir tout »).
 2. **Zéro doublon** : une information, une action, une destination, un seul endroit.
 3. **Une icône parle avant le mot** : chaque bouton a l'icône de son action (§ 8).
-4. **Peu de texte** : une phrase sous un titre, jamais un paragraphe.
+4. **Texte minimal (règle du 15 nov. 2026)** : pas de sous-titre ni de phrase d'explication ; un texte n'apparaît que s'il est indispensable (erreur, état vide, conséquence d'une action irréversible, valeur d'un réglage). Aucun réglage inutile : une valeur par défaut adaptée au marché algérien plutôt qu'une question.
 5. **Pouce d'abord** : actions en bas, cibles ≥ 44 px, ronds d'action de 56 px.
 6. **Aplats seulement** : ni dégradé décoratif, ni halo coloré, ni reflet, ni ombre teintée.
 

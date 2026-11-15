@@ -60,7 +60,6 @@ function RejectSheet({ id, onClose }: { id: string; onClose: () => void }) {
         <div className="flex flex-col gap-3">
           <div>
             <h2 className="h2">{t('Refuser le justificatif')}</h2>
-            <p className="t3 mt-1">{t('Votre motif est envoyé avec la demande d’un autre justificatif. Le créneau reste bloqué.')}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {REJECT_REASONS.map((r) => (
@@ -142,7 +141,6 @@ export function DepositReview({ booking: b }: { booking: Booking }) {
       )}
       {proof.isPending && !!b.depositSubmittedAt && submitted && <div className="dp-proof sk" aria-hidden />}
 
-      {submitted && <p className="t3">{t('Vérifiez sur votre compte que {montant} est bien arrivé avant de valider.', { montant: amount })}</p>}
 
       <DepositTrace steps={steps} />
       {view && proof.data && <ProofViewer url={proof.data.url} onClose={() => setView(false)} />}

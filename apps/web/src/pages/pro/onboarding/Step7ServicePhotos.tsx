@@ -67,7 +67,7 @@ export function Step7ServicePhotos() {
         backTo={`${stepPath(6)}/${service.id}`}
         right={fromCatalog ? 'Catalogue' : undefined}
       />
-      <StepTitle icon={Camera} sub={t('Avec photo, 3 fois plus de réservations.')}>
+      <StepTitle icon={Camera}>
         {t('Une photo pour « {service} »', { service: service.name })}
       </StepTitle>
       <button
@@ -116,7 +116,7 @@ export function Step7ServicePhotos() {
         label={photo ? t("Enregistrer la prestation") : t("Enregistrer sans photo")}
         hint={fromCatalog ? undefined : t('Vos autres photos : étape suivante.')}
         onClick={() =>
-          void save().then((ok) => ok && navigate(fromCatalog ? '/pro/catalogue' : stepPath(8)))
+          void save().then((ok) => ok && navigate('/pro/catalogue'))
         }
         busy={busy || setPhotos.isPending}
         secondary={

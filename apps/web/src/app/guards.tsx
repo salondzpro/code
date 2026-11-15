@@ -210,7 +210,7 @@ export function RequirePro() {
       return <Navigate to="/pro/onboarding/1" replace />;
     return <Outlet />;
   }
-  if (onboarding && (step === null || step <= 4) && !path.endsWith('/publier') && !path.endsWith('/prestations'))
+  if (onboarding && (step === null || step <= 4) && !path.endsWith('/prestations'))
     return <Navigate to={salon.services.length === 0 ? '/pro/onboarding/prestations' : '/pro'} replace />;
   return <Outlet />;
 }

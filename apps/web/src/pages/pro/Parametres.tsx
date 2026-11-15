@@ -21,33 +21,32 @@ export function Parametres() {
           maquette 11 a allégé. */}
       <PageHead
         title={t('Paramètres')}
-        sub={t('Votre salon, vos horaires et votre compte.')}
         action={salon && <QuickCloseButton openingHours={salon.openingHours} />}
       />
       <div className="lst">
-        <SettingRow to="/pro/mon-salon" icon={Store} title={t('Mon salon')} sub={t('Nom, adresse, photos, spécialités')} />
-        <SettingRow to="/pro/profil/horaires" icon={Clock} title={t("Horaires d'ouverture")} sub={t('Jours et heures où l’on peut réserver')} />
-        <SettingRow to="/pro/blocages" icon={CalendarOff} title={t('Fermetures')} sub={t('Congés, jours fermés')} />
-        <SettingRow to="/pro/profil/regles" icon={CalendarClock} title={t('Règles de réservation')} sub={t('Délais, annulation, validation')} />
+        <SettingRow to="/pro/mon-salon" icon={Store} title={t('Mon salon')} />
+        <SettingRow to="/pro/profil/horaires" icon={Clock} title={t("Horaires d'ouverture")} />
+        <SettingRow to="/pro/blocages" icon={CalendarOff} title={t('Fermetures')} />
+        <SettingRow to="/pro/profil/regles" icon={CalendarClock} title={t('Règles de réservation')} />
         <SettingRow
           to="/pro/profil/versement"
           icon={Landmark}
           title={t('Versement à la réservation')}
           sub={
             (salon?.depositMode ?? 'off') === 'off'
-              ? t('Désactivé · CCP (BaridiMob)')
+              ? t('Désactivé')
               : salon?.depositMode === 'percent'
-                ? t('{n} % du total, justificatif à valider', { n: salon?.depositValue ?? 0 })
-                : t('{montant}, justificatif à valider', { montant: formatDA(salon?.depositValue ?? 0) })
+                ? `${salon?.depositValue ?? 0} %`
+                : formatDA(salon?.depositValue ?? 0)
           }
         />
       </div>
       <div className="lst">
         {/* À plusieurs, « Équipe » est dans le menu « Plus » : une seule entrée. */}
         {!team && (
-          <SettingRow to="/pro/equipe" icon={Users} title={t('Travailler à plusieurs')} sub={t('Ajoutez une personne qui travaille avec vous')} />
+          <SettingRow to="/pro/equipe" icon={Users} title={t('Travailler à plusieurs')} />
         )}
-        <SettingRow to="/pro/compte" icon={UserCircle} title={t('Mon compte')} sub={t('Identité, langue, notifications')} />
+        <SettingRow to="/pro/compte" icon={UserCircle} title={t('Mon compte')} />
       </div>
     </Screen>
   );

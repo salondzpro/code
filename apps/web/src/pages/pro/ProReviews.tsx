@@ -61,9 +61,6 @@ function ReplySheet({
         <div className="h2 text-center !text-[1.143rem]">
           {review.reply ? t('Modifier la réponse') : t('Répondre à cet avis')}
         </div>
-        <p className="p text-[1rem]">
-          {t("Votre réponse est publique : elle s'affiche sous l'avis, sur votre page.")}
-        </p>
         <Textarea
           value={texte}
           onChange={(e) => setTexte(e.target.value.slice(0, MAX))}

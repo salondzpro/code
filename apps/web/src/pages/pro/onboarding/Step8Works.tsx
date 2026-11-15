@@ -63,13 +63,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
         right={settings ? null : undefined}
         title={settings ? t('Réalisations') : undefined}
       />
-      {settings ? (
-        <p className="p">{t("Vos photos de travail, visibles dans l'onglet « Réalisations ».")}</p>
-      ) : (
-        <StepTitle icon={Images} sub={t('C’est votre vitrine.')}>
-          {t('Montrez votre travail')}
-        </StepTitle>
-      )}
+      {!settings && <StepTitle icon={Images}>{t('Montrez votre travail')}</StepTitle>}
       <div className="g3">
         {works.map((w) => (
           <div key={w.id} className="relative aspect-square overflow-hidden rounded-[var(--radius-card-sm)] bg-line">

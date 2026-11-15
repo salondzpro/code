@@ -240,7 +240,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
     <Screen bottom={SHEET_PAD} gap={16}>
       <StepBar step={2} backTo={settings ? '/pro/mon-salon' : stepPath(1)} right={settings ? null : undefined} title={settings ? t('Adresse') : undefined} />
       {!settings && (
-        <StepTitle icon={MapPin} sub={t('Wilaya, adresse, emplacement.')}>
+        <StepTitle icon={MapPin}>
           {t('Où se trouve votre salon ?')}
         </StepTitle>
       )}

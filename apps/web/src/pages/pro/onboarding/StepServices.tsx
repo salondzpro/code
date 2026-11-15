@@ -84,7 +84,7 @@ export function StepServices() {
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
       <StepBar step={3} backTo={undefined} />
-      <StepTitle icon={Scissors} sub={t('Déjà remplies aux prix courants. Décochez, ajustez un prix, c’est tout.')}>
+      <StepTitle icon={Scissors}>
         {t('Vos prestations')}
       </StepTitle>
 
@@ -129,7 +129,6 @@ export function StepServices() {
         label={chosen.length ? t('Mettre mon salon en ligne') : t('Choisissez au moins une prestation')}
         disabled={chosen.length === 0}
         busy={busy}
-        hint={t('{n} prestation(s) · horaires du samedi au jeudi, 9 h – 19 h, modifiables ensuite.', { n: chosen.length })}
         onClick={() => void goLive()}
       />
     </Screen>

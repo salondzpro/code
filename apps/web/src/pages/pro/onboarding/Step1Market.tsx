@@ -60,7 +60,7 @@ export function Step1Market() {
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
       <StepBar step={1} backTo="/pro/bienvenue" />
-      <StepTitle icon={Store} sub={t('Deux réponses, et votre page est presque prête.')}>
+      <StepTitle icon={Store}>
         {t('Votre salon')}
       </StepTitle>
 
@@ -98,7 +98,6 @@ export function Step1Market() {
 
       <StepSheet
         disabled={!ready}
-        hint={t('Tout se modifie ensuite depuis Mon salon.')}
         onClick={() => {
           writeProDraft({ market, name: name.trim(), categoryIds: defaultSpecialties(market!) });
           navigate(stepPath(4));

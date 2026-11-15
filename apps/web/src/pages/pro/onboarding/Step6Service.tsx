@@ -76,7 +76,7 @@ export function Step6Service() {
         title={first ? undefined : existing ? t('Modifier la prestation') : t('Nouvelle prestation')}
       />
       {first && (
-        <StepTitle icon={Tag} sub={t('Nom, prix, durée.')}>
+        <StepTitle icon={Tag}>
           {t('Votre première prestation')}
         </StepTitle>
       )}
@@ -117,7 +117,7 @@ export function Step6Service() {
             </Pill>
           ))}
         </div>
-        <Field label={t("Catégorie")} htmlFor="svc-cat" hint={t('Classe la prestation sur votre page.')}>
+        <Field label={t("Catégorie")} htmlFor="svc-cat">
           <PickerField
             label={t("Catégorie")}
             value={pick}
@@ -154,16 +154,10 @@ export function Step6Service() {
           />
           {creating && <Input id="svc-group" lg className="mt-2" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} placeholder={t("Nom de la nouvelle catégorie (ex. Soins de la barbe)")} aria-label={t("Nouvelle catégorie")} />}
         </Field>
-        <Field label={t("Description")} htmlFor="svc-desc">
-          <Textarea id="svc-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} placeholder={t("Pose complète en gel, limage, cuticules et finition brillante. Tenue 3 à 4 semaines.")} />
-        </Field>
         {existing && (
           <div className="crd !flex-row !items-center !gap-3 !py-3">
             <span className="min-w-0 flex-1">
               <span className="block text-[1rem] font-semibold">{t('Réservable sur ma page')}</span>
-              <span className="block text-[0.929rem] text-muted">
-                {isActive ? t('Vos clientes peuvent la choisir.') : t('Masquée : elle reste dans votre catalogue.')}
-              </span>
             </span>
             <Toggle on={isActive} onChange={setIsActive} label={t('Réservable sur ma page')} />
           </div>

@@ -24,7 +24,7 @@ import { t } from '@/i18n';
 
 type Retour = { ok: boolean; texte: string } | null;
 
-export function DevicePushRow({ sub }: { sub: string }) {
+export function DevicePushRow({ sub }: { sub?: string }) {
   const n = useNotificationStatus();
   const [coupe, setCoupe] = useState(false);
   const [test, setTest] = useState<'idle' | 'pending'>('idle');
@@ -88,9 +88,9 @@ export function DevicePushRow({ sub }: { sub: string }) {
           </span>
           <span className="min-w-0">
             <span className="block text-[1rem] font-semibold">{t('Notifications sur cet appareil')}</span>
-            <span className="p block text-[0.857rem]">
-              {n.situation === 'impossibles' ? n.consigne : sub}
-            </span>
+            {(n.situation === 'impossibles' || sub) && (
+              <span className="p block text-[0.857rem]">{n.situation === 'impossibles' ? n.consigne : sub}</span>
+            )}
           </span>
         </span>
         {n.situation !== 'impossibles' && (

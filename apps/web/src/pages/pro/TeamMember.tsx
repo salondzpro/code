@@ -371,9 +371,6 @@ export function TeamMemberServices() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo={`/pro/equipe/${member.id}`} title={t("Prestations")} right={member.displayName} />
-      <p className="p">
-        {t("Le membre n'est proposé aux clients que pour les prestations qu'il réalise.")}
-      </p>
       <ServicesPicker
         services={salon.services}
         all={all}
@@ -477,7 +474,7 @@ export function TeamMemberHours() {
       ) : custom ? (
         <WeekHoursEditor rows={rows} onChange={setRows} closedLabel="Repos" />
       ) : (
-        <p className="p">{t("Ce membre est réservable sur tous les horaires d'ouverture du salon.")}</p>
+        <p className="p">{t('Horaires du salon')}</p>
       )}
       {!custom && salon.openingHours.some((h) => !h.isClosed) && (
         <div className="crd !gap-1">

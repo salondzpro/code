@@ -54,7 +54,6 @@ export function ProAccount() {
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/parametres" title={t("Mon compte")} />
 
-      <SectionLabel>{t("Profil professionnel")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         {/* Piloté par un administrateur : l'identité se corrige dans l'administration, avec un motif
             et une trace — jamais ici, où l'on modifierait le compte de l'administrateur. */}
@@ -67,14 +66,13 @@ export function ProAccount() {
         </ListRow>
         {/* Piloté par un administrateur : ce navigateur est le sien, pas celui du professionnel. */}
         {!owner && (
-          <DevicePushRow sub={t('Demandes, annulations, rappels · sur ce navigateur ou sur l’application')} />
+          <DevicePushRow />
         )}
       </div>
 
-      <SectionLabel>{t("Paramètres")}</SectionLabel>
       <div className="crd !gap-0 !py-1">
         <div className="li">
-          <RowText icon={Languages} title={t("Langue")} sub={t("Français, arabe ou anglais")} />
+          <RowText icon={Languages} title={t("Langue")} />
           <PickerField
             inline
             label={t("Langue")}
@@ -86,7 +84,7 @@ export function ProAccount() {
           />
         </div>
         <div className="li">
-          <RowText icon={Globe} title={t("Page publiée")} sub="Visible dans la marketplace" />
+          <RowText icon={Globe} title={t("Page publiée")} />
           <Toggle
             on={salon.isPublished}
             onChange={(v) =>
@@ -123,7 +121,7 @@ export function ProAccount() {
           <BottomSheet modal>
             <div className="h1 !text-[1.429rem]">{t("Supprimer mon compte et mon salon ?")}</div>
             <p className="p">
-              {t("Vos rendez-vous à venir seront annulés et vos clients prévenus. Votre page, votre catalogue, votre équipe, vos avis et l’historique de vos rendez-vous seront supprimés, chez vous comme chez vos clients. Cette action est définitive.")}
+              {t("Rendez-vous à venir annulés, clients prévenus. Définitif.")}
             </p>
             {deleting && deleting !== '…' && (
               <p className="text-[1rem] text-danger" role="alert">

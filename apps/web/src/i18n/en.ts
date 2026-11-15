@@ -2159,4 +2159,13 @@ export const en: Record<string, string> = {
   "Faisons connaissance": "Let’s get to know you",
   "Votre nom pour le salon, et ce que vous recherchez.": "Your name for the salon, and what you’re looking for.",
   "Encre": "Ink",
+  "Désactivé": "Off",
+  "À compléter": "To complete",
+  "Rendez-vous à venir annulés, clients prévenus. Définitif.": "Upcoming appointments cancelled, clients notified. Permanent.",
+  "Les clients concernés seront prévenus.": "The clients concerned will be notified.",
+  "Aucune catégorie.": "No category.",
+  "Mettre mon salon en ligne": "Put my salon online",
+  "Choisissez au moins une prestation": "Choose at least one service",
+  "Votre page n’est pas en ligne": "Your page is not online",
+  "Mettre ma page en ligne": "Put my page online",
 };

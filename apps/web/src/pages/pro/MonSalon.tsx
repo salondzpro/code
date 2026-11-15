@@ -99,7 +99,7 @@ export function MonSalon() {
           <RowText
             icon={FileText}
             title={t('Nom et description')}
-            sub={salon.description || t('Ajoutez une description : ce qui rend votre salon unique')}
+            sub={salon.description || t('À compléter')}
             alerte={!salon.description}
           />
           <I icon={ICONE.modifier} size={18} className="flex-none text-muted" />
@@ -111,19 +111,19 @@ export function MonSalon() {
             sub={
               nPhotos || salon.logoUrl
                 ? `${salon.logoUrl ? t('Logo') : t('Sans logo')} · ${t(nPhotos > 1 ? '{n} photos de couverture' : '{n} photo de couverture', { n: nPhotos })}`
-                : t('Ajoutez un logo et des photos')
+                : t('À compléter')
             }
             alerte={!nPhotos || !salon.logoUrl}
           />
         </ListRow>
         <ListRow to="/pro/salon">
-          <RowText icon={MapPin} title={t('Adresse')} sub={place || t('Adresse à compléter')} alerte={!place} />
+          <RowText icon={MapPin} title={t('Adresse')} sub={place || t('À compléter')} alerte={!place} />
         </ListRow>
         <ListRow to="/pro/realisations">
           <RowText
             icon={Sparkles}
             title={t('Réalisations')}
-            sub={nWorks ? t(nWorks > 1 ? '{n} photos de votre travail' : '{n} photo de votre travail', { n: nWorks }) : t('Montrez votre travail en photos')}
+            sub={nWorks ? t(nWorks > 1 ? '{n} photos de votre travail' : '{n} photo de votre travail', { n: nWorks }) : t('À compléter')}
             alerte={!nWorks}
           />
         </ListRow>
@@ -151,7 +151,7 @@ export function MonSalon() {
           <RowText
             icon={Store}
             title={t('Spécialités')}
-            sub={salon.categoryIds.length ? salon.categoryIds.map((id) => categoryLabel(id)).join(' · ') : t('Choisissez vos spécialités')}
+            sub={salon.categoryIds.length ? salon.categoryIds.map((id) => categoryLabel(id)).join(' · ') : t('À compléter')}
             alerte={!salon.categoryIds.length}
           />
         </ListRow>
@@ -168,7 +168,6 @@ export function MonSalon() {
           <Dim onClose={() => setEdit(null)} />
           <BottomSheet modal>
             <div className="h2 !text-[1.286rem]">{t('Nom et description')}</div>
-            <p className="-mt-2 text-[0.929rem] text-muted">{t('Affichés en haut de votre page, sous vos photos.')}</p>
             <Field label={t('Nom du salon')} htmlFor="ms-nom">
               <Input id="ms-nom" value={edit.name} maxLength={80} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
             </Field>

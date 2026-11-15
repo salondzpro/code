@@ -2145,4 +2145,13 @@ export const ar: Record<string, string> = {
   "Faisons connaissance": "لنتعرّف",
   "Votre nom pour le salon, et ce que vous recherchez.": "اسمك للصالون، وما تبحث عنه.",
   "Encre": "حبر",
+  "Désactivé": "معطّل",
+  "À compléter": "للإكمال",
+  "Rendez-vous à venir annulés, clients prévenus. Définitif.": "تُلغى المواعيد القادمة ويُبلَّغ الزبائن. نهائي.",
+  "Les clients concernés seront prévenus.": "سيتم إبلاغ الزبائن المعنيين.",
+  "Aucune catégorie.": "لا توجد فئة.",
+  "Mettre mon salon en ligne": "نشر صالوني",
+  "Choisissez au moins une prestation": "اختر خدمة واحدة على الأقل",
+  "Votre page n’est pas en ligne": "صفحتك غير منشورة",
+  "Mettre ma page en ligne": "نشر صفحتي",
 };

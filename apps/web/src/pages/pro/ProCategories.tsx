@@ -56,7 +56,7 @@ export function ProCategories() {
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro/catalogue" title={t("Catégories")} />
       {groups.length === 0 ? (
-        <p className="p">{t("Une catégorie apparaît dès que vous ajoutez une prestation.")}</p>
+        <p className="p">{t("Aucune catégorie.")}</p>
       ) : (
         <div className="crd !gap-0 !py-1">
           {groups.map((g) => (

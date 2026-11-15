@@ -79,7 +79,7 @@ export function Settings() {
             lorsqu'elle est ouverte. C'est le seul réglage qui dépend d'une permission
             système, d'où l'état « refusé » explicite plutôt qu'un interrupteur qui ne
             bougerait pas. */}
-        <DevicePushRow sub={t('Rappels et confirmations, même application fermée')} />
+        <DevicePushRow />
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>

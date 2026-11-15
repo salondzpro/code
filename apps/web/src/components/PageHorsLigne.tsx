@@ -31,10 +31,7 @@ export function PageHorsLigne({ salon }: { salon: SalonOwnerView }) {
         <span className="phl-ic" aria-hidden>
           <I icon={EyeOff} size={18} />
         </span>
-        <span className="min-w-0 flex-1">
-          <b className="block">{t('Votre page n’est pas en ligne')}</b>
-          <span className="t3 block">{t('Vos clientes voient « Salon introuvable » sur votre lien.')}</span>
-        </span>
+        <b className="min-w-0 flex-1 self-center">{t('Votre page n’est pas en ligne')}</b>
       </div>
       <Button icon={ICONE.publier} loading={updateSalon.isPending} onClick={() => void publish()}>
         {t('Mettre ma page en ligne')}
