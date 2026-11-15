@@ -2144,4 +2144,5 @@ export const ar: Record<string, string> = {
   "C’est votre première fois. Choisissez un mot de passe.": "هذه أول مرة لك. اختر كلمة سر.",
   "Faisons connaissance": "لنتعرّف",
   "Votre nom pour le salon, et ce que vous recherchez.": "اسمك للصالون، وما تبحث عنه.",
+  "Encre": "حبر",
 };

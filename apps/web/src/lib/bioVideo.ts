@@ -17,16 +17,17 @@ const H = 1280;
 export const BIO_VIDEO_SIZE = { width: W, height: H };
 export const BIO_VIDEO_MS = 27600;
 
-const ACCENT = '#6c5ce7';
-const INK = '#1e1b30';
-const MUTED = '#636174';
-const SUBTLE = '#716f80';
-const SOFT = '#f0effe';
-const FILL = '#f3f3f8';
-const LINE = '#e6e5ee';
-const OUTFIT = 'Outfit, Inter, sans-serif';
-const INTER = 'Inter, sans-serif';
-const SERIF = '"Instrument Serif", Georgia, serif';
+// Écrans redessinés de Salon DZ : charte unique (15 nov. 2026).
+const ACCENT = '#111111';
+const INK = '#111111';
+const MUTED = '#6e6e76';
+const SUBTLE = '#8e8e93';
+const SOFT = '#f1f1f3';
+const FILL = '#f1f1f3';
+const LINE = '#ececef';
+const OUTFIT = '"Plus Jakarta Sans", Inter, sans-serif';
+const INTER = '"Plus Jakarta Sans", Inter, sans-serif';
+const SERIF = '"Plus Jakarta Sans", Inter, sans-serif';
 const MONO = 'ui-monospace, Menlo, Consolas, monospace';
 
 /** Le téléphone mesure 390 × 844, comme l'écran pour lequel l'application est dessinée. */
@@ -548,7 +549,7 @@ function drawTitle(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
     line(g, title.b, x, 266, `500 56px ${OUTFIT}`, SUBTLE);
     x += g.measureText(title.b).width + (title.b.endsWith('’') ? 2 : 14);
   }
-  const serif = (px: number) => `italic 400 ${px}px ${SERIF}`;
+  const serif = (px: number) => `600 ${px}px ${SERIF}`;
   line(g, title.c, x, 266, serif(shrink(g, title.c, serif, 74, W - x - 40)), ACCENT);
   g.restore();
 }
@@ -618,11 +619,11 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   g.font = `500 42px ${OUTFIT}`;
   const left = `${t('Réservez en')} `;
   const lw = g.measureText(left).width;
-  g.font = `italic 400 58px ${SERIF}`;
+  g.font = `600 58px ${SERIF}`;
   const rw = g.measureText(t('30 secondes.')).width;
   const x = (W - lw - rw) / 2;
   line(g, left, x, 610, `500 42px ${OUTFIT}`, SUBTLE);
-  line(g, t('30 secondes.'), x + lw, 610, `italic 400 58px ${SERIF}`, ACCENT);
+  line(g, t('30 secondes.'), x + lw, 610, `600 58px ${SERIF}`, ACCENT);
   g.globalAlpha = out((ms - 1100) / 450);
   box(g, W / 2 - 200, 780, 400, 76, 38, ACCENT);
   line(g, `👆 ${t('Lien dans notre bio')}`, W / 2, 829, `600 28px ${OUTFIT}`, '#ffffff', 'center', 360);

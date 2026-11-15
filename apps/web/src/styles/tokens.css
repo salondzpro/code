@@ -1,107 +1,94 @@
 /*
- * Jetons de design — refonte du 1er nov. 2026 (« SalonDZ × mew3id », validée sur le canevas
- * https://claude.ai/artifact/91Wa36xH7wKniVgraxyKUo, accueil 11 et agenda 9).
+ * JETONS DE DESIGN — CHARTE OFFICIELLE UNIQUE (15 nov. 2026, demande du propriétaire).
  *
- * UN accent violet (#6c5ce7) pour tout ce qui AGIT ou est CHOISI (bouton principal, interrupteur,
- * case, créneau, champ actif, onglet actif) ; une encre bleu nuit pour le texte et les éléments
- * sombres ; des neutres très légèrement teintés de violet (+7° de teinte, comme mew3id) — c'est ce
- * qui rend la palette harmonieuse sans la colorer. Toutes les valeurs sont calculées en OKLCH à
- * partir de l'accent et leurs contrastes VÉRIFIÉS (texte ≥ 4,5:1, gris secondaire ≥ 6:1).
- * Ne pas ajouter de couleur « au jugé » : une nouvelle nuance se dérive de la même gamme.
+ * Source de vérité : l'ESPACE PROFESSIONNELS EN PRODUCTION (thème « minimal éditorial » validé le
+ * 11 nov. 2026), mesuré sur salondz.com. Documentation complète : `docs/CHARTE.md`.
+ *
+ * Ces valeurs sont les SEULES autorisées. Toute couleur, police, ombre ou arrondi d'un écran passe par
+ * un jeton d'ici ; jamais une valeur au jugé, jamais une ancienne identité (violet #6c5ce7, encre bleu
+ * nuit #1e1b30, police Outfit, ombres teintées, couleurs par catégorie — supprimés le 15 nov. 2026).
+ *
+ *   Encre #111 · gris #6e6e76 · fond #f7f7f9 · surface blanche · aucun accent de marque.
+ *   La couleur ne sert qu'à DIRE quelque chose : couleurs système d'iOS (vert oui, rouge non,
+ *   orange à valider, bleu confirmé, gris passé).
  */
 
 @theme {
-  /* Fonds */
-  --color-canvas: #ffffff; /* autour de la colonne app sur grand écran */
-  --color-bg: #ffffff; /* fond des écrans : blanc pur, partout (consigne du 4 nov. 2026) */
-  --color-surface: #ffffff; /* cartes */
-  --color-fill: #f4f4f9; /* surfaces douces (champs, boutons secondaires pleins) */
-  --color-line: #e6e5ee; /* bordures */
-  --color-line-soft: #efeef4; /* séparateurs de liste */
+  /* ---------------------------------------------------------------- Fonds et surfaces */
+  --color-canvas: #f7f7f9; /* autour de la colonne sur grand écran */
+  --color-bg: #f7f7f9; /* fond de toutes les pages */
+  --color-surface: #ffffff; /* cartes, listes, fenêtres, champs */
+  --color-fill: #f1f1f3; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
+  --color-fill-strong: #ebebee; /* bouton secondaire, sélecteur segmenté */
+  --color-line: #ececef; /* bordures */
+  --color-line-strong: #e2e2e6; /* contour des champs, des ronds blancs, lignes des heures */
+  --color-line-soft: #f1f1f3; /* séparateurs de liste */
 
-  /* Texte */
-  --color-text: #1e1b30; /* encre bleu nuit, 16,8:1 sur blanc */
-  --color-muted: #636174; /* secondaire, 6:1 sur blanc */
-  --color-subtle: #716f80; /* tertiaire, 4,9:1 sur blanc, 4,5:1 sur le fond */
-  --color-disabled: #c4c3cd;
-  --color-ink: #1e1b30; /* éléments SOMBRES : filtre choisi, message flottant, fonds d'encre */
-  --color-women: #f06a9b; /* titre « Femmes » en rose clair, mode femmes */
+  /* ---------------------------------------------------------------- Texte */
+  --color-text: #111111;
+  --color-muted: #6e6e76; /* secondaire */
+  --color-subtle: #6e6e76; /* tertiaire : même gris que le secondaire (mesuré en production) */
+  --color-disabled: #c7c7cc;
+  --color-ink: #111111; /* éléments SOMBRES : bouton principal, sélection, onglet actif */
   --color-on-ink: #ffffff;
 
-  /* Accent : la couleur de la marque, et la seule */
-  --color-accent: #6c5ce7; /* blanc dessus 4,9:1 */
-  --color-accent-strong: #6553dd; /* texte d'accent posé sur un fond pâle (≥ 4,8:1) */
-  --color-accent-deep: #41398a; /* texte foncé sur fond pâle d'accent */
-  --color-accent-soft: #f0effe; /* fond pâle : bouton secondaire, pastille, icône */
-  --color-accent-tint: #e5e3fe; /* fond pâle appuyé : élément choisi dans une liste */
-  --color-accent-line: #d8d4fa; /* contour d'accent */
+  /* Accent = l'encre : il n'y a PAS de couleur de marque (anciens jetons gardés pour les classes
+     existantes, tous ramenés à l'encre et aux gris). */
+  --color-accent: #111111;
+  --color-accent-strong: #111111;
+  --color-accent-deep: #111111;
+  --color-accent-soft: #f1f1f3;
+  --color-accent-tint: #ececef;
+  --color-accent-line: #cfcfd4;
   --color-on-accent: #ffffff;
-
-  /* Statuts */
-  --color-danger: #e5484d;
-  --color-danger-line: #f4d7d8;
-  --color-ok-bg: #e2f6ec;
-  --color-ok-fg: #0e7a4d;
-  --color-pending-bg: #fce8d8;
-  --color-pending-fg: #96551f;
-  --color-cancel-bg: #fde8e8;
-  --color-cancel-fg: #b22f33;
-  --color-green: #18a66a; /* WhatsApp seulement (les interrupteurs passent à l'accent) */
-  /* Heures libres sur les cartes de la marketplace (chiffres et cadre) : bleu du drapeau
-     français, demandé le 19 sept. 2026. */
-  --color-hour: #0055a4;
-
-  /* Catégories (agenda) */
-  --color-cat-hair-bg: #ddf3f4;
-  --color-cat-hair-line: #38aeb5;
-  --color-cat-hair-fg: #0e5a5f;
-  --color-cat-barb-bg: #dce7ff;
-  --color-cat-barb-line: #6d8fe8;
-  --color-cat-barb-fg: #2c4a93;
-  --color-cat-nail-bg: #fbe1ea;
-  --color-cat-nail-line: #d97898;
-  --color-cat-nail-fg: #8f3556;
-  --color-cat-lash-bg: #e7dfff;
-  --color-cat-lash-line: #8a63d8;
-  --color-cat-lash-fg: #4b2c91;
-  --color-cat-skin-bg: #dff3e7;
-  --color-cat-skin-line: #55a873;
-  --color-cat-skin-fg: #1f6b41;
-  --color-cat-lasr-bg: #fce8d8;
-  --color-cat-lasr-line: #d88c52;
-  --color-cat-lasr-fg: #8a4b18;
-
-  /* Alias de transition (anciennes classes) */
-  --color-primary: #6c5ce7;
+  --color-primary: #111111;
   --color-primary-contrast: #ffffff;
-  --color-success: #0e7a4d;
-  --color-warning: #96551f;
-  --color-info: #2c4a93;
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
-  /* Titres, grands chiffres, noms : Outfit (latin). L'arabe retombe sur la police du texte. */
-  --font-display: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* ---------------------------------------------------------------- Couleurs de SENS (iOS) */
+  --color-ok: #34c759; /* oui, fait, en cours */
+  --color-ok-bg: #e3f7e8;
+  --color-ok-fg: #1d8a3c;
+  --color-danger: #ff3b30; /* non, danger, absent */
+  --color-danger-line: #ffd6d3;
+  --color-cancel-bg: #ffe7e5;
+  --color-cancel-fg: #c81e14;
+  --color-pending: #ff9500; /* à valider */
+  --color-pending-bg: #fff1dc;
+  --color-pending-fg: #a35f00;
+  --color-info: #007aff; /* confirmé */
+  --color-info-bg: #e5f1ff;
+  --color-past: #aeaeb2; /* passé, terminé */
+  --color-success: #1d8a3c;
+  --color-warning: #a35f00;
 
-  /**
-   * Arrondis — LIBRAIRIE DE DESIGN du 1er nov. 2026 (valeurs des maquettes 11 et 9 validées par le
-   * propriétaire, ergonomie mew3id) : cartes 22 px, boutons, champs et tuiles 14 px, créneaux 12 px,
-   * feuilles 28 px. Remplace le compromis du même jour (14 / 12 / 10 / 20) et la consigne « réduits »
-   * du 15 sept. Toujours par ces jetons, jamais une valeur en dur. Racine 14 px.
-   */
-  --radius-card: 1.571rem; /* 22 px */
-  --radius-card-sm: 1rem; /* 14 px */
-  --radius-btn: 1rem; /* 14 px */
-  --radius-input: 1rem; /* 14 px */
-  --radius-slot: 0.857rem; /* 12 px */
+  /* Couleurs de MARQUE tierces (logos officiels seulement, `BrandIcons.tsx`). */
+  --color-green: #25d366; /* WhatsApp */
+  /* Espace clientes : la seule couleur propre, le rose de l'espace féminin. */
+  --color-women: #f06a9b;
+  /* Heures libres des cartes de la place de marché : encre (le bleu du 19 sept. est retiré). */
+  --color-hour: #111111;
+
+  /* ---------------------------------------------------------------- Typographie */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* Plus de seconde police : les titres utilisent la même (l'arabe retombe sur la police système). */
+  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* ---------------------------------------------------------------- Arrondis (racine 14 px) */
+  --radius-card: 1.571rem; /* 22 px — cartes et listes (mesuré en production) */
+  --radius-card-sm: 1rem; /* 14 px — tuiles, petites cartes */
+  --radius-btn: 1rem; /* 14 px — boutons rectangulaires (les petits boutons sont en pilule) */
+  --radius-input: 1rem; /* 14 px — champs */
+  --radius-slot: 0.857rem; /* 12 px — créneaux horaires */
   --radius-img: 1rem; /* 14 px */
-  --radius-pill: 62.4375rem;
-  --radius-sheet: 2rem; /* 28 px */
+  --radius-pill: 62.4375rem; /* pastilles, badges, ronds */
+  --radius-sheet: 2rem; /* 28 px — fenêtres du bas */
 
-  /* Ombres teintées de l'encre (jamais du noir pur) : douces, elles décollent sans salir. */
-  --shadow-card: 0 1px 2px rgb(30 27 48 / 0.04), 0 12px 32px -14px rgb(30 27 48 / 0.16);
-  --shadow-sheet: 0 -12px 40px -12px rgb(30 27 48 / 0.2);
-  --shadow-fab: 0 10px 24px -6px rgb(108 92 231 / 0.45);
-  --shadow-toast: 0 12px 32px -10px rgb(30 27 48 / 0.4);
+  /* ---------------------------------------------------------------- Ombres (neutres, jamais teintées) */
+  --shadow-card: 0 10px 28px -16px rgb(0 0 0 / 0.16);
+  --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.18);
+  --shadow-fab: 0 10px 24px -8px rgb(0 0 0 / 0.35);
+  --shadow-toast: 0 12px 32px -10px rgb(0 0 0 / 0.3);
+  --shadow-menu: 0 18px 44px -12px rgb(0 0 0 / 0.28), 0 0 0 1px rgb(0 0 0 / 0.05);
 
   /* Largeur de la colonne app (écran du design = 390 px) */
   --app-max-width: 430px;
@@ -109,4 +96,6 @@
 
 :root {
   color-scheme: light;
+  /* Ombre des cartes du thème (alias historique, même valeur que --shadow-card). */
+  --pro-shadow: 0 10px 28px -16px rgb(0 0 0 / 0.16);
 }

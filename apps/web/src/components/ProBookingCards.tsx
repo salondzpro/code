@@ -179,6 +179,3 @@ export function TimelineNow({ time }: { time: string }) {
   );
 }
 
-/** Couleur d'une catégorie de prestation pour un liseré ou un point (gris sans catégorie). */
-export const toneVar = (tone: string | null | undefined) =>
-  tone ? `var(--color-cat-${tone}-line)` : 'var(--color-disabled)';

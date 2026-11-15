@@ -15,11 +15,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CalendarCheck2, Inbox, Plus } from 'lucide-react';
 import { useProBookings, useProPendingBookings, useProSalon, useSeenOnDisplay } from '@salondz/api-client';
-import { addDaysToKey, categoryTone, formatDA, formatLocale, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
+import { addDaysToKey, formatDA, formatLocale, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { RefuseRequestSheet, type RefusedRequest } from '@/components/RefuseRequestSheet';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
-import { RequestCard, TimelineList, TimelineRow, toneVar } from '@/components/ProBookingCards';
+import { RequestCard, TimelineList, TimelineRow } from '@/components/ProBookingCards';
+import { statutCouleur } from '@/lib/statusColors';
 import { Button, EmptyState, I, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
@@ -60,8 +61,6 @@ export function Requests() {
     if (last && last[0] === key) last[1].push(b);
     else days.push([key, [b]]);
   }
-  const toneOf = (serviceId: string | null) =>
-    toneVar(categoryTone(salon?.services.find((s) => s.id === serviceId)?.categoryId));
 
   // La liste affichée vaut lecture : demandes et rendez-vous à venir sont marqués vus, et les
   // pastilles « Réservations » et « Agenda » baissent sans ouvrir chaque fiche.
@@ -140,7 +139,7 @@ export function Requests() {
               </div>
               <TimelineList>
                 {list.map((b) => (
-                  <TimelineRow key={b.id} b={b} tone={toneOf(b.serviceId)} onOpen={setPeek} />
+                  <TimelineRow key={b.id} b={b} tone={statutCouleur(b)} onOpen={setPeek} />
                 ))}
               </TimelineList>
             </section>

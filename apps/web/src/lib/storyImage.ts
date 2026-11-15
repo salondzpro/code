@@ -40,7 +40,7 @@ export interface StoryInput {
 
 async function fonts() {
   try {
-    await Promise.all([document.fonts.load('600 96px Outfit'), document.fonts.load('500 40px Inter'), document.fonts.load('600 40px Inter')]);
+    await Promise.all([document.fonts.load('600 96px "Plus Jakarta Sans"'), document.fonts.load('500 40px "Plus Jakarta Sans"')]);
   } catch {
     /* polices indisponibles : repli système */
   }

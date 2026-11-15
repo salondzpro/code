@@ -43,7 +43,7 @@ export function StoryStudio({
   const models = useMemo<{ id: StoryModel; name: string }[]>(
     () => [
       ...(photo ? [{ id: 'photo' as const, name: t('Photo') }] : []),
-      { id: 'violet', name: t('Violet') },
+      { id: 'violet', name: t('Encre') },
       { id: 'clair', name: t('Clair') },
     ],
     [photo],

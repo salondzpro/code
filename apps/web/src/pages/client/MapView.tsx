@@ -141,7 +141,7 @@ export function MapView() {
       color: '#c4c3cd',
       dashArray: '6 6',
       weight: 1.5,
-      fillColor: '#1e1b30',
+      fillColor: '#111111',
       fillOpacity: 0.04,
     }).addTo(layer);
     // Plus de pastille noire au centre de la zone (29 oct. 2026) : elle suivait le centre de

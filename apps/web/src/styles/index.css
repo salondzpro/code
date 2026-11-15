@@ -6,9 +6,9 @@
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/inter-500.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-700.woff2') format('woff2'); }
-/* Outfit (titres, grands chiffres) : fichier VARIABLE, une seule requête pour 400 à 700. Alphabet latin seulement ;
-   l'arabe retombe sur la police du texte. */
-@font-face { font-family: 'Outfit'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/outfit-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+/* POLICE UNIQUE de la charte (15 nov. 2026) : Plus Jakarta Sans, graisses 400 à 600, alphabet latin ;
+   l'arabe retombe sur la police système. Inter ne reste qu'en secours. Outfit et Instrument Serif
+   (anciennes identités) sont supprimées. */
 @font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400 600; font-display: swap; src: url('/fonts/jakarta-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
 /* ------------------------------------------------------------------ */
@@ -111,7 +111,7 @@ body::before {
   }
   /* iOS : voir la règle « Jamais de zoom au toucher d'un champ » en fin de fichier, HORS couche. */
   ::selection {
-    background: rgb(108 92 231 / 0.18);
+    background: rgb(0 0 0 / 0.18);
   }
   :focus {
     outline: none;
@@ -444,7 +444,7 @@ body::before {
   }
   .b-dk {
     background: #dddde7;
-    color: #1e1b30;
+    color: #111111;
   }
   .dot {
     width: 0.375rem;
@@ -798,7 +798,7 @@ body::before {
     border-radius: var(--radius-card-sm);
     font-size: 0.857rem;
     color: var(--color-subtle);
-    background: repeating-linear-gradient(135deg, #f4f4f9 0 6px, #efeef4 6px 12px);
+    background: repeating-linear-gradient(135deg, #f1f1f3 0 6px, #f1f1f3 6px 12px);
     overflow: hidden;
     white-space: nowrap;
   }
@@ -921,8 +921,8 @@ body::before {
     background: var(--color-surface);
     border-radius: 1.75rem 1.75rem 0 0;
     box-shadow:
-      0 -1px 0 rgb(30 27 48 / 0.05),
-      0 -14px 32px -8px rgb(30 27 48 / 0.08);
+      0 -1px 0 rgb(0 0 0 / 0.05),
+      0 -14px 32px -8px rgb(0 0 0 / 0.08);
     z-index: 30;
   }
   .nvi {
@@ -1002,7 +1002,7 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 22px -6px rgb(30 27 48 / 0.4);
+    box-shadow: 0 10px 22px -6px rgb(0 0 0 / 0.4);
     transition: background-color 0.15s ease;
   }
   .nvc .nvd {
@@ -1038,7 +1038,7 @@ body::before {
   .dim {
     position: fixed;
     inset: 0;
-    background: rgb(30 27 48 / 0.36);
+    background: rgb(0 0 0 / 0.36);
     z-index: 35;
   }
   .fab {
@@ -1603,7 +1603,7 @@ body::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgb(30 27 48 / 0.85) 0%, rgb(30 27 48 / 0.15) 55%, transparent 100%);
+    background: linear-gradient(to top, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.15) 55%, transparent 100%);
     z-index: 1;
   }
   .hm-cat > .hm-cat-txt {
@@ -1901,7 +1901,7 @@ body::before {
       position: absolute;
       inset: 0;
       z-index: -1;
-      background: linear-gradient(190deg, rgb(30 27 48 / 0.25) 0%, rgb(30 27 48 / 0.55) 45%, rgb(30 27 48 / 0.9) 100%);
+      background: linear-gradient(190deg, rgb(0 0 0 / 0.25) 0%, rgb(0 0 0 / 0.55) 45%, rgb(0 0 0 / 0.9) 100%);
     }
     .auth-col {
       position: relative;
@@ -1947,7 +1947,7 @@ html[data-native='true'] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(30 27 48 / 0.32);
+  background: rgb(0 0 0 / 0.32);
   animation: veil-in 0.18s ease-out;
 }
 .signout-veil > div {
@@ -1957,7 +1957,7 @@ html[data-native='true'] {
   padding: 0.875rem 1.25rem;
   border-radius: var(--radius-card);
   background: var(--color-surface);
-  box-shadow: 0 8px 28px rgb(30 27 48 / 0.18);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.18);
   color: var(--color-text);
   font-size: 1rem;
   font-weight: 600;
@@ -2004,7 +2004,7 @@ html[data-native='true'] {
   width: calc(50% - 0.25rem);
   border-radius: calc(var(--radius-btn) - 2px);
   background: var(--color-ink);
-  box-shadow: 0 1px 3px rgb(30 27 48 / 0.18);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .auth-onglets[data-pos='inscription'] .auth-onglets-pastille {
@@ -2772,7 +2772,7 @@ html:has(.auth-onglets) body {
   }
   .apv:not(.compact) .apv-n {
     grid-area: auto;
-    background: rgb(30 27 48 / 0.72);
+    background: rgb(0 0 0 / 0.72);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
@@ -2947,7 +2947,7 @@ html:has(.auth-onglets) body {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(180deg, rgb(30 27 48 / 0.35) 0%, rgb(30 27 48 / 0.8) 38%, var(--color-ink) 62%);
+    background: linear-gradient(180deg, rgb(0 0 0 / 0.35) 0%, rgb(0 0 0 / 0.8) 38%, var(--color-ink) 62%);
   }
   .pwl-bar {
     display: flex;
@@ -3669,7 +3669,7 @@ html:has(.auth-onglets) body {
     padding: 0.375rem 0.75rem;
     transform: translateX(-50%);
     border-radius: var(--radius-pill);
-    background: rgb(30 27 48 / 0.82);
+    background: rgb(0 0 0 / 0.82);
     color: #fff;
     font-size: 0.786rem;
     font-weight: 600;
@@ -3955,7 +3955,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-card);
     background: var(--color-surface);
     border: 1px solid var(--color-line);
-    box-shadow: 0 12px 32px -12px rgb(30 27 48 / 0.35);
+    box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.35);
     color: var(--color-text);
     transform-origin: top right;
     animation: lng-in 0.16s ease-out;
@@ -4094,7 +4094,7 @@ html:has(.auth-onglets) body {
     z-index: 2;
     padding: 2px;
     border-radius: calc(var(--radius-card) + 2px);
-    background: conic-gradient(from var(--pwl-angle), #b6a5ff, #1e1b30 25%, #ffb877 50%, #1e1b30 75%, #b6a5ff);
+    background: conic-gradient(from var(--pwl-angle), #b6a5ff, #111111 25%, #ffb877 50%, #111111 75%, #b6a5ff);
     animation: pwl-tour 6s linear infinite, ph-in 0.6s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .pwl-acces-in {
@@ -4385,7 +4385,7 @@ html:has(.auth-onglets) body {
     gap: 0.4375rem;
     padding: 0.5rem 0.75rem;
     border-radius: var(--radius-pill);
-    background: rgb(30 27 48 / 0.6);
+    background: rgb(0 0 0 / 0.6);
     border: 1px solid rgb(255 255 255 / 0.16);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
@@ -5354,13 +5354,11 @@ html:has(.auth-onglets) body {
     color: var(--color-muted);
   }
 
-  /* --- Cartes : blanches, filet de 0,5 px et ombre douce, arrondi 22 --- */
+  /* --- Cartes : blanches, SANS contour, ombre de la charte (`--shadow-card`), arrondi 22 --- */
   .crd,
   .card {
     border-color: transparent;
-    box-shadow:
-      0 0 0 0.5px rgb(30 27 48 / 0.08),
-      0 8px 24px -12px rgb(30 27 48 / 0.1);
+    box-shadow: var(--shadow-card);
   }
   .crd.sel {
     border-color: var(--color-accent);
@@ -5370,7 +5368,7 @@ html:has(.auth-onglets) body {
   .lst {
     background: var(--color-surface);
     border-radius: var(--radius-card);
-    box-shadow: 0 0 0 0.5px rgb(30 27 48 / 0.08);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
   }
   .lst-r {
@@ -5437,12 +5435,18 @@ html:has(.auth-onglets) body {
     border-radius: 0.857rem;
     font-size: 1.071rem;
   }
-  /* Contour : l'alternative à l'action principale */
+  /* Secondaire (charte unique, 15 nov. 2026) : GRIS CLAIR plein, texte encre — partout, pro et
+     clientes. Le « troisième » niveau, cerclé de noir, est `.btn.o`. */
   .btn.g,
   .btn-ghost {
+    background: var(--color-fill-strong);
+    color: var(--color-text);
+    border-color: transparent;
+  }
+  .btn.o {
     background: var(--color-surface);
-    color: var(--color-accent);
-    border-color: var(--color-accent-line);
+    color: var(--color-text);
+    border-color: var(--color-ink);
   }
   /* Danger : rouge pâle, jamais un rouge plein */
   .btn.d,
@@ -5506,7 +5510,7 @@ html:has(.auth-onglets) body {
 
   /* --- Segmenté : sélection en encre pleine --- */
   .seg {
-    background: #ececf4;
+    background: #ebebee;
     border-radius: 1rem;
     padding: 0.286rem;
     gap: 0.286rem;
@@ -5522,7 +5526,7 @@ html:has(.auth-onglets) body {
   .seg > button.on {
     background: var(--color-ink);
     color: #ffffff;
-    box-shadow: 0 4px 10px rgb(30 27 48 / 0.18);
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.18);
   }
 
   /* --- Puces (filtres, choix d'une prestation ou d'un jour) : pâle + contour accent --- */
@@ -5573,8 +5577,8 @@ html:has(.auth-onglets) body {
     color: var(--color-text);
     border-radius: 0.857rem;
     box-shadow:
-      0 10px 28px rgb(30 27 48 / 0.14),
-      0 0 0 0.5px rgb(30 27 48 / 0.06);
+      0 10px 28px rgb(0 0 0 / 0.14),
+      0 0 0 0.5px rgb(0 0 0 / 0.06);
     font-family: var(--font-display);
     font-size: 1.071rem;
     font-weight: 500;
@@ -5589,7 +5593,7 @@ html:has(.auth-onglets) body {
     height: 4rem;
     background: var(--color-accent);
     color: #ffffff;
-    box-shadow: 0 10px 22px rgb(30 27 48 / 0.2);
+    box-shadow: 0 10px 22px rgb(0 0 0 / 0.2);
   }
   .fab-ag {
     inset-inline-end: max(1.143rem, calc((100vw - var(--app-max-width)) / 2 + 1.143rem));
@@ -5648,8 +5652,6 @@ html:has(.auth-onglets) body {
   }
 }
 
-/* Instrument Serif italique : le « Bonjour » et le jour de la story (maquette 11). Latin seulement. */
-@font-face { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; font-display: swap; src: url('/fonts/instrument-serif-italic.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
 /* ===================================================================================== */
 /* ACCUEIL PRO = MAQUETTE 11, valeurs reprises À L'IDENTIQUE de `Accueil11.dc.html`        */
@@ -5658,7 +5660,7 @@ html:has(.auth-onglets) body {
 @layer components {
   .h11 {
     --h11-ink2: #474558;
-    --h11-chip: #ececf4;
+    --h11-chip: #ebebee;
     --h11-hair: #e9e9ef;
     --h11-track: #efeff5;
     --h11-bar: #cdccd8;
@@ -5678,7 +5680,7 @@ html:has(.auth-onglets) body {
     --gutter: 14px;
   }
   .h11-serif {
-    font: italic 400 calc(26px * var(--fz, 1))/1 'Instrument Serif', Georgia, serif;
+    font: italic 400 calc(26px * var(--fz, 1))/1 var(--font-sans);
     letter-spacing: -0.2px;
   }
 
@@ -5693,7 +5695,7 @@ html:has(.auth-onglets) body {
   }
   .h11-hi {
     display: block;
-    font: 600 calc(24px * var(--fz, 1))/1.1 Outfit, sans-serif;
+    font: 600 calc(24px * var(--fz, 1))/1.1 var(--font-sans);
     letter-spacing: -0.7px;
     white-space: nowrap;
     overflow: hidden;
@@ -5737,7 +5739,7 @@ html:has(.auth-onglets) body {
     flex-direction: column;
     gap: 2px;
     margin-bottom: -12px;
-    font-family: Outfit, sans-serif;
+    font-family: var(--font-sans);
   }
   .h11-arr-h {
     display: flex;
@@ -5749,7 +5751,7 @@ html:has(.auth-onglets) body {
   .h11-arr-h h2,
   .h11-page-h h2 {
     margin: 0;
-    font: 600 calc(18px * var(--fz, 1))/28px Outfit, sans-serif;
+    font: 600 calc(18px * var(--fz, 1))/28px var(--font-sans);
     letter-spacing: -0.3px;
     white-space: nowrap;
   }
@@ -5771,7 +5773,7 @@ html:has(.auth-onglets) body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font: 600 calc(12px * var(--fz, 1)) Outfit, sans-serif;
+    font: 600 calc(12px * var(--fz, 1)) var(--font-sans);
     cursor: pointer;
   }
   .h11-sc.all,
@@ -5837,7 +5839,7 @@ html:has(.auth-onglets) body {
     border-radius: 14px;
     background: var(--h11-chip);
     color: var(--h11-ink2);
-    font: 600 calc(17px * var(--fz, 1)) Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1)) var(--font-sans);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5850,7 +5852,7 @@ html:has(.auth-onglets) body {
     gap: 3px;
   }
   .h11-name {
-    font: 600 calc(17px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1))/1.2 var(--font-sans);
     letter-spacing: -0.3px;
     color: var(--color-ink);
     white-space: nowrap;
@@ -5861,7 +5863,7 @@ html:has(.auth-onglets) body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font: 600 calc(12px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 600 calc(12px * var(--fz, 1))/1.2 var(--font-sans);
     color: var(--color-muted);
     white-space: nowrap;
   }
@@ -5882,12 +5884,12 @@ html:has(.auth-onglets) body {
     gap: 3px;
   }
   .h11-time b {
-    font: 600 calc(24px * var(--fz, 1))/1 Outfit, sans-serif;
+    font: 600 calc(24px * var(--fz, 1))/1 var(--font-sans);
     letter-spacing: -0.8px;
     color: var(--color-ink);
   }
   .h11-time span {
-    font: 500 calc(12px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 500 calc(12px * var(--fz, 1))/1.2 var(--font-sans);
     color: var(--color-subtle);
   }
   .h11-mid {
@@ -5905,7 +5907,7 @@ html:has(.auth-onglets) body {
   }
   .h11-svc {
     min-width: 0;
-    font: 600 calc(17px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1))/1.2 var(--font-sans);
     letter-spacing: -0.2px;
     color: var(--color-ink);
     white-space: nowrap;
@@ -5914,7 +5916,7 @@ html:has(.auth-onglets) body {
   }
   .h11-price {
     flex: none;
-    font: 600 calc(17px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1))/1.2 var(--font-sans);
     letter-spacing: -0.2px;
     color: var(--color-ink);
     white-space: nowrap;
@@ -5931,7 +5933,7 @@ html:has(.auth-onglets) body {
     align-items: center;
     gap: 7px;
     min-width: 0;
-    font: 500 calc(14px * var(--fz, 1)) Outfit, sans-serif;
+    font: 500 calc(14px * var(--fz, 1)) var(--font-sans);
     color: var(--h11-ink2);
     white-space: nowrap;
   }
@@ -5946,7 +5948,7 @@ html:has(.auth-onglets) body {
     border-radius: 999px;
     background: var(--color-fill);
     color: var(--h11-ink2);
-    font: 500 calc(12px * var(--fz, 1)) Outfit, sans-serif;
+    font: 500 calc(12px * var(--fz, 1)) var(--font-sans);
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
@@ -5970,7 +5972,7 @@ html:has(.auth-onglets) body {
     background: var(--color-bg);
     border-radius: 10px;
     padding: 5px 9px;
-    font: 400 calc(12.5px * var(--fz, 1))/1.35 Inter, sans-serif;
+    font: 400 calc(12.5px * var(--fz, 1))/1.35 var(--font-sans);
     color: var(--h11-ink2);
   }
   .h11-note svg {
@@ -5999,7 +6001,7 @@ html:has(.auth-onglets) body {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    font: 500 calc(11px * var(--fz, 1)) Outfit, sans-serif;
+    font: 500 calc(11px * var(--fz, 1)) var(--font-sans);
     cursor: pointer;
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -6037,12 +6039,12 @@ html:has(.auth-onglets) body {
     justify-content: center;
   }
   .h11-end-t {
-    font: 600 calc(17px * var(--fz, 1))/1.25 Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1))/1.25 var(--font-sans);
     letter-spacing: -0.2px;
     color: var(--color-ink);
   }
   .h11-end-p {
-    font: 400 calc(13px * var(--fz, 1))/1.4 Inter, sans-serif;
+    font: 400 calc(13px * var(--fz, 1))/1.4 var(--font-sans);
     color: var(--color-muted);
   }
 
@@ -6052,7 +6054,7 @@ html:has(.auth-onglets) body {
     box-sizing: border-box;
     border: 0;
     border-radius: 12px;
-    font: 600 calc(15px * var(--fz, 1)) Outfit, sans-serif;
+    font: 600 calc(15px * var(--fz, 1)) var(--font-sans);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6105,14 +6107,14 @@ html:has(.auth-onglets) body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    font-family: Outfit, sans-serif;
+    font-family: var(--font-sans);
   }
   .h11-link-l {
-    font: 500 calc(12px * var(--fz, 1))/1.3 Outfit, sans-serif;
+    font: 500 calc(12px * var(--fz, 1))/1.3 var(--font-sans);
     color: var(--color-muted);
   }
   .h11-link-u {
-    font: 600 calc(17px * var(--fz, 1))/1.3 Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1))/1.3 var(--font-sans);
     color: var(--color-ink);
     white-space: nowrap;
     overflow: hidden;
@@ -6124,7 +6126,7 @@ html:has(.auth-onglets) body {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    font-family: Outfit, sans-serif;
+    font-family: var(--font-sans);
   }
   .h11-page-h {
     display: flex;
@@ -6136,7 +6138,7 @@ html:has(.auth-onglets) body {
     line-height: 24px;
   }
   .h11-page-h span {
-    font: 400 calc(12px * var(--fz, 1)) Outfit, sans-serif;
+    font: 400 calc(12px * var(--fz, 1)) var(--font-sans);
     color: var(--color-muted);
   }
   .h11-page-c {
@@ -6164,7 +6166,7 @@ html:has(.auth-onglets) body {
     border-inline-end: 1px solid var(--h11-hair);
   }
   .h11-kp b {
-    font: 600 calc(28px * var(--fz, 1))/1 Outfit, sans-serif;
+    font: 600 calc(28px * var(--fz, 1))/1 var(--font-sans);
     letter-spacing: -0.8px;
     color: var(--color-ink);
   }
@@ -6172,7 +6174,7 @@ html:has(.auth-onglets) body {
     color: var(--color-accent);
   }
   .h11-kp span {
-    font: 500 calc(13px * var(--fz, 1))/1 Outfit, sans-serif;
+    font: 500 calc(13px * var(--fz, 1))/1 var(--font-sans);
     color: var(--color-muted);
   }
   .h11-bars {
@@ -6185,7 +6187,7 @@ html:has(.auth-onglets) body {
   }
   .h11-bars-l,
   .h11-bar span {
-    font: 600 calc(10px * var(--fz, 1))/12px Outfit, sans-serif;
+    font: 600 calc(10px * var(--fz, 1))/12px var(--font-sans);
     color: var(--color-subtle);
   }
   .h11-bars-r {
@@ -6228,7 +6230,7 @@ html:has(.auth-onglets) body {
     border: 1px solid var(--h11-hair);
     border-radius: 999px;
     padding: 4px 8px;
-    font: 500 calc(12px * var(--fz, 1))/1.5 Outfit, sans-serif;
+    font: 500 calc(12px * var(--fz, 1))/1.5 var(--font-sans);
     color: var(--color-ink);
     white-space: nowrap;
   }
@@ -6244,7 +6246,7 @@ html:has(.auth-onglets) body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font: 500 calc(12px * var(--fz, 1))/1.3 Outfit, sans-serif;
+    font: 500 calc(12px * var(--fz, 1))/1.3 var(--font-sans);
   }
   .h11-bravo svg {
     flex: none;
@@ -6298,7 +6300,7 @@ html:has(.auth-onglets) body {
     font-size: calc(17px * var(--fz, 1));
   }
   .h11-story-t b {
-    font: 600 calc(13px * var(--fz, 1))/1.1 Outfit, sans-serif;
+    font: 600 calc(13px * var(--fz, 1))/1.1 var(--font-sans);
   }
   .h11-story-s {
     position: absolute;
@@ -6310,7 +6312,7 @@ html:has(.auth-onglets) body {
     gap: 4px;
   }
   .h11-story-s span {
-    font: 600 calc(11px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(11px * var(--fz, 1)) var(--font-sans);
     color: var(--h11-plum);
     background: #ffffff;
     border-radius: 999px;
@@ -6323,7 +6325,7 @@ html:has(.auth-onglets) body {
     right: 4px;
     bottom: 10px;
     text-align: center;
-    font: 600 calc(9px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(9px * var(--fz, 1)) var(--font-sans);
     color: rgb(255 255 255 / 0.85);
     white-space: nowrap;
     overflow: hidden;
@@ -6337,11 +6339,11 @@ html:has(.auth-onglets) body {
     gap: 8px;
   }
   .h11-story-k {
-    font: 600 calc(12px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(12px * var(--fz, 1)) var(--font-sans);
     color: var(--color-accent);
   }
   .h11-story-h {
-    font: 600 calc(19px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 600 calc(19px * var(--fz, 1))/1.2 var(--font-sans);
     letter-spacing: -0.4px;
     color: var(--h11-plum);
   }
@@ -6358,7 +6360,7 @@ html:has(.auth-onglets) body {
     gap: 8px;
     border: 0;
     border-radius: 999px;
-    font: 600 calc(14px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(14px * var(--fz, 1)) var(--font-sans);
     cursor: pointer;
   }
   .h11-pill.ig {
@@ -6402,7 +6404,7 @@ html:has(.auth-onglets) body {
   }
   .h11-team-a.ini {
     background: var(--h11-chip);
-    font: 600 calc(11px * var(--fz, 1)) Outfit, sans-serif;
+    font: 600 calc(11px * var(--fz, 1)) var(--font-sans);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6451,7 +6453,7 @@ html:has(.auth-onglets) body {
   .h11-team-h > div {
     display: flex;
     justify-content: space-between;
-    font: 500 calc(11px * var(--fz, 1)) Inter, sans-serif;
+    font: 500 calc(11px * var(--fz, 1)) var(--font-sans);
     color: var(--color-subtle);
   }
 
@@ -6465,13 +6467,13 @@ html:has(.auth-onglets) body {
     background: #ffffff;
     border-radius: 12px;
     box-shadow:
-      0 10px 28px rgb(30 27 48 / 0.14),
-      0 0 0 0.5px rgb(30 27 48 / 0.06);
+      0 10px 28px rgb(0 0 0 / 0.14),
+      0 0 0 0.5px rgb(0 0 0 / 0.06);
     padding: 11px 18px 11px 12px;
     display: flex;
     align-items: center;
     gap: 10px;
-    font: 400 calc(15px * var(--fz, 1)) Outfit, sans-serif;
+    font: 400 calc(15px * var(--fz, 1)) var(--font-sans);
     color: var(--color-ink);
     white-space: nowrap;
     max-width: calc(100vw - 32px);
@@ -6499,7 +6501,7 @@ html:has(.auth-onglets) body {
     inset: 0;
     z-index: 60;
     border: 0;
-    background: rgb(30 27 48 / 0.45);
+    background: rgb(0 0 0 / 0.45);
     animation: h11-fade 0.2s ease-out;
   }
   .h11-sheet-w {
@@ -6517,7 +6519,7 @@ html:has(.auth-onglets) body {
     padding: 12px 20px calc(20px + var(--safe-bottom));
     display: flex;
     flex-direction: column;
-    font-family: Outfit, sans-serif;
+    font-family: var(--font-sans);
     color: var(--color-ink);
     max-height: calc(100dvh - 60px);
     overflow-y: auto;
@@ -6540,17 +6542,17 @@ html:has(.auth-onglets) body {
   .h11-sh-h h3,
   .h11-dlg h3 {
     margin: 0;
-    font: 600 calc(23px * var(--fz, 1))/1.2 Outfit, sans-serif;
+    font: 600 calc(23px * var(--fz, 1))/1.2 var(--font-sans);
     letter-spacing: -0.5px;
   }
   .h11-sh-h p {
     margin: 4px 0 0;
-    font: 400 calc(15px * var(--fz, 1))/1.3 Outfit, sans-serif;
+    font: 400 calc(15px * var(--fz, 1))/1.3 var(--font-sans);
     color: var(--color-muted);
   }
   .h11-sh-l {
     margin-top: 16px;
-    font: 600 calc(14px * var(--fz, 1))/20px Outfit, sans-serif;
+    font: 600 calc(14px * var(--fz, 1))/20px var(--font-sans);
   }
   .h11-chips {
     margin-top: 8px;
@@ -6570,7 +6572,7 @@ html:has(.auth-onglets) body {
     border: 1px solid var(--h11-line2, #dddde7);
     background: #ffffff;
     color: var(--color-ink);
-    font: 500 calc(15px * var(--fz, 1)) Outfit, sans-serif;
+    font: 500 calc(15px * var(--fz, 1)) var(--font-sans);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -6588,7 +6590,7 @@ html:has(.auth-onglets) body {
     background: var(--color-fill);
     border-radius: 18px;
     padding: 16px;
-    font: 400 calc(15px * var(--fz, 1))/1.47 Outfit, sans-serif;
+    font: 400 calc(15px * var(--fz, 1))/1.47 var(--font-sans);
     color: var(--color-ink);
   }
   .h11-sh-a {
@@ -6612,7 +6614,7 @@ html:has(.auth-onglets) body {
     align-items: center;
     gap: 14px;
     text-align: start;
-    font: 500 calc(16px * var(--fz, 1)) Outfit, sans-serif;
+    font: 500 calc(16px * var(--fz, 1)) var(--font-sans);
     color: var(--color-ink);
     cursor: pointer;
   }
@@ -6661,7 +6663,7 @@ html:has(.auth-onglets) body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    font-family: Outfit, sans-serif;
+    font-family: var(--font-sans);
     color: var(--color-ink);
     animation: h11-pop 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
   }
@@ -6671,7 +6673,7 @@ html:has(.auth-onglets) body {
   }
   .h11-dlg p {
     margin: 10px 0 0;
-    font: 400 calc(15px * var(--fz, 1))/1.4 Outfit, sans-serif;
+    font: 400 calc(15px * var(--fz, 1))/1.4 var(--font-sans);
     color: var(--color-muted);
   }
   .h11-dlg-x {
@@ -6685,7 +6687,7 @@ html:has(.auth-onglets) body {
     border-radius: 28px;
     padding: 20px;
     background: #ffffff;
-    box-shadow: 0 10px 30px rgb(30 27 48 / 0.06);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.06);
   }
   .h11-qr img {
     display: block;
@@ -6741,7 +6743,7 @@ html:has(.auth-onglets) body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font: 600 calc(12px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(12px * var(--fz, 1)) var(--font-sans);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-accent);
@@ -6755,14 +6757,14 @@ html:has(.auth-onglets) body {
     border-radius: 999px;
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
-    font: 600 calc(11px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(11px * var(--fz, 1)) var(--font-sans);
     letter-spacing: 0;
     text-transform: none;
     cursor: pointer;
   }
   .ag9-t {
     margin: 0;
-    font: 600 calc(24px * var(--fz, 1))/1.1 Outfit, sans-serif;
+    font: 600 calc(24px * var(--fz, 1))/1.1 var(--font-sans);
     letter-spacing: -0.8px;
     white-space: nowrap;
     overflow: hidden;
@@ -6781,13 +6783,13 @@ html:has(.auth-onglets) body {
     border: 0;
     border-radius: 999px;
     background: transparent;
-    font: 500 calc(13px * var(--fz, 1)) Inter, sans-serif;
+    font: 500 calc(13px * var(--fz, 1)) var(--font-sans);
     color: var(--color-muted);
     cursor: pointer;
   }
   .ag9-v button.on {
     background: #ffffff;
-    box-shadow: 0 1px 3px rgb(30 27 48 / 0.14);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.14);
     font-weight: 600;
     color: var(--color-ink);
   }
@@ -6816,7 +6818,7 @@ html:has(.auth-onglets) body {
     border-radius: 18px;
     background: #ffffff;
     color: var(--color-ink);
-    box-shadow: 0 0 0 0.5px rgb(30 27 48 / 0.1);
+    box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -6835,17 +6837,17 @@ html:has(.auth-onglets) body {
   .ag9-d.on {
     background: var(--color-ink);
     color: #ffffff;
-    box-shadow: 0 8px 18px rgb(30 27 48 / 0.28);
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.28);
   }
   .ag9-d.off {
     opacity: 0.45;
   }
   .ag9-dw {
-    font: 500 calc(11px * var(--fz, 1)) Inter, sans-serif;
+    font: 500 calc(11px * var(--fz, 1)) var(--font-sans);
     opacity: 0.7;
   }
   .ag9-dn {
-    font: 600 calc(17px * var(--fz, 1))/1 Outfit, sans-serif;
+    font: 600 calc(17px * var(--fz, 1))/1 var(--font-sans);
   }
   .ag9-dd {
     display: flex;
@@ -6870,7 +6872,7 @@ html:has(.auth-onglets) body {
   .agenda .agb {
     border-radius: 14px;
     padding: 7px 8px;
-    font-family: Inter, sans-serif;
+    font-family: var(--font-sans);
     border-inline-start-width: 0;
     background-image: none;
   }
@@ -6878,13 +6880,13 @@ html:has(.auth-onglets) body {
     background: #ffffff;
     color: var(--color-ink);
     border: 1px solid var(--color-ink);
-    box-shadow: 0 4px 12px rgb(30 27 48 / 0.06);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
   }
   .agenda .agb.s-cur {
     background: var(--color-ink);
     color: #ffffff;
     border: 0;
-    box-shadow: 0 8px 18px rgb(30 27 48 / 0.25);
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.25);
   }
   .agenda .agb.s-pd {
     background: #ffffff;
@@ -6901,7 +6903,7 @@ html:has(.auth-onglets) body {
   .ag9-tag {
     display: inline-block;
     margin-top: 2px;
-    font: 600 calc(10px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(10px * var(--fz, 1)) var(--font-sans);
     border-radius: 999px;
     padding: 2px 7px;
     background: var(--color-accent);
@@ -6919,7 +6921,7 @@ html:has(.auth-onglets) body {
     height: 56px;
     border-radius: 20px;
     bottom: calc(106px + var(--safe-bottom));
-    box-shadow: 0 10px 22px rgb(30 27 48 / 0.2);
+    box-shadow: 0 10px 22px rgb(0 0 0 / 0.2);
   }
 
   /* Grille du jour : directement sur le fond de page, les heures dans la gouttière. */
@@ -6938,7 +6940,7 @@ html:has(.auth-onglets) body {
     position: absolute;
     inset-inline-end: calc(100% + 6px);
     top: -7px;
-    font: 500 calc(11px * var(--fz, 1))/14px Inter, sans-serif;
+    font: 500 calc(11px * var(--fz, 1))/14px var(--font-sans);
     font-variant-numeric: tabular-nums;
     color: var(--color-subtle);
   }
@@ -6966,7 +6968,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-card-sm);
     background: rgb(255 255 255 / 0.45);
     color: var(--color-subtle);
-    font: 600 calc(12px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(12px * var(--fz, 1)) var(--font-sans);
     cursor: pointer;
   }
   .ag9-f:active {
@@ -6990,7 +6992,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-slot);
     background: var(--color-accent);
     color: #ffffff;
-    font: 600 calc(12px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(12px * var(--fz, 1)) var(--font-sans);
     font-variant-numeric: tabular-nums;
     pointer-events: none;
   }
@@ -7013,7 +7015,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-pill);
     background: var(--color-accent);
     color: #ffffff;
-    font: 600 calc(10px * var(--fz, 1))/12px Inter, sans-serif;
+    font: 600 calc(10px * var(--fz, 1))/12px var(--font-sans);
     font-variant-numeric: tabular-nums;
   }
 
@@ -7040,7 +7042,7 @@ html:has(.auth-onglets) body {
     border: 1.5px dashed var(--color-line);
   }
   .agenda .agb-t {
-    font: 600 calc(11px * var(--fz, 1))/14px Inter, sans-serif;
+    font: 600 calc(11px * var(--fz, 1))/14px var(--font-sans);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
     opacity: 0.7;
@@ -7055,7 +7057,7 @@ html:has(.auth-onglets) body {
     white-space: nowrap;
   }
   .agb-n {
-    font: 600 calc(13px * var(--fz, 1))/16px Inter, sans-serif;
+    font: 600 calc(13px * var(--fz, 1))/16px var(--font-sans);
   }
   /* Qui reçoit ce rendez-vous : le nom des colonnes n'est plus affiché, le filtre du haut suffit. */
   .agb-n > .av {
@@ -7065,7 +7067,7 @@ html:has(.auth-onglets) body {
     margin-inline-end: 4px;
   }
   .agb-s {
-    font: 400 calc(12px * var(--fz, 1))/15px Inter, sans-serif;
+    font: 400 calc(12px * var(--fz, 1))/15px var(--font-sans);
     opacity: 0.72;
   }
   .agenda .agb .ag9-tag {
@@ -7083,7 +7085,7 @@ html:has(.auth-onglets) body {
     align-items: flex-start;
     padding: 7px 8px;
     border: 0;
-    font: 600 calc(13px * var(--fz, 1))/16px Inter, sans-serif;
+    font: 600 calc(13px * var(--fz, 1))/16px var(--font-sans);
   }
   button.agoff {
     cursor: pointer;
@@ -7128,7 +7130,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-card-sm);
     background: var(--color-surface);
     color: var(--color-ink);
-    font: 600 calc(14px * var(--fz, 1))/18px Inter, sans-serif;
+    font: 600 calc(14px * var(--fz, 1))/18px var(--font-sans);
     cursor: pointer;
   }
   .nb-two:active {
@@ -7217,7 +7219,7 @@ html:has(.auth-onglets) body {
     flex-direction: column;
   }
   .rp-i.sms small {
-    font: 600 calc(9px * var(--fz, 1))/10px Inter, sans-serif;
+    font: 600 calc(9px * var(--fz, 1))/10px var(--font-sans);
   }
   .rp-i:active {
     background: var(--color-line);
@@ -7292,7 +7294,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-slot);
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
-    font: 600 calc(13px * var(--fz, 1)) Inter, sans-serif;
+    font: 600 calc(13px * var(--fz, 1)) var(--font-sans);
     cursor: pointer;
   }
   .rp-prev {
@@ -7328,7 +7330,7 @@ html:has(.auth-onglets) body {
     background: var(--color-accent-soft);
   }
   .sg-t {
-    font: 600 calc(14px * var(--fz, 1))/18px Inter, sans-serif;
+    font: 600 calc(14px * var(--fz, 1))/18px var(--font-sans);
     color: var(--color-ink);
   }
   .sg-n {
@@ -7397,7 +7399,7 @@ html:has(.auth-onglets) body {
     border-radius: var(--radius-pill);
     background: var(--color-fill);
     color: var(--color-ink);
-    font: 600 calc(12px * var(--fz, 1))/16px Inter, sans-serif;
+    font: 600 calc(12px * var(--fz, 1))/16px var(--font-sans);
   }
   .ag9-sc.off {
     background: #ffffff;
@@ -7634,7 +7636,7 @@ html[data-kb] #root {
     align-items: center;
     gap: 6px;
     min-width: 0;
-    font: 500 calc(13px * var(--fz, 1))/18px Inter, sans-serif;
+    font: 500 calc(13px * var(--fz, 1))/18px var(--font-sans);
     color: var(--color-muted);
   }
   .fs-k i {
@@ -7691,7 +7693,7 @@ html[data-kb] #root {
     border: 3px solid #ffffff;
     border-radius: 50%;
     background: var(--color-accent);
-    box-shadow: 0 1px 4px rgb(30 27 48 / 0.25);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
     transform: translateY(-50%);
   }
   .fs-bl {
@@ -7830,7 +7832,7 @@ html[data-kb] #root {
   .h12-link {
     position: relative;
     margin-top: -68px;
-    box-shadow: 0 8px 24px rgb(30 27 48 / 0.08);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
   }
   .h12-l {
     font-size: calc(13px * var(--fz, 1));
@@ -7852,7 +7854,7 @@ html[data-kb] #root {
     color: var(--color-ink);
   }
   .h12-h span {
-    font: 400 calc(13px * var(--fz, 1)) Inter, sans-serif;
+    font: 400 calc(13px * var(--fz, 1)) var(--font-sans);
     color: var(--color-muted);
   }
   /* Prochains rendez-vous, dans l'en-tête (6 nov. 2026) : le résumé du jour, LE prochain en grand,
@@ -7925,7 +7927,7 @@ html[data-kb] #root {
     border-radius: var(--radius-card);
     background: #ffffff;
     color: var(--color-ink);
-    box-shadow: 0 10px 28px rgb(30 27 48 / 0.18);
+    box-shadow: 0 10px 28px rgb(0 0 0 / 0.18);
   }
   .h13-hb {
     min-width: 0;
@@ -7950,7 +7952,7 @@ html[data-kb] #root {
     border-radius: var(--radius-pill);
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
-    font: 600 calc(12px * var(--fz, 1))/16px Inter, sans-serif;
+    font: 600 calc(12px * var(--fz, 1))/16px var(--font-sans);
   }
   .h13-tag.live {
     background: var(--color-ok-bg);
@@ -7964,7 +7966,7 @@ html[data-kb] #root {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font: 600 calc(13px * var(--fz, 1))/16px Inter, sans-serif;
+    font: 600 calc(13px * var(--fz, 1))/16px var(--font-sans);
     color: var(--color-accent-strong);
     white-space: nowrap;
   }
@@ -7998,7 +8000,7 @@ html[data-kb] #root {
     font-variant-numeric: tabular-nums;
   }
   .h13-time small {
-    font: 500 calc(12px * var(--fz, 1))/1.2 Inter, sans-serif;
+    font: 500 calc(12px * var(--fz, 1))/1.2 var(--font-sans);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
   }
@@ -8062,7 +8064,7 @@ html[data-kb] #root {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font: 600 calc(13px * var(--fz, 1))/1.3 Inter, sans-serif;
+    font: 600 calc(13px * var(--fz, 1))/1.3 var(--font-sans);
     color: var(--color-ok-fg);
   }
   .h13-ok span {
@@ -8087,7 +8089,7 @@ html[data-kb] #root {
   }
   .h13-lbl {
     padding-inline: 2px;
-    font: 600 calc(13px * var(--fz, 1))/18px Inter, sans-serif;
+    font: 600 calc(13px * var(--fz, 1))/18px var(--font-sans);
     color: rgb(255 255 255 / 0.85);
   }
   .h13-it {
@@ -8120,7 +8122,7 @@ html[data-kb] #root {
     white-space: nowrap;
   }
   .h13-n {
-    font: 600 calc(14px * var(--fz, 1))/1.3 Inter, sans-serif;
+    font: 600 calc(14px * var(--fz, 1))/1.3 var(--font-sans);
   }
   .h13-s {
     font-size: calc(12px * var(--fz, 1));
@@ -8137,7 +8139,7 @@ html[data-kb] #root {
     border-radius: var(--radius-pill);
     background: #ffffff;
     color: var(--color-pending-fg);
-    font: 600 calc(11px * var(--fz, 1))/16px Inter, sans-serif;
+    font: 600 calc(11px * var(--fz, 1))/16px var(--font-sans);
     font-style: normal;
   }
   .h13-more {
@@ -8710,7 +8712,7 @@ html[data-kb] #root {
     border: 1px solid var(--color-line);
     border-radius: var(--radius-card-sm);
     background: #ffffff;
-    box-shadow: 0 8px 24px rgb(30 27 48 / 0.12);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
   }
   .h12-sm button,
   .h12-sm label {
@@ -9082,25 +9084,8 @@ html[data-kb] #root {
    Maquettes de référence : maquettes/pro-2026/shots-minimal/.
    ================================================================================================ */
 html.pro-theme {
-  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --color-bg: #f7f7f9;
-  --color-canvas: #f7f7f9;
-  --color-surface: #ffffff;
-  --color-text: #111111;
-  --color-ink: #111111;
-  --color-muted: #6e6e76;
-  --color-subtle: #6e6e76;
-  --color-line: #ececef;
-  --color-line-soft: #f1f1f3;
-  --color-accent: #111111;
-  --color-accent-strong: #111111;
-  --color-accent-deep: #111111;
-  --color-accent-soft: #f1f1f3;
-  --color-accent-tint: #ececef;
-  --color-accent-line: #cfcfd4;
+  /* Les jetons de la charte vivent dans `tokens.css` (source unique, 15 nov. 2026). */
   --bar-top-bg: #f7f7f9;
-  --pro-shadow: 0 10px 28px -16px rgb(0 0 0 / 0.16);
   background: #f7f7f9;
 }
 html.pro-theme :is(b, strong, h1, h2, h3) {
@@ -10969,12 +10954,6 @@ html.client-theme .tool {
 html.client-theme .ib.lg {
   border-color: transparent;
   box-shadow: 0 6px 18px -12px rgb(0 0 0 / 0.3);
-}
-/* Boutons : principal noir ; secondaire gris clair ; le contour d'accent des « g » devient un gris doux. */
-html.client-theme .btn.g {
-  background: #ebebee;
-  border-color: transparent;
-  color: #111111;
 }
 html.client-theme .pill:not(.soft) {
   border-color: #111111;

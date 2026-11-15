@@ -31,19 +31,20 @@ export interface StoryArt {
   rtl?: boolean;
 }
 
-const INK = '#1e1b30';
-const MUTED = '#636174';
-const ACCENT = '#6c5ce7';
-const ACCENT_SOFT = '#f0effe';
-const ACCENT_TINT = '#e5e3fe';
-const OK = '#18a66a';
+const INK = '#111111';
+const MUTED = '#6e6e76';
+// Charte unique (15 nov. 2026) : modèle « Encre » (anciennement violet), aucun accent de couleur.
+const ACCENT = '#111111';
+const ACCENT_SOFT = '#f1f1f3';
+const ACCENT_TINT = '#ebebee';
+const OK = '#34c759';
 const M = 72;
 const SAFE_TOP = 250;
 const LINK_Y = STORY_H - 340;
 const LINK_H = 132;
 const STEPS_Y = LINK_Y - 196;
-const DISPLAY = 'Outfit, Inter, sans-serif';
-const BODY = 'Inter, sans-serif';
+const DISPLAY = '"Plus Jakarta Sans", Inter, sans-serif';
+const BODY = '"Plus Jakarta Sans", Inter, sans-serif';
 
 /* ------------------------------------------------------------------ outils */
 
@@ -123,7 +124,7 @@ const THEMES: Record<StoryModel, Theme> = {
     sub: MUTED,
     card: '#ffffff',
     cardText: INK,
-    cardLine: '#e6e5ee',
+    cardLine: '#ececef',
     icon: ACCENT_SOFT,
     iconFg: ACCENT,
     chip: ACCENT_SOFT,
@@ -151,7 +152,7 @@ function background(g: CanvasRenderingContext2D, a: StoryArt, ms: number) {
     return;
   }
   if (a.model === 'clair') {
-    g.fillStyle = '#f7f6fe';
+    g.fillStyle = '#f7f7f9';
     g.fillRect(0, 0, STORY_W, STORY_H);
     g.fillStyle = ACCENT_TINT;
     g.beginPath();
@@ -159,7 +160,7 @@ function background(g: CanvasRenderingContext2D, a: StoryArt, ms: number) {
     g.fill();
     return;
   }
-  // Violet : le fond uni et de grands disques qui glissent lentement.
+  // Encre : le fond uni et de grands disques qui glissent lentement.
   g.fillStyle = ACCENT;
   g.fillRect(0, 0, STORY_W, STORY_H);
   g.fillStyle = 'rgba(255,255,255,.08)';
@@ -347,14 +348,14 @@ function slots(g: CanvasRenderingContext2D, a: StoryArt, th: Theme, ms: number) 
         const lw = g.measureText(lab).width + 62;
         const lx = BX(M + ox + w - 22 - lw, lw);
         rr(g, lx, cy - 25, lw, 50, 25);
-        g.fillStyle = a.model === 'photo' ? 'rgba(255,255,255,.2)' : '#e2f6ec';
+        g.fillStyle = a.model === 'photo' ? 'rgba(255,255,255,.2)' : '#e3f7e8';
         g.fill();
         const dot = R ? lx + lw - 24 : lx + 24;
         g.beginPath();
         g.arc(dot, cy, 7, 0, Math.PI * 2);
         g.fillStyle = OK;
         g.fill();
-        g.fillStyle = a.model === 'photo' ? '#ffffff' : '#0e7a4d';
+        g.fillStyle = a.model === 'photo' ? '#ffffff' : '#1d8a3c';
         g.textAlign = R ? 'right' : 'left';
         g.direction = R ? 'rtl' : 'ltr';
         g.fillText(lab, R ? lx + lw - 40 : lx + 40, cy + 10);

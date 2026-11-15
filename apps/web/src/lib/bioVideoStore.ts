@@ -47,7 +47,7 @@ async function save(key: string, blob: Blob) {
 }
 
 export const loadVideoFonts = () =>
-  Promise.all(['700 60px Outfit', '500 16px Inter', 'italic 400 70px "Instrument Serif"'].map((f) => document.fonts.load(f).catch(() => undefined)));
+  Promise.all(['700 60px "Plus Jakarta Sans"', '500 16px "Plus Jakarta Sans"'].map((f) => document.fonts.load(f).catch(() => undefined)));
 
 /** Une seule fabrication à la fois, et jamais deux fois la même. */
 export function prepareVideo(key: string, load: () => Promise<BioVideoData>) {

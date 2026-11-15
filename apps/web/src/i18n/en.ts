@@ -2158,4 +2158,5 @@ export const en: Record<string, string> = {
   "C’est votre première fois. Choisissez un mot de passe.": "First time here. Choose a password.",
   "Faisons connaissance": "Let’s get to know you",
   "Votre nom pour le salon, et ce que vous recherchez.": "Your name for the salon, and what you’re looking for.",
+  "Encre": "Ink",
 };

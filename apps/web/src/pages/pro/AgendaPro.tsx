@@ -22,7 +22,6 @@ import {
   DAY_LABELS_FR,
   DAY_LABELS_SHORT_FR,
   addDaysToKey,
-  categoryTone,
   dayOfWeekFromKey,
   formatDA,
   formatLocale,
@@ -37,6 +36,7 @@ import { readAgendaMemory, saveAgendaMemory, takeAgendaFlash } from '@/lib/agend
 import { BlockedSlotSheet, FreeSlotSheet, type BlockedSlot, type FreeSlot } from '@/components/FreeSlotSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
 import { StaffFilter } from '@/components/StaffFilter';
+import { STATUT_COULEUR, statutCle, type StatutCle } from '@/lib/statusColors';
 import { formatDuration } from '@/lib/format';
 import { useDesktop } from '@/lib/breakpoint';
 import {
@@ -70,22 +70,15 @@ const MONTHS = [
   'novembre',
   'décembre',
 ];
-const TONE: Record<string, string> = {
-  hair: 'bg-cat-hair-bg border-cat-hair-line text-cat-hair-fg',
-  barb: 'bg-cat-barb-bg border-cat-barb-line text-cat-barb-fg',
-  nail: 'bg-cat-nail-bg border-cat-nail-line text-cat-nail-fg',
-  lash: 'bg-cat-lash-bg border-cat-lash-line text-cat-lash-fg',
-  skin: 'bg-cat-skin-bg border-cat-skin-line text-cat-skin-fg',
-  lasr: 'bg-cat-lasr-bg border-cat-lasr-line text-cat-lasr-fg',
+/** Vues semaine et mois : la couleur du STATUT (`lib/statusColors.ts`), comme la grille du jour. */
+const TONE: Record<StatutCle, string> = {
+  pd: 'bg-[#fff1dc] border-[#ff9500]',
+  cf: 'bg-[#e5f1ff] border-[#007aff]',
+  cur: 'bg-[#e3f7e8] border-[#34c759]',
+  ns: 'bg-[#ffe7e5] border-[#ff3b30]',
+  done: 'bg-[#f1f1f3] border-[#aeaeb2]',
 };
-const DOT: Record<string, string> = {
-  hair: '#38aeb5',
-  barb: '#6d8fe8',
-  nail: '#d97898',
-  lash: '#8a63d8',
-  skin: '#55a873',
-  lasr: '#d88c52',
-};
+const DOT = STATUT_COULEUR;
 
 /**
  * Statuts d'un rendez-vous dans la grille du jour (11 nov. 2026) : une COULEUR vive chacun, la même
@@ -159,8 +152,7 @@ export function AgendaPro() {
   const meId = useMe().data?.profile?.id;
   const desktop = useDesktop();
 
-  const toneOf = (b: BookingWithStaff) =>
-    categoryTone(salon?.services.find((s) => s.id === b.serviceId)?.categoryId);
+  const toneOf = (b: BookingWithStaff) => statutCle(b);
   const [staffId, setStaffId] = useStaffFilter();
   // Le rendez-vous ajouté clignote s'il est sur le jour affiché ; sinon, rien n'est à montrer.
   const [flash, setFlash] = useState(added && added.date === date ? added.id : null);
@@ -1008,7 +1000,7 @@ function WeekGrid({
   byDay: Map<string, BookingWithStaff[]>;
   closedDays: number[];
   salonHours: { dayOfWeek: number; opensAt: string; closesAt: string; isClosed: boolean }[];
-  toneOf: (b: BookingWithStaff) => string;
+  toneOf: (b: BookingWithStaff) => StatutCle;
   selected: string;
   onSelect: (d: string) => void;
 }) {
@@ -1086,7 +1078,7 @@ function WeekGrid({
                 style={{
                   height: H,
                   background: closed
-                    ? 'repeating-linear-gradient(135deg,#f4f4f9 0 6px,#efeef4 6px 12px)'
+                    ? 'repeating-linear-gradient(135deg,#f1f1f3 0 6px,#ececef 6px 12px)'
                     : undefined,
                 }}
               >
@@ -1128,7 +1120,7 @@ function WeekGrid({
           <span
             className="h-3 w-5 rounded"
             style={{
-              background: 'repeating-linear-gradient(135deg,#f4f4f9 0 3px,#e6e5ee 3px 6px)',
+              background: 'repeating-linear-gradient(135deg,#f1f1f3 0 3px,#e2e2e6 3px 6px)',
             }}
           />{' '}
           {t("Fermé")}
@@ -1158,7 +1150,7 @@ function MonthGrid({
   marks?: Record<string, number>;
   byDay: Map<string, BookingWithStaff[]>;
   closedDays: number[];
-  toneOf: (b: BookingWithStaff) => string;
+  toneOf: (b: BookingWithStaff) => StatutCle;
   selected: string;
   today: string;
   onSelect: (d: string) => void;
@@ -1197,7 +1189,7 @@ function MonthGrid({
                 closed && !on
                   ? {
                       background:
-                        'repeating-linear-gradient(135deg,#f4f4f9 0 6px,#efeef4 6px 12px)',
+                        'repeating-linear-gradient(135deg,#f1f1f3 0 6px,#ececef 6px 12px)',
                     }
                   : undefined
               }
@@ -1234,7 +1226,7 @@ function MonthGrid({
           <span
             className="h-3 w-5 rounded"
             style={{
-              background: 'repeating-linear-gradient(135deg,#f4f4f9 0 3px,#e6e5ee 3px 6px)',
+              background: 'repeating-linear-gradient(135deg,#f1f1f3 0 3px,#e2e2e6 3px 6px)',
             }}
           />{' '}
           {t("Fermé")}
