@@ -3,9 +3,6 @@
  * confirmation, fiche du rendez-vous. Le salon est la première ligne de la carte (plus de carte à
  * part), la prestation porte son prix à droite, et le pied résume en une ligne ce qu'il faut savoir
  * (paiement, heure d'arrivée, retard toléré). Moins de blanc, même lecture partout.
- *
- * `ConfirmHero` : la coche dessinée, puis le titre — l'écran de récapitulatif se TRANSFORME en
- * confirmation sur place, sans changer de page.
  */
 import type { ReactNode } from 'react';
 import { CalendarDays, Scissors, Banknote } from 'lucide-react';
@@ -126,25 +123,3 @@ export function BookingSummary({
 }
 
 /** Coche qui se dessine, cercle qui s'ouvre, puis titre : la réservation vient d'être prise. */
-export function ConfirmHero({ pending, title, sub }: { pending?: boolean; title: string; sub: string }) {
-  return (
-    <div className="bk-hero flex items-center gap-3.5" role="status">
-      <span className={`bk-ok ${pending ? 'pending' : ''}`} aria-hidden>
-        <svg viewBox="0 0 24 24" width="26" height="26">
-          {pending ? (
-            <>
-              <circle cx="12" cy="12" r="8" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.2" />
-              <path d="M12 8v4.2l2.8 1.8" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </>
-          ) : (
-            <path d="M5 12.5l4.2 4.2L19 7" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-          )}
-        </svg>
-      </span>
-      <span className="min-w-0">
-        <h1 className="h1 !text-[1.571rem] leading-tight">{title}</h1>
-        <span className="block text-[0.857rem] text-muted">{sub}</span>
-      </span>
-    </div>
-  );
-}

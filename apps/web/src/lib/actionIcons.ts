@@ -76,6 +76,8 @@ export const ICONE = {
   validerReport: CalendarCheck,
   annulerRdv: CalendarX2,
   confirmerRdv: CalendarCheck,
+  /** Ouvrir la fiche d'un rendez-vous (après la réservation). */
+  voirRdv: CalendarDays,
   annulerRetard: TimerOff,
   garder: Undo2,
   reprendre: CalendarPlus,

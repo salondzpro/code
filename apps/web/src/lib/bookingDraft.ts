@@ -8,6 +8,8 @@ export interface BookingDraft {
   serviceIds: string[];
   date?: string;
   startsAt?: string;
+  /** Membre choisi ; absent ou null = « n'importe qui » (le plus rapide). */
+  staffId?: string | null;
   name?: string;
   phone?: string;
   notes?: string;

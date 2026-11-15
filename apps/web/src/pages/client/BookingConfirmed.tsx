@@ -1,12 +1,14 @@
 /** C-F 12 — Rendez-vous confirmé (ou demande envoyée). Le même écran sert juste après la réservation (`BookingReview`). */
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Calendar, CalendarCheck, Navigation } from 'lucide-react';
+import { Calendar, Navigation } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
 import { formatDZPhone, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
 import { BottomSheet, Button, I } from '@/components/ui';
-import { BookingSummary, ConfirmHero } from '@/components/BookingSummary';
+import { BookingSummary } from '@/components/BookingSummary';
+import { ICONE } from '@/lib/actionIcons';
 import { directionsUrl } from './Bookings';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -47,36 +49,62 @@ export function BookingConfirmed() {
 }
 
 /**
- * La confirmation, affichée PAR-DESSUS le récapitulatif au moment où la réservation est prise
- * (`BookingReview`) comme à l'ouverture de son adresse : même carte, à la même place, qui passe au
- * vert pendant que la coche se dessine — on ne change pas de page, on voit la réservation se faire.
+ * La confirmation (refonte du 15 nov. 2026, « animation premium, compact ») : affichée à la place du
+ * récapitulatif au moment où la réservation est prise, et à l'ouverture de son adresse. Un grand
+ * insigne centré qui s'anime selon l'état décidé par le salon :
+ *   confirmé → vert, coche qui se dessine, deux ondes ;
+ *   demande envoyée (validation manuelle) → orange, horloge dont l'aiguille tourne ;
+ *   versement à faire → orange, « Plus qu'une étape », la carte du versement dessous.
+ * Puis la carte du rendez-vous et les actions. Sous `prefers-reduced-motion`, rien ne bouge.
  */
 export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon }) {
   const navigate = useNavigate();
   // Le cache suit le rendez-vous (justificatif envoyé, versement validé) ; la réponse de la création sert d'amorce.
   const b = useBooking(initial.id).data ?? initial;
   const confirmed = b.status === 'confirmed';
-  const deposit = b.status === 'pending' && !!b.depositAmount && !!b.depositStatus;
+  const deposit = b.status === 'pending' && !!b.depositAmount && !!b.depositStatus && b.depositStatus !== 'accepted';
+  const state = confirmed ? 'ok' : deposit ? 'dep' : 'wait';
   const lines = b.items?.length
     ? b.items.map((it) => ({ id: it.id, name: it.serviceName, minutes: it.durationMinutes, priceDa: it.priceDa }))
     : [{ id: b.id, name: b.serviceName, minutes: b.durationMinutes, priceDa: b.priceDa }];
   const area = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
+  useEffect(() => {
+    try {
+      navigator.vibrate?.(confirmed ? [18, 60, 18] : 18);
+    } catch {
+      /* pas de vibreur */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <Screen bottom={SHEET_PAD} gap={12}>
-      <ConfirmHero
-        pending={!confirmed}
-        title={confirmed ? t('Rendez-vous confirmé') : deposit ? t('Créneau réservé') : t('Demande envoyée')}
-        sub={
-          confirmed
-            ? t('Vous serez rappelé(e) 1 h puis 30 min avant.')
-            : deposit
-              ? t('Il reste une étape : le versement demandé par le salon.')
-              : t('Le salon répond à votre demande. Vous recevrez une notification.')
-        }
-      />
+    <Screen bottom={SHEET_PAD} gap={14}>
+      <div className={`cf ${state}`} role="status">
+        <span className="cf-badge" aria-hidden>
+          <i className="cf-wave" />
+          <i className="cf-wave w2" />
+          <svg viewBox="0 0 24 24" width="40" height="40">
+            {state === 'ok' ? (
+              <path className="cf-draw" d="M5 12.5l4.2 4.2L19 7" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            ) : state === 'wait' ? (
+              <>
+                <circle className="cf-draw" cx="12" cy="12" r="8.5" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.2" />
+                <path className="cf-hand" d="M12 12V7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M12 12l3 1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              </>
+            ) : (
+              <>
+                <path className="cf-draw" d="M4 10l8-5 8 5M5 10v8M19 10v8M9 10v8M15 10v8M3.5 19.5h17" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </>
+            )}
+          </svg>
+        </span>
+        <h1 className="cf-t">{state === 'ok' ? t('Rendez-vous confirmé') : state === 'wait' ? t('Demande envoyée') : t('Plus qu’une étape')}</h1>
+        {state === 'wait' && <p className="cf-s">{t('Le salon vous répond bientôt.')}</p>}
+        {state === 'dep' && <p className="cf-s">{t('Le versement confirme votre rendez-vous.')}</p>}
+      </div>
       <BookingSummary
-        className="bk-flash"
+        className="cf-card"
         salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl, area: SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone ? `${area} · ${formatDZPhone(b.salon.phone)}` : area }}
         status={b.status}
         startsAt={b.startsAt}
@@ -88,16 +116,16 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
       />
       <DepositCard booking={b} />
       <BottomSheet>
-        <div className="bk-in-2 flex flex-col gap-2">
-          <Button onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
-            <I icon={CalendarCheck} size={18} /> {t('Voir le rendez-vous')}
+        <div className="cf-acts flex flex-col gap-2">
+          <Button icon={ICONE.voirRdv} onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
+            {t('Voir le rendez-vous')}
           </Button>
           <div className="g2">
             <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
-              <I icon={Navigation} size={18} /> {t('Itinéraire')}
+              <I icon={Navigation} size={16} /> {t('Itinéraire')}
             </a>
             <a href={googleCalendarUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
-              <I icon={Calendar} size={18} /> {t('Calendrier')}
+              <I icon={Calendar} size={16} /> {t('Calendrier')}
             </a>
           </div>
         </div>

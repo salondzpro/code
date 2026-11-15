@@ -1,11 +1,16 @@
 /**
- * C-F 09 — Quand ? Semaine (dimanche → samedi), créneaux Matin / Après-midi / Soir.
- * Seuls les créneaux libres sont affichés (pas de grille grisée à faire défiler) ; journée complète →
- * carte « Complet » avec le dernier créneau du jour et un bouton vers la prochaine disponibilité.
+ * QUAND ? — refonte du 15 nov. 2026 (demande du propriétaire : « réserver vite, compact, premium »).
+ *
+ * - « Le plus tôt » en tête : le premier créneau libre (aujourd'hui, sinon le prochain jour), avec
+ *   n'importe quel membre — un toucher et l'on passe à la confirmation.
+ * - Avec qui : « N'importe qui » par défaut (le plus rapide), ou un membre (équipe ≥ 2 seulement).
+ * - Jours puis heures libres ; TOUCHER UNE HEURE = continuer (plus de bouton « Continuer »).
+ * Les créneaux viennent toujours de `GET /salons/:id/availability` (jamais calculés au front).
  */
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
+import { ChevronRight, Users, Zap } from 'lucide-react';
 import { useAvailability, useSalon } from '@salondz/api-client';
 import {
   addDaysToKey,
@@ -13,7 +18,6 @@ import {
   formatDA,
   formatTimeDZ,
   localDateTimeToISO,
-  minutesToTime,
   relativeDayLabelDZ,
   timeToMinutes,
   toLocalDateKey,
@@ -23,9 +27,9 @@ import { setGuestMarket } from '@/lib/useClientMarket';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDuration } from '@/lib/format';
-import { Avatar, BottomSheet, Button, InfoBox, Skeleton, Slot, TopBar } from '@/components/ui';
+import { Avatar, Button, I, Skeleton, Slot, TopBar } from '@/components/ui';
 import { DayStrip, MonthNav } from '@/components/DaySelector';
-import { Screen, SHEET_PAD } from '@/components/AppFrame';
+import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
@@ -42,15 +46,18 @@ export function BookingWhen() {
   const today = toLocalDateKey();
   const [date, setDate] = useState(draft.date ?? today);
   const [weekOf, setWeekOf] = useState(draft.date ?? today);
-  const [slot, setSlot] = useState<string | null>(draft.startsAt ?? null);
+  const [staffId, setStaffId] = useState<string | null>(draft.staffId ?? null);
   const serviceIds = draft.serviceIds;
   const s = salon.data;
-  const availability = useAvailability(s?.id ?? '', { serviceIds: serviceIds.join(','), date });
-  // Alerte « créneau libéré » pour ce salon et ce jour (compte connecté seulement).
+  const q = { serviceIds: serviceIds.join(','), ...(staffId ? { staffId } : {}) };
+  const availability = useAvailability(s?.id ?? '', { ...q, date });
+  // « Le plus tôt » : toujours calculé depuis aujourd'hui, quel que soit le jour affiché.
+  const soonest = useAvailability(s?.id ?? '', { ...q, date: today });
+
+  // Liste d'attente (« M'alerter si un créneau se libère ») : comptes connectés seulement.
   const { session } = useAuth();
   const [alertId, setAlertId] = useState<string | null>(null);
   const [alertBusy, setAlertBusy] = useState(false);
-  const [alertError, setAlertError] = useState<unknown>(null);
   useEffect(() => {
     if (!session || !s?.id) return setAlertId(null);
     let alive = true;
@@ -64,27 +71,19 @@ export function BookingWhen() {
   }, [session, s?.id, date]);
   const toggleAlert = async () => {
     if (!s) return;
-    if (!session) return navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}/reserver/quand`)}`);
+    if (!session) return navigate(`/acces?next=${encodeURIComponent(`/s/${s.slug}/reserver/quand`)}`);
     setAlertBusy(true);
     try {
       if (alertId) {
         await api.me.removeSlotAlert(alertId);
         setAlertId(null);
-      } else {
-        const created = await api.me.addSlotAlert({ salonId: s.id, day: date, serviceId: serviceIds[0] });
-        setAlertId(created.id);
-      }
-      setAlertError(null);
-    } catch (err) {
-      setAlertError(err);
+      } else setAlertId((await api.me.addSlotAlert({ salonId: s.id, day: date, serviceId: serviceIds[0] })).id);
+    } catch {
+      /* l'état reste tel quel */
     } finally {
       setAlertBusy(false);
     }
   };
-
-  useEffect(() => {
-    setSlot((cur) => (cur && cur.startsWith(date) ? cur : null));
-  }, [date]);
 
   const chosen = useMemo(
     () => (s ? serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean) : []),
@@ -93,170 +92,116 @@ export function BookingWhen() {
   const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);
 
-  /** Grille complète du jour (pas du salon) : les créneaux absents des disponibilités sont grisés. */
-  const grid = useMemo(() => {
-    if (!s || !availability.data) return [] as { time: string; iso: string; free: boolean }[];
-    const dow = dayOfWeekFromKey(date);
-    const hours = s.openingHours.filter((h) => h.dayOfWeek === dow && !h.isClosed);
-    const free = new Set(availability.data.slots.map((x) => formatTimeDZ(x.startsAt)));
-    const out: { time: string; iso: string; free: boolean }[] = [];
-    for (const h of hours) {
-      for (
-        let m = timeToMinutes(h.opensAt);
-        m + minutes <= timeToMinutes(h.closesAt);
-        m += availability.data.slotIntervalMinutes
-      ) {
-        const t = minutesToTime(m);
-        out.push({ time: t, iso: localDateTimeToISO(date, t), free: free.has(t) });
-      }
-    }
-    // si le salon n'a pas d'horaires ce jour mais des créneaux (horaires membre), on affiche les dispos
-    if (out.length === 0)
-      for (const x of availability.data.slots)
-        out.push({ time: formatTimeDZ(x.startsAt), iso: x.startsAt, free: true });
-    return out;
-  }, [s, availability.data, date, minutes]);
-
-  /**
-   * Arrivé sans jour choisi, le soir, après le dernier créneau : l'écran annonçait « Journée
-   * terminée » et il fallait toucher « Prochaine disponibilité ». On y va tout seul, UNE fois, et on
-   * le dit (`sauteDe`). Un jour COMPLET n'est pas sauté : la liste d'attente y a son sens.
-   */
-  const [sauteDe, setSauteDe] = useState<string | null>(null);
-  const [sautPossible, setSautPossible] = useState(!draft.date);
-  useEffect(() => {
-    if (!sautPossible || !availability.data || date !== today) return;
-    setSautPossible(false);
-    const dernier = grid[grid.length - 1];
-    const fini = !!dernier && new Date(dernier.iso).getTime() <= Date.now();
-    const prochain = availability.data.nextAvailable;
-    if (fini && !grid.some((g) => g.free) && prochain) {
-      setSauteDe(today);
-      setWeekOf(prochain.date);
-      setDate(prochain.date);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availability.data, sautPossible]);
-
-  // Un créneau pré-rempli (carte marketplace) n'est gardé que s'il est réellement libre pour la durée choisie.
-  useEffect(() => {
-    if (!availability.data || !slot) return;
-    if (!grid.some((g) => g.iso === slot && g.free)) setSlot(null);
-  }, [availability.data, grid, slot]);
+  const free = useMemo(
+    () => (availability.data?.slots ?? []).map((x) => ({ time: formatTimeDZ(x.startsAt), iso: x.startsAt })).filter((g) => new Date(g.iso).getTime() > Date.now()),
+    [availability.data],
+  );
+  const first = useMemo(() => {
+    const d = soonest.data;
+    if (!d) return null;
+    const now = d.slots.find((x) => new Date(x.startsAt).getTime() > Date.now());
+    if (now) return { date: today, time: formatTimeDZ(now.startsAt), iso: now.startsAt };
+    if (d.nextAvailable?.slots[0]) return { date: d.nextAvailable.date, time: d.nextAvailable.slots[0], iso: localDateTimeToISO(d.nextAvailable.date, d.nextAvailable.slots[0]) };
+    return null;
+  }, [soonest.data, today]);
 
   if (serviceIds.length === 0) return <Navigate to={`/s/${slug}/prestations`} replace />;
   if (salon.isPending) return <PageLoading />;
-  if (salon.isError || !s)
-    return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
+  if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 
+  const team = s.staff ?? [];
   const maxDate = addDaysToKey(today, s.bookingHorizonDays);
-  const closedDays = [0, 1, 2, 3, 4, 5, 6].filter(
-    (d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed),
-  );
-  const freeGrid = grid.filter((g) => g.free);
-  const takenCount = grid.length - freeGrid.length;
-  const groups = new Map<Period, typeof grid>();
-  for (const g of freeGrid)
-    groups.set(periodOf(g.time), [...(groups.get(periodOf(g.time)) ?? []), g]);
-  const chosenSlot = grid.find((g) => g.iso === slot);
-  const endTime = chosenSlot ? minutesToTime(timeToMinutes(chosenSlot.time) + minutes) : null;
-  const lastSlot = grid[grid.length - 1] ?? null;
-  const dayOver = !!lastSlot && new Date(lastSlot.iso).getTime() <= Date.now();
+  const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
+  const groups = new Map<Period, typeof free>();
+  for (const g of free) groups.set(periodOf(g.time), [...(groups.get(periodOf(g.time)) ?? []), g]);
   const next = availability.data?.nextAvailable ?? null;
-  const goNext = () => {
-    if (!next) return;
-    setWeekOf(next.date);
-    setDate(next.date);
-    setSlot(localDateTimeToISO(next.date, next.slots[0]!));
+
+  /** Un créneau choisi = on passe tout de suite à la confirmation. */
+  const go = (d: string, iso: string, who: string | null) => {
+    writeDraft(slug, { date: d, startsAt: iso, staffId: who });
+    if (!session && (s.genderTarget === 'men' || s.genderTarget === 'women')) setGuestMarket(s.genderTarget);
+    navigate(`/s/${s.slug}/reserver/recap`);
   };
 
   return (
-    <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo={`/s/${s.slug}`} right="Étape 1 sur 3" title={t("Quand ?")} />
-      <div className="crd !flex-row items-center gap-3.5">
-        <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={64} />
-        <span className="min-w-0">
-          <span className="block text-[1rem] font-semibold tracking-[-0.3px]">{s.name}</span>
-          <span className="block text-[0.857rem] text-muted">
-            {chosen.map((x) => x!.name).join(' + ')} · {formatDuration(minutes)} · {formatDA(price)}
-          </span>
+    <Screen gap={14}>
+      <TopBar backTo={`/s/${s.slug}`} title={t('Quand ?')} />
+      <div className="bw-svc">
+        <b className="truncate">{chosen.map((x) => x!.name).join(' + ')}</b>
+        <span dir="ltr">
+          {formatDuration(minutes)} · {formatDA(price)}
         </span>
       </div>
-      <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} />
-      <DayStrip
-        weekOf={weekOf}
-        selected={date}
-        onSelect={setDate}
-        minDate={today}
-        maxDate={maxDate}
-        disabledDays={closedDays}
-      />
-      {sauteDe && date !== sauteDe && (
-        <p className="s -mt-2" role="status">
-          {t('Plus aucun créneau aujourd’hui : voici le prochain jour disponible.')}
-        </p>
+
+      {/* Le plus rapide : premier créneau libre, n'importe quel membre (ou celui choisi). */}
+      {soonest.isPending ? (
+        <Skeleton className="h-[4.5rem] w-full !rounded-[var(--radius-card)]" />
+      ) : first ? (
+        <button type="button" className="bw-fast" onClick={() => go(first.date, first.iso, staffId)}>
+          <span className="bw-fast-ic" aria-hidden>
+            <I icon={Zap} size={20} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <small>{t('Le plus tôt')}</small>
+            <b>
+              {relativeDayLabelDZ(first.date)} · <span dir="ltr">{first.time}</span>
+            </b>
+          </span>
+          <I icon={ChevronRight} size={20} className="flex-none rtl:rotate-180" />
+        </button>
+      ) : null}
+
+      {team.length >= 2 && (
+        <div className="pills bleed" role="radiogroup" aria-label={t('Avec qui')}>
+          <button type="button" role="radio" aria-checked={!staffId} className={`bw-who${!staffId ? ' on' : ''}`} onClick={() => setStaffId(null)}>
+            <span className="bw-who-ic" aria-hidden>
+              <I icon={Users} size={15} />
+            </span>
+            {t('N’importe qui')}
+          </button>
+          {team.map((m) => (
+            <button key={m.id} type="button" role="radio" aria-checked={staffId === m.id} className={`bw-who${staffId === m.id ? ' on' : ''}`} onClick={() => setStaffId(m.id)}>
+              <Avatar src={m.avatarUrl} name={m.displayName} size={26} />
+              {m.displayName}
+            </button>
+          ))}
+        </div>
       )}
 
+      <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} />
+      <DayStrip weekOf={weekOf} selected={date} onSelect={setDate} minDate={today} maxDate={maxDate} disabledDays={closedDays} />
+
       {closedDays.includes(dayOfWeekFromKey(date)) ? (
-        <p className="p">{t("Le salon est fermé ce jour-là.")}</p>
+        <p className="p">{t('Fermé ce jour.')}</p>
       ) : availability.isPending || availability.isFetching ? (
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-[4rem] w-full" />
-          <Skeleton className="h-[4rem] w-full" />
+        <div className="g3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skeleton key={i} className="h-[3.5rem]" />
+          ))}
         </div>
       ) : availability.isError ? (
         <ErrorMessage error={availability.error} retry={() => availability.refetch()} />
-      ) : freeGrid.length === 0 ? (
-        <div className="crd !gap-2" role="status">
-          <span className="text-[1rem] font-semibold tracking-[-0.3px]">
-            {dayOver ? t('Journée terminée') : t('Complet ce jour')}
-          </span>
-          <span className="p text-[1rem]">
-            {lastSlot
-              ? dayOver
-                ? t('Le dernier créneau du jour était à {time}.', { time: lastSlot.time })
-                : t('Le dernier créneau ({time}) est déjà pris : toutes les disponibilités de ce jour sont réservées.', { time: lastSlot.time })
-              : t('Aucune disponibilité ce jour.')}
-          </span>
-          {next ? (
-            <Button icon={ICONE.prochaineDispo} auto sm onClick={goNext} className="mt-1">
-              {t("Prochaine disponibilité ·")}{' '}{relativeDayLabelDZ(next.date)} {t("à")}{' '}{next.slots[0]}
+      ) : free.length === 0 ? (
+        <div className="crd !gap-3" role="status">
+          <b className="text-[1.071rem]">{t('Complet ce jour')}</b>
+          {next && (
+            <Button icon={ICONE.prochaineDispo} sm auto onClick={() => { setWeekOf(next.date); setDate(next.date); }}>
+              {relativeDayLabelDZ(next.date)} · {next.slots[0]}
             </Button>
-          ) : (
-            <span className="p text-[0.857rem]">
-              {t("Aucune disponibilité dans les")}{' '}{s.bookingHorizonDays} {t("prochains jours pour ces prestations.")}
-            </span>
           )}
-          {/* Liste d'attente : premier prévenu, premier servi (comme Planity). */}
-          {!dayOver &&
-            (alertId ? (
-              <div className="mt-1 flex items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-ok/10 px-3 py-2.5 text-[0.857rem] text-ok">
-                <span>{t("Alerte activée : vous serez prévenu(e) si un créneau se libère ce jour.")}</span>
-                <button type="button" className="flex-none font-semibold underline" onClick={() => void toggleAlert()} disabled={alertBusy}>
-                  {t("Retirer")}
-                </button>
-              </div>
-            ) : (
-              <Button icon={ICONE.alerter} variant="g" auto sm onClick={() => void toggleAlert()} disabled={alertBusy} className="mt-1">
-                {t("M'alerter si un créneau se libère")}
-              </Button>
-            ))}
-          <ErrorMessage error={alertError} className="mt-1" />
+          {date >= today && (
+            <Button icon={ICONE.alerter} variant="g" sm auto onClick={() => void toggleAlert()} disabled={alertBusy}>
+              {alertId ? t('Alerte activée · retirer') : t("M'alerter si un créneau se libère")}
+            </Button>
+          )}
         </div>
       ) : (
         [...groups.entries()].map(([period, list]) => (
-          <div key={period} className="flex flex-col gap-3">
-            <span className="h3">{period}</span>
+          <div key={period} className="flex flex-col gap-2.5">
+            <span className="h3">{t(period)}</span>
             <div className="g3">
               {list.map((g) => (
-                <Slot
-                  key={g.iso}
-                  on={slot === g.iso}
-                  off={!g.free}
-                  onClick={() => g.free && setSlot(g.iso)}
-                  className="!py-[1.375rem] !text-[1rem]"
-                >
+                <Slot key={g.iso} on={draft.startsAt === g.iso} onClick={() => go(date, g.iso, staffId)} className="!py-[1.125rem] !text-[1rem]">
                   {g.time}
                 </Slot>
               ))}
@@ -264,31 +209,6 @@ export function BookingWhen() {
           </div>
         ))
       )}
-
-      {freeGrid.length > 0 && (
-        <InfoBox>
-          {chosenSlot
-            ? `Créneau de ${formatDuration(minutes)} : ${chosenSlot.time} → ${endTime}.`
-            : `Durée totale ${formatDuration(minutes)}.`}
-          {takenCount > 0
-            ? ` ${takenCount} créneau${takenCount > 1 ? 'x' : ''} déjà pris ce jour ${takenCount > 1 ? 'ne sont' : "n'est"} pas affiché${takenCount > 1 ? 's' : ''}.`
-            : ''}
-        </InfoBox>
-      )}
-
-      <BottomSheet>
-        <Button icon={ICONE.continuer}
-          disabled={!slot}
-          onClick={() => {
-            writeDraft(slug, { date, startsAt: slot! });
-            // Le compte qui va se créer reprend le marché de ce salon : une étape de moins.
-            if (!session && (s.genderTarget === 'men' || s.genderTarget === 'women')) setGuestMarket(s.genderTarget);
-            navigate(`/s/${s.slug}/reserver/coordonnees`);
-          }}
-        >
-          {chosenSlot ? `Continuer · ${chosenSlot.time}` : 'Choisissez un créneau'}
-        </Button>
-      </BottomSheet>
     </Screen>
   );
 }
