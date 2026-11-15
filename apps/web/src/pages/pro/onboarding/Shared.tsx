@@ -21,7 +21,7 @@ export function StepBar({
   /** Fourni en réglages (hors inscription) : pas de compteur ni de progression. */
   right?: ReactNode;
 }) {
-  const shown = Math.min(ONBOARDING_STEPS, step > 5 ? step - 1 : step);
+  const shown = Math.min(ONBOARDING_STEPS, step);
   const settings = right !== undefined;
   return (
     <div className="flex flex-col gap-3">

@@ -67,4 +67,5 @@ export const draftFiles = {
 
 /** Nombre d'étapes affiché dans l'en-tête (design : « Étape n sur 10 »). */
 /** Étapes affichées (la 5, choix des catégories, n'existe plus : les routes gardent leur numéro). */
-export const ONBOARDING_STEPS = 9;
+/** Inscription en 3 écrans depuis le 15 nov. 2026 : votre salon, adresse, prestations. */
+export const ONBOARDING_STEPS = 3;

@@ -76,14 +76,13 @@ const Privacy = lazyNamed(() => import('@/pages/Legal'), 'Privacy');
 const Terms = lazyNamed(() => import('@/pages/Legal'), 'Terms');
 const DeleteAccount = lazyNamed(() => import('@/pages/Legal'), 'DeleteAccount');
 const Step1Market = lazyNamed(() => import('@/pages/pro/onboarding/Step1Market'), 'Step1Market');
-const Step2Name = lazyNamed(() => import('@/pages/pro/onboarding/Step2Name'), 'Step2Name');
-const Step3Identity = lazyNamed(() => import('@/pages/pro/onboarding/Step3Identity'), 'Step3Identity');
 const Step4Address = lazyNamed(() => import('@/pages/pro/onboarding/Step4Address'), 'Step4Address');
 const Step6Service = lazyNamed(() => import('@/pages/pro/onboarding/Step6Service'), 'Step6Service');
 const Step7ServicePhotos = lazyNamed(() => import('@/pages/pro/onboarding/Step7ServicePhotos'), 'Step7ServicePhotos');
 const Step8Works = lazyNamed(() => import('@/pages/pro/onboarding/Step8Works'), 'Step8Works');
 const Step9Hours = lazyNamed(() => import('@/pages/pro/onboarding/Step9Hours'), 'Step9Hours');
 const ProDeposit = lazyNamed(() => import('@/pages/pro/ProDeposit'), 'ProDeposit');
+const StepServices = lazyNamed(() => import('@/pages/pro/onboarding/StepServices'), 'StepServices');
 const Step10Availability = lazyNamed(() => import('@/pages/pro/onboarding/Step10Availability'), 'Step10Availability');
 const Publish = lazyNamed(() => import('@/pages/pro/onboarding/Publish'), 'Publish');
 const ProPhotos = lazyNamed(() => import('@/pages/pro/Photos'), 'ProPhotos');
@@ -262,8 +261,10 @@ export const router = createBrowserRouter([
             children: [
               { path: 'onboarding', element: <Step1Market /> },
               { path: 'onboarding/1', element: <Step1Market /> },
-              { path: 'onboarding/2', element: <Step2Name /> },
-              { path: 'onboarding/3', element: <Step3Identity /> },
+              // Inscription en 3 écrans (15 nov. 2026) : le nom est sur l'écran 1, les photos se règlent ensuite.
+              { path: 'onboarding/2', element: <Navigate to="/pro/onboarding/1" replace /> },
+              { path: 'onboarding/3', element: <Navigate to="/pro/onboarding/4" replace /> },
+              { path: 'onboarding/prestations', element: <StepServices /> },
               { path: 'onboarding/4', element: <Step4Address /> },
               { path: 'onboarding/5', element: <Navigate to="/pro/onboarding/6" replace /> },
               { path: 'onboarding/6', element: <Step6Service /> },

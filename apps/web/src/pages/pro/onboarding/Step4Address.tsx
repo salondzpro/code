@@ -187,7 +187,8 @@ export function Step4Address({ settings }: { settings?: boolean }) {
     if (address.trim().length < 3) e.address = t('Indiquez l’adresse du salon (rue, numéro ou lieu proche).');
     if (!pos || !placed) e.pos = t('Placez l’épingle sur votre salon.');
     else if (outside) e.pos = t('L’épingle est en dehors de la wilaya de {w}. Déplacez la carte, ou changez de wilaya.', { w: wName });
-    else if (!confirmed) e.pos = t('Confirmez l’emplacement de votre salon sur la carte.');
+    // Inscription (15 nov. 2026) : « Continuer » avec l'épingle sur la carte VAUT confirmation — une étape de moins.
+    else if (!confirmed && settings) e.pos = t('Confirmez l’emplacement de votre salon sur la carte.');
     if (settings && phone.trim() && !phoneDZ.safeParse(phone).success) e.phone = t('Numéro algérien invalide.');
     return e;
   };
@@ -227,7 +228,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
       await updateSalon.mutateAsync({ logoUrl: logoUrl ?? undefined, homeService: home });
       clearProDraft();
       qc.invalidateQueries({ queryKey: queryKeys.pro.all });
-      navigate(stepPath(6), { replace: true });
+      navigate('/pro/onboarding/prestations', { replace: true });
     } catch (err) {
       setErrors({ form: errorText(err) });
     } finally {
@@ -237,7 +238,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <StepBar step={4} backTo={settings ? '/pro/mon-salon' : stepPath(3)} right={settings ? null : undefined} title={settings ? t('Adresse') : undefined} />
+      <StepBar step={2} backTo={settings ? '/pro/mon-salon' : stepPath(1)} right={settings ? null : undefined} title={settings ? t('Adresse') : undefined} />
       {!settings && (
         <StepTitle icon={MapPin} sub={t('Wilaya, adresse, emplacement.')}>
           {t('Où se trouve votre salon ?')}

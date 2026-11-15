@@ -11,6 +11,7 @@
  * et on l'ajoute ici — jamais une icône approximative.
  */
 import {
+  Globe,
   Archive,
   ArrowLeft,
   ArrowLeftRight,
@@ -106,6 +107,8 @@ export const ICONE = {
   partager: Share,
   copier: Copy,
   apercu: Eye,
+  /** Mettre sa page en ligne (publier le salon). */
+  publier: Globe,
   photos: Images,
   masquer: EyeOff,
   // Compte et accès

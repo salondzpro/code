@@ -34,6 +34,7 @@ import { HomeUpcoming } from '@/components/HomeUpcoming';
 import { DispoSheet } from '@/components/DispoSheet';
 import { ProStoryRail } from '@/components/ProStories';
 import { QuickCloseBanner } from '@/components/QuickClose';
+import { PageHorsLigne } from '@/components/PageHorsLigne';
 import { StoryCard } from '@/components/StoryCard';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
@@ -126,6 +127,7 @@ export function ProHome() {
             {nonLues > 0 && <i aria-hidden />}
           </button>
         </div>
+        {salon && <PageHorsLigne salon={salon} />}
         {salon && <ProStoryRail salon={salon} short={link.short} pending={pending.data?.items.length ?? 0} />}
         <HomeUpcoming all={allToday} upcoming={upcoming} now={now} salon={salon} setStatus={setStatus} onPeek={setPeek} />
       </header>

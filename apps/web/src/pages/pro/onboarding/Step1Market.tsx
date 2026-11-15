@@ -1,20 +1,21 @@
 /**
- * PRO-F 03 — Étape 1 en deux temps : « Pour qui travaillez-vous ? » (le marché définit le catalogue et la
- * marketplace), puis « Que proposez-vous ? » (les spécialités du marché : ongles, cheveux, cils, sourcils…
- * ou cheveux, barbe, lissage, soins…). Le reste de l'inscription s'adapte à ce choix : suggestions de
- * prestations, catégories du catalogue, textes.
+ * INSCRIPTION PRO EN 3 ÉCRANS (15 nov. 2026, demande du propriétaire : « droit au but, pré-remplis le
+ * reste »). Écran 1 sur 3 : « Votre salon » — pour qui (Hommes / Femmes, deux tuiles) ET le nom, avec
+ * le lien de réservation vérifié en direct. Plus de question « spécialités » : toutes celles du marché
+ * sont prises d'office (au plus 6), modifiables ensuite dans Mon salon. Suite : l'adresse (écran 2),
+ * puis les prestations pré-remplies (écran 3) et la mise en ligne.
  */
-import { ICONE } from '@/lib/actionIcons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Check, Sparkles, Users } from 'lucide-react';
-import { MARKET_LABELS_FR, categoriesForMarket, type Market } from '@salondz/constants';
+import { Check, Store } from 'lucide-react';
+import { useApi } from '@salondz/api-client';
+import { MARKET_LABELS_FR, SERVICE_TEMPLATES, categoriesForMarket, type Market } from '@salondz/constants';
 import { DESIGN_IMAGES } from '@/lib/authFlow';
 import { readProDraft, writeProDraft } from '@/lib/proDraft';
-import { Button, I } from '@/components/ui';
-import { MAX_SPECIALTIES, SpecialtiesGrid } from '@/components/SpecialtiesGrid';
-import { Screen, SHEET_PAD, SHEET_PAD_2 } from '@/components/AppFrame';
+import { Badge, Field, I, Input } from '@/components/ui';
+import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
+import { env } from '@/lib/env';
 import { t } from '@/i18n';
 
 const CARDS: { id: Market; img: string }[] = [
@@ -22,84 +23,85 @@ const CARDS: { id: Market; img: string }[] = [
   { id: 'women', img: DESIGN_IMAGES.marketWomen.src },
 ];
 
+/** Spécialités prises d'office : celles du marché qui ont des prestations types, au plus 6. */
+export function defaultSpecialties(market: Market): string[] {
+  const cats = categoriesForMarket(market);
+  const withTpl = cats.filter((c) => (SERVICE_TEMPLATES[c.id as keyof typeof SERVICE_TEMPLATES] ?? []).length > 0);
+  return (withTpl.length ? withTpl : cats).slice(0, 6).map((c) => c.id);
+}
+
 export function Step1Market() {
   const navigate = useNavigate();
+  const { api } = useApi();
   const draft = readProDraft();
   const [market, setMarket] = useState<Market | undefined>(draft.market);
-  const [chosen, setChosen] = useState<string[]>(draft.categoryIds ?? []);
-  const [phase, setPhase] = useState<'market' | 'specialties'>(draft.market && draft.categoryIds?.length ? 'specialties' : 'market');
+  const [name, setName] = useState(draft.name ?? '');
+  const [check, setCheck] = useState<{ slug: string; available: boolean } | null>(null);
+  const [checking, setChecking] = useState(false);
+  const host = env.siteUrl.replace(/^https?:\/\/(www\.)?/, '');
 
-  if (phase === 'specialties' && market) {
-    const cats = categoriesForMarket(market);
-    return (
-      <Screen bottom={SHEET_PAD_2} gap={16}>
-        <StepBar step={1} backTo={undefined} />
-        <StepTitle icon={Sparkles} sub={t('Une ou plusieurs.')}>
-          {t("Que proposez-vous ?")}
-        </StepTitle>
-        <SpecialtiesGrid items={cats} chosen={chosen} onChange={setChosen} />
-        <p className="p text-[0.857rem]">{t('{n} sur {max} spécialités · modifiable ensuite depuis Mon salon', { n: chosen.length, max: MAX_SPECIALTIES })}</p>
-        <StepSheet
-          disabled={chosen.length === 0}
-          secondary={
-            <Button variant="g" icon={ICONE.changer} onClick={() => setPhase('market')}>
-              {t("Changer de marché")}
-            </Button>
-          }
-          onClick={() => {
-            writeProDraft({ market, categoryIds: chosen });
-            navigate(stepPath(2));
-          }}
-        />
-      </Screen>
-    );
-  }
+  useEffect(() => {
+    const v = name.trim();
+    if (v.length < 2) return setCheck(null);
+    setChecking(true);
+    const timer = setTimeout(() => {
+      api.pro
+        .slugCheck(v)
+        .then((r) => setCheck(r))
+        .catch(() => setCheck(null))
+        .finally(() => setChecking(false));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [name, api]);
+
+  const taken = !!check && !check.available && !checking;
+  const ready = !!market && name.trim().length >= 2 && !taken;
 
   return (
-    <Screen bottom={SHEET_PAD} gap={16}>
+    <Screen bottom={SHEET_PAD} gap={14}>
       <StepBar step={1} backTo="/pro/bienvenue" />
-      <StepTitle icon={Users} sub={t('Votre clientèle.')}>
-        {t("Pour qui travaillez-vous ?")}
+      <StepTitle icon={Store} sub={t('Deux réponses, et votre page est presque prête.')}>
+        {t('Votre salon')}
       </StepTitle>
-      {CARDS.map((c) => {
-        const on = market === c.id;
-        return (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => {
-              if (market !== c.id) setChosen([]);
-              setMarket(c.id);
-            }}
-            aria-pressed={on}
-            className={`relative h-[9.5rem] w-full overflow-hidden rounded-[var(--radius-card)] text-start transition-[box-shadow,opacity] ${on ? 'ring-2 ring-ink ring-offset-2 ring-offset-bg' : market ? 'opacity-70' : ''}`}
-          >
-            <img src={c.img} alt="" className="h-full w-full object-cover" />
-            <div className="ovl" />
-            <span
-              className={`absolute end-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 ${on ? 'border-white bg-white text-ink' : 'border-white/70 text-transparent'}`}
-              aria-hidden
-            >
-              <I icon={Check} size={18} />
-            </span>
-            <div className="ovl-t">
-              <div className="text-[1.429rem] font-semibold leading-[1.1] tracking-[-0.6px]">{t(MARKET_LABELS_FR[c.id])}</div>
-              <div className="mt-1 text-[0.857rem] leading-[1.35] text-white/85">
-                {categoriesForMarket(c.id)
-                  .slice(0, 5)
-                  .map((x) => t(x.labelFr))
-                  .join(' · ')}
-              </div>
-            </div>
-          </button>
-        );
-      })}
+
+      <div className="obm" role="radiogroup" aria-label={t('Pour qui travaillez-vous ?')}>
+        {CARDS.map((c) => {
+          const on = market === c.id;
+          return (
+            <button key={c.id} type="button" role="radio" aria-checked={on} className={`obm-c${on ? ' on' : ''}`} onClick={() => setMarket(c.id)}>
+              <img src={c.img} alt="" />
+              <span className="obm-v" />
+              {on && (
+                <span className="obm-ok" aria-hidden>
+                  <I icon={Check} size={16} strokeWidth={2.6} />
+                </span>
+              )}
+              <b>{t(MARKET_LABELS_FR[c.id])}</b>
+            </button>
+          );
+        })}
+      </div>
+
+      <Field label={t('Nom du salon')} htmlFor="salon-name">
+        <Input id="salon-name" lg className={name ? 'f' : ''} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={t('Salon Sarah')} />
+      </Field>
+      {check && (
+        <div className="flex items-center gap-2 px-1">
+          <span className="min-w-0 flex-1 truncate text-[0.929rem] text-muted" dir="ltr">
+            {host}/{check.slug}
+          </span>
+          <Badge tone={taken ? 'cn' : 'ok'} md>
+            {checking ? t('Vérification…') : taken ? t('Déjà pris') : t('Disponible')}
+          </Badge>
+        </div>
+      )}
+
       <StepSheet
-        disabled={!market}
-        hint={t("Modifiable ensuite depuis Mon salon.")}
+        disabled={!ready}
+        hint={t('Tout se modifie ensuite depuis Mon salon.')}
         onClick={() => {
-          writeProDraft({ market });
-          setPhase('specialties');
+          writeProDraft({ market, name: name.trim(), categoryIds: defaultSpecialties(market!) });
+          navigate(stepPath(4));
         }}
       />
     </Screen>
