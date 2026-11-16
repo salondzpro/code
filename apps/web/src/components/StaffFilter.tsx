@@ -14,8 +14,13 @@ import type { Staff } from '@salondz/types';
 import { I } from '@/components/ui';
 import { t } from '@/i18n';
 
-/** Couleurs claires, bien distinctes, texte en encre lisible dessus. */
-const COULEURS = ['#ffd6e0', '#cfe4ff', '#d3f4dd', '#ffe3bd', '#e5dbff', '#c9f0f2', '#fff1b0', '#f9d6ca', '#dcebc6', '#f3d9f7'];
+/**
+ * Couleurs claires des MEMBRES, texte en encre lisible dessus. RÈGLE (16 nov. 2026, demande du
+ * propriétaire) : jamais une couleur de STATUT de rendez-vous — orange (à valider), bleu (confirmé),
+ * vert (en cours), rouge (absent), gris (terminé), voir `--st` dans `index.css`. Les membres prennent
+ * donc d'autres teintes : rose, lavande, jaune, mauve, sable, puis leurs variantes.
+ */
+const COULEURS = ['#ffd4e6', '#e6dbff', '#fff0a3', '#f5d3f2', '#ece1cf', '#ddd0f0', '#ffe3f0', '#f0eac0'];
 
 /** Couleur du rond du membre n° `i` (ordre de l'équipe : actifs, triés). */
 export const couleurMembre = (i: number) => COULEURS[Math.max(0, i) % COULEURS.length]!;
