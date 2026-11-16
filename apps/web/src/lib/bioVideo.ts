@@ -26,7 +26,7 @@ const H = 1280;
 export const BIO_VIDEO_SIZE = { width: W, height: H };
 export const BIO_VIDEO_MS = 18500;
 /** Change à chaque nouveau dessin : la vidéo préparée et gardée sur l'appareil est refaite. */
-const DESIGN = 3;
+const DESIGN = 4;
 
 // Charte actuelle (docs/CHARTE.md) : encre, gris, fond, vert de « oui », étoile dorée.
 const INK = '#111111';
@@ -43,7 +43,15 @@ const f = (w: number, px: number) => `${w} ${px}px ${FONT}`;
 /** Le téléphone mesure 390 × 844, comme l'écran pour lequel l'application est dessinée. */
 const PW = 390;
 const PH = 844;
-const PHONE = { x: (W - PW) / 2, y: 372, s: 1 };
+/**
+ * FORMAT STORY INSTAGRAM (17 nov. 2026 : la vidéo se publie en story). Instagram couvre le HAUT (barres
+ * de progression, photo et nom du compte : ~170 px ici) et le BAS (« Envoyer un message » : ~230 px).
+ * Tout ce qui compte tient donc entre 170 et 1050 : titres en haut de cette zone, téléphone réduit
+ * dessous, ses boutons du bas toujours visibles.
+ */
+const SAFE_TOP = 176;
+const PHONE_S = 0.82;
+const PHONE = { x: (W - PW * PHONE_S) / 2, y: 356, s: PHONE_S };
 
 type Picture = HTMLImageElement | null;
 type Day = { label: string; n: string; past: boolean; on: boolean };
@@ -864,46 +872,40 @@ function drawStepTitle(g: CanvasRenderingContext2D, ms: number, d: BioVideoData)
   const step = [...stepsOf(d)].reverse().find((x) => ms >= x.from);
   if (!step) return;
   const k = ms - step.from;
-  // Barre de progression : une case par étape.
-  const seg = (W - 96 - (ETAPES - 1) * 12) / ETAPES;
-  for (let i = 0; i < ETAPES; i += 1) {
-    const done = step.n === 0 || (step.n > 0 && i < step.n - 1) ? 1 : step.n > 0 && i === step.n - 1 ? clamp(k / 500) : 0;
-    const x = 48 + i * (seg + 12);
-    box(g, x, 70, seg, 6, 3, FILL);
-    if (done > 0) box(g, x, 70, seg * done, 6, 3, INK);
-  }
+  // Pas de barres de progression : en story, Instagram affiche déjà les siennes juste au-dessus.
+  const y0 = SAFE_TOP + 8;
   const a = out(k / 380);
   g.save();
   g.globalAlpha = a;
-  g.translate(0, (1 - a) * 22);
+  g.translate(0, (1 - a) * 18);
   if (step.n > 0) {
-    box(g, 48, 118, 148, 44, 22, INK);
-    line(g, t('Étape {n} sur {total}', { n: step.n, total: ETAPES }), 122, 147, f(600, 19), '#ffffff', 'center');
+    box(g, 48, y0, 148, 40, 20, INK);
+    line(g, t('Étape {n} sur {total}', { n: step.n, total: ETAPES }), 122, y0 + 27, f(600, 18), '#ffffff', 'center');
   } else if (step.n < 0) {
-    const ig = g.createLinearGradient(48, 162, 210, 118);
+    const ig = g.createLinearGradient(48, y0 + 40, 210, y0);
     IG.forEach((c, i) => ig.addColorStop(i / (IG.length - 1), c));
-    box(g, 48, 118, 162, 44, 22, null);
+    box(g, 48, y0, 156, 40, 20, null);
     g.fillStyle = ig;
     g.fill();
-    line(g, 'Instagram', 129, 147, f(700, 19), '#ffffff', 'center');
+    line(g, 'Instagram', 126, y0 + 27, f(700, 18), '#ffffff', 'center');
   } else {
     g.fillStyle = GREEN;
     g.beginPath();
-    g.arc(70, 140, 22, 0, Math.PI * 2);
+    g.arc(68, y0 + 20, 20, 0, Math.PI * 2);
     g.fill();
     g.strokeStyle = '#ffffff';
     g.lineWidth = 4;
     g.lineCap = 'round';
     g.beginPath();
-    g.moveTo(60, 141);
-    g.lineTo(67, 148);
-    g.lineTo(81, 132);
+    g.moveTo(59, y0 + 21);
+    g.lineTo(66, y0 + 28);
+    g.lineTo(78, y0 + 13);
     g.stroke();
   }
-  const px = fit(g, step.title, 800, 54, W - 96);
-  line(g, step.title, 48, 236, f(800, px), INK);
+  const px = fit(g, step.title, 800, 46, W - 96);
+  line(g, step.title, 48, y0 + 92, f(800, px), INK);
   g.restore();
-  line(g, step.n < 0 ? `@${d.handle}` : d.salon, 48, 292, f(500, 22), MUTED, 'left', W - 96);
+  line(g, step.n < 0 ? `@${d.handle}` : d.salon, 48, y0 + 128, f(500, 20), MUTED, 'left', W - 96);
 }
 
 /** L'ouverture, brève : le logo et le nom du salon, « Comment réserver chez nous ». */
@@ -954,7 +956,7 @@ function drawBackdrop(g: CanvasRenderingContext2D, d: BioVideoData) {
 function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   const a = spring(ms / 600);
   g.save();
-  g.translate(W / 2, 330);
+  g.translate(W / 2, 320);
   g.scale(a, a);
   g.strokeStyle = '#ffffff';
   g.lineWidth = 8;
@@ -964,34 +966,34 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   avatar(g, d, 0, 0, 78);
   g.restore();
   g.globalAlpha = out((ms - 250) / 450);
-  line(g, d.salon, W / 2, 500, f(800, fit(g, d.salon, 800, 58, W - 80)), INK, 'center');
+  line(g, d.salon, W / 2, 478, f(800, fit(g, d.salon, 800, 56, W - 80)), INK, 'center');
   if (d.rating) {
     g.font = f(600, 26);
     const w = g.measureText(d.rating).width;
-    star(g, W / 2 - w / 2 - 6, 541, 13);
-    line(g, d.rating, W / 2 + 14, 550, f(600, 26), INK, 'center');
+    star(g, W / 2 - w / 2 - 6, 517, 13);
+    line(g, d.rating, W / 2 + 14, 526, f(600, 26), INK, 'center');
   }
   g.globalAlpha = out((ms - 550) / 450);
-  line(g, t('Réservez en 30 secondes.'), W / 2, 650, f(700, 40), INK, 'center', W - 80);
+  line(g, t('Réservez en 30 secondes.'), W / 2, 616, f(700, 40), INK, 'center', W - 80);
   // Le lien, en gros bouton noir : le curseur vient le cliquer.
   g.globalAlpha = out((ms - 850) / 450);
   const pressed = pressedAt(ms + T.end, TAP.link);
   g.save();
-  pressScale(g, W / 2, 790, pressed);
-  box(g, 50, 750, W - 100, 84, 42, INK);
+  pressScale(g, W / 2, 730, pressed);
+  box(g, 50, 690, W - 100, 84, 42, INK);
   // Le lien EN ENTIER : la taille baisse plutôt que de le couper.
   const lp = fit(g, d.link, 700, 30, W - 150);
-  line(g, d.link, W / 2, 803, f(700, lp), '#ffffff', 'center', W - 140);
+  line(g, d.link, W / 2, 743, f(700, lp), '#ffffff', 'center', W - 140);
   g.restore();
-  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 890, f(500, 24), MUTED, 'center', W - 80);
+  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 826, f(500, 24), MUTED, 'center', W - 80);
   g.globalAlpha = out((ms - 1300) / 450);
-  line(g, `Salon DZ · ${t('réservation en ligne')}`, W / 2, 1180, f(500, 20), SUBTLE, 'center');
+  line(g, `Salon DZ · ${t('réservation en ligne')}`, W / 2, 1010, f(500, 20), SUBTLE, 'center');
   g.globalAlpha = 1;
   // Dernier clic, sur le lien.
   const keys: [number, number, number][] = [
-    [T.end + 1300, 600, 1150],
-    [TAP.link - 150, W - 150, 780],
-    [TAP.link + 700, W - 150, 780],
+    [T.end + 1300, 600, 1000],
+    [TAP.link - 150, W - 150, 720],
+    [TAP.link + 700, W - 150, 720],
   ];
   const at = cursorAt(keys, ms + T.end);
   if (at) drawCursor(g, at[0], at[1], ms + T.end, [TAP.link], 1.5);
