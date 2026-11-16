@@ -290,28 +290,38 @@ export function TeamMember() {
         </p>
       )}
       {!isOwner &&
+        // SUPPRIMER (16 nov. 2026, demande du propriétaire) : l'interrupteur du haut active / désactive,
+        // ce bouton retire le membre de l'équipe et de l'agenda pour de bon. Son nom reste sur ses
+        // anciens rendez-vous (le serveur le marque supprimé au lieu de l'effacer s'il a un historique).
         (confirmRemove ? (
-          <Button icon={ICONE.retirerMembre}
-            className="!bg-danger !text-white"
-            disabled={remove.isPending}
-            onClick={async () => {
-              try {
-                await remove.mutateAsync(member.id);
-                navigate('/pro/equipe', { replace: true });
-              } catch (err) {
-                setError(errorText(err));
-              }
-            }}
-          >
-            {t("Confirmer le retrait")}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <p className="p text-center">{t('Son nom reste sur ses anciens rendez-vous.')}</p>
+            <Button icon={ICONE.supprimer}
+              className="!bg-danger !text-white"
+              loading={remove.isPending}
+              disabled={remove.isPending}
+              onClick={async () => {
+                try {
+                  await remove.mutateAsync(member.id);
+                  navigate('/pro/equipe', { replace: true });
+                } catch (err) {
+                  setError(errorText(err));
+                }
+              }}
+            >
+              {t('Supprimer {nom}', { nom: member.displayName })}
+            </Button>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setConfirmRemove(false)}>
+              {t('Garder')}
+            </Button>
+          </div>
         ) : (
           <button
             type="button"
             className="py-2 text-[1rem] text-danger"
             onClick={() => setConfirmRemove(true)}
           >
-            {t("Retirer de l'équipe")}
+            {t('Supprimer')}
           </button>
         ))}
       {cropAvatar && (

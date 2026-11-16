@@ -663,7 +663,9 @@ on('POST', '/bookings/:id/review', (c, p) => {
 // ---------------------------------------------------------------------------------------------
 on('GET', '/pro/salon', (c) => {
   const u = requireUser(c);
-  return ok({ salon: c.w.salons.find((x) => x.ownerId === u.id) ?? null });
+  const s = c.w.salons.find((x) => x.ownerId === u.id) ?? null;
+  // Membres supprimés (comme l'API, 0058) : hors de l'équipe et de l'agenda.
+  return ok({ salon: s ? { ...s, staff: s.staff.filter((m) => !(m as { deletedAt?: string }).deletedAt) } : null });
 });
 on('POST', '/pro/salon', (c) => {
   requireUser(c);
@@ -874,10 +876,14 @@ on('DELETE', '/pro/staff/:id', (c, p) => {
   const m = s.staff.find((x) => x.id === p.id);
   if (!m) throw notFound('Membre');
   if (!s.staff.some((x) => x.isActive && x.id !== m.id)) throw conflict('LAST_STAFF', 'Il faut au moins un membre actif.');
+  const avenir = c.w.bookings.filter((b) => b.staffId === m.id && (b.status === 'pending' || b.status === 'confirmed') && Date.parse(b.startsAt) >= Date.now()).length;
+  if (avenir) throw conflict('STAFF_HAS_UPCOMING', `Ce membre a encore ${avenir} rendez-vous à venir : confiez-les à quelqu'un d'autre avant de le supprimer.`);
   if (c.w.bookings.some((b) => b.staffId === m.id)) {
+    // Historique : marqué supprimé, son nom reste sur ses anciens rendez-vous.
     m.isActive = false;
+    (m as { deletedAt?: string }).deletedAt = new Date().toISOString();
     touch(c.w, s);
-    return ok({ deleted: false, deactivated: true });
+    return ok({ deleted: true, deactivated: false });
   }
   s.staff = s.staff.filter((x) => x.id !== m.id);
   touch(c.w, s);

@@ -15,7 +15,7 @@ export const PHOTO_COLS = 'id, salon_id, url, sort_order, kind';
 export const SERVICE_COLS =
   'id, salon_id, name, description, duration_minutes, price_da, category_id, group_name, is_active, sort_order';
 export const STAFF_COLS =
-  'id, salon_id, user_id, display_name, phone, avatar_url, is_active, sort_order, all_services';
+  'id, salon_id, user_id, display_name, phone, avatar_url, is_active, sort_order, all_services, deleted_at';
 export const STAFF_SELECT = `${STAFF_COLS}, staff_services(service_id)`;
 export const HOURS_COLS = 'id, salon_id, day_of_week, opens_at, closes_at, is_closed';
 export const BOOKING_COLS =
@@ -73,7 +73,8 @@ function composeSalon(row: Row): SalonOwnerView {
         };
       }),
     ),
-    staff: sortBy((staff ?? []).map((m) => mapStaff(m))),
+    // Membres SUPPRIMÉS (0058) : hors de l'équipe et de l'agenda ; leur nom reste sur l'historique.
+    staff: sortBy((staff ?? []).filter((m) => !m.deleted_at).map((m) => mapStaff(m))),
     openingHours: mapHours(opening_hours ?? []),
   };
 }

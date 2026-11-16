@@ -2227,4 +2227,7 @@ export const en: Record<string, string> = {
   "Réservez en 3 étapes": "Book in 3 steps",
   "Réservez en 30 secondes.": "Book in 30 seconds.",
   "Lien dans la bio": "Link in bio",
+  // Accès (14-16 nov. 2026)
+  "Son nom reste sur ses anciens rendez-vous.": "Their name stays on past appointments.",
+  "Supprimer {nom}": "Delete {nom}",
 };

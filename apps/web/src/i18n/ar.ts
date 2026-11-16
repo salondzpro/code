@@ -2213,4 +2213,7 @@ export const ar: Record<string, string> = {
   "Réservez en 3 étapes": "احجز في 3 خطوات",
   "Réservez en 30 secondes.": "احجز في 30 ثانية.",
   "Lien dans la bio": "الرابط في السيرة",
+  // Accès (14-16 nov. 2026)
+  "Son nom reste sur ses anciens rendez-vous.": "يبقى اسمه على مواعيده السابقة.",
+  "Supprimer {nom}": "حذف {nom}",
 };

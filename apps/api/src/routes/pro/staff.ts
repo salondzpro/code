@@ -66,18 +66,39 @@ const proStaffRoutes: FastifyPluginAsyncZod = async (app) => {
     return loadStaff(salonId, req.params.id);
   });
 
-  /** Supprime si aucune réservation, sinon désactive. */
+  /**
+   * SUPPRIMER UN MEMBRE (16 nov. 2026, demande du propriétaire ; migration 0058). Sans aucun rendez-vous :
+   * effacé. Avec un historique : marqué SUPPRIMÉ (`deleted_at`, et inactif) — il disparaît de l'équipe,
+   * de l'agenda et de la réservation, mais son nom reste sur ses anciens rendez-vous. Refusé tant qu'il
+   * a des rendez-vous À VENIR (ils perdraient leur colonne) : on les confie d'abord à quelqu'un d'autre.
+   */
   app.delete('/staff/:id', { schema: { params: z.object({ id: uuid }) } }, async (req) => {
     const salonId = req.salon!.id;
-    const { count } = await db.from('staff').select('id', { count: 'exact', head: true }).eq('salon_id', salonId).eq('is_active', true).neq('id', req.params.id);
+    const { count } = await db.from('staff').select('id', { count: 'exact', head: true }).eq('salon_id', salonId).eq('is_active', true).is('deleted_at', null).neq('id', req.params.id);
     if ((count ?? 0) === 0) throw conflict('LAST_STAFF', 'Il faut au moins un membre actif.');
+    const avenir = await db
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('salon_id', salonId)
+      .eq('staff_id', req.params.id)
+      .in('status', ['pending', 'confirmed'])
+      .gte('starts_at', new Date().toISOString());
+    if (avenir.error) throw avenir.error;
+    if ((avenir.count ?? 0) > 0)
+      throw conflict('STAFF_HAS_UPCOMING', `Ce membre a encore ${avenir.count} rendez-vous à venir : confiez-les à quelqu'un d'autre avant de le supprimer.`);
     const del = await db.from('staff').delete().eq('id', req.params.id).eq('salon_id', salonId).select('id').maybeSingle();
     if (del.error) {
       if (del.error.code !== '23503') throw del.error;
-      const upd = await db.from('staff').update({ is_active: false }).eq('id', req.params.id).eq('salon_id', salonId).select('id').maybeSingle();
+      const upd = await db
+        .from('staff')
+        .update({ is_active: false, deleted_at: new Date().toISOString() })
+        .eq('id', req.params.id)
+        .eq('salon_id', salonId)
+        .select('id')
+        .maybeSingle();
       if (upd.error) throw upd.error;
       if (!upd.data) throw notFound('Membre');
-      return { deleted: false, deactivated: true };
+      return { deleted: true, deactivated: false };
     }
     if (!del.data) throw notFound('Membre');
     return { deleted: true, deactivated: false };
