@@ -99,9 +99,6 @@ export function ProCategories() {
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-[1rem] font-semibold">{g.name}</span>
-                      <span className="block text-[1rem] text-muted">
-                        {t('{n} prestation(s)', { n: g.services.length })}
-                      </span>
                     </span>
                   </span>
                   <span className="flex flex-none gap-2">
