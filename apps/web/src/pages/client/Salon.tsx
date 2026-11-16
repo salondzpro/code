@@ -15,7 +15,6 @@ import {
   Map as MapIcon,
   Phone,
   Ban,
-  Star,
 } from 'lucide-react';
 import { writeDraft } from '@/lib/bookingDraft';
 import { recordPageView } from '@/lib/pageView';
@@ -73,13 +72,11 @@ import { ReportReviewButton } from '@/components/ReportReview';
 import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
 import { cibleCarte, itineraireUrl } from '@/lib/maps';
+import { RatingLine } from '@/components/SalonListCard';
 import { t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
 type Tab = 'book' | 'reviews' | 'about';
-
-/** Étoile des avis : DORÉE (16 nov. 2026, demande du propriétaire), pleine. */
-const ETOILE = '#f5a623';
 
 /**
  * « Ouvert · ferme à 19:00 » / « Fermé · ouvre demain 09:00 ». `etat` (Ouvert / Fermé) s'affiche en
@@ -259,7 +256,7 @@ export function Salon() {
               <h1 className="h1 min-w-0 !text-[1.714rem]">{s.name}</h1>
               <button
                 type="button"
-                className={`flex flex-none items-center gap-1 text-[1rem]${s.ratingCount > 0 ? '' : ' text-muted'}`}
+                className="flex-none"
                 onClick={() => setTab('reviews')}
                 aria-label={
                   s.ratingCount > 0
@@ -267,15 +264,7 @@ export function Salon() {
                     : 'Avis : voir les avis'
                 }
               >
-                <Star size={17} strokeWidth={1.6} className="flex-none" fill={ETOILE} color={ETOILE} />
-                {s.ratingCount > 0 ? (
-                  <>
-                    <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
-                    <span className="text-muted">({s.ratingCount})</span>
-                  </>
-                ) : (
-                  <span>{t('Nouveau')}</span>
-                )}
+                <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
               </button>
             </div>
             <a

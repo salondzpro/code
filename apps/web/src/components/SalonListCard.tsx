@@ -37,18 +37,24 @@ export function RatingPill({
   );
 }
 
-/** Ligne d'avis des cartes (Planity : « ☆ 4,9 (383 avis) ») ; sans avis : « Nouveau sur Salon DZ ». */
+/** Étoile des avis : DORÉE et pleine (16 nov. 2026, demande du propriétaire). */
+export const ETOILE = '#f5a623';
+
+/**
+ * LA ligne d'avis, compacte (16 nov. 2026) : « ★ 4,9 (64) », étoile dorée ; sans avis : « ★ Nouveau ».
+ * Même rendu sur les cartes de la place de marché et sur la page du salon.
+ */
 export function RatingLine({ avg, count }: { avg: number; count: number }) {
   return (
-    <span className="flex items-center gap-1.5 text-[1rem]">
-      <I icon={Star} size={18} className="flex-none" />
+    <span className="flex flex-none items-center gap-1 text-[1rem]">
+      <Star size={17} strokeWidth={1.6} className="flex-none" fill={ETOILE} color={ETOILE} />
       {count > 0 ? (
         <>
-          <b className="text-[1rem]">{formatRating(avg)}</b>
-          <span className="text-muted">({t('{n} avis', { n: count })})</span>
+          <b className="font-semibold">{formatRating(avg)}</b>
+          <span className="text-muted">({count})</span>
         </>
       ) : (
-        <span className="font-medium text-muted">{t("Nouveau sur Salon DZ")}</span>
+        <span className="text-muted">{t('Nouveau')}</span>
       )}
     </span>
   );
