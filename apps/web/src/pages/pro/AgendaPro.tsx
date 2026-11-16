@@ -40,7 +40,6 @@ import { STATUT_COULEUR, statutCle, type StatutCle } from '@/lib/statusColors';
 import { formatDuration } from '@/lib/format';
 import { useDesktop } from '@/lib/breakpoint';
 import {
-  Avatar,
   Badge,
   I,
   IconButton,
@@ -784,18 +783,8 @@ function DayColumns({
         )}
       </div>
     )}
-    {/* Qui travaille dans quelle colonne : le nom en tête de SA colonne (le filtre est la liste déroulante). */}
-    {narrow && (
-      <div className="ag9-ch" style={{ paddingInlineStart: GUTTER, gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
-        {columns.map((col) => (
-          <div key={col.id ?? 'all'} className="ag9-chc">
-            <Avatar src={col.avatarUrl} name={col.name} size={24} />
-            <b>{col.name}</b>
-            <span>{items.filter((b) => inCol(col, b.staffId)).length}</span>
-          </div>
-        ))}
-      </div>
-    )}
+    {/* Plus de rangée de membres au-dessus des colonnes (16 nov. 2026, demande du propriétaire) : on
+        choisit qui l'on regarde dans la liste déroulante « Toute l'équipe ». */}
     <div className="ag9-g" style={{ height, paddingInlineStart: GUTTER }}>
       {halfMarks.map((m) => (
         <div key={`h${m}`} className="ag9-hr half" style={{ top: top(m) }} aria-hidden />
