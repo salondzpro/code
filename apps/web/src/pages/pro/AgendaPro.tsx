@@ -369,7 +369,7 @@ export function AgendaPro() {
             onSelect={setDate}
             onView={setStripDay}
           />
-          {/* Filtre par membre (15 nov. 2026) : une liste déroulante, « Toute l'équipe » par défaut. */}
+          {/* Filtre par membre (16 nov. 2026) : ronds d'initiales colorés, « Tous » par défaut. */}
           <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} counts={staffCounts} nameOf={nameOf} />
           <DayCarousel
             date={date}

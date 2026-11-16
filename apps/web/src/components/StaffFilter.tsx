@@ -1,92 +1,85 @@
 /**
- * FILTRE PAR MEMBRE DE L'AGENDA (15 nov. 2026, demande du propriétaire) : une LISTE DÉROULANTE, comme
- * un menu iOS. Le bouton dit qui est affiché (« Toute l'équipe » par défaut, ou le membre choisi, avec
- * sa photo) ; il ouvre la liste : Toute l'équipe, puis chaque membre avec son nombre de rendez-vous du
- * jour, une coche sur le choix en cours. Toucher dehors ou Échap referme. Rien sans équipe (< 2 actifs).
+ * FILTRE PAR MEMBRE DE L'AGENDA — RONDS D'INITIALES (16 nov. 2026, demande du propriétaire ; remplace
+ * la liste déroulante du 15 nov.). Un rond « Tous » (toute l'équipe, par défaut) puis un rond par
+ * membre : ses initiales sur une couleur CLAIRE qui lui est propre. Toucher un rond = ne voir que lui ;
+ * le rond choisi est cerclé d'encre. Rien sans équipe (< 2 membres actifs).
+ *
+ * Initiales (règle du propriétaire), sur le PRÉNOM :
+ *   1. la première lettre ;
+ *   2. si un autre prénom commence par la même lettre : la première ET la deuxième (« Sa », « So ») ;
+ *   3. si un autre prénom a les mêmes deux premières lettres : la première ET la dernière (« Sa », « Sm »).
  */
-import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import type { Staff } from '@salondz/types';
-import { Avatar, I } from '@/components/ui';
+import { I } from '@/components/ui';
 import { t } from '@/i18n';
+
+/** Couleurs claires, bien distinctes, texte en encre lisible dessus. */
+const COULEURS = ['#ffd6e0', '#cfe4ff', '#d3f4dd', '#ffe3bd', '#e5dbff', '#c9f0f2', '#fff1b0', '#f9d6ca', '#dcebc6', '#f3d9f7'];
+
+const prenom = (nom: string) => nom.trim().split(/\s+/)[0] || '?';
+const bas = (s: string) => s.toLocaleLowerCase('fr');
+
+/** Les initiales de chaque nom, selon la règle ci-dessus (même ordre que `noms`). */
+export function initialesEquipe(noms: string[]): string[] {
+  const prenoms = noms.map(prenom);
+  return prenoms.map((p, i) => {
+    const autres = prenoms.filter((_, j) => j !== i);
+    const une = p.charAt(0).toLocaleUpperCase('fr');
+    const memeLettre = autres.filter((q) => bas(q.charAt(0)) === bas(p.charAt(0)));
+    if (!memeLettre.length || p.length < 2) return une;
+    const deux = une + bas(p.charAt(1));
+    if (!memeLettre.some((q) => bas(q.slice(0, 2)) === bas(p.slice(0, 2)))) return deux;
+    return une + bas(p.charAt(p.length - 1));
+  });
+}
 
 export function StaffFilter({
   staff,
   value,
   onChange,
-  counts,
   nameOf = (m) => m.displayName,
 }: {
   staff: Staff[];
   value: string | null;
   onChange: (id: string | null) => void;
-  /** Rendez-vous par membre (clé = id, `all` = toute l'équipe), affichés dans la liste. */
+  /** Gardé pour compatibilité : les ronds n'affichent plus de compteur. */
   counts?: Record<string, number>;
-  /** Nom affiché d'un membre (« Vous » pour soi, comme en tête des colonnes). */
+  /** Nom lu par la synthèse vocale (« Vous » pour soi). */
   nameOf?: (m: Staff) => string;
 }) {
-  const [open, setOpen] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: PointerEvent) => {
-      if (!box.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
-    document.addEventListener('pointerdown', away);
-    document.addEventListener('keydown', esc);
-    return () => {
-      document.removeEventListener('pointerdown', away);
-      document.removeEventListener('keydown', esc);
-    };
-  }, [open]);
-
   const members = staff.filter((m) => m.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   if (members.length < 2) return null;
+  const initiales = initialesEquipe(members.map((m) => m.displayName));
   const current = members.find((m) => m.id === value) ?? null;
-  const pick = (id: string | null) => {
-    onChange(id);
-    setOpen(false);
-  };
-  const n = (k: string) => (counts && counts[k] != null ? <span className="stf-n">{counts[k]}</span> : null);
 
   return (
-    <div className="stf" ref={box}>
-      <button type="button" className={`stf-b${open ? ' on' : ''}`} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {current ? (
-          <Avatar src={current.avatarUrl} name={current.displayName} size={24} />
-        ) : (
-          <span className="stf-ic" aria-hidden>
-            <I icon={Users} size={15} />
-          </span>
-        )}
-        <b>{current ? nameOf(current) : t("Toute l'équipe")}</b>
-        <I icon={ChevronDown} size={16} className="stf-chev" />
+    <div className="stc" role="radiogroup" aria-label={t('Filtrer par membre')}>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={!current}
+        aria-label={t("Toute l'équipe")}
+        className={`stc-r tous${!current ? ' on' : ''}`}
+        onClick={() => onChange(null)}
+      >
+        <I icon={Users} size={18} />
       </button>
-      {open && (
-        <ul className="stf-l" role="listbox" aria-label={t('Filtrer par membre')}>
-          <li>
-            <button type="button" role="option" aria-selected={!current} onClick={() => pick(null)}>
-              <span className="stf-ic" aria-hidden>
-                <I icon={Users} size={15} />
-              </span>
-              <b>{t("Toute l'équipe")}</b>
-              {n('all')}
-              {!current && <I icon={Check} size={17} className="stf-ok" />}
-            </button>
-          </li>
-          {members.map((m) => (
-            <li key={m.id}>
-              <button type="button" role="option" aria-selected={current?.id === m.id} onClick={() => pick(m.id)}>
-                <Avatar src={m.avatarUrl} name={m.displayName} size={28} />
-                <b>{nameOf(m)}</b>
-                {n(m.id)}
-                {current?.id === m.id && <I icon={Check} size={17} className="stf-ok" />}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {members.map((m, i) => (
+        <button
+          key={m.id}
+          type="button"
+          role="radio"
+          aria-checked={current?.id === m.id}
+          aria-label={nameOf(m)}
+          title={nameOf(m)}
+          className={`stc-r${current?.id === m.id ? ' on' : ''}`}
+          style={{ background: COULEURS[i % COULEURS.length] }}
+          onClick={() => onChange(current?.id === m.id ? null : m.id)}
+        >
+          {initiales[i]}
+        </button>
+      ))}
     </div>
   );
 }
