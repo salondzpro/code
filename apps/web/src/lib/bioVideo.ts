@@ -24,9 +24,9 @@ import { t } from '@/i18n';
 const W = 720;
 const H = 1280;
 export const BIO_VIDEO_SIZE = { width: W, height: H };
-export const BIO_VIDEO_MS = 14500;
+export const BIO_VIDEO_MS = 18500;
 /** Change à chaque nouveau dessin : la vidéo préparée et gardée sur l'appareil est refaite. */
-const DESIGN = 2;
+const DESIGN = 3;
 
 // Charte actuelle (docs/CHARTE.md) : encre, gris, fond, vert de « oui », étoile dorée.
 const INK = '#111111';
@@ -270,16 +270,22 @@ function pressScale(g: CanvasRenderingContext2D, cx: number, cy: number, on: boo
 
 /* ------------------------------ Le minutage ------------------------------ */
 
-/** Les quatre écrans et la fin. */
+/**
+ * Le parcours RÉEL d'une cliente (17 nov. 2026, demande du propriétaire) : le profil Instagram du
+ * salon, le lien de sa bio touché, la page du salon qui s'ouvre, la prestation, le jour et l'heure, la
+ * fenêtre d'inscription, la confirmation, puis la fin.
+ */
 const T = {
-  phoneIn: 1100,
-  stepWhen: 3800,
-  stepRecap: 7600,
-  done: 9300,
-  end: 10900,
+  phoneIn: 700,
+  browser: 2600,
+  stepWhen: 4700,
+  signup: 8200,
+  stepRecap: 10900,
+  done: 12500,
+  end: 14200,
 };
-/** Les clics (curseur), dans l'ordre : Choisir, le jour, l'heure, Continuer, Confirmer, le lien de fin. */
-const TAP = { choose: 3100, day: 4700, hour: 5900, next: 7000, confirm: 8800, link: 13200 };
+/** Les clics du curseur, dans l'ordre du parcours. */
+const TAP = { bio: 2250, choose: 4050, day: 5500, hour: 6600, next: 7700, femme: 9800, create: 10500, confirm: 12050, link: 16900 };
 
 /* ------------------------------ Les écrans ------------------------------ */
 
@@ -497,6 +503,168 @@ function screenDone(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
   g.globalAlpha = 1;
 }
 
+/* ------------------------------ Instagram et inscription ------------------------------ */
+
+/** Le lien de la bio, là où le curseur clique (coordonnées de l'écran du téléphone). */
+const BIO_LINK = { x: 150, y: 289 };
+/** Dégradé de la bague Instagram (couleurs officielles de la marque). */
+const IG = ['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5'];
+
+/** Le profil Instagram DU SALON : son nom de compte, ses vraies photos, son lien en bio. */
+function screenInstagram(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, 0, PW, PH);
+  // En-tête : retour, nom du compte, menu.
+  g.save();
+  g.strokeStyle = INK;
+  g.lineWidth = 2;
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  chevronLeft(g, 26, 82);
+  g.restore();
+  line(g, d.handle, 50, 88, f(700, 17), INK, 'left', 260);
+  [0, 1, 2].forEach((i) => {
+    g.fillStyle = INK;
+    g.beginPath();
+    g.arc(352 + i * 7, 82, 2, 0, Math.PI * 2);
+    g.fill();
+  });
+  // Photo du profil dans la bague Instagram.
+  const ring = g.createLinearGradient(20, 200, 108, 120);
+  IG.forEach((c, i) => ring.addColorStop(i / (IG.length - 1), c));
+  g.strokeStyle = ring;
+  g.lineWidth = 3.5;
+  g.beginPath();
+  g.arc(64, 160, 46, 0, Math.PI * 2);
+  g.stroke();
+  avatar(g, d, 64, 160, 40);
+  // Compteurs : sans chiffre inventé, la forme suffit à reconnaître Instagram.
+  [t('publications'), t('abonnés'), t('suivis')].forEach((x, i) => {
+    const cx = 178 + i * 76;
+    box(g, cx - 18, 140, 36, 14, 7, '#ececf0');
+    line(g, x, cx, 178, f(400, 12.5), INK, 'center');
+  });
+  line(g, d.salon, 18, 234, f(700, 15), INK, 'left', 354);
+  line(g, `${d.job} · ${d.city}`, 18, 255, f(400, 14), MUTED, 'left', 354);
+  line(g, t('Réservez en ligne, c’est ici :'), 18, 275, f(400, 14), INK, 'left', 354);
+  // Le lien de la bio : il s'éclaire quand on le touche.
+  if (pressedAt(ms, TAP.bio) || (ms > TAP.bio && ms < TAP.bio + 350)) box(g, 12, 280, 300, 24, 8, '#e8eefc');
+  g.save();
+  g.strokeStyle = '#00376b';
+  g.lineWidth = 1.6;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(22, 297);
+  g.lineTo(30, 289);
+  g.stroke();
+  g.beginPath();
+  g.roundRect(17, 290, 9, 5, 2.5);
+  g.roundRect(26, 286, 9, 5, 2.5);
+  g.stroke();
+  g.restore();
+  line(g, d.link, 40, 297, f(600, 14), '#00376b', 'left', 330);
+  box(g, 16, 316, 114, 34, 9, '#0095f6');
+  line(g, t('Suivre'), 73, 338, f(600, 14), '#ffffff', 'center');
+  box(g, 138, 316, 114, 34, 9, '#efefef');
+  line(g, t('Message'), 195, 338, f(600, 14), INK, 'center');
+  box(g, 260, 316, 114, 34, 9, '#efefef');
+  line(g, t('Contacter'), 317, 338, f(600, 14), INK, 'center');
+  // Grille de publications : les vraies photos du salon.
+  g.fillStyle = INK;
+  g.fillRect(0, 372, PW / 3, 1.5);
+  const size = (PW - 4) / 3;
+  const pics = [d.cover, ...d.grid].filter(Boolean) as HTMLImageElement[];
+  for (let i = 0; i < 9; i += 1) {
+    const x = (i % 3) * (size + 2);
+    const y = 376 + Math.floor(i / 3) * (size + 2);
+    if (pics.length) picture(g, pics[i % pics.length]!, x, y, size, size);
+    else box(g, x, y, size, size, 0, '#ececf0');
+  }
+}
+
+/** La barre du navigateur d'Instagram, en haut de la page qui s'ouvre. */
+function browserBar(g: CanvasRenderingContext2D, d: BioVideoData, alpha: number) {
+  if (alpha <= 0) return;
+  g.save();
+  g.globalAlpha = alpha;
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, 44, PW, 52);
+  g.fillStyle = '#ececf0';
+  g.fillRect(0, 95, PW, 1);
+  g.strokeStyle = INK;
+  g.lineWidth = 1.8;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(20, 63);
+  g.lineTo(32, 75);
+  g.moveTo(32, 63);
+  g.lineTo(20, 75);
+  g.stroke();
+  const host = d.link.split('/')[0] ?? d.link;
+  line(g, host, PW / 2, 68, f(600, 14), INK, 'center');
+  line(g, d.salon, PW / 2, 86, f(400, 11.5), MUTED, 'center', 240);
+  g.restore();
+}
+
+/** La fenêtre d'inscription : adresse, prénom, femme ou homme, « Créer mon compte ». */
+function signupSheet(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
+  const k = out((ms - T.signup) / 420);
+  g.fillStyle = `rgba(0,0,0,${0.35 * k})`;
+  g.fillRect(0, 0, PW, PH);
+  g.save();
+  g.translate(0, (1 - k) * 560);
+  g.save();
+  g.shadowColor = 'rgba(17,17,17,.18)';
+  g.shadowBlur = 24;
+  box(g, 0, 290, PW, PH - 270, 28, '#ffffff');
+  g.restore();
+  box(g, 175, 302, 40, 5, 3, '#d8d8de');
+  line(g, t('Créez votre compte'), 20, 350, f(700, 22), INK);
+  const prenom = d.typedName.split(' ')[0] ?? d.typedName;
+  const email = `${prenom.toLowerCase()}@gmail.com`;
+  const field = (label: string, y: number, value: string, on: boolean) => {
+    line(g, label, 20, y, f(600, 13.5), INK);
+    box(g, 16, y + 8, 358, 50, 14, '#f4f4f6', on ? INK : undefined, on ? 1.5 : 1);
+    line(g, value, 32, y + 40, f(400, 16), INK);
+    if (on && Math.floor(ms / 400) % 2 === 0) {
+      g.font = f(400, 16);
+      g.fillStyle = INK;
+      g.fillRect(33 + g.measureText(value).width, y + 22, 1.5, 22);
+    }
+  };
+  const tEmail = typed(email, ms, T.signup + 450, T.signup + 1150);
+  const tPrenom = typed(prenom, ms, T.signup + 1300, T.signup + 1650);
+  field(t('Adresse e-mail'), 384, tEmail, ms < T.signup + 1250);
+  field(t('Prénom'), 460, tPrenom, ms >= T.signup + 1250 && ms < TAP.femme - 200);
+  line(g, t('Vous êtes'), 20, 550, f(600, 13.5), INK);
+  const homme = d.typedName.startsWith('Yacine');
+  const choisi = ms > TAP.femme;
+  [
+    { label: t('Femme'), x: 16, fond: '#fde7ef', on: choisi && !homme, tap: !homme },
+    { label: t('Homme'), x: 203, fond: '#e3efff', on: choisi && homme, tap: homme },
+  ].forEach((tile) => {
+    g.save();
+    pressScale(g, tile.x + 85, 604, tile.tap && pressedAt(ms, TAP.femme));
+    box(g, tile.x, 560, 171, 92, 18, '#ffffff', tile.on ? INK : '#e6e6ea', tile.on ? 2 : 1);
+    g.fillStyle = tile.fond;
+    g.beginPath();
+    g.arc(tile.x + 85, 592, 20, 0, Math.PI * 2);
+    g.fill();
+    line(g, tile.label, tile.x + 85, 638, f(600, 15), INK, 'center');
+    g.restore();
+  });
+  g.save();
+  pressScale(g, PW / 2, BTN_Y + 26, pressedAt(ms, TAP.create));
+  box(g, 16, BTN_Y, 358, 52, 26, choisi ? INK : '#ececf0');
+  line(g, t('Créer mon compte'), PW / 2, BTN_Y + 33, f(600, 16), choisi ? '#ffffff' : SUBTLE, 'center');
+  g.restore();
+  g.restore();
+}
+
+function typed(text: string, ms: number, from: number, to: number) {
+  return text.slice(0, Math.round(text.length * clamp((ms - from) / Math.max(1, to - from))));
+}
+
 /* ------------------------------ Le curseur ------------------------------ */
 
 /**
@@ -512,17 +680,26 @@ const FINGERS = new Path2D('M10.1 9.5v3.4M14 10.4v2.7M17.8 11.5v2');
 function cursorPath(d: BioVideoData): [number, number, number][] {
   const p = hourAt(PICK_HOUR(d));
   const choose = { x: 316, y: SERVICE_Y + 37 };
+  const tile = d.typedName.startsWith('Yacine') ? { x: 288, y: 604 } : { x: 101, y: 604 };
   return [
-    [1700, 360, 900],
-    [2700, choose.x, choose.y],
-    [TAP.choose + 250, choose.x, choose.y],
-    [TAP.day - 500, dayX(d), WEEK_Y + 32],
+    [1100, 360, 900],
+    [TAP.bio - 450, BIO_LINK.x, BIO_LINK.y],
+    [TAP.bio + 250, BIO_LINK.x, BIO_LINK.y],
+    [T.browser + 700, 330, 700],
+    [TAP.choose - 450, choose.x, choose.y],
+    [TAP.choose + 200, choose.x, choose.y],
+    [TAP.day - 450, dayX(d), WEEK_Y + 32],
     [TAP.day + 200, dayX(d), WEEK_Y + 32],
     [TAP.hour - 450, p.x + HOUR_W / 2, p.y + HOUR_H / 2],
     [TAP.hour + 200, p.x + HOUR_W / 2, p.y + HOUR_H / 2],
     [TAP.next - 450, 250, BTN_Y + 28],
     [TAP.next + 250, 250, BTN_Y + 28],
-    [T.stepRecap + 400, 300, 600],
+    [T.signup + 900, 330, 700],
+    [TAP.femme - 450, tile.x, tile.y],
+    [TAP.femme + 150, tile.x, tile.y],
+    [TAP.create - 400, 240, BTN_Y + 28],
+    [TAP.create + 250, 240, BTN_Y + 28],
+    [T.stepRecap + 300, 300, 620],
     [TAP.confirm - 450, 230, BTN_Y + 28],
     [TAP.confirm + 250, 230, BTN_Y + 28],
     [T.done + 300, 360, 900],
@@ -626,35 +803,59 @@ function phoneFrame(g: CanvasRenderingContext2D, x: number, y: number, s: number
 }
 
 function drawScreens(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  // Instagram, puis la page du salon qui MONTE par-dessus (le navigateur d'Instagram s'ouvre).
+  if (ms < T.stepWhen) {
+    if (ms < T.browser + 500) screenInstagram(g, d, ms);
+    if (ms >= T.browser) {
+      const k = out((ms - T.browser) / 460);
+      g.save();
+      g.translate(0, (1 - k) * PH);
+      screenSalon(g, d, ms);
+      browserBar(g, d, 1 - clamp((ms - T.browser - 1100) / 350));
+      g.restore();
+    }
+    return;
+  }
+  // Ensuite les étapes glissent de droite à gauche, comme dans l'application.
   const steps: [number, () => void][] = [
-    [0, () => screenSalon(g, d, ms)],
     [T.stepWhen, () => screenWhen(g, d, ms)],
     [T.stepRecap, () => screenRecap(g, d, ms)],
     [T.done, () => screenDone(g, d, ms - T.done)],
   ];
   const i = steps.reduce((a, s, n) => (ms >= s[0] ? n : a), 0);
   const k = out((ms - steps[i]![0]) / 380);
-  if (i > 0 && k < 1) {
+  const prev = i > 0 ? steps[i - 1]![1] : () => screenSalon(g, d, ms);
+  if (k < 1) {
     g.save();
     g.translate(-k * PW * 0.3, 0);
-    steps[i - 1]![1]();
+    prev();
     g.fillStyle = `rgba(0,0,0,${0.12 * k})`;
     g.fillRect(0, 0, PW, PH);
     g.restore();
   }
   g.save();
-  g.translate(i > 0 ? (1 - k) * PW : 0, 0);
+  g.translate((1 - k) * PW, 0);
   steps[i]![1]();
   g.restore();
+  // La fenêtre d'inscription monte sur « Quand ? », après « Continuer ».
+  if (ms >= T.signup && ms < T.stepRecap + 380) {
+    g.save();
+    if (ms >= T.stepRecap) g.translate(-k * PW * 0.3, 0);
+    signupSheet(g, d, ms);
+    g.restore();
+  }
 }
 
-/** Le titre au-dessus du téléphone : « 1 sur 3 » en pastille, puis l'étape en grand. */
+/** Le titre au-dessus du téléphone : l'étape en pastille, puis ce qu'il faut faire, en grand. */
 type Step = { from: number; n: number; title: string };
+const ETAPES = 4;
 function stepsOf(d: BioVideoData): Step[] {
   return [
-    { from: T.phoneIn, n: 1, title: t('Choisissez la prestation') },
+    { from: T.phoneIn, n: -1, title: t('Touchez le lien de la bio') },
+    { from: T.browser, n: 1, title: t('Choisissez la prestation') },
     { from: T.stepWhen, n: 2, title: t('Choisissez le jour et l’heure') },
-    { from: T.stepRecap, n: 3, title: t('Confirmez en un clic') },
+    { from: T.signup, n: 3, title: t('Créez votre compte') },
+    { from: T.stepRecap, n: 4, title: t('Confirmez en un clic') },
     { from: T.done, n: 0, title: d.confirmed ? t('C’est réservé.') : t('Demande envoyée.') },
   ];
 }
@@ -663,19 +864,28 @@ function drawStepTitle(g: CanvasRenderingContext2D, ms: number, d: BioVideoData)
   const step = [...stepsOf(d)].reverse().find((x) => ms >= x.from);
   if (!step) return;
   const k = ms - step.from;
-  // Barre de progression en trois segments.
-  for (let i = 0; i < 3; i += 1) {
-    const done = step.n === 0 || i < step.n - 1 ? 1 : i === step.n - 1 ? clamp(k / 500) : 0;
-    box(g, 48 + i * 212, 70, 200, 6, 3, FILL);
-    if (done > 0) box(g, 48 + i * 212, 70, 200 * done, 6, 3, INK);
+  // Barre de progression : une case par étape.
+  const seg = (W - 96 - (ETAPES - 1) * 12) / ETAPES;
+  for (let i = 0; i < ETAPES; i += 1) {
+    const done = step.n === 0 || (step.n > 0 && i < step.n - 1) ? 1 : step.n > 0 && i === step.n - 1 ? clamp(k / 500) : 0;
+    const x = 48 + i * (seg + 12);
+    box(g, x, 70, seg, 6, 3, FILL);
+    if (done > 0) box(g, x, 70, seg * done, 6, 3, INK);
   }
   const a = out(k / 380);
   g.save();
   g.globalAlpha = a;
   g.translate(0, (1 - a) * 22);
   if (step.n > 0) {
-    box(g, 48, 118, 132, 44, 22, INK);
-    line(g, t('Étape {n} sur 3', { n: step.n }), 114, 147, f(600, 19), '#ffffff', 'center');
+    box(g, 48, 118, 148, 44, 22, INK);
+    line(g, t('Étape {n} sur {total}', { n: step.n, total: ETAPES }), 122, 147, f(600, 19), '#ffffff', 'center');
+  } else if (step.n < 0) {
+    const ig = g.createLinearGradient(48, 162, 210, 118);
+    IG.forEach((c, i) => ig.addColorStop(i / (IG.length - 1), c));
+    box(g, 48, 118, 162, 44, 22, null);
+    g.fillStyle = ig;
+    g.fill();
+    line(g, 'Instagram', 129, 147, f(700, 19), '#ffffff', 'center');
   } else {
     g.fillStyle = GREEN;
     g.beginPath();
@@ -693,16 +903,16 @@ function drawStepTitle(g: CanvasRenderingContext2D, ms: number, d: BioVideoData)
   const px = fit(g, step.title, 800, 54, W - 96);
   line(g, step.title, 48, 236, f(800, px), INK);
   g.restore();
-  line(g, d.salon, 48, 292, f(500, 22), MUTED, 'left', W - 96);
+  line(g, step.n < 0 ? `@${d.handle}` : d.salon, 48, 292, f(500, 22), MUTED, 'left', W - 96);
 }
 
-/** L'ouverture : la photo floutée du salon, son logo, son nom, « Réservez en 3 étapes ». */
+/** L'ouverture, brève : le logo et le nom du salon, « Comment réserver chez nous ». */
 function drawIntro(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
-  const leave = ease((ms - 900) / 500);
+  const leave = ease((ms - 450) / 450);
   g.save();
   g.globalAlpha = 1 - leave;
   g.translate(0, -leave * 120);
-  const a = spring(ms / 600);
+  const a = spring(ms / 500);
   g.save();
   g.translate(W / 2, 470);
   g.scale(a, a);
@@ -713,12 +923,9 @@ function drawIntro(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   g.stroke();
   avatar(g, d, 0, 0, 98);
   g.restore();
-  const b = out((ms - 200) / 450);
-  g.globalAlpha = (1 - leave) * b;
+  g.globalAlpha = (1 - leave) * out((ms - 120) / 350);
   line(g, d.salon, W / 2, 680, f(800, fit(g, d.salon, 800, 62, W - 80)), INK, 'center');
-  const c = out((ms - 400) / 450);
-  g.globalAlpha = (1 - leave) * c;
-  line(g, t('Réservez en 3 étapes'), W / 2, 740, f(500, 30), MUTED, 'center');
+  line(g, t('Comment réserver chez nous'), W / 2, 740, f(500, 30), MUTED, 'center', W - 80);
   g.restore();
 }
 
@@ -776,7 +983,7 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   const lp = fit(g, d.link, 700, 30, W - 150);
   line(g, d.link, W / 2, 803, f(700, lp), '#ffffff', 'center', W - 140);
   g.restore();
-  line(g, t('Lien dans la bio'), W / 2, 890, f(500, 26), MUTED, 'center');
+  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 890, f(500, 24), MUTED, 'center', W - 80);
   g.globalAlpha = out((ms - 1300) / 450);
   line(g, `Salon DZ · ${t('réservation en ligne')}`, W / 2, 1180, f(500, 20), SUBTLE, 'center');
   g.globalAlpha = 1;
@@ -810,7 +1017,7 @@ export function drawBioFrame(g: CanvasRenderingContext2D, at: number, d: BioVide
     const k = spring((ms - (T.phoneIn - 200)) / 700);
     const y = mix(H + 60, PHONE.y, k);
     const keys = cursorPath(d);
-    const taps = [TAP.choose, TAP.day, TAP.hour, TAP.next, TAP.confirm];
+    const taps = [TAP.bio, TAP.choose, TAP.day, TAP.hour, TAP.next, TAP.femme, TAP.create, TAP.confirm];
     phoneFrame(g, PHONE.x, y, PHONE.s, () => drawScreens(g, ms, d), () => {
       const c = cursorAt(keys, ms);
       if (c) drawCursor(g, c[0], c[1], ms, taps);

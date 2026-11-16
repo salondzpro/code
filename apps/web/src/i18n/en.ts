@@ -2230,4 +2230,13 @@ export const en: Record<string, string> = {
   // Accès (14-16 nov. 2026)
   "Son nom reste sur ses anciens rendez-vous.": "Their name stays on past appointments.",
   "Supprimer {nom}": "Delete {nom}",
+  // Accès (14-16 nov. 2026)
+  "Touchez le lien de la bio": "Tap the link in bio",
+  "Comment réserver chez nous": "How to book with us",
+  "Réservez en ligne, c’est ici :": "Book online here:",
+  "publications": "posts",
+  "abonnés": "followers",
+  "suivis": "following",
+  "Suivre": "Follow",
+  "Contacter": "Contact",
 };

@@ -2216,4 +2216,13 @@ export const ar: Record<string, string> = {
   // Accès (14-16 nov. 2026)
   "Son nom reste sur ses anciens rendez-vous.": "يبقى اسمه على مواعيده السابقة.",
   "Supprimer {nom}": "حذف {nom}",
+  // Accès (14-16 nov. 2026)
+  "Touchez le lien de la bio": "اضغط على رابط السيرة",
+  "Comment réserver chez nous": "كيف تحجز عندنا",
+  "Réservez en ligne, c’est ici :": "احجز عبر الإنترنت من هنا:",
+  "publications": "منشورات",
+  "abonnés": "متابعون",
+  "suivis": "يتابع",
+  "Suivre": "متابعة",
+  "Contacter": "تواصل",
 };
