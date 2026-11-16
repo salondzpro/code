@@ -77,9 +77,10 @@ export function ServiceDetail() {
               {s.ratingCount > 0 ? ` · ★ ${formatRating(s.ratingAvg)}` : ''}
             </span>
           </span>
-          <span className={`badge md !text-[1rem] ${status.open ? 'b-ok' : 'b-nu'}`}>
+          {/* Vert ouvert, rouge fermé (16 nov. 2026), comme sur la page du salon. */}
+          <span className={`badge md !text-[1rem] ${status.open ? 'b-ok' : 'b-cn'}`}>
             <span className="dot" />
-            {status.open ? 'Ouvert' : 'Fermé'}
+            {status.etat}
           </span>
         </div>
       </div>

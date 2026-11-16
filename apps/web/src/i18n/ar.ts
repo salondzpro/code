@@ -2197,4 +2197,10 @@ export const ar: Record<string, string> = {
   "Déjà reporté une fois.": "تم التأجيل مرة واحدة.",
   // Accès (14-16 nov. 2026)
   "Réponse du salon avant {when}.": "ردّ الصالون قبل {when}.",
+  // Accès (14-16 nov. 2026)
+  "Ouvert": "مفتوح",
+  "ferme à {time}": "يغلق على {time}",
+  "ouvre à {time}": "يفتح على {time}",
+  "ouvre demain {time}": "يفتح غدًا {time}",
+  "ouvre {day} {time}": "يفتح {day} {time}",
 };

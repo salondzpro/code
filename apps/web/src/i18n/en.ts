@@ -2211,4 +2211,10 @@ export const en: Record<string, string> = {
   "Déjà reporté une fois.": "Already rescheduled once.",
   // Accès (14-16 nov. 2026)
   "Réponse du salon avant {when}.": "The salon will reply before {when}.",
+  // Accès (14-16 nov. 2026)
+  "Ouvert": "Open",
+  "ferme à {time}": "closes at {time}",
+  "ouvre à {time}": "opens at {time}",
+  "ouvre demain {time}": "opens tomorrow {time}",
+  "ouvre {day} {time}": "opens {day} {time}",
 };
