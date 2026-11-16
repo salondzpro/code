@@ -13,7 +13,6 @@ import {
   Info,
   MapPin,
   Map as MapIcon,
-  Navigation,
   Phone,
   Ban,
   Star,
@@ -73,6 +72,7 @@ import { ReviewService, ReviewSummary } from '@/components/ReviewExtras';
 import { ReportReviewButton } from '@/components/ReportReview';
 import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
+import { cibleCarte, itineraireUrl } from '@/lib/maps';
 import { t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
@@ -178,7 +178,8 @@ export function Salon() {
   const priceRange = prices.length
     ? `${formatDA(Math.min(...prices))} – ${formatDA(Math.max(...prices))}`
     : null;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([s.name, s.address, place].filter(Boolean).join(', '))}`;
+  // L'ADRESSE EST LE LIEN DE L'ITINÉRAIRE (16 nov. 2026) : l'application de cartes du téléphone.
+  const mapsUrl = itineraireUrl({ name: s.name, address: s.address, city: place, lat: s.lat, lng: s.lng });
   const reviewItems = pagesItems(reviews.data);
 
   return (
@@ -238,7 +239,7 @@ export function Salon() {
             <h1 className="h1 !text-[1.714rem]">{s.name}</h1>
             <a
               href={mapsUrl}
-              target="_blank"
+              target={cibleCarte(mapsUrl)}
               rel="noreferrer"
               className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
             >
@@ -283,26 +284,13 @@ export function Salon() {
             </div>
           </div>
 
-          {/* Deux gestes utiles tout de suite : joindre le salon, ou y aller. */}
-          <div className="g2">
-            {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone ? (
-              <a href={`tel:${s.phone}`} className="btn g sm !py-[0.9375rem] !text-[1rem]">
-                <I icon={Phone} size={18} /> {t("Appeler")}
-              </a>
-            ) : (
-              <button type="button" className="btn g sm !py-[0.9375rem] !text-[1rem]" onClick={() => void partager()}>
-                <I icon={Share2} size={18} /> {t("Partager")}
-              </button>
-            )}
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="btn g sm !py-[0.9375rem] !text-[1rem]"
-            >
-              <I icon={Navigation} size={18} /> {t("Itinéraire")}
+          {/* Plus de boutons « Partager » et « Itinéraire » (16 nov. 2026, demande du propriétaire) :
+              partager est en haut, l'itinéraire est l'adresse elle-même. */}
+          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
+            <a href={`tel:${s.phone}`} className="btn g sm">
+              <I icon={Phone} size={18} /> {t('Appeler')}
             </a>
-          </div>
+          )}
           </>
         )}
 
@@ -475,7 +463,7 @@ export function Salon() {
               )}
               <a
                 href={mapsUrl}
-                target="_blank"
+                target={cibleCarte(mapsUrl)}
                 rel="noreferrer"
                 className="btn auto absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-1/2 !rounded-full !px-5 !py-3 !text-[1rem]"
               >

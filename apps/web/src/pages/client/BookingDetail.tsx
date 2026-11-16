@@ -53,6 +53,7 @@ import { depositPayNote } from '@/lib/deposit';
 import { FactRow } from '@/components/BookingFacts';
 import { PageLoading } from '@/components/PageLoading';
 import { directionsUrl } from './Bookings';
+import { cibleCarte } from '@/lib/maps';
 import { t } from '@/i18n';
 
 const formatDeadline = (ms: number) =>
@@ -232,7 +233,7 @@ export function BookingDetail() {
       {(() => {
         const visibles = [
           active && (
-            <a key="it" href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn sm flex-1">
+            <a key="it" href={directionsUrl(b)} target={cibleCarte(directionsUrl(b))} rel="noreferrer" className="btn sm flex-1">
               <I icon={ICONE.itineraire} size={18} /> {t('Itinéraire')}
             </a>
           ),

@@ -14,6 +14,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import type { BookingWithSalon } from '@salondz/types';
+import { cibleCarte } from '@/lib/maps';
 import { t } from '@/i18n';
 
 function icsDate(iso: string): string {
@@ -134,7 +135,7 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
             {t('Voir le rendez-vous')}
           </Button>
           <div className="g2">
-            <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
+            <a href={directionsUrl(b)} target={cibleCarte(directionsUrl(b))} rel="noreferrer" className="btn g sm">
               <I icon={Navigation} size={16} /> {t('Itinéraire')}
             </a>
             <a href={googleCalendarUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">

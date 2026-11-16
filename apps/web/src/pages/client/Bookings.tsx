@@ -33,10 +33,12 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import type { BookingWithSalon } from '@salondz/types';
 import { t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
+import { cibleCarte, itineraireUrl } from '@/lib/maps';
 
+/** Itinéraire vers le salon d'un rendez-vous : l'application de cartes du téléphone (`lib/maps.ts`). */
 export function directionsUrl(b: BookingWithSalon): string {
-  const q = [b.salon.name, b.salon.address, b.salon.city].filter(Boolean).join(', ');
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+  const lieu = b.salon as typeof b.salon & { lat?: number | null; lng?: number | null };
+  return itineraireUrl({ name: lieu.name, address: lieu.address, city: lieu.city, lat: lieu.lat, lng: lieu.lng });
 }
 
 type Scope = 'upcoming' | 'past' | 'cancelled';
@@ -144,7 +146,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
         <div className="flex gap-2" onClick={stop} onKeyDown={stop} role="presentation">
           <a
             href={directionsUrl(b)}
-            target="_blank"
+            target={cibleCarte(directionsUrl(b))}
             rel="noreferrer"
             className="btn g sm flex-1 !text-[1rem]"
           >
