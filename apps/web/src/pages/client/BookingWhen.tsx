@@ -139,7 +139,7 @@ export function BookingWhen() {
       ) : first ? (
         <button type="button" className="bw-fast" onClick={() => go(first.date, first.iso, staffId)}>
           <span className="bw-fast-ic" aria-hidden>
-            <I icon={Zap} size={20} />
+            <Zap size={22} fill="currentColor" strokeWidth={1.6} />
           </span>
           <span className="min-w-0 flex-1">
             <small>{t('Le plus tôt')}</small>

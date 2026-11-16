@@ -58,6 +58,8 @@
   --color-info: #007aff; /* confirmé */
   --color-info-bg: #e5f1ff;
   --color-past: #aeaeb2; /* passé, terminé */
+  /* « Le plus tôt » (réservation la plus rapide, 15 nov. 2026, demande du propriétaire) : orange iOS + éclair. */
+  --color-fast: #ff9500;
   --color-success: #1d8a3c;
   --color-warning: #a35f00;
 

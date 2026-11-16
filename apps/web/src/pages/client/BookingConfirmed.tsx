@@ -1,11 +1,11 @@
 /** C-F 12 — Rendez-vous confirmé (ou demande envoyée). Le même écran sert juste après la réservation (`BookingReview`). */
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Calendar, Navigation } from 'lucide-react';
+import { Calendar, Landmark, Navigation } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
-import { formatDZPhone, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
+import { formatDA, formatDZPhone, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
 import { BottomSheet, Button, I } from '@/components/ui';
 import { BookingSummary } from '@/components/BookingSummary';
 import { ICONE } from '@/lib/actionIcons';
@@ -79,30 +79,39 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
 
   return (
     <Screen bottom={SHEET_PAD} gap={14}>
-      <div className={`cf ${state}`} role="status">
-        <span className="cf-badge" aria-hidden>
-          <i className="cf-wave" />
-          <i className="cf-wave w2" />
-          <svg viewBox="0 0 24 24" width="40" height="40">
-            {state === 'ok' ? (
-              <path className="cf-draw" d="M5 12.5l4.2 4.2L19 7" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            ) : state === 'wait' ? (
-              <>
-                <circle className="cf-draw" cx="12" cy="12" r="8.5" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.2" />
-                <path className="cf-hand" d="M12 12V7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M12 12l3 1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-              </>
-            ) : (
-              <>
-                <path className="cf-draw" d="M4 10l8-5 8 5M5 10v8M19 10v8M9 10v8M15 10v8M3.5 19.5h17" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </>
-            )}
-          </svg>
-        </span>
-        <h1 className="cf-t">{state === 'ok' ? t('Rendez-vous confirmé') : state === 'wait' ? t('Demande envoyée') : t('Plus qu’une étape')}</h1>
-        {state === 'wait' && <p className="cf-s">{t('Le salon vous répond bientôt.')}</p>}
-        {state === 'dep' && <p className="cf-s">{t('Le versement confirme votre rendez-vous.')}</p>}
-      </div>
+      {state === 'dep' ? (
+        // Versement : en-tête compact, le parcours étape par étape tout de suite visible (sans défiler).
+        <div className="cf-mini" role="status">
+          <span className="cf-mini-ic" aria-hidden>
+            <I icon={Landmark} size={20} />
+          </span>
+          <span className="min-w-0">
+            <b>{t('Créneau réservé')}</b>
+            {b.depositStatus !== 'submitted' && <small>{t('Plus qu’une étape pour confirmer')}</small>}
+          </span>
+        </div>
+      ) : (
+        <div className={`cf ${state}`} role="status">
+          <span className="cf-badge" aria-hidden>
+            <i className="cf-wave" />
+            <i className="cf-wave w2" />
+            <svg viewBox="0 0 24 24" width="40" height="40">
+              {state === 'ok' ? (
+                <path className="cf-draw" d="M5 12.5l4.2 4.2L19 7" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              ) : (
+                <>
+                  <circle className="cf-draw" cx="12" cy="12" r="8.5" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.2" />
+                  <path className="cf-hand" d="M12 12V7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                  <path d="M12 12l3 1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                </>
+              )}
+            </svg>
+          </span>
+          <h1 className="cf-t">{state === 'ok' ? t('Rendez-vous confirmé') : t('Demande envoyée')}</h1>
+          {state === 'wait' && <p className="cf-s">{t('Le salon vous répond bientôt.')}</p>}
+        </div>
+      )}
+      {state === 'dep' && <DepositCard booking={b} />}
       <BookingSummary
         className="cf-card"
         salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl, area: SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone ? `${area} · ${formatDZPhone(b.salon.phone)}` : area }}
@@ -112,9 +121,13 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
         lines={lines}
         staffName={b.staff?.displayName}
         priceDa={b.priceDa}
-        payNote={depositPayNote(b) ?? t('Paiement sur place')}
+        payNote={
+          state === 'dep'
+            ? t('Reste {montant} sur place', { montant: formatDA(Math.max(0, b.priceDa - (b.depositAmount ?? 0))) })
+            : (depositPayNote(b) ?? t('Paiement sur place'))
+        }
       />
-      <DepositCard booking={b} />
+      {state !== 'dep' && <DepositCard booking={b} />}
       <BottomSheet>
         <div className="cf-acts flex flex-col gap-2">
           <Button icon={ICONE.voirRdv} onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>

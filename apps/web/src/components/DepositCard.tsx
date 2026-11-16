@@ -70,6 +70,8 @@ export function DepositCard({ booking: b }: { booking: BookingWithSalon }) {
   const input = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Étape affichée : 0 verser, 1 joindre le reçu (un refus du salon ramène directement au reçu).
+  const [step, setStep] = useState<0 | 1>(status === 'rejected' ? 1 : 0);
   if (!b.depositAmount || !status) return null;
   const amount = formatDA(b.depositAmount);
 
@@ -117,101 +119,98 @@ export function DepositCard({ booking: b }: { booking: BookingWithSalon }) {
   const d = info.data;
   const deadline = d?.deadline ? formatDeadline(d.deadline) : null;
 
-  // Justificatif envoyé : le suivi.
+  // PARCOURS ÉTAPE PAR ÉTAPE (15 nov. 2026, demande du propriétaire) : Verser → Reçu → Confirmé, une
+  // étape à la fois, barre de progression en tête, très peu de texte — comme l'inscription pro.
+  const current = status === 'submitted' ? 2 : step;
+  const acc = d?.account ?? null;
+  const bar = (
+    <ol className="dps-bar" aria-label={t('Étapes du versement')}>
+      {[t('Verser'), t('Reçu'), t('Confirmé')].map((label, i) => (
+        <li key={label} className={i < current ? 'done' : i === current ? 'now' : ''} aria-current={i === current ? 'step' : undefined}>
+          <span className="dps-dot">{i < current ? <I icon={Check} size={12} strokeWidth={3} /> : i + 1}</span>
+          {label}
+        </li>
+      ))}
+    </ol>
+  );
+
   if (status === 'submitted')
     return (
-      <section className="dp">
-        <header className="dp-h">
-          <span className="dp-eyebrow">
-            <I icon={Clock3} size={14} /> {t('Justificatif en vérification')}
+      <section className="dp dps">
+        {bar}
+        <div className="dps-wait">
+          <span className="dps-wait-ic" aria-hidden>
+            <I icon={Clock3} size={22} />
           </span>
-          <strong className="dp-amount" dir="ltr">{amount}</strong>
-          <p className="dp-sub">{t('Le salon vérifie votre virement. Votre rendez-vous sera confirmé dès sa validation, et vous serez prévenu(e).')}</p>
-        </header>
-        <DepositTrace
-          steps={[
-            { label: t('Créneau réservé'), when: formatWhen(b.createdAt), state: 'done' },
-            { label: t('Justificatif envoyé'), when: b.depositSubmittedAt ? formatWhen(b.depositSubmittedAt) : null, state: 'done' },
-            { label: t('Vérification par le salon'), state: 'now' },
-            { label: t('Rendez-vous confirmé'), state: 'todo' },
-          ]}
-        />
+          <span className="min-w-0 flex-1">
+            <b>{t('Reçu en vérification')}</b>
+            <small>{t('Le salon confirme dès réception.')}</small>
+          </span>
+        </div>
         {fileInput}
         <Button variant="g" sm icon={ICONE.joindreJustificatif} loading={sending} onClick={() => input.current?.click()}>
-          {t('Remplacer le justificatif')}
+          {t('Remplacer le reçu')}
         </Button>
         {error && <p className="dp-err" role="alert">{error}</p>}
       </section>
     );
 
-  // Versement à faire (ou à refaire).
-  const acc = d?.account ?? null;
   return (
-    <section className="dp">
-      <header className="dp-h">
-        <span className="dp-eyebrow">
-          <I icon={Landmark} size={14} /> {t('Versement pour confirmer')}
-        </span>
-        <strong className="dp-amount" dir="ltr">{amount}</strong>
-        <p className="dp-sub">
-          {deadline
-            ? t('À verser avant {quand}. Sans justificatif, le créneau est libéré.', { quand: deadline })
-            : t('Le salon demande un versement pour confirmer ce rendez-vous.')}
-        </p>
-      </header>
-
+    <section className="dp dps">
+      {bar}
       {status === 'rejected' && (
         <div className="dp-bad" role="alert">
           <I icon={AlertCircle} size={18} />
           <span>
-            <b>{t('Justificatif refusé par le salon')}</b>
+            <b>{t('Reçu refusé')}</b>
             {b.depositRejectReason && <span>« {b.depositRejectReason} »</span>}
-            <span>{t('Envoyez-en un autre avant l’heure limite.')}</span>
           </span>
         </div>
       )}
 
-      {info.isPending ? (
-        <div className="dp-acc sk" aria-hidden />
-      ) : acc?.account ? (
-        <div className="dp-acc">
-          <div className="dp-acc-li">
-            <span className="dp-acc-who">
-              <small>{t(METHOD_LABEL[acc.method])}</small>
-              <b className="mono" dir="ltr">{acc.account}</b>
-              <span dir="auto">{acc.holder || b.salon.name}</span>
-            </span>
-            <CopyChip value={acc.account.replace(/\s/g, '')} label={t('Copier le numéro CCP')} />
+      {current === 0 ? (
+        <>
+          <div className="dps-amt">
+            <strong dir="ltr">{amount}</strong>
+            {deadline && <small>{t('avant {quand}', { quand: deadline })}</small>}
           </div>
-          <div className="dp-acc-li">
-            <span className="dp-acc-who">
-              <small>{t('Montant exact')}</small>
-              <b dir="ltr">{amount}</b>
-            </span>
-            <CopyChip value={String(b.depositAmount)} label={t('Copier le montant')} />
-          </div>
-          {acc.note && <p className="dp-acc-note" dir="auto">{acc.note}</p>}
-        </div>
+          {info.isPending ? (
+            <div className="dp-acc sk" aria-hidden />
+          ) : acc?.account ? (
+            <div className="dp-acc">
+              <div className="dp-acc-li">
+                <span className="dp-acc-who">
+                  <small>{t(METHOD_LABEL[acc.method])}</small>
+                  <b className="mono" dir="ltr">{acc.account}</b>
+                  <span dir="auto">{acc.holder || b.salon.name}</span>
+                </span>
+                <CopyChip value={acc.account.replace(/\s/g, '')} label={t('Copier le numéro CCP')} />
+              </div>
+            </div>
+          ) : (
+            <p className="dp-sub">{t('Le salon n’a pas encore indiqué son compte.')}</p>
+          )}
+          <Button icon={ICONE.continuer} onClick={() => setStep(1)}>
+            {t('J’ai versé {montant}', { montant: amount })}
+          </Button>
+        </>
       ) : (
-        <p className="dp-sub">{t('Le salon n’a pas encore indiqué son compte. Contactez-le pour verser.')}</p>
+        <>
+          {fileInput}
+          <button type="button" className="dps-drop" onClick={() => input.current?.click()} disabled={sending}>
+            <span className="dps-drop-ic" aria-hidden>
+              <I icon={ICONE.joindreJustificatif} size={24} />
+            </span>
+            <b>{sending ? t('Envoi…') : t('Joindre la capture du reçu')}</b>
+            <small>{t('Image ou PDF')}</small>
+          </button>
+          {status !== 'rejected' && (
+            <button type="button" className="dps-back" onClick={() => setStep(0)}>
+              {t('Revoir le compte')}
+            </button>
+          )}
+        </>
       )}
-
-      <ol className="dp-steps">
-        <li>
-          <span>1</span>
-          {t('Envoyez {montant} par BaridiMob ou au bureau de poste.', { montant: amount })}
-        </li>
-        <li>
-          <span>2</span>
-          {t('Joignez la capture du reçu : le salon valide, c’est confirmé.')}
-        </li>
-      </ol>
-
-      {fileInput}
-      <Button icon={ICONE.joindreJustificatif} loading={sending} onClick={() => input.current?.click()}>
-        {status === 'rejected' ? t('Envoyer un autre justificatif') : t('Joindre le justificatif')}
-      </Button>
-      <p className="dp-foot">{t('Image ou PDF, 8 Mo au plus. Seul le salon le voit.')}</p>
       {error && <p className="dp-err" role="alert">{error}</p>}
     </section>
   );

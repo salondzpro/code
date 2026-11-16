@@ -55,7 +55,7 @@ pour les classes en place mais valent l'encre et les gris. La couleur ne sert qu
 
 Couleurs de statut d'un rendez-vous : `lib/statusColors.ts` (`STATUT_COULEUR`, `statutCle`) — la même
 partout (jour, semaine, mois, Demandes). **Jamais de couleur par catégorie de prestation ni par membre.**
-Marques tierces : logos et couleurs OFFICIELS (§ 9). Espace clientes : seul le rose `--color-women`
+**Exception voulue** : « Le plus tôt » (réserver au plus vite, `.bw-fast`) = orange iOS `--color-fast` `#ff9500` + éclair plein (demande du propriétaire, 15 nov. 2026). Marques tierces : logos et couleurs OFFICIELS (§ 9). Espace clientes : seul le rose `--color-women`
 (`#f06a9b`) marque l'espace féminin.
 
 ## 3. Typographie

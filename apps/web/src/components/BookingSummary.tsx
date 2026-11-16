@@ -1,8 +1,7 @@
 /**
- * Carte d'un rendez-vous, UNE pour trois écrans (29 oct. 2026) : récapitulatif avant confirmation,
- * confirmation, fiche du rendez-vous. Le salon est la première ligne de la carte (plus de carte à
- * part), la prestation porte son prix à droite, et le pied résume en une ligne ce qu'il faut savoir
- * (paiement, heure d'arrivée, retard toléré). Moins de blanc, même lecture partout.
+ * Carte d'un rendez-vous, UNE pour trois écrans : confirmer, confirmation, fiche du rendez-vous.
+ * Compacte et SANS DOUBLON (15 nov. 2026, demande du propriétaire) : l'heure une seule fois, en grand ;
+ * le jour sous le jour relatif ; la durée une seule fois, sous la prestation ; une ligne de pied.
  */
 import type { ReactNode } from 'react';
 import { CalendarDays, Scissors, Banknote } from 'lucide-react';
@@ -31,7 +30,7 @@ export function BookingSummary({
   staffName,
   priceDa,
   payNote,
-  showLate = true,
+  showLate = false,
   extra,
   muted,
   className = '',
@@ -55,8 +54,7 @@ export function BookingSummary({
 }) {
   const dayLabel = relativeDayLabelDZ(toLocalDateKey(new Date(startsAt)));
   const dateLong = formatDateLongDZ(startsAt).replace(/^\w/, (c) => c.toUpperCase());
-  const minutes = Math.round((new Date(endsAt).getTime() - new Date(startsAt).getTime()) / 60_000);
-  const single = lines.length === 1;
+    const single = lines.length === 1;
   const late = lateRule(startsAt);
 
   return (
@@ -77,14 +75,10 @@ export function BookingSummary({
       </div>
       <FactRow
         icon={CalendarDays}
-        title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : `${dayLabel} · ${dateLong}`}
-        sub={
-          <span dir="ltr">
-            {formatTimeDZ(startsAt)} – {formatTimeDZ(endsAt)} · {formatDuration(minutes)}
-          </span>
-        }
+        title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : dayLabel}
+        sub={/^\p{L}+\. \d/u.test(dayLabel) ? undefined : dateLong}
         right={
-          <span className={`mono text-[1.429rem] font-semibold tracking-[-0.5px] ${muted ? 'text-muted' : ''}`}>
+          <span className={`mono text-[1.429rem] font-semibold tracking-[-0.5px] ${muted ? 'text-muted' : ''}`} dir="ltr">
             {formatTimeDZ(startsAt)}
           </span>
         }
@@ -121,5 +115,3 @@ export function BookingSummary({
     </div>
   );
 }
-
-/** Coche qui se dessine, cercle qui s'ouvre, puis titre : la réservation vient d'être prise. */

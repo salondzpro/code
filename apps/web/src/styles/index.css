@@ -4888,7 +4888,7 @@ html:has(.auth-onglets) body {
   width: 100%;
   padding: 14px 16px;
   border-radius: var(--radius-card);
-  background: var(--color-ink);
+  background: var(--color-fast);
   color: #fff;
   text-align: start;
   transition: transform 0.12s ease;
@@ -4896,16 +4896,17 @@ html:has(.auth-onglets) body {
 .bw-fast:active { transform: scale(0.98); }
 .bw-fast-ic {
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgb(255 255 255 / 0.14);
+  background: #fff;
+  color: var(--color-fast);
 }
-.bw-fast small { display: block; font-size: calc(13px * var(--fz, 1)); color: rgb(255 255 255 / 0.7); }
-.bw-fast b { display: block; font-size: calc(17px * var(--fz, 1)); font-weight: 600; }
+.bw-fast small { display: block; font-size: calc(13px * var(--fz, 1)); font-weight: 600; color: rgb(255 255 255 / 0.85); }
+.bw-fast b { display: block; font-size: calc(18px * var(--fz, 1)); font-weight: 600; }
 .bw-who {
   flex: none;
   display: inline-flex;
@@ -12893,7 +12894,6 @@ div.skx-card {
   flex-direction: column;
   border-radius: 14px;
   background: #f7f7f9;
-  min-height: 7.5rem;
 }
 .dp-acc.sk { background: var(--color-fill); }
 .dp-acc-li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 14px; }
@@ -13374,4 +13374,65 @@ html.pro-theme .ag9-hr span {
 /* Accueil : page pas en ligne. */
 .phl { display: flex; flex-direction: column; gap: 12px; box-shadow: var(--pro-shadow, 0 10px 28px -16px rgb(0 0 0 / 0.16)), inset 0 0 0 1.5px rgb(255 149 0 / 0.55) !important; }
 .phl-ic { flex: none; width: 36px; height: 36px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: rgb(255 149 0 / 0.14); color: #a35f00; }
+
+/* VERSEMENT ÉTAPE PAR ÉTAPE (15 nov. 2026, `DepositCard`) : Verser → Reçu → Confirmé, une étape à la
+   fois ; barre d'étapes façon inscription pro (fait = coche verte, en cours = encre, à venir = gris). */
+.dps { gap: 14px; }
+.dps-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.dps-bar li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 3px solid var(--color-fill-strong);
+  font-size: calc(12px * var(--fz, 1));
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+.dps-bar li.done { border-color: var(--color-ok); color: var(--color-text); }
+.dps-bar li.now { border-color: var(--color-ink); color: var(--color-text); }
+.dps-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-fill-strong);
+  color: var(--color-muted);
+  font-size: calc(12px * var(--fz, 1));
+}
+.dps-bar li.done .dps-dot { background: var(--color-ok); color: #fff; }
+.dps-bar li.now .dps-dot { background: var(--color-ink); color: #fff; }
+.dps-amt { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.dps-amt strong { font-size: calc(34px * var(--fz, 1)); font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.dps-amt small { font-size: calc(13px * var(--fz, 1)); color: var(--color-muted); }
+.dps-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 26px 16px;
+  border-radius: var(--radius-card-sm);
+  border: 1.5px dashed var(--color-line-strong);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: transform 0.12s ease;
+}
+.dps-drop:active { transform: scale(0.98); }
+.dps-drop-ic { width: 52px; height: 52px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: var(--color-ink); color: #fff; }
+.dps-drop b { font-size: calc(16px * var(--fz, 1)); font-weight: 600; }
+.dps-drop small { font-size: calc(13px * var(--fz, 1)); color: var(--color-muted); }
+.dps-back { align-self: center; font-size: calc(14px * var(--fz, 1)); text-decoration: underline; text-underline-offset: 3px; color: var(--color-muted); }
+.dps-wait { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius-card-sm); background: var(--color-pending-bg); color: var(--color-pending-fg); }
+.dps-wait-ic { flex: none; width: 40px; height: 40px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: var(--color-pending); color: #fff; }
+.dps-wait b { display: block; font-size: calc(16px * var(--fz, 1)); font-weight: 600; }
+.dps-wait small { display: block; font-size: calc(13px * var(--fz, 1)); }
+/* Confirmation avec versement : en-tête compact (le parcours passe juste dessous). */
+.cf-mini { display: flex; align-items: center; gap: 12px; padding-top: 6px; animation: cf-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.cf-mini-ic { flex: none; width: 44px; height: 44px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: var(--color-pending); color: #fff; }
+.cf-mini b { display: block; font-size: calc(20px * var(--fz, 1)); font-weight: 600; }
+.cf-mini small { display: block; font-size: calc(14px * var(--fz, 1)); color: var(--color-muted); }
 
