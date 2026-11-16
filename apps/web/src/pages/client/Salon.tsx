@@ -78,6 +78,9 @@ import { MARCHE } from '@/lib/flavor';
 
 type Tab = 'book' | 'reviews' | 'about';
 
+/** Étoile des avis : DORÉE (16 nov. 2026, demande du propriétaire), pleine. */
+const ETOILE = '#f5a623';
+
 /**
  * « Ouvert · ferme à 19:00 » / « Fermé · ouvre demain 09:00 ». `etat` (Ouvert / Fermé) s'affiche en
  * couleur de sens — vert ouvert, rouge fermé (16 nov. 2026, demande du propriétaire) — et `suite`
@@ -192,10 +195,6 @@ export function Salon() {
     ...works.map((x) => x.url),
   ].filter((x, idx, arr): x is string => !!x && arr.indexOf(x) === idx);
   const groups = groupServices(s.services);
-  const prices = s.services.map((x) => x.priceDa).filter((x) => x > 0);
-  const priceRange = prices.length
-    ? `${formatDA(Math.min(...prices))} – ${formatDA(Math.max(...prices))}`
-    : null;
   // L'ADRESSE EST LE LIEN DE L'ITINÉRAIRE (16 nov. 2026) : l'application de cartes du téléphone.
   const mapsUrl = itineraireUrl({ name: s.name, address: s.address, city: place, lat: s.lat, lng: s.lng });
   const reviewItems = pagesItems(reviews.data);
@@ -252,9 +251,33 @@ export function Salon() {
             porte déjà ses propres titres. */}
         {tab === 'book' && (
           <>
-          {/* Identité : le nom, où c'est, ce que ça vaut. Trois lignes, rien de plus. */}
+          {/* Identité (16 nov. 2026, demande du propriétaire) : le nom et la note SUR LA MÊME LIGNE
+              (étoile dorée), l'adresse qui ouvre l'itinéraire, le statut en couleur. Plus de
+              fourchette de prix : chaque prestation affiche le sien juste en dessous. */}
           <div className="flex flex-col gap-1.5">
-            <h1 className="h1 !text-[1.714rem]">{s.name}</h1>
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="h1 min-w-0 !text-[1.714rem]">{s.name}</h1>
+              <button
+                type="button"
+                className={`flex flex-none items-center gap-1 text-[1rem]${s.ratingCount > 0 ? '' : ' text-muted'}`}
+                onClick={() => setTab('reviews')}
+                aria-label={
+                  s.ratingCount > 0
+                    ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
+                    : 'Avis : voir les avis'
+                }
+              >
+                <Star size={17} strokeWidth={1.6} className="flex-none" fill={ETOILE} color={ETOILE} />
+                {s.ratingCount > 0 ? (
+                  <>
+                    <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
+                    <span className="text-muted">({s.ratingCount})</span>
+                  </>
+                ) : (
+                  <span>{t('Nouveau')}</span>
+                )}
+              </button>
+            </div>
             <a
               href={mapsUrl}
               target={cibleCarte(mapsUrl)}
@@ -264,38 +287,7 @@ export function Salon() {
               <I icon={MapPin} size={16} className="flex-none text-muted" />
               <span className="min-w-0 truncate" dir="auto">{s.address ? `${s.address}, ${place}` : place}</span>
             </a>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[1rem]">
-              <button
-                type="button"
-                className={`flex items-center gap-1${s.ratingCount > 0 ? '' : ' text-muted'}`}
-                onClick={() => setTab('reviews')}
-                aria-label={
-                  s.ratingCount > 0
-                    ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
-                    : 'Avis : voir les avis'
-                }
-              >
-                <I icon={Star} size={16} className="flex-none" />
-                {s.ratingCount > 0 ? (
-                  <>
-                    <span className="font-semibold">{formatRating(s.ratingAvg)}</span>
-                    <span className="text-muted">({t('{n} avis', { n: s.ratingCount })})</span>
-                  </>
-                ) : (
-                  <span>{t("Pas encore d'avis")}</span>
-                )}
-              </button>
-              {priceRange && (
-                <>
-                  <span className="text-disabled" aria-hidden>
-                    ·
-                  </span>
-                  <span className="text-muted" dir="ltr">{priceRange}</span>
-                </>
-              )}
-              <span className="text-disabled" aria-hidden>
-                ·
-              </span>
+            <div className="text-[1rem]">
               <OpeningStatus status={status} />
             </div>
           </div>
