@@ -1,23 +1,25 @@
 /**
- * C-F 22 — Mon compte, sur le modèle des outils du métier : l'identité en tête (photo, nom,
- * e-mail, numéro, un bouton pour modifier), trois chiffres, puis les rubriques en lignes avec
- * icône — mes rendez-vous, mes favoris, mes informations, notifications, réglages —, l'accès
- * pro, et la déconnexion tout en bas, seule.
+ * MON COMPTE, CÔTÉ CLIENT (refonte du 16 nov. 2026, demande du propriétaire : « uniquement le
+ * nécessaire, ultra moderne façon Apple / Uber, au thème actuel comme côté pro »).
+ *
+ * Ce qu'une cliente vient chercher ici : se reconnaître (photo, nom, numéro) et corriger ses
+ * informations, retrouver ses salons favoris, ses notifications, ses réglages, se déconnecter.
+ * Rien d'autre :
+ *   - carte d'identité façon « identifiant Apple » : la photo (touchée = changer), le nom, le
+ *     numéro, et toute la carte mène à « Mes informations » — plus de bouton « Modifier » à part,
+ *     plus de pastille « Vérifié » qui n'apprenait rien ;
+ *   - une liste groupée (`SettingRow` dans `.lst`, les mêmes lignes que l'espace pro) ;
+ *   - « Se déconnecter » seul, en rouge, dans son propre groupe.
+ * Retirés : la phrase sous le titre, les trois compteurs (réservations = onglet Rendez-vous ; avis
+ * = fiche d'un rendez-vous passé ; favoris = ligne ci-dessous, avec leur nombre).
  */
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
-import {
-  Camera,
-  ChevronRight,
-  LogOut,
-  Pencil,
-  Settings,
-  type LucideIcon,
-} from 'lucide-react';
+import { Bell, Camera, ChevronRight, Heart, LogOut, Settings } from 'lucide-react';
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
-import { Avatar, Badge, Button, I, PageHead } from '@/components/ui';
+import { Avatar, I, PageHead, SettingRow } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
@@ -25,43 +27,6 @@ import { ImageCropper } from '@/components/ImageCropper';
 import { uploadAvatar } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
 import { t } from '@/i18n';
-
-/** Ligne de rubrique : icône ronde, libellé, détail éventuel, chevron. */
-function Row({ to, icon, label, sub, right }: { to: string; icon: LucideIcon; label: string; sub?: string; right?: string }) {
-  return (
-    <Link to={to} className="li">
-      <span className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-fill text-muted">
-          <I icon={icon} size={18} />
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate text-[1rem] font-semibold">{label}</span>
-          {sub && <span className="block truncate text-[0.857rem] text-muted">{sub}</span>}
-        </span>
-      </span>
-      {right && <span className="flex-none text-[1rem] text-muted">{right}</span>}
-      <I icon={ChevronRight} size={18} className="shrink-0 text-disabled" />
-    </Link>
-  );
-}
-
-/**
- * Compteur du compte. Il ANNONCE quelque chose qui existe ailleurs : on y va d'un tap, comme
- * partout ailleurs dans l'application. Un chiffre qui ne mène nulle part invite à le toucher
- * pour rien.
- */
-function Stat({ value, label, to }: { value: string; label: string; to: string }) {
-  return (
-    <Link
-      to={to}
-      className="flex min-w-0 flex-col rounded-[var(--radius-card-sm)] bg-surface px-3 py-2.5 shadow-[var(--pro-shadow)]"
-      aria-label={`${value} ${label}`}
-    >
-      <span className="truncate text-[1.429rem] font-semibold leading-tight tracking-[-0.5px]">{value}</span>
-      <span className="truncate text-[0.857rem] text-muted">{label}</span>
-    </Link>
-  );
-}
 
 export function Profile() {
   const { user } = useAuth();
@@ -77,79 +42,63 @@ export function Profile() {
   const p = me.data?.profile;
   const phone = p?.phone ?? null;
   const email = user?.email ?? null;
-  const bookings = stats.data?.bookings ?? 0;
-  const reviews = stats.data?.reviews ?? 0;
+  const favoris = stats.data?.favorites ?? 0;
 
   return (
-    <Screen bottom={NAV_PAD} gap={12}>
-      <PageHead title={t('Mon compte')} sub={t('Vos informations, vos réglages et votre activité.')} />
+    <Screen bottom={NAV_PAD} gap={16}>
+      <PageHead title={t('Mon compte')} />
 
-      {/* Qui : photo, nom, e-mail vérifié, numéro — et le bouton pour corriger. */}
-      <div className="crd !gap-3">
-        <div className="flex items-center gap-3.5">
-          <button
-            type="button"
-            className="relative flex-none"
-            onClick={() => avatarInput.current?.click()}
-            aria-label={t("Changer la photo de profil")}
-            disabled={avatarBusy || !user}
-          >
-            <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={64} />
-            <span className="absolute -bottom-0.5 -end-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
-              <I icon={Camera} size={14} />
-            </span>
-          </button>
-          <input
-            ref={avatarInput}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) setCropAvatar(f);
-              e.target.value = '';
-            }}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[1.429rem] font-semibold tracking-[-0.4px]">
-              {p?.fullName ?? 'Votre nom'}
-            </span>
-            {email && <span className="block truncate text-[0.857rem] text-muted">{email}</span>}
-            {phone && <span className="mono block text-[0.857rem] text-muted">{formatDZPhone(phone)}</span>}
+      {/* Qui : la photo (touchée = changer) et l'identité, qui mène à « Mes informations ». */}
+      <div className="crd !flex-row items-center !gap-3.5">
+        <button
+          type="button"
+          className="relative flex-none"
+          onClick={() => avatarInput.current?.click()}
+          aria-label={t('Changer la photo de profil')}
+          disabled={avatarBusy || !user}
+        >
+          <Avatar src={p?.avatarUrl} name={p?.fullName ?? 'Moi'} size={64} />
+          <span className="absolute -bottom-0.5 -end-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-white">
+            <I icon={Camera} size={14} />
           </span>
-          {email && (
-            <Badge tone="ok" dot>
-              {t("Vérifié")}
-            </Badge>
-          )}
-        </div>
-        <Link to="/compte/informations" className="btn g sm">
-          <I icon={Pencil} size={16} /> {t("Modifier mes informations")}
+        </button>
+        <input
+          ref={avatarInput}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) setCropAvatar(f);
+            e.target.value = '';
+          }}
+        />
+        <Link to="/compte/informations" className="flex min-w-0 flex-1 items-center gap-2" aria-label={t('Mes informations')}>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[1.429rem] font-semibold tracking-[-0.4px]">{p?.fullName ?? t('Votre nom')}</span>
+            <span className="block truncate text-[0.929rem] text-muted" dir="ltr">
+              {phone ? formatDZPhone(phone) : email}
+            </span>
+          </span>
+          <I icon={ChevronRight} size={18} className="shrink-0 text-disabled rtl:rotate-180" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5">
-        <Stat
-          to="/rendez-vous"
-          value={String(bookings)}
-          label={bookings > 1 ? t('réservations') : t('réservation')}
+      <div className="lst">
+        <SettingRow
+          to="/favoris"
+          icon={Heart}
+          title={t('Mes favoris')}
+          right={
+            <span className="flex items-center gap-1.5 text-muted">
+              {favoris > 0 && <span>{favoris}</span>}
+              <I icon={ChevronRight} size={18} className="shrink-0 text-disabled rtl:rotate-180" />
+            </span>
+          }
         />
-        <Stat to="/favoris" value={String(stats.data?.favorites ?? 0)} label={t('favoris')} />
-        {/* Les avis se donnent depuis un rendez-vous passé : c'est là qu'on les retrouve. */}
-        <Stat
-          to="/rendez-vous?scope=past"
-          value={stats.data ? String(reviews) : '—'}
-          label={reviews > 1 ? t('avis donnés') : t('avis donné')}
-        />
+        <SettingRow to="/notifications" icon={Bell} title={t('Notifications')} />
+        <SettingRow to="/reglages" icon={Settings} title={t('Réglages')} />
       </div>
-
-      <div className="crd !gap-0 !py-1">
-        <Row to="/reglages" icon={Settings} label={t("Réglages")} sub={t("Marché affiché, langue, données")} />
-      </div>
-
-      {/* Plus de passerelle vers l'espace pro : décision du 24 sept. 2026. Un compte sert à UN usage à
-          la fois ; faire cohabiter les deux espaces dans le même écran embrouillait plus qu'il n'aidait.
-          La porte d'entrée professionnelle reste « Portail des professionnels », sur l'écran de connexion. */}
 
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
@@ -157,16 +106,22 @@ export function Profile() {
         </p>
       )}
 
-      <Button variant="g" className="mt-2 !text-danger" loading={enCours} onClick={() => void seDeconnecter()}>
-        {!enCours && <I icon={LogOut} size={18} />} {enCours ? t('Déconnexion…') : t('Se déconnecter')}
-      </Button>
+      <div className="lst">
+        <SettingRow
+          onClick={() => void seDeconnecter()}
+          icon={LogOut}
+          danger
+          title={enCours ? t('Déconnexion…') : t('Se déconnecter')}
+          right={<span />}
+        />
+      </div>
 
       {cropAvatar && user && (
         <ImageCropper
           file={cropAvatar}
           aspect={1}
           round
-          title={t("Recadrer votre photo")}
+          title={t('Recadrer votre photo')}
           onCancel={() => setCropAvatar(null)}
           onDone={async (f) => {
             setCropAvatar(null);
