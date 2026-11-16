@@ -2203,4 +2203,13 @@ export const en: Record<string, string> = {
   // Accès (14-16 nov. 2026)
   "Aucun compte client associé à ces identifiants.": "No client account matches these credentials.",
   "Aucun compte professionnel associé à ces identifiants.": "No professional account matches these credentials.",
+  // Accès (14-16 nov. 2026)
+  "Reprendre rendez-vous": "Book again",
+  "Plus d’actions": "More actions",
+  "Voir le salon": "View salon",
+  "Vous avez noté ce rendez-vous {n}/5.": "You rated this appointment {n}/5.",
+  "Report et annulation possibles en ligne jusqu’à {n} h avant.": "Online rescheduling and cancellation up to {n} h before.",
+  "Déjà reporté une fois.": "Already rescheduled once.",
+  // Accès (14-16 nov. 2026)
+  "Réponse du salon avant {when}.": "The salon will reply before {when}.",
 };

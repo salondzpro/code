@@ -6,16 +6,11 @@
 import { WhatsAppLogo } from '@/components/BrandIcons';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {
   ArrowLeft,
-  Calendar,
-  CalendarClock,
-  MessageCircle,
-  Navigation,
   Phone,
   RotateCcw,
-  Star,
   StickyNote,
   UserRound,
   XCircle,
@@ -57,7 +52,6 @@ import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
 import { FactRow } from '@/components/BookingFacts';
 import { PageLoading } from '@/components/PageLoading';
-import { googleCalendarUrl } from './BookingConfirmed';
 import { directionsUrl } from './Bookings';
 import { t } from '@/i18n';
 
@@ -70,6 +64,7 @@ export function BookingDetail() {
   const cancel = useCancelBooking();
   const me = useMe();
   const [cancelling, setCancelling] = useState(false);
+  const [plus, setPlus] = useState(false);
   const [reason, setReason] = useState('');
   const [done, setDone] = useState(false);
   /**
@@ -221,73 +216,98 @@ export function BookingDetail() {
       {/* Validation manuelle : le créneau est bloqué pour les autres tant que le salon n'a pas répondu, et
           la demande expire d'elle-même (le client est prévenu, le créneau libéré). */}
       {/* Versement demandé par le salon : la carte du virement prend la place de l'avis d'attente. */}
-      <DepositCard booking={b} />
+      {/* Versement VALIDÉ : le résumé le dit déjà (« Versement de … reçu ») — pas de seconde carte. */}
+      {b.depositStatus !== 'accepted' && <DepositCard booking={b} />}
       {b.status === 'pending' && !b.depositStatus && (
         <InfoBox>
-          {t('Le salon a jusqu’au {when} pour confirmer. Sans réponse, la demande expire et vous êtes prévenu(e).', {
+          {t('Réponse du salon avant {when}.', {
             when: formatDeadline(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())),
           })}
         </InfoBox>
       )}
-      {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
-        <div className="g2">
-          <a href={`tel:${b.salon.phone}`} className="btn g sm">
-            <I icon={Phone} size={18} /> {t("Appeler")}
-          </a>
-          {wa && (
-            <a href={wa} target="_blank" rel="noreferrer" className="btn g sm">
-              <WhatsAppLogo size={18} /> {t("WhatsApp")}
+      {/* DEUX BOUTONS, LE RESTE DANS « ⋯ » (16 nov. 2026, demande du propriétaire). Ce dont la
+          cliente a besoin AVANT d'y aller : s'y rendre, et éventuellement déplacer. Après : noter,
+          ou reprendre rendez-vous. Annuler, voir le salon, joindre le salon : derrière « ⋯ ».
+          Plus de bouton « Calendrier ». */}
+      {(() => {
+        const visibles = [
+          active && (
+            <a key="it" href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn sm flex-1">
+              <I icon={ICONE.itineraire} size={18} /> {t('Itinéraire')}
             </a>
-          )}
-        </div>
+          ),
+          canReschedule && (
+            <LinkButton key="rep" to={`/rendez-vous/${b.id}/reporter`} variant="g" sm icon={ICONE.reporter} className="flex-1">
+              {t('Reporter')}
+            </LinkButton>
+          ),
+          b.status === 'completed' && b.reviewRating == null && (
+            <LinkButton key="note" to={`/rendez-vous/${b.id}/noter`} sm icon={ICONE.avis} className="flex-1">
+              {t('Noter')}
+            </LinkButton>
+          ),
+          !active && (
+            <LinkButton key="re" to={`/s/${b.salon.slug}/prestations`} variant="g" sm icon={ICONE.reserver} className="flex-1">
+              {t('Reprendre rendez-vous')}
+            </LinkButton>
+          ),
+        ].filter(Boolean).slice(0, 2);
+        return (
+          <div className="flex gap-2.5">
+            {visibles}
+            <button
+              type="button"
+              className="btn g sm !w-[3.25rem] flex-none !px-0"
+              aria-label={t('Plus d’actions')}
+              onClick={() => setPlus(true)}
+            >
+              <I icon={ICONE.autresActions} size={20} />
+            </button>
+          </div>
+        );
+      })()}
+      {b.status === 'completed' && b.reviewRating != null && (
+        <p className="p text-center">{t('Vous avez noté ce rendez-vous {n}/5.', { n: b.reviewRating })}</p>
       )}
-      <div className="flex flex-col gap-2.5">
-        {active && (
-          <div className="g2">
-            <a href={directionsUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
-              <I icon={Navigation} size={18} /> {t("Itinéraire")}
-            </a>
-            <a href={googleCalendarUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
-              <I icon={Calendar} size={18} /> {t("Calendrier")}
-            </a>
-          </div>
-        )}
-        {canReschedule && (
-          <div className="g2">
-            <Link to={`/rendez-vous/${b.id}/reporter`} className="btn g sm">
-              <I icon={CalendarClock} size={18} /> {t("Reporter")}
-            </Link>
-            <Button variant="d" onClick={() => setCancelling(true)}>
-              <I icon={XCircle} size={18} /> {t("Annuler")}
-            </Button>
-          </div>
-        )}
-        {canModify && !canReschedule && (
-          <Button variant="d" onClick={() => setCancelling(true)}>
-            <I icon={XCircle} size={18} /> {t("Annuler")}
-          </Button>
-        )}
-        {active && !canModify && (
-          <p className="p text-center text-[1rem]">
-            {t("Report et annulation en ligne possibles jusqu'à")}{' '}{minHours} {t("h avant. Contactez le salon.")}
-          </p>
-        )}
-        {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
-          <p className="p text-center text-[1rem]">
-            {t("Déjà reporté une fois. Pour le déplacer encore, contactez le salon.")}
-          </p>
-        )}
-        {b.status === 'completed' && b.reviewRating == null && (
-          <LinkButton to={`/rendez-vous/${b.id}/noter`}>
-            <I icon={Star} size={18} /> {t("Noter la prestation")}
-          </LinkButton>
-        )}
-        {b.status === 'completed' && b.reviewRating != null && (
-          <InfoBox>
-            {t("Merci ! Vous avez noté ce rendez-vous")}{' '}{b.reviewRating}{t("/5. Votre avis est visible sur la page du salon.")}
-          </InfoBox>
-        )}
-      </div>
+
+      {plus && (
+        <>
+          <Dim onClose={() => setPlus(false)} />
+          <BottomSheet modal>
+            <LinkButton to={`/s/${b.salon.slug}`} variant="g" icon={ICONE.voirSalon}>
+              {t('Voir le salon')}
+            </LinkButton>
+            {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
+              <a href={`tel:${b.salon.phone}`} className="btn g">
+                <I icon={Phone} size={18} /> {t('Appeler le salon')}
+              </a>
+            )}
+            {wa && (
+              <a href={wa} target="_blank" rel="noreferrer" className="btn g">
+                <WhatsAppLogo size={18} /> {t('WhatsApp')}
+              </a>
+            )}
+            {canModify && (
+              <Button
+                variant="d"
+                icon={ICONE.annulerRdv}
+                onClick={() => {
+                  setPlus(false);
+                  setCancelling(true);
+                }}
+              >
+                {t('Annuler le rendez-vous')}
+              </Button>
+            )}
+            {active && !canModify && (
+              <p className="p text-center">{t('Report et annulation possibles en ligne jusqu’à {n} h avant.', { n: minHours })}</p>
+            )}
+            {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
+              <p className="p text-center">{t('Déjà reporté une fois.')}</p>
+            )}
+          </BottomSheet>
+        </>
+      )}
 
       {cancelling && (
         <>

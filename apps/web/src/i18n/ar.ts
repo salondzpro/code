@@ -2189,4 +2189,13 @@ export const ar: Record<string, string> = {
   // Accès (14-16 nov. 2026)
   "Aucun compte client associé à ces identifiants.": "لا يوجد حساب زبون مرتبط بهذه البيانات.",
   "Aucun compte professionnel associé à ces identifiants.": "لا يوجد حساب مهني مرتبط بهذه البيانات.",
+  // Accès (14-16 nov. 2026)
+  "Reprendre rendez-vous": "حجز موعد جديد",
+  "Plus d’actions": "إجراءات أخرى",
+  "Voir le salon": "عرض الصالون",
+  "Vous avez noté ce rendez-vous {n}/5.": "قيّمت هذا الموعد {n}/5.",
+  "Report et annulation possibles en ligne jusqu’à {n} h avant.": "التأجيل والإلغاء عبر الإنترنت ممكنان حتى {n} ساعة قبل الموعد.",
+  "Déjà reporté une fois.": "تم التأجيل مرة واحدة.",
+  // Accès (14-16 nov. 2026)
+  "Réponse du salon avant {when}.": "ردّ الصالون قبل {when}.",
 };

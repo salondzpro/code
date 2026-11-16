@@ -12,6 +12,8 @@
  */
 import {
   Globe,
+  MoreHorizontal,
+  Navigation,
   Archive,
   ArrowLeft,
   ArrowLeftRight,
@@ -134,6 +136,10 @@ export const ICONE = {
   voirJustificatif: ReceiptText,
   validerVersement: BadgeCheck,
   refuserJustificatif: FileX2,
+  // Fiche d'un rendez-vous côté client (16 nov. 2026)
+  itineraire: Navigation,
+  autresActions: MoreHorizontal,
+  voirSalon: Store,
 } satisfies Record<string, LucideIcon>;
 
 export type ActionIcone = keyof typeof ICONE;
