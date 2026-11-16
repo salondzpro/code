@@ -35,7 +35,7 @@ import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { readAgendaMemory, saveAgendaMemory, takeAgendaFlash } from '@/lib/agendaMemory';
 import { BlockedSlotSheet, FreeSlotSheet, type BlockedSlot, type FreeSlot } from '@/components/FreeSlotSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
-import { StaffFilter } from '@/components/StaffFilter';
+import { StaffFilter, teinteColonne } from '@/components/StaffFilter';
 import { STATUT_COULEUR, statutCle, type StatutCle } from '@/lib/statusColors';
 import { formatDuration } from '@/lib/format';
 import { useDesktop } from '@/lib/breakpoint';
@@ -117,6 +117,8 @@ interface Column {
   id: string | null;
   name: string;
   avatarUrl: string | null;
+  /** Fond très léger de la colonne, à la couleur du rond du membre (16 nov. 2026). */
+  tint?: string;
 }
 
 export function AgendaPro() {
@@ -267,6 +269,8 @@ export function AgendaPro() {
           id: m.id,
           name: nameOf(m),
           avatarUrl: m.avatarUrl,
+          // Même couleur que son rond dans le filtre, très atténuée : les rendez-vous restent lisibles.
+          tint: teinteColonne(team.indexOf(m)),
         }));
 
   // Rendez-vous du jour par membre, pour la liste déroulante du filtre (annulés exclus).
@@ -796,7 +800,7 @@ function DayColumns({
       ))}
       <div className="ag9-cs" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
         {columns.map((col) => (
-          <div key={col.id ?? 'all'} className="agcol" onClick={(e) => tapFree(e, col)} role="presentation">
+          <div key={col.id ?? 'all'} className="agcol" style={col.tint ? { background: col.tint } : undefined} onClick={(e) => tapFree(e, col)} role="presentation">
             {gapsOf(col).map((g) => (
               <FreeGap
                 key={`g-${g.s}`}

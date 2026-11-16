@@ -17,6 +17,15 @@ import { t } from '@/i18n';
 /** Couleurs claires, bien distinctes, texte en encre lisible dessus. */
 const COULEURS = ['#ffd6e0', '#cfe4ff', '#d3f4dd', '#ffe3bd', '#e5dbff', '#c9f0f2', '#fff1b0', '#f9d6ca', '#dcebc6', '#f3d9f7'];
 
+/** Couleur du rond du membre n° `i` (ordre de l'équipe : actifs, triés). */
+export const couleurMembre = (i: number) => COULEURS[Math.max(0, i) % COULEURS.length]!;
+
+/**
+ * Fond de SA colonne dans l'agenda : la même couleur, à 35 % seulement (16 nov. 2026, demande du
+ * propriétaire : « pas trop forcé, qu'on voie bien ce qui est écrit dessus »).
+ */
+export const teinteColonne = (i: number) => `${couleurMembre(i)}59`;
+
 const prenom = (nom: string) => nom.trim().split(/\s+/)[0] || '?';
 const bas = (s: string) => s.toLocaleLowerCase('fr');
 
@@ -74,7 +83,7 @@ export function StaffFilter({
           aria-label={nameOf(m)}
           title={nameOf(m)}
           className={`stc-r${current?.id === m.id ? ' on' : ''}`}
-          style={{ background: COULEURS[i % COULEURS.length] }}
+          style={{ background: couleurMembre(i) }}
           onClick={() => onChange(current?.id === m.id ? null : m.id)}
         >
           {initiales[i]}
