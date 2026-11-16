@@ -335,7 +335,6 @@ export function Salon() {
               <Accordion
                 key={g.name}
                 title={g.name}
-                hint={t('{n} prestation(s)', { n: g.services.length })}
                 open={!closedGroups.has(g.name)}
                 onToggle={() =>
                   setClosedGroups((cur) => {
