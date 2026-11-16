@@ -624,7 +624,6 @@ export const en: Record<string, string> = {
   'Un lien de confirmation vous sera envoyé.': 'A confirmation link will be sent to you.',
   'Une catégorie apparaît dès que vous ajoutez une prestation.': 'A category appears as soon as you add a service.',
   'Une erreur est survenue. Réessayez.': 'Something went wrong. Try again.',
-  'Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.': 'One service per appointment. To combine several, book one appointment per service.',
   'Une seule image, celle qui représente le mieux cette prestation.': 'A single image, the one that best represents this service.',
   'Utiliser ma position actuelle': 'Use my current location',
   'Validation manuelle': 'Manual confirmation',

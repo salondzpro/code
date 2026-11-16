@@ -632,7 +632,6 @@ Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez vo
 Un lien de confirmation vous sera envoyé.
 Une catégorie apparaît dès que vous ajoutez une prestation.
 Une erreur est survenue. Réessayez.
-Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.
 Une seule image, celle qui représente le mieux cette prestation.
 Utiliser ma position actuelle
 Validation manuelle

@@ -335,9 +335,6 @@ export function Salon() {
               </div>
             )}
             <h2 className="h1 !text-[1.429rem]">{t("Choix de la prestation")}</h2>
-            <p className="p !text-[1rem]">
-              {t("Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.")}
-            </p>
             {groups.map((g) => (
               <Accordion
                 key={g.name}

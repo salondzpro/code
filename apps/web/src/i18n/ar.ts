@@ -624,7 +624,6 @@ export const ar: Record<string, string> = {
   'Un lien de confirmation vous sera envoyé.': 'سيُرسل إليك رابط تأكيد.',
   'Une catégorie apparaît dès que vous ajoutez une prestation.': 'تظهر الفئة بمجرد إضافة خدمة.',
   'Une erreur est survenue. Réessayez.': 'حدث خطأ. أعد المحاولة.',
-  'Une prestation par rendez-vous. Pour en cumuler plusieurs, prenez un rendez-vous par prestation.': 'خدمة واحدة لكل موعد. لعدة خدمات، احجز موعدًا لكل خدمة.',
   'Une seule image, celle qui représente le mieux cette prestation.': 'صورة واحدة فقط، تلك التي تمثل هذه الخدمة أفضل تمثيل.',
   'Utiliser ma position actuelle': 'استخدام موقعي الحالي',
   'Validation manuelle': 'تأكيد يدوي',
