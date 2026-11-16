@@ -2217,4 +2217,14 @@ export const en: Record<string, string> = {
   "ouvre à {time}": "opens at {time}",
   "ouvre demain {time}": "opens tomorrow {time}",
   "ouvre {day} {time}": "opens {day} {time}",
+  // Accès (14-16 nov. 2026)
+  "Choisissez la prestation": "Choose your service",
+  "Choisissez le jour et l’heure": "Pick the day and time",
+  "Confirmez en un clic": "Confirm in one tap",
+  "C’est réservé.": "You’re booked.",
+  "Demande envoyée.": "Request sent.",
+  "Étape {n} sur 3": "Step {n} of 3",
+  "Réservez en 3 étapes": "Book in 3 steps",
+  "Réservez en 30 secondes.": "Book in 30 seconds.",
+  "Lien dans la bio": "Link in bio",
 };

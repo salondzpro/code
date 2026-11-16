@@ -8438,19 +8438,31 @@ html[data-kb] #root {
     font: 600 calc(15px * var(--fz, 1)) var(--font-display);
     cursor: pointer;
   }
-  /* La vidéo remplit l'écran ; la barre et la fermeture en haut, le partage en bas. */
+  /* « MA VIDÉO » (refonte du 16 nov. 2026, thème actuel) : fond clair, la vidéo ENTIÈRE au centre,
+     arrondie et posée sur une ombre légère ; la progression et la fermeture en haut, les deux gestes
+     en bas — rien ne recouvre la vidéo. */
   .sv.vid {
     padding: 0;
-    background: #ffffff;
+    background: #f7f7f9;
+    color: #111111;
   }
-  /* Toute la largeur, jamais rognée : le bas passe sous le panneau de partage. */
+  .sv-v {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 16px 12px;
+  }
+  /* Tailles automatiques bornées par la zone : le cadre garde EXACTEMENT les proportions de la vidéo
+     (aucune bande autour), quelle que soit la hauteur de l'écran. */
   .sv.vid canvas {
-    flex: none;
-    width: 100%;
+    width: auto;
     height: auto;
-    max-height: calc(100% - 3.5rem);
-    object-fit: contain;
-    object-position: top;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 22px;
+    box-shadow: 0 10px 34px rgb(17 17 17 / 0.12);
   }
   .sv-top {
     order: -1;
@@ -8460,12 +8472,17 @@ html[data-kb] #root {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: calc(var(--safe-top, 0px) + 8px) 6px 4px 12px;
-    background: #14121f;
+    padding: calc(var(--safe-top, 0px) + 8px) 8px 4px 16px;
   }
   .sv-top .sv-b {
     flex: 1;
     padding: 0;
+  }
+  .sv-top .sv-b i {
+    background: #e6e6ea;
+  }
+  .sv-top .sv-b b {
+    background: #111111;
   }
   .sv-top button {
     width: 40px;
@@ -8475,19 +8492,18 @@ html[data-kb] #root {
     align-items: center;
     justify-content: center;
     border: 0;
-    background: none;
-    color: #ffffff;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 6px rgb(17 17 17 / 0.08);
+    color: #111111;
     cursor: pointer;
   }
   .sv-a {
-    position: absolute;
-    inset: auto 0 0;
-    z-index: 2;
+    flex: none;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 14px 16px calc(14px + var(--safe-bottom));
-    background: rgb(20 16 36 / 0.72);
+    padding: 0 16px calc(14px + var(--safe-bottom));
   }
   .sv-w {
     display: flex;
@@ -8517,23 +8533,22 @@ html[data-kb] #root {
     gap: 8px;
   }
   .sv-c button {
-    min-height: 50px;
+    min-height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 0 8px;
-    border: 1px solid rgb(255 255 255 / 0.5);
-    border-radius: var(--radius-btn);
-    background: none;
-    color: #ffffff;
+    border: 0;
+    border-radius: 999px;
+    background: #ececf0;
+    color: #111111;
     font: 600 calc(15px * var(--fz, 1)) var(--font-display);
     cursor: pointer;
   }
   .sv-c button.p {
-    border-color: transparent;
-    background: #ffffff;
-    color: var(--color-ink);
+    background: #111111;
+    color: #ffffff;
   }
   .sv-c button:disabled {
     opacity: 0.6;

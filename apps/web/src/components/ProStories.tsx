@@ -241,7 +241,11 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
 
   return createPortal(
     <div className="sv vid" role="dialog" aria-modal="true" aria-label={t('Votre vidéo')}>
-      <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Votre vidéo')} />
+      {/* Refonte du 16 nov. 2026 : fond clair du thème, la vidéo entière au centre (jamais recouverte),
+          les deux gestes dessous. Plus de texte d'explication : la vidéo parle d'elle-même. */}
+      <div className="sv-v">
+        <canvas ref={canvas} {...BIO_VIDEO_SIZE} aria-label={t('Votre vidéo')} />
+      </div>
       <div className="sv-top">
         <div className="sv-b" aria-hidden>
           <i>
@@ -253,13 +257,6 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
         </button>
       </div>
       <div className="sv-a">
-        <div className="sv-w">
-          <img src={photo} alt={name} />
-          <span>
-            <b>{t('Votre vidéo')}</b>
-            {women ? t('Partagez ce tutoriel pour montrer à vos clientes comment réserver') : t('Partagez ce tutoriel pour montrer à vos clients comment réserver')}
-          </span>
-        </div>
         {noVideo ? (
           <p>{t('Ce téléphone ne sait pas créer la vidéo.')}</p>
         ) : (

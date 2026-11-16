@@ -2203,4 +2203,14 @@ export const ar: Record<string, string> = {
   "ouvre à {time}": "يفتح على {time}",
   "ouvre demain {time}": "يفتح غدًا {time}",
   "ouvre {day} {time}": "يفتح {day} {time}",
+  // Accès (14-16 nov. 2026)
+  "Choisissez la prestation": "اختر الخدمة",
+  "Choisissez le jour et l’heure": "اختر اليوم والساعة",
+  "Confirmez en un clic": "أكّد بنقرة واحدة",
+  "C’est réservé.": "تم الحجز.",
+  "Demande envoyée.": "تم إرسال الطلب.",
+  "Étape {n} sur 3": "الخطوة {n} من 3",
+  "Réservez en 3 étapes": "احجز في 3 خطوات",
+  "Réservez en 30 secondes.": "احجز في 30 ثانية.",
+  "Lien dans la bio": "الرابط في السيرة",
 };
