@@ -30,7 +30,11 @@ import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { api } from '@/lib/api';
 import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { guestMarket, setGuestMarket } from '@/lib/useClientMarket';
-import { choisirEspace } from '@/lib/espaceClient';
+import { estRefusCompte } from '@/components/CompteRefuse';
+
+/** Les deux seules phrases d'un refus (16 nov. 2026) : rien sur l'autre type de compte. */
+const texteRefus = (role: 'client' | 'pro') =>
+  role === 'pro' ? t('Aucun compte professionnel associé à ces identifiants.') : t('Aucun compte client associé à ces identifiants.');
 import { AuthError, PasswordField } from '@/components/AuthShell';
 import { MailAppButton, AuthScreen } from '@/components/AuthKit';
 import { isNative } from '@/lib/native';
@@ -82,7 +86,11 @@ export function AccesEmail() {
   const [email, setEmail] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Err>(() =>
-    params.get('erreur') ? { kind: 'expired', text: t('Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.') } : null,
+    params.get('erreur') === 'compte'
+      ? { kind: 'credentials', text: texteRefus(role) }
+      : params.get('erreur')
+        ? { kind: 'expired', text: t('Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.') }
+        : null,
   );
 
   if (session) return <Navigate to={retour(next)} replace />;
@@ -154,7 +162,7 @@ export function AccesEmail() {
 /* -------------------------------------------------------------------- 2a. Compte existant */
 
 export function AccesMotDePasse() {
-  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin } = useAuth();
+  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin, signOut } = useAuth();
   const navigate = useNavigate();
   const { next, email, q, role, base } = useParcours();
   const [password, setPassword] = useState('');
@@ -163,33 +171,7 @@ export function AccesMotDePasse() {
   // Voir `Login.tsx` : une référence, pour que la redirection de session n'arrive pas avant le
   // contrôle du portail.
   const enCours = useRef(false);
-  // Compte PRO entré par le portail CLIENT : il choisit son espace (14 nov. 2026).
-  const [choix, setChoix] = useState(false);
 
-  if (choix && session) {
-    const aller = (espace: 'client' | 'pro') => {
-      choisirEspace(session.user.id, espace);
-      navigate(retour(espace === 'pro' ? '/pro' : next.startsWith('/pro') ? MARCHE : next), { replace: true });
-    };
-    return (
-      <AuthScreen
-        titre={t('Vous avez un espace professionnel')}
-        sous={t('Avec la même adresse, vous pouvez aussi réserver comme client dans les salons.')}
-        actions={
-          <>
-            <Button icon={ICONE.continuer} onClick={() => aller('client')}>
-              {t('Continuer comme client')}
-            </Button>
-            <Button icon={ICONE.seConnecter} variant="g" onClick={() => aller('pro')}>
-              {t('Ouvrir mon espace pro')}
-            </Button>
-          </>
-        }
-      >
-        <CompteCarte email={email} modifier={`${base}${q({ email })}`} />
-      </AuthScreen>
-    );
-  }
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
   if (!email) return <Navigate to={`${base}${q()}`} replace />;
 
@@ -198,6 +180,7 @@ export function AccesMotDePasse() {
     const demo = demoAccountForCredentials(email, password);
     setError(null);
     if (demo) {
+      if (demo.role !== role) return setError({ kind: 'credentials', text: texteRefus(role) });
       setBusy('password');
       try {
         writeAuthFlow({ role: demo.role, next: demo.role === 'pro' ? '/pro' : '/', identifier: demo.email, channel: 'email' });
@@ -216,25 +199,27 @@ export function AccesMotDePasse() {
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email' });
       await signInWithPassword(email, password);
-      // Le compte s'ouvre dans SON espace, quel que soit le portail par lequel on est passé : un
-      // professionnel entré par le portail client arrive sur son accueil pro, et l'inverse. Plus de
-      // refus ni de déconnexion (14 nov. 2026).
-      let dest = next;
+      /**
+       * SÉPARATION STRICTE (16 nov. 2026, demande du propriétaire) : chaque portail n'ouvre que SON
+       * type de compte. Un compte de l'autre côté est déconnecté aussitôt et l'on affiche seulement
+       * « Aucun compte client (professionnel) associé à ces identifiants. » — sans dire qu'un compte
+       * de l'autre type existe, sans proposer d'y aller. Le serveur refuse aussi (`X-Salondz-App`,
+       * gardes de rôle) : ce contrôle-ci n'est que l'écran.
+       */
+      let refus = false;
       try {
         const { profile } = await api.me.get();
-        // Professionnel passé par le portail CLIENT : on lui laisse le choix, il n'est plus renvoyé
-        // d'office sur son espace pro (14 nov. 2026, demande du propriétaire).
-        if (profile.role === 'pro' && role === 'client') {
-          setChoix(true);
-          return;
-        }
-        if (profile.role === 'pro' && !next.startsWith('/pro')) dest = '/pro';
-        else if (profile.role !== 'pro' && next.startsWith('/pro')) dest = '/';
-        if (profile.role !== role) writeAuthFlow({ role: profile.role === 'pro' ? 'pro' : 'client', next: dest });
-      } catch {
-        // Profil illisible (réseau) : on entre, les gardes trancheront.
+        refus = (profile.role === 'pro') !== (role === 'pro');
+      } catch (err) {
+        // Application : le serveur a déjà refusé le compte (403). Réseau : les gardes trancheront.
+        refus = estRefusCompte(err) !== null;
       }
-      navigate(retour(dest), { replace: true });
+      if (refus) {
+        await signOut({ voile: false }).catch(() => undefined);
+        setError({ kind: 'credentials', text: texteRefus(role) });
+        return;
+      }
+      navigate(retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE), { replace: true });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {

@@ -34,6 +34,12 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode versionProps['versionCode'].toInteger()
         versionName versionProps['versionName']
+        // Liens salondz.com réclamés par CETTE application (AndroidManifest.xml, séparation stricte du
+        // 16 nov. 2026) : l'espace pro pour l'application pro, le reste pour l'application client.
+        def liens = pro
+            ? ['/pro', '/pro', '/pro', '/pro', '/pro', '/pro', '/pro', '/pro']
+            : ['/s/', '/rendez-vous', '/favoris', '/carte', '/salons', '/home', '/supprimer', '/notifications']
+        manifestPlaceholders = (1..8).collectEntries { ["lien${it}".toString(), liens[it - 1]] }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

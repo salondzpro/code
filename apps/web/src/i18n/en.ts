@@ -2200,4 +2200,7 @@ export const en: Record<string, string> = {
   "Rechercher dans cette zone": "Search this area",
   "Zoomez pour voir les professionnels": "Zoom in to see professionals",
   "Aucun salon dans cette zone.": "No salon in this area.",
+  // Accès (14-16 nov. 2026)
+  "Aucun compte client associé à ces identifiants.": "No client account matches these credentials.",
+  "Aucun compte professionnel associé à ces identifiants.": "No professional account matches these credentials.",
 };

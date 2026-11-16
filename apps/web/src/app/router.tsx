@@ -12,7 +12,7 @@ import {
 } from './guards';
 import { ScrollToTop } from './ScrollToTop';
 import { ErrorBoundary } from '@/pages/ErrorBoundary';
-import { NATIF, PRO_ONLY } from '@/lib/flavor';
+import { APPLI, MARCHE, NATIF, PRO_ONLY } from '@/lib/flavor';
 import { NotFound } from '@/pages/NotFound';
 import { RootSlug } from '@/pages/client/RootSlug';
 // Parcours de connexion (design AUTH 01 → 16)
@@ -206,7 +206,7 @@ export const router = createBrowserRouter([
         children: [
           // Ex-« Intro » + « Bienvenue » : un visiteur non connecté n'a rien d'autre à faire que se
           // connecter, autant l'y amener directement plutôt que deux écrans intermédiaires.
-          { path: '/intro', element: <ClientWelcome /> },
+          { path: '/intro', element: APPLI === 'pro' ? <Navigate to="/pro/bienvenue" replace /> : <ClientWelcome /> },
           { path: '/bienvenue', element: <Navigate to="/intro" replace /> },
           { path: '/connexion', element: <Login /> },
           { path: '/inscription', element: <SignUp /> },
@@ -215,20 +215,34 @@ export const router = createBrowserRouter([
           { path: '/connexion/lien', element: <MagicLink /> },
           { path: '/connexion/mot-de-passe', element: <NewPassword /> },
           { path: '/connexion/retour', element: <WelcomeBack /> },
-          { path: '/pro/bienvenue', element: <ProWelcome /> },
-          // Accès professionnel en un seul chemin, l'e-mail d'abord (13 nov. 2026).
-          { path: '/pro/acces', element: <AccesEmail /> },
-          { path: '/pro/acces/mot-de-passe', element: <AccesMotDePasse /> },
-          { path: '/pro/acces/creer', element: <AccesCreer /> },
-          { path: '/pro/acces/envoye', element: <AccesEnvoye /> },
-          { path: '/pro/acces/oubli', element: <AccesOubli /> },
-          // Accès client : le même parcours, l'e-mail d'abord (14 nov. 2026).
-          { path: '/acces', element: <AccesEmail /> },
-          { path: '/acces/mot-de-passe', element: <AccesMotDePasse /> },
-          { path: '/acces/creer', element: <AccesCreer /> },
-          { path: '/acces/vous', element: <AccesVous /> },
-          { path: '/acces/envoye', element: <AccesEnvoye /> },
-          { path: '/acces/oubli', element: <AccesOubli /> },
+          // SÉPARATION STRICTE (16 nov. 2026) : l'application CLIENT n'a pas la porte pro, l'application
+          // PRO n'a pas la porte client — une adresse de l'autre portail ramène à la sienne. Le site
+          // garde les deux.
+          ...(APPLI === 'client'
+            ? []
+            : [
+                { path: '/pro/bienvenue', element: <ProWelcome /> },
+                // Accès professionnel en un seul chemin, l'e-mail d'abord (13 nov. 2026).
+                { path: '/pro/acces', element: <AccesEmail /> },
+                { path: '/pro/acces/mot-de-passe', element: <AccesMotDePasse /> },
+                { path: '/pro/acces/creer', element: <AccesCreer /> },
+                { path: '/pro/acces/envoye', element: <AccesEnvoye /> },
+                { path: '/pro/acces/oubli', element: <AccesOubli /> },
+              ]),
+          ...(APPLI === 'pro'
+            ? [
+                { path: '/acces/*', element: <Navigate to="/pro/acces" replace /> },
+                { path: '/acces', element: <Navigate to="/pro/acces" replace /> },
+              ]
+            : [
+                // Accès client : le même parcours, l'e-mail d'abord (14 nov. 2026).
+                { path: '/acces', element: <AccesEmail /> },
+                { path: '/acces/mot-de-passe', element: <AccesMotDePasse /> },
+                { path: '/acces/creer', element: <AccesCreer /> },
+                { path: '/acces/vous', element: <AccesVous /> },
+                { path: '/acces/envoye', element: <AccesEnvoye /> },
+                { path: '/acces/oubli', element: <AccesOubli /> },
+              ]),
           {
             element: <RequireAuth />,
             children: [
@@ -241,17 +255,22 @@ export const router = createBrowserRouter([
       ...(PRO_ONLY
         ? []
         : [
-            { path: '/home', element: <Home /> },
+            // Présentation du site : hors de l'application client, qui s'ouvre sur la place de marché
+            // (la page renvoie vers l'espace pro, absent de cette application).
+            { path: '/home', element: APPLI === 'client' ? <Navigate to={MARCHE} replace /> : <Home /> },
             // Sur le site, salondz.com EST la page de présentation (14 nov. 2026).
             ...(NATIF ? [] : [{ path: '/', element: <Home /> }]),
             // Page d'accueil du site PROFESSIONNEL : sur le web, `/pro/bienvenue` y mène (14 nov. 2026).
-            { path: '/professionnels', element: <ProSite /> },
+            // Absente de l'application client (séparation stricte).
+            ...(APPLI === 'client' ? [] : [{ path: '/professionnels', element: <ProSite /> }]),
           ]),
       ...routesClient,
       // ---- Pages légales (et pages salon hors variante pro) ----
       { element: PRO_ONLY ? <PlainLayout /> : <ClientPlainLayout />, children: routesPubliques },
-      // ---- Espace pro ----
-      {
+      // ---- Espace pro ---- (absent de l'application client : toute adresse /pro y ramène à l'accueil)
+      APPLI === 'client'
+        ? { path: '/pro/*', element: <Navigate to={MARCHE} replace /> }
+        : {
         path: '/pro',
         element: <RequirePro />,
         children: [

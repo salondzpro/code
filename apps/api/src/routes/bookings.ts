@@ -25,7 +25,15 @@ import { STORAGE_BUCKETS } from '@salondz/constants';
 import type { BookingDepositInfo } from '@salondz/types';
 
 const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
-  app.addHook('preHandler', app.requireProfile);
+  /**
+   * Routes du CLIENT (réserver, voir, annuler, reporter, noter, verser) : jamais un compte pro
+   * (16 nov. 2026, séparation stricte des deux applications). Seul le signalement d'un avis reste
+   * ouvert à tous — le professionnel visé est le premier à pouvoir signaler un avis mensonger.
+   */
+  app.addHook('preHandler', async (req, reply) => {
+    if (req.routeOptions.url?.endsWith('/reviews/:id/report')) return app.requireProfile(req, reply);
+    return app.requireClientRole(req, reply);
+  });
 
   /**
    * Signaler un avis (migration 0047). Ouvert à toute personne connectée SAUF son auteur — le professionnel

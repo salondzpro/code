@@ -27,7 +27,7 @@ import { badRequest, conflict, unwrap } from '../../lib/errors';
 import { snakeize } from '../../lib/mappers';
 import { loadOwnerView } from '../../lib/queries';
 import { bookingsOutsideHours } from '../../lib/hours';
-import { loadOwnedSalon } from '../../plugins/auth';
+import { loadOwnedSalon, noAccount } from '../../plugins/auth';
 import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } from '../../lib/labelSettings';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -56,6 +56,8 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
           : null,
       };
     }
+    // Compte client : l'espace pro n'existe pas pour lui (jamais d'inscription de salon proposée).
+    if (req.profile!.role !== 'pro') throw noAccount('pro');
     const salon = await loadOwnedSalon(req.user!.id);
     return { salon: salon ? await loadOwnerView(salon.id) : null };
   });
@@ -68,6 +70,9 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       // Un administrateur qui pilote le salon d'un professionnel n'ouvre pas un salon à son nom.
       if (await app.resolveActing(req, reply))
         throw conflict('SALON_EXISTS', 'Ce professionnel a déjà un salon.');
+      // Seul un compte PRO (inscrit par le portail pro) ouvre un salon : un compte client ne se
+      // transforme jamais en compte pro (16 nov. 2026, séparation stricte des deux applications).
+      if (req.profile!.role !== 'pro') throw noAccount('pro');
       const existing = await loadOwnedSalon(req.user!.id);
       if (existing) throw conflict('SALON_EXISTS', 'Vous avez déjà un salon.');
       const { categoryIds, ...rest } = req.body;

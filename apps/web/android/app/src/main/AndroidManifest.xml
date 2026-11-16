@@ -25,12 +25,24 @@
 
             <!-- Liens salondz.com ouverts depuis WhatsApp, un e-mail ou un QR : ils s'ouvrent DANS
                  l'application, sur la bonne page. `autoVerify` évite le choix « ouvrir avec ». -->
+            <!-- SÉPARATION STRICTE (16 nov. 2026) : chaque application ne réclame QUE ses adresses.
+                 Application client : salons, rendez-vous, favoris, carte… ; application pro : /pro
+                 seulement (`build.gradle` remplit les huit emplacements `lien1`…`lien8`). Avant, les
+                 deux réclamaient tout salondz.com : un lien de salon pouvait ouvrir l'application pro. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="salondz.com" />
                 <data android:scheme="https" android:host="www.salondz.com" />
+                <data android:pathPrefix="${lien1}" />
+                <data android:pathPrefix="${lien2}" />
+                <data android:pathPrefix="${lien3}" />
+                <data android:pathPrefix="${lien4}" />
+                <data android:pathPrefix="${lien5}" />
+                <data android:pathPrefix="${lien6}" />
+                <data android:pathPrefix="${lien7}" />
+                <data android:pathPrefix="${lien8}" />
             </intent-filter>
 
             <!-- SCHÉMA D'APPLICATION. Les liens d'application ouvrent l'app depuis un e-mail ou un

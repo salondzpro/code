@@ -440,6 +440,8 @@ export type EmailSignupInput = z.infer<typeof emailSignupSchema>;
 export const emailLinkSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   next: nextPath,
+  /** Portail d'où part la demande (client ou pro) : un lien n'ouvre jamais l'autre application. */
+  role: z.enum(USER_ROLES).optional(),
 });
 export type EmailLinkInput = z.infer<typeof emailLinkSchema>;
 /** Vérification d'une adresse AVANT l'inscription (dès la première étape) : libre, ou déjà prise. */

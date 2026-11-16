@@ -10,7 +10,8 @@ import { useAuth } from '@/lib/auth';
 import { readAuthFlow } from '@/lib/authFlow';
 import { supabase } from '@/lib/supabase';
 import { PageLoading } from '@/components/PageLoading';
-import { MARCHE } from '@/lib/flavor';
+import { APPLI, MARCHE } from '@/lib/flavor';
+import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
 
 /**
  * Jetons arrivés par une PASSATION depuis le navigateur (`lib/appHandoff.ts`). Supabase ne lit le
@@ -62,6 +63,12 @@ export function WelcomeBack() {
   const profile = me.data?.profile;
   const next = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : MARCHE);
   const q = `?next=${encodeURIComponent(next)}`;
+  // SÉPARATION STRICTE (16 nov. 2026) : un lien ne fait entrer que dans le portail de SON type —
+  // celui de l'application, sinon celui de la destination. Sinon : session fermée, message de refus.
+  const attendu = APPLI ?? (next.startsWith('/pro') ? 'pro' : 'client');
+  const refuse = estRefusCompte(me.error);
+  if (refuse) return <CompteRefuse cote={refuse} />;
+  if (!next.startsWith('/admin') && profile && (profile.role === 'pro') !== (attendu === 'pro')) return <CompteRefuse cote={attendu} />;
   // Sans profil (erreur réseau), on ne sait rien de la personne : la renvoyer sur « créer son profil »
   // montrait un formulaire vide à un compte existant. On entre, et le garde de la page tranchera.
   if (me.isError) return <Navigate to={next} replace />;

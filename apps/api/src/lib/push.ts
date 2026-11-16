@@ -28,6 +28,30 @@ interface PendingNotification {
   push_attempts: number;
 }
 
+/** Identifiants des deux applications (Android `applicationId`, iPhone bundle = `apns-topic`). */
+export const CLIENT_APP_ID = 'dz.salondz.app';
+export const PRO_APP_ID = 'pro.salondz.app';
+
+/**
+ * SÉPARATION STRICTE DES NOTIFICATIONS (16 nov. 2026, demande du propriétaire) : un appareil de
+ * l'application PRO ne reçoit que pour un compte pro, un appareil de l'application CLIENT que pour
+ * un compte client. Un jeton sans application (navigateur, ancienne application Expo) suit le
+ * compte. Appliqué à l'inscription d'un jeton (`POST /me/push-tokens`) ET à chaque envoi : un vieux
+ * jeton enregistré avant cette règle ne peut plus rien recevoir de l'autre côté.
+ */
+export function appMatchesRole(appId: string | null | undefined, role: string | null | undefined): boolean {
+  if (appId === PRO_APP_ID) return role === 'pro';
+  if (appId === CLIENT_APP_ID) return role !== 'pro';
+  return true;
+}
+
+/** Rôle de chaque destinataire, pour `appMatchesRole`. */
+async function rolesOf(userIds: string[]): Promise<Map<string, string>> {
+  const res = await db.from('profiles').select('id, role').in('id', userIds);
+  if (res.error) throw res.error;
+  return new Map((res.data ?? []).map((p) => [p.id as string, p.role as string]));
+}
+
 interface DeviceToken {
   user_id: string;
   token: string;
@@ -112,8 +136,11 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   }
   const wanted = (n: PendingNotification) => !(optOut.has(n.user_id) && CONFIRMATION_TYPES.has(n.type));
 
-  const { data: tokens, error: tErr } = await db.from('push_tokens').select('user_id, token, app_id, device_name').in('user_id', userIds);
+  const { data: tokensBruts, error: tErr } = await db.from('push_tokens').select('user_id, token, app_id, device_name').in('user_id', userIds);
   if (tErr) throw tErr;
+  // Jamais vers l'application de l'autre côté (voir `appMatchesRole`).
+  const roles = await rolesOf(userIds);
+  const tokens = ((tokensBruts ?? []) as DeviceToken[]).filter((t) => appMatchesRole(t.app_id, roles.get(t.user_id)));
 
   // Quatre canaux, quatre protocoles, reconnus à la FORME du jeton : Expo (ancienne application),
   // APNs (iPhone), Firebase (Android), Web Push (navigateur). L'ORDRE des tests compte — un jeton
@@ -308,8 +335,10 @@ export interface TestPushResult {
 }
 
 export async function sendTestPush(log: FastifyBaseLogger, userId: string): Promise<TestPushResult> {
-  const { data, error } = await db.from('push_tokens').select('token, platform, app_id, device_name').eq('user_id', userId);
+  const { data: bruts, error } = await db.from('push_tokens').select('token, platform, app_id, device_name').eq('user_id', userId);
   if (error) throw error;
+  const role = (await rolesOf([userId])).get(userId);
+  const data = ((bruts ?? []) as { app_id: string | null }[]).filter((t) => appMatchesRole(t.app_id, role));
   const payload = {
     title: '🔔 Salon DZ',
     body: 'Notification de test : tout fonctionne sur cet appareil.',

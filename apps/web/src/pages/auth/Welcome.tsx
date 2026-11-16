@@ -19,7 +19,6 @@ import { LangSwitch } from '@/components/LangSwitch';
 import { Wordmark } from '@/components/Wordmark';
 import { I } from '@/components/ui';
 import { ICONE } from '@/lib/actionIcons';
-import { Store } from 'lucide-react';
 import { t } from '@/i18n';
 
 export function ClientWelcome() {
@@ -83,9 +82,7 @@ export function ClientWelcome() {
             {t('Découvrir les salons')}
           </Link>
         )}
-        <Link to="/pro/bienvenue" className="pa-lien pwo-pro">
-          <I icon={Store} size={16} /> {t('Vous êtes professionnel ?')}
-        </Link>
+        {/* Plus de porte vers l'espace pro dans l'application client (séparation stricte, 16 nov. 2026). */}
         <p className="pa-note centre">
           {t('En continuant, vous acceptez les')} <Link to="/cgu">{t('conditions d’utilisation')}</Link> {t('et la')}{' '}
           <Link to="/confidentialite">{t('politique de confidentialité')}</Link>.

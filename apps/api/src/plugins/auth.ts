@@ -9,6 +9,12 @@ import { trace } from '../lib/audit';
 import { readControlToken } from '../lib/control';
 import type { Profile, Salon } from '@salondz/types';
 
+/** Phrases imposées par le propriétaire (16 nov. 2026) : elles ne disent rien de l'autre type de compte. */
+export const NO_CLIENT_ACCOUNT = 'Aucun compte client associé à ces identifiants.';
+export const NO_PRO_ACCOUNT = 'Aucun compte professionnel associé à ces identifiants.';
+export const noAccount = (cote: 'client' | 'pro') =>
+  cote === 'pro' ? new AppError(403, 'NO_PRO_ACCOUNT', NO_PRO_ACCOUNT) : new AppError(403, 'NO_CLIENT_ACCOUNT', NO_CLIENT_ACCOUNT);
+
 export interface AuthUser {
   id: string;
   email: string | null;
@@ -55,6 +61,8 @@ declare module 'fastify' {
     requireProfile: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** Exige un profil pro possédant un salon ; charge `req.salon`. Un administrateur muni d'un jeton de contrôle : celui du jeton. */
     requireSalon: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    /** Compte CLIENT seulement (403 `NO_CLIENT_ACCOUNT` pour un compte pro). */
+    requireClientRole: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** Le salon qu'un administrateur pilote (jeton de contrôle valide), ou `null` si la requête est ordinaire. */
     resolveActing: (req: FastifyRequest, reply: FastifyReply) => Promise<Salon | null>;
     /** Exige un administrateur de la place de marché ; charge `req.admin`. */
@@ -171,6 +179,28 @@ export default fp(async (app) => {
       return;
     }
     req.profile = camelize<Profile>(data);
+    enforceApp(req);
+  });
+
+  /**
+   * SÉPARATION STRICTE DES DEUX APPLICATIONS (16 nov. 2026, demande du propriétaire). Chaque
+   * application mobile s'annonce par l'en-tête `X-Salondz-App` (`client` ou `pro`, posé par
+   * `createApiClient`). Un compte qui n'est pas du bon côté est refusé sur TOUTE route authentifiée,
+   * avec la même phrase que l'écran de connexion — sans jamais dire qu'un compte de l'autre type
+   * existe, ni proposer d'y aller. Sans en-tête (site salondz.com, scripts), ce sont les gardes de
+   * rôle ci-dessous qui tranchent, route par route.
+   */
+  function enforceApp(req: FastifyRequest) {
+    const appli = req.headers['x-salondz-app'];
+    const role = req.profile?.role;
+    if (appli === 'pro' && role !== 'pro') throw noAccount('pro');
+    if (appli === 'client' && role === 'pro') throw noAccount('client');
+  }
+
+  /** Routes de CLIENT (réserver, annuler, reporter, noter, favoris, alertes) : jamais un compte pro. */
+  app.decorate('requireClientRole', async (req: FastifyRequest, reply: FastifyReply) => {
+    await app.requireProfile(req, reply);
+    if (req.profile!.role === 'pro') throw noAccount('client');
   });
 
   /**
@@ -216,6 +246,8 @@ export default fp(async (app) => {
       req.salon = pilote;
       return;
     }
+    // Un compte client n'entre JAMAIS dans l'espace pro, même s'il possédait un salon par le passé.
+    if (req.profile!.role !== 'pro') throw noAccount('pro');
     const salon = await loadOwnedSalon(req.user!.id);
     if (!salon) throw forbidden("Vous n'avez pas encore de salon. Créez-le d'abord.");
     req.salon = salon;

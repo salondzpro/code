@@ -91,6 +91,12 @@ export interface ApiClientOptions {
    * ainsi : personne ne travaille dans le dos d'un professionnel.
    */
   actingAsToken?: () => string | null;
+  /**
+   * Application qui appelle (16 nov. 2026, séparation stricte) : `client` ou `pro`, envoyé en
+   * `X-Salondz-App` à chaque requête. Le serveur refuse alors tout compte de l'autre type
+   * (`NO_CLIENT_ACCOUNT` / `NO_PRO_ACCOUNT`). Absent sur le site, qui sert les deux portails.
+   */
+  app?: 'client' | 'pro';
 }
 
 type Query = Record<string, string | number | boolean | undefined | null>;
@@ -381,6 +387,7 @@ export function createApiClient(opts: ApiClientOptions) {
     if (init.auth !== false) {
       const token = await opts.getAccessToken();
       if (token) headers.Authorization = `Bearer ${token}`;
+    if (opts.app) headers['X-Salondz-App'] = opts.app;
       const control = opts.actingAsToken?.();
       if (control && path.startsWith('/pro/')) headers['X-Admin-Control'] = control;
     }

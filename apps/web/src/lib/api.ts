@@ -3,10 +3,14 @@ import { env } from './env';
 import { supabase } from './supabase';
 import { isDemo } from '@/demo/session';
 import { actingAsToken } from './actingAs';
+import { APPLI } from './flavor';
 
 export const api = createApiClient({
   baseUrl: env.apiUrl,
   timeoutMs: 15_000,
+  // Séparation stricte (16 nov. 2026) : chaque application s'annonce, le serveur refuse tout compte
+  // de l'autre côté. Le site, qui sert les deux portails, ne s'annonce pas.
+  app: APPLI ?? undefined,
   /**
    * Démonstration : tout est servi dans le navigateur (aucune requête ne part). Le moteur
    * (monde, règles, routeur) est chargé À LA DEMANDE : un visiteur ordinaire ne télécharge
@@ -33,7 +37,7 @@ export const api = createApiClient({
     if (isDemo()) return;
     void supabase.auth.signOut().finally(() => {
       const next = window.location.pathname + window.location.search;
-      window.location.assign(`/intro?next=${encodeURIComponent(next)}`);
+      window.location.assign(`${APPLI === 'pro' ? '/pro/bienvenue' : '/intro'}?next=${encodeURIComponent(next)}`);
     });
   },
 });

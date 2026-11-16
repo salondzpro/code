@@ -62,13 +62,18 @@ export function handOffToApp(): void {
  */
 export function handoffUrl(ua: string, destination: string, repliVers: string): string {
   const d = encodeURIComponent(destination);
+  // SÉPARATION STRICTE (16 nov. 2026) : la destination dit QUELLE application réveiller — l'espace
+  // pro dans Salon DZ Pro, tout le reste dans Salon DZ. Jamais l'une à la place de l'autre.
+  const pro = destination.startsWith('/pro');
   if (/android/i.test(ua)) {
     // `intent://` prévoit le REPLI : sans application installée, Android revient ici et la personne
-    // continue dans son navigateur, sans page d'erreur. Le paquet n'est volontairement PAS nommé —
-    // ainsi l'application professionnelle (`pro.salondz.app`) est reconnue elle aussi.
-    return `intent://reprise?d=${d}#Intent;scheme=salondz;S.browser_fallback_url=${encodeURIComponent(repliVers)};end`;
+    // continue dans son navigateur, sans page d'erreur. Le paquet est NOMMÉ : les deux applications
+    // déclarent le schéma `salondz`, seul le paquet désigne la bonne.
+    const paquet = pro ? 'pro.salondz.app' : 'dz.salondz.app';
+    return `intent://reprise?d=${d}#Intent;scheme=salondz;package=${paquet};S.browser_fallback_url=${encodeURIComponent(repliVers)};end`;
   }
-  // iOS : le schéma direct. Safari demande confirmation la première fois, et ne fait rien si
-  // l'application est absente — la page reste affichée, ce qui est exactement le repli voulu.
-  return `salondz://reprise?d=${d}`;
+  // iOS : le schéma direct, propre à chaque application (`salondzpro` posé par Codemagic pour la
+  // pro). Safari demande confirmation la première fois, et ne fait rien si l'application est
+  // absente — la page reste affichée, ce qui est exactement le repli voulu.
+  return `${pro ? 'salondzpro' : 'salondz'}://reprise?d=${d}`;
 }

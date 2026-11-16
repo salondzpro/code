@@ -2,15 +2,22 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["PRB75K5S58.dz.salondz.app", "PRB75K5S58.pro.salondz.app"],
+        "appIDs": ["PRB75K5S58.dz.salondz.app"],
         "components": [
+          { "/": "/pro/*", "exclude": true, "comment": "Séparation stricte (16 nov. 2026) : jamais l'espace pro dans l'application client" },
           { "/": "/s/*", "comment": "Page publique d'un salon, partagée par le professionnel" },
           { "/": "/rendez-vous/*", "comment": "Un rendez-vous précis, côté client" },
-          { "/": "/pro/*", "comment": "Espace professionnel" },
           { "/": "/favoris" },
           { "/": "/carte" },
+          { "/": "/salons" },
           { "/": "/home" },
           { "/": "/supprimer" }
+        ]
+      },
+      {
+        "appIDs": ["PRB75K5S58.pro.salondz.app"],
+        "components": [
+          { "/": "/pro/*", "comment": "Espace professionnel : seule adresse de l'application pro" }
         ]
       }
     ]

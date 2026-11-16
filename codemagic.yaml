@@ -224,6 +224,9 @@ workflows:
           sed -i '' 's/ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;/ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Pro";/g' App.xcodeproj/project.pbxproj
           plutil -replace CFBundleDisplayName -string "Salon DZ Pro" App/Info.plist
           plutil -replace CFBundleURLTypes.0.CFBundleURLName -string "pro.salondz.app" App/Info.plist
+          # Schéma PROPRE à l'application pro (séparation stricte, 16 nov. 2026) : `salondz://` reste à
+          # l'application client, la reprise d'un lien pro vise `salondzpro://` (lib/appHandoff.ts).
+          plutil -replace CFBundleURLTypes.0.CFBundleURLSchemes.0 -string "salondzpro" App/Info.plist
           grep -q "pro.salondz.app" App.xcodeproj/project.pbxproj || { echo "identifiant pro non posé"; exit 1; }
           test -d App/Assets.xcassets/AppIcon-Pro.appiconset || { echo "icône AppIcon-Pro absente : node scripts/make-capacitor-icons.mjs --pro"; exit 1; }
       - name: Dépendances natives (Swift Package Manager)

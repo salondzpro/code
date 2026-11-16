@@ -31,6 +31,15 @@ export const NATIF = (() => {
 })();
 
 /**
+ * QUELLE APPLICATION (16 nov. 2026, séparation stricte demandée par le propriétaire) :
+ *   `pro`    — Salon DZ Pro (variante compilée), réservée aux comptes professionnels ;
+ *   `client` — Salon DZ (application grand public, Android en ligne ou iPhone embarqué), réservée
+ *              aux comptes clients : l'espace pro n'y est pas monté ;
+ *   `null`   — le SITE salondz.com, qui garde les deux portails (chacun refuse l'autre type de compte).
+ */
+export const APPLI: 'client' | 'pro' | null = PRO_ONLY ? 'pro' : NATIF ? 'client' : null;
+
+/**
  * LA PLACE DE MARCHÉ (14 nov. 2026, demande du propriétaire). Sur le SITE, salondz.com affiche la page
  * de présentation (`pages/Home.tsx`) et la place de marché vit sur `/salons`. Dans l'APPLICATION, rien
  * ne change : elle s'ouvre sur la place de marché, à la racine. Tout lien vers la place de marché passe

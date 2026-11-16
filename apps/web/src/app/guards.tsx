@@ -16,7 +16,8 @@ import { useDesktop } from '@/lib/breakpoint';
 import { useActingAs } from '@/lib/actingAs';
 import { useAutoLocate } from '@/lib/useAutoLocate';
 import { ActingAsBanner } from '@/components/ActingAsBanner';
-import { proEnClient } from '@/lib/espaceClient';
+import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
+import { APPLI } from '@/lib/flavor';
 import { AccountSuspendedNotice, SalonSuspendedNotice } from '@/components/SuspensionNotice';
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
@@ -148,7 +149,10 @@ export function RequireClient() {
     return <Navigate to={`/connexion?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
   if (me.isPending) return <PageLoading />;
-  if (me.isError) return <ErrorState error={me.error} retry={() => me.refetch()} accueil={false} />;
+  if (me.isError) {
+    if (estRefusCompte(me.error)) return <CompteRefuse cote="client" />;
+    return <ErrorState error={me.error} retry={() => me.refetch()} accueil={false} />;
+  }
   const p = me.data.profile;
   /**
    * UN RÔLE, UN ESPACE. Un professionnel n'a rien à faire dans la place de marché : c'est ce qui
@@ -156,8 +160,14 @@ export function RequireClient() {
    * passer tout le monde — un professionnel rouvrait donc son application en client, et devait
    * retrouver son espace à la main.
    */
-  // Sauf s'il a choisi, sur cet appareil, de continuer comme client (`lib/espaceClient.ts`).
-  if (p.role === 'pro' && !proEnClient(session.user.id)) return <Navigate to="/pro" replace />;
+  // SÉPARATION STRICTE (16 nov. 2026) : un compte pro n'entre JAMAIS dans l'espace client et n'est
+  // jamais renvoyé vers son espace pro — session fermée, « Aucun compte client associé à ces
+  // identifiants. ». Seule exception, sur le SITE : les pages en libre accès (place de marché, carte)
+  // restent consultables comme par un visiteur.
+  if (p.role === 'pro') {
+    if (APPLI === null && LIBRE_ACCES.test(location.pathname)) return <Outlet />;
+    return <CompteRefuse cote="client" />;
+  }
   const next = encodeURIComponent(location.pathname + location.search);
   // Le NOM seul est exigé (14 nov. 2026, inscription simplifiée) : le numéro est demandé au moment
   // de réserver, à l'étape des coordonnées, et enregistré sur le profil à ce moment-là.
@@ -195,6 +205,10 @@ export function RequirePro() {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/pro/bienvenue?next=${next}`} replace />;
   }
+  // SÉPARATION STRICTE (16 nov. 2026) : un compte client n'entre jamais dans l'espace pro (pas
+  // d'inscription de salon proposée). L'administrateur qui pilote un salon reste admis.
+  if (!acting && (estRefusCompte(salonQuery.error) || estRefusCompte(me.error) || (me.data && me.data.profile.role !== 'pro')))
+    return <CompteRefuse cote="pro" />;
   if (salonQuery.isPending || me.isPending) return <PageLoading />;
   // Le professionnel aussi complète nom et numéro avant d'entrer : ses clients l'appellent.
   // Un administrateur qui pilote le salon d'un autre n'a pas à donner son propre numéro : ce sont

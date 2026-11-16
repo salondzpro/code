@@ -145,8 +145,6 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const role = (res.data?.role as string | undefined) ?? (user.user_metadata.role as string | undefined);
     return role === 'pro' ? 'pro' : 'client';
   };
-  const PRO_EXISTS_TEXT =
-    'Cette adresse e-mail est déjà associée à un compte professionnel Salon DZ. Connectez-vous, ou récupérez votre accès.';
 
   /**
    * VÉRIFICATION DE L'ADRESSE DÈS LA PREMIÈRE ÉTAPE (28 oct. 2026, demande du propriétaire) : on
@@ -165,7 +163,9 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.header('Cache-Control', 'private, no-store');
       const user = await findUser(req.body.email);
       let status: EmailCheckStatus = 'available';
-      if (user) status = user.email_confirmed_at ? await roleOf(user) : 'pending';
+      // Compte confirmé : on répond le rôle DU PORTAIL interrogé, jamais celui du compte — l'écran sait
+      // qu'il faut un mot de passe, sans apprendre qu'un compte de l'autre type existe (16 nov. 2026).
+      if (user) status = user.email_confirmed_at ? (req.body.role ?? (await roleOf(user))) : 'pending';
       return { status };
     },
   );
@@ -211,7 +211,6 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     // est unique dans `auth.users`, enregistrée en minuscules — deux inscriptions simultanées de
     // la même adresse en laissent passer une seule, l'autre reçoit « déjà inscrite » ci-dessous.
     if (existing?.email_confirmed_at) {
-      if ((await roleOf(existing)) === 'pro') throw conflict('PRO_EMAIL_EXISTS', PRO_EXISTS_TEXT);
       throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
     }
     let link: string;
@@ -271,7 +270,11 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/auth/magic-link', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
     const user = await findUser(email);
-    if (!user) {
+    // Portail emprunté : celui annoncé, sinon celui de la destination. Un lien de connexion n'est
+    // jamais envoyé pour entrer dans l'autre application (16 nov. 2026) — même réponse 204, aucun
+    // indice sur le type du compte.
+    const portail = req.body.role ?? (next.startsWith('/pro') ? 'pro' : 'client');
+    if (!user || (await roleOf(user)) !== portail) {
       reply.status(204);
       return null;
     }

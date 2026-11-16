@@ -8,11 +8,11 @@ import {
 } from '@salondz/validation';
 import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
 import { db } from '../lib/supabase';
-import { sendTestPush } from '../lib/push';
+import { PRO_APP_ID, appMatchesRole, sendTestPush } from '../lib/push';
 import { readLabelSettings } from '../lib/labelSettings';
 import { camelize, snakeize } from '../lib/mappers';
 import { unwrap, conflict } from '../lib/errors';
-import { loadOwnedSalon } from '../plugins/auth';
+import { loadOwnedSalon, noAccount } from '../plugins/auth';
 import { attachNextSlots } from '../lib/availability';
 import { eraseClientAccount, eraseProAccount } from '../lib/moderation';
 import { clientStanding } from '../lib/standing';
@@ -26,7 +26,15 @@ const PROFILE_COLS =
   'id, role, full_name, phone, avatar_url, gender, locale, market, reminders_enabled, notify_confirmations, created_at, suspended_at, suspended_reason';
 
 const meRoutes: FastifyPluginAsyncZod = async (app) => {
-  app.addHook('preHandler', app.requireProfile);
+  /**
+   * Routes communes (profil, notifications, appareils) : tout compte. Routes de CLIENT (situation
+   * de réservation, compteurs, favoris, alertes de créneau) : jamais un compte pro (16 nov. 2026).
+   */
+  const CLIENT_SEULEMENT = /\/me\/(booking-standing|stats|favorites|slot-alerts)/;
+  app.addHook('preHandler', async (req, reply) => {
+    if (CLIENT_SEULEMENT.test(req.routeOptions.url ?? '')) return app.requireClientRole(req, reply);
+    return app.requireProfile(req, reply);
+  });
 
   /**
    * Situation de réservation chez un salon : suspension anti-abus (annulations / absences) ou blocage par ce salon.
@@ -139,7 +147,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     return camelize<Profile>(unwrap(res));
   });
 
+  /**
+   * LE RÔLE D'UN COMPTE EST DÉFINITIF (16 nov. 2026, séparation stricte) : posé à l'inscription par
+   * le portail emprunté, il ne change plus. Cette route ne sert plus qu'à reconfirmer le même rôle.
+   */
   app.post('/me/role', { schema: { body: chooseRoleSchema } }, async (req) => {
+    if (req.body.role !== req.profile!.role) throw noAccount(req.body.role === 'pro' ? 'pro' : 'client');
     const res = await db
       .from('profiles')
       .update({ role: req.body.role })
@@ -151,6 +164,10 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
 
   // ---- Push tokens ----
   app.post('/me/push-tokens', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } }, schema: { body: registerPushTokenSchema } }, async (req, reply) => {
+    // Un appareil de l'application PRO n'inscrit qu'un compte pro, et l'application CLIENT qu'un
+    // compte client (16 nov. 2026) : aucune notification ne peut atterrir dans l'autre application.
+    if (!appMatchesRole(req.body.appId ?? null, req.profile!.role))
+      throw noAccount(req.body.appId === PRO_APP_ID ? 'pro' : 'client');
     const res = await db
       .from('push_tokens')
       .upsert(

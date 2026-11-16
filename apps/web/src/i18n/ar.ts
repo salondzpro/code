@@ -2186,4 +2186,7 @@ export const ar: Record<string, string> = {
   "Rechercher dans cette zone": "البحث في هذه المنطقة",
   "Zoomez pour voir les professionnels": "كبّر لرؤية المحترفين",
   "Aucun salon dans cette zone.": "لا يوجد صالون في هذه المنطقة.",
+  // Accès (14-16 nov. 2026)
+  "Aucun compte client associé à ces identifiants.": "لا يوجد حساب زبون مرتبط بهذه البيانات.",
+  "Aucun compte professionnel associé à ces identifiants.": "لا يوجد حساب مهني مرتبط بهذه البيانات.",
 };
