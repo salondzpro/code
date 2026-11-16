@@ -448,7 +448,8 @@ export function createApiClient(opts: ApiClientOptions) {
     auth: {
       /** Inscription par e-mail : le compte est créé, le lien de confirmation part par nos e-mails. */
       /** `{ opened: true }` : compte client ouvert tout de suite (se connecter au mot de passe) ; sinon lien envoyé. */
-      signup: (body: EmailSignupInput) => post<{ opened: boolean } | null>('/auth/signup', body),
+      // `login` : l'adresse de connexion (l'interne quand la vraie sert déjà à un compte de l'autre côté).
+      signup: (body: EmailSignupInput) => post<{ opened: boolean; login?: string } | null>('/auth/signup', body),
       /** L'adresse est-elle libre ? Appelée dès la saisie, avant toute création de compte. */
       emailCheck: (body: EmailCheckInput) => post<{ status: EmailCheckStatus }>('/auth/email-check', body),
       /** Lien de connexion par e-mail (compte existant). */

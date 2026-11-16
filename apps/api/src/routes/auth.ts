@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { DEMO_LOGIN_CODE, demoAccountFor } from '@salondz/constants';
+import { ALIAS_DOMAIN, DEMO_LOGIN_CODE, demoAccountFor } from '@salondz/constants';
 import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, type EmailCheckStatus } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
@@ -135,7 +136,6 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
-  /** Inscription : crée le compte (non confirmé) et envoie le lien de confirmation. */
   /**
    * Rôle d'un compte existant : celui du profil s'il est créé, sinon celui posé à l'inscription.
    * Un compte est client OU professionnel, jamais les deux.
@@ -147,11 +147,27 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   };
 
   /**
-   * VÉRIFICATION DE L'ADRESSE DÈS LA PREMIÈRE ÉTAPE (28 oct. 2026, demande du propriétaire) : on
-   * dit tout de suite qu'une adresse est déjà prise, au lieu de laisser remplir le formulaire puis
-   * refuser. C'est un choix assumé : la route révèle qu'une adresse a un compte. D'où sa limite par
-   * IP SEULE (on ne peut pas la contourner en changeant d'adresse à chaque appel) et l'absence de
-   * tout autre renseignement que le statut. La création reste protégée à part (`/auth/signup`).
+   * DEUX COMPTES POUR UNE MÊME ADRESSE (16 nov. 2026, séparation stricte) : le compte du second côté
+   * vit sous une adresse interne (`@salondz/constants` → `alias.ts`, même calcul dans le site).
+   */
+  type Portail = 'client' | 'pro';
+  const aliasOf = (email: string, role: Portail) =>
+    `${role}-${createHash('sha256').update(email.trim().toLowerCase()).digest('hex').slice(0, 24)}@${ALIAS_DOMAIN}`;
+  /** Le compte de CE portail pour cette adresse : le vrai s'il est du bon rôle, sinon l'interne, sinon rien. */
+  const accountFor = async (email: string, role: Portail) => {
+    const user = await findUser(email);
+    if (user && (await roleOf(user)) === role) return user;
+    return findUser(aliasOf(email, role));
+  };
+  /** Portail d'une demande : celui annoncé, sinon celui de la destination. */
+  const portailOf = (role: string | undefined, next: string): Portail => (role === 'pro' || role === 'client' ? role : next.startsWith('/pro') ? 'pro' : 'client');
+  const EXISTS_TEXT = 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.';
+
+  /**
+   * VÉRIFICATION DE L'ADRESSE DÈS LA PREMIÈRE ÉTAPE (28 oct. 2026) — PAR PORTAIL depuis le 16 nov. :
+   * « existe » ne vaut que pour un compte DE CE CÔTÉ. Une adresse qui n'a qu'un compte de l'autre côté
+   * est « libre » ici : on propose l'inscription, jamais un refus au mot de passe (demande du
+   * propriétaire). Limite par IP SEULE, aucun autre renseignement que le statut.
    */
   app.post(
     '/auth/email-check',
@@ -161,18 +177,23 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (req, reply) => {
       reply.header('Cache-Control', 'private, no-store');
-      const user = await findUser(req.body.email);
+      const role = req.body.role === 'pro' ? 'pro' : 'client';
+      const user = await accountFor(req.body.email, role);
       let status: EmailCheckStatus = 'available';
-      // Compte confirmé : on répond le rôle DU PORTAIL interrogé, jamais celui du compte — l'écran sait
-      // qu'il faut un mot de passe, sans apprendre qu'un compte de l'autre type existe (16 nov. 2026).
-      if (user) status = user.email_confirmed_at ? (req.body.role ?? (await roleOf(user))) : 'pending';
+      if (user) status = user.email_confirmed_at ? role : 'pending';
       return { status };
     },
   );
 
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
-    const { email, password, role, next, fullName, gender } = req.body;
-    const existing = await findUser(email);
+    const { email, password, next, fullName, gender } = req.body;
+    const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
+    // Le compte DE CE CÔTÉ, s'il existe déjà (vrai ou interne).
+    const existing = await accountFor(email, role);
+    // Adresse prise par un compte de l'AUTRE côté : le nouveau compte vit sous l'adresse interne.
+    const autre = existing ? null : await findUser(email);
+    const cible = autre ? aliasOf(email, role) : email;
+    const meta = { role, ...(autre ? { contact_email: email } : {}) };
     /**
      * CLIENTE : COMPTE OUVERT TOUT DE SUITE (14 nov. 2026, demande du propriétaire : « être
      * facilitateur »). Adresse, mot de passe, nom et « femme / homme », et l'on entre — pas de lien
@@ -182,15 +203,14 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
      */
     if (role === 'client' && fullName && !existing) {
       const created = await db.auth.admin.createUser({
-        email,
+        email: cible,
         password,
         email_confirm: true,
-        user_metadata: { role, full_name: fullName },
+        user_metadata: { ...meta, full_name: fullName },
       });
       if (created.error || !created.data.user) {
         const msg = created.error?.message ?? '';
-        if (/already|registered|exists/i.test(msg))
-          throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
+        if (/already|registered|exists/i.test(msg)) throw conflict('EMAIL_EXISTS', EXISTS_TEXT);
         if (/invalid|valid email/i.test(msg)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
         throw created.error ?? new Error('createUser');
       }
@@ -204,54 +224,45 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
         if (upd.error) req.log.error({ err: upd.error }, 'signup profil');
       }
       reply.header('Cache-Control', 'private, no-store');
-      return { opened: true };
+      // `login` : l'adresse avec laquelle le site doit se connecter (l'interne le cas échéant).
+      return { opened: true, login: cible };
     }
-    // Compte confirmé : AUCUNE seconde inscription. Le serveur décide, quoi qu'ait affiché l'écran
-    // (un ancien bundle, un appel direct). L'unicité elle-même est tenue par la base : l'adresse
-    // est unique dans `auth.users`, enregistrée en minuscules — deux inscriptions simultanées de
-    // la même adresse en laissent passer une seule, l'autre reçoit « déjà inscrite » ci-dessous.
-    if (existing?.email_confirmed_at) {
-      throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
-    }
+    // Compte confirmé DE CE CÔTÉ : AUCUNE seconde inscription. Le serveur décide, quoi qu'ait affiché
+    // l'écran (un ancien bundle, un appel direct). L'unicité est tenue par `auth.users`.
+    if (existing?.email_confirmed_at) throw conflict('EMAIL_EXISTS', EXISTS_TEXT);
     let link: string;
+    const to = redirect('/connexion/retour', next);
     if (existing) {
       // Inscription commencée mais jamais confirmée : on garde le compte et on renvoie un lien qui
-      // confirme l'adresse et connecte. LE MOT DE PASSE SAISI ICI N'EST PAS ENREGISTRÉ : n'importe
-      // qui peut appeler cette route avec l'adresse d'un autre, et l'ancien code posait SON mot de
-      // passe sur le compte de la victime — qui cliquait ensuite le lien reçu, confirmait l'adresse,
-      // et laissait l'attaquant se connecter. Celui qui a réellement l'accès à la boîte entre par le
-      // lien, et choisit son mot de passe dans « Mot de passe oublié » si l'ancien ne lui va plus.
-      const upd = await db.auth.admin.updateUserById(existing.id, { user_metadata: { ...existing.user_metadata, role } });
-      if (upd.error) throw upd.error;
-      const to = redirect('/connexion/retour', next);
-      const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
+      // confirme l'adresse et connecte. LE MOT DE PASSE SAISI ICI N'EST PAS ENREGISTRÉ (sinon
+      // n'importe qui poserait le sien sur le compte d'un autre avant qu'il ne clique le lien).
+      const gen = await db.auth.admin.generateLink({ type: 'magiclink', email: existing.email, options: { redirectTo: to } });
       if (gen.error) throw gen.error;
       link = mailLink(req, gen.data.properties, to);
     } else {
-      const to = redirect('/connexion/retour', next);
       const gen = await db.auth.admin.generateLink({
         type: 'signup',
-        email,
+        email: cible,
         password,
-        options: { data: { role }, redirectTo: to },
+        options: { data: meta, redirectTo: to },
       });
       if (gen.error) {
-        if (/already|registered|exists/i.test(gen.error.message))
-          throw conflict('EMAIL_EXISTS', 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe.');
+        if (/already|registered|exists/i.test(gen.error.message)) throw conflict('EMAIL_EXISTS', EXISTS_TEXT);
         if (/invalid|valid email/i.test(gen.error.message)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
         throw gen.error;
       }
       link = mailLink(req, gen.data.properties, to);
     }
+    // Toujours vers la VRAIE adresse, même pour un compte interne.
     await sendMail(req.log, { to: email, ...confirmationMail(link) });
     reply.status(204);
     return null;
   });
 
-  /** Renvoi du lien de confirmation à un compte non confirmé. */
+  /** Renvoi du lien de confirmation à un compte non confirmé (celui du portail). */
   app.post('/auth/resend-confirmation', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
-    const user = await findUser(email);
+    const user = await accountFor(email, portailOf(req.body.role, next));
     // Adresse inconnue : même réponse qu'un envoi réussi (pas d'oracle « ce compte existe-t-il ? »).
     if (!user) {
       reply.status(204);
@@ -259,43 +270,42 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     }
     if (user.email_confirmed_at) throw conflict('ALREADY_CONFIRMED', 'Cette adresse est déjà confirmée : connectez-vous.');
     const to = redirect('/connexion/retour', next);
-    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
+    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email: user.email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
     await sendMail(req.log, { to: email, ...confirmationMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);
     return null;
   });
 
-  /** Lien de connexion sans mot de passe (compte existant seulement). */
+  /**
+   * Lien de connexion sans mot de passe : vers le compte DU PORTAIL seulement (jamais pour entrer dans
+   * l'autre application, 16 nov. 2026) — même réponse 204 quoi qu'il arrive.
+   */
   app.post('/auth/magic-link', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
-    const user = await findUser(email);
-    // Portail emprunté : celui annoncé, sinon celui de la destination. Un lien de connexion n'est
-    // jamais envoyé pour entrer dans l'autre application (16 nov. 2026) — même réponse 204, aucun
-    // indice sur le type du compte.
-    const portail = req.body.role ?? (next.startsWith('/pro') ? 'pro' : 'client');
-    if (!user || (await roleOf(user)) !== portail) {
+    const user = await accountFor(email, portailOf(req.body.role, next));
+    if (!user) {
       reply.status(204);
       return null;
     }
     const to = redirect('/connexion/retour', next);
-    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: to } });
+    const gen = await db.auth.admin.generateLink({ type: 'magiclink', email: user.email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
     await sendMail(req.log, { to: email, ...magicLinkMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);
     return null;
   });
 
-  /** Mot de passe oublié : lien vers le choix d'un nouveau mot de passe. */
+  /** Mot de passe oublié : celui du compte DU PORTAIL (client par défaut). */
   app.post('/auth/password-reset', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email } = req.body;
-    const user = await findUser(email);
+    const user = await accountFor(email, req.body.role === 'pro' ? 'pro' : 'client');
     if (!user) {
       reply.status(204);
       return null;
     }
     const to = new URL('/connexion/mot-de-passe', config.webUrl).toString();
-    const gen = await db.auth.admin.generateLink({ type: 'recovery', email, options: { redirectTo: to } });
+    const gen = await db.auth.admin.generateLink({ type: 'recovery', email: user.email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
     await sendMail(req.log, { to: email, ...recoveryMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);

@@ -18,6 +18,7 @@ export * from './visibility';
 export * from './reviewSummary';
 export * from './labels';
 export * from './deposit';
+export * from './alias';
 
 export const APP_NAME = 'SalonDZ';
 export const DEFAULT_LOCALE = 'fr' as const;

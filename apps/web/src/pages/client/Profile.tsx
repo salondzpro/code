@@ -19,6 +19,7 @@ import { Bell, Camera, ChevronRight, Heart, LogOut, Settings } from 'lucide-reac
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
+import { visibleEmail } from '@/lib/alias';
 import { Avatar, I, PageHead, SettingRow } from '@/components/ui';
 import { BrandFooter } from '@/components/BrandFooter';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -41,7 +42,7 @@ export function Profile() {
   if (me.isPending) return <PageLoading />;
   const p = me.data?.profile;
   const phone = p?.phone ?? null;
-  const email = user?.email ?? null;
+  const email = visibleEmail(user);
   const favoris = stats.data?.favorites ?? 0;
 
   return (

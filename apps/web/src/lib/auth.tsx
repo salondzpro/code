@@ -75,11 +75,11 @@ interface AuthContextValue {
     extra?: { fullName: string; gender: 'male' | 'female' },
   ) => Promise<boolean>;
   /** Lien de connexion par e-mail (sans mot de passe). */
-  sendMagicLink: (email: string, next: string) => Promise<void>;
+  sendMagicLink: (email: string, next: string, role?: UserRole) => Promise<void>;
   /** Renvoie le lien de confirmation d'inscription. */
-  resendConfirmation: (email: string, next: string) => Promise<void>;
-  /** E-mail de réinitialisation du mot de passe. */
-  sendPasswordReset: (email: string) => Promise<void>;
+  resendConfirmation: (email: string, next: string, role?: UserRole) => Promise<void>;
+  /** E-mail de réinitialisation du mot de passe (du compte de CE portail : `role`). */
+  sendPasswordReset: (email: string, role?: UserRole) => Promise<void>;
   /** Nouveau mot de passe (session ouverte par le lien de réinitialisation). */
   updatePassword: (password: string) => Promise<void>;
   /** Comptes de démonstration : numéro + code fixe → vraie session par l'API. */
@@ -132,23 +132,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // le compte est ouvert d'office, on se connecte aussitôt avec le mot de passe saisi.
       const res = await api.auth.signup({ email, password, role, next, ...(extra ?? {}) });
       if (!res?.opened) return false;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      // `login` : l'adresse interne quand la vraie sert déjà à un compte de l'autre côté (16 nov. 2026).
+      const { error } = await supabase.auth.signInWithPassword({ email: res.login ?? email, password });
       if (error) throw error;
       return true;
     },
     [],
   );
 
-  const sendMagicLink = useCallback(async (email: string, next: string) => {
-    await api.auth.magicLink({ email, next });
+  // Le portail (`role`) dit QUEL compte de l'adresse est visé : un lien n'ouvre jamais l'autre côté.
+  const sendMagicLink = useCallback(async (email: string, next: string, role?: UserRole) => {
+    await api.auth.magicLink({ email, next, role });
   }, []);
 
-  const resendConfirmation = useCallback(async (email: string, next: string) => {
-    await api.auth.resendConfirmation({ email, next });
+  const resendConfirmation = useCallback(async (email: string, next: string, role?: UserRole) => {
+    await api.auth.resendConfirmation({ email, next, role });
   }, []);
 
-  const sendPasswordReset = useCallback(async (email: string) => {
-    await api.auth.passwordReset({ email, next: HOME });
+  const sendPasswordReset = useCallback(async (email: string, role?: UserRole) => {
+    await api.auth.passwordReset({ email, next: HOME, role });
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {

@@ -31,6 +31,7 @@ import { api } from '@/lib/api';
 import { Button, Field, I, Input, LinkButton } from '@/components/ui';
 import { guestMarket, setGuestMarket } from '@/lib/useClientMarket';
 import { estRefusCompte } from '@/components/CompteRefuse';
+import { aliasEmail } from '@/lib/alias';
 
 /** Les deux seules phrases d'un refus (16 nov. 2026) : rien sur l'autre type de compte. */
 const texteRefus = (role: 'client' | 'pro') =>
@@ -198,28 +199,40 @@ export function AccesMotDePasse() {
     enCours.current = true;
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email' });
-      await signInWithPassword(email, password);
       /**
        * SÉPARATION STRICTE (16 nov. 2026, demande du propriétaire) : chaque portail n'ouvre que SON
-       * type de compte. Un compte de l'autre côté est déconnecté aussitôt et l'on affiche seulement
-       * « Aucun compte client (professionnel) associé à ces identifiants. » — sans dire qu'un compte
-       * de l'autre type existe, sans proposer d'y aller. Le serveur refuse aussi (`X-Salondz-App`,
-       * gardes de rôle) : ce contrôle-ci n'est que l'écran.
+       * type de compte. Une même adresse peut avoir DEUX comptes (le second sous son adresse interne,
+       * `lib/alias.ts`) : on essaie la vraie adresse, et si elle mène à un compte de l'autre côté ou
+       * à un mot de passe refusé, l'adresse interne de CE portail. Le serveur refuse aussi
+       * (`X-Salondz-App`, gardes de rôle) : ce contrôle-ci n'est que l'écran.
        */
-      let refus = false;
+      const bonCote = async (): Promise<boolean> => {
+        try {
+          const { profile } = await api.me.get();
+          return (profile.role === 'pro') === (role === 'pro');
+        } catch (err) {
+          // Application : le serveur a refusé le compte (403). Réseau : on entre, les gardes trancheront.
+          return estRefusCompte(err) === null;
+        }
+      };
+      let premiere: unknown = null;
       try {
-        const { profile } = await api.me.get();
-        refus = (profile.role === 'pro') !== (role === 'pro');
-      } catch (err) {
-        // Application : le serveur a déjà refusé le compte (403). Réseau : les gardes trancheront.
-        refus = estRefusCompte(err) !== null;
-      }
-      if (refus) {
+        await signInWithPassword(email, password);
+        if (await bonCote()) return navigate(retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE), { replace: true });
         await signOut({ voile: false }).catch(() => undefined);
-        setError({ kind: 'credentials', text: texteRefus(role) });
-        return;
+      } catch (err) {
+        premiere = err;
       }
-      navigate(retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE), { replace: true });
+      // Second essai : le compte de CE portail sous l'adresse interne.
+      try {
+        await signInWithPassword(await aliasEmail(email, role), password);
+        if (await bonCote()) return navigate(retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE), { replace: true });
+        await signOut({ voile: false }).catch(() => undefined);
+      } catch {
+        /* pas de compte interne : on garde la première réponse */
+      }
+      if (premiere) throw premiere;
+      setError({ kind: 'credentials', text: texteRefus(role) });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
@@ -233,7 +246,7 @@ export function AccesMotDePasse() {
     setError(null);
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      await sendMagicLink(email, next);
+      await sendMagicLink(email, next, role);
       navigate(`${base}/envoye?mode=link`);
     } catch (err) {
       setError(describeAuthError(err));
@@ -246,7 +259,7 @@ export function AccesMotDePasse() {
     setBusy('resend');
     try {
       writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      await resendConfirmation(email, next);
+      await resendConfirmation(email, next, role);
       navigate(`${base}/envoye?mode=confirm`);
     } catch (err) {
       setError(describeAuthError(err));
@@ -560,7 +573,7 @@ export function AccesEnvoye() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const flow = readAuthFlow();
-  const { base, defaut } = usePortail();
+  const { base, defaut, role } = usePortail();
   const mode = (['confirm', 'link', 'reset'].includes(params.get('mode') ?? '') ? params.get('mode') : 'confirm') as Mode;
   const email = flow?.identifier ?? '';
   const next = flow?.next ?? defaut;
@@ -582,9 +595,9 @@ export function AccesEnvoye() {
     setBusy(true);
     setError(null);
     try {
-      if (mode === 'confirm') await resendConfirmation(email, next);
-      else if (mode === 'link') await sendMagicLink(email, next);
-      else await sendPasswordReset(email);
+      if (mode === 'confirm') await resendConfirmation(email, next, role);
+      else if (mode === 'link') await sendMagicLink(email, next, role);
+      else await sendPasswordReset(email, role);
       writeAuthFlow({ sentAt: Date.now() });
       setDans(RENVOI_S);
     } catch (err) {
@@ -648,7 +661,7 @@ export function AccesOubli() {
     setError(null);
     try {
       writeAuthFlow({ role, next, identifier: id, channel: 'email', sentAt: Date.now() });
-      await sendPasswordReset(id);
+      await sendPasswordReset(id, role);
       navigate(`${base}/envoye?mode=reset`, { replace: true });
     } catch (err) {
       setError(describeAuthError(err).text);

@@ -10,6 +10,7 @@ import { ChevronDown } from 'lucide-react';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
+import { visibleEmail } from '@/lib/alias';
 import { groupLocalDigits } from '@/lib/authFlow';
 import { ErrorMessage, errorText } from '@/components/ErrorMessage';
 import { Badge, Button, Field, I, Input, TopBar } from '@/components/ui';
@@ -100,11 +101,11 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
             {error?.field === 'phone' ? error.msg : t('Format algérien · aucun SMS envoyé.')}
           </p>
         </div>
-        {user?.email && (
+        {visibleEmail(user) && (
           <div>
             <span className="lbl">{t('E-mail')}</span>
             <div className="flex items-center justify-between gap-3 rounded-[var(--radius-input)] bg-fill px-4 py-[1.125rem] text-[0.857rem]">
-              <span className="truncate">{user.email}</span>
+              <span className="truncate">{visibleEmail(user)}</span>
               <Badge tone="ok" md>
                 {t('Vérifié')}
               </Badge>
