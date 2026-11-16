@@ -2,9 +2,9 @@
  * Fenêtre d'un créneau libre ou d'un blocage, ouverte depuis l'agenda (maquette 9).
  *
  * Un trou dans la journée est une occasion : on y pose un rendez-vous (l'action principale, en
- * accent), on le partage en story ou on le ferme (deux tuiles côte à côte). Une barre montre le trou
- * entier et l'heure touchée dedans. Un blocage posé par erreur se retire ici aussi, sans passer par
- * les paramètres.
+ * accent), on le partage en story ou on le ferme (deux tuiles côte à côte). Plus de barre de
+ * disponibilité (16 nov. 2026, demande du propriétaire) : la plage reste écrite sur « Bloquer ». Un
+ * blocage posé par erreur se retire ici aussi, sans passer par les paramètres.
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -75,23 +75,6 @@ function SheetHead({ kind, title, staffName, onClose }: { kind: 'free' | 'closed
   );
 }
 
-/** Le trou de la journée en une barre : où l'on se place dedans, et combien de temps il reste libre. */
-function GapBand({ start, end, at }: { start: number; end: number; at?: number }) {
-  const pct = at === undefined ? null : Math.round(((at - start) / Math.max(1, end - start)) * 100);
-  return (
-    <div className="fs-band">
-      <span className="fs-bar" aria-hidden>
-        {pct !== null && <i style={{ insetInlineStart: `${Math.min(100, Math.max(0, pct))}%` }} />}
-      </span>
-      <span className="fs-bl">
-        <b dir="ltr">{minutesToTime(start)}</b>
-        <span>{t('{d} de libre', { d: formatDuration(end - start) })}</span>
-        <b dir="ltr">{minutesToTime(end)}</b>
-      </span>
-    </div>
-  );
-}
-
 export function FreeSlotSheet({
   slot,
   salon,
@@ -130,7 +113,6 @@ export function FreeSlotSheet({
       <Dim onClose={onClose} />
       <BottomSheet modal className="max-h-[88vh] overflow-y-auto">
         <SheetHead kind="free" title={minutesToTime(slot.at)} staffName={slot.staffName} onClose={onClose} />
-        <GapBand start={slot.start} end={slot.end} at={slot.at} />
         <ErrorMessage error={create.error} />
         <Button className="ag9-a" onClick={add}>
           <I icon={Plus} size={18} strokeWidth={2.2} /> {t('Ajouter un rendez-vous à {h}', { h: minutesToTime(slot.at) })}
