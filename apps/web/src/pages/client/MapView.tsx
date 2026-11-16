@@ -8,6 +8,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { POSITION, RAYON } from '@/lib/mapColors';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Locate, LocateFixed, LocateOff } from 'lucide-react';
@@ -136,14 +137,7 @@ export function MapView() {
     if (!layer) return;
     layer.clearLayers();
     if (!a) return;
-    L.circle([a.lat, a.lng], {
-      radius: a.radiusKm * 1000,
-      color: '#c4c3cd',
-      dashArray: '6 6',
-      weight: 1.5,
-      fillColor: '#111111',
-      fillOpacity: 0.04,
-    }).addTo(layer);
+    L.circle([a.lat, a.lng], { radius: a.radiusKm * 1000, ...RAYON, interactive: false }).addTo(layer);
     // Plus de pastille noire au centre de la zone (29 oct. 2026) : elle suivait le centre de
     // l'écran à chaque zoom — on la prenait pour SA position, qui « bougeait » avec le zoom. La
     // zone se lit à son cercle ; la position, au seul point bleu, posé sur la mesure GPS.
@@ -356,7 +350,7 @@ export function MapView() {
       L.circle([mePos.lat, mePos.lng], {
         radius: Math.min(mePos.acc, 150),
         stroke: false,
-        fillColor: '#1a73e8',
+        fillColor: POSITION,
         fillOpacity: 0.12,
         interactive: false,
         pane: 'moi',
@@ -365,7 +359,7 @@ export function MapView() {
       radius: 7,
       color: '#ffffff',
       weight: 3,
-      fillColor: '#1a73e8',
+      fillColor: POSITION,
       fillOpacity: 1,
       interactive: false,
       pane: 'moi',

@@ -1,6 +1,7 @@
 /** Petite carte OpenStreetMap (Leaflet) : un point et le cercle de son rayon — page Localisation. */
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { POSITION, RAYON } from '@/lib/mapColors';
 import 'leaflet/dist/leaflet.css';
 import { t } from '@/i18n';
 
@@ -27,8 +28,8 @@ export function MiniMap({ lat, lng, radiusKm, label, className = '' }: { lat: nu
     const g = layer.current;
     if (!m || !g) return;
     g.clearLayers();
-    const circle = L.circle([lat, lng], { radius: radiusKm * 1000, color: '#c4c3cd', dashArray: '6 6', weight: 1.5, fillColor: '#111111', fillOpacity: 0.05 }).addTo(g);
-    L.circleMarker([lat, lng], { radius: 9, color: '#fff', weight: 4, fillColor: '#111111', fillOpacity: 1 }).addTo(g);
+    const circle = L.circle([lat, lng], { radius: radiusKm * 1000, ...RAYON, interactive: false }).addTo(g);
+    L.circleMarker([lat, lng], { radius: 9, color: '#fff', weight: 4, fillColor: POSITION, fillOpacity: 1 }).addTo(g);
     m.fitBounds(circle.getBounds(), { padding: [12, 12], animate: false });
   }, [lat, lng, radiusKm]);
 
