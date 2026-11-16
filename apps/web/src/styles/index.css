@@ -13436,3 +13436,29 @@ html.pro-theme .ag9-hr span {
 .cf-mini b { display: block; font-size: calc(20px * var(--fz, 1)); font-weight: 600; }
 .cf-mini small { display: block; font-size: calc(14px * var(--fz, 1)); color: var(--color-muted); }
 
+/* Accueil clientes : titre du marché (15 nov. 2026, demande du propriétaire). « Pour Femmes » en rose
+   de l'espace féminin, « Pour Hommes » en encre ; le lien « Voir Pour … » porte la couleur du marché
+   vers lequel il mène. Seule couleur propre de l'espace clientes (`--color-women`, charte § 2). */
+.h12-h .mk-t { font: inherit; color: inherit; }
+.h12-h.mk-women .mk-t { color: var(--color-women); }
+.h12-h button.mk-to-women { color: var(--color-women); text-decoration-color: var(--color-women); }
+.h12-h button.mk-to-men { color: var(--color-text); }
+
+/* Carte : « Rechercher dans cette zone » (15 nov. 2026, façon Uber / Plans) — pilule encre qui
+   apparaît dès qu'on explore la carte ; la recherche ne se relance jamais toute seule. */
+.map-here {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  color: #fff;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 600;
+  box-shadow: var(--shadow-toast);
+  animation: cf-up 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.map-here:active { transform: scale(0.97); }
+

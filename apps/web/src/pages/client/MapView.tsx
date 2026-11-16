@@ -2,16 +2,20 @@
  * C-H 04 — Résultats sur la carte : bulles de prix (prix de départ), cercle du rayon,
  * feuille basse avec la carte du salon sélectionné. Fond de carte gris clair (OpenStreetMap).
  *
- * Interactive : déplacer la carte propose « Rechercher dans cette zone » (centre + rayon déduits de
- * l'emprise visible), le bouton de position utilise la géolocalisation réelle, une bulle touchée
- * sélectionne le salon (et inversement), le compteur suit les résultats de la zone.
+ * DEUX ZONES DISTINCTES, comme Uber, Bolt, Planity ou Plans d'Apple (15 nov. 2026, demande du
+ * propriétaire) :
+ *   1. le FILTRE DE DISTANCE (2, 5, 10 km… autour du lieu choisi ou de sa position) = cercle bleu FIXE ;
+ *      zoomer ou déplacer la carte ne le change pas, changer le rayon recadre la carte sur lui ;
+ *   2. explorer la carte ne relance RIEN tout seul : une pastille « Rechercher dans cette zone »
+ *      apparaît ; la toucher cherche dans l'écran visible — sans cercle (la zone, c'est l'écran).
+ * Le bouton de position utilise la géolocalisation réelle ; une bulle touchée sélectionne le salon.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { POSITION, RAYON } from '@/lib/mapColors';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Locate, LocateFixed, LocateOff } from 'lucide-react';
+import { Locate, LocateFixed, LocateOff, Search } from 'lucide-react';
 import { useSalonSearch } from '@salondz/api-client';
 import { useClientMarket } from '@/lib/useClientMarket';
 import { formatDA, reverseGeocode, spreadOverlaps, type CategoryId } from '@salondz/constants';
@@ -28,7 +32,8 @@ import { t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
 const ALGIERS: [number, number] = [36.7538, 3.0588];
-type Area = { lat: number; lng: number; radiusKm: number };
+/** `viewport` : zone = écran visible (« Rechercher dans cette zone »), pas de cercle. */
+type Area = { lat: number; lng: number; radiusKm: number; viewport?: boolean };
 /** Au-delà de ce rayon (carte trop dézoomée), on n'interroge pas le serveur : « Zoomez pour voir les professionnels ». */
 const MAX_ZONE_KM = 20;
 
@@ -44,8 +49,13 @@ function areaOf(map: L.Map): Area {
     lat: Number(c.lat.toFixed(4)),
     lng: Number(c.lng.toFixed(4)),
     radiusKm: Math.min(MAX_ZONE_KM + 1, Math.max(1, Number((Math.min(h, w) / 2).toFixed(1)))),
+    viewport: true,
   };
 }
+
+/** Cadre de la carte sur le cercle du filtre (il tient en entier à l'écran, comme Uber). */
+const fitCircle = (map: L.Map, a: Area, animate = false) =>
+  map.fitBounds(L.latLng(a.lat, a.lng).toBounds(a.radiusKm * 2000), { padding: [16, 16], animate });
 
 const escHtml = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -63,6 +73,15 @@ export function MapView() {
     prefs.lat != null ? { lat: prefs.lat, lng: prefs.lng!, radiusKm: prefs.radiusKm } : null,
   );
   const moveTimer = useRef<number | null>(null);
+  /** La carte a été déplacée à la main depuis la dernière recherche : la pastille s'affiche. */
+  const [moved, setMoved] = useState(false);
+  const searchHere = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    setArea(areaOf(map));
+    setSelected(null);
+    setMoved(false);
+  };
   const [locating, setLocating] = useState(false);
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -136,7 +155,8 @@ export function MapView() {
     const layer = areaLayerRef.current;
     if (!layer) return;
     layer.clearLayers();
-    if (!a) return;
+    // Zone de l'écran (« Rechercher dans cette zone ») : pas de cercle, l'écran EST la zone.
+    if (!a || a.viewport) return;
     L.circle([a.lat, a.lng], { radius: a.radiusKm * 1000, ...RAYON, interactive: false }).addTo(layer);
     // Plus de pastille noire au centre de la zone (29 oct. 2026) : elle suivait le centre de
     // l'écran à chaque zoom — on la prenait pour SA position, qui « bougeait » avec le zoom. La
@@ -189,14 +209,16 @@ export function MapView() {
         programmatic.current = false;
         return;
       }
+      // Exploration : on ne relance rien tout seul, on PROPOSE « Rechercher dans cette zone ».
       if (moveTimer.current) window.clearTimeout(moveTimer.current);
-      moveTimer.current = window.setTimeout(() => {
-        setArea(areaOf(map));
-        setSelected(null);
-      }, 500);
+      moveTimer.current = window.setTimeout(() => setMoved(true), 250);
     });
     mapRef.current = map;
     drawArea(area);
+    if (area && !area.viewport) {
+      programmatic.current = true;
+      fitCircle(map, area);
+    }
     return () => {
       map.remove();
       mapRef.current = null;
@@ -205,6 +227,25 @@ export function MapView() {
   }, []);
 
   useEffect(() => drawArea(area), [area, drawArea]);
+
+  /**
+   * Le FILTRE DE DISTANCE change (2 → 5 → 10 km) : le cercle prend le nouveau rayon et la carte se
+   * recadre pour le montrer en entier, comme Uber. Une recherche « dans cette zone » revient au cercle.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    const lat = area && !area.viewport ? area.lat : prefs.lat;
+    const lng = area && !area.viewport ? area.lng : prefs.lng;
+    if (!map || lat == null || lng == null) return;
+    if (area && !area.viewport && area.radiusKm === prefs.radiusKm) return;
+    if (!area) return;
+    const a = { lat, lng, radiusKm: prefs.radiusKm };
+    setArea(a);
+    setMoved(false);
+    programmatic.current = true;
+    fitCircle(map, a, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefs.radiusKm]);
 
   /**
    * Position en TEMPS RÉEL : `watchPosition` pousse chaque nouvelle mesure, donc le point
@@ -296,8 +337,9 @@ export function MapView() {
     // les résultats sont les siens — et il n'y a plus rien à ramener ailleurs.
     const a = { lat: Number(mePos.lat.toFixed(4)), lng: Number(mePos.lng.toFixed(4)), radiusKm: prefs.radiusKm };
     setArea(a);
+    setMoved(false);
     programmatic.current = true;
-    map.setView([a.lat, a.lng], 14, { animate: false });
+    fitCircle(map, a);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mePos]);
 
@@ -317,9 +359,10 @@ export function MapView() {
     if (area && Math.abs(area.lat - prefs.lat) < 0.0005 && Math.abs(area.lng - prefs.lng) < 0.0005) return;
     recentre.current = true;
     setArea({ lat: prefs.lat, lng: prefs.lng, radiusKm: prefs.radiusKm });
+    setMoved(false);
     setSelected(null);
     programmatic.current = true;
-    map.setView([prefs.lat, prefs.lng], 14, { animate: false });
+    fitCircle(map, { lat: prefs.lat, lng: prefs.lng, radiusKm: prefs.radiusKm });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefs.lat, prefs.lng]);
 
@@ -442,12 +485,13 @@ export function MapView() {
     const goTo = (lat: number, lng: number) => {
       const a = { lat: arrondir(lat), lng: arrondir(lng), radiusKm: prefs.radiusKm };
       setArea(a);
+      setMoved(false);
       setPrefs({ lat: a.lat, lng: a.lng, city: null, label: t("Ma position") });
       void reverseGeocode(a.lat, a.lng).then((r) => r && setPrefs({ label: r.label }));
       setSelected(null);
       setLocating(false);
       programmatic.current = true;
-      mapRef.current?.setView([a.lat, a.lng], 14, { animate: true });
+      if (mapRef.current) fitCircle(mapRef.current, a, true);
     };
     // Le suivi continu tient déjà une mesure fraîche : s'en resservir évite d'attendre
     // plusieurs secondes un relevé que l'on a sous les yeux.
@@ -510,8 +554,8 @@ export function MapView() {
           className="min-w-0 flex-1"
           market={market}
           q=""
-          place={area && area.lat !== prefs.lat ? 'zone de la carte' : prefs.label}
-          radiusKm={area?.radiusKm ?? prefs.radiusKm}
+          place={area?.viewport ? t('Zone de la carte') : prefs.label}
+          radiusKm={area?.viewport ? undefined : (area?.radiusKm ?? prefs.radiusKm)}
           wilaya={prefs.wilaya}
           // Chercher un nom depuis la carte ramène à la liste : c'est là que les noms se lisent.
           onQuery={(v) => navigate(v ? `${MARCHE}?q=${encodeURIComponent(v)}` : MARCHE)}
@@ -527,16 +571,23 @@ export function MapView() {
         />
         </div>
         <div className="pointer-events-auto flex items-center justify-center gap-2">
-          <span
-            className="rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-medium text-muted shadow-card"
-            aria-live="polite"
-          >
-            {tooWide
-              ? 'Zoomez pour voir les professionnels'
-              : query.isFetching
-                ? 'Recherche…'
-                : `${total} ${noun}${total > 1 ? 's' : ''} dans cette zone`}
-          </span>
+          {moved ? (
+            <button type="button" className="map-here" onClick={searchHere}>
+              <I icon={Search} size={16} />
+              {t('Rechercher dans cette zone')}
+            </button>
+          ) : (
+            <span
+              className="rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-medium text-muted shadow-card"
+              aria-live="polite"
+            >
+              {tooWide
+                ? t('Zoomez pour voir les professionnels')
+                : query.isFetching
+                  ? t('Recherche…')
+                  : `${total} ${noun}${total > 1 ? 's' : ''}`}
+            </span>
+          )}
         </div>
       </div>
 
@@ -573,7 +624,7 @@ export function MapView() {
               ? 'Zoomez sur un quartier pour voir les professionnels.'
               : query.isPending
                 ? 'Chargement…'
-                : 'Aucun salon dans cette zone. Déplacez la carte : la recherche suit la zone visible.'}
+                : t('Aucun salon dans cette zone.')}
           </p>
         ) : (
           <div

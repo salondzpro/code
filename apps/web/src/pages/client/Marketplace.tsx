@@ -160,9 +160,11 @@ export function Marketplace() {
 
       {/* Titre du marché affiché, au-dessus des résultats qu'il commande — comme « Ma page » sur
           l'accueil pro : le titre de section, et le changement en lien souligné. */}
-      <h2 className="h12-h mt-1">
-        {t(MARKET_LABELS_FR[market])}
-        <button type="button" onClick={swapMarket}>
+      {/* « Pour Femmes » en ROSE (`--color-women`), « Pour Hommes » en encre ; le lien prend la couleur
+          du marché vers lequel il mène (15 nov. 2026) : on comprend qu'on bascule de l'un à l'autre. */}
+      <h2 className={`h12-h mt-1 mk-${market}`}>
+        <b className="mk-t">{t(MARKET_LABELS_FR[market])}</b>
+        <button type="button" onClick={swapMarket} className={market === 'men' ? 'mk-to-women' : 'mk-to-men'}>
           {market === 'men' ? t('Voir Pour Femmes') : t('Voir Pour Hommes')}
         </button>
       </h2>

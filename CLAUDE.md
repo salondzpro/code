@@ -161,6 +161,7 @@ L'espace Professionnels en production est la SOURCE DE VÉRITÉ graphique. Une s
 - **Le point bleu a son propre calque Leaflet** (`createPane('moi')`, z-index 450) : la zone de recherche est redessinée à chaque déplacement et Leaflet empile dans l'ordre de création, donc la pastille noire du centre repassait par-dessus. Ce centre ne se dessine plus quand il EST la position. Un déplacement PROGRAMMÉ de la carte ne recalcule pas la zone d'après l'écran : on demandait 10 km et la recherche retombait à « 2,9 km ».
 
 ## Recherche de salons
+- **Carte : deux zones distinctes (15 nov. 2026, façon Uber / Planity / Plans)** — `MapView.tsx`. (1) Le FILTRE DE DISTANCE (2/5/10 km autour du lieu ou de la position) = cercle bleu Apple FIXE (`lib/mapColors.ts`), la carte cadrée sur le cercle entier (`fitCircle`) à l'ouverture, au changement de lieu, de rayon et sur « Ma position » ; zoomer ou déplacer ne le change pas. (2) Explorer la carte ne relance JAMAIS la recherche : la pilule encre « Rechercher dans cette zone » (`.map-here`) apparaît ; la toucher cherche dans l'écran visible (`Area.viewport`), SANS cercle, champ « Zone de la carte » sans rayon.
 - **Le RAYON prime sur le nom de la commune** (migration 0048). Le front envoie la ville ET les coordonnées ; la fonction les combinait en ET, donc le nom exact l'emportait : se placer sur « Akbou » masquait « Katia beauty », à 8 km, parce que sa commune s'écrit « Daïra Akbou ». Quand `p_lat`, `p_lng` et `p_radius_km` sont fournis, `p_city` et `p_wilaya` ne filtrent plus.
 
 ## Sécurité

@@ -2196,4 +2196,8 @@ export const en: Record<string, string> = {
   "Revoir le compte": "See the account again",
   "Plus qu’une étape pour confirmer": "One step left to confirm",
   "Reste {montant} sur place": "{montant} left at the salon",
+  "Zone de la carte": "Map area",
+  "Rechercher dans cette zone": "Search this area",
+  "Zoomez pour voir les professionnels": "Zoom in to see professionals",
+  "Aucun salon dans cette zone.": "No salon in this area.",
 };

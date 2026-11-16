@@ -83,7 +83,8 @@ export function SearchField({
   market: Market;
   q: string;
   place: string;
-  radiusKm: number;
+  /** Absent : zone de la carte (pas de rayon à afficher). */
+  radiusKm?: number;
   wilaya: number;
   /** Lancer une recherche par nom ou mot-clé (la page décide où elle s'affiche). */
   onQuery: (v: string) => void;
@@ -140,7 +141,7 @@ export function SearchField({
         : l.kind === 'commune'
           ? // Une commune algérienne dépasse souvent 5 km : un rayon trop serré autour du centre
             // laisserait dehors les quartiers périphériques de la ville qu'on vient de choisir.
-            { city: null, wilaya: l.wilaya, lat: l.lat, lng: l.lng, label: l.label, radiusKm: Math.max(radiusKm, 10) }
+            { city: null, wilaya: l.wilaya, lat: l.lat, lng: l.lng, label: l.label, radiusKm: Math.max(radiusKm ?? 10, 10) }
           : { city: null, lat: l.lat, lng: l.lng, label: l.label };
     setPrefs(suite);
     pushRecentPlace({ label: l.label, city: null, wilaya: l.kind === 'adresse' ? wilaya : l.wilaya, lat: 'lat' in l ? l.lat : null, lng: 'lng' in l ? l.lng : null });
@@ -185,7 +186,8 @@ export function SearchField({
             {q || t(PLACEHOLDER[market])}
           </span>
           <span className="block truncate text-[1rem] text-muted">
-            {place} · {radiusKm} {t("km")}
+            {place}
+            {radiusKm != null && ` · ${radiusKm} ${t('km')}`}
           </span>
         </span>
       </button>

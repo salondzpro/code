@@ -2182,4 +2182,8 @@ export const ar: Record<string, string> = {
   "Revoir le compte": "مراجعة الحساب",
   "Plus qu’une étape pour confirmer": "خطوة واحدة للتأكيد",
   "Reste {montant} sur place": "الباقي {montant} في الصالون",
+  "Zone de la carte": "منطقة الخريطة",
+  "Rechercher dans cette zone": "البحث في هذه المنطقة",
+  "Zoomez pour voir les professionnels": "كبّر لرؤية المحترفين",
+  "Aucun salon dans cette zone.": "لا يوجد صالون في هذه المنطقة.",
 };
