@@ -9969,8 +9969,9 @@ html[data-kb] .pa-actions {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* « Vous êtes » (15 nov. 2026, demande du propriétaire) : deux grandes tuiles, une icône de couleur
-   chacune — rose pour femme, bleu pour homme ; la tuile choisie est cerclée d'encre. */
+/* « Vous êtes » (15-16 nov. 2026, demande du propriétaire) : deux grandes tuiles, un VISAGE en
+   couleur chacune (cheveux longs / cheveux courts et barbe) — fond rose pour femme, bleu pour
+   homme ; la tuile choisie est cerclée d'encre. */
 .pa-genre {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -9996,29 +9997,32 @@ html[data-kb] .pa-actions {
 .pa-genre-t.on {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), inset 0 0 0 2px #111111;
 }
+/* Visage dessiné (`components/GenderFaces.tsx`, 16 nov. 2026), recadré par le rond : les épaules
+   s'arrêtent sur son bord. Choisi : le rond s'entoure de la couleur du côté. */
 .pa-genre-i {
   display: flex;
-  width: 56px;
-  height: 56px;
-  align-items: center;
+  width: 72px;
+  height: 72px;
+  align-items: flex-end;
   justify-content: center;
+  overflow: hidden;
   border-radius: 999px;
+}
+.pa-genre-i svg {
+  width: 72px;
+  height: 72px;
 }
 .pa-genre-t.f .pa-genre-i {
   background: #fde7ef;
-  color: #e0457f;
 }
 .pa-genre-t.h .pa-genre-i {
   background: #e3efff;
-  color: #007aff;
 }
 .pa-genre-t.f.on .pa-genre-i {
-  background: #e0457f;
-  color: #ffffff;
+  box-shadow: 0 0 0 3px #e0457f;
 }
 .pa-genre-t.h.on .pa-genre-i {
-  background: #007aff;
-  color: #ffffff;
+  box-shadow: 0 0 0 3px #007aff;
 }
 @media (prefers-reduced-motion: reduce) {
   .pa-genre-t {

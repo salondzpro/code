@@ -22,7 +22,8 @@
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Check, MailCheck, Mars, Venus } from 'lucide-react';
+import { Check, MailCheck } from 'lucide-react';
+import { VisageFemme, VisageHomme } from '@/components/GenderFaces';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
@@ -487,8 +488,8 @@ export function AccesVous() {
   };
 
   const tuiles = [
-    { value: 'female' as const, label: t('Femme'), icon: Venus, cls: 'f' },
-    { value: 'male' as const, label: t('Homme'), icon: Mars, cls: 'h' },
+    { value: 'female' as const, label: t('Femme'), Visage: VisageFemme, cls: 'f' },
+    { value: 'male' as const, label: t('Homme'), Visage: VisageHomme, cls: 'h' },
   ];
 
   return (
@@ -537,7 +538,7 @@ export function AccesVous() {
                 }}
               >
                 <span className="pa-genre-i" aria-hidden>
-                  <I icon={x.icon} size={26} strokeWidth={2} />
+                  <x.Visage />
                 </span>
                 {x.label}
               </button>
