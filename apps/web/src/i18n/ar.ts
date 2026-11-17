@@ -2230,4 +2230,7 @@ export const ar: Record<string, string> = {
   "Notifications coupées": "الإشعارات متوقفة",
   "Activez les notifications": "فعّل الإشعارات",
   "Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.": "تأكيد الصالون وتذكير قبل ساعة ثم قبل 30 دقيقة: لا يفوتك أي موعد.",
+  "Ouvert jusqu’à {time}": "مفتوح حتى {time}",
+  "Ouvre à {time}": "يفتح على {time}",
+  "Ouvre {day} à {time}": "يفتح {day} على {time}",
 };

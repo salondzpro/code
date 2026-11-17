@@ -73,48 +73,57 @@ import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
 import { cibleCarte, itineraireUrl } from '@/lib/maps';
 import { RatingLine } from '@/components/SalonListCard';
-import { t } from '@/i18n';
+import { getLocale, t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
 type Tab = 'book' | 'reviews' | 'about';
 
 /**
- * « Ouvert · ferme à 19:00 » / « Fermé · ouvre demain 09:00 ». `etat` (Ouvert / Fermé) s'affiche en
- * couleur de sens — vert ouvert, rouge fermé (16 nov. 2026, demande du propriétaire) — et `suite`
- * (l'horaire) en gris à côté.
+ * État d'ouverture. `etat` (Ouvert / Fermé) sert de pastille (fiche d'une prestation) ; `court` est la
+ * phrase UNIQUE de la page salon (17 nov. 2026, demande du propriétaire : peu de mots) — « Ouvre à 9h »
+ * (rouge), « Ouvre samedi à 9h » au-delà de demain, « Ouvert jusqu'à 19h » (vert).
  */
-export function openingStatus(s: SalonPublic): { open: boolean; label: string; etat: string; suite: string | null } {
+export function openingStatus(s: SalonPublic): { open: boolean; etat: string; court: string } {
   const now = new Date();
   const local = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Algiers' }));
   const dow = local.getDay();
   const hm = `${String(local.getHours()).padStart(2, '0')}:${String(local.getMinutes()).padStart(2, '0')}`;
   const today = s.openingHours.filter((h) => h.dayOfWeek === dow && !h.isClosed);
-  const fait = (open: boolean, suite: string | null) => {
+  const fait = (open: boolean, court?: string) => {
     const etat = open ? t('Ouvert') : t('Fermé');
-    return { open, etat, suite, label: suite ? `${etat} · ${suite}` : etat };
+    return { open, etat, court: court ?? etat };
   };
   const current = today.find((h) => h.opensAt <= hm && hm < h.closesAt);
-  if (current) return fait(true, t('ferme à {time}', { time: current.closesAt }));
+  if (current) return fait(true, t('Ouvert jusqu’à {time}', { time: heure(current.closesAt) }));
   const later = today.find((h) => h.opensAt > hm);
-  if (later) return fait(false, t('ouvre à {time}', { time: later.opensAt }));
+  if (later) return fait(false, t('Ouvre à {time}', { time: heure(later.opensAt) }));
   for (let i = 1; i <= 7; i++) {
     const d = (dow + i) % 7;
     const h = s.openingHours.find((x) => x.dayOfWeek === d && !x.isClosed);
     if (h)
       return fait(
         false,
-        i === 1 ? t('ouvre demain {time}', { time: h.opensAt }) : t('ouvre {day} {time}', { day: t(DAY_LABELS_FR[d as 0]).toLowerCase(), time: h.opensAt }),
+        i === 1
+          ? t('Ouvre à {time}', { time: heure(h.opensAt) })
+          : t('Ouvre {day} à {time}', { day: t(DAY_LABELS_FR[d as 0]).toLowerCase(), time: heure(h.opensAt) }),
       );
   }
-  return fait(false, null);
+  return fait(false);
 }
 
-/** Le statut à l'écran : « Ouvert » vert ou « Fermé » rouge, puis l'horaire en gris. */
+/** « 09:00 » → « 9h », « 09:30 » → « 9h30 » en français ; « 9:00 » ailleurs. */
+function heure(hhmm: string): string {
+  const [h, m] = hhmm.split(':');
+  const hh = String(Number(h));
+  if (getLocale() !== 'fr') return `${hh}:${m}`;
+  return m === '00' ? `${hh}h` : `${hh}h${m}`;
+}
+
+/** Le statut à l'écran, en une phrase colorée : vert ouvert, rouge fermé. */
 export function OpeningStatus({ status }: { status: ReturnType<typeof openingStatus> }) {
   return (
-    <span>
-      <span className={`font-semibold ${status.open ? 'text-ok-fg' : 'text-danger'}`}>{status.etat}</span>
-      {status.suite && <span className="text-muted" dir="auto"> · {status.suite}</span>}
+    <span className={`font-semibold ${status.open ? 'text-ok-fg' : 'text-danger'}`} dir="auto">
+      {status.court}
     </span>
   );
 }
