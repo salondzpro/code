@@ -11056,6 +11056,9 @@ html.client-theme .hdr {
 html.client-theme .tb-t {
   flex: 1 0 auto;
   max-width: 62%;
+  /* Collé au bouton retour (17 nov. 2026) : sans cela, `justify-between` répartissait la place
+     restante de part et d'autre et le titre partait vers la droite. */
+  margin-inline-end: auto;
   font-size: calc(24px * var(--fz, 1));
 }
 html.client-theme .tb-t ~ .pill {

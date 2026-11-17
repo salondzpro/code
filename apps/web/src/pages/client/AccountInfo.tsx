@@ -61,7 +61,6 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo={backTo} title={t('Mes informations')} />
-      <p className="p">{t('Le nom que voient les salons et le numéro où ils peuvent vous joindre.')}</p>
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <Field label={t('Prénom et nom')} htmlFor="ai-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
