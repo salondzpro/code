@@ -26,7 +26,6 @@ export function SalonWorks() {
         />
       ) : (
         <>
-          <p className="p -mt-2">{t('{n} photo(s)', { n: photos.length })}</p>
           <div className="g2">
             {photos.map((p) => (
               <Img key={p.id} src={p.url} className="aspect-[3/4] w-full" />

@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Clock } from 'lucide-react';
 import { useAvailability, useBooking, useRescheduleBooking, useSalon } from '@salondz/api-client';
-import { DAY_LABELS_FR, RESCHEDULE_MAX_DAYS_AFTER, addDaysToKey, dayOfWeekFromKey, formatDateLongDZ, formatTimeDZ, localDateTimeToISO, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
-import { BottomSheet, Button, I, InfoBox, Skeleton, Slot, TopBar } from '@/components/ui';
-import { DayStrip, MonthNav, dayNumber } from '@/components/DaySelector';
+import { RESCHEDULE_MAX_DAYS_AFTER, addDaysToKey, dayOfWeekFromKey, formatDateLongDZ, formatTimeDZ, localDateTimeToISO, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import { BottomSheet, Button, I, Skeleton, Slot, TopBar } from '@/components/ui';
+import { DayStrip, MonthNav } from '@/components/DaySelector';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
@@ -65,9 +65,6 @@ export function BookingReschedule() {
       </div>
       <MonthNav weekOf={weekOf} onWeekChange={setWeekOf} minDate={today} maxDate={maxDate} />
       <DayStrip weekOf={weekOf} selected={date} onSelect={setDate} minDate={today} maxDate={maxDate} disabledDays={closedDays} />
-      <span className="h3">
-        {t("Créneaux ·")}{' '}{t(DAY_LABELS_FR[dow]).toLowerCase()} {dayNumber(date)}
-      </span>
       {closedDays.includes(dow) ? (
         <p className="p">{t("Le salon est fermé ce jour-là.")}</p>
       ) : availability.isPending || availability.isFetching ? (
@@ -85,7 +82,6 @@ export function BookingReschedule() {
           ))}
         </div>
       )}
-      <InfoBox>{t("Le professionnel reçoit la demande et confirme le nouveau créneau.")}</InfoBox>
       <ErrorMessage error={reschedule.error} />
       <BottomSheet>
         <Button icon={ICONE.validerReport}

@@ -360,11 +360,6 @@ export function Salon() {
                         <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">
                           {sv.name}
                         </span>
-                        {sv.description && (
-                          <span className="mt-0.5 block text-[1rem] text-muted">
-                            {sv.description}
-                          </span>
-                        )}
                         <span className="mt-1 block text-[1rem] font-semibold">
                           {/* Prix et durée se lisent de gauche à droite, même en arabe. */}
                           <span dir="ltr">
@@ -413,7 +408,7 @@ export function Salon() {
                 </span>
               </div>
             ) : (
-              <p className="p py-2">{t("Pas encore d'avis : soyez le premier après votre rendez-vous.")}</p>
+              <p className="p py-2">{t("Pas encore d'avis.")}</p>
             )}
             {s.ratingCount > 0 && <ReviewSummary salon={s} />}
             {s.ratingCount > 0 && (

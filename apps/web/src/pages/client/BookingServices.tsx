@@ -66,9 +66,6 @@ export function BookingServices() {
     <div className={`flex w-full items-start gap-3 ${boxed ? 'crd !flex-row' : 'li !items-start'}`}>
       <div className="min-w-0 flex-1">
         <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">{sv.name}</span>
-        {sv.description && (
-          <span className="mt-0.5 block text-[1rem] text-muted">{sv.description}</span>
-        )}
         <span className="mt-1 block text-[1rem] font-semibold">
           <span dir="ltr">
             {formatDA(sv.priceDa)}

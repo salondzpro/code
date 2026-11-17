@@ -4,18 +4,14 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { PickerField } from '@/components/Picker';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
-import { MARKET_LABELS_FR, formatLocale } from '@salondz/constants';
+import { MARKET_LABELS_FR } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
-import { Badge, BottomSheet, Button, ListRow, SectionLabel, TopBar, Dim } from '@/components/ui';
+import { BottomSheet, Button, ListRow, SectionLabel, TopBar, Dim } from '@/components/ui';
 import { api } from '@/lib/api';
 import { errorText } from '@/components/ErrorMessage';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
-
-function since(iso: string): string {
-  return new Intl.DateTimeFormat(formatLocale(), { day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
-}
 
 export function Settings() {
   const { session } = useAuth();
@@ -67,7 +63,6 @@ export function Settings() {
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Langue")}</span>
-            <span className="p block text-[0.857rem]">{t("Français, arabe ou anglais")}</span>
           </span>
           <PickerField
             inline
@@ -85,7 +80,6 @@ export function Settings() {
         <div className="li">
           <span>
             <span className="block text-[1rem] font-semibold">{t("Catalogue affiché")}</span>
-            <span className="p block text-[0.857rem]">{t("Marketplace et recherche")}</span>
           </span>
           <PickerField
             inline
@@ -110,15 +104,6 @@ export function Settings() {
 
       <SectionLabel>{t("Compte")}</SectionLabel>
       <div className="crd !gap-0 !py-1" id="contact">
-        <div className="li">
-          <span>
-            <span className="block text-[1rem] font-semibold">{t("Session")}</span>
-            <span className="p block text-[0.857rem]">{p ? t('Ouverte depuis le {date} · illimitée', { date: since(p.createdAt) }) : t('Session ouverte')}</span>
-          </span>
-          <Badge tone="ok" md>
-            {t("Active")}
-          </Badge>
-        </div>
         <ListRow onClick={() => void exportData()}>
           <span className="text-[1rem]">{exporting ? t('Préparation…') : t("Télécharger mes données")}</span>
         </ListRow>

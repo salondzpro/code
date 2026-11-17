@@ -17,7 +17,7 @@ import { RADIUS_OPTIONS, formatKm, pushRecentPlace, readRecentPlaces, useLocatio
 import { useDebounced } from '@/lib/useDebounced';
 import { prechargerLieux, useLieux, type Lieu } from '@/lib/places';
 import { arrondir, positionPrecise } from '@/lib/position';
-import { BottomSheet, Button, Card, I, InfoBox, Pill, SearchBox, SectionLabel, TopBar } from '@/components/ui';
+import { BottomSheet, Button, Card, I, Pill, SearchBox, SectionLabel, TopBar } from '@/components/ui';
 import { PlaceSuggestions } from '@/components/PlaceSuggestions';
 import { MiniMap } from '@/components/MiniMap';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -173,10 +173,8 @@ export function Localisation() {
           </span>
           <span className="min-w-0 flex-1 text-start">
             <span className="block text-[0.857rem] font-semibold">{t("Choisir un quartier")}</span>
-            <span className="p block text-[1rem]">{t("Sans activer la localisation")}</span>
           </span>
         </Card>
-        <InfoBox>{t("Le bouton ouvre la fiche Salon DZ dans les réglages du téléphone, à la ligne « Position ».")}</InfoBox>
         {/* Dans l'application : la fiche Salon DZ des réglages du téléphone. Sur le web, rien n'est
             adressable : on redemande, le navigateur dira si la porte est rouverte. */}
         <Button onClick={() => void ouvrirReglagesApplication().then((ok) => ok || locate())}>

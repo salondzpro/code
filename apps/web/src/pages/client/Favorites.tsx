@@ -21,10 +21,7 @@ export function Favorites() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <PageHead
-        title={t('Mes favoris')}
-        sub={all.length > 0 ? t('{n} salon(s) gardé(s) sous la main.', { n: all.length }) : t('Les salons que vous gardez sous la main.')}
-      />
+      <PageHead title={t('Mes favoris')} />
       {/* Le filtre par marché n'a de sens que s'il y a des favoris des deux côtés. */}
       {all.some((s) => salonMarkets(s.genderTarget).includes('men')) &&
         all.some((s) => salonMarkets(s.genderTarget).includes('women')) && (

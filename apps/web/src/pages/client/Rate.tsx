@@ -77,7 +77,6 @@ export function Rate() {
             </button>
           ))}
         </div>
-        <span className="text-[1rem] text-muted">{rating ? `${rating} sur 5` : 'Touchez une étoile'}</span>
       </div>
       <SectionLabel>{t("Ce qui vous a plu")}</SectionLabel>
       <div className="flex flex-wrap gap-2.5">
@@ -94,7 +93,6 @@ export function Rate() {
           DIT, sans interrupteur — l'ancien ne changeait rien à ce qui était envoyé. */}
       <div className="crd">
         <span className="block text-[1rem] font-semibold">{t("Publié sous «")}{' '}{initials} »</span>
-        <span className="p block text-[1rem]">{t("Votre numéro reste privé")}</span>
       </div>
       <ErrorMessage error={review.error} />
       <BottomSheet>
