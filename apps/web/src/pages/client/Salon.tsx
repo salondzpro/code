@@ -72,7 +72,7 @@ import { ReportReviewButton } from '@/components/ReportReview';
 import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
 import { cibleCarte, itineraireUrl } from '@/lib/maps';
-import { RatingLine } from '@/components/SalonListCard';
+import { ETOILE, RatingLine } from '@/components/SalonListCard';
 import { getLocale, t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
@@ -399,19 +399,17 @@ export function Salon() {
             <h2 className="h1 !text-[1.429rem]">{t("Avis")}</h2>
             {s.ratingCount > 0 ? (
               <div className="crd !flex-row !items-center !gap-3.5">
-                <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]">
+                <span className="text-[2.286rem] font-semibold leading-none tracking-[-1px]" style={{ color: ETOILE }}>
                   {formatRating(s.ratingAvg)}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[1.143rem] font-semibold">
+                  <span className="block text-[1.143rem] font-semibold" style={{ color: ETOILE }}>
                     {'★'.repeat(Math.round(s.ratingAvg))}
                     <span className="text-disabled">
                       {'★'.repeat(5 - Math.round(s.ratingAvg))}
                     </span>
                   </span>
-                  <span className="block text-[1rem] text-muted">
-                    {s.ratingCount} {t("avis vérifié")}{s.ratingCount > 1 ? 's' : ''} {t("· après rendez-vous")}
-                  </span>
+                  <span className="block text-[1rem] text-muted">{t('{n} avis', { n: s.ratingCount })}</span>
                 </span>
               </div>
             ) : (
@@ -434,7 +432,7 @@ export function Salon() {
             {reviewItems.map((r) => (
               <div key={r.id} className="crd !gap-1">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[1rem] font-semibold">
+                  <span className="text-[1rem] font-semibold" style={{ color: ETOILE }}>
                     {'★'.repeat(r.rating)}
                     <span className="text-disabled">{'★'.repeat(5 - r.rating)}</span>
                   </span>

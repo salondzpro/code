@@ -13485,3 +13485,7 @@ html.pro-theme .ag9-hr span {
   border-color: transparent;
   color: var(--color-muted);
 }
+
+/* Album photo de la fiche salon : bande à glisser, sans barre de défilement (17 nov. 2026). */
+.gal-bande { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.gal-bande::-webkit-scrollbar { display: none; }

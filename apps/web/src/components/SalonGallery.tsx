@@ -8,11 +8,17 @@
  * Les dégradés ne sont posés QUE sur les bords gauche et droit, verticalement : ils détachent
  * les flèches de la photo sans l'assombrir au centre, là où il y a quelque chose à regarder.
  */
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { I } from './ui';
 import { t } from '@/i18n';
 
+/**
+ * GLISSER AU DOIGT (17 nov. 2026, demande du propriétaire) : les photos sont une bande qui défile de
+ * côté avec aimantation (`scroll-snap`) — elle suit le doigt, comme Instagram ou Airbnb. Les flèches
+ * restent et font défiler la même bande ; le compteur suit la photo visible. En arabe, le défilement
+ * part de la droite : la position est lue en valeur absolue.
+ */
 export function SalonGallery({
   images,
   alt,
@@ -26,17 +32,37 @@ export function SalonGallery({
   className?: string;
 }) {
   const [i, setI] = useState(0);
+  const bande = useRef<HTMLDivElement>(null);
   const count = images.length;
-  const go = (d: number) => setI((v) => (v + d + count) % count);
+
+  const aller = (n: number) => {
+    const el = bande.current;
+    if (!el) return;
+    const cible = (n + count) % count;
+    const rtl = getComputedStyle(el).direction === 'rtl';
+    el.scrollTo({ left: (rtl ? -1 : 1) * cible * el.clientWidth, behavior: 'smooth' });
+  };
+  const surDefilement = () => {
+    const el = bande.current;
+    if (!el || !el.clientWidth) return;
+    setI(Math.min(count - 1, Math.round(Math.abs(el.scrollLeft) / el.clientWidth)));
+  };
 
   return (
     <div className={`relative overflow-hidden bg-line ${className}`}>
       {count > 0 && (
-        <img
-          src={images[Math.min(i, count - 1)]}
-          alt={alt}
-          className="h-full w-full object-cover"
-        />
+        <div ref={bande} onScroll={surDefilement} className="gal-bande flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain">
+          {images.map((src, k) => (
+            <img
+              key={src}
+              src={src}
+              alt={k === 0 ? alt : ''}
+              loading={k === 0 ? 'eager' : 'lazy'}
+              draggable={false}
+              className="h-full w-full flex-none snap-center snap-always object-cover"
+            />
+          ))}
+        </div>
       )}
 
       {/* Dégradés latéraux uniquement : le centre de la photo reste intact. */}
@@ -60,7 +86,7 @@ export function SalonGallery({
           <button
             type="button"
             aria-label={t("Photo précédente")}
-            onClick={() => go(-1)}
+            onClick={() => aller(i - 1)}
             className="absolute start-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
           >
             <I icon={ChevronLeft} size={20} className="text-current" />
@@ -68,7 +94,7 @@ export function SalonGallery({
           <button
             type="button"
             aria-label={t("Photo suivante")}
-            onClick={() => go(1)}
+            onClick={() => aller(i + 1)}
             className="absolute end-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
           >
             <I icon={ChevronRight} size={20} className="text-current" />
