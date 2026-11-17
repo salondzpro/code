@@ -72,7 +72,7 @@ interface AuthContextValue {
     password: string,
     role: UserRole,
     next: string,
-    extra?: { fullName: string; gender: 'male' | 'female' },
+    extra?: { fullName: string; gender: 'male' | 'female'; phone?: string },
   ) => Promise<boolean>;
   /** Lien de connexion par e-mail (sans mot de passe). */
   sendMagicLink: (email: string, next: string, role?: UserRole) => Promise<void>;
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUpWithPassword = useCallback(
-    async (email: string, password: string, role: UserRole, next: string, extra?: { fullName: string; gender: 'male' | 'female' }) => {
+    async (email: string, password: string, role: UserRole, next: string, extra?: { fullName: string; gender: 'male' | 'female'; phone?: string }) => {
       // Compte créé par l'API. Professionnel : elle envoie le lien de confirmation (nos e-mails, pas
       // le SMTP de Supabase), pas de session avant le clic. Cliente avec nom et genre (14 nov. 2026) :
       // le compte est ouvert d'office, on se connecte aussitôt avec le mot de passe saisi.

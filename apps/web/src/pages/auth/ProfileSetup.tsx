@@ -8,14 +8,13 @@ import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState, type FormEvent } from 'react';
 import { guestMarket } from '@/lib/useClientMarket';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown } from 'lucide-react';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
-import { groupLocalDigits } from '@/lib/authFlow';
 import { errorText } from '@/components/ErrorMessage';
-import { Button, Field, I, Input } from '@/components/ui';
+import { Button, Field, Input } from '@/components/ui';
 import { AuthScreen } from '@/components/AuthKit';
+import { PhoneDZField } from '@/components/PhoneDZField';
 import { t } from '@/i18n';
 
 export function ProfileSetup() {
@@ -42,11 +41,10 @@ export function ProfileSetup() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) return setError({ field: 'name', msg: t("Indiquez votre prénom et votre nom.") });
-    // Numéro obligatoire pour le professionnel ; FACULTATIF pour la cliente (14 nov. 2026), qui le
-    // donne au moment de réserver. S'il est tapé, il doit être valide.
+    // Numéro OBLIGATOIRE pour tous (17 nov. 2026, demande du propriétaire), avec ou sans le 0 du début.
     const brut = digits.replace(/\D/g, '');
     const parsed = phoneDZ.safeParse(`0${brut}`);
-    if ((isPro || brut) && !parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
+    if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
       // Les rappels sont ACQUIS, pas proposés : un interrupteur sur l'écran d'inscription demandait un
@@ -55,7 +53,7 @@ export function ProfileSetup() {
       // défaut en base, donc l'écrire ne servirait qu'à rallumer, en silence, ce que quelqu'un
       // aurait éteint.
       const market = !isPro && !me.data?.profile.market ? guestMarket() : null;
-      await update.mutateAsync({ fullName: name.trim(), ...(parsed.success ? { phone: parsed.data } : {}), ...(market ? { market } : {}) });
+      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, ...(market ? { market } : {}) });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market && !market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });
@@ -88,33 +86,15 @@ export function ProfileSetup() {
             placeholder={t("Inès Rahmani")}
           />
         </Field>
-        <div>
-          <label className="lbl" htmlFor="profile-phone">
-            {t("Numéro de téléphone")}
-          </label>
-          <div className="flex gap-2.5">
-            <div className="pa-indicatif" dir="ltr" aria-label={t("Indicatif +213")}>
-              +213 <I icon={ChevronDown} size={15} className="text-subtle" />
-            </div>
-            <Input
-              id="profile-phone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              placeholder="6 61 24 87 90"
-              value={groupLocalDigits(digits)}
-              onChange={(e) => {
-                setDigits(e.target.value.replace(/\D/g, '').slice(0, 9));
-                setError(null);
-              }}
-              err={error?.field === 'phone'}
-              aria-required
-            />
-          </div>
-          <p className={`mt-1 text-[0.857rem] ${error?.field === 'phone' ? 'text-danger' : 'text-subtle'}`}>
-            {error?.field === 'phone' ? error.msg : isPro ? t('Format algérien · aucun SMS envoyé.') : t('Facultatif · demandé au moment de réserver.')}
-          </p>
-        </div>
+        <PhoneDZField
+          id="profile-phone"
+          digits={digits}
+          onDigits={(v) => {
+            setDigits(v);
+            setError(null);
+          }}
+          error={error?.field === 'phone' ? error.msg : null}
+        />
         {error?.field === 'form' && (
           <p className="text-[1rem] text-danger" role="alert">
             {error.msg}

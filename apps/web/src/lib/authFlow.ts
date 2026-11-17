@@ -55,6 +55,18 @@ export function formatIntlDZ(e164: string): string {
 }
 
 /** « 6 61 24 87 90 » : 9 chiffres saisis après +213, groupés comme dans le design. */
+/**
+ * Saisie d'un numéro algérien après « +213 » (17 nov. 2026) : AVEC ou SANS le 0 du début, et même
+ * collé en entier (« +213 661… », « 00213 661… »). Rend les 9 chiffres utiles.
+ */
+export function phoneDigits(input: string): string {
+  let d = input.replace(/\D/g, '');
+  if (d.startsWith('00213')) d = d.slice(5);
+  else if (d.startsWith('213') && d.length > 9) d = d.slice(3);
+  if (d.startsWith('0')) d = d.slice(1);
+  return d.slice(0, 9);
+}
+
 export function groupLocalDigits(digits: string): string {
   const d = digits.replace(/\D/g, '').slice(0, 9);
   const parts = [d.slice(0, 1), d.slice(1, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean);

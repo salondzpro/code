@@ -14,7 +14,7 @@ import type { BookingWithSalon } from '@salondz/types';
 import { ApiError, useBookingStanding, useCreateBooking, useMe, useSalon } from '@salondz/api-client';
 import { CLIENT_CANCEL_MIN_HOURS, depositFor, formatDA, wilayaName } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
-import { groupLocalDigits } from '@/lib/authFlow';
+import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
 import { clearDraft, readDraft, writeDraft } from '@/lib/bookingDraft';
 import { BottomSheet, Button, Field, I, Input, Segmented, Textarea, TopBar } from '@/components/ui';
 import { BookingSummary } from '@/components/BookingSummary';
@@ -34,7 +34,7 @@ function PhoneField({ label, digits, onDigits, error }: { label: string; digits:
         <div className="flex flex-none items-center gap-2 rounded-[var(--radius-input)] bg-fill px-4 text-[0.929rem] font-medium" dir="ltr">
           +213
         </div>
-        <Input lg type="tel" inputMode="numeric" value={groupLocalDigits(digits)} onChange={(e) => onDigits(e.target.value.replace(/\D/g, '').slice(0, 9))} aria-label={label} err={!!error} />
+        <Input lg type="tel" inputMode="numeric" value={groupLocalDigits(digits)} onChange={(e) => onDigits(phoneDigits(e.target.value))} aria-label={label} err={!!error} />
       </div>
       {error && <p className="mt-1.5 text-[0.857rem] text-danger">{error}</p>}
     </div>

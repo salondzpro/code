@@ -76,8 +76,8 @@ export function WelcomeBack() {
   // rien : on ne lui réclame pas de quoi être rappelé pour un rendez-vous qu'il ne prendra pas.
   // Rien à contourner ici — c'est `requireAdmin`, côté serveur, qui ouvre ou non la porte.
   if (!next.startsWith('/admin')) {
-    // Numéro exigé du professionnel seulement : la cliente le donne en réservant.
-    if (!profile?.fullName || (profile.role === 'pro' && !profile.phone)) return <Navigate to={`/profil/creer${q}`} replace />;
+    // Nom et numéro exigés de tous (17 nov. 2026).
+    if (!profile?.fullName || !profile.phone) return <Navigate to={`/profil/creer${q}`} replace />;
     if (profile.role !== 'pro' && !profile.market) return <Navigate to={`/marche${q}`} replace />;
   }
   return <Navigate to={next} replace />;

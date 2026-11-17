@@ -11,7 +11,7 @@ import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { visibleEmail } from '@/lib/alias';
-import { groupLocalDigits } from '@/lib/authFlow';
+import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
 import { ErrorMessage, errorText } from '@/components/ErrorMessage';
 import { Badge, Button, Field, I, Input, TopBar } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
@@ -91,7 +91,7 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
               autoComplete="tel-national"
               value={groupLocalDigits(digits)}
               onChange={(e) => {
-                setDigits(e.target.value.replace(/\D/g, '').slice(0, 9));
+                setDigits(phoneDigits(e.target.value));
                 setError(null);
               }}
               err={error?.field === 'phone'}

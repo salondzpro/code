@@ -3,7 +3,11 @@
  * fixes 0[2-4] + 7/8 chiffres. Format E.164 : +213XXXXXXXXX.
  */
 export const DZ_COUNTRY_CODE = '+213';
-export const DZ_PHONE_REGEX = /^(?:\+213|00213|0)([5-7]\d{8}|[2-4]\d{7,8})$/;
+/**
+ * Numéro algérien, AVEC ou SANS le 0 du début (17 nov. 2026, demande du propriétaire) : « 0661 23 45 67 »,
+ * « 661 23 45 67 », « +213 661 23 45 67 » et « 00213… » sont tous acceptés, puis ramenés à +213….
+ */
+export const DZ_PHONE_REGEX = /^(?:\+213|00213|0)?([5-7]\d{8}|[2-4]\d{7,8})$/;
 
 /** Normalise vers E.164 (+213…). Retourne null si invalide. */
 export function normalizeDZPhone(input: string): string | null {

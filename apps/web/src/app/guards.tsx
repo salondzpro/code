@@ -169,9 +169,9 @@ export function RequireClient() {
     return <CompteRefuse cote="client" />;
   }
   const next = encodeURIComponent(location.pathname + location.search);
-  // Le NOM seul est exigé (14 nov. 2026, inscription simplifiée) : le numéro est demandé au moment
-  // de réserver, à l'étape des coordonnées, et enregistré sur le profil à ce moment-là.
-  if (!p.fullName) return <Navigate to={`/profil/creer?next=${next}`} replace />;
+  // Nom ET numéro obligatoires (17 nov. 2026, demande du propriétaire) : le salon doit pouvoir joindre
+  // la personne. Un compte créé sans numéro le donne à « Vos coordonnées » avant d'entrer.
+  if (!p.fullName || !p.phone) return <Navigate to={`/profil/creer?next=${next}`} replace />;
   if (!p.market) return <Navigate to={`/marche?next=${next}`} replace />;
   return <Outlet />;
 }

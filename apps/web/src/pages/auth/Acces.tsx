@@ -24,6 +24,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Check, MailCheck } from 'lucide-react';
 import { VisageFemme, VisageHomme } from '@/components/GenderFaces';
+import { PhoneDZField, numeroDZ } from '@/components/PhoneDZField';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
@@ -44,7 +45,7 @@ import { PASSWORD_MIN } from './SignUp';
 import { t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
-type Err = { kind: AuthErrorKind | 'form'; text: string } | null;
+type Err = { kind: AuthErrorKind | 'form' | 'phone'; text: string } | null;
 
 /**
  * LE MÊME PARCOURS POUR LES DEUX PORTAILS (14 nov. 2026) : l'espace pro (`/pro/acces/*`) et l'espace
@@ -451,6 +452,7 @@ export function AccesVous() {
   const { next, email, q, base } = useParcours();
   const password = (location.state as { password?: string } | null)?.password ?? '';
   const [name, setName] = useState('');
+  const [digits, setDigits] = useState('');
   const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
     const m = guestMarket();
     return m === 'women' ? 'female' : m === 'men' ? 'male' : '';
@@ -467,13 +469,16 @@ export function AccesVous() {
   const entrer = async (e: FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
+    // Numéro OBLIGATOIRE (17 nov. 2026), avec ou sans le 0 du début ; vérifié aussi par le serveur.
+    const phone = numeroDZ(digits);
+    if (!phone) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
     if (!gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
     setError(null);
     setBusy(true);
     enCours.current = true;
     try {
       writeAuthFlow({ role: 'client', next, identifier: email, channel: 'email', sentAt: Date.now() });
-      const ouverte = await signUpWithPassword(email, password, 'client', next, { fullName: name.trim(), gender });
+      const ouverte = await signUpWithPassword(email, password, 'client', next, { fullName: name.trim(), gender, phone });
       setGuestMarket(gender === 'female' ? 'women' : 'men');
       if (ouverte) navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
       else navigate(`${base}/envoye?mode=confirm`, { replace: true });
@@ -520,6 +525,15 @@ export function AccesVous() {
             }}
           />
         </Field>
+        <PhoneDZField
+          id="pa-vous-tel"
+          digits={digits}
+          onDigits={(v) => {
+            setDigits(v);
+            setError(null);
+          }}
+          error={error?.kind === 'phone' ? error.text : null}
+        />
         <div>
           <span className="lbl">{t('Vous êtes')}</span>
           <div className="pa-genre" role="radiogroup" aria-label={t('Vous êtes')}>

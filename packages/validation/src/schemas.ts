@@ -434,6 +434,8 @@ export const emailSignupSchema = z.object({
    */
   fullName: z.string().trim().min(2).max(80).optional(),
   gender: z.enum(['male', 'female']).optional(),
+  /** Numéro algérien, avec ou sans le 0 du début (17 nov. 2026) : obligatoire à l'écran, contrôlé ici. */
+  phone: p.phoneDZ.optional(),
 });
 export type EmailSignupInput = z.infer<typeof emailSignupSchema>;
 /** Lien de connexion, renvoi de confirmation, mot de passe oublié : une adresse (+ retour). */

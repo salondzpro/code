@@ -186,7 +186,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
-    const { email, password, next, fullName, gender } = req.body;
+    const { email, password, next, fullName, gender, phone } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
     // Le compte DE CE CÔTÉ, s'il existe déjà (vrai ou interne).
     const existing = await accountFor(email, role);
@@ -216,10 +216,13 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       }
       // Le profil vient du déclencheur (rôle + nom) ; on y ajoute le choix femme / homme, qui ouvre
       // la place de marché sur le bon côté.
-      if (gender) {
+      if (gender || phone) {
         const upd = await db
           .from('profiles')
-          .update({ gender, market: gender === 'female' ? 'women' : 'men' })
+          .update({
+            ...(gender ? { gender, market: gender === 'female' ? 'women' : 'men' } : {}),
+            ...(phone ? { phone } : {}),
+          })
           .eq('id', created.data.user.id);
         if (upd.error) req.log.error({ err: upd.error }, 'signup profil');
       }
