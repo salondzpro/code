@@ -4801,8 +4801,8 @@ html:has(.auth-onglets) body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 28px 0 6px;
+  gap: 4px;
+  padding: 10px 0 2px;
   text-align: center;
 }
 .cf.wait,
@@ -4812,9 +4812,9 @@ html:has(.auth-onglets) body {
 }
 .cf-badge {
   position: relative;
-  width: 88px;
-  height: 88px;
-  margin-bottom: 10px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
@@ -4845,7 +4845,7 @@ html:has(.auth-onglets) body {
   animation: cf-turn 2.4s linear 0.6s infinite;
 }
 .cf-t {
-  font-size: calc(24px * var(--fz, 1));
+  font-size: calc(22px * var(--fz, 1));
   font-weight: 600;
   letter-spacing: -0.5px;
   color: var(--color-text);

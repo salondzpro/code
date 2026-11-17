@@ -1,44 +1,21 @@
 /** C-F 12 — Rendez-vous confirmé (ou demande envoyée). Le même écran sert juste après la réservation (`BookingReview`). */
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Calendar, Landmark, Navigation } from 'lucide-react';
+import { Landmark } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
 import { formatDA, formatDZPhone, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
-import { BottomSheet, Button, I } from '@/components/ui';
+import { Button, I } from '@/components/ui';
 import { BookingSummary } from '@/components/BookingSummary';
 import { ICONE } from '@/lib/actionIcons';
 import { directionsUrl } from './Bookings';
-import { Screen, SHEET_PAD } from '@/components/AppFrame';
+import { Screen } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import type { BookingWithSalon } from '@salondz/types';
 import { cibleCarte } from '@/lib/maps';
 import { t } from '@/i18n';
-
-function icsDate(iso: string): string {
-  return new Date(iso)
-    .toISOString()
-    .replace(/[-:]/g, '')
-    .replace(/\.\d{3}/, '');
-}
-
-/** Lien « Ajouter à votre calendrier Google » (le fichier .ics n'est plus proposé : trop technique pour la V1). */
-export function googleCalendarUrl(b: BookingWithSalon): string {
-  const title = `${b.serviceName} · ${b.salon.name}`;
-  const location = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${icsDate(b.startsAt)}/${icsDate(b.endsAt)}&location=${encodeURIComponent(location)}&details=${encodeURIComponent('Réservé via Salon DZ')}`;
-}
-
-/** Bouton commun (confirmation + détails) : tout en bas, avec icône. */
-export function GoogleCalendarButton({ booking }: { booking: BookingWithSalon }) {
-  return (
-    <a href={googleCalendarUrl(booking)} target="_blank" rel="noreferrer" className="btn g">
-      <I icon={Calendar} size={18} /> {t("Ajouter à votre calendrier Google")}
-    </a>
-  );
-}
 
 export function BookingConfirmed() {
   const { id = '' } = useParams();
@@ -79,7 +56,7 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
   }, []);
 
   return (
-    <Screen bottom={SHEET_PAD} gap={14}>
+    <Screen gap={14}>
       {state === 'dep' ? (
         // Versement : en-tête compact, le parcours étape par étape tout de suite visible (sans défiler).
         <div className="cf-mini" role="status">
@@ -96,7 +73,7 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
           <span className="cf-badge" aria-hidden>
             <i className="cf-wave" />
             <i className="cf-wave w2" />
-            <svg viewBox="0 0 24 24" width="40" height="40">
+            <svg viewBox="0 0 24 24" width="30" height="30">
               {state === 'ok' ? (
                 <path className="cf-draw" d="M5 12.5l4.2 4.2L19 7" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
               ) : (
@@ -129,21 +106,16 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
         }
       />
       {state !== 'dep' && <DepositCard booking={b} />}
-      <BottomSheet>
-        <div className="cf-acts flex flex-col gap-2">
-          <Button icon={ICONE.voirRdv} onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
-            {t('Voir le rendez-vous')}
-          </Button>
-          <div className="g2">
-            <a href={directionsUrl(b)} target={cibleCarte(directionsUrl(b))} rel="noreferrer" className="btn g sm">
-              <I icon={Navigation} size={16} /> {t('Itinéraire')}
-            </a>
-            <a href={googleCalendarUrl(b)} target="_blank" rel="noreferrer" className="btn g sm">
-              <I icon={Calendar} size={16} /> {t('Calendrier')}
-            </a>
-          </div>
-        </div>
-      </BottomSheet>
+      {/* DEUX BOUTONS sur une ligne, juste sous la carte (16 nov. 2026, comme la fiche du rendez-vous) :
+          plus de panneau du bas, plus de « Calendrier ». */}
+      <div className="cf-acts flex gap-2.5">
+        <Button icon={ICONE.voirRdv} sm className="flex-1 whitespace-nowrap" onClick={() => navigate(`/rendez-vous/${b.id}`, { replace: true })}>
+          {t('Mon rendez-vous')}
+        </Button>
+        <a href={directionsUrl(b)} target={cibleCarte(directionsUrl(b))} rel="noreferrer" className="btn g sm flex-1">
+          <I icon={ICONE.itineraire} size={18} /> {t('Itinéraire')}
+        </a>
+      </div>
     </Screen>
   );
 }

@@ -2225,4 +2225,6 @@ export const ar: Record<string, string> = {
   "suivis": "يتابع",
   "Suivre": "متابعة",
   "Contacter": "تواصل",
+  // Accès (14-16 nov. 2026)
+  "Mon rendez-vous": "موعدي",
 };

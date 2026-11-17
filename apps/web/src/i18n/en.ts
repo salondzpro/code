@@ -2239,4 +2239,6 @@ export const en: Record<string, string> = {
   "suivis": "following",
   "Suivre": "Follow",
   "Contacter": "Contact",
+  // Accès (14-16 nov. 2026)
+  "Mon rendez-vous": "My appointment",
 };
