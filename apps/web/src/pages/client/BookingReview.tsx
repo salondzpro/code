@@ -12,7 +12,7 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import { Ban, ChevronDown, Pencil, StickyNote } from 'lucide-react';
 import type { BookingWithSalon } from '@salondz/types';
 import { ApiError, useBookingStanding, useCreateBooking, useMe, useSalon } from '@salondz/api-client';
-import { CLIENT_CANCEL_MIN_HOURS, depositFor, formatDA, wilayaName } from '@salondz/constants';
+import { depositFor, formatDA } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
 import { clearDraft, readDraft, writeDraft } from '@/lib/bookingDraft';
@@ -78,14 +78,10 @@ export function BookingReview() {
   if (!s) return <ErrorMessage error={new Error('Salon introuvable')} />;
 
   const chosen = draft.serviceIds.map((id) => s.services.find((x) => x.id === id)).filter(Boolean);
-  const minutes = chosen.reduce((a, x) => a + (x?.durationMinutes ?? 0), 0);
   const price = chosen.reduce((a, x) => a + (x?.priceDa ?? 0), 0);
   const deposit = depositFor(price, s.depositMode ?? 'off', s.depositValue ?? 0);
-  const staff = draft.staffId ? (s.staff ?? []).find((m) => m.id === draft.staffId) : null;
   const cannotBook = !forOther && !!standing.data && !standing.data.canBook;
   const compteComplet = !!profil?.fullName && !!profil?.phone;
-  const area = [s.address, s.zone ?? s.city, wilayaName(s.wilayaCode)].filter(Boolean).join(', ');
-  const endsAt = new Date(new Date(draft.startsAt).getTime() + minutes * 60_000).toISOString();
   const time = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Africa/Algiers' }).format(new Date(draft.startsAt));
 
   const confirm = async () => {
@@ -147,16 +143,14 @@ export function BookingReview() {
 
       <BookingSummary
         className={cannotBook ? 'opacity-60' : ''}
-        salon={{ name: s.name, logoUrl: s.logoUrl, coverUrl: s.coverUrl, area }}
+        salon={{ name: s.name, logoUrl: s.logoUrl, coverUrl: s.coverUrl }}
         startsAt={draft.startsAt}
-        endsAt={endsAt}
         lines={chosen.map((sv) => ({ id: sv!.id, name: sv!.name, minutes: sv!.durationMinutes, priceDa: sv!.priceDa }))}
-        staffName={staff?.displayName}
         priceDa={price}
         payNote={
           deposit != null
             ? t('Versement de {montant} · reste {reste} sur place', { montant: formatDA(deposit), reste: formatDA(price - deposit) })
-            : t('Paiement sur place · annulation gratuite jusqu’à {h} h avant', { h: s.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS })
+            : null
         }
       />
 

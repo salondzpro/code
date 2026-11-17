@@ -2247,4 +2247,5 @@ export const en: Record<string, string> = {
   "Ouvert jusqu’à {time}": "Open until {time}",
   "Ouvre à {time}": "Opens at {time}",
   "Ouvre {day} à {time}": "Opens {day} at {time}",
+  "Encore une annulation et la réservation en ligne est suspendue {n} jours.": "One more cancellation and online booking is suspended for {n} days.",
 };

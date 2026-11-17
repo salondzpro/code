@@ -1,15 +1,17 @@
 /**
  * Carte d'un rendez-vous, UNE pour trois écrans : confirmer, confirmation, fiche du rendez-vous.
- * Compacte et SANS DOUBLON (15 nov. 2026, demande du propriétaire) : l'heure une seule fois, en grand ;
- * le jour sous le jour relatif ; la durée une seule fois, sous la prestation ; une ligne de pied.
+ * L'ESSENTIEL SEULEMENT (17 nov. 2026, demande du propriétaire : « droit au but », aucun texte gris
+ * inutile) : le salon et l'état ; le jour (« Demain », « Mer. 18 nov. ») et l'heure en grand ; la
+ * prestation et son prix. Plus d'adresse (le bouton Itinéraire y mène), plus de date complète sous
+ * « Demain », plus de durée, plus de « Paiement sur place » ni de règle de retard. Le pied n'existe
+ * que pour un VERSEMENT (`payNote`), seule information d'argent qui change quelque chose.
  */
 import type { ReactNode } from 'react';
 import { CalendarDays, Scissors, Banknote } from 'lucide-react';
 import type { BookingStatus, CancellationKind, CancelledBy } from '@salondz/constants';
-import { formatDA, formatDateLongDZ, formatTimeDZ, lateRule, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
+import { formatDA, formatTimeDZ, relativeDayLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { Avatar, StatusBadge } from './ui';
 import { FactRow } from './BookingFacts';
-import { formatDuration } from '@/lib/format';
 import { t } from '@/i18n';
 
 export interface SummaryLine {
@@ -25,27 +27,22 @@ export function BookingSummary({
   cancelledBy,
   cancellationKind,
   startsAt,
-  endsAt,
   lines,
-  staffName,
   priceDa,
   payNote,
-  showLate = false,
   extra,
   muted,
   className = '',
 }: {
-  salon: { name: string; logoUrl?: string | null; coverUrl?: string | null; area?: string | null };
+  salon: { name: string; logoUrl?: string | null; coverUrl?: string | null };
   status?: BookingStatus;
   cancelledBy?: CancelledBy | null;
   cancellationKind?: CancellationKind | null;
   startsAt: string;
-  endsAt: string;
   lines: SummaryLine[];
-  staffName?: string | null;
   priceDa: number;
-  payNote: string;
-  showLate?: boolean;
+  /** Seulement pour un versement : « Versement de 500 DA à faire · reste 1 000 DA sur place ». */
+  payNote?: string | null;
   /** Lignes propres à l'écran (pour qui, note, motif d'annulation). */
   extra?: ReactNode;
   /** Rendez-vous passé ou annulé : l'heure en gris. */
@@ -53,19 +50,14 @@ export function BookingSummary({
   className?: string;
 }) {
   const dayLabel = relativeDayLabelDZ(toLocalDateKey(new Date(startsAt)));
-  const dateLong = formatDateLongDZ(startsAt).replace(/^\w/, (c) => c.toUpperCase());
-    const single = lines.length === 1;
-  const late = lateRule(startsAt);
+  const single = lines.length === 1;
 
   return (
     <div className={`crd !gap-0 !py-1 ${className}`}>
       <div className="li !items-center !gap-3">
         <span className="flex min-w-0 flex-1 items-center gap-3">
           <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={40} />
-          <span className="min-w-0">
-            <span className="block truncate text-[1rem] font-semibold">{salon.name}</span>
-            {salon.area && <span className="block truncate text-[0.857rem] text-muted">{salon.area}</span>}
-          </span>
+          <span className="min-w-0 truncate text-[1rem] font-semibold">{salon.name}</span>
         </span>
         {status && (
           <span className="bk-badge flex-none">
@@ -75,8 +67,7 @@ export function BookingSummary({
       </div>
       <FactRow
         icon={CalendarDays}
-        title={/^\p{L}+\. \d/u.test(dayLabel) ? dateLong : dayLabel}
-        sub={/^\p{L}+\. \d/u.test(dayLabel) ? undefined : dateLong}
+        title={dayLabel}
         right={
           <span className={`mono text-[1.429rem] font-semibold tracking-[-0.5px] ${muted ? 'text-muted' : ''}`} dir="ltr">
             {formatTimeDZ(startsAt)}
@@ -88,9 +79,6 @@ export function BookingSummary({
           key={l.id}
           icon={Scissors}
           title={l.name}
-          sub={[l.minutes ? formatDuration(l.minutes) : null, single && staffName ? t('Avec {name}', { name: staffName }) : null]
-            .filter(Boolean)
-            .join(' · ') || undefined}
           right={<span className="text-[1rem] font-semibold">{formatDA(l.priceDa)}</span>}
         />
       ))}
@@ -98,20 +86,11 @@ export function BookingSummary({
         <FactRow
           icon={Banknote}
           title={t('Total')}
-          sub={staffName ? t('Avec {name}', { name: staffName }) : undefined}
           right={<span className="text-[1rem] font-semibold">{formatDA(priceDa)}</span>}
         />
       )}
       {extra}
-      <p className="px-0.5 pb-2 pt-2.5 text-[0.786rem] leading-[1.45] text-muted">
-        {payNote}
-        {showLate && (
-          <>
-            {' · '}
-            {t('Arrivez à {a}, retard toléré jusqu’à {b}', { a: late.arriveAt, b: late.lateUntil })}
-          </>
-        )}
-      </p>
+      {payNote && <p className="px-0.5 pb-2 pt-2.5 text-[0.857rem] font-medium">{payNote}</p>}
     </div>
   );
 }

@@ -19,7 +19,6 @@ import { useBooking, useCancelBooking, useMarkNotificationsRead, useMe } from '@
 import {
   CANCEL_ABUSE_BLOCK_DAYS,
   CANCEL_ABUSE_MAX,
-  CANCEL_ABUSE_WINDOW_DAYS,
   CLIENT_CANCEL_MIN_HOURS,
   MAX_CLIENT_RESCHEDULES,
   formatDA,
@@ -31,8 +30,6 @@ import {
   CLIENT_CANCEL_REASONS_FR,
   reasonOptions,
   SHOW_SALON_CONTACT_TO_CLIENTS,
-  PENDING_REQUEST_TTL_HOURS,
-  formatLocale,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -55,9 +52,6 @@ import { PageLoading } from '@/components/PageLoading';
 import { directionsUrl } from './Bookings';
 import { cibleCarte } from '@/lib/maps';
 import { t } from '@/i18n';
-
-const formatDeadline = (ms: number) =>
-  new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Africa/Algiers' }).format(new Date(ms));
 
 export function BookingDetail() {
   const { id = '' } = useParams();
@@ -174,35 +168,30 @@ export function BookingDetail() {
     );
   }
 
-  const address = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
-
   return (
     <Screen className="h-app" gap={12}>
       <TopBar backTo="/rendez-vous" title={t('Rendez-vous')} />
       {/* Une seule carte : le salon en tête avec l'état, puis quand, quoi, combien (`BookingSummary`). */}
       <BookingSummary
-        salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl, area: address || b.salon.city }}
+        salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl }}
         status={b.status}
         cancelledBy={b.cancelledBy}
         cancellationKind={b.cancellationKind}
         startsAt={b.startsAt}
-        endsAt={b.endsAt}
         lines={
           b.items?.length
             ? b.items.map((it) => ({ id: it.id, name: it.serviceName, minutes: it.durationMinutes, priceDa: it.priceDa }))
             : [{ id: b.id, name: b.serviceName, minutes: b.durationMinutes, priceDa: b.priceDa }]
         }
-        staffName={b.staff?.displayName}
         priceDa={b.priceDa}
-        payNote={depositPayNote(b) ?? t('Paiement sur place')}
-        showLate={active}
+        payNote={depositPayNote(b)}
         muted={!active}
         extra={
           <>
             {/* Pris pour quelqu'un d'autre, ou par quelqu'un d'autre : sans cette ligne, on ne
                 sait pas de quel rendez-vous il s'agit ni pourquoi il est là. */}
             {forSomeoneElse && (
-              <FactRow icon={UserRound} title={`Pour ${b.clientName}`} sub="À son nom, avec ses règles" />
+              <FactRow icon={UserRound} title={t('Pour {name}', { name: b.clientName ?? '' })} />
             )}
             {!forSomeoneElse && !!b.bookedByName && (
               <FactRow icon={UserRound} title={`Réservé par ${b.bookedByName}`} />
@@ -219,13 +208,6 @@ export function BookingDetail() {
       {/* Versement demandé par le salon : la carte du virement prend la place de l'avis d'attente. */}
       {/* Versement VALIDÉ : le résumé le dit déjà (« Versement de … reçu ») — pas de seconde carte. */}
       {b.depositStatus !== 'accepted' && <DepositCard booking={b} />}
-      {b.status === 'pending' && !b.depositStatus && (
-        <InfoBox>
-          {t('Réponse du salon avant {when}.', {
-            when: formatDeadline(Math.min(new Date(b.createdAt).getTime() + PENDING_REQUEST_TTL_HOURS * 3_600_000, new Date(b.startsAt).getTime())),
-          })}
-        </InfoBox>
-      )}
       {/* DEUX BOUTONS, LE RESTE DANS « ⋯ » (16 nov. 2026, demande du propriétaire). Ce dont la
           cliente a besoin AVANT d'y aller : s'y rendre, et éventuellement déplacer. Après : noter,
           ou reprendre rendez-vous. Annuler, voir le salon, joindre le salon : derrière « ⋯ ».
@@ -314,19 +296,13 @@ export function BookingDetail() {
         <>
           <Dim onClose={() => setCancelling(false)} />
           <BottomSheet modal>
-            <div className="text-center">
-              <div className="text-[1.429rem] font-semibold tracking-[-0.4px]">
-                {t("Annuler ce rendez-vous ?")}
-              </div>
-              <p className="p mt-2">
-                {t("Annulation gratuite — il reste")}{' '}{hoursLeft} {t("h avant le rendez-vous. Le créneau sera libéré immédiatement.")}
-              </p>
-            </div>
-            <InfoBox>
-              {cancels >= CANCEL_ABUSE_MAX - 1
-                ? `Attention : ce serait votre ${cancels + 1}ᵉ annulation en ${CANCEL_ABUSE_WINDOW_DAYS} jours. Au-delà de ${CANCEL_ABUSE_MAX}, la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`
-                : `Pour respecter le travail des salons, au-delà de ${CANCEL_ABUSE_MAX} annulations en ${CANCEL_ABUSE_WINDOW_DAYS} jours la réservation en ligne est suspendue ${CANCEL_ABUSE_BLOCK_DAYS} jours.`}
-            </InfoBox>
+            <div className="text-center text-[1.429rem] font-semibold tracking-[-0.4px]">{t("Annuler ce rendez-vous ?")}</div>
+            {/* Seule phrase gardée : celle qui a une CONSÉQUENCE — la suspension toute proche. */}
+            {cancels >= CANCEL_ABUSE_MAX - 1 && (
+              <InfoBox>
+                {t('Encore une annulation et la réservation en ligne est suspendue {n} jours.', { n: CANCEL_ABUSE_BLOCK_DAYS })}
+              </InfoBox>
+            )}
             <div className="crd !flex-row items-center justify-between !py-3">
               <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
               <PickerField

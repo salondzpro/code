@@ -2233,4 +2233,5 @@ export const ar: Record<string, string> = {
   "Ouvert jusqu’à {time}": "مفتوح حتى {time}",
   "Ouvre à {time}": "يفتح على {time}",
   "Ouvre {day} à {time}": "يفتح {day} على {time}",
+  "Encore une annulation et la réservation en ligne est suspendue {n} jours.": "إلغاء آخر وسيتم إيقاف الحجز عبر الإنترنت لمدة {n} أيام.",
 };

@@ -5,7 +5,7 @@ import { Landmark } from 'lucide-react';
 import { useBooking } from '@salondz/api-client';
 import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
-import { formatDA, formatDZPhone, SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
+import { formatDA } from '@salondz/constants';
 import { Button, I } from '@/components/ui';
 import { BookingSummary } from '@/components/BookingSummary';
 import { ICONE } from '@/lib/actionIcons';
@@ -45,7 +45,6 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
   const lines = b.items?.length
     ? b.items.map((it) => ({ id: it.id, name: it.serviceName, minutes: it.durationMinutes, priceDa: it.priceDa }))
     : [{ id: b.id, name: b.serviceName, minutes: b.durationMinutes, priceDa: b.priceDa }];
-  const area = [b.salon.address, b.salon.city].filter(Boolean).join(', ');
   useEffect(() => {
     try {
       navigator.vibrate?.(confirmed ? [18, 60, 18] : 18);
@@ -86,23 +85,20 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
             </svg>
           </span>
           <h1 className="cf-t">{state === 'ok' ? t('Rendez-vous confirmé') : t('Demande envoyée')}</h1>
-          {state === 'wait' && <p className="cf-s">{t('Le salon vous répond bientôt.')}</p>}
         </div>
       )}
       {state === 'dep' && <DepositCard booking={b} />}
       <BookingSummary
         className="cf-card"
-        salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl, area: SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone ? `${area} · ${formatDZPhone(b.salon.phone)}` : area }}
+        salon={{ name: b.salon.name, logoUrl: b.salon.logoUrl, coverUrl: b.salon.coverUrl }}
         status={b.status}
         startsAt={b.startsAt}
-        endsAt={b.endsAt}
         lines={lines}
-        staffName={b.staff?.displayName}
         priceDa={b.priceDa}
         payNote={
           state === 'dep'
             ? t('Reste {montant} sur place', { montant: formatDA(Math.max(0, b.priceDa - (b.depositAmount ?? 0))) })
-            : (depositPayNote(b) ?? t('Paiement sur place'))
+            : depositPayNote(b)
         }
       />
       {state !== 'dep' && <DepositCard booking={b} />}
