@@ -2253,4 +2253,5 @@ export const en: Record<string, string> = {
   "Pas encore d'avis.": "No reviews yet.",
   "Première visite": "First visit",
   "{n} rendez-vous chez vous": "{n} appointments with you",
+  "Étape": "Step",
 };

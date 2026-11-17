@@ -2239,4 +2239,5 @@ export const ar: Record<string, string> = {
   "Pas encore d'avis.": "لا توجد آراء بعد.",
   "Première visite": "الزيارة الأولى",
   "{n} rendez-vous chez vous": "{n} مواعيد عندك",
+  "Étape": "المرحلة",
 };

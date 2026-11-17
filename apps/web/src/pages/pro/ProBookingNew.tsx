@@ -206,7 +206,7 @@ function ClientSheet({
 
 export function ProBookingNew() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const salon = useProSalon().data?.salon ?? null;
   const { createWalkIn } = useProBookingMutations();
   const [name, setName] = useState(params.get('name') ?? '');
@@ -358,6 +358,31 @@ export function ProBookingNew() {
     setFieldErr((f) => ({ ...f, services: undefined }));
   };
   const clientDone = name.trim().length >= 2;
+  /**
+   * DEUX ÉTAPES (17 nov. 2026, demande du propriétaire) : 1. qui et quoi, 2. quand puis Enregistrer.
+   * L'étape vit dans l'adresse (`?etape=2`) : le retour du téléphone ramène à l'étape 1 sans rien
+   * perdre (le composant reste monté, seuls les paramètres changent). Sans client ni prestation —
+   * page rechargée à l'étape 2 —, on reste à l'étape 1.
+   */
+  const etape: 1 | 2 = params.get('etape') === '2' && clientDone && chosen.length > 0 ? 2 : 1;
+  const continuer = () => {
+    const errs: typeof fieldErr = {};
+    if (!clientDone) errs.name = 'Indiquez le client.';
+    if (chosen.length === 0) errs.services = 'Choisissez au moins une prestation.';
+    setFieldErr(errs);
+    if (errs.name) return setSheet('find');
+    if (errs.services) return document.getElementById('nb-services')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const next = new URLSearchParams(params);
+    next.set('etape', '2');
+    setParams(next);
+    window.scrollTo({ top: 0 });
+  };
+  const retourEtape1 = (() => {
+    const prev = new URLSearchParams(params);
+    prev.delete('etape');
+    const q = prev.toString();
+    return `/pro/rendez-vous/nouveau${q ? `?${q}` : ''}`;
+  })();
   const confirmation = `https://api.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${encodeURIComponent(
     t('Salam {first} 😊 Votre rendez-vous chez {salon} est bien noté : {day} à {time}.', {
       first: name.trim().split(' ')[0] ?? name,
@@ -369,7 +394,19 @@ export function ProBookingNew() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo="/pro/agenda" close title={t('Nouveau rendez-vous')} />
+      <TopBar
+        backTo={etape === 2 ? retourEtape1 : '/pro/agenda'}
+        close={etape === 1}
+        title={t('Nouveau rendez-vous')}
+        right={<span className="text-[0.857rem] font-semibold text-muted">{etape}/2</span>}
+      />
+      <div className="flex gap-1" role="progressbar" aria-valuemin={1} aria-valuemax={2} aria-valuenow={etape} aria-label={t('Étape')}>
+        <span className="h-1 flex-1 rounded-full bg-ink" />
+        <span className={`h-1 flex-1 rounded-full ${etape === 2 ? 'bg-ink' : 'bg-line'}`} />
+      </div>
+
+      {etape === 1 && (
+      <>
 
       {/* 1. QUI */}
       <section className="crd !gap-2.5" aria-labelledby="nb-s1">
@@ -459,6 +496,20 @@ export function ProBookingNew() {
         )}
       </section>
 
+      </>
+      )}
+
+      {etape === 2 && (
+      <>
+      {/* Rappel de l'étape 1 : touché, il y ramène. */}
+      <button type="button" className="nb-pick crd !flex-row" onClick={() => navigate(retourEtape1)}>
+        <Avatar name={name} size={36} />
+        <span className="min-w-0 flex-1 text-start">
+          <span className="block truncate text-[1rem] font-semibold">{name}</span>
+          <span className="block truncate text-[0.857rem] text-muted">{chosen.map((x) => x!.name).join(' + ')}</span>
+        </span>
+        <span className="text-[0.857rem] font-semibold text-muted">{t('Changer')}</span>
+      </button>
       {/* 3. QUAND — membre, jour, puis la grille des créneaux de la période */}
       <section id="nb-when" className="crd !gap-3" aria-labelledby="nb-s3">
         <StepHead n={3} id="nb-s3" title={t('Quand')} done={chosen.length > 0 && (slots.length === 0 || slots.some((x) => x.t === time && !x.taken))} />
@@ -571,6 +622,9 @@ export function ProBookingNew() {
         </button>
       )}
 
+      </>
+      )}
+
       {sheet && (
         <ClientSheet
           mode={sheet}
@@ -623,6 +677,7 @@ export function ProBookingNew() {
             <div className="text-[1.429rem] font-semibold leading-tight tracking-[-0.4px]" dir="ltr">
               {formatDA(total)}
             </div>
+            {etape === 2 && (
             <div className="truncate text-[0.857rem] text-muted">
               {relativeDayLabelDZ(date)} ·{' '}
               <span className="mono" dir="ltr">
@@ -636,10 +691,17 @@ export function ProBookingNew() {
                 </>
               ) : null}
             </div>
+            )}
           </div>
-          <Button icon={ICONE.confirmerRdv} auto className="!px-6" onClick={() => void submit()} loading={createWalkIn.isPending}>
-            {t('Enregistrer')}
-          </Button>
+          {etape === 1 ? (
+            <Button icon={ICONE.continuer} auto className="!px-6" onClick={continuer}>
+              {t('Continuer')}
+            </Button>
+          ) : (
+            <Button icon={ICONE.confirmerRdv} auto className="!px-6" onClick={() => void submit()} loading={createWalkIn.isPending}>
+              {t('Enregistrer')}
+            </Button>
+          )}
         </div>
       </BottomSheet>
     </Screen>
