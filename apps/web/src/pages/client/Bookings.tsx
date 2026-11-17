@@ -19,7 +19,6 @@ import {
   CalendarX,
   History,
   Info,
-  MapPin,
   Navigation,
   Phone,
   RotateCcw,
@@ -110,9 +109,6 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           className={`mono text-[2.286rem] font-semibold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
         >
           {formatTimeDZ(b.startsAt)}
-          <span className="ms-1 text-[1rem] font-medium tracking-normal text-muted">
-            → {formatTimeDZ(b.endsAt)}
-          </span>
         </span>
         <span className="text-[1.429rem] font-semibold leading-none tracking-[-0.5px]">
           {formatDA(b.priceDa)}
@@ -129,16 +125,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           </span>
           <span className="block text-[1rem] text-muted">
             {b.serviceName}
-            {b.staff?.displayName ? ` · avec ${b.staff.displayName}` : ''}
           </span>
-          {(b.salon.address || b.salon.city) && (
-            <span className="mt-0.5 flex items-center gap-1 text-[0.857rem] text-muted">
-              <I icon={MapPin} size={13} />
-              <span className="truncate">
-                {[b.salon.address, b.salon.city].filter(Boolean).join(', ')}
-              </span>
-            </span>
-          )}
         </span>
       </div>
       {active && (
@@ -284,7 +271,7 @@ export function Bookings() {
     <Screen bottom={NAV_PAD} gap={16}>
       {/* Un rappel non reçu, c'est un rendez-vous oublié. Reproposé bien plus rarement que côté
           professionnel : un client n'y perd pas son activité. */}
-      <PageHead title={t('Rendez-vous')} sub={t('Vos réservations, à venir et passées.')} />
+      <PageHead title={t('Rendez-vous')} />
       <Segmented
         label={t("Période")}
         value={scope}
