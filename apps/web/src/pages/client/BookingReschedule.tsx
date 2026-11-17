@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Clock } from 'lucide-react';
 import { useAvailability, useBooking, useRescheduleBooking, useSalon } from '@salondz/api-client';
-import { DAY_LABELS_FR, addDaysToKey, dayOfWeekFromKey, formatDateLongDZ, formatTimeDZ, localDateTimeToISO, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
+import { DAY_LABELS_FR, RESCHEDULE_MAX_DAYS_AFTER, addDaysToKey, dayOfWeekFromKey, formatDateLongDZ, formatTimeDZ, localDateTimeToISO, minutesToTime, timeToMinutes, toLocalDateKey } from '@salondz/constants';
 import { BottomSheet, Button, I, InfoBox, Skeleton, Slot, TopBar } from '@/components/ui';
 import { DayStrip, MonthNav, dayNumber } from '@/components/DaySelector';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -40,7 +40,10 @@ export function BookingReschedule() {
   if (salon.isError) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
   if (!b || !salon.data) return <PageLoading />;
   const s = salon.data;
-  const maxDate = addDaysToKey(today, s.bookingHorizonDays);
+  // Au plus 14 jours après la date d'origine (migration 0059), et dans l'horizon du salon.
+  const limiteReport = addDaysToKey(toLocalDateKey(new Date(b.startsAt)), RESCHEDULE_MAX_DAYS_AFTER);
+  const horizon = addDaysToKey(today, s.bookingHorizonDays);
+  const maxDate = limiteReport < horizon ? limiteReport : horizon;
   const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !s.openingHours.some((h) => h.dayOfWeek === d && !h.isClosed));
   const dow = dayOfWeekFromKey(date);
   const hours = s.openingHours.filter((h) => h.dayOfWeek === dow && !h.isClosed);

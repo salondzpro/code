@@ -13,7 +13,7 @@ import {
   relativeDayLabelDZ,
   toLocalDateKey,
   untilLabelFR,
-  SHOW_SALON_CONTACT_TO_CLIENTS, formatLocale, CLIENT_CANCEL_MIN_HOURS, MAX_CLIENT_RESCHEDULES } from '@salondz/constants';
+  SHOW_SALON_CONTACT_TO_CLIENTS, formatLocale, MAX_CLIENT_RESCHEDULES, rescheduleMinHours } from '@salondz/constants';
 import {
   CalendarClock,
   CalendarX,
@@ -141,7 +141,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           {/* Mêmes règles que la fiche : report autorisé, délai du salon respecté, un seul report en
               ligne. Sinon le bouton menait à un choix de créneau que le serveur refusait ensuite. */}
           {b.salon.allowClientReschedule !== false &&
-            (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 >= (b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS) &&
+            (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 >= rescheduleMinHours(b.salon.cancelMinHours) &&
             b.clientReschedules < MAX_CLIENT_RESCHEDULES && (
             <LinkButton
               to={`/rendez-vous/${b.id}/reporter`}

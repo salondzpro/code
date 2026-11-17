@@ -21,6 +21,7 @@ import {
   CANCEL_ABUSE_MAX,
   CLIENT_CANCEL_MIN_HOURS,
   MAX_CLIENT_RESCHEDULES,
+  rescheduleMinHours,
   formatDA,
   formatDateLongDZ,
   formatDZPhone,
@@ -88,7 +89,10 @@ export function BookingDetail() {
   const minHours = b.salon.cancelMinHours ?? CLIENT_CANCEL_MIN_HOURS;
   const canModify = active && hoursLeft >= minHours;
   const rescheduled = b.clientReschedules >= MAX_CLIENT_RESCHEDULES;
-  const canReschedule = canModify && b.salon.allowClientReschedule !== false && !rescheduled;
+  // Report : règles de la migration 0059 (jusqu'à 3 h avant au moins, un seul report).
+  const reportMinHours = rescheduleMinHours(b.salon.cancelMinHours);
+  const tropTardReport = (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 < reportMinHours;
+  const canReschedule = active && !tropTardReport && b.salon.allowClientReschedule !== false && !rescheduled;
   const wa =
     SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
       ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}`
@@ -287,6 +291,9 @@ export function BookingDetail() {
             )}
             {canModify && rescheduled && b.salon.allowClientReschedule !== false && (
               <p className="p text-center">{t('Déjà reporté une fois.')}</p>
+            )}
+            {canModify && !rescheduled && tropTardReport && b.salon.allowClientReschedule !== false && (
+              <p className="p text-center">{t('Report en ligne possible jusqu’à {n} h avant.', { n: reportMinHours })}</p>
             )}
           </BottomSheet>
         </>

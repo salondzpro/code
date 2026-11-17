@@ -34,6 +34,8 @@ const BUSINESS_MESSAGES: Record<string, { status: number; message: string }> = {
   BOOKING_NOT_CANCELLABLE: { status: 409, message: 'Cette réservation ne peut plus être modifiée.' },
   CANCEL_TOO_LATE: { status: 409, message: 'Trop tard pour modifier en ligne. Contactez le salon.' },
   RESCHEDULE_DISABLED: { status: 409, message: 'Ce salon ne permet pas le report en ligne. Contactez-le.' },
+  RESCHEDULE_TOO_LATE: { status: 409, message: 'Report en ligne possible jusqu’à 3 h avant le rendez-vous. Contactez le salon.' },
+  RESCHEDULE_TOO_FAR: { status: 409, message: 'Choisissez un nouveau créneau dans les 14 jours qui suivent la date prévue.' },
   RESCHEDULE_LIMIT: { status: 409, message: 'Ce rendez-vous a déjà été reporté une fois. Pour le déplacer encore, contactez le salon.' },
   CLIENT_BLOCKED: { status: 403, message: "Ce salon n'accepte pas vos réservations en ligne. Contactez-le directement." },
   // Suspensions décidées par la PLATEFORME (migration 0045). Sans ces deux lignes, la base lève le

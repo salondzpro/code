@@ -116,6 +116,12 @@ export const NO_SHOW_ABUSE_BLOCK_DAYS = 14;
 
 /** Nombre de reports en ligne autorisés par rendez-vous pour le client (au-delà : contacter le salon). */
 export const MAX_CLIENT_RESCHEDULES = 1;
+/** Report en ligne jusqu'à N h avant au plus tard (ou le délai d'annulation du salon s'il est plus long). Migration 0059. */
+export const RESCHEDULE_MIN_HOURS = 3;
+/** Nouvelle date au plus N jours après la date d'origine. Migration 0059. */
+export const RESCHEDULE_MAX_DAYS_AFTER = 14;
+/** Délai effectif du report pour un salon. */
+export const rescheduleMinHours = (cancelMinHours?: number | null): number => Math.max(cancelMinHours ?? 0, RESCHEDULE_MIN_HOURS);
 
 /** Durée maximale d'un blocage (congés) : un an. */
 export const MAX_TIME_BLOCK_DAYS = 366;

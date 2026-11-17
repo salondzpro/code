@@ -10,6 +10,8 @@ import {
   CLIENT_CANCEL_MIN_HOURS,
   LATE_TOLERANCE_MINUTES,
   MAX_CLIENT_RESCHEDULES,
+  RESCHEDULE_MAX_DAYS_AFTER,
+  rescheduleMinHours,
   MAX_SERVICES_PER_SALON,
   MAX_STAFF_PER_SALON,
   MAX_UPCOMING_BOOKINGS_PER_CLIENT,
@@ -630,9 +632,11 @@ on('POST', '/bookings/:id/reschedule', (c, p) => {
   if (b.status !== 'pending' && b.status !== 'confirmed') throw conflict('BOOKING_NOT_CANCELLABLE', 'Cette réservation ne peut plus être déplacée.');
   if (!s.allowClientReschedule) throw conflict('RESCHEDULE_DISABLED', 'Ce salon ne permet pas le report en ligne. Contactez-le.');
   if (b.clientReschedules >= MAX_CLIENT_RESCHEDULES) throw conflict('RESCHEDULE_LIMIT', 'Ce rendez-vous a déjà été déplacé une fois. Contactez le salon.');
-  if ((new Date(b.startsAt).getTime() - c.now) / 3_600_000 < s.cancelMinHours) throw conflict('CANCEL_TOO_LATE', `Report en ligne impossible à moins de ${s.cancelMinHours} h. Contactez le salon.`);
+  const minReport = rescheduleMinHours(s.cancelMinHours);
+  if ((new Date(b.startsAt).getTime() - c.now) / 3_600_000 < minReport) throw conflict('RESCHEDULE_TOO_LATE', `Report en ligne possible jusqu’à ${minReport} h avant le rendez-vous. Contactez le salon.`);
   const startsAt = new Date(c.body.startsAt as string).toISOString();
   const startMs = new Date(startsAt).getTime();
+  if (startMs > new Date(b.startsAt).getTime() + (RESCHEDULE_MAX_DAYS_AFTER + 1) * 86_400_000) throw conflict('RESCHEDULE_TOO_FAR', 'Choisissez un nouveau créneau dans les 14 jours qui suivent la date prévue.');
   if (startMs < c.now + s.bookingLeadTimeMinutes * 60_000) throw conflict('TOO_SOON', `Réservez au moins ${s.bookingLeadTimeMinutes} min à l'avance.`);
   if (startMs > c.now + s.bookingHorizonDays * 86_400_000) throw conflict('TOO_FAR', `Ce salon prend les réservations jusqu'à ${s.bookingHorizonDays} jours à l'avance.`);
   const staff = pickStaffFor(c.w, s, startsAt, b.durationMinutes, (c.body.staffId as string | null | undefined) ?? b.staffId, [b.serviceId], true, b.id, c.now);
