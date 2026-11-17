@@ -9,7 +9,6 @@ import { audienceOf, pushTitle, pushUrl } from './pushContent';
 const expo = new Expo({ useFcmV1: true });
 
 /** Notifications couvertes par le réglage « Confirmations » des Réglages client. */
-const CONFIRMATION_TYPES = new Set(['booking_created', 'booking_confirmed', 'booking_cancelled', 'booking_rescheduled']);
 
 /** Au-delà, un échec passager n'est plus retenté : la notification reste dans l'application. */
 export const PUSH_MAX_ATTEMPTS = 3;
@@ -126,15 +125,8 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
 
   const userIds = [...new Set(pending.map((n) => n.user_id))];
 
-  // Réglage « Confirmations » (client) : les notifications de réservation restent dans l'application
-  // mais ne sont pas poussées quand la personne l'a coupé. Un pro reçoit toujours ses demandes.
-  const optOut = new Set<string>();
-  if (pending.some((n) => CONFIRMATION_TYPES.has(n.type))) {
-    const prefs = await db.from('profiles').select('id').in('id', userIds).eq('role', 'client').eq('notify_confirmations', false);
-    if (prefs.error) log.warn({ err: prefs.error }, 'push prefs');
-    for (const p of prefs.data ?? []) optOut.add(p.id as string);
-  }
-  const wanted = (n: PendingNotification) => !(optOut.has(n.user_id) && CONFIRMATION_TYPES.has(n.type));
+  // Les confirmations sont TOUJOURS poussées (17 nov. 2026, demande du propriétaire : ne rien
+  // rater) : le réglage « Confirmations » du client n'existe plus, `notify_confirmations` est ignoré.
 
   const { data: tokensBruts, error: tErr } = await db.from('push_tokens').select('user_id, token, app_id, device_name').in('user_id', userIds);
   if (tErr) throw tErr;
@@ -196,7 +188,6 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // Ancienne application Expo : un lot par fournisseur.
   const messages: (ExpoPushMessage & { notificationId: string })[] = [];
   for (const n of pending) {
-    if (!wanted(n)) continue;
     const p = pousse(n);
     for (const to of expoByUser.get(n.user_id) ?? []) {
       messages.push({ to, title: p.title, body: p.body, data: p.data, badge: p.badge, sound: 'default', channelId: 'bookings', priority: 'high', notificationId: n.id });
@@ -245,7 +236,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // qui a les deux doit être prévenu sur les deux, ce canal ne s'exclut donc pas avec Firebase.
   // Le `apns-topic` est celui de l'application qui a enregistré le jeton (grand public ou pro).
   for (const n of pending) {
-    if (!wanted(n) || expoByUser.has(n.user_id)) continue;
+    if (expoByUser.has(n.user_id)) continue;
     const p = pousse(n);
     for (const t of apnsByUser.get(n.user_id) ?? []) {
       await envoyer(n, t.token, () => sendApns(log, { token: t.token, topic: t.app_id ?? undefined, title: p.title, body: p.body, badge: p.badge, data: p.data }), 'apns');
@@ -255,7 +246,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // Application mobile (Capacitor → Firebase) : même règle de priorité que le reste, une seule
   // notification par personne. Elle passe avant le navigateur, qui ne sert qu'à qui n'a pas l'application.
   for (const n of pending) {
-    if (!wanted(n) || expoByUser.has(n.user_id)) continue;
+    if (expoByUser.has(n.user_id)) continue;
     const p = pousse(n);
     for (const token of fcmByUser.get(n.user_id) ?? []) {
       await envoyer(n, token, () => sendFcm(log, { token, title: p.title, body: p.body, badge: p.badge, data: p.data }), 'fcm');
@@ -266,7 +257,6 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   // l'application mobile est prévenue par elle, pas en double par le navigateur ; le navigateur ne sert
   // qu'à qui n'a pas l'application (un jeton mobile mort est retiré au tour précédent, le navigateur prend le relais).
   for (const n of pending) {
-    if (!wanted(n)) continue;
     const aLApplication = expoByUser.has(n.user_id) || apnsByUser.has(n.user_id) || fcmByUser.has(n.user_id);
     const p = pousse(n);
     for (const { token, device_name } of webByUser.get(n.user_id) ?? []) {
@@ -299,7 +289,6 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     const attempts = n.push_attempts + 1;
     let outcome: PushOutcome;
     if (ok > 0) outcome = 'sent';
-    else if (!wanted(n)) outcome = 'opted_out';
     else if (ko > 0) outcome = 'failed';
     else outcome = 'no_device';
     const retry = outcome === 'failed' && attempts < PUSH_MAX_ATTEMPTS;

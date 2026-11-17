@@ -1,4 +1,5 @@
 import { ReminderConfirm } from '@/components/ReminderConfirm';
+import { NotificationsGate } from '@/components/NotificationsGate';
 import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProPendingUnseenCount, useProSalon } from '@salondz/api-client';
@@ -173,7 +174,13 @@ export function RequireClient() {
   // la personne. Un compte créé sans numéro le donne à « Vos coordonnées » avant d'entrer.
   if (!p.fullName || !p.phone) return <Navigate to={`/profil/creer?next=${next}`} replace />;
   if (!p.market) return <Navigate to={`/marche?next=${next}`} replace />;
-  return <Outlet />;
+  // Notifications demandées à chaque ouverture tant qu'elles ne sont pas actives (17 nov. 2026).
+  return (
+    <>
+      <Outlet />
+      <NotificationsGate />
+    </>
+  );
 }
 
 /**

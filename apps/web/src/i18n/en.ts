@@ -2241,4 +2241,7 @@ export const en: Record<string, string> = {
   "Contacter": "Contact",
   // Accès (14-16 nov. 2026)
   "Mon rendez-vous": "My appointment",
+  "Notifications coupées": "Notifications off",
+  "Activez les notifications": "Turn on notifications",
+  "Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.": "Salon confirmation, reminders 1 h and 30 min before: never miss an appointment.",
 };

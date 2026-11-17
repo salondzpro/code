@@ -64,6 +64,8 @@ import {
   FileUp,
   FileX2,
   ReceiptText,
+  Settings,
+  Clock3,
 } from 'lucide-react';
 import { UsersEchange } from './customIcons';
 
@@ -140,6 +142,9 @@ export const ICONE = {
   itineraire: Navigation,
   autresActions: MoreHorizontal,
   voirSalon: Store,
+  // Notifications (demande à l'ouverture)
+  reglages: Settings,
+  plusTard: Clock3,
 } satisfies Record<string, LucideIcon>;
 
 export type ActionIcone = keyof typeof ICONE;

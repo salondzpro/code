@@ -2227,4 +2227,7 @@ export const ar: Record<string, string> = {
   "Contacter": "تواصل",
   // Accès (14-16 nov. 2026)
   "Mon rendez-vous": "موعدي",
+  "Notifications coupées": "الإشعارات متوقفة",
+  "Activez les notifications": "فعّل الإشعارات",
+  "Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.": "تأكيد الصالون وتذكير قبل ساعة ثم قبل 30 دقيقة: لا يفوتك أي موعد.",
 };

@@ -1,0 +1,101 @@
+/**
+ * DEMANDE DES NOTIFICATIONS À CHAQUE OUVERTURE (client, 17 nov. 2026, demande du propriétaire :
+ * « ne rien rater », stratégie des grandes applications).
+ *
+ * Tant que les notifications ne sont pas actives sur l'appareil, une fenêtre les demande à chaque
+ * ouverture de l'application (ou du site) et à chaque retour après 30 min en arrière-plan :
+ *   - le système peut encore demander → « Activer » pose SA question (pré-demande puis système,
+ *     comme Uber : la question du système n'arrive qu'après un geste, elle est donc acceptée) ;
+ *   - refusées → « Ouvrir les réglages » emmène à l'écran Notifications du téléphone, sinon le
+ *     chemin exact est écrit ;
+ *   - impossibles (Safari hors écran d'accueil) → la consigne d'installer l'application.
+ * « Plus tard » reste offert : Apple (règle 4.5.4) et Google interdisent d'exiger les notifications
+ * pour utiliser l'application. Revenu des réglages avec les notifications allumées, la fenêtre se
+ * ferme d'elle-même (état relu au retour, `usePushPermission`).
+ *
+ * Remplace, côté client, le bandeau `NotificationsNudge` et les réglages « Rappels » /
+ * « Confirmations » : rappels et confirmations sont toujours envoyés.
+ */
+import { useEffect, useState } from 'react';
+import { BellRing } from 'lucide-react';
+import { useNotificationStatus } from '@/lib/useNotificationStatus';
+import { ICONE } from '@/lib/actionIcons';
+import { BottomSheet, Button, Dim, I } from './ui';
+import { t } from '@/i18n';
+
+/** Une seule fois par ouverture : vit en module, donc remis à zéro à chaque lancement. */
+let vuCetteOuverture = false;
+const RETOUR_MS = 30 * 60_000;
+
+function useOuverture(): [boolean, () => void] {
+  const [vu, setVu] = useState(vuCetteOuverture);
+  useEffect(() => {
+    let cache = 0;
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') cache = Date.now();
+      else if (cache && Date.now() - cache > RETOUR_MS) {
+        vuCetteOuverture = false;
+        setVu(false);
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+  return [
+    vu,
+    () => {
+      vuCetteOuverture = true;
+      setVu(true);
+    },
+  ];
+}
+
+export function NotificationsGate() {
+  const n = useNotificationStatus();
+  const [vu, marquerVu] = useOuverture();
+  const [chemin, setChemin] = useState(false);
+
+  if (vu || !n.pret || n.situation === 'actives') return null;
+
+  const bloquees = n.situation === 'bloquees';
+  const impossibles = n.situation === 'impossibles';
+
+  const agir = async () => {
+    if (bloquees) {
+      if (n.ouvrable && (await n.ouvrir())) return;
+      setChemin(true);
+      return;
+    }
+    await n.activer();
+  };
+
+  return (
+    <>
+      <Dim onClose={() => undefined} />
+      <BottomSheet modal>
+        <div className="flex flex-col items-center gap-3 pt-2 text-center">
+          <span className="flex size-16 items-center justify-center rounded-full bg-fill">
+            <I icon={BellRing} size={30} strokeWidth={1.6} />
+          </span>
+          <div className="h1 !text-[1.429rem]">{bloquees ? t('Notifications coupées') : t('Activez les notifications')}</div>
+          <p className="p">
+            {impossibles || (bloquees && chemin) ? n.consigne : t('Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.')}
+          </p>
+        </div>
+        {n.erreur && !bloquees && (
+          <p className="text-[0.857rem] text-danger" role="alert">
+            {n.erreur}
+          </p>
+        )}
+        {!impossibles && !(bloquees && chemin) && (
+          <Button icon={bloquees ? ICONE.reglages : ICONE.alerter} loading={n.occupe} onClick={() => void agir()}>
+            {bloquees ? t('Ouvrir les réglages') : t('Activer les notifications')}
+          </Button>
+        )}
+        <Button icon={ICONE.plusTard} variant="g" onClick={marquerVu}>
+          {t('Plus tard')}
+        </Button>
+      </BottomSheet>
+    </>
+  );
+}

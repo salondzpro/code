@@ -3,7 +3,7 @@
  * nécessaire, ultra moderne façon Apple / Uber, au thème actuel comme côté pro »).
  *
  * Ce qu'une cliente vient chercher ici : se reconnaître (photo, nom, numéro) et corriger ses
- * informations, retrouver ses salons favoris, ses notifications, ses réglages, se déconnecter.
+ * informations, retrouver ses salons favoris, ses réglages (notifications : cloche de l'accueil), se déconnecter.
  * Rien d'autre :
  *   - carte d'identité façon « identifiant Apple » : la photo (touchée = changer), le nom, le
  *     numéro, et toute la carte mène à « Mes informations » — plus de bouton « Modifier » à part,
@@ -15,7 +15,7 @@
  */
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { Bell, Camera, ChevronRight, Heart, LogOut, Settings } from 'lucide-react';
+import { Camera, ChevronRight, Heart, LogOut, Settings } from 'lucide-react';
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
@@ -97,7 +97,6 @@ export function Profile() {
             </span>
           }
         />
-        <SettingRow to="/notifications" icon={Bell} title={t('Notifications')} />
         <SettingRow to="/reglages" icon={Settings} title={t('Réglages')} />
       </div>
 

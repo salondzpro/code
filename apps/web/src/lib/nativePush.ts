@@ -140,6 +140,9 @@ export async function ensureNativePush(api: ApiClient): Promise<void> {
       return;
     }
     if (!canAsk(receive)) return; // le système ne peut plus demander : bandeau → réglages
+    // Application CLIENT : la question du système ne part qu'après « Activer » dans la fenêtre
+    // `NotificationsGate` (pré-demande façon Uber, reposée à chaque ouverture).
+    if (!PRO_ONLY) return;
     const last = Number(localStorage.getItem(DEJA_DEMANDE) || 0);
     if (last > 1 && Date.now() - last < REDEMANDE_MS) return;
     localStorage.setItem(DEJA_DEMANDE, String(Date.now()));

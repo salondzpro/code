@@ -1,16 +1,15 @@
-/** C-F 23 — Réglages client : notifications, préférences (langue, catalogue, ville), compte (session, confidentialité, données, déconnexion). */
+/** C-F 23 — Réglages client : préférences (langue, catalogue, ville), compte (session, confidentialité, données, déconnexion). */
 import { ICONE } from '@/lib/actionIcons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { PickerField } from '@/components/Picker';
 import { useMe, useUpdateProfile } from '@salondz/api-client';
 import { MARKET_LABELS_FR, formatLocale } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
 import { useLocationPrefs } from '@/lib/clientPrefs';
-import { Badge, BottomSheet, Button, ListRow, SectionLabel, Toggle, TopBar, Dim } from '@/components/ui';
+import { Badge, BottomSheet, Button, ListRow, SectionLabel, TopBar, Dim } from '@/components/ui';
 import { api } from '@/lib/api';
 import { errorText } from '@/components/ErrorMessage';
-import { DevicePushRow } from '@/components/DevicePushRow';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { LOCALES, switchLocale, t, useLocale } from '@/i18n';
 
@@ -19,7 +18,6 @@ function since(iso: string): string {
 }
 
 export function Settings() {
-  // État RÉEL de la permission, aussi dans l'application mobile (lu du greffon, de façon asynchrone).
   const { session } = useAuth();
   const { seDeconnecter } = useSignOut();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -57,61 +55,12 @@ export function Settings() {
   const me = useMe();
   const update = useUpdateProfile();
   const [prefs, setPrefs] = useLocationPrefs();
-  const [reminders, setReminders] = useState(true);
-  const [confirmations, setConfirmations] = useState(true);
   const p = me.data?.profile;
   const [locale] = useLocale();
-
-  useEffect(() => {
-    if (p) {
-      setReminders(p.remindersEnabled ?? true);
-      setConfirmations(p.notifyConfirmations ?? true);
-    }
-  }, [p]);
 
   return (
     <Screen bottom={NAV_PAD} gap={14}>
       <TopBar backTo="/profil" title={t("Réglages")} />
-
-      <SectionLabel>{t("Notifications")}</SectionLabel>
-      <div className="crd !gap-0 !py-1 scroll-mt-[4.5rem]" id="notifications">
-        {/* Notifications du navigateur : sans elles, l'application ne peut prévenir que
-            lorsqu'elle est ouverte. C'est le seul réglage qui dépend d'une permission
-            système, d'où l'état « refusé » explicite plutôt qu'un interrupteur qui ne
-            bougerait pas. */}
-        <DevicePushRow />
-        <div className="li">
-          <span>
-            <span className="block text-[1rem] font-semibold">{t("Rappels de rendez-vous")}</span>
-            <span className="p block text-[0.857rem]">{t("1 h puis 30 min avant le rendez-vous")}</span>
-          </span>
-          <Toggle
-            on={reminders}
-            disabled={update.isPending}
-            onChange={(v) => {
-              setReminders(v);
-              // Le serveur fait foi : si l'enregistrement échoue, l'interrupteur revient à sa position.
-              update.mutate({ remindersEnabled: v }, { onError: () => setReminders(!v) });
-            }}
-            label={t("Rappels de rendez-vous")}
-          />
-        </div>
-        <div className="li">
-          <span>
-            <span className="block text-[1rem] font-semibold">{t("Confirmations")}</span>
-            <span className="p block text-[0.857rem]">{t("Réservation, report, annulation")}</span>
-          </span>
-          <Toggle
-            on={confirmations}
-            disabled={update.isPending}
-            onChange={(v) => {
-              setConfirmations(v);
-              update.mutate({ notifyConfirmations: v });
-            }}
-            label={t("Confirmations")}
-          />
-        </div>
-      </div>
 
       <SectionLabel>{t("Préférences")}</SectionLabel>
       <div className="crd !gap-0 !py-1">

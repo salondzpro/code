@@ -55,9 +55,8 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
      * après l'heure visée : le cron bat toutes les 10 minutes, aucun rendez-vous ne peut la
      * traverser sans être vu, et un tick sauté ne fait rien manquer.
      *
-     * Le réglage « Rappels de rendez-vous » du client est respecté ici ; les rendez-vous de ceux qui
-     * les ont coupés sont tout de même marqués traités, pour ne pas les repasser en revue à chaque
-     * tick.
+     * Les rappels sont TOUJOURS envoyés (17 nov. 2026, demande du propriétaire) : le réglage
+     * « Rappels de rendez-vous » n'existe plus, `reminders_enabled` est ignoré.
      */
     const envoyes: Record<string, number> = {};
     for (const rappel of CLIENT_REMINDERS) {
@@ -73,10 +72,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       const dus = unwrap(res) as unknown as { id: string; client_id: string; service_name: string; starts_at: string; salons: { name: string } | null }[];
       if (!dus.length) continue;
 
-      const prefs = await db.from('profiles').select('id, reminders_enabled').in('id', [...new Set(dus.map((b) => b.client_id))]).eq('reminders_enabled', false);
-      if (prefs.error) throw prefs.error;
-      const coupes = new Set((prefs.data ?? []).map((p) => p.id as string));
-      const aPrevenir = dus.filter((b) => !coupes.has(b.client_id));
+      const aPrevenir = dus;
 
       if (aPrevenir.length) {
         const ins = await db.from('notifications').insert(

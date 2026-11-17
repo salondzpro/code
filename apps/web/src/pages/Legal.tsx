@@ -339,7 +339,7 @@ export function Help() {
       <h2>Questions fréquentes</h2>
       <p><strong>Je n'ai pas reçu l'e-mail de confirmation.</strong> Regardez dans les courriers indésirables ; le lien reste valable une heure. Sinon, demandez-en un nouveau depuis l'écran de connexion.</p>
       <p><strong>Comment annuler ou déplacer un rendez-vous ?</strong> Depuis Rendez-vous → le rendez-vous → Annuler ou Reporter, dans le délai fixé par le salon.</p>
-      <p><strong>Je ne reçois pas les rappels.</strong> Ils arrivent sur l'application Salon DZ si elle est installée, sinon par le navigateur : activez « Notifications sur cet appareil » dans les Réglages. Ils restent visibles dans l'application dans tous les cas.</p>
+      <p><strong>Je ne reçois pas les rappels.</strong> Ils arrivent sur l'application Salon DZ si elle est installée, sinon par le navigateur : acceptez les notifications quand Salon DZ vous les demande à l'ouverture. Ils restent visibles dans l'application dans tous les cas.</p>
       <p><strong>Ma réservation en ligne est suspendue.</strong> Plusieurs annulations tardives ou absences déclenchent une suspension temporaire, dont la fin est affichée. Vous pouvez toujours contacter le salon directement.</p>
       <p><strong>Modifier mon numéro de téléphone.</strong> Il identifie vos rendez-vous auprès des salons : écrivez au support pour le changer une fois un rendez-vous pris.</p>
       <p><strong>Supprimer mon compte.</strong> Réglages → Supprimer mon compte. Vos rendez-vous passés sont anonymisés, le reste est effacé.</p>
