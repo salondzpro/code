@@ -13,12 +13,8 @@ import { useNavigate, useParams } from 'react-router';
 import {
   Ban,
   CalendarClock,
-  CalendarX2,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  History,
-  Mail,
   MessageCircle,
   NotebookPen,
   Phone,
@@ -35,8 +31,6 @@ import {
 } from '@salondz/api-client';
 import {
   formatDA,
-  formatDZPhone,
-  formatDateShortDZ,
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
@@ -201,7 +195,6 @@ export function ClientDetail() {
   /** Note : le champ ne s'affiche que si une note existe, ou sur demande. */
   const [ouvrirNote, setOuvrirNote] = useState(false);
   /** Historique complet (onglets, pages) : sur demande ; sinon les trois derniers. */
-  const [toutHistorique, setToutHistorique] = useState(false);
   const historyTop = useRef<HTMLSpanElement | null>(null);
   useEffect(() => {
     if (c) setNotesDraft(c.notes ?? '');
@@ -217,7 +210,6 @@ export function ClientDetail() {
     );
   // Un blocage n'empêche vraiment quelque chose que si la personne peut réserver en ligne,
   // c'est-à-dire si elle a un compte ou un numéro. Sinon c'est un repère dans la clientèle.
-  const blocageOpposable = !!(c.clientId || c.phone);
   const now = Date.now();
   // Le membre n'est nommé dans l'historique que si le salon a une équipe : seul, c'est du bruit.
   const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
@@ -341,29 +333,11 @@ export function ClientDetail() {
         </p>
       )}
 
-      {/* Historique : les trois derniers rendez-vous ; le détail (onglets, pages) sur demande. */}
+      {/* Historique COMPLET, ouvert d'office (17 nov. 2026, demande du propriétaire) : onglets et pages,
+          plus de « Voir tout l'historique ». */}
       <span className="h3 scroll-mt-[9rem]" ref={historyTop}>
         {t('Derniers rendez-vous')}
       </span>
-      {!toutHistorique ? (
-        <>
-          {history.isPending ? (
-            <Skeleton className="h-[8rem] w-full !rounded-[var(--radius-card)]" />
-          ) : (
-            <div className="crd !gap-0 !py-1">
-              {shown.slice(0, 3).map((h) => (
-                <LigneHistorique key={h.id} h={h} now={now} team={team} />
-              ))}
-              {shown.length === 0 && <p className="p py-3">{t("Aucun rendez-vous pour l'instant.")}</p>}
-            </div>
-          )}
-          {total > 3 && (
-            <button type="button" className="cd-ajout" onClick={() => setToutHistorique(true)}>
-              <I icon={History} size={16} /> {t('Voir tout l’historique ({n})', { n: total })}
-            </button>
-          )}
-        </>
-      ) : (
       <>
       <Tabs
         label={t("Filtrer l'historique")}
@@ -404,51 +378,17 @@ export function ClientDetail() {
         loading={history.isFetching}
       />
       </>
-      )}
 
-      {/* LE RESTE, SUR DEMANDE : coordonnées, chiffres détaillés, blocage (geste rare et lourd). */}
-      <details className="cd-plus">
-        <summary>
-          <I icon={ChevronDown} size={16} className="cd-plus-c" /> {t('Plus d’informations')}
-        </summary>
-        <div className="crd !gap-0 !py-1">
-          <FactRow
-            icon={Phone}
-            title={c.phone ? formatDZPhone(c.phone) : t('Sans numéro de téléphone')}
-          />
-          {c.email && (
-            <a href={`mailto:${c.email}`} className="block">
-              <FactRow icon={Mail} title={c.email} />
-            </a>
-          )}
-          <FactRow
-            icon={History}
-            title={c.lastAt ? `${t('Dernière visite le')} ${formatDateShortDZ(c.lastAt)}` : t('Aucune visite pour l’instant')}
-            sub={c.bookingsCount ? t('{n} rendez-vous au total', { n: c.bookingsCount }) : undefined}
-          />
-          <FactRow
-            icon={CalendarX2}
-            title={t('{a} annulation(s) · {b} absence(s)', { a: c.cancelledCount, b: c.noShowCount })}
-          />
-        </div>
-        <div className="flex flex-col gap-2 pt-1">
-          <Button
-            variant={c.blocked ? 'g' : 'd'}
-            icon={c.blocked ? ShieldCheck : Ban}
-            onClick={() => void toggleBlock()}
-            disabled={block.isPending || unblock.isPending}
-          >
-            {c.blocked ? t('Débloquer ce client') : t('Bloquer ce client')}
-          </Button>
-          <p className="t3 text-center">
-            {blocageOpposable
-              ? c.blocked
-                ? t('Ce client ne peut plus prendre de rendez-vous chez vous. Le blocage ne concerne que votre salon.')
-                : t('Un client bloqué ne peut plus réserver chez vous en ligne. Cela ne concerne que votre salon.')
-              : t("Ce client de passage n'a ni compte ni numéro : le blocage le signale dans votre clientèle, il n'y a rien à empêcher en ligne.")}
-          </p>
-        </div>
-      </details>
+      {/* « Plus d'informations » SUPPRIMÉ (17 nov. 2026) : numéro, visites, annulations et absences
+          sont déjà en haut de la fiche. Reste le geste rare : bloquer. */}
+      <Button
+        variant={c.blocked ? 'g' : 'd'}
+        icon={c.blocked ? ShieldCheck : Ban}
+        onClick={() => void toggleBlock()}
+        disabled={block.isPending || unblock.isPending}
+      >
+        {c.blocked ? t('Débloquer ce client') : t('Bloquer ce client')}
+      </Button>
     </Screen>
   );
 }
