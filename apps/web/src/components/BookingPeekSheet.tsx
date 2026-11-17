@@ -184,15 +184,17 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
                 blancs cerclés, le mot dessous. L'action de l'état en premier, la fiche au bout. */}
             {!cancelling && (
               <div className="ag-acts">
-                {confirmable && b.depositStatus !== 'submitted' && (
-                  <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
+                {/* Ordre voulu par le propriétaire (17 nov. 2026) : Confier, Refuser, Accepter, Fiche —
+                    Accepter a pris la place de Confier. */}
+                {confirmable && team > 1 && (
+                  <ActionRond ton="violet" icon={ICONE.confier} label={t('Confier')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
                 )}
                 {confirmable && b.depositStatus === 'submitted' && <DepositDecision id={b.id} onDone={onClose} />}
                 {confirmable && b.depositStatus !== 'submitted' && (
                   <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />
                 )}
-                {confirmable && team > 1 && (
-                  <ActionRond ton="violet" icon={ICONE.confier} label={t('Confier')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
+                {confirmable && b.depositStatus !== 'submitted' && (
+                  <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
                 )}
                 {closable && (
                   <>
