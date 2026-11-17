@@ -9,7 +9,7 @@ import { useProSalon, useProSalonMutations } from '@salondz/api-client';
 import { SALON_MAX_PHOTOS } from '@salondz/constants';
 import { uploadSalonPhoto } from '@/lib/upload';
 import { errorText } from '@/components/ErrorMessage';
-import { Avatar, Button, I, InfoBox, SectionLabel, TopBar } from '@/components/ui';
+import { Avatar, Button, I, SectionLabel, TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
 import { COVER_ASPECT, ImageCropper } from '@/components/ImageCropper';
@@ -83,7 +83,6 @@ export function ProPhotos() {
           <span className="block text-[1rem] font-semibold">
             {salon.logoUrl ? 'Votre logo' : 'Aucun logo : la couverture est utilisée'}
           </span>
-          <span className="p block text-[0.857rem]">{t("Format carré conseillé.")}</span>
         </span>
         <div className="flex flex-col items-end gap-1.5">
           <Button
@@ -184,10 +183,6 @@ export function ProPhotos() {
           }}
         />
       </div>
-      <InfoBox>
-        {t("La première photo est votre couverture.")}{' '}{photos.length}/{SALON_MAX_PHOTOS} {t("photo")}
-        {photos.length > 1 ? 's' : ''}{t(". Les photos de vos réalisations se gèrent depuis chaque prestation.")}
-      </InfoBox>
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
           {error}

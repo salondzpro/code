@@ -2235,4 +2235,8 @@ export const ar: Record<string, string> = {
   "Ouvre {day} à {time}": "يفتح {day} على {time}",
   "Encore une annulation et la réservation en ligne est suspendue {n} jours.": "إلغاء آخر وسيتم إيقاف الحجز عبر الإنترنت لمدة {n} أيام.",
   "Report en ligne possible jusqu’à {n} h avant.": "التأجيل عبر الإنترنت ممكن حتى {n} ساعات قبل الموعد.",
+  "Aucune fermeture prévue.": "لا يوجد إغلاق مبرمج.",
+  "Pas encore d'avis.": "لا توجد آراء بعد.",
+  "Première visite": "الزيارة الأولى",
+  "{n} rendez-vous chez vous": "{n} مواعيد عندك",
 };

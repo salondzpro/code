@@ -174,7 +174,7 @@ export function Closures() {
         {blocks.isPending && <Skeleton className="my-3 h-[4rem]" />}
         {blocks.data && items.length === 0 && (
           <p className="p py-4 text-[0.857rem]">
-            {t("Aucune fermeture prévue sur les")}{' '}{HORIZON_DAYS} {t("prochains jours.")}
+            {t("Aucune fermeture prévue.")}
           </p>
         )}
         {items.map((b) => {

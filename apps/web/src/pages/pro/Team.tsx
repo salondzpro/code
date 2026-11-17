@@ -38,7 +38,7 @@ export function ServicesPicker({
         ]}
       />
       {all ? (
-        <p className="p text-[1rem]">{t("Toutes les prestations, y compris les futures.")}</p>
+        null
       ) : services.length === 0 ? (
         <p className="p text-[1rem]">{t("Aucune prestation au catalogue pour l'instant.")}</p>
       ) : (

@@ -19,11 +19,9 @@ import {
   formatDA,
   formatDateLongDZ,
   formatDateShortDZ,
-  formatDZPhone,
   formatTimeDZ,
   LATE_TOLERANCE_MINUTES,
   isLate,
-  lateRule,
   localDateTimeToISO,
   relativeDayLabelDZ,
   toLocalDateKey,
@@ -32,7 +30,6 @@ import {
   SALON_CANCEL_REASONS_FR,
   reasonOptions,
 } from '@salondz/constants';
-import { formatDuration } from '@/lib/format';
 import {
   AlarmClock,
   ArrowLeft,
@@ -102,9 +99,6 @@ export function ProBookingDetail() {
       ),
     [history.data, b],
   );
-  const lastVisit = visits
-    .filter((x) => x.startsAt < (b?.startsAt ?? ''))
-    .sort((a, c) => c.startsAt.localeCompare(a.startsAt))[0];
 
   if (booking.isPending || !salon) return <PageLoading />;
   if (booking.isError)
@@ -113,7 +107,6 @@ export function ProBookingDetail() {
   const active = b.status === 'pending' || b.status === 'confirmed';
   const past = new Date(b.startsAt).getTime() < Date.now();
   const late = active && isLate(b.startsAt);
-  const rule = lateRule(b.startsAt);
   const lines = b.items?.length
     ? b.items
     : [
@@ -149,9 +142,6 @@ export function ProBookingDetail() {
           <Avatar name={b.clientName} size={48} />
           <div className="min-w-0 flex-1">
             <h1 className="h1 truncate !text-[1.286rem]">{initials}</h1>
-            {b.clientPhone && (
-              <p className="mono text-[0.857rem] text-muted" dir="ltr">{formatDZPhone(b.clientPhone)}</p>
-            )}
           </div>
           <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
         </div>
@@ -173,7 +163,6 @@ export function ProBookingDetail() {
             key={it.id}
             icon={Scissors}
             title={it.serviceName}
-            sub={'durationMinutes' in it && it.durationMinutes ? formatDuration(it.durationMinutes) : undefined}
             // Une seule prestation : son prix est le total, dit une ligne plus bas.
             right={
               lines.length > 1 && 'priceDa' in it && it.priceDa != null ? (
@@ -186,13 +175,12 @@ export function ProBookingDetail() {
         <FactRow
           icon={Banknote}
           title={formatDA(b.priceDa)}
-          sub={`${depositPayNote(b) ?? t('Sur place')} · ${t('arrivée {a}, retard toléré jusqu’à {b}', { a: rule.arriveAt, b: rule.lateUntil })}`}
+          sub={depositPayNote(b) ?? undefined}
         />
         {(originLabel(b.origin) || b.bookedByName) && (
           <FactRow
             icon={CalendarDays}
             title={b.bookedByName ? `${t('Réservé par')} ${b.bookedByName}` : originLabel(b.origin)!}
-            sub={b.bookedByName ? (originLabel(b.origin) ?? undefined) : undefined}
           />
         )}
         {b.notes && (
@@ -205,11 +193,8 @@ export function ProBookingDetail() {
         {b.cancellationReason && (
           <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
         )}
-        <FactRow
-          icon={History}
-          title={`${visits.length} rendez-vous chez vous`}
-          sub={lastVisit ? `Dernière visite le ${formatDateShortDZ(lastVisit.startsAt)}` : 'Première visite'}
-        />
+        {/* Fidélité en un mot : première visite, ou combien de fois déjà. */}
+        <FactRow icon={History} title={visits.length > 1 ? t('{n} rendez-vous chez vous', { n: visits.length }) : t('Première visite')} />
       </div>
       <DepositReview booking={b} />
       <ErrorMessage error={setStatus.error ?? cancel.error} />
@@ -254,9 +239,6 @@ export function ProBookingDetail() {
               <div className="text-[1.429rem] font-semibold tracking-[-0.4px]">
                 {b.status === 'pending' ? t('Refuser cette demande ?') : t('Annuler ce rendez-vous ?')}
               </div>
-              <p className="p mt-2">
-                {t("Le client sera prévenu sur WhatsApp et le créneau sera libéré.")}
-              </p>
             </div>
             <div className="crd !flex-row items-center justify-between !py-3">
               <span className="text-[1rem]">{t("Motif (optionnel)")}</span>
