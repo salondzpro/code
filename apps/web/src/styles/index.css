@@ -13447,3 +13447,38 @@ html.pro-theme .ag9-hr span {
 }
 .map-here:active { transform: scale(0.97); }
 
+
+/* ==========================================================================
+   CHAMPS LISIBLES — partout (17 nov. 2026, demande du propriétaire : « on ne fait pas la
+   différence entre les champs et le fond »). Le fond gris #f1f1f3 se confondait avec le fond des
+   pages #f7f7f9. Tout champ SAISISSABLE (texte, liste, heure, indicatif) est désormais BLANC avec
+   un contour `--color-line-strong` ; actif = contour encre ; erreur = contour rouge. Un champ
+   NON modifiable (e-mail du compte) reste gris sans contour : c'est ce qui le distingue.
+   Hors couche exprès : il l'emporte sur les anciens réglages de champ du fichier.
+   ========================================================================== */
+:is(.inp, .input, .tmb, .fld) {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-line-strong);
+}
+.pa-indicatif {
+  border: 1.5px solid var(--color-line-strong);
+}
+.pa :is(.inp, input.inp) {
+  border-width: 1.5px;
+}
+:is(.inp, .input):focus,
+.inp.f,
+.tmb:focus-within {
+  background: var(--color-surface);
+  border-color: var(--color-text);
+  box-shadow: none;
+}
+.inp.err,
+.inp.err:focus {
+  border-color: var(--color-danger);
+}
+:is(.inp, .input):disabled {
+  background: var(--color-fill);
+  border-color: transparent;
+  color: var(--color-muted);
+}

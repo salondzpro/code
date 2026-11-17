@@ -35,7 +35,7 @@ d'œil, entre deux clientes**, et ne réapprenne jamais un geste.
 | Désactivé | `--color-disabled` | `#c7c7cc` |
 | Fond de page | `--color-bg` | `#f7f7f9` |
 | Surface (cartes, listes, fenêtres, champs) | `--color-surface` | `#ffffff` |
-| Fond doux (icône dans un rond, champ) | `--color-fill` | `#f1f1f3` |
+| Fond doux (icône dans un rond, champ non modifiable) | `--color-fill` | `#f1f1f3` |
 | Gris plein (bouton secondaire, segmenté) | `--color-fill-strong` | `#ebebee` |
 | Bordure | `--color-line` | `#ececef` |
 | Contour de champ, rond blanc, lignes des heures | `--color-line-strong` | `#e2e2e6` |
@@ -118,9 +118,11 @@ bouton, libellé gardé) · focus clavier = anneau encre 2 px.
 
 ## 6. Formulaires, listes, menus
 
-- **Champ** (`.inp`, `Input`, `Field`) : fond `#f1f1f3`, coins 14 px, ≈ 50 px de haut, texte 16 px
-  (anti-zoom iOS), focus = fond blanc + contour encre 1,5 px, erreur = contour `#ff3b30` + message
-  rouge sous le champ. Étiquette au-dessus, 13 px 600.
+- **Champ** (`.inp`, `Input`, `Field`, `.tmb`, `.fld`, indicatif) : fond BLANC `#ffffff` + contour 1,5 px
+  `#e2e2e6` (`--color-line-strong`) — 17 nov. 2026, le gris se confondait avec le fond des pages ;
+  coins 14 px, ≈ 50 px de haut, texte 16 px (anti-zoom iOS), focus = contour encre, erreur = contour
+  `#ff3b30` + message rouge sous le champ. Champ NON modifiable = gris `#f1f1f3` sans contour.
+  Étiquette au-dessus, 13 px 600.
 - **Liste** (`.lst` + `SettingRow`, `.li`) : carte blanche, lignes séparées par `#f1f1f3`, icône dans
   un rond gris `#f1f1f3`, titre 16 px, sous-titre 14 px gris, chevron gris au bout.
 - **Segmenté** (`Segmented`, `.seg`) : fond `#ebebee`, choisi = pastille blanche, 13 px 600.

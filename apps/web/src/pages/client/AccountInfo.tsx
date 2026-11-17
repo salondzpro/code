@@ -80,7 +80,7 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
             {t('Numéro de téléphone')}
           </label>
           <div className="flex gap-2.5">
-            <div className="flex flex-none items-center gap-2 rounded-[var(--radius-input)] bg-fill px-4 text-[0.857rem] font-medium" aria-label={t('Indicatif +213')}>
+            <div className="fld flex flex-none items-center gap-2 rounded-[var(--radius-input)] px-4 text-[0.857rem] font-medium" aria-label={t('Indicatif +213')}>
               +213 <I icon={ChevronDown} size={16} className="text-subtle" />
             </div>
             <Input

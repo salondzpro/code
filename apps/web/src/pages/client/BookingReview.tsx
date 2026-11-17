@@ -31,7 +31,7 @@ function PhoneField({ label, digits, onDigits, error }: { label: string; digits:
     <div>
       <span className="lbl">{label}</span>
       <div className="flex gap-2.5">
-        <div className="flex flex-none items-center gap-2 rounded-[var(--radius-input)] bg-fill px-4 text-[0.929rem] font-medium" dir="ltr">
+        <div className="fld flex flex-none items-center gap-2 rounded-[var(--radius-input)] px-4 text-[0.929rem] font-medium" dir="ltr">
           +213
         </div>
         <Input lg type="tel" inputMode="numeric" value={groupLocalDigits(digits)} onChange={(e) => onDigits(phoneDigits(e.target.value))} aria-label={label} err={!!error} />
