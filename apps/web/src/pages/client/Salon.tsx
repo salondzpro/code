@@ -267,17 +267,21 @@ export function Salon() {
                 <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
               </button>
             </div>
-            <a
-              href={mapsUrl}
-              target={cibleCarte(mapsUrl)}
-              rel="noreferrer"
-              className="flex items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
-            >
-              <I icon={MapPin} size={16} className="flex-none text-muted" />
-              <span className="min-w-0 truncate" dir="auto">{s.address ? `${s.address}, ${place}` : place}</span>
-            </a>
-            <div className="text-[1rem]">
-              <OpeningStatus status={status} />
+            {/* Adresse et horaires sur UNE ligne (17 nov. 2026, demande du propriétaire) : l'état
+                d'ouverture à droite, sous la note ; l'adresse s'abrège si la place manque. */}
+            <div className="flex items-center justify-between gap-3">
+              <a
+                href={mapsUrl}
+                target={cibleCarte(mapsUrl)}
+                rel="noreferrer"
+                className="flex min-w-0 items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
+              >
+                <I icon={MapPin} size={16} className="flex-none text-muted" />
+                <span className="min-w-0 truncate" dir="auto">{s.address ? `${s.address}, ${place}` : place}</span>
+              </a>
+              <div className="flex-none whitespace-nowrap text-[0.929rem]">
+                <OpeningStatus status={status} />
+              </div>
             </div>
           </div>
 
