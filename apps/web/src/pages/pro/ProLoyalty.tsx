@@ -29,7 +29,6 @@ const REWARDS: Reward[] = [
   { kind: 'amount', value: 500 },
 ];
 const rewardTitle = (r: Reward) => (r.kind === 'free' ? t('Offerte') : r.kind === 'percent' ? `−${r.value} %` : `−${formatDA(r.value)}`);
-const rewardSub = (r: Reward) => (r.kind === 'free' ? t('la prestation') : r.kind === 'percent' ? t('sur la prestation') : t('sur l’addition'));
 
 export function ProLoyalty() {
   const navigate = useNavigate();
@@ -102,7 +101,6 @@ export function ProLoyalty() {
                 <button key={`${r.kind}${r.value}`} type="button" role="radio" aria-checked={sel} className={`dp-tile${sel ? ' on' : ''}`} onClick={() => setReward(r)}>
                   {sel && <I icon={Check} size={14} strokeWidth={2.6} className="dp-tile-ok" />}
                   <b dir="ltr">{rewardTitle(r)}</b>
-                  <small>{rewardSub(r)}</small>
                 </button>
               );
             })}
