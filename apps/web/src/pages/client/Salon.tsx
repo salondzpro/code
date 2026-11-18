@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { writeDraft } from '@/lib/bookingDraft';
 import { recordPageView } from '@/lib/pageView';
-import { useApi } from '@salondz/api-client';
+import { useApi, useLoyaltyPrograms, useMyLoyaltyAt } from '@salondz/api-client';
 import { env } from '@/lib/env';
 import { Toast } from '@/components/ui';
 import { Check } from 'lucide-react';
@@ -49,6 +49,7 @@ import {
   SHOW_SALON_CONTACT_TO_CLIENTS,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
+import { LoyaltyCardView } from '@/components/Loyalty';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
 import {
@@ -135,6 +136,9 @@ export function Salon() {
   const back = useBack(MARCHE);
   const { session } = useAuth();
   const salon = useSalon(slug);
+  const programmes = useLoyaltyPrograms();
+  const maCarte = useMyLoyaltyAt(salon.data?.id, !!session);
+  const fidelite = programmes.data?.find((p) => p.salonId === salon.data?.id);
   const { api } = useApi();
   // Visite comptée pour la carte « Votre page » du professionnel (anonyme, une fois par session).
   const salonId = salon.data?.id;
@@ -293,6 +297,12 @@ export function Salon() {
               </div>
             </div>
           </div>
+
+          {/* Carte fidélité du salon (18 nov. 2026) : les tampons du client s'il est connecté, sinon
+              la carte vierge (avec le tampon offert) — ce qu'il gagne à réserver ici. */}
+          {fidelite && (
+            <LoyaltyCardView program={fidelite} stamps={maCarte.data?.stamps ?? (fidelite.welcome ? 1 : 0)} />
+          )}
 
           {/* Plus de boutons « Partager » et « Itinéraire » (16 nov. 2026, demande du propriétaire) :
               partager est en haut, l'itinéraire est l'adresse elle-même. */}

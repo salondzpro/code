@@ -1,4 +1,12 @@
-import type { LabelSettings, LabelSocial, LabelStyle } from '@salondz/constants';
+import type { LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyProgram, LoyaltyPublic, LoyaltyProgress } from '@salondz/constants';
+
+/** Fidélité d'un rendez-vous (fenêtre du pro) : la récompense à offrir, s'il y en a une. */
+export interface BookingLoyalty {
+  program: LoyaltyPublic | null;
+  stamps: number;
+  reward: string | null;
+}
+export type LoyaltyInput = Pick<LoyaltyProgram, 'enabled' | 'visits' | 'rewardKind' | 'rewardValue' | 'welcome' | 'validityMonths'>;
 import type {
   ApiErrorBody,
   BookingDepositInfo,
@@ -487,6 +495,8 @@ export function createApiClient(opts: ApiClientOptions) {
       /** Synthèse IA des avis (`null` sous le seuil ou tant qu'elle n'est pas calculée). */
       reviewSummary: (salonId: string, locale: string) =>
         get<{ summary: string | null }>(`/salons/${salonId}/reviews/summary`, { locale }, false),
+      /** Fidélité : programmes actifs (icône sur les cartes des salons). */
+      loyaltyPrograms: () => get<LoyaltyPublic[]>('/loyalty/programs', undefined, false),
     },
     me: {
       get: () => get<MeResponse>('/me'),
@@ -525,6 +535,9 @@ export function createApiClient(opts: ApiClientOptions) {
       /** Vider la boîte : les notifications déjà lues, ou toutes. */
       clearNotifications: (scope: 'read' | 'all') => post<{ deleted: number }>('/me/notifications/clear', { scope }),
       favorites: () => get<{ items: SalonSummary[] }>('/me/favorites'),
+      /** Fidélité : toutes mes cartes, et ma carte chez un salon (`null` sans programme). */
+      loyalty: () => get<LoyaltyCard[]>('/me/loyalty'),
+      loyaltyAt: (salonId: string) => get<(LoyaltyProgress & { program: LoyaltyPublic }) | null>(`/me/loyalty/${salonId}`),
       stats: () => get<MeStats>('/me/stats'),
       addFavorite: (salonId: string) => put<void>(`/me/favorites/${salonId}`),
       removeFavorite: (salonId: string) => del<void>(`/me/favorites/${salonId}`),
@@ -552,6 +565,10 @@ export function createApiClient(opts: ApiClientOptions) {
     pro: {
       /** Versement à la réservation : montant (fixe ou %), portée, compte où verser. */
       depositSettings: () => get<DepositSettings>('/pro/deposit-settings'),
+      /** Programme fidélité du salon. */
+      loyalty: () => get<LoyaltyProgram>('/pro/loyalty'),
+      saveLoyalty: (body: LoyaltyInput) => put<LoyaltyProgram & { announced: number }>('/pro/loyalty', body),
+      bookingLoyalty: (id: string) => get<BookingLoyalty>(`/pro/bookings/${id}/loyalty`),
       saveDepositSettings: (body: DepositSettings) => put<DepositSettings>('/pro/deposit-settings', body),
       /** Réseaux sociaux de l'étiquette « Vitrine noire ». */
       labelSocials: () => get<LabelSocial[]>('/pro/label-socials'),

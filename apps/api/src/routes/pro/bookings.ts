@@ -14,6 +14,7 @@ import { db } from '../../lib/supabase';
 import { badRequest, conflict, notFound, unwrap } from '../../lib/errors';
 import { BOOKING_WITH_STAFF_SELECT, getBookingWithStaff, mapBookingWithStaff } from '../../lib/queries';
 import { pushAfterBooking } from '../../lib/push';
+import { bookingReward, notifyStamp } from '../../lib/loyalty';
 import { notifySlotFreed } from '../../lib/waitlist';
 import { notifyDepositRejected, signedProofUrl } from '../../lib/deposit';
 
@@ -196,6 +197,14 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     return b;
   });
 
+  /** Fidélité : ce rendez-vous est-il la visite récompensée ? (fenêtre et fiche du rendez-vous) */
+  app.get('/bookings/:id/loyalty', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    const b = await getBookingWithStaff(req.params.id);
+    if (b.salonId !== req.salon!.id) throw notFound('Réservation');
+    reply.header('Cache-Control', 'private, no-store');
+    return (await bookingReward(b)) ?? { program: null, stamps: 0, reward: null };
+  });
+
   /** Justificatif de versement, par adresse signée de 10 minutes (seau privé). */
   app.get('/bookings/:id/deposit-proof', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
     const b = await getBookingWithStaff(req.params.id);
@@ -267,6 +276,8 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     const res = await db.from('bookings').update({ status: req.body.status }).eq('id', b.id).eq('status', b.status).select('id').maybeSingle();
     if (!unwrap(res)) throw conflict('INVALID_TRANSITION', 'La réservation a changé entre-temps.');
     pushAfterBooking(req.log, b.id);
+    // Fidélité : « +1 tampon » au client (jamais bloquant).
+    if (req.body.status === 'completed') void notifyStamp(req.log, b, { name: req.salon!.name, slug: req.salon!.slug });
     return getBookingWithStaff(b.id);
   });
 

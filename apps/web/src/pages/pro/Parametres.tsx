@@ -5,8 +5,9 @@
  * indépendante la trouve sous « Travailler à plusieurs ».
  */
 import { CalendarClock, CalendarOff, Clock, Landmark, Store, UserCircle, Users } from 'lucide-react';
-import { formatDA } from '@salondz/constants';
-import { useProSalon } from '@salondz/api-client';
+import { formatDA, loyaltyHeadline } from '@salondz/constants';
+import { useProLoyalty, useProSalon } from '@salondz/api-client';
+import { ICONE } from '@/lib/actionIcons';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageHead, SettingRow } from '@/components/ui';
 import { QuickCloseButton } from '@/components/QuickClose';
@@ -14,6 +15,7 @@ import { t } from '@/i18n';
 
 export function Parametres() {
   const salon = useProSalon().data?.salon ?? null;
+  const loyalty = useProLoyalty();
   const team = (salon?.staff.filter((m) => m.isActive).length ?? 0) > 1;
   return (
     <Screen bottom={NAV_PAD} gap={18}>
@@ -39,6 +41,12 @@ export function Parametres() {
                 ? `${salon?.depositValue ?? 0} %`
                 : formatDA(salon?.depositValue ?? 0)
           }
+        />
+        <SettingRow
+          to="/pro/profil/fidelite"
+          icon={ICONE.fidelite}
+          title={t('Carte fidélité')}
+          sub={loyalty.data?.enabled ? loyaltyHeadline(loyalty.data) : t('Désactivée')}
         />
       </div>
       <div className="lst">

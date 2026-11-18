@@ -7,7 +7,8 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Heart, MapPin, Star } from 'lucide-react';
-import { useFavorites, useToggleFavorite } from '@salondz/api-client';
+import { LoyaltyBadge } from './Loyalty';
+import { useFavorites, useLoyaltyPrograms, useToggleFavorite } from '@salondz/api-client';
 import type { SalonSummary } from '@salondz/types';
 import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@salondz/constants';
 import { formatKm, formatRating } from '@/lib/clientPrefs';
@@ -207,6 +208,8 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
   const favs = useFavorites(!!session);
   const toggle = useToggleFavorite();
   const isFav = !!favs.data?.items.some((x) => x.id === s.id);
+  // Programme fidélité actif : la pastille sur la photo (une requête en cache pour toute la liste).
+  const fidelite = useLoyaltyPrograms().data?.find((p) => p.salonId === s.id);
   const photos = s.photoUrls?.length ? s.photoUrls : s.coverUrl ? [s.coverUrl] : [];
   const [idx, setIdx] = useState(0);
   const scroller = useRef<HTMLDivElement | null>(null);
@@ -258,6 +261,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
             ))}
           </div>
         )}
+        {fidelite && <LoyaltyBadge program={fidelite} className="absolute start-2.5 top-2.5 shadow-sm" />}
         <IconButton
           className="absolute end-2.5 top-2.5 !bg-surface/95 shadow-sm"
           aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}

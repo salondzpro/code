@@ -11,7 +11,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Ban, ChevronDown, Pencil, StickyNote } from 'lucide-react';
 import type { BookingWithSalon } from '@salondz/types';
-import { ApiError, useBookingStanding, useCreateBooking, useMe, useSalon } from '@salondz/api-client';
+import { ApiError, useBookingStanding, useCreateBooking, useMe, useMyLoyaltyAt, useSalon } from '@salondz/api-client';
+import { loyaltyDiscount, loyaltyReward } from '@salondz/constants';
 import { depositFor, formatDA } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
@@ -64,6 +65,8 @@ export function BookingReview() {
   const [done, setDone] = useState<BookingWithSalon | null>(null);
 
   const profil = me.data?.profile;
+  // Fidélité : cette visite est-elle la récompense ? (pour soi seulement : la carte est celle du compte)
+  const carte = useMyLoyaltyAt(salon.data?.id, !forOther);
   useEffect(() => {
     if (!profil) return;
     setName((v) => v || profil.fullName || '');
@@ -153,6 +156,18 @@ export function BookingReview() {
             : null
         }
       />
+
+      {!forOther && carte.data?.nextIsReward && (
+        <div className="fid-reward" role="status">
+          <span className="fid-ic" aria-hidden>
+            <I icon={ICONE.fidelite} size={22} strokeWidth={1.7} />
+          </span>
+          <span className="min-w-0">
+            <b>{t('Visite récompensée : {recompense}', { recompense: loyaltyReward(carte.data.program).toLowerCase() })}</b>
+            <span dir="auto">{t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(carte.data.program, price)) })}</span>
+          </span>
+        </div>
+      )}
 
       <Segmented
         label={t('Pour qui')}

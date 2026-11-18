@@ -46,6 +46,7 @@ import { BookingDetail } from '@/pages/client/BookingDetail';
 import { BookingReschedule } from '@/pages/client/BookingReschedule';
 import { Rate } from '@/pages/client/Rate';
 import { Favorites } from '@/pages/client/Favorites';
+import { Loyalty } from '@/pages/client/Loyalty';
 import { Profile } from '@/pages/client/Profile';
 import { Settings } from '@/pages/client/Settings';
 import { AccountInfo } from '@/pages/client/AccountInfo';
@@ -82,6 +83,7 @@ const Step7ServicePhotos = lazyNamed(() => import('@/pages/pro/onboarding/Step7S
 const Step8Works = lazyNamed(() => import('@/pages/pro/onboarding/Step8Works'), 'Step8Works');
 const Step9Hours = lazyNamed(() => import('@/pages/pro/onboarding/Step9Hours'), 'Step9Hours');
 const ProDeposit = lazyNamed(() => import('@/pages/pro/ProDeposit'), 'ProDeposit');
+const ProLoyalty = lazyNamed(() => import('@/pages/pro/ProLoyalty'), 'ProLoyalty');
 const StepServices = lazyNamed(() => import('@/pages/pro/onboarding/StepServices'), 'StepServices');
 const Step10Availability = lazyNamed(() => import('@/pages/pro/onboarding/Step10Availability'), 'Step10Availability');
 const ProPhotos = lazyNamed(() => import('@/pages/pro/Photos'), 'ProPhotos');
@@ -147,6 +149,7 @@ const routesClient = PRO_ONLY
               { path: '/categorie/:category', element: <CategoryRedirect /> },
               { path: '/rendez-vous', element: <Bookings /> },
               { path: '/favoris', element: <Favorites /> },
+              { path: '/fidelite', element: <Loyalty /> },
               { path: '/profil', element: <Profile /> },
               { path: '/reglages', element: <Settings /> },
               { path: '/compte/informations', element: <AccountInfo /> },
@@ -308,6 +311,7 @@ export const router = createBrowserRouter([
               { path: 'profil/horaires', element: <Step9Hours settings /> },
               { path: 'profil/regles', element: <Step10Availability /> },
               { path: 'profil/versement', element: <ProDeposit /> },
+              { path: 'profil/fidelite', element: <ProLoyalty /> },
               { path: 'rendez-vous/nouveau', element: <ProBookingNew /> },
               { path: 'rendez-vous/:id', element: <ProBookingDetail /> },
               { path: 'rendez-vous/:id/reporter', element: <ProBookingReschedule /> },

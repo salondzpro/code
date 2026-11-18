@@ -24,6 +24,18 @@ export const UsersEchange = createLucideIcon('users-echange', [
 ]);
 
 /**
+ * CARTE FIDÉLITÉ (18 nov. 2026) : une carte avec deux lignes de texte et un tampon étoilé — le
+ * programme fidélité d'un salon, partout (place de marché, page du salon, réglage du pro).
+ */
+export const CarteFidelite = createLucideIcon('carte-fidelite', [
+  ['rect', { x: '2.5', y: '5', width: '19', height: '14', rx: '3', key: 'carte' }],
+  ['path', { d: 'M6 9.5h4.5', key: 'ligne-1' }],
+  ['path', { d: 'M6 13h2.5', key: 'ligne-2' }],
+  ['circle', { cx: '16', cy: '12', r: '3.6', key: 'tampon' }],
+  ['path', { d: 'm16 10.2.6 1.2 1.3.2-.95.9.22 1.3L16 13.2l-1.17.6.22-1.3-.95-.9 1.3-.2Z', key: 'etoile' }],
+]);
+
+/**
  * Icônes détaillées (plusieurs éléments dans le rond) : dans un rond d'action, elles s'affichent PLUS
  * GRANDES et au trait FIN, sinon elles deviennent une tache grasse (demande du propriétaire, 13 nov.).
  */

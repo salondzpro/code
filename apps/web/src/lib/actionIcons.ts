@@ -67,7 +67,7 @@ import {
   Settings,
   Clock3,
 } from 'lucide-react';
-import { UsersEchange } from './customIcons';
+import { CarteFidelite, UsersEchange } from './customIcons';
 
 export const ICONE = {
   // Rendez-vous
@@ -145,6 +145,8 @@ export const ICONE = {
   // Notifications (demande à l'ouverture)
   reglages: Settings,
   plusTard: Clock3,
+  // Programme fidélité
+  fidelite: CarteFidelite,
 } satisfies Record<string, LucideIcon>;
 
 export type ActionIcone = keyof typeof ICONE;

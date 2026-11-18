@@ -14,6 +14,7 @@
  * = fiche d'un rendez-vous passé ; favoris = ligne ci-dessous, avec leur nombre).
  */
 import { useRef, useState } from 'react';
+import { ICONE } from '@/lib/actionIcons';
 import { Link } from 'react-router';
 import { Camera, ChevronRight, Heart, LogOut, Settings } from 'lucide-react';
 import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
@@ -97,6 +98,7 @@ export function Profile() {
             </span>
           }
         />
+        <SettingRow to="/fidelite" icon={ICONE.fidelite} title={t('Ma fidélité')} />
         <SettingRow to="/reglages" icon={Settings} title={t('Réglages')} />
       </div>
 

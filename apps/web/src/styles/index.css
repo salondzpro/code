@@ -13489,3 +13489,27 @@ html.pro-theme .ag9-hr span {
 /* Album photo de la fiche salon : bande à glisser, sans barre de défilement (17 nov. 2026). */
 .gal-bande { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .gal-bande::-webkit-scrollbar { display: none; }
+
+/* ==========================================================================
+   PROGRAMME FIDÉLITÉ (18 nov. 2026) — `components/Loyalty.tsx`.
+   Charte actuelle : cartes blanches, encre ; seul le CADEAU porte l'or des étoiles d'avis.
+   ========================================================================== */
+.fid-badge {
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+  font-size: calc(12.5px * var(--fz, 1)); font-weight: 600; color: var(--color-ink);
+  background: var(--color-surface); border-radius: var(--radius-pill); padding: 4px 10px 4px 7px;
+  box-shadow: 0 0 0 1px var(--color-line);
+}
+.fid-badge svg { color: #b7791f; flex: none; }
+.fid-card { gap: 12px !important; }
+.fid-ic { width: 36px; height: 36px; border-radius: 50%; background: var(--color-fill); display: grid; place-items: center; flex: none; color: #b7791f; }
+.fid-stamps { display: grid; gap: 7px; }
+.fid-dot { aspect-ratio: 1; border-radius: 50%; border: 1.5px dashed var(--color-line-strong); display: grid; place-items: center; max-width: 40px; width: 100%; justify-self: center; }
+.fid-dot.on { background: var(--color-ink); border: 0; }
+.fid-dot.gift { border: 1.5px solid #f5a623; color: #b7791f; }
+.fid-dot.gift.ready { background: #f5a623; color: #fff; border: 0; }
+.fid-ready { font-size: calc(14px * var(--fz, 1)); font-weight: 600; color: #8a5a0d; }
+.fid-reward { display: flex; align-items: center; gap: 12px; border-radius: var(--radius-card); background: #fff6e6; padding: 12px 14px; }
+.fid-reward .fid-ic { background: #fff; }
+.fid-reward b { display: block; font-size: calc(15px * var(--fz, 1)); }
+.fid-reward span { font-size: calc(13px * var(--fz, 1)); color: #8a5a0d; }

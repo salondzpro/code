@@ -31,6 +31,10 @@ import {
   normalizeLabelStyle,
   PENDING_REQUEST_TTL_HOURS,
   depositFor,
+  loyaltyProgress,
+  loyaltyReward,
+  normalizeLoyalty,
+  type LoyaltyProgram,
 } from '@salondz/constants';
 import type { DepositAccount, DepositSettings } from '@salondz/types';
 import type { Booking, BookingOrigin, BookingWithSalon, BookingWithStaff, OutsideBooking, SalonOwnerView, SalonPublic, Service, Staff, StaffHour, TimeBlock } from '@salondz/types';
@@ -696,6 +700,55 @@ on('PUT', '/pro/label-socials', (c) => {
   const v = normalizeLabelSocials(c.body as unknown);
   demoSocials.set(ownedSalon(c).id, v);
   return ok(v);
+});
+// PROGRAMME FIDÉLITÉ (18 nov. 2026) : les deux salons de démonstration en ont un d'office, pour le voir
+// partout (place de marché, page du salon, « Ma fidélité », fenêtre du pro). Mêmes règles que l'API.
+const demoLoyalty = new Map<string, LoyaltyProgram>();
+const loyaltyOf = (c: Ctx, salonId: string): LoyaltyProgram => {
+  const kept = demoLoyalty.get(salonId);
+  if (kept) return kept;
+  const s = c.w.salons.find((x) => x.id === salonId);
+  const demo = s?.slug === 'karim-barber-club' || s?.slug === 'yasmine-beauty-studio';
+  return normalizeLoyalty(demo ? (s!.genderTarget === 'men' ? { enabled: true, visits: 6, rewardKind: 'free' } : { enabled: true, visits: 8, rewardKind: 'percent', rewardValue: 50 }) : null);
+};
+const loyaltyPublic = (salonId: string, p: LoyaltyProgram) => ({ salonId, visits: p.visits, rewardKind: p.rewardKind, rewardValue: p.rewardValue, welcome: p.welcome, validityMonths: p.validityMonths });
+const loyaltyVisits = (c: Ctx, salonId: string, clientId: string) =>
+  c.w.bookings.filter((b) => b.salonId === salonId && b.clientId === clientId && b.status === 'completed' && b.source === 'online').map((b) => b.startsAt);
+on('GET', '/loyalty/programs', (c) => ok(c.w.salons.map((s) => [s.id, loyaltyOf(c, s.id)] as const).filter(([, p]) => p.enabled).map(([id, p]) => loyaltyPublic(id, p))));
+on('GET', '/pro/loyalty', (c) => ok(loyaltyOf(c, ownedSalon(c).id)));
+on('PUT', '/pro/loyalty', (c) => {
+  const s = ownedSalon(c);
+  const before = loyaltyOf(c, s.id);
+  const v = normalizeLoyalty({ ...(c.body as object), startedAt: before.startedAt, announcedAt: before.announcedAt });
+  demoLoyalty.set(s.id, v);
+  return ok({ ...v, announced: 0 });
+});
+on('GET', '/me/loyalty', (c) => {
+  const u = requireUser(c);
+  const ids = [...new Set(c.w.bookings.filter((b) => b.clientId === u.id && b.status === 'completed' && b.source === 'online').map((b) => b.salonId))];
+  return ok(
+    ids
+      .map((id) => ({ s: c.w.salons.find((x) => x.id === id), p: loyaltyOf(c, id) }))
+      .filter((x) => x.s && x.p.enabled)
+      .map(({ s, p }) => ({
+        ...loyaltyProgress(p, loyaltyVisits(c, s!.id, u.id), new Date(c.now)),
+        program: loyaltyPublic(s!.id, p),
+        salon: { id: s!.id, slug: s!.slug, name: s!.name, logoUrl: s!.logoUrl ?? null, coverUrl: s!.coverUrl ?? null, city: s!.city ?? null },
+      })),
+  );
+});
+on('GET', '/me/loyalty/:salonId', (c, p) => {
+  const u = requireUser(c);
+  const prog = loyaltyOf(c, p.salonId!);
+  if (!prog.enabled) return ok(null);
+  return ok({ program: loyaltyPublic(p.salonId!, prog), ...loyaltyProgress(prog, loyaltyVisits(c, p.salonId!, u.id), new Date(c.now)) });
+});
+on('GET', '/pro/bookings/:id/loyalty', (c, p) => {
+  const b = proBooking(c, p.id!).b;
+  const prog = loyaltyOf(c, b.salonId);
+  if (!prog.enabled || !b.clientId || b.source !== 'online') return ok({ program: null, stamps: 0, reward: null });
+  const r = loyaltyProgress(prog, loyaltyVisits(c, b.salonId, b.clientId), new Date(c.now), b.startsAt);
+  return ok({ program: loyaltyPublic(b.salonId, prog), stamps: r.stamps, reward: r.nextIsReward ? loyaltyReward(prog) : null });
 });
 const demoStyles = new Map<string, ReturnType<typeof normalizeLabelStyle>>();
 on('GET', '/pro/label-style', (c) => ok(demoStyles.get(ownedSalon(c).id) ?? normalizeLabelStyle(null)));

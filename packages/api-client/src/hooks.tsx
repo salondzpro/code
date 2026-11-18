@@ -17,7 +17,7 @@ import type {
 } from '@salondz/validation';
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
-import type { ReviewSort } from './client';
+import type { LoyaltyInput, ReviewSort } from './client';
 import type { ReportReason } from '@salondz/constants';
 import type { DepositSettings } from '@salondz/types';
 
@@ -913,3 +913,39 @@ export function useAdminTeamMutations() {
     revoke: useMutation({ mutationFn: (b: { id: string; reason: string }) => api.admin.revokeAdmin(b.id, b.reason), onSuccess: done }),
   };
 }
+
+// ---------------------------------------------------------------------------------------------
+// Programme fidélité (18 nov. 2026).
+// ---------------------------------------------------------------------------------------------
+/** Programmes actifs : une requête en cache pour toutes les cartes de la place de marché. */
+export const useLoyaltyPrograms = () => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['loyalty', 'programs'], queryFn: () => api.public.loyaltyPrograms(), staleTime: 5 * 60_000, retry: false });
+};
+export const useMyLoyalty = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['me', 'loyalty'], queryFn: () => api.me.loyalty(), enabled, retry: false });
+};
+export const useMyLoyaltyAt = (salonId: string | undefined, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['me', 'loyalty', salonId], queryFn: () => api.me.loyaltyAt(salonId!), enabled: enabled && !!salonId, retry: false });
+};
+export const useProLoyalty = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'loyalty'], queryFn: () => api.pro.loyalty(), enabled });
+};
+export function useSaveProLoyalty() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: LoyaltyInput) => api.pro.saveLoyalty(body),
+    onSuccess: (data) => {
+      qc.setQueryData(['pro', 'loyalty'], data);
+      qc.invalidateQueries({ queryKey: ['loyalty', 'programs'] });
+    },
+  });
+}
+export const useBookingLoyalty = (bookingId: string | undefined, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'booking-loyalty', bookingId], queryFn: () => api.pro.bookingLoyalty(bookingId!), enabled: enabled && !!bookingId, retry: false });
+};

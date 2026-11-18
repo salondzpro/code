@@ -53,6 +53,7 @@ import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { FactRow } from '@/components/BookingFacts';
 import { DepositDecision, DepositReview } from '@/components/DepositReview';
+import { BookingLoyaltyNote } from '@/components/Loyalty';
 import { depositPayNote } from '@/lib/deposit';
 import { ClientContact } from '@/components/ClientContact';
 import { ActionRond } from '@/components/ActionRond';
@@ -197,6 +198,7 @@ export function ProBookingDetail() {
         <FactRow icon={History} title={visits.length > 1 ? t('{n} rendez-vous chez vous', { n: visits.length }) : t('Première visite')} />
       </div>
       <DepositReview booking={b} />
+      <BookingLoyaltyNote bookingId={b.id} priceDa={b.priceDa} active={active} />
       <ErrorMessage error={setStatus.error ?? cancel.error} />
 
       {/* Les gestes en ronds (les mêmes que la fenêtre de l'agenda) : vert = oui, rouge = non, blanc

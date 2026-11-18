@@ -35,6 +35,7 @@ import { Scissors, UserRound } from 'lucide-react';
 import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { ClientContact } from './ClientContact';
 import { DepositDecision, DepositReview } from './DepositReview';
+import { BookingLoyaltyNote } from './Loyalty';
 import { t } from '@/i18n';
 
 /** Délai proposé pour la prochaine visite d'une cliente dont le rendez-vous est terminé. */
@@ -176,6 +177,7 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
             {b.notes && <p className="ag9-sn">« {b.notes} »</p>}
             {b.cancellationReason && <p className="ag9-sn">{b.cancellationReason}</p>}
             <DepositReview booking={b} />
+            <BookingLoyaltyNote bookingId={b.id} priceDa={b.priceDa} active={active} />
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 

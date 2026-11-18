@@ -7,6 +7,7 @@ import {
   uuid,
 } from '@salondz/validation';
 import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
+import { clientCards, clientProgress } from '../lib/loyalty';
 import { db } from '../lib/supabase';
 import { PRO_APP_ID, appMatchesRole, sendTestPush } from '../lib/push';
 import { readLabelSettings } from '../lib/labelSettings';
@@ -30,7 +31,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
    * Routes communes (profil, notifications, appareils) : tout compte. Routes de CLIENT (situation
    * de réservation, compteurs, favoris, alertes de créneau) : jamais un compte pro (16 nov. 2026).
    */
-  const CLIENT_SEULEMENT = /\/me\/(booking-standing|stats|favorites|slot-alerts)/;
+  const CLIENT_SEULEMENT = /\/me\/(booking-standing|stats|favorites|slot-alerts|loyalty)/;
   app.addHook('preHandler', async (req, reply) => {
     if (CLIENT_SEULEMENT.test(req.routeOptions.url ?? '')) return app.requireClientRole(req, reply);
     return app.requireProfile(req, reply);
@@ -460,6 +461,17 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   // ---- Alertes « prévenez-moi si un créneau se libère » ----
+
+  /** Fidélité : toutes mes cartes (« Ma fidélité »). */
+  app.get('/me/loyalty', async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return clientCards(req.user!.id);
+  });
+  /** Fidélité : ma carte chez un salon (page du salon, « Confirmer »). `null` si pas de programme. */
+  app.get('/me/loyalty/:salonId', { schema: { params: z.object({ salonId: uuid }) } }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return clientProgress(req.params.salonId, req.user!.id);
+  });
 
   app.get('/me/slot-alerts', { schema: { querystring: z.object({ salonId: uuid.optional() }) } }, async (req, reply) => {
     let q = db.from('slot_alerts').select('id, salon_id, service_id, day, created_at').eq('client_id', req.user!.id).is('notified_at', null).gte('day', new Date().toISOString().slice(0, 10)).order('day');

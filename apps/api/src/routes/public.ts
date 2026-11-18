@@ -33,6 +33,7 @@ import {
   wilayasResponse,
 } from '../schemas/public';
 import { attachNextSlots } from '../lib/availability';
+import { activePrograms } from '../lib/loyalty';
 
 const CACHE_PUBLIC_LONG = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400';
 const CACHE_PUBLIC_SHORT = 'public, max-age=60, s-maxage=120, stale-while-revalidate=600';
@@ -45,6 +46,11 @@ const CACHE_AVAILABILITY = 'public, no-cache';
 const CACHE_PUBLIC_REVALIDATE = 'public, no-cache';
 
 const publicRoutes: FastifyPluginAsyncZod = async (app) => {
+  /** Fidélité : programmes actifs (l'icône sur les cartes de la place de marché). */
+  app.get('/loyalty/programs', async (_req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
+    return activePrograms();
+  });
   app.get(
     '/categories',
     { schema: { response: { 200: categoriesResponse } } },

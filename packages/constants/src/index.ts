@@ -36,3 +36,4 @@ export const SALON_MAX_WORKS = 40;
 export const STORAGE_BUCKETS = { salons: 'salons', avatars: 'avatars', deposits: 'deposits' } as const;
 export * from './serviceTemplates';
 export * from './publicLinks';
+export * from './loyalty';

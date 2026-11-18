@@ -29,6 +29,7 @@ import { loadOwnerView } from '../../lib/queries';
 import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon, noAccount } from '../../plugins/auth';
 import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } from '../../lib/labelSettings';
+import { readLoyalty, writeLoyalty } from '../../lib/loyalty';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -153,6 +154,29 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (req) => writeLabelSocials(req.salon!.id, req.body),
   );
+  // PROGRAMME FIDÉLITÉ (18 nov. 2026) : carte à tampons réglée par le pro, gardée dans app_settings.
+  app.get('/loyalty', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-cache');
+    return readLoyalty(req.salon!.id);
+  });
+  app.put(
+    '/loyalty',
+    {
+      preHandler: app.requireSalon,
+      schema: {
+        body: z.object({
+          enabled: z.boolean(),
+          visits: z.number().int().min(3).max(20),
+          rewardKind: z.enum(['free', 'percent', 'amount']),
+          rewardValue: z.number().int().min(0).max(100_000),
+          welcome: z.boolean(),
+          validityMonths: z.union([z.literal(6), z.literal(12)]),
+        }),
+      },
+    },
+    async (req) => writeLoyalty(req.log, { id: req.salon!.id, name: req.salon!.name, slug: req.salon!.slug }, req.body),
+  );
+
   // Langue, couleur, style et phrase de la « Vitrine noire ».
   app.get('/label-style', { preHandler: app.requireSalon }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-cache');
