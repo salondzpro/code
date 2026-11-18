@@ -7,7 +7,7 @@ import {
   uuid,
 } from '@salondz/validation';
 import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
-import { clientCards, clientProgress } from '../lib/loyalty';
+import { checkPromo, clientCards, clientProgress } from '../lib/loyalty';
 import { db } from '../lib/supabase';
 import { PRO_APP_ID, appMatchesRole, sendTestPush } from '../lib/push';
 import { readLabelSettings } from '../lib/labelSettings';
@@ -31,7 +31,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
    * Routes communes (profil, notifications, appareils) : tout compte. Routes de CLIENT (situation
    * de réservation, compteurs, favoris, alertes de créneau) : jamais un compte pro (16 nov. 2026).
    */
-  const CLIENT_SEULEMENT = /\/me\/(booking-standing|stats|favorites|slot-alerts|loyalty)/;
+  const CLIENT_SEULEMENT = /\/me\/(booking-standing|stats|favorites|slot-alerts|loyalty|promo)/;
   app.addHook('preHandler', async (req, reply) => {
     if (CLIENT_SEULEMENT.test(req.routeOptions.url ?? '')) return app.requireClientRole(req, reply);
     return app.requireProfile(req, reply);
@@ -471,6 +471,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/me/loyalty/:salonId', { schema: { params: z.object({ salonId: uuid }) } }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-store');
     return clientProgress(req.params.salonId, req.user!.id);
+  });
+
+  /** Code promo d'un salon : valable pour moi ? (avant de réserver) */
+  app.get('/me/promo/:salonId', { schema: { params: z.object({ salonId: uuid }), querystring: z.object({ code: z.string().trim().max(20) }) } }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return checkPromo(req.params.salonId, req.query.code, req.user!.id);
   });
 
   app.get('/me/slot-alerts', { schema: { querystring: z.object({ salonId: uuid.optional() }) } }, async (req, reply) => {

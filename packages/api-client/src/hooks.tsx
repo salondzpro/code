@@ -941,6 +941,7 @@ export function useSaveProLoyalty() {
     mutationFn: (body: LoyaltyInput) => api.pro.saveLoyalty(body),
     onSuccess: (data) => {
       qc.setQueryData(['pro', 'loyalty'], data);
+      qc.invalidateQueries({ queryKey: ['pro', 'loyalty', 'clients'] });
       qc.invalidateQueries({ queryKey: ['loyalty', 'programs'] });
     },
   });
@@ -948,4 +949,8 @@ export function useSaveProLoyalty() {
 export const useBookingLoyalty = (bookingId: string | undefined, enabled = true) => {
   const { api } = useApi();
   return useQuery({ queryKey: ['pro', 'booking-loyalty', bookingId], queryFn: () => api.pro.bookingLoyalty(bookingId!), enabled: enabled && !!bookingId, retry: false });
+};
+export const useProLoyaltyClients = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'loyalty', 'clients'], queryFn: () => api.pro.loyaltyClients(), enabled, retry: false });
 };

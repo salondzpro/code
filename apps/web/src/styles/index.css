@@ -13518,3 +13518,7 @@ html.pro-theme .ag9-hr span {
 .seg.fid-seg { flex: none; min-width: 9.5rem; }
 .seg.fid-seg > button { white-space: nowrap; }
 .fid-dot { max-width: 34px; }
+.fid-bar { flex: 1; height: 10px; border-radius: var(--radius-pill); background: var(--color-fill); overflow: hidden; }
+.fid-bar i { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--color-ink); }
+.fid-promo { display: flex; align-items: center; gap: 10px; }
+.fid-promo .inp { flex: 1; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }

@@ -3,7 +3,6 @@
  * d'abord. Chaque carte mène au salon pour réserver la visite suivante.
  */
 import { useMyLoyalty } from '@salondz/api-client';
-import { formatDateShortDZ } from '@salondz/constants';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { EmptyState, LinkButton, Skeleton, TopBar } from '@/components/ui';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -37,12 +36,13 @@ export function Loyalty() {
           <LoyaltyCardView
             key={c.salon.id}
             program={c.program}
-            stamps={c.stamps}
+            progress={c.progress}
+            giftAvailable={c.giftAvailable}
+            giftExpiresAt={c.giftExpiresAt}
             title={c.salon.name}
-            sub={c.expiresAt && !c.nextIsReward ? t('Valables jusqu’au {date}', { date: formatDateShortDZ(c.expiresAt) }) : null}
             action={
-              <LinkButton to={`/s/${c.salon.slug}`} variant={c.nextIsReward ? undefined : 'g'} sm icon={ICONE.reserver}>
-                {c.nextIsReward ? t('Réserver ma visite récompensée') : t('Réserver')}
+              <LinkButton to={`/s/${c.salon.slug}`} variant={c.giftAvailable ? undefined : 'g'} sm icon={ICONE.reserver}>
+                {c.giftAvailable ? t('Réserver et profiter du cadeau') : t('Réserver')}
               </LinkButton>
             }
           />

@@ -45,7 +45,7 @@ export function Parametres() {
         <SettingRow
           to="/pro/profil/fidelite"
           icon={ICONE.fidelite}
-          title={t('Carte fidélité')}
+          title={t('Programme fidélité')}
           sub={loyalty.data?.enabled ? loyaltyHeadline(loyalty.data) : t('Désactivée')}
         />
       </div>

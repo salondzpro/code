@@ -237,6 +237,8 @@ export const createBookingSchema = z
       .optional(),
     /** D'où vient la personne : le réseau seulement. */
     origin: z.enum(['link', 'instagram', 'snapchat', 'qr', 'marketplace']).optional(),
+    /** Code promo du salon (programme fidélité « code promo ») : vérifié côté serveur, une fois par client. */
+    promoCode: z.string().trim().max(20).optional(),
   })
   .refine((b) => !!b.serviceId || (b.serviceIds?.length ?? 0) > 0, {
     message: 'Choisissez au moins une prestation',

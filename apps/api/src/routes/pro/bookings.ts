@@ -202,7 +202,7 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     const b = await getBookingWithStaff(req.params.id);
     if (b.salonId !== req.salon!.id) throw notFound('Réservation');
     reply.header('Cache-Control', 'private, no-store');
-    return (await bookingReward(b)) ?? { program: null, stamps: 0, reward: null };
+    return (await bookingReward(b)) ?? { reward: null, discount: 0 };
   });
 
   /** Justificatif de versement, par adresse signée de 10 minutes (seau privé). */

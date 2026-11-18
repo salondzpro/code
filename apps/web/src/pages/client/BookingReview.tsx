@@ -11,8 +11,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Ban, ChevronDown, Pencil, StickyNote } from 'lucide-react';
 import type { BookingWithSalon } from '@salondz/types';
-import { ApiError, useBookingStanding, useCreateBooking, useMe, useMyLoyaltyAt, useSalon } from '@salondz/api-client';
+import { ApiError, useBookingStanding, useCreateBooking, useLoyaltyPrograms, useMe, useMyLoyaltyAt, useSalon } from '@salondz/api-client';
 import { loyaltyDiscount, loyaltyReward } from '@salondz/constants';
+import { PromoCodeField, RewardBox } from '@/components/Loyalty';
 import { depositFor, formatDA } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
@@ -67,6 +68,8 @@ export function BookingReview() {
   const profil = me.data?.profile;
   // Fidélité : cette visite est-elle la récompense ? (pour soi seulement : la carte est celle du compte)
   const carte = useMyLoyaltyAt(salon.data?.id, !forOther);
+  const promo = useLoyaltyPrograms().data?.some((p) => p.salonId === salon.data?.id && p.mode === 'promo');
+  const [promoCode, setPromoCode] = useState<string | null>(null);
   useEffect(() => {
     if (!profil) return;
     setName((v) => v || profil.fullName || '');
@@ -118,6 +121,7 @@ export function BookingReview() {
         clientPhone,
         origin: bookingOrigin(s.id),
         beneficiary,
+        promoCode: !forOther && promoCode ? promoCode : undefined,
       });
       clearDraft(slug);
       // Même entrée d'historique, nouvelle adresse : un rechargement rouvre la confirmation.
@@ -157,17 +161,21 @@ export function BookingReview() {
         }
       />
 
-      {!forOther && carte.data?.nextIsReward && (
-        <div className="fid-reward" role="status">
-          <span className="fid-ic" aria-hidden>
-            <I icon={ICONE.fidelite} size={22} strokeWidth={1.7} />
-          </span>
-          <span className="min-w-0">
-            <b>{t('Visite récompensée : {recompense}', { recompense: loyaltyReward(carte.data.program).toLowerCase() })}</b>
-            <span dir="auto">{t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(carte.data.program, price)) })}</span>
-          </span>
-        </div>
+      {/* Fidélité (18 nov. 2026) : cadeau de la carte, ou code promo du salon. Pour soi seulement. */}
+      {!forOther && carte.data?.giftAvailable && (
+        price >= carte.data.program.minSpend ? (
+          <RewardBox
+            title={t('Cadeau fidélité : {recompense}', { recompense: loyaltyReward(carte.data.program) })}
+            sub={t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(carte.data.program, price)) })}
+          />
+        ) : (
+          <RewardBox
+            title={t('Cadeau fidélité : {recompense}', { recompense: loyaltyReward(carte.data.program) })}
+            sub={t('Valable dès {montant} : ajoutez une prestation.', { montant: formatDA(carte.data.program.minSpend) })}
+          />
+        )
       )}
+      {!forOther && promo && <PromoCodeField salonId={s.id} priceDa={price} onCode={setPromoCode} />}
 
       <Segmented
         label={t('Pour qui')}

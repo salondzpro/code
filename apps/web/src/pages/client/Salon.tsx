@@ -300,8 +300,8 @@ export function Salon() {
 
           {/* Carte fidélité du salon (18 nov. 2026) : les tampons du client s'il est connecté, sinon
               la carte vierge (avec le tampon offert) — ce qu'il gagne à réserver ici. */}
-          {fidelite && (
-            <LoyaltyCardView program={fidelite} stamps={maCarte.data?.stamps ?? (fidelite.welcome ? 1 : 0)} />
+          {fidelite && fidelite.mode !== 'promo' && (
+            <LoyaltyCardView program={fidelite} progress={maCarte.data?.progress ?? 0} giftAvailable={maCarte.data?.giftAvailable} giftExpiresAt={maCarte.data?.giftExpiresAt} />
           )}
 
           {/* Plus de boutons « Partager » et « Itinéraire » (16 nov. 2026, demande du propriétaire) :

@@ -18,6 +18,7 @@ import { badRequest, conflict, forbidden, notFound, unwrap } from '../lib/errors
 import { camelize } from '../lib/mappers';
 import { BOOKING_WITH_SALON_SELECT, getBookingWithSalon, mapBookingWithSalon } from '../lib/queries';
 import { pushAfterBooking } from '../lib/push';
+import { applyPromo } from '../lib/loyalty';
 import { notifySlotFreed } from '../lib/waitlist';
 import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
 import { depositDeadline, loadDepositAccount, notifyDepositSubmitted, proofExt } from '../lib/deposit';
@@ -155,6 +156,11 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
       if (saved.error) req.log.warn({ err: saved.error.message }, 'provenance non enregistrée');
     }
     pushAfterBooking(req.log, created.id);
+    // Code promo : retenu pour ce rendez-vous si valable (jamais bloquant).
+    if (body.promoCode) {
+      const full = await getBookingWithSalon(created.id);
+      await applyPromo(req.log, { id: full.id, salonId: full.salonId, clientId: full.clientId, priceDa: full.priceDa }, body.promoCode);
+    }
     reply.status(201);
     return getBookingWithSalon(created.id);
   });

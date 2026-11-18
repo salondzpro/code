@@ -1,165 +1,236 @@
 /**
- * PROGRAMME FIDÉLITÉ (18 nov. 2026, demande du propriétaire) — une CARTE À TAMPONS que le pro règle
- * en quelques touchers, et que Salon DZ met en avant auprès des clients.
+ * PROGRAMME FIDÉLITÉ (18 nov. 2026, demande du propriétaire) — UN programme par salon, au choix :
+ *   - `visits` : PAR PASSAGE — après N visites, un cadeau ;
+ *   - `points` : PAR POINTS — 1 point par tranche de 100 DA dépensés, un cadeau à N points ;
+ *   - `promo`  : CODE PROMO — un code que le pro partage (Instagram, WhatsApp), une fois par client.
+ * Le cadeau : un POURCENTAGE du total ou un MONTANT FIXE, à partir d'un achat minimum (`minSpend`),
+ * valable `giftMonths` mois (1 à 6) une fois gagné (pour un code : depuis sa création).
  *
- * Règles (les mêmes côté API, site et démonstration — tout passe par `loyaltyProgress`) :
- *   - un tampon par rendez-vous TERMINÉ, pris SUR SALON DZ (`source = 'online'`), un seul par jour ;
- *   - la Nᵉ visite est la récompense, puis la carte repart à zéro ;
- *   - « premier tampon offert » : la toute première carte commence à 1 ;
- *   - les tampons tombent si l'on ne revient pas pendant `validityMonths` ;
- *   - seules les visites faites APRÈS l'activation du programme comptent.
+ * Règles communes à l'API, au site et à la démonstration — tout passe par `loyaltyState` :
+ *   - seuls comptent les rendez-vous TERMINÉS pris SUR SALON DZ, après l'activation ;
+ *   - par passage : une visite par jour au plus ;
+ *   - un seul cadeau en attente à la fois ; il s'utilise sur une visite d'au moins `minSpend` ;
+ *   - un cadeau non utilisé à temps est perdu.
  * Rien n'est stocké en plus : la progression se recalcule à partir des rendez-vous.
  */
 import { tr } from './i18n';
 import { formatDA } from './money';
 
-export type LoyaltyRewardKind = 'free' | 'percent' | 'amount';
+export type LoyaltyMode = 'visits' | 'points' | 'promo';
+export type LoyaltyRewardKind = 'percent' | 'amount';
 
 export interface LoyaltyProgram {
   enabled: boolean;
-  /** La visite récompensée (la 6ᵉ, la 10ᵉ…). */
-  visits: number;
+  mode: LoyaltyMode;
+  /** Visites (passage) ou points à atteindre. */
+  threshold: number;
   rewardKind: LoyaltyRewardKind;
-  /** % pour `percent`, DA pour `amount`, plafond en DA pour `free` (0 = sans plafond). */
+  /** % du total ou montant en DA. */
   rewardValue: number;
-  /** La première carte commence avec un tampon. */
-  welcome: boolean;
-  validityMonths: number;
+  /** Achat minimum pour profiter du cadeau (0 = aucun). */
+  minSpend: number;
+  /** Validité du cadeau, en mois (1 à 6). */
+  giftMonths: number;
+  /** Code promo (mode `promo`), en majuscules. */
+  code: string | null;
   /** Première activation : les visites d'avant ne comptent pas. */
   startedAt: string | null;
-  /** Dernière annonce envoyée aux clients du salon (une au plus par mois). */
+  /** Création du code en vigueur (sa validité part de là). */
+  codeSince: string | null;
+  /** Dernière annonce aux clients du salon (une par mois au plus). */
   announcedAt: string | null;
 }
 
-export const LOYALTY_VISITS = [5, 6, 8, 10] as const;
-export const LOYALTY_VISITS_MIN = 3;
-export const LOYALTY_VISITS_MAX = 20;
-export const LOYALTY_VALIDITY = [6, 12] as const;
+/** 1 point par tranche de 100 DA. */
+export const LOYALTY_DA_PER_POINT = 100;
+export const LOYALTY_VISIT_PRESETS = [3, 5, 8, 10] as const;
+export const LOYALTY_POINT_PRESETS = [50, 100, 200] as const;
+export const LOYALTY_REWARD_PRESETS: { kind: LoyaltyRewardKind; value: number }[] = [
+  { kind: 'percent', value: 10 },
+  { kind: 'percent', value: 20 },
+  { kind: 'percent', value: 50 },
+  { kind: 'amount', value: 500 },
+  { kind: 'amount', value: 1000 },
+  { kind: 'amount', value: 2000 },
+];
+export const LOYALTY_MIN_SPEND_PRESETS = [0, 2000, 5000] as const;
+export const LOYALTY_GIFT_MONTHS = [1, 3, 6] as const;
 export const LOYALTY_ANNOUNCE_EVERY_DAYS = 30;
+export const LOYALTY_CODE = /^[A-Z0-9]{3,12}$/;
 
 export const DEFAULT_LOYALTY: LoyaltyProgram = {
   enabled: false,
-  visits: 6,
-  rewardKind: 'free',
-  rewardValue: 0,
-  welcome: true,
-  validityMonths: 6,
+  mode: 'visits',
+  threshold: 5,
+  rewardKind: 'percent',
+  rewardValue: 20,
+  minSpend: 0,
+  giftMonths: 3,
+  code: null,
   startedAt: null,
+  codeSince: null,
   announcedAt: null,
 };
 
+export const normalizeCode = (c: unknown): string | null => {
+  const v = typeof c === 'string' ? c.trim().toUpperCase().replace(/\s+/g, '') : '';
+  return LOYALTY_CODE.test(v) ? v : null;
+};
+
 export function normalizeLoyalty(x: unknown): LoyaltyProgram {
-  const o = (x && typeof x === 'object' ? x : {}) as Partial<LoyaltyProgram>;
-  const visits = Math.round(Number(o.visits));
-  const kind: LoyaltyRewardKind = o.rewardKind === 'percent' || o.rewardKind === 'amount' ? o.rewardKind : 'free';
-  let value = Math.max(0, Math.round(Number(o.rewardValue) || 0));
-  if (kind === 'percent') value = Math.min(100, Math.max(5, value || 50));
-  if (kind === 'amount') value = Math.min(100_000, value || 500);
+  const o = (x && typeof x === 'object' ? x : {}) as Partial<LoyaltyProgram> & { visits?: number; validityMonths?: number };
+  const mode: LoyaltyMode = o.mode === 'points' || o.mode === 'promo' ? o.mode : 'visits';
+  const kind: LoyaltyRewardKind = o.rewardKind === 'amount' ? 'amount' : 'percent';
+  let value = Math.round(Number(o.rewardValue) || 0);
+  value = kind === 'percent' ? Math.min(100, Math.max(5, value || 20)) : Math.min(100_000, Math.max(100, value || 500));
+  const raw = Math.round(Number(o.threshold ?? o.visits) || 0);
+  const threshold = mode === 'points' ? Math.min(2000, Math.max(10, raw || 100)) : Math.min(20, Math.max(2, raw || 5));
   return {
     enabled: !!o.enabled,
-    visits: Number.isFinite(visits) ? Math.min(LOYALTY_VISITS_MAX, Math.max(LOYALTY_VISITS_MIN, visits)) : DEFAULT_LOYALTY.visits,
+    mode,
+    threshold,
     rewardKind: kind,
     rewardValue: value,
-    welcome: o.welcome !== false,
-    validityMonths: o.validityMonths === 12 ? 12 : 6,
+    minSpend: Math.min(1_000_000, Math.max(0, Math.round(Number(o.minSpend) || 0))),
+    giftMonths: Math.min(6, Math.max(1, Math.round(Number(o.giftMonths) || 3))),
+    code: normalizeCode(o.code),
     startedAt: typeof o.startedAt === 'string' ? o.startedAt : null,
+    codeSince: typeof o.codeSince === 'string' ? o.codeSince : null,
     announcedAt: typeof o.announcedAt === 'string' ? o.announcedAt : null,
   };
 }
 
-/** « Prestation offerte », « −50 % », « −500 DA ». */
-export function loyaltyReward(p: Pick<LoyaltyProgram, 'rewardKind' | 'rewardValue'>): string {
-  if (p.rewardKind === 'percent') return tr('−{n} %', { n: p.rewardValue });
-  if (p.rewardKind === 'amount') return tr('−{montant}', { montant: formatDA(p.rewardValue) });
-  return p.rewardValue > 0 ? tr('Offerte jusqu’à {montant}', { montant: formatDA(p.rewardValue) }) : tr('Offerte');
+type Rew = Pick<LoyaltyProgram, 'rewardKind' | 'rewardValue'>;
+type Head = Pick<LoyaltyProgram, 'mode' | 'threshold' | 'rewardKind' | 'rewardValue'>;
+
+/** « −20 % » ou « −1 000 DA ». */
+export const loyaltyReward = (p: Rew): string =>
+  p.rewardKind === 'percent' ? tr('−{n} %', { n: p.rewardValue }) : tr('−{montant}', { montant: formatDA(p.rewardValue) });
+
+/** LA phrase du programme, partout : « −20 % après 5 visites », « −1 000 DA à 100 points », « Code promo −10 % ». */
+export function loyaltyHeadline(p: Head): string {
+  const r = loyaltyReward(p);
+  if (p.mode === 'promo') return tr('Code promo {recompense}', { recompense: r });
+  if (p.mode === 'points') return tr('{recompense} à {n} points', { recompense: r, n: p.threshold });
+  return tr('{recompense} après {n} visites', { recompense: r, n: p.threshold });
 }
 
-/** LA phrase du programme, partout : « 6ᵉ visite offerte », « 5ᵉ visite à −50 % ». */
-export function loyaltyHeadline(p: Pick<LoyaltyProgram, 'visits' | 'rewardKind' | 'rewardValue'>): string {
-  if (p.rewardKind === 'percent') return tr('{n}ᵉ visite à −{v} %', { n: p.visits, v: p.rewardValue });
-  if (p.rewardKind === 'amount') return tr('{n}ᵉ visite : −{montant}', { n: p.visits, montant: formatDA(p.rewardValue) });
-  return tr('{n}ᵉ visite offerte', { n: p.visits });
-}
+/** Condition d'achat : « dès 2 000 DA », ou rien. */
+export const loyaltyCondition = (p: Pick<LoyaltyProgram, 'minSpend'>): string | null =>
+  p.minSpend > 0 ? tr('dès {montant}', { montant: formatDA(p.minSpend) }) : null;
 
-/** Montant déduit d'une visite de `priceDa` (pour l'afficher au client et au pro). */
-export function loyaltyDiscount(p: Pick<LoyaltyProgram, 'rewardKind' | 'rewardValue'>, priceDa: number): number {
+/** Montant déduit d'une visite de `priceDa`. */
+export function loyaltyDiscount(p: Rew, priceDa: number): number {
   if (p.rewardKind === 'percent') return Math.round((priceDa * p.rewardValue) / 100);
-  if (p.rewardKind === 'amount') return Math.min(priceDa, p.rewardValue);
-  return p.rewardValue > 0 ? Math.min(priceDa, p.rewardValue) : priceDa;
+  return Math.min(priceDa, p.rewardValue);
 }
 
-export interface LoyaltyProgress {
-  /** Tampons sur la carte en cours (0 … visits − 1). */
-  stamps: number;
-  /** La prochaine visite est la récompense. */
-  nextIsReward: boolean;
-  /** Récompenses déjà obtenues. */
+export const pointsFor = (priceDa: number) => Math.floor(Math.max(0, priceDa) / LOYALTY_DA_PER_POINT);
+
+/** Une visite qui compte : date de début et montant du rendez-vous. */
+export interface LoyaltyVisit {
+  at: string;
+  amount: number;
+}
+
+export interface LoyaltyState {
+  /** Visites ou points accumulés vers le prochain cadeau (0 … threshold). */
+  progress: number;
+  threshold: number;
+  /** Un cadeau attend d'être utilisé (jusqu'à `giftExpiresAt`). */
+  giftAvailable: boolean;
+  giftExpiresAt: string | null;
+  /** Cadeaux déjà utilisés. */
   rewards: number;
-  /** Les tampons tombent à cette date sans nouvelle visite (null s'il n'y a rien à perdre). */
-  expiresAt: string | null;
 }
 
-const addMonths = (d: Date, m: number) => {
-  const x = new Date(d.getTime());
+const addMonths = (iso: string, m: number) => {
+  const x = new Date(iso);
   x.setMonth(x.getMonth() + m);
-  return x;
+  return x.toISOString();
 };
 
 /**
- * Progression d'un client, d'après les dates de ses visites qui comptent (rendez-vous terminés, pris
- * sur Salon DZ, triés ou non). `before` : ne compter que les visites antérieures (pour savoir si un
- * rendez-vous à venir est la récompense).
+ * État d'un client chez un salon (modes `visits` et `points`). `before` : ne compter que les visites
+ * antérieures — pour savoir si un rendez-vous à venir profitera du cadeau.
  */
-export function loyaltyProgress(p: LoyaltyProgram, visitIsoDates: string[], now: Date = new Date(), before?: string): LoyaltyProgress {
+export function loyaltyState(p: LoyaltyProgram, visits: LoyaltyVisit[], now: Date = new Date(), before?: string): LoyaltyState {
   const start = p.startedAt ? new Date(p.startedAt).getTime() : 0;
   const limit = before ? new Date(before).getTime() : Infinity;
-  // Un tampon par jour (heure d'Alger) au plus.
   const seen = new Set<string>();
-  const days = visitIsoDates
-    .map((iso) => new Date(iso))
-    .filter((d) => d.getTime() >= start && d.getTime() < limit)
-    .sort((a, b) => a.getTime() - b.getTime())
-    .filter((d) => {
-      const k = d.toLocaleDateString('en-CA', { timeZone: 'Africa/Algiers' });
+  const list = visits
+    .filter((v) => {
+      const t = new Date(v.at).getTime();
+      return t >= start && t < limit;
+    })
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .filter((v) => {
+      if (p.mode !== 'visits') return true;
+      const k = new Date(v.at).toLocaleDateString('en-CA', { timeZone: 'Africa/Algiers' });
       if (seen.has(k)) return false;
       seen.add(k);
       return true;
     });
-  let stamps = p.welcome ? 1 : 0;
+  let progress = 0;
+  let gift: string | null = null; // date d'expiration du cadeau en attente
   let rewards = 0;
-  let last: Date | null = null;
-  for (const d of days) {
-    if (last && d.getTime() > addMonths(last, p.validityMonths).getTime()) stamps = 0;
-    if (stamps >= p.visits - 1) {
-      stamps = 0;
+  for (const v of list) {
+    if (gift && v.at > gift) gift = null;
+    if (gift && v.amount >= p.minSpend) {
+      gift = null;
       rewards += 1;
-    } else {
-      stamps += 1;
     }
-    last = d;
+    progress += p.mode === 'points' ? pointsFor(v.amount) : 1;
+    if (progress >= p.threshold) {
+      if (!gift) {
+        gift = addMonths(v.at, p.giftMonths);
+        progress -= p.threshold;
+      } else {
+        progress = p.threshold;
+      }
+    }
   }
-  const ref = before ? new Date(before) : now;
-  if (last && ref.getTime() > addMonths(last, p.validityMonths).getTime()) stamps = 0;
-  return {
-    stamps,
-    nextIsReward: stamps >= p.visits - 1,
-    rewards,
-    expiresAt: last && stamps > 0 ? addMonths(last, p.validityMonths).toISOString() : null,
-  };
+  const ref = (before ? new Date(before) : now).toISOString();
+  if (gift && ref > gift) gift = null;
+  return { progress: Math.min(progress, p.threshold), threshold: p.threshold, giftAvailable: !!gift, giftExpiresAt: gift, rewards };
 }
 
-/** Ce que l'API rend d'un programme actif, côté public (place de marché, page du salon). */
+/** Le code promo est-il valable à cette date ? */
+export function promoValid(p: LoyaltyProgram, at: Date = new Date()): boolean {
+  if (!p.enabled || p.mode !== 'promo' || !p.code) return false;
+  const since = p.codeSince ?? p.startedAt;
+  return !since || at.getTime() <= new Date(addMonths(since, p.giftMonths)).getTime();
+}
+
+export const promoExpiresAt = (p: LoyaltyProgram): string | null => {
+  const since = p.codeSince ?? p.startedAt;
+  return since ? addMonths(since, p.giftMonths) : null;
+};
+
+/** Ce que l'API rend d'un programme actif, côté public (jamais le code promo). */
 export interface LoyaltyPublic {
   salonId: string;
-  visits: number;
+  mode: LoyaltyMode;
+  threshold: number;
   rewardKind: LoyaltyRewardKind;
   rewardValue: number;
-  welcome: boolean;
-  validityMonths: number;
+  minSpend: number;
+  giftMonths: number;
 }
 
-/** La carte d'un client chez un salon. */
-export interface LoyaltyCard extends LoyaltyProgress {
+/** La carte d'un client chez un salon (« Ma fidélité »). */
+export interface LoyaltyCard extends LoyaltyState {
   program: LoyaltyPublic;
   salon: { id: string; slug: string; name: string; logoUrl: string | null; coverUrl: string | null; city: string | null };
 }
+
+/** Un client proche d'un cadeau (côté pro). */
+export interface LoyaltyClientRow extends LoyaltyState {
+  key: string;
+  name: string;
+  phone: string | null;
+}
+
+/** Plus c'est proche d'un cadeau, plus c'est haut : cadeau en attente d'abord, puis la progression. */
+export const loyaltyCloseness = (s: Pick<LoyaltyState, 'giftAvailable' | 'progress' | 'threshold'>) =>
+  s.giftAvailable ? 2 : s.progress / Math.max(1, s.threshold);

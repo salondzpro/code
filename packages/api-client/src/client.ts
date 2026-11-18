@@ -1,12 +1,12 @@
-import type { LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyProgram, LoyaltyPublic, LoyaltyProgress } from '@salondz/constants';
+import type { LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyClientRow, LoyaltyProgram, LoyaltyPublic, LoyaltyState } from '@salondz/constants';
 
 /** Fidélité d'un rendez-vous (fenêtre du pro) : la récompense à offrir, s'il y en a une. */
 export interface BookingLoyalty {
-  program: LoyaltyPublic | null;
-  stamps: number;
   reward: string | null;
+  discount: number;
 }
-export type LoyaltyInput = Pick<LoyaltyProgram, 'enabled' | 'visits' | 'rewardKind' | 'rewardValue' | 'welcome' | 'validityMonths'>;
+export type LoyaltyInput = Pick<LoyaltyProgram, 'enabled' | 'mode' | 'threshold' | 'rewardKind' | 'rewardValue' | 'minSpend' | 'giftMonths' | 'code'>;
+export type PromoCheck = { valid: true; program: LoyaltyPublic } | { valid: false; reason: 'invalid' | 'used' };
 import type {
   ApiErrorBody,
   BookingDepositInfo,
@@ -537,7 +537,8 @@ export function createApiClient(opts: ApiClientOptions) {
       favorites: () => get<{ items: SalonSummary[] }>('/me/favorites'),
       /** Fidélité : toutes mes cartes, et ma carte chez un salon (`null` sans programme). */
       loyalty: () => get<LoyaltyCard[]>('/me/loyalty'),
-      loyaltyAt: (salonId: string) => get<(LoyaltyProgress & { program: LoyaltyPublic }) | null>(`/me/loyalty/${salonId}`),
+      loyaltyAt: (salonId: string) => get<(LoyaltyState & { program: LoyaltyPublic }) | null>(`/me/loyalty/${salonId}`),
+      checkPromo: (salonId: string, code: string) => get<PromoCheck>(`/me/promo/${salonId}`, { code }),
       stats: () => get<MeStats>('/me/stats'),
       addFavorite: (salonId: string) => put<void>(`/me/favorites/${salonId}`),
       removeFavorite: (salonId: string) => del<void>(`/me/favorites/${salonId}`),
@@ -569,6 +570,7 @@ export function createApiClient(opts: ApiClientOptions) {
       loyalty: () => get<LoyaltyProgram>('/pro/loyalty'),
       saveLoyalty: (body: LoyaltyInput) => put<LoyaltyProgram & { announced: number }>('/pro/loyalty', body),
       bookingLoyalty: (id: string) => get<BookingLoyalty>(`/pro/bookings/${id}/loyalty`),
+      loyaltyClients: () => get<LoyaltyClientRow[]>('/pro/loyalty/clients'),
       saveDepositSettings: (body: DepositSettings) => put<DepositSettings>('/pro/deposit-settings', body),
       /** Réseaux sociaux de l'étiquette « Vitrine noire ». */
       labelSocials: () => get<LabelSocial[]>('/pro/label-socials'),

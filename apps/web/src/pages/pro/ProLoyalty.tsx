@@ -1,66 +1,101 @@
 /**
- * CARTE FIDÉLITÉ DU SALON (18 nov. 2026, demande du propriétaire : « personnalisable par le
- * professionnel, enrichi et simple, à comprendre directement »).
+ * PROGRAMME FIDÉLITÉ DU SALON (18 nov. 2026, demande du propriétaire : « le plus simple possible »).
  *
- * Deux questions, des choix tout prêts d'un toucher (comme le versement) :
- *   1. après combien de visites ? 5, 6, 8, 10 ;
- *   2. quelle récompense ? prestation offerte, −50 %, −20 %, ou un montant en DA.
- * Deux réglages : premier tampon offert, validité 6 ou 12 mois. L'aperçu EST la carte du client.
+ * Une question par bloc, des choix tout prêts d'un toucher (comme le versement) :
+ *   1. le type : par passages, par points (1 point = 100 DA) ou code promo ;
+ *   2. la condition : après 3/5/8/10 visites, à 50/100/200 points, ou le code ;
+ *   3. le cadeau : 10 %, 20 %, 50 % du total, ou 500 / 1 000 / 2 000 DA ;
+ *   4. dès un achat de : sans minimum, 2 000 DA, 5 000 DA ;
+ *   5. cadeau valable : 1, 3 ou 6 mois.
+ * Puis l'aperçu (ce que voit le client) et « Bientôt récompensés » : les clients proches d'un cadeau.
  * Activer annonce le programme aux clients du salon (une fois par mois au plus, côté serveur).
  */
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Check } from 'lucide-react';
-import { useProLoyalty, useSaveProLoyalty } from '@salondz/api-client';
-import { LOYALTY_VISITS, formatDA, loyaltyHeadline, type LoyaltyRewardKind } from '@salondz/constants';
+import { useProLoyalty, useProLoyaltyClients, useSaveProLoyalty } from '@salondz/api-client';
+import {
+  LOYALTY_DA_PER_POINT,
+  LOYALTY_GIFT_MONTHS,
+  LOYALTY_MIN_SPEND_PRESETS,
+  LOYALTY_POINT_PRESETS,
+  LOYALTY_REWARD_PRESETS,
+  LOYALTY_VISIT_PRESETS,
+  formatDA,
+  formatDateShortDZ,
+  loyaltyReward,
+  type LoyaltyMode,
+  type LoyaltyRewardKind,
+} from '@salondz/constants';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { BottomSheet, Button, I, Segmented, SectionLabel, Toggle, TopBar } from '@/components/ui';
+import { Avatar, BottomSheet, Button, I, Segmented, SectionLabel, Toggle, TopBar } from '@/components/ui';
 import { PageLoading } from '@/components/PageLoading';
 import { errorText } from '@/components/ErrorMessage';
 import { LoyaltyCardView } from '@/components/Loyalty';
 import { ICONE } from '@/lib/actionIcons';
 import { t } from '@/i18n';
 
-type Reward = { kind: LoyaltyRewardKind; value: number };
-const REWARDS: Reward[] = [
-  { kind: 'free', value: 0 },
-  { kind: 'percent', value: 50 },
-  { kind: 'percent', value: 20 },
-  { kind: 'amount', value: 500 },
-];
-const rewardTitle = (r: Reward) => (r.kind === 'free' ? t('Offerte') : r.kind === 'percent' ? `−${r.value} %` : `−${formatDA(r.value)}`);
+function Tile({ on, onClick, title, sub }: { on: boolean; onClick: () => void; title: string; sub?: string }) {
+  return (
+    <button type="button" role="radio" aria-checked={on} className={`dp-tile${on ? ' on' : ''}`} onClick={onClick}>
+      {on && <I icon={Check} size={14} strokeWidth={2.6} className="dp-tile-ok" />}
+      <b dir="ltr">{title}</b>
+      {sub && <small dir="ltr">{sub}</small>}
+    </button>
+  );
+}
 
 export function ProLoyalty() {
   const navigate = useNavigate();
   const loyalty = useProLoyalty();
   const save = useSaveProLoyalty();
   const [on, setOn] = useState(false);
-  const [visits, setVisits] = useState(6);
-  const [reward, setReward] = useState<Reward>({ kind: 'free', value: 0 });
-  const [welcome, setWelcome] = useState(true);
-  const [validity, setValidity] = useState<6 | 12>(6);
+  const [mode, setMode] = useState<LoyaltyMode>('visits');
+  const [threshold, setThreshold] = useState(5);
+  const [reward, setReward] = useState<{ kind: LoyaltyRewardKind; value: number }>({ kind: 'percent', value: 20 });
+  const [minSpend, setMinSpend] = useState(0);
+  const [months, setMonths] = useState(3);
+  const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
+  const clients = useProLoyaltyClients(!!loyalty.data?.enabled && loyalty.data.mode !== 'promo');
 
   useEffect(() => {
     const p = loyalty.data;
     if (!p) return;
     setOn(p.enabled);
-    setVisits(p.visits);
+    setMode(p.mode);
+    setThreshold(p.threshold);
     setReward({ kind: p.rewardKind, value: p.rewardValue });
-    setWelcome(p.welcome);
-    setValidity(p.validityMonths === 12 ? 12 : 6);
+    setMinSpend(p.minSpend);
+    setMonths(p.giftMonths);
+    setCode(p.code ?? '');
   }, [loyalty.data]);
 
   if (loyalty.isPending) return <PageLoading />;
 
-  const program = { visits, rewardKind: reward.kind, rewardValue: reward.value };
+  const changeMode = (m: LoyaltyMode) => {
+    setMode(m);
+    if (m === 'visits' && !(LOYALTY_VISIT_PRESETS as readonly number[]).includes(threshold)) setThreshold(5);
+    if (m === 'points' && !(LOYALTY_POINT_PRESETS as readonly number[]).includes(threshold)) setThreshold(100);
+  };
+  const program = { mode, threshold, rewardKind: reward.kind, rewardValue: reward.value, minSpend };
   const wasOn = !!loyalty.data?.enabled;
 
   const submit = async () => {
     setError(null);
+    if (on && mode === 'promo' && !/^[A-Z0-9]{3,12}$/.test(code)) return setError(t('Le code promo compte 3 à 12 lettres ou chiffres.'));
     try {
-      const r = await save.mutateAsync({ enabled: on, visits, rewardKind: reward.kind, rewardValue: reward.value, welcome, validityMonths: validity });
+      const r = await save.mutateAsync({
+        enabled: on,
+        mode,
+        threshold,
+        rewardKind: reward.kind,
+        rewardValue: reward.value,
+        minSpend,
+        giftMonths: months,
+        code: mode === 'promo' ? code : null,
+      });
       if (r.announced > 0) setDone(t('Programme activé : {n} client(s) prévenu(s).', { n: r.announced }));
       else navigate('/pro/parametres');
     } catch (err) {
@@ -70,65 +105,124 @@ export function ProLoyalty() {
 
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
-      <TopBar backTo="/pro/parametres" title={t('Carte fidélité')} />
+      <TopBar backTo="/pro/parametres" title={t('Programme fidélité')} />
 
       <div className="crd dp-set-hero">
         <span className="fid-ic" aria-hidden>
           <I icon={ICONE.fidelite} size={20} strokeWidth={1.7} />
         </span>
-        <b className="min-w-0 flex-1 text-[1.071rem] font-semibold">{t('Récompenser mes clients fidèles')}</b>
-        <Toggle on={on} onChange={setOn} label={t('Récompenser mes clients fidèles')} />
+        <b className="min-w-0 flex-1 text-[1.071rem] font-semibold">{t('Récompenser mes clients')}</b>
+        <Toggle on={on} onChange={setOn} label={t('Récompenser mes clients')} />
       </div>
 
       {on && (
         <>
-          <SectionLabel>{t('La visite récompensée')}</SectionLabel>
-          <div className="dp-presets fid-presets" role="radiogroup" aria-label={t('La visite récompensée')}>
-            {LOYALTY_VISITS.map((n) => (
-              <button key={n} type="button" role="radio" aria-checked={visits === n} className={`dp-tile${visits === n ? ' on' : ''}`} onClick={() => setVisits(n)}>
-                {visits === n && <I icon={Check} size={14} strokeWidth={2.6} className="dp-tile-ok" />}
-                <b>{t('{n}ᵉ', { n })}</b>
-                <small>{t('visite')}</small>
-              </button>
+          <Segmented
+            label={t('Type de programme')}
+            value={mode}
+            onChange={changeMode}
+            options={[
+              { value: 'visits', label: t('Passages') },
+              { value: 'points', label: t('Points') },
+              { value: 'promo', label: t('Code promo') },
+            ]}
+          />
+
+          {mode === 'visits' && (
+            <>
+              <SectionLabel>{t('Cadeau après')}</SectionLabel>
+              <div className="dp-presets fid-presets" role="radiogroup" aria-label={t('Cadeau après')}>
+                {LOYALTY_VISIT_PRESETS.map((n) => (
+                  <Tile key={n} on={threshold === n} onClick={() => setThreshold(n)} title={String(n)} sub={t('visites')} />
+                ))}
+              </div>
+            </>
+          )}
+          {mode === 'points' && (
+            <>
+              <SectionLabel>{t('Cadeau à')}</SectionLabel>
+              <div className="dp-presets" role="radiogroup" aria-label={t('Cadeau à')}>
+                {LOYALTY_POINT_PRESETS.map((n) => (
+                  <Tile key={n} on={threshold === n} onClick={() => setThreshold(n)} title={t('{n} pts', { n })} sub={formatDA(n * LOYALTY_DA_PER_POINT)} />
+                ))}
+              </div>
+            </>
+          )}
+          {mode === 'promo' && (
+            <>
+              <SectionLabel>{t('Le code')}</SectionLabel>
+              <input
+                className="inp mono uppercase tracking-[0.06em]"
+                value={code}
+                maxLength={12}
+                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                placeholder="KARIM10"
+                aria-label={t('Code promo')}
+                autoCapitalize="characters"
+              />
+            </>
+          )}
+
+          <SectionLabel>{t('Le cadeau')}</SectionLabel>
+          <div className="dp-presets" role="radiogroup" aria-label={t('Le cadeau')}>
+            {LOYALTY_REWARD_PRESETS.map((r) => (
+              <Tile
+                key={`${r.kind}${r.value}`}
+                on={reward.kind === r.kind && reward.value === r.value}
+                onClick={() => setReward(r)}
+                title={loyaltyReward({ rewardKind: r.kind, rewardValue: r.value })}
+                sub={r.kind === 'percent' ? t('du total') : undefined}
+              />
             ))}
           </div>
 
-          <SectionLabel>{t('La récompense')}</SectionLabel>
-          <div className="dp-presets fid-presets" role="radiogroup" aria-label={t('La récompense')}>
-            {REWARDS.map((r) => {
-              const sel = reward.kind === r.kind && reward.value === r.value;
-              return (
-                <button key={`${r.kind}${r.value}`} type="button" role="radio" aria-checked={sel} className={`dp-tile${sel ? ' on' : ''}`} onClick={() => setReward(r)}>
-                  {sel && <I icon={Check} size={14} strokeWidth={2.6} className="dp-tile-ok" />}
-                  <b dir="ltr">{rewardTitle(r)}</b>
-                </button>
-              );
-            })}
+          <SectionLabel>{t('Dès un achat de')}</SectionLabel>
+          <div className="dp-presets" role="radiogroup" aria-label={t('Dès un achat de')}>
+            {LOYALTY_MIN_SPEND_PRESETS.map((v) => (
+              <Tile key={v} on={minSpend === v} onClick={() => setMinSpend(v)} title={v === 0 ? t('Sans minimum') : formatDA(v)} />
+            ))}
           </div>
 
-          <div className="crd !gap-0 !py-1">
-            <div className="li">
-              <span className="text-[1rem] font-semibold">{t('Premier tampon offert')}</span>
-              <Toggle on={welcome} onChange={setWelcome} label={t('Premier tampon offert')} />
-            </div>
-            <div className="li">
-              <span className="text-[1rem] font-semibold">{t('Tampons valables')}</span>
-              <Segmented
-                sm
-                className="fid-seg"
-                label={t('Tampons valables')}
-                value={String(validity)}
-                onChange={(v) => setValidity(v === '12' ? 12 : 6)}
-                options={[
-                  { value: '6', label: t('6 mois') },
-                  { value: '12', label: t('1 an') },
-                ]}
-              />
-            </div>
-          </div>
+          <SectionLabel>{mode === 'promo' ? t('Code valable') : t('Cadeau valable')}</SectionLabel>
+          <Segmented
+            label={mode === 'promo' ? t('Code valable') : t('Cadeau valable')}
+            value={String(months)}
+            onChange={(v) => setMonths(Number(v))}
+            options={LOYALTY_GIFT_MONTHS.map((m) => ({ value: String(m), label: t('{n} mois', { n: m }) }))}
+          />
 
-          <SectionLabel>{t('Ce que voient vos clients')}</SectionLabel>
-          <LoyaltyCardView program={program} stamps={welcome ? 1 : 0} sub={loyaltyHeadline(program)} />
+          {mode !== 'promo' && (
+            <>
+              <SectionLabel>{t('Ce que voient vos clients')}</SectionLabel>
+              <LoyaltyCardView program={program} progress={mode === 'points' ? Math.round(threshold * 0.4) : 2} />
+            </>
+          )}
+
+          {wasOn && loyalty.data?.mode !== 'promo' && (clients.data?.length ?? 0) > 0 && (
+            <>
+              <SectionLabel>{t('Bientôt récompensés')}</SectionLabel>
+              <div className="crd !gap-0 !py-1">
+                {clients.data!.map((c) => (
+                  <Link key={c.key} to={`/pro/clients/${encodeURIComponent(c.key)}`} className="li">
+                    <span className="flex min-w-0 items-center gap-3">
+                      <Avatar name={c.name} size={36} />
+                      <span className="min-w-0">
+                        <b className="block truncate text-[1rem] font-semibold">{c.name}</b>
+                        <span className="block text-[0.857rem] text-muted" dir="auto">
+                          {c.giftAvailable
+                            ? t('Cadeau à utiliser avant le {date}', { date: formatDateShortDZ(c.giftExpiresAt!) })
+                            : loyalty.data!.mode === 'points'
+                              ? t('{n} pts', { n: `${c.progress}/${c.threshold}` })
+                              : t('{n} visites sur {total}', { n: c.progress, total: c.threshold })}
+                        </span>
+                      </span>
+                    </span>
+                    {c.giftAvailable && <span className="fid-badge">{loyaltyReward(loyalty.data!)}</span>}
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 

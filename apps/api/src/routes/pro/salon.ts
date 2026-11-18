@@ -29,7 +29,7 @@ import { loadOwnerView } from '../../lib/queries';
 import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon, noAccount } from '../../plugins/auth';
 import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } from '../../lib/labelSettings';
-import { readLoyalty, writeLoyalty } from '../../lib/loyalty';
+import { proClientsClose, readLoyalty, writeLoyalty } from '../../lib/loyalty';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -166,16 +166,28 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         body: z.object({
           enabled: z.boolean(),
-          visits: z.number().int().min(3).max(20),
-          rewardKind: z.enum(['free', 'percent', 'amount']),
-          rewardValue: z.number().int().min(0).max(100_000),
-          welcome: z.boolean(),
-          validityMonths: z.union([z.literal(6), z.literal(12)]),
+          mode: z.enum(['visits', 'points', 'promo']),
+          threshold: z.number().int().min(2).max(2000),
+          rewardKind: z.enum(['percent', 'amount']),
+          rewardValue: z.number().int().min(1).max(100_000),
+          minSpend: z.number().int().min(0).max(1_000_000),
+          giftMonths: z.number().int().min(1).max(6),
+          code: z.string().trim().max(20).nullable(),
         }),
       },
     },
-    async (req) => writeLoyalty(req.log, { id: req.salon!.id, name: req.salon!.name, slug: req.salon!.slug }, req.body),
+    async (req) => {
+      if (req.body.enabled && req.body.mode === 'promo' && !/^[A-Z0-9]{3,12}$/.test((req.body.code ?? '').trim().toUpperCase().replace(/\s+/g, ''))) {
+        throw badRequest('INVALID_PROMO_CODE', 'Le code promo compte 3 à 12 lettres ou chiffres, sans espace.');
+      }
+      return writeLoyalty(req.log, { id: req.salon!.id, name: req.salon!.name, slug: req.salon!.slug }, req.body);
+    },
   );
+  /** Clients proches d'un cadeau (au moins 60 % du chemin, ou cadeau à utiliser). */
+  app.get('/loyalty/clients', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return proClientsClose(req.salon!.id);
+  });
 
   // Langue, couleur, style et phrase de la « Vitrine noire ».
   app.get('/label-style', { preHandler: app.requireSalon }, async (req, reply) => {
