@@ -13558,3 +13558,5 @@ html.pro-theme .ag9-hr span {
 .fid-code { display: flex; flex-direction: column; gap: 10px; }
 .fid-code .row { display: flex; align-items: center; gap: 10px; }
 .fid-code .inp { flex: 1; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.seg.fid-seg-mode > button { white-space: nowrap; padding-inline: 0.4rem; }
+.seg.fid-seg-mode > button svg { margin-inline-end: 0.25rem !important; }

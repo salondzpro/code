@@ -97,6 +97,7 @@ export function ProLoyalty() {
       {on && (
         <>
           <Segmented
+            className="fid-seg-mode"
             label={t('Type de programme')}
             value={mode}
             onChange={changeMode}
