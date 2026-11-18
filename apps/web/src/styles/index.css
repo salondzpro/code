@@ -13601,3 +13601,17 @@ html.espace-pro .seg > button {
 }
 .seg.sm > button { padding: 6px 0; font-size: calc(14px * var(--fz, 1)); }
 .seg > button svg { margin-inline-end: 0.3rem; }
+/* L'espace pro avait sa propre taille de bouton du segmenté : l'onglet choisi doit rester en encre souligné. */
+html.espace-pro .seg > button.on { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+/* Jour · Semaine · Mois de l'agenda (`.ag9-v`) : mêmes onglets soulignés, en compact. */
+.ag9-v,
+html.pro-theme .ag9-v { display: flex; gap: 16px; padding: 0; background: none; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--color-line); }
+.ag9-v button,
+html.espace-pro .ag9-v > button {
+  width: auto; height: auto; min-width: 0; margin-bottom: -1px; padding: 4px 2px;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; box-shadow: none;
+  color: var(--color-muted); font: 500 calc(14px * var(--fz, 1)) var(--font-display);
+}
+.ag9-v button.on,
+html.pro-theme .ag9-v .on,
+html.espace-pro .ag9-v > button.on { background: none; box-shadow: none; border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
