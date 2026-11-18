@@ -54,7 +54,9 @@ export function BookingReview() {
   const standing = useBookingStanding(salon.data?.id ?? '');
   // Instantané : la création invalide des requêtes avant la transformation de l'écran.
   const [draft] = useState(() => readDraft(slug));
-  const [forOther, setForOther] = useState(!!draft.forOther);
+  // « Pour moi » par défaut (18 nov. 2026) : « Quelqu'un d'autre » n'est repris que si sa saisie avait commencé —
+  // sinon un compte complet se voyait redemander un nom et un numéro.
+  const [forOther, setForOther] = useState(!!draft.forOther && !!(draft.otherName || draft.otherPhone));
   const [name, setName] = useState(draft.name ?? '');
   const [digits, setDigits] = useState(() => (draft.phone ?? '').replace(/^\+213/, ''));
   const [otherName, setOtherName] = useState(draft.otherName ?? '');
