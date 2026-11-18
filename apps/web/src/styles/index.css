@@ -13536,3 +13536,25 @@ html.pro-theme .ag9-hr span {
   }
   .sheet.modal::after { content: ''; flex: none; height: 0.75rem; }
 }
+
+/* ==========================================================================
+   COULEURS DE LA FIDÉLITÉ (18 nov. 2026, demande du propriétaire : « des couleurs pour mieux
+   comprendre ») — couleurs de SENS de la charte (§ 2), une par type, partout (pro et client) :
+   passages = bleu, points = orange, code promo = rouge, cadeau gagné = vert.
+   ========================================================================== */
+.fid-c-visits { --fid-c: var(--color-info); --fid-bg: var(--color-info-bg); --fid-fg: var(--color-info); }
+.fid-c-points { --fid-c: var(--color-fast); --fid-bg: var(--color-pending-bg); --fid-fg: var(--color-pending-fg); }
+.fid-c-promo { --fid-c: var(--color-danger); --fid-bg: var(--color-cancel-bg); --fid-fg: var(--color-cancel-fg); }
+.fid-c-gift { --fid-c: var(--color-ok); --fid-bg: var(--color-ok-bg); --fid-fg: var(--color-ok-fg); }
+:is(.fid-c-visits, .fid-c-points, .fid-c-promo, .fid-c-gift) .fid-ic,
+.lst-r:is(.fid-c-visits, .fid-c-points, .fid-c-promo, .fid-c-gift) .ico { background: var(--fid-bg); color: var(--fid-fg); }
+.fid-card:is(.fid-c-visits, .fid-c-points) .fid-dot.on { background: var(--fid-c); }
+.fid-card:is(.fid-c-visits, .fid-c-points) .fid-bar { background: var(--fid-bg); }
+.fid-card:is(.fid-c-visits, .fid-c-points) .fid-bar i { background: var(--fid-c); }
+.fid-card .fid-count { color: var(--fid-fg); }
+.fid-tag { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: calc(12.5px * var(--fz, 1)); font-weight: 600; border-radius: var(--radius-pill); padding: 4px 10px 4px 8px; background: var(--fid-bg); color: var(--fid-fg); }
+.fid-tag svg { flex: none; }
+/* Code promo côté client : carte rouge pâle à champ visible (plus de ligne repliée). */
+.fid-code { display: flex; flex-direction: column; gap: 10px; }
+.fid-code .row { display: flex; align-items: center; gap: 10px; }
+.fid-code .inp { flex: 1; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }

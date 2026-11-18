@@ -14,7 +14,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { CalendarClock, Hash, ShoppingBag, Target } from 'lucide-react';
+import { CalendarClock, Coins, Hash, Repeat, ShoppingBag, Target, Ticket } from 'lucide-react';
 import { useProLoyalty, useProLoyaltyClients, useSaveProLoyalty } from '@salondz/api-client';
 import { LOYALTY_DA_PER_POINT, formatDA, formatDateShortDZ, loyaltyReward, type LoyaltyMode, type LoyaltyRewardKind } from '@salondz/constants';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -101,15 +101,16 @@ export function ProLoyalty() {
             value={mode}
             onChange={changeMode}
             options={[
-              { value: 'visits', label: t('Passages') },
-              { value: 'points', label: t('Points') },
-              { value: 'promo', label: t('Code promo') },
+              { value: 'visits', label: t('Passages'), icon: Repeat },
+              { value: 'points', label: t('Points'), icon: Coins },
+              { value: 'promo', label: t('Code promo'), icon: Ticket },
             ]}
           />
 
           <div className="lst">
             {mode === 'promo' ? (
               <SettingRow
+                className="fid-c-promo"
                 icon={Hash}
                 title={t('Le code')}
                 onClick={() => {
@@ -119,9 +120,9 @@ export function ProLoyalty() {
                 right={<b className="mono text-[1rem] tracking-[0.06em]">{code || '—'}</b>}
               />
             ) : (
-              <SettingRow icon={Target} title={t('Cadeau après')} sub={mode === 'points' ? t('1 point = {n} DA', { n: LOYALTY_DA_PER_POINT }) : undefined} onClick={() => setSheet('seuil')} right={<b className="text-[1rem]">{seuilTxt}</b>} />
+              <SettingRow className={`fid-c-${mode}`} icon={Target} title={t('Cadeau après')} sub={mode === 'points' ? t('1 point = {n} DA', { n: LOYALTY_DA_PER_POINT }) : undefined} onClick={() => setSheet('seuil')} right={<b className="text-[1rem]">{seuilTxt}</b>} />
             )}
-            <SettingRow icon={ICONE.promo} title={t('Le cadeau')} onClick={() => setSheet('cadeau')} right={<Badge tone="ok" md dot={false}>{loyaltyReward(program)}</Badge>} />
+            <SettingRow className="fid-c-gift" icon={ICONE.promo} title={t('Le cadeau')} onClick={() => setSheet('cadeau')} right={<span className="fid-tag fid-c-gift">{loyaltyReward(program)}</span>} />
             <SettingRow icon={ShoppingBag} title={t('Dès un achat de')} onClick={() => setSheet('minimum')} right={<b className="text-[1rem]">{minSpend > 0 ? formatDA(minSpend) : t('Aucun minimum')}</b>} />
             <SettingRow icon={CalendarClock} title={mode === 'promo' ? t('Code valable') : t('Cadeau valable')} onClick={() => setSheet('validite')} right={<b className="text-[1rem]">{t('{n} mois', { n: months })}</b>} />
           </div>

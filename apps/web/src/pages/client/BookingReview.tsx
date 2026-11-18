@@ -165,7 +165,7 @@ export function BookingReview() {
       {/* Promotion en cours sur une prestation choisie : la réduction, déduite par le salon. */}
       {(() => {
         const off = promoDiscount(chosen.map((x) => ({ serviceId: x!.id, priceDa: x!.priceDa })), promosSalon);
-        return off > 0 ? <RewardBox title={t('Promotion : −{montant}', { montant: formatDA(off) })} sub={t('À payer au salon : {montant}', { montant: formatDA(price - off) })} /> : null;
+        return off > 0 ? <RewardBox tone="promo" icon={ICONE.promo} title={t('Promotion : −{montant}', { montant: formatDA(off) })} sub={t('À payer au salon : {montant}', { montant: formatDA(price - off) })} /> : null;
       })()}
       {/* Fidélité (18 nov. 2026) : cadeau de la carte, ou code promo du salon. Pour soi seulement. */}
       {!forOther && carte.data?.giftAvailable && (

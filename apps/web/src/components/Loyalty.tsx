@@ -15,9 +15,12 @@ import { t } from '@/i18n';
 
 type Prog = Pick<LoyaltyPublic, 'mode' | 'threshold' | 'rewardKind' | 'rewardValue' | 'minSpend'>;
 
+/** La couleur de sens du type de programme : passages bleu, points orange, code promo rouge. */
+export const fidColor = (mode: LoyaltyPublic['mode']) => `fid-c-${mode}`;
+
 export function LoyaltyBadge({ program, className = '' }: { program: Prog; className?: string }) {
   return (
-    <span className={`badge b-ok md fid-badge ${className}`}>
+    <span className={`fid-tag ${fidColor(program.mode)} ${className}`}>
       <I icon={ICONE.fidelite} size={14} strokeWidth={2} />
       {loyaltyHeadline(program)}
     </span>
@@ -72,7 +75,7 @@ export function LoyaltyCardView({
   const cond = loyaltyCondition(program);
   const unit = program.mode === 'points' ? t('{n} pts', { n: `${progress}/${program.threshold}` }) : `${progress}/${program.threshold}`;
   return (
-    <div className="crd fid-card">
+    <div className={`crd fid-card ${fidColor(program.mode)}`}>
       <div className="flex items-center gap-2.5">
         <span className="fid-ic" aria-hidden>
           <I icon={ICONE.fidelite} size={18} strokeWidth={2} />
@@ -85,7 +88,7 @@ export function LoyaltyCardView({
           </span>
         </span>
         {!giftAvailable && (
-          <b className="mono flex-none text-[1rem]" dir="ltr">
+          <b className="fid-count mono flex-none text-[1rem]" dir="ltr">
             {unit}
           </b>
         )}
@@ -115,6 +118,7 @@ export function BookingLoyaltyNote({ bookingId, active }: { bookingId: string; p
     <div className="lst" role="status">
       {q.data.promo && (
         <SettingRow
+          className="fid-c-promo"
           icon={ICONE.promo}
           title={t('Promotion : {reduction}', { reduction: q.data.promo.label ?? '' })}
           right={<b className="text-[1rem] text-ok-fg" dir="ltr">−{formatDA(q.data.promo.discount)}</b>}
@@ -122,6 +126,7 @@ export function BookingLoyaltyNote({ bookingId, active }: { bookingId: string; p
       )}
       {q.data.reward && (
         <SettingRow
+          className="fid-c-gift"
           icon={ICONE.fidelite}
           title={t('Cadeau fidélité : {recompense}', { recompense: q.data.reward })}
           right={<b className="text-[1rem] text-ok-fg" dir="ltr">−{formatDA(q.data.discount)}</b>}
@@ -132,10 +137,10 @@ export function BookingLoyaltyNote({ bookingId, active }: { bookingId: string; p
 }
 
 /** L'encadré du cadeau côté client (« Confirmer ») : ce qui sera déduit. */
-export function RewardBox({ title, sub, icon = ICONE.fidelite }: { title: string; sub: string; icon?: typeof ICONE.fidelite }) {
+export function RewardBox({ title, sub, icon = ICONE.fidelite, tone = 'gift' }: { title: string; sub: string; icon?: typeof ICONE.fidelite; tone?: 'gift' | 'promo' }) {
   return (
     <div className="lst" role="status">
-      <SettingRow icon={icon} title={title} sub={<span dir="auto">{sub}</span>} />
+      <SettingRow className={`fid-c-${tone}`} icon={icon} title={title} sub={<span dir="auto">{sub}</span>} />
     </div>
   );
 }
@@ -147,7 +152,6 @@ export function RewardBox({ title, sub, icon = ICONE.fidelite }: { title: string
  */
 export function PromoCodeField({ salonId, priceDa, onCode }: { salonId: string; priceDa: number; onCode: (code: string | null) => void }) {
   const { api } = useApi();
-  const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [ok, setOk] = useState<LoyaltyPublic | null>(null);
@@ -176,22 +180,24 @@ export function PromoCodeField({ salonId, priceDa, onCode }: { salonId: string; 
     }
   };
   if (ok)
-    return <RewardBox title={t('Code promo : {recompense}', { recompense: loyaltyReward(ok) })} sub={t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(ok, priceDa)) })} />;
-  if (!open)
-    return (
-      <button type="button" className="bk-note" onClick={() => setOpen(true)}>
-        <I icon={ICONE.fidelite} size={17} />
-        {t('Ajouter un code promo')}
-      </button>
-    );
+    return <RewardBox tone="promo" icon={ICONE.promo} title={t('Code promo : {recompense}', { recompense: loyaltyReward(ok) })} sub={t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(ok, priceDa)) })} />;
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="fid-promo">
+    <div className="crd fid-code fid-c-promo">
+      <div className="flex items-center gap-2.5">
+        <span className="fid-ic" aria-hidden>
+          <I icon={ICONE.promo} size={18} strokeWidth={2} />
+        </span>
+        <b className="text-[1rem] font-semibold">{t('Vous avez un code promo ?')}</b>
+      </div>
+      <div className="row">
         <input
           className="inp"
           value={code}
           maxLength={12}
-          onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+          onChange={(e) => {
+            setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
+            setErr(null);
+          }}
           placeholder={t('Code promo')}
           aria-label={t('Code promo')}
           autoCapitalize="characters"

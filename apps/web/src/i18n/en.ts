@@ -2368,4 +2368,6 @@ export const en: Record<string, string> = {
   "Arrêter cette promotion ?": "Stop this promotion?",
   "Arrêter la promotion": "Stop the promotion",
   "Soldé": "Settled",
+  "Vous avez un code promo ?": "Have a promo code?",
+  "Code promo accepté": "Promo code accepted",
 };

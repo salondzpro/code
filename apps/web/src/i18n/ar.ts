@@ -2354,4 +2354,6 @@ export const ar: Record<string, string> = {
   "Arrêter cette promotion ?": "إيقاف هذا العرض؟",
   "Arrêter la promotion": "إيقاف العرض",
   "Soldé": "مُسدَّد",
+  "Vous avez un code promo ?": "هل لديك رمز ترويجي؟",
+  "Code promo accepté": "يقبل رمزًا ترويجيًا",
 };

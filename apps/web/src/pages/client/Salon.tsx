@@ -21,7 +21,7 @@ import { writeDraft } from '@/lib/bookingDraft';
 import { recordPageView } from '@/lib/pageView';
 import { useApi, useLoyaltyPrograms, useMyLoyaltyAt } from '@salondz/api-client';
 import { env } from '@/lib/env';
-import { Toast } from '@/components/ui';
+import { SettingRow, Toast } from '@/components/ui';
 import { Check } from 'lucide-react';
 import { MiniMap } from '@/components/MiniMap';
 import { SalonGallery } from '@/components/SalonGallery';
@@ -48,6 +48,7 @@ import {
   dayOfWeekFromKey,
   toLocalDateKey,
   SHOW_SALON_CONTACT_TO_CLIENTS,
+  loyaltyReward,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { LoyaltyCardView } from '@/components/Loyalty';
@@ -301,6 +302,12 @@ export function Salon() {
 
           {/* Carte fidélité du salon (18 nov. 2026) : les tampons du client s'il est connecté, sinon
               la carte vierge (avec le tampon offert) — ce qu'il gagne à réserver ici. */}
+          {/* Code promo accepté par ce salon : on le dit ici, le champ est sur « Confirmer ». */}
+          {fidelite?.mode === 'promo' && (
+            <div className="lst">
+              <SettingRow className="fid-c-promo" icon={ICONE.promo} title={t('Code promo accepté')} right={<span className="fid-tag fid-c-promo">{loyaltyReward(fidelite)}</span>} />
+            </div>
+          )}
           {fidelite && fidelite.mode !== 'promo' && (
             <LoyaltyCardView program={fidelite} progress={maCarte.data?.progress ?? 0} giftAvailable={maCarte.data?.giftAvailable} giftExpiresAt={maCarte.data?.giftExpiresAt} />
           )}

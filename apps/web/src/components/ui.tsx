@@ -647,9 +647,11 @@ export function SettingRow({
   sub,
   right,
   danger,
+  className = '',
 }: {
   to?: string;
   onClick?: () => void;
+  className?: string;
   icon: LucideIcon;
   title: ReactNode;
   sub?: ReactNode;
@@ -670,17 +672,17 @@ export function SettingRow({
   );
   if (to)
     return (
-      <Link to={to} className="lst-r">
+      <Link to={to} className={`lst-r ${className}`}>
         {inner}
       </Link>
     );
   if (onClick)
     return (
-      <button type="button" onClick={onClick} className="lst-r w-full text-start">
+      <button type="button" onClick={onClick} className={`lst-r w-full text-start ${className}`}>
         {inner}
       </button>
     );
-  return <div className="lst-r">{inner}</div>;
+  return <div className={`lst-r ${className}`}>{inner}</div>;
 }
 
 /** Encadré d'information gris avec l'icône ⓘ (design .sf). */
