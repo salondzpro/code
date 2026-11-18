@@ -712,7 +712,23 @@ on('PUT', '/pro/label-socials', (c) => {
 });
 // PROGRAMME FIDÉLITÉ (18 nov. 2026) : les deux salons de démonstration en ont un d'office (passages chez
 // le barbier, points chez l'institut), pour le voir partout. Mêmes règles que l'API (`loyaltyState`).
-const demoLoyalty = new Map<string, LoyaltyProgram>();
+// Gardé dans le navigateur : le réglage du pro doit se voir côté cliente après un rechargement.
+const LOYALTY_KEY = 'salondz:demo:loyalty';
+const demoLoyalty = {
+  all: (): Record<string, LoyaltyProgram> => {
+    try {
+      return JSON.parse(localStorage.getItem(LOYALTY_KEY) ?? '{}') as Record<string, LoyaltyProgram>;
+    } catch {
+      return {};
+    }
+  },
+  get(k: string): LoyaltyProgram | undefined {
+    return this.all()[k];
+  },
+  set(k: string, v: LoyaltyProgram) {
+    localStorage.setItem(LOYALTY_KEY, JSON.stringify({ ...this.all(), [k]: v }));
+  },
+};
 const loyaltyOf = (c: Ctx, salonId: string): LoyaltyProgram => {
   const kept = demoLoyalty.get(salonId);
   if (kept) return kept;
