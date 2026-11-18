@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { Download, Play, Share, Sparkles, X } from 'lucide-react';
+import { Download, Play, Share, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { useLabelSocials } from '@salondz/api-client';
 import { minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
@@ -17,7 +17,7 @@ import { proTips, type ProTip } from '@/lib/proTips';
 import { saveImage, shareImage } from '@/lib/storyImage';
 import { useStoryDefaultDay } from '@/lib/useStorySlots';
 import { isNativeApp } from '@/lib/nativeFile';
-import { loadVideoFonts, prepareVideo, provideVideo, useVideoFile } from '@/lib/bioVideoStore';
+import { loadVideoFonts, prepareVideo, provideVideo, soundtrack, useVideoFile } from '@/lib/bioVideoStore';
 import { t } from '@/i18n';
 
 const TIP_MS = 7000;
@@ -109,6 +109,33 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
   // Le geste fait avant que le fichier soit fini : il s'exécute dès qu'il l'est.
   const [wanted, setWanted] = useState<'share' | 'save' | null>(null);
   const fallback = useRef<(() => void) | null>(null);
+  // Le son de l'aperçu : la même bande que dans le fichier, jouée en même temps que l'image.
+  const [muted, setMuted] = useState(false);
+  const mutedRef = useRef(false);
+  mutedRef.current = muted;
+  const audio = useRef<{ ctx: AudioContext | null; buffer: AudioBuffer | null; src: AudioBufferSourceNode | null; at: () => number }>({ ctx: null, buffer: null, src: null, at: () => 0 });
+  const startSound = (fromMs: number) => {
+    const a = audio.current;
+    a.src?.stop();
+    a.src = null;
+    if (!a.ctx || !a.buffer || a.ctx.state !== 'running' || fromMs >= a.buffer.duration * 1000) return;
+    const src = a.ctx.createBufferSource();
+    src.buffer = a.buffer;
+    src.connect(a.ctx.destination);
+    src.start(0, fromMs / 1000);
+    a.src = src;
+  };
+  const toggleSound = () => {
+    const a = audio.current;
+    if (!muted) {
+      a.src?.stop();
+      a.src = null;
+      setMuted(true);
+      return;
+    }
+    setMuted(false);
+    void a.ctx?.resume().then(() => startSound(a.at()));
+  };
   useFullScreen(onClose);
 
   useEffect(() => {
@@ -158,6 +185,8 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
         recorder.start();
       }
       const start = performance.now();
+      audio.current.at = () => Math.min(Math.max(0, performance.now() - start), BIO_VIDEO_MS);
+      if (!mutedRef.current) startSound(0);
       const tick = (now: number) => {
         // Le premier instant peut précéder `start` de quelques millisecondes.
         const ms = Math.min(Math.max(0, now - start), BIO_VIDEO_MS);
@@ -191,8 +220,13 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
         }, 40);
         probe.start();
       });
-    void Promise.all([load(), loadVideoFonts()]).then(([d]) => {
+    void Promise.all([load(), loadVideoFonts()]).then(async ([d]) => {
       data = d;
+      // Ouvert d'un toucher : le navigateur laisse en général le son démarrer tout de suite.
+      const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (Ctx && !audio.current.ctx) audio.current.ctx = new Ctx();
+      await audio.current.ctx?.resume().catch(() => undefined);
+      audio.current.buffer = await soundtrack(version, d);
       if (!dead) play();
     });
     fallback.current = () => {
@@ -204,6 +238,10 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
       dead = true;
       cancelAnimationFrame(raf);
       if (recorder?.state === 'recording') recorder.stop();
+      audio.current.src?.stop();
+      audio.current.src = null;
+      void audio.current.ctx?.close().catch(() => undefined);
+      audio.current.ctx = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version]);
@@ -252,11 +290,15 @@ function VideoViewer({ load, version, file, photo, women, name, onClose }: { loa
             <b ref={bar} className="live" />
           </i>
         </div>
+        <button type="button" aria-label={muted ? t('Activer le son') : t('Couper le son')} aria-pressed={!muted} onClick={toggleSound}>
+          <I icon={muted ? VolumeX : Volume2} size={22} />
+        </button>
         <button type="button" aria-label={t('Fermer')} onClick={onClose}>
           <I icon={X} size={24} />
         </button>
       </div>
       <div className="sv-a">
+        <h2 className="sv-tt">{t('Votre pub vidéo, prête à faire réserver')}</h2>
         {noVideo ? (
           <p>{t('Ce téléphone ne sait pas créer la vidéo.')}</p>
         ) : (
@@ -320,7 +362,7 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
               <I icon={Play} size={18} />
             </i>
           </span>
-          {t('Ma vidéo')}
+          {t('Ma pub')}
         </button>
         <button type="button" onClick={() => see('tips')}>
           <span className={`h12-sv${readSeen(tipsKey) === today ? '' : ' on'}`}>

@@ -2365,4 +2365,14 @@ export const ar: Record<string, string> = {
   "Avance": "تسبيق",
   "Avance chez {salon}": "تسبيق عند {salon}",
   "Avances des clients": "تسبيقات الزبائن",
+  // « Ma pub » : son, fin aux boutiques (18 nov. 2026)
+  "Réservez en 3 clics, sans appeler": "احجز في 3 نقرات، دون اتصال",
+  "Disponible en application": "متوفر أيضًا كتطبيق",
+  "Télécharger dans": "حمّله من",
+  "l’App Store": "App Store",
+  "DISPONIBLE SUR": "احصل عليه من",
+  "Activer le son": "تشغيل الصوت",
+  "Couper le son": "كتم الصوت",
+  "Votre pub vidéo, prête à faire réserver": "إعلانك بالفيديو جاهز لجلب الحجوزات",
+  "Ma pub": "إعلاني",
 };

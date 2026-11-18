@@ -2379,4 +2379,14 @@ export const en: Record<string, string> = {
   "Avance": "Advance",
   "Avance chez {salon}": "Advance at {salon}",
   "Avances des clients": "Client advances",
+  // « Ma pub » : son, fin aux boutiques (18 nov. 2026)
+  "Réservez en 3 clics, sans appeler": "Book in 3 taps, no phone call",
+  "Disponible en application": "Also available as an app",
+  "Télécharger dans": "Download on the",
+  "l’App Store": "App Store",
+  "DISPONIBLE SUR": "GET IT ON",
+  "Activer le son": "Turn sound on",
+  "Couper le son": "Mute",
+  "Votre pub vidéo, prête à faire réserver": "Your video ad, ready to bring in bookings",
+  "Ma pub": "My ad",
 };

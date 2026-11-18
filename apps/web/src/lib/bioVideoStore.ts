@@ -4,7 +4,8 @@
  * jour, car la vidéo montre la date et les heures libres.
  */
 import { useSyncExternalStore } from 'react';
-import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, drawBioFrame, type BioVideoData } from './bioVideo';
+import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioSoundCues, bioVoiceLines, drawBioFrame, type BioVideoData } from './bioVideo';
+import { renderBioSound } from './bioVideoSound';
 import { encodeVideo } from './videoEncode';
 
 type State = { key: string; blob: Blob | null; progress: number; failed: boolean };
@@ -49,6 +50,13 @@ async function save(key: string, blob: Blob) {
 export const loadVideoFonts = () =>
   Promise.all(['700 60px "Plus Jakarta Sans"', '500 16px "Plus Jakarta Sans"'].map((f) => document.fonts.load(f).catch(() => undefined)));
 
+/** La bande son, rendue une fois par vidéo : sert au fichier ET à la lecture à l'écran. */
+let sound: { key: string; buffer: Promise<AudioBuffer | null> } | null = null;
+export function soundtrack(key: string, data: BioVideoData): Promise<AudioBuffer | null> {
+  if (sound?.key !== key) sound = { key, buffer: renderBioSound(bioSoundCues(data), BIO_VIDEO_MS, bioVoiceLines(data)).catch(() => null) };
+  return sound.buffer;
+}
+
 /** Une seule fabrication à la fois, et jamais deux fois la même. */
 export function prepareVideo(key: string, load: () => Promise<BioVideoData>) {
   if (state.key === key) return;
@@ -62,12 +70,15 @@ export function prepareVideo(key: string, load: () => Promise<BioVideoData>) {
       return;
     }
     const [data] = await Promise.all([load(), loadVideoFonts()]);
+    const sound = await soundtrack(key, data);
+    if (state.key !== key) return;
     const blob = await encodeVideo(
       BIO_VIDEO_SIZE,
       BIO_VIDEO_MS,
       (g, ms) => drawBioFrame(g, ms, data),
       (progress) => state.key === key && set({ progress }),
       () => state.key !== key,
+      sound,
     ).catch(() => null);
     if (state.key !== key) return;
     if (!blob) {

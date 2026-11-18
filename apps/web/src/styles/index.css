@@ -8505,6 +8505,15 @@ html[data-kb] #root {
     gap: 12px;
     padding: 0 16px calc(14px + var(--safe-bottom));
   }
+  /* Le titre de l'outil (18 nov. 2026, demande du propriétaire : « très marketing »). */
+  .sv-tt {
+    margin: 0;
+    text-align: center;
+    font-size: calc(17px * var(--fz, 1));
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-ink, #111111);
+  }
   .sv-w {
     display: flex;
     align-items: center;

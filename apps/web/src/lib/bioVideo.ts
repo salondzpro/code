@@ -19,14 +19,15 @@ import type { SalonOwnerView } from '@salondz/types';
 import { proProfile, profileJob, profilePhotos } from './proProfile';
 import { loadImage } from './storyImage';
 import { formatDuration } from './format';
-import { t } from '@/i18n';
+import { getLocale, t } from '@/i18n';
+import type { VoiceLine } from './bioVideoSound';
 
 const W = 720;
 const H = 1280;
 export const BIO_VIDEO_SIZE = { width: W, height: H };
-export const BIO_VIDEO_MS = 18500;
+export const BIO_VIDEO_MS = 21000;
 /** Change à chaque nouveau dessin : la vidéo préparée et gardée sur l'appareil est refaite. */
-const DESIGN = 4;
+const DESIGN = 5;
 
 // Charte actuelle (docs/CHARTE.md) : encre, gris, fond, vert de « oui », étoile dorée.
 const INK = '#111111';
@@ -66,6 +67,8 @@ export type BioVideoData = {
   initials: string;
   /** Sans validation manuelle, le rendez-vous est pris tout de suite. */
   confirmed: boolean;
+  /** Salon d'hommes : voix off d'homme, sinon de femme. */
+  men: boolean;
   services: { name: string; price: string; meta: string }[];
   picked: { name: string; price: string; meta: string };
   month: string;
@@ -109,6 +112,7 @@ export async function loadBioVideo(salon: SalonOwnerView, link: string, date: st
     rating: salon.ratingCount ? `${salon.ratingAvg.toFixed(1).replace('.', ',')} (${salon.ratingCount})` : '',
     initials: salon.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase(),
     confirmed: salon.autoConfirm,
+    men,
     services,
     picked: services[0] ?? { name: salon.name, price: '', meta: '' },
     month: capitalize(pretty(date, { month: 'long', year: 'numeric' })),
@@ -134,7 +138,8 @@ export function bioVideoVersion(salon: SalonOwnerView, link: string): string {
     .filter((s) => s.isActive)
     .map((s) => `${s.id}:${s.name}:${s.priceDa}`)
     .sort();
-  return JSON.stringify([DESIGN, link, salon.coverUrl, salon.logoUrl, salon.autoConfirm, salon.ratingCount, services]);
+  // La langue aussi : les textes ET la voix off changent avec elle.
+  return JSON.stringify([DESIGN, getLocale(), salon.genderTarget, link, salon.coverUrl, salon.logoUrl, salon.autoConfirm, salon.ratingCount, services]);
 }
 
 /**
@@ -157,9 +162,10 @@ const ease = (x: number) => {
 };
 const out = (x: number) => 1 - Math.pow(1 - clamp(x), 3);
 /** Arrivée avec un léger dépassement (ressort) : l'élément « se pose ». */
-const spring = (x: number) => {
+const spring = (x: number): number => {
   const k = clamp(x);
-  return 1 + 1.6 * Math.pow(k - 1, 3) + 0.6 * Math.pow(k - 1, 2);
+  // Jamais négatif : un rayon de -5e-15 à l’instant 0 faisait échouer `arc()` et toute la fabrication.
+  return Math.max(0, 1 + 1.6 * Math.pow(k - 1, 3) + 0.6 * Math.pow(k - 1, 2));
 };
 const mix = (a: number, b: number, k: number) => a + (b - a) * k;
 
@@ -927,7 +933,8 @@ function drawIntro(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   g.restore();
   g.globalAlpha = (1 - leave) * out((ms - 120) / 350);
   line(g, d.salon, W / 2, 680, f(800, fit(g, d.salon, 800, 62, W - 80)), INK, 'center');
-  line(g, t('Comment réserver chez nous'), W / 2, 740, f(500, 30), MUTED, 'center', W - 80);
+  // L'accroche, dès la première seconde : ce qui fait rester sur la story.
+  line(g, t('Réservez en 3 clics, sans appeler'), W / 2, 740, f(600, 32), INK, 'center', W - 80);
   g.restore();
 }
 
@@ -952,6 +959,88 @@ function drawBackdrop(g: CanvasRenderingContext2D, d: BioVideoData) {
   g.fillRect(0, 979, W, H - 979);
 }
 
+const LINK_Y = 640;
+/** Les deux boutiques apparaissent après le dernier clic sur le lien. */
+const STORES_AT = 17500;
+
+/** Logos officiels des boutiques (tracés 24 × 24, Simple Icons, CC0). */
+const APPLE = new Path2D(
+  'M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701',
+);
+/** Le triangle de Google Play en quatre pièces, chacune à sa couleur officielle. */
+const PLAY: [string, Path2D][] = [
+  ['#00a0ff', new Path2D('M1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924z')],
+  ['#00f076', new Path2D('M13.544 10.989l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973z')],
+  ['#ffd500', new Path2D('M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594z')],
+  ['#ff3a44', new Path2D('M13.544 13.056l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z')],
+];
+
+/** Badge de boutique, noir comme les badges officiels : logo, petite ligne, nom de la boutique. */
+function storeBadge(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, kind: 'apple' | 'google') {
+  g.save();
+  g.shadowColor = 'rgba(17,17,17,.18)';
+  g.shadowBlur = 16;
+  g.shadowOffsetY = 5;
+  box(g, x, y, w, h, 16, '#000000');
+  g.restore();
+  box(g, x + 1, y + 1, w - 2, h - 2, 15, null, '#a6a6a6', 1.5);
+  const s = 1.85;
+  g.save();
+  g.translate(x + 22, y + (h - 24 * s) / 2);
+  g.scale(s, s);
+  if (kind === 'apple') {
+    g.fillStyle = '#ffffff';
+    g.fill(APPLE);
+  } else {
+    PLAY.forEach(([c, p]) => {
+      g.fillStyle = c;
+      g.fill(p);
+    });
+  }
+  g.restore();
+  const tx = x + 22 + 24 * s + 14;
+  const max = w - (tx - x) - 12;
+  const store = kind === 'apple' ? t('l’App Store') : 'Google Play';
+  line(g, kind === 'apple' ? t('Télécharger dans') : t('DISPONIBLE SUR'), tx, y + 31, f(500, 15), '#ffffff', 'left', max);
+  line(g, store, tx, y + 60, f(700, Math.min(28, fit(g, 'Google Play', 700, 28, max), fit(g, store, 700, 28, max))), '#ffffff', 'left', max);
+}
+
+/* ------------------------------ Le son ------------------------------ */
+
+/** Les instants du son, tirés du minutage de l'image : un clic tombe pile sur son toucher. */
+export type BioSoundCues = {
+  pop: number;
+  taps: number[];
+  whooshes: number[];
+  /** [début, fin, nombre de lettres] de chaque saisie. */
+  typing: [number, number, number][];
+  success: number;
+  stores: number;
+};
+
+export function bioSoundCues(d: BioVideoData): BioSoundCues {
+  const prenom = d.typedName.split(' ')[0] ?? d.typedName;
+  return {
+    pop: 40,
+    taps: [TAP.bio, TAP.choose, TAP.day, TAP.hour, TAP.next, TAP.femme, TAP.create, TAP.confirm, TAP.link],
+    whooshes: [T.phoneIn - 200, T.browser, T.stepWhen, T.signup, T.stepRecap, T.done, T.end],
+    typing: [
+      [T.signup + 450, T.signup + 1150, prenom.length + 10],
+      [T.signup + 1300, T.signup + 1650, prenom.length],
+    ],
+    success: T.done + 250,
+    stores: STORES_AT + 150,
+  };
+}
+
+/** La voix off : sept répliques, calées sur les écrans ; la voix suit le type de salon. */
+const VOICE_AT = [150, 2650, 5900, 8500, 11000, 14500, STORES_AT + 100];
+export function bioVoiceLines(d: BioVideoData): VoiceLine[] {
+  const lang = getLocale();
+  const who = d.men ? 'h' : 'f';
+  return VOICE_AT.map((at, i) => ({ at, file: `/video/voix/${lang}-${who}-${i + 1}.mp3` }));
+}
+
 /** La fin : le nom, « Réservez en 30 secondes », et le lien — que le curseur vient cliquer. */
 function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   const a = spring(ms / 600);
@@ -974,26 +1063,45 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
     line(g, d.rating, W / 2 + 14, 526, f(600, 26), INK, 'center');
   }
   g.globalAlpha = out((ms - 550) / 450);
-  line(g, t('Réservez en 30 secondes.'), W / 2, 616, f(700, 40), INK, 'center', W - 80);
+  line(g, t('Réservez en 30 secondes.'), W / 2, 600, f(700, 40), INK, 'center', W - 80);
   // Le lien, en gros bouton noir : le curseur vient le cliquer.
   g.globalAlpha = out((ms - 850) / 450);
   const pressed = pressedAt(ms + T.end, TAP.link);
   g.save();
-  pressScale(g, W / 2, 730, pressed);
-  box(g, 50, 690, W - 100, 84, 42, INK);
+  pressScale(g, W / 2, LINK_Y + 42, pressed);
+  box(g, 50, LINK_Y, W - 100, 84, 42, INK);
   // Le lien EN ENTIER : la taille baisse plutôt que de le couper.
   const lp = fit(g, d.link, 700, 30, W - 150);
-  line(g, d.link, W / 2, 743, f(700, lp), '#ffffff', 'center', W - 140);
+  line(g, d.link, W / 2, LINK_Y + 53, f(700, lp), '#ffffff', 'center', W - 140);
   g.restore();
-  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 826, f(500, 24), MUTED, 'center', W - 80);
-  g.globalAlpha = out((ms - 1300) / 450);
-  line(g, `Salon DZ · ${t('réservation en ligne')}`, W / 2, 1010, f(500, 20), SUBTLE, 'center');
+  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 768, f(500, 24), MUTED, 'center', W - 80);
+  // « Disponible en application » : les deux boutiques, qui se posent l'une après l'autre.
+  const sIn = ms - (STORES_AT - T.end);
+  if (sIn > 0) {
+    g.globalAlpha = out(sIn / 400);
+    line(g, t('Disponible en application'), W / 2, 862, f(700, 30), INK, 'center', W - 80);
+    const bw = 280;
+    const gap = 16;
+    const x0 = (W - bw * 2 - gap) / 2;
+    (['apple', 'google'] as const).forEach((kind, i) => {
+      const k = spring((sIn - 150 - i * 140) / 520);
+      if (k <= 0) return;
+      g.save();
+      g.globalAlpha = clamp((sIn - 150 - i * 140) / 200);
+      const cx = x0 + i * (bw + gap) + bw / 2;
+      g.translate(cx, 930);
+      g.scale(k, k);
+      g.translate(-cx, -930);
+      storeBadge(g, x0 + i * (bw + gap), 892, bw, 76, kind);
+      g.restore();
+    });
+  }
   g.globalAlpha = 1;
   // Dernier clic, sur le lien.
   const keys: [number, number, number][] = [
     [T.end + 1300, 600, 1000],
-    [TAP.link - 150, W - 150, 720],
-    [TAP.link + 700, W - 150, 720],
+    [TAP.link - 150, W - 150, LINK_Y + 30],
+    [TAP.link + 700, W - 150, LINK_Y + 30],
   ];
   const at = cursorAt(keys, ms + T.end);
   if (at) drawCursor(g, at[0], at[1], ms + T.end, [TAP.link], 1.5);
