@@ -62,10 +62,13 @@ export function ProfileSetup() {
     }
   };
 
+  // Seulement ce qui MANQUE au compte (18 nov. 2026) : un compte qui a déjà son nom ne le retape pas.
+  const avaitNom = !!me.data?.profile.fullName;
+  const avaitTel = !!me.data?.profile.phone;
+  const titre = avaitNom && !avaitTel ? t('Votre numéro') : !avaitNom && avaitTel ? t('Votre nom') : t('Vos coordonnées');
   return (
     <AuthScreen
-      titre={t('Vos coordonnées')}
-      sous={isPro ? t('Pour que Salon DZ puisse vous joindre au sujet de votre espace.') : t('Le salon s’en sert pour vous joindre au sujet de votre rendez-vous.')}
+      titre={titre}
       actions={
         <Button icon={ICONE.valider} type="submit" form="pa-profil" loading={update.isPending} disabled={me.isPending}>
           {t('Terminer')}
@@ -73,6 +76,7 @@ export function ProfileSetup() {
       }
     >
       <form id="pa-profil" onSubmit={submit} noValidate className="pa-form">
+        {!avaitNom && (
         <Field label={t("Prénom et nom")} htmlFor="full-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
             id="full-name"
@@ -86,6 +90,8 @@ export function ProfileSetup() {
             placeholder={t("Inès Rahmani")}
           />
         </Field>
+        )}
+        {!avaitTel && (
         <PhoneDZField
           id="profile-phone"
           digits={digits}
@@ -95,6 +101,7 @@ export function ProfileSetup() {
           }}
           error={error?.field === 'phone' ? error.msg : null}
         />
+        )}
         {error?.field === 'form' && (
           <p className="text-[1rem] text-danger" role="alert">
             {error.msg}
