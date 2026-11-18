@@ -13,7 +13,8 @@ import { t } from '@/i18n';
 
 export function ProCredits() {
   const q = useProCredits();
-  const total = (q.data ?? []).reduce((a, r) => a + r.balance, 0);
+  const total = (q.data ?? []).reduce((a, r) => a + Math.max(0, r.balance), 0);
+  const avances = (q.data ?? []).reduce((a, r) => a + Math.max(0, -r.balance), 0);
   return (
     <Screen bottom={NAV_PAD} gap={12}>
       <TopBar backTo="/pro/parametres" title={t('Crédits clients')} />
@@ -31,6 +32,14 @@ export function ProCredits() {
               {formatDA(total)}
             </span>
           </div>
+          {avances > 0 && (
+            <div className="crd !flex-row items-center justify-between">
+              <b className="text-[1rem] font-semibold">{t('Avances des clients')}</b>
+              <span className="cr-bal text-ok-fg" dir="ltr">
+                +{formatDA(avances)}
+              </span>
+            </div>
+          )}
           <div className="crd !gap-0 !py-1">
             {q.data.map((r) => (
               <Link key={r.clientKey} to={`/pro/clients/${encodeURIComponent(r.clientKey)}`} className="li">
@@ -41,8 +50,8 @@ export function ProCredits() {
                     {r.lastAt && <span className="block text-[0.857rem] text-muted">{formatDateShortDZ(r.lastAt)}</span>}
                   </span>
                 </span>
-                <b className="flex-none text-[1rem] text-danger" dir="ltr">
-                  {formatDA(r.balance)}
+                <b className={`flex-none text-[1rem] ${r.balance > 0 ? 'text-danger' : 'text-ok-fg'}`} dir="ltr">
+                  {r.balance > 0 ? formatDA(r.balance) : `+${formatDA(-r.balance)}`}
                 </b>
               </Link>
             ))}

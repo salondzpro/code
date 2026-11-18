@@ -98,10 +98,12 @@ export function Profile() {
                 <span className="fid-ic" aria-hidden>
                   <I icon={ICONE.credit} size={18} strokeWidth={1.7} />
                 </span>
-                <b className="min-w-0 truncate text-[1rem] font-semibold">{t('Crédit chez {salon}', { salon: c.salonName })}</b>
+                <b className="min-w-0 truncate text-[1rem] font-semibold">
+                  {c.balance > 0 ? t('Crédit chez {salon}', { salon: c.salonName }) : t('Avance chez {salon}', { salon: c.salonName })}
+                </b>
               </span>
-              <b className="flex-none text-[1rem] text-danger" dir="ltr">
-                {formatDA(c.balance)}
+              <b className={`flex-none text-[1rem] ${c.balance > 0 ? 'text-danger' : 'text-ok-fg'}`} dir="ltr">
+                {c.balance > 0 ? formatDA(c.balance) : `+${formatDA(-c.balance)}`}
               </b>
             </div>
           ))}

@@ -2361,4 +2361,8 @@ export const ar: Record<string, string> = {
   "Un seul programme à la fois : l’ancien s’arrête.": "برنامج واحد في كل مرة: يتوقف القديم.",
   "Remplacer": "استبدال",
   "Garder « {ancien} »": "الإبقاء على «{ancien}»",
+  "Dû": "مستحق",
+  "Avance": "تسبيق",
+  "Avance chez {salon}": "تسبيق عند {salon}",
+  "Avances des clients": "تسبيقات الزبائن",
 };

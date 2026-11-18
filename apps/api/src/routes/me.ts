@@ -138,7 +138,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const identite = (['fullName', 'phone', 'gender', 'avatarUrl'] as const).some(
       (k) => k in body && (body as Record<string, unknown>)[k] !== (req.profile as unknown as Record<string, unknown>)[k],
     );
-    if (identite && req.profile!.role === 'client' && (await clientCredits(req.user!.id, req.profile!.phone ?? null)).length > 0) {
+    if (identite && req.profile!.role === 'client' && (await clientCredits(req.user!.id, req.profile!.phone ?? null)).some((c) => c.balance > 0)) {
       throw conflict('CREDIT_LOCKED', 'Un crédit est en cours chez un salon : vos informations ne peuvent pas changer avant son règlement.');
     }
     // Le numéro identifie la personne dans les règles anti-abus et les fiches des salons : une fois un
@@ -465,7 +465,7 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     // suppression d'un compte client le temps d'un déploiement.
     const body = z.object({ withSalon: z.boolean().optional() }).safeParse(req.body ?? {});
     // Crédit en cours chez un salon : le compte ne se supprime pas avant le règlement.
-    if (req.profile!.role === 'client' && (await clientCredits(req.user!.id, req.profile!.phone ?? null)).length > 0) {
+    if (req.profile!.role === 'client' && (await clientCredits(req.user!.id, req.profile!.phone ?? null)).some((c) => c.balance > 0)) {
       throw conflict('CREDIT_OPEN', 'Un crédit est en cours chez un salon : le compte pourra être supprimé une fois réglé.');
     }
     if (body.success && body.data.withSalon) await eraseProAccount(req.log, req.user!.id);

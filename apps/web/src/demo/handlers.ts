@@ -852,7 +852,7 @@ on('GET', '/pro/credits', (c) => {
     demoCredits.entries()
       .filter(([k]) => k.startsWith(sid + ':'))
       .map(([, f]) => ({ clientKey: f.clientKey, name: f.name, phone: f.phone, balance: creditBalance(f.entries), lastAt: f.entries.at(-1)?.at ?? null }))
-      .filter((r) => r.balance > 0)
+      .filter((r) => r.balance !== 0)
       .sort((a, b) => b.balance - a.balance),
   );
 });

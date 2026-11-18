@@ -48,7 +48,11 @@ export function CreditPanel({ clientKey }: { clientKey: string }) {
         right={
           balance > 0 ? (
             <Badge tone="cn" md dot={false}>
-              <span dir="ltr">{formatDA(balance)}</span>
+              {t('Dû')} <span dir="ltr">{formatDA(balance)}</span>
+            </Badge>
+          ) : balance < 0 ? (
+            <Badge tone="ok" md dot={false}>
+              {t('Avance')} <span dir="ltr">+{formatDA(-balance)}</span>
             </Badge>
           ) : (
             <Badge tone="ok" md dot={false}>
@@ -61,7 +65,7 @@ export function CreditPanel({ clientKey }: { clientKey: string }) {
         <Button icon={ICONE.ajouter} variant="g" sm className="flex-1" onClick={() => setSheet('debt')}>
           {t('Crédit')}
         </Button>
-        <Button icon={ICONE.valider} sm className="flex-1" disabled={balance === 0} onClick={() => setSheet('payment')}>
+        <Button icon={ICONE.valider} sm className="flex-1" onClick={() => setSheet('payment')}>
           {t('Encaisser')}
         </Button>
       </div>

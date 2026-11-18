@@ -2375,4 +2375,8 @@ export const en: Record<string, string> = {
   "Un seul programme à la fois : l’ancien s’arrête.": "One programme at a time: the old one stops.",
   "Remplacer": "Replace",
   "Garder « {ancien} »": "Keep “{ancien}”",
+  "Dû": "Owed",
+  "Avance": "Advance",
+  "Avance chez {salon}": "Advance at {salon}",
+  "Avances des clients": "Client advances",
 };

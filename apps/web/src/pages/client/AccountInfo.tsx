@@ -26,7 +26,7 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
   const { user } = useAuth();
   const me = useMe();
   // Crédit en cours chez un salon : identité gelée (le serveur refuse aussi, CREDIT_LOCKED).
-  const gele = (useMyCredits().data?.length ?? 0) > 0;
+  const gele = !!useMyCredits().data?.some((c) => c.balance > 0);
   const update = useUpdateProfile();
   const [name, setName] = useState('');
   const [digits, setDigits] = useState('');

@@ -92,9 +92,12 @@ export interface CreditFile {
   entries: CreditEntry[];
 }
 
-/** Solde dû (sommes dues − encaissements), jamais négatif. */
+/**
+ * Solde (sommes dues − encaissements) : POSITIF = le client doit ; NÉGATIF = il a payé plus, c'est une
+ * AVANCE en sa faveur (18 nov. 2026, demande du propriétaire). Seul un solde dû gèle le compte.
+ */
 export const creditBalance = (entries: Pick<CreditEntry, 'kind' | 'amount'>[]): number =>
-  Math.max(0, entries.reduce((a, e) => a + (e.kind === 'debt' ? e.amount : -e.amount), 0));
+  entries.reduce((a, e) => a + (e.kind === 'debt' ? e.amount : -e.amount), 0);
 
 /** Côté client : un crédit en cours chez un salon. */
 export interface ClientCredit {

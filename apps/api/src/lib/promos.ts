@@ -126,7 +126,9 @@ export async function addCredit(
         ? `${formatDA(entry.amount)} à régler. Reste dû : ${formatDA(balance)}.`
         : balance > 0
           ? `${formatDA(entry.amount)} reçus. Reste dû : ${formatDA(balance)}.`
-          : `${formatDA(entry.amount)} reçus. Votre crédit est soldé, merci.`;
+          : balance < 0
+            ? `${formatDA(entry.amount)} reçus. Avance en votre faveur : ${formatDA(-balance)}.`
+            : `${formatDA(entry.amount)} reçus. Votre crédit est soldé, merci.`;
     const ins = await db.from('notifications').insert({ user_id: client.clientId, type: 'booking_completed', title, body, data: { kind: 'credit', salonId: salon.id, url: '/profil' } });
     if (ins.error) log.warn({ err: ins.error }, 'credit notify');
     else void dispatchPendingPush(log).catch(() => undefined);
@@ -151,7 +153,7 @@ export async function salonCredits(salonId: string): Promise<SalonCreditRow[]> {
     try {
       const f = JSON.parse(r.value as string) as CreditFile;
       const balance = creditBalance(f.entries ?? []);
-      if (balance > 0) rows.push({ clientKey: f.clientKey, name: f.name, phone: f.phone, balance, lastAt: f.entries.at(-1)?.at ?? null });
+      if (balance !== 0) rows.push({ clientKey: f.clientKey, name: f.name, phone: f.phone, balance, lastAt: f.entries.at(-1)?.at ?? null });
     } catch {
       /* ignoré */
     }
@@ -174,7 +176,7 @@ export async function clientCredits(userId: string, phone: string | null): Promi
     try {
       const f = JSON.parse(r.value as string) as CreditFile;
       const balance = creditBalance(f.entries ?? []);
-      if (balance > 0) open.push({ salonId: (r.key as string).split(':')[1]!, balance });
+      if (balance !== 0) open.push({ salonId: (r.key as string).split(':')[1]!, balance });
     } catch {
       /* ignoré */
     }
