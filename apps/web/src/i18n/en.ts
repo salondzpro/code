@@ -2395,4 +2395,11 @@ export const en: Record<string, string> = {
   "Suivez votre rendez-vous dans l’application": "Follow your appointment in the app",
   "Télécharger sur l’App Store": "Download on the App Store",
   "Disponible sur Google Play": "Get it on Google Play",
+  "Votre rendez-vous vous suit dans l’application": "Your appointment follows you in the app",
+  "Un rappel avant votre rendez-vous": "A reminder before your appointment",
+  "Reporter ou annuler en un geste": "Reschedule or cancel in one tap",
+  "Vos cadeaux fidélité": "Your loyalty gifts",
+  "QR code de l’application": "App QR code",
+  "Scannez avec votre téléphone": "Scan with your phone",
+  "Connectez-vous avec {email}": "Sign in with {email}",
 };

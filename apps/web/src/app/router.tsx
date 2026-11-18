@@ -15,6 +15,7 @@ import { ErrorBoundary } from '@/pages/ErrorBoundary';
 import { APPLI, MARCHE, NATIF, PRO_ONLY } from '@/lib/flavor';
 import { NotFound } from '@/pages/NotFound';
 import { RootSlug } from '@/pages/client/RootSlug';
+import { AppRedirect } from '@/pages/AppRedirect';
 // Parcours de connexion (design AUTH 01 → 16)
 import { Login } from '@/pages/auth/Login';
 import { SignUp } from '@/pages/auth/SignUp';
@@ -373,7 +374,7 @@ export const router = createBrowserRouter([
         ],
       },
       // Lien court des étiquettes : `salondz.com/<slug>` → page du salon (`/s/<slug>`).
-      ...(PRO_ONLY ? [] : [{ path: '/:slug', element: <RootSlug /> }]),
+      ...(PRO_ONLY ? [] : [{ path: '/app', element: <AppRedirect /> }, { path: '/:slug', element: <RootSlug /> }]),
       { path: '*', element: <NotFound /> },
     ],
   },

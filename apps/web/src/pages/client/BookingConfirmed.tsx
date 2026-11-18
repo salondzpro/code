@@ -7,7 +7,7 @@ import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
 import { formatDA } from '@salondz/constants';
 import { Button, I, TopBar } from '@/components/ui';
-import { AppInstallCard } from '@/components/AppBanner';
+import { AppHandoffCard, AppHandoffSheet } from '@/components/AppHandoff';
 import { BookingSummary } from '@/components/BookingSummary';
 import { ICONE } from '@/lib/actionIcons';
 import { directionsUrl } from './Bookings';
@@ -115,8 +115,9 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
           <I icon={ICONE.itineraire} size={18} /> {t('Itinéraire')}
         </a>
       </div>
-      {/* Sur le site, téléphone : l'application, directement sur le bon store. */}
-      <AppInstallCard />
+      {/* Passation vers l'application (façon Uber) : la carte ici, et une fenêtre une fois par réservation. */}
+      <AppHandoffCard />
+      <AppHandoffSheet bookingId={b.id} />
     </Screen>
   );
 }
