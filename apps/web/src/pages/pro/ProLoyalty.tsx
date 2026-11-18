@@ -84,7 +84,7 @@ export function ProLoyalty() {
       {on && (
         <>
           <SectionLabel>{t('La visite récompensée')}</SectionLabel>
-          <div className="dp-presets" role="radiogroup" aria-label={t('La visite récompensée')}>
+          <div className="dp-presets fid-presets" role="radiogroup" aria-label={t('La visite récompensée')}>
             {LOYALTY_VISITS.map((n) => (
               <button key={n} type="button" role="radio" aria-checked={visits === n} className={`dp-tile${visits === n ? ' on' : ''}`} onClick={() => setVisits(n)}>
                 {visits === n && <I icon={Check} size={14} strokeWidth={2.6} className="dp-tile-ok" />}
@@ -95,7 +95,7 @@ export function ProLoyalty() {
           </div>
 
           <SectionLabel>{t('La récompense')}</SectionLabel>
-          <div className="dp-presets" role="radiogroup" aria-label={t('La récompense')}>
+          <div className="dp-presets fid-presets" role="radiogroup" aria-label={t('La récompense')}>
             {REWARDS.map((r) => {
               const sel = reward.kind === r.kind && reward.value === r.value;
               return (
@@ -117,6 +117,7 @@ export function ProLoyalty() {
               <span className="text-[1rem] font-semibold">{t('Tampons valables')}</span>
               <Segmented
                 sm
+                className="fid-seg"
                 label={t('Tampons valables')}
                 value={String(validity)}
                 onChange={(v) => setValidity(v === '12' ? 12 : 6)}

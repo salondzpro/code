@@ -13513,3 +13513,8 @@ html.pro-theme .ag9-hr span {
 .fid-reward .fid-ic { background: #fff; }
 .fid-reward b { display: block; font-size: calc(15px * var(--fz, 1)); }
 .fid-reward span { font-size: calc(13px * var(--fz, 1)); color: #8a5a0d; }
+.dp-presets.fid-presets { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.fid-presets .dp-tile b { font-size: calc(15px * var(--fz, 1)); }
+.seg.fid-seg { flex: none; min-width: 9.5rem; }
+.seg.fid-seg > button { white-space: nowrap; }
+.fid-dot { max-width: 34px; }
