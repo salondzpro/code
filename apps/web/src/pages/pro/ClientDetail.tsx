@@ -52,6 +52,7 @@ import {
 } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
+import { CreditPanel } from '@/components/CreditPanel';
 import { t } from '@/i18n';
 
 /** « Annulé par le client », « Annulé par le salon », « Expiré » (demande jamais validée). */
@@ -332,6 +333,9 @@ export function ClientDetail() {
           {error}
         </p>
       )}
+
+      {/* Crédit du client (18 nov. 2026) : solde dû, « Crédit » / « Encaisser », historique. */}
+      <CreditPanel clientKey={key} />
 
       {/* Historique COMPLET, ouvert d'office (17 nov. 2026, demande du propriétaire) : onglets et pages,
           plus de « Voir tout l'historique ». */}

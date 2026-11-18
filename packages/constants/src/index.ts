@@ -37,3 +37,4 @@ export const STORAGE_BUCKETS = { salons: 'salons', avatars: 'avatars', deposits:
 export * from './serviceTemplates';
 export * from './publicLinks';
 export * from './loyalty';
+export * from './promos';

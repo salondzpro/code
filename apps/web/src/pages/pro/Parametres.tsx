@@ -48,6 +48,8 @@ export function Parametres() {
           title={t('Programme fidélité')}
           sub={loyalty.data?.enabled ? loyaltyHeadline(loyalty.data) : t('Désactivée')}
         />
+        <SettingRow to="/pro/promotions" icon={ICONE.promo} title={t('Promotions')} />
+        <SettingRow to="/pro/credits" icon={ICONE.credit} title={t('Crédits clients')} />
       </div>
       <div className="lst">
         {/* À plusieurs, « Équipe » est dans le menu « Plus » : une seule entrée. */}

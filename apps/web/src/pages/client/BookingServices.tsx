@@ -3,6 +3,7 @@
  * feuille de synthèse (durées, total, « Choisir un créneau »).
  */
 import { ICONE } from '@/lib/actionIcons';
+import { PromoPrice } from '@/components/PromoPrice';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSalon } from '@salondz/api-client';
@@ -68,7 +69,7 @@ export function BookingServices() {
         <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">{sv.name}</span>
         <span className="mt-1 block text-[1rem] font-semibold">
           <span dir="ltr">
-            {formatDA(sv.priceDa)}
+            <PromoPrice salonId={s.id} serviceId={sv.id} priceDa={sv.priceDa} />
             <span className="font-normal text-muted"> · {formatDuration(sv.durationMinutes)}</span>
           </span>
         </span>

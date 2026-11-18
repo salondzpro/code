@@ -8,6 +8,7 @@ import {
 } from '@salondz/validation';
 import type { BookingStanding, MeStats, Notification, Profile, SalonSummary } from '@salondz/types';
 import { checkPromo, clientCards, clientProgress } from '../lib/loyalty';
+import { clientCredits } from '../lib/promos';
 import { db } from '../lib/supabase';
 import { PRO_APP_ID, appMatchesRole, sendTestPush } from '../lib/push';
 import { readLabelSettings } from '../lib/labelSettings';
@@ -131,6 +132,15 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const { phone, ...rest } = req.body;
     const body = req.user!.phone ? rest : req.body;
     if (Object.keys(body).length === 0) return req.profile!;
+    // CRÉDIT EN COURS (18 nov. 2026) : identité gelée (nom, numéro, genre, photo) tant qu'un solde reste
+    // dû à un salon — contre les impayés et l'escroquerie. Langue et préférences restent libres ; l'e-mail
+    // et le mot de passe passent par l'authentification, jamais par ici.
+    const identite = (['fullName', 'phone', 'gender', 'avatarUrl'] as const).some(
+      (k) => k in body && (body as Record<string, unknown>)[k] !== (req.profile as unknown as Record<string, unknown>)[k],
+    );
+    if (identite && req.profile!.role === 'client' && (await clientCredits(req.user!.id, req.profile!.phone ?? null)).length > 0) {
+      throw conflict('CREDIT_LOCKED', 'Un crédit est en cours chez un salon : vos informations ne peuvent pas changer avant son règlement.');
+    }
     // Le numéro identifie la personne dans les règles anti-abus et les fiches des salons : une fois un
     // rendez-vous pris, il ne se change plus librement (support). Avant, il reste modifiable.
     if (phone && phone !== req.profile!.phone && req.profile!.phone) {
@@ -454,6 +464,10 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
     // (même `.optional()`) répond 400 à une requête DELETE vide — c'est ce qui avait cassé la
     // suppression d'un compte client le temps d'un déploiement.
     const body = z.object({ withSalon: z.boolean().optional() }).safeParse(req.body ?? {});
+    // Crédit en cours chez un salon : le compte ne se supprime pas avant le règlement.
+    if (req.profile!.role === 'client' && (await clientCredits(req.user!.id, req.profile!.phone ?? null)).length > 0) {
+      throw conflict('CREDIT_OPEN', 'Un crédit est en cours chez un salon : le compte pourra être supprimé une fois réglé.');
+    }
     if (body.success && body.data.withSalon) await eraseProAccount(req.log, req.user!.id);
     else await eraseClientAccount(req.log, req.user!.id);
     reply.status(204);
@@ -461,6 +475,12 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   // ---- Alertes « prévenez-moi si un créneau se libère » ----
+
+  /** Crédits en cours chez les salons (Mon compte ; gel des informations). */
+  app.get('/me/credits', async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return clientCredits(req.user!.id, req.profile!.phone ?? null);
+  });
 
   /** Fidélité : toutes mes cartes (« Ma fidélité »). */
   app.get('/me/loyalty', async (req, reply) => {

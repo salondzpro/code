@@ -7,7 +7,7 @@ import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronDown } from 'lucide-react';
-import { useMe, useUpdateProfile } from '@salondz/api-client';
+import { useMe, useMyCredits, useUpdateProfile } from '@salondz/api-client';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { visibleEmail } from '@/lib/alias';
@@ -25,6 +25,8 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
   const navigate = useNavigate();
   const { user } = useAuth();
   const me = useMe();
+  // Crédit en cours chez un salon : identité gelée (le serveur refuse aussi, CREDIT_LOCKED).
+  const gele = (useMyCredits().data?.length ?? 0) > 0;
   const update = useUpdateProfile();
   const [name, setName] = useState('');
   const [digits, setDigits] = useState('');
@@ -61,7 +63,13 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo={backTo} title={t('Mes informations')} />
+      {gele && (
+        <p className="text-[0.929rem] font-semibold text-danger" role="status">
+          {t('Crédit en cours : vos informations seront modifiables après règlement.')}
+        </p>
+      )}
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+        <fieldset disabled={gele} className="contents">
         <Field label={t('Prénom et nom')} htmlFor="ai-name" error={error?.field === 'name' ? error.msg : null}>
           <Input
             id="ai-name"
@@ -117,9 +125,10 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
             {error.msg}
           </p>
         )}
-        <Button icon={ICONE.enregistrer} type="submit" disabled={update.isPending || (!dirty && !saved)}>
+        <Button icon={ICONE.enregistrer} type="submit" disabled={gele || update.isPending || (!dirty && !saved)}>
           {saved ? t('Enregistré') : update.isPending ? t('Enregistrement…') : t('Enregistrer')}
         </Button>
+        </fieldset>
       </form>
     </Screen>
   );

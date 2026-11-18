@@ -17,7 +17,7 @@ import type {
 } from '@salondz/validation';
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
-import type { LoyaltyInput, ReviewSort } from './client';
+import type { LoyaltyInput, ReviewSort, ServicePromoInput } from './client';
 import type { ReportReason } from '@salondz/constants';
 import type { DepositSettings } from '@salondz/types';
 
@@ -954,3 +954,50 @@ export const useProLoyaltyClients = (enabled = true) => {
   const { api } = useApi();
   return useQuery({ queryKey: ['pro', 'loyalty', 'clients'], queryFn: () => api.pro.loyaltyClients(), enabled, retry: false });
 };
+
+// ---------------------------------------------------------------------------------------------
+// Promotions sur les prestations et crédit client (18 nov. 2026).
+// ---------------------------------------------------------------------------------------------
+export const usePromos = () => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['promos'], queryFn: () => api.public.promos(), staleTime: 5 * 60_000, retry: false });
+};
+export const useProPromos = () => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'promos'], queryFn: () => api.pro.promos() });
+};
+export function useSaveProPromos() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ServicePromoInput[]) => api.pro.savePromos(body),
+    onSuccess: (data) => {
+      qc.setQueryData(['pro', 'promos'], data);
+      qc.invalidateQueries({ queryKey: ['promos'] });
+    },
+  });
+}
+export const useMyCredits = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['me', 'credits'], queryFn: () => api.me.credits(), enabled, retry: false });
+};
+export const useProCredits = () => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'credits'], queryFn: () => api.pro.credits() });
+};
+export const useClientCredit = (key: string, enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'credit', key], queryFn: () => api.pro.clientCredit(key), enabled: enabled && !!key });
+};
+export function useCreditMutations(key: string) {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  const done = (data: unknown) => {
+    qc.setQueryData(['pro', 'credit', key], data);
+    qc.invalidateQueries({ queryKey: ['pro', 'credits'] });
+  };
+  return {
+    add: useMutation({ mutationFn: (body: { kind: 'debt' | 'payment'; amount: number; note?: string }) => api.pro.addCredit(key, body), onSuccess: done }),
+    remove: useMutation({ mutationFn: (entryId: string) => api.pro.removeCredit(key, entryId), onSuccess: done }),
+  };
+}

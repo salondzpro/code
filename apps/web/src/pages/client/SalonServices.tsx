@@ -1,5 +1,6 @@
 /** C-F 06 — Prestations illustrées : vignette, nom, durée · nombre de photos, prix, chevron vers le détail. */
 import { Link, useParams } from 'react-router';
+import { PromoPrice } from '@/components/PromoPrice';
 import { ChevronRight } from 'lucide-react';
 import { useSalon } from '@salondz/api-client';
 import { formatDA, groupServices } from '@salondz/constants';
@@ -36,7 +37,7 @@ export function SalonServices() {
                   {formatDuration(sv.durationMinutes)}
                   {photos.length ? ` · ${photos.length} photo${photos.length > 1 ? 's' : ''}` : ''}
                 </span>
-                <span className="mt-1.5 block text-[1rem] font-semibold">{formatDA(sv.priceDa)}</span>
+                <span className="mt-1.5 block text-[1rem] font-semibold"><PromoPrice salonId={s.id} serviceId={sv.id} priceDa={sv.priceDa} /></span>
               </span>
               <I icon={ChevronRight} size={20} className="text-disabled" />
             </Link>

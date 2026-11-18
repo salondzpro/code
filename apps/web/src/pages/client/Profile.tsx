@@ -17,7 +17,8 @@ import { useRef, useState } from 'react';
 import { ICONE } from '@/lib/actionIcons';
 import { Link } from 'react-router';
 import { Camera, ChevronRight, Heart, LogOut, Settings } from 'lucide-react';
-import { useMe, useMeStats, useUpdateProfile } from '@salondz/api-client';
+import { useMe, useMeStats, useMyCredits, useUpdateProfile } from '@salondz/api-client';
+import { formatDA } from '@salondz/constants';
 import { formatDZPhone } from '@salondz/constants';
 import { useAuth, useSignOut } from '@/lib/auth';
 import { visibleEmail } from '@/lib/alias';
@@ -34,6 +35,7 @@ export function Profile() {
   const { user } = useAuth();
   const { seDeconnecter, enCours } = useSignOut();
   const me = useMe();
+  const credits = useMyCredits();
   const stats = useMeStats();
   const updateProfile = useUpdateProfile();
   const avatarInput = useRef<HTMLInputElement | null>(null);
@@ -85,6 +87,26 @@ export function Profile() {
           <I icon={ChevronRight} size={18} className="shrink-0 text-disabled rtl:rotate-180" />
         </Link>
       </div>
+
+      {/* Crédits en cours chez des salons (18 nov. 2026) : le client sait ce qu'il doit, et pourquoi son
+          compte est gelé tant que ce n'est pas réglé. */}
+      {(credits.data?.length ?? 0) > 0 && (
+        <div className="crd !gap-0 !py-1">
+          {credits.data!.map((c) => (
+            <div key={c.salonId} className="li">
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="fid-ic" aria-hidden>
+                  <I icon={ICONE.credit} size={18} strokeWidth={1.7} />
+                </span>
+                <b className="min-w-0 truncate text-[1rem] font-semibold">{t('Crédit chez {salon}', { salon: c.salonName })}</b>
+              </span>
+              <b className="flex-none text-[1rem] text-danger" dir="ltr">
+                {formatDA(c.balance)}
+              </b>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="lst">
         <SettingRow

@@ -1,5 +1,6 @@
 /** C-F 07 — Détail de la prestation : photo plein cadre, nom + prix, durée · catégorie, description, réalisations, salon, « Réserver ». */
 import { ICONE } from '@/lib/actionIcons';
+import { PromoPrice } from '@/components/PromoPrice';
 import { useBack } from '@/lib/useBack';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, Heart } from 'lucide-react';
@@ -55,7 +56,7 @@ export function ServiceDetail() {
               {sv.categoryId ? ` · ${categoryLabel(sv.categoryId)}` : ''}
             </p>
           </div>
-          <span className="text-[1.429rem] font-semibold tracking-[-0.5px]">{formatDA(sv.priceDa)}</span>
+          <span className="text-[1.429rem] font-semibold tracking-[-0.5px]"><PromoPrice salonId={s.id} serviceId={sv.id} priceDa={sv.priceDa} /></span>
         </div>
         {sv.description && <p className="p text-[0.857rem]">{sv.description}</p>}
         {photos.length > 1 && (

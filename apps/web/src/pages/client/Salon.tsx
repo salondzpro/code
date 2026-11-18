@@ -3,6 +3,7 @@
  * description, onglets Prestations / Réalisations / Infos, feuille « Réserver ».
  */
 import { ICONE } from '@/lib/actionIcons';
+import { PromoPrice } from '@/components/PromoPrice';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useBack } from '@/lib/useBack';
@@ -373,7 +374,7 @@ export function Salon() {
                         <span className="mt-1 block text-[1rem] font-semibold">
                           {/* Prix et durée se lisent de gauche à droite, même en arabe. */}
                           <span dir="ltr">
-                            {formatDA(sv.priceDa)}
+                            <PromoPrice salonId={s.id} serviceId={sv.id} priceDa={sv.priceDa} />
                             <span className="font-normal text-muted">
                               {' '}
                               · {formatDuration(sv.durationMinutes)}

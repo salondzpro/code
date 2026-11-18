@@ -30,6 +30,7 @@ import { bookingsOutsideHours } from '../../lib/hours';
 import { loadOwnedSalon, noAccount } from '../../plugins/auth';
 import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } from '../../lib/labelSettings';
 import { proClientsClose, readLoyalty, writeLoyalty } from '../../lib/loyalty';
+import { readPromos, writePromos } from '../../lib/promos';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -183,6 +184,38 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       return writeLoyalty(req.log, { id: req.salon!.id, name: req.salon!.name, slug: req.salon!.slug }, req.body);
     },
   );
+  /** Promotions sur les prestations (18 nov. 2026). */
+  app.get('/promos', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-cache');
+    return readPromos(req.salon!.id);
+  });
+  app.put(
+    '/promos',
+    {
+      preHandler: app.requireSalon,
+      schema: {
+        body: z
+          .array(
+            z.object({
+              id: z.string().max(60).optional(),
+              serviceIds: z.array(z.string().uuid()).min(1).max(50),
+              kind: z.enum(['percent', 'amount']),
+              value: z.number().int().min(1).max(100_000),
+              startsAt: z.string().max(40),
+              endsAt: z.string().max(40),
+            }),
+          )
+          .max(20),
+      },
+    },
+    async (req) => {
+      const svc = await db.from('services').select('id').eq('salon_id', req.salon!.id);
+      if (svc.error) throw svc.error;
+      const own = new Set((svc.data ?? []).map((s) => s.id as string));
+      return writePromos(req.salon!.id, req.body.map((p) => ({ ...p, serviceIds: p.serviceIds.filter((id) => own.has(id)) })));
+    },
+  );
+
   /** Clients proches d'un cadeau (au moins 60 % du chemin, ou cadeau à utiliser). */
   app.get('/loyalty/clients', { preHandler: app.requireSalon }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-store');

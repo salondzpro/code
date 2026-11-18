@@ -66,6 +66,8 @@ import {
   ReceiptText,
   Settings,
   Clock3,
+  BadgePercent,
+  HandCoins,
 } from 'lucide-react';
 import { CarteFidelite, UsersEchange } from './customIcons';
 
@@ -147,6 +149,9 @@ export const ICONE = {
   plusTard: Clock3,
   // Programme fidélité
   fidelite: CarteFidelite,
+  // Promotions et crédit client
+  promo: BadgePercent,
+  credit: HandCoins,
 } satisfies Record<string, LucideIcon>;
 
 export type ActionIcone = keyof typeof ICONE;

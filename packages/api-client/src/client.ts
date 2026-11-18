@@ -1,10 +1,13 @@
-import type { LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyClientRow, LoyaltyProgram, LoyaltyPublic, LoyaltyState } from '@salondz/constants';
+import type { ClientCredit, CreditFile, CreditKind, LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyClientRow, LoyaltyProgram, LoyaltyPublic, LoyaltyState, SalonCreditRow, SalonPromos, ServicePromo } from '@salondz/constants';
 
 /** Fidélité d'un rendez-vous (fenêtre du pro) : la récompense à offrir, s'il y en a une. */
 export interface BookingLoyalty {
   reward: string | null;
   discount: number;
+  /** Promotion sur les prestations, active au moment de la réservation. */
+  promo?: { label: string | null; discount: number } | null;
 }
+export type ServicePromoInput = Omit<ServicePromo, 'id'> & { id?: string };
 export type LoyaltyInput = Pick<LoyaltyProgram, 'enabled' | 'mode' | 'threshold' | 'rewardKind' | 'rewardValue' | 'minSpend' | 'giftMonths' | 'code'>;
 export type PromoCheck = { valid: true; program: LoyaltyPublic } | { valid: false; reason: 'invalid' | 'used' };
 import type {
@@ -497,6 +500,8 @@ export function createApiClient(opts: ApiClientOptions) {
         get<{ summary: string | null }>(`/salons/${salonId}/reviews/summary`, { locale }, false),
       /** Fidélité : programmes actifs (icône sur les cartes des salons). */
       loyaltyPrograms: () => get<LoyaltyPublic[]>('/loyalty/programs', undefined, false),
+      /** Promotions en cours sur les prestations, tous salons. */
+      promos: () => get<SalonPromos[]>('/promos', undefined, false),
     },
     me: {
       get: () => get<MeResponse>('/me'),
@@ -537,6 +542,8 @@ export function createApiClient(opts: ApiClientOptions) {
       favorites: () => get<{ items: SalonSummary[] }>('/me/favorites'),
       /** Fidélité : toutes mes cartes, et ma carte chez un salon (`null` sans programme). */
       loyalty: () => get<LoyaltyCard[]>('/me/loyalty'),
+      /** Crédits en cours chez les salons (gel des informations du compte). */
+      credits: () => get<ClientCredit[]>('/me/credits'),
       loyaltyAt: (salonId: string) => get<(LoyaltyState & { program: LoyaltyPublic }) | null>(`/me/loyalty/${salonId}`),
       checkPromo: (salonId: string, code: string) => get<PromoCheck>(`/me/promo/${salonId}`, { code }),
       stats: () => get<MeStats>('/me/stats'),
@@ -571,6 +578,12 @@ export function createApiClient(opts: ApiClientOptions) {
       saveLoyalty: (body: LoyaltyInput) => put<LoyaltyProgram & { announced: number }>('/pro/loyalty', body),
       bookingLoyalty: (id: string) => get<BookingLoyalty>(`/pro/bookings/${id}/loyalty`),
       loyaltyClients: () => get<LoyaltyClientRow[]>('/pro/loyalty/clients'),
+      promos: () => get<ServicePromo[]>('/pro/promos'),
+      savePromos: (body: ServicePromoInput[]) => put<ServicePromo[]>('/pro/promos', body),
+      credits: () => get<SalonCreditRow[]>('/pro/credits'),
+      clientCredit: (key: string) => get<CreditFile>(`/pro/clients/${encodeURIComponent(key)}/credit`),
+      addCredit: (key: string, body: { kind: CreditKind; amount: number; note?: string }) => post<CreditFile>(`/pro/clients/${encodeURIComponent(key)}/credit`, body),
+      removeCredit: (key: string, entryId: string) => del<CreditFile>(`/pro/clients/${encodeURIComponent(key)}/credit/${encodeURIComponent(entryId)}`),
       saveDepositSettings: (body: DepositSettings) => put<DepositSettings>('/pro/deposit-settings', body),
       /** Réseaux sociaux de l'étiquette « Vitrine noire ». */
       labelSocials: () => get<LabelSocial[]>('/pro/label-socials'),

@@ -13522,3 +13522,13 @@ html.pro-theme .ag9-hr span {
 .fid-bar i { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--color-ink); }
 .fid-promo { display: flex; align-items: center; gap: 10px; }
 .fid-promo .inp { flex: 1; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+/* PROMOTIONS ET CRÉDIT (18 nov. 2026) — tag encre (charte : pas de nouvelle couleur), solde dû en rouge. */
+.promo-tag {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  font-size: calc(12.5px * var(--fz, 1)); font-weight: 700; color: #fff;
+  background: var(--color-ink); border-radius: var(--radius-pill); padding: 3px 9px;
+}
+.promo-old { text-decoration: line-through; color: var(--color-muted); font-weight: 500; margin-inline-start: 6px; }
+.cr-bal { font-size: calc(26px * var(--fz, 1)); font-weight: 700; letter-spacing: -0.02em; }
+.cr-bal.du { color: var(--color-danger); }

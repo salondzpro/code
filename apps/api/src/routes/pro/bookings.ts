@@ -15,6 +15,7 @@ import { badRequest, conflict, notFound, unwrap } from '../../lib/errors';
 import { BOOKING_WITH_STAFF_SELECT, getBookingWithStaff, mapBookingWithStaff } from '../../lib/queries';
 import { pushAfterBooking } from '../../lib/push';
 import { bookingReward, notifyStamp } from '../../lib/loyalty';
+import { bookingPromo } from '../../lib/promos';
 import { notifySlotFreed } from '../../lib/waitlist';
 import { notifyDepositRejected, signedProofUrl } from '../../lib/deposit';
 
@@ -202,7 +203,9 @@ const proBookingRoutes: FastifyPluginAsyncZod = async (app) => {
     const b = await getBookingWithStaff(req.params.id);
     if (b.salonId !== req.salon!.id) throw notFound('Réservation');
     reply.header('Cache-Control', 'private, no-store');
-    return (await bookingReward(b)) ?? { reward: null, discount: 0 };
+    const fid = await bookingReward(b);
+    const promo = await bookingPromo(b).catch(() => null);
+    return { reward: fid?.reward ?? null, discount: fid?.discount ?? 0, promo };
   });
 
   /** Justificatif de versement, par adresse signée de 10 minutes (seau privé). */

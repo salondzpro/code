@@ -11,8 +11,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Ban, ChevronDown, Pencil, StickyNote } from 'lucide-react';
 import type { BookingWithSalon } from '@salondz/types';
-import { ApiError, useBookingStanding, useCreateBooking, useLoyaltyPrograms, useMe, useMyLoyaltyAt, useSalon } from '@salondz/api-client';
-import { loyaltyDiscount, loyaltyReward } from '@salondz/constants';
+import { ApiError, useBookingStanding, useCreateBooking, useLoyaltyPrograms, useMe, useMyLoyaltyAt, usePromos, useSalon } from '@salondz/api-client';
+import { loyaltyDiscount, loyaltyReward, promoDiscount } from '@salondz/constants';
 import { PromoCodeField, RewardBox } from '@/components/Loyalty';
 import { depositFor, formatDA } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
@@ -70,6 +70,7 @@ export function BookingReview() {
   const carte = useMyLoyaltyAt(salon.data?.id, !forOther);
   const promo = useLoyaltyPrograms().data?.some((p) => p.salonId === salon.data?.id && p.mode === 'promo');
   const [promoCode, setPromoCode] = useState<string | null>(null);
+  const promosSalon = usePromos().data?.find((x) => x.salonId === salon.data?.id)?.promos ?? [];
   useEffect(() => {
     if (!profil) return;
     setName((v) => v || profil.fullName || '');
@@ -161,6 +162,11 @@ export function BookingReview() {
         }
       />
 
+      {/* Promotion en cours sur une prestation choisie : la réduction, déduite par le salon. */}
+      {(() => {
+        const off = promoDiscount(chosen.map((x) => ({ serviceId: x!.id, priceDa: x!.priceDa })), promosSalon);
+        return off > 0 ? <RewardBox title={t('Promotion : −{montant}', { montant: formatDA(off) })} sub={t('À payer au salon : {montant}', { montant: formatDA(price - off) })} /> : null;
+      })()}
       {/* Fidélité (18 nov. 2026) : cadeau de la carte, ou code promo du salon. Pour soi seulement. */}
       {!forOther && carte.data?.giftAvailable && (
         price >= carte.data.program.minSpend ? (

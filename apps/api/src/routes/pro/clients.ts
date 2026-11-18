@@ -6,6 +6,7 @@ import type { ProClient, ProClientHistoryItem } from '@salondz/types';
 import { db } from '../../lib/supabase';
 import { badRequest, unwrap, notFound } from '../../lib/errors';
 import { camelize } from '../../lib/mappers';
+import { addCredit, readCredit, removeCreditEntry, salonCredits } from '../../lib/promos';
 
 function mapProClient(r: Record<string, unknown>): ProClient {
   const { total_count: _t, blocked_count: _b, ...row } = r;
@@ -53,6 +54,29 @@ const proClientRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   const keyParam = z.object({ key: z.string().min(1).max(200) });
+
+  /** CRÉDIT CLIENT (18 nov. 2026) : dossier d'un client, ajout d'une somme due ou d'un encaissement. */
+  app.get('/credits', async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return salonCredits(req.salon!.id);
+  });
+  app.get('/clients/:key/credit', { schema: { params: keyParam } }, async (req, reply) => {
+    const c = await loadClient(req.salon!.id, req.params.key);
+    reply.header('Cache-Control', 'private, no-store');
+    return readCredit(req.salon!.id, { clientKey: req.params.key, clientId: c.clientId, name: c.name, phone: c.phone });
+  });
+  app.post(
+    '/clients/:key/credit',
+    { schema: { params: keyParam, body: z.object({ kind: z.enum(['debt', 'payment']), amount: z.number().int().min(1).max(10_000_000), note: z.string().trim().max(120).optional() }) } },
+    async (req) => {
+      const c = await loadClient(req.salon!.id, req.params.key);
+      return addCredit(req.log, { id: req.salon!.id, name: req.salon!.name }, { clientKey: req.params.key, clientId: c.clientId, name: c.name, phone: c.phone }, req.body);
+    },
+  );
+  app.delete('/clients/:key/credit/:entryId', { schema: { params: keyParam.extend({ entryId: z.string().min(1).max(60) }) } }, async (req) => {
+    const c = await loadClient(req.salon!.id, req.params.key);
+    return removeCreditEntry(req.salon!.id, { clientKey: req.params.key, clientId: c.clientId, name: c.name, phone: c.phone }, req.params.entryId);
+  });
 
   /** Une seule fiche client (sans charger toute la liste). */
   app.get('/clients/:key', { schema: { params: keyParam } }, async (req, reply) => {

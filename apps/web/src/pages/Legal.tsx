@@ -134,6 +134,13 @@ export function Terms() {
         page, en cas de manquement aux présentes CGU, de contenu illicite, de fraude ou de plaintes répétées, après information de la
         personne concernée sauf urgence. Les rendez-vous en cours sont alors annulés et les personnes concernées prévenues.
       </p>
+      <p>
+        Crédit chez un Professionnel : lorsqu'un Professionnel enregistre une somme due par un client (crédit), le client en est
+        informé par notification et la voit dans son compte. Tant qu'un solde reste dû, son nom, son numéro et les autres
+        informations de son profil ne peuvent pas être modifiés et le compte ne peut pas être supprimé, afin de prévenir les impayés
+        et la fraude ; l'adresse e-mail et le mot de passe restent modifiables pour la sécurité du compte. Le blocage est levé dès le
+        règlement enregistré par le Professionnel.
+      </p>
       <h2>11. Données personnelles</h2>
       <p>
         Le traitement des données personnelles est décrit dans la <Link to="/confidentialite">politique de confidentialité</Link>, qui fait

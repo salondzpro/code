@@ -110,8 +110,21 @@ export function LoyaltyCardView({
 /** Côté PRO : « Cadeau fidélité : −20 % · à déduire 300 DA ». Rien sinon. */
 export function BookingLoyaltyNote({ bookingId, active }: { bookingId: string; priceDa?: number; active: boolean }) {
   const q = useBookingLoyalty(bookingId, active);
-  if (!active || !q.data?.reward) return null;
+  if (!active || (!q.data?.reward && !q.data?.promo)) return null;
   return (
+    <>
+      {q.data.promo && (
+        <div className="fid-reward" role="status">
+          <span className="fid-ic" aria-hidden>
+            <I icon={ICONE.promo} size={20} strokeWidth={1.7} />
+          </span>
+          <span className="min-w-0">
+            <b>{t('Promotion : {reduction}', { reduction: q.data.promo.label ?? '' })}</b>
+            <span dir="auto">{t('À déduire : {montant}', { montant: formatDA(q.data.promo.discount) })}</span>
+          </span>
+        </div>
+      )}
+      {q.data.reward && (
     <div className="fid-reward" role="status">
       <span className="fid-ic" aria-hidden>
         <I icon={ICONE.fidelite} size={20} strokeWidth={1.7} />
@@ -121,6 +134,8 @@ export function BookingLoyaltyNote({ bookingId, active }: { bookingId: string; p
         <span dir="auto">{t('À déduire : {montant}', { montant: formatDA(q.data.discount) })}</span>
       </span>
     </div>
+      )}
+    </>
   );
 }
 

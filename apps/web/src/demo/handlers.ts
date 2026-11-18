@@ -37,6 +37,12 @@ import {
   loyaltyState,
   normalizeLoyalty,
   promoValid,
+  promoActive,
+  promoDiscount,
+  promoLabel,
+  creditBalance,
+  type ServicePromo,
+  type CreditFile,
   type LoyaltyProgram,
 } from '@salondz/constants';
 import type { DepositAccount, DepositSettings } from '@salondz/types';
@@ -778,10 +784,65 @@ on('GET', '/me/promo/:salonId', (c, p) => {
 on('GET', '/pro/bookings/:id/loyalty', (c, p) => {
   const b = proBooking(c, p.id!).b;
   const prog = loyaltyOf(c, b.salonId);
-  if (!prog.enabled || prog.mode === 'promo' || !b.clientId || b.source !== 'online') return ok({ reward: null, discount: 0 });
+  const lines = (b.items?.length ? b.items : [{ serviceId: b.serviceId, priceDa: b.priceDa }]).map((l) => ({ serviceId: l.serviceId ?? null, priceDa: l.priceDa }));
+  const pr = promosOf(c, b.salonId);
+  const off = promoDiscount(lines, pr, new Date(b.createdAt));
+  const promo = off > 0 ? { label: pr[0] ? promoLabel(pr[0]) : null, discount: off } : null;
+  if (!prog.enabled || prog.mode === 'promo' || !b.clientId || b.source !== 'online') return ok({ reward: null, discount: 0, promo });
   const st = loyaltyState(prog, loyaltyVisits(c, b.salonId, b.clientId), new Date(c.now), b.startsAt);
-  if (!st.giftAvailable || b.priceDa < prog.minSpend) return ok({ reward: null, discount: 0 });
-  return ok({ reward: loyaltyReward(prog), discount: loyaltyDiscount(prog, b.priceDa) });
+  if (!st.giftAvailable || b.priceDa < prog.minSpend) return ok({ reward: null, discount: 0, promo });
+  return ok({ reward: loyaltyReward(prog), discount: loyaltyDiscount(prog, b.priceDa), promo });
+});
+// PROMOTIONS ET CRÉDIT (18 nov. 2026) : une promotion d'office chez le barbier de démonstration (−20 %
+// sur la première prestation, 14 jours), crédits gardés le temps de la session.
+const demoPromos = new Map<string, ServicePromo[]>();
+const promosOf = (c: Ctx, salonId: string): ServicePromo[] => {
+  const kept = demoPromos.get(salonId);
+  if (kept) return kept;
+  const s = c.w.salons.find((x) => x.id === salonId);
+  if (s?.slug !== 'karim-barber-club' || !s.services[0]) return [];
+  const start = new Date(c.now - 86_400_000).toISOString();
+  return [{ id: 'demo-promo', serviceIds: [s.services[0].id], kind: 'percent', value: 20, startsAt: start, endsAt: new Date(c.now + 14 * 86_400_000).toISOString() }];
+};
+on('GET', '/promos', (c) => ok(c.w.salons.map((s) => ({ salonId: s.id, promos: promosOf(c, s.id).filter((p) => promoActive(p, new Date(c.now))) })).filter((x) => x.promos.length)));
+on('GET', '/pro/promos', (c) => ok(promosOf(c, ownedSalon(c).id)));
+on('PUT', '/pro/promos', (c) => {
+  const list = ((c.body as unknown as ServicePromo[]) ?? []).map((p) => ({ ...p, id: p.id ?? uid() }));
+  demoPromos.set(ownedSalon(c).id, list);
+  return ok(list);
+});
+const demoCredits = new Map<string, CreditFile>();
+on('GET', '/me/credits', () => ok([]));
+on('GET', '/pro/credits', (c) => {
+  const sid = ownedSalon(c).id;
+  return ok(
+    [...demoCredits.entries()]
+      .filter(([k]) => k.startsWith(sid + ':'))
+      .map(([, f]) => ({ clientKey: f.clientKey, name: f.name, phone: f.phone, balance: creditBalance(f.entries), lastAt: f.entries.at(-1)?.at ?? null }))
+      .filter((r) => r.balance > 0)
+      .sort((a, b) => b.balance - a.balance),
+  );
+});
+const creditFileOf = (c: Ctx, key: string): CreditFile => {
+  const sid = ownedSalon(c).id;
+  const k = `${sid}:${key}`;
+  const b = c.w.bookings.find((x) => x.salonId === sid && (x.clientPhone === key || x.clientId === key));
+  return demoCredits.get(k) ?? { clientKey: key, clientId: b?.clientId ?? null, name: b?.clientName ?? key, phone: b?.clientPhone ?? null, entries: [] };
+};
+on('GET', '/pro/clients/:key/credit', (c, p) => ok(creditFileOf(c, decodeURIComponent(p.key!))));
+on('POST', '/pro/clients/:key/credit', (c, p) => {
+  const key = decodeURIComponent(p.key!);
+  const f = creditFileOf(c, key);
+  f.entries = [...f.entries, { id: uid(), kind: c.body.kind as 'debt' | 'payment', amount: Number(c.body.amount), note: (c.body.note as string) ?? null, at: new Date(c.now).toISOString() }];
+  demoCredits.set(`${ownedSalon(c).id}:${key}`, f);
+  return ok(f);
+});
+on('DELETE', '/pro/clients/:key/credit/:entryId', (c, p) => {
+  const key = decodeURIComponent(p.key!);
+  const f = creditFileOf(c, key);
+  f.entries = f.entries.filter((e) => e.id !== p.entryId);
+  demoCredits.set(`${ownedSalon(c).id}:${key}`, f);
+  return ok(f);
 });
 const demoStyles = new Map<string, ReturnType<typeof normalizeLabelStyle>>();
 on('GET', '/pro/label-style', (c) => ok(demoStyles.get(ownedSalon(c).id) ?? normalizeLabelStyle(null)));
