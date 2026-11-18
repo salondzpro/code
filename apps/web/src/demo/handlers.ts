@@ -811,12 +811,29 @@ on('PUT', '/pro/promos', (c) => {
   demoPromos.set(ownedSalon(c).id, list);
   return ok(list);
 });
-const demoCredits = new Map<string, CreditFile>();
+// Gardés dans le navigateur : la liste des crédits doit survivre à un rechargement de page.
+const CREDITS_KEY = 'salondz:demo:credits';
+const demoCredits = {
+  all: (): Record<string, CreditFile> => {
+    try {
+      return JSON.parse(localStorage.getItem(CREDITS_KEY) ?? '{}') as Record<string, CreditFile>;
+    } catch {
+      return {};
+    }
+  },
+  get(k: string) {
+    return this.all()[k];
+  },
+  set(k: string, f: CreditFile) {
+    localStorage.setItem(CREDITS_KEY, JSON.stringify({ ...this.all(), [k]: f }));
+  },
+  entries: () => Object.entries(demoCredits.all()),
+};
 on('GET', '/me/credits', () => ok([]));
 on('GET', '/pro/credits', (c) => {
   const sid = ownedSalon(c).id;
   return ok(
-    [...demoCredits.entries()]
+    demoCredits.entries()
       .filter(([k]) => k.startsWith(sid + ':'))
       .map(([, f]) => ({ clientKey: f.clientKey, name: f.name, phone: f.phone, balance: creditBalance(f.entries), lastAt: f.entries.at(-1)?.at ?? null }))
       .filter((r) => r.balance > 0)
