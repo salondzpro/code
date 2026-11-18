@@ -823,7 +823,10 @@ export function BottomSheet({
   const own = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = own.current;
-    if (!el) return;
+    // Seule la BARRE D'ACTION d'un écran réserve sa place sous le contenu. Une fenêtre (modale) qui
+    // publiait sa hauteur l'EFFAÇAIT en se fermant : la dernière ligne de la page repassait alors
+    // derrière la barre d'action (18 nov. 2026).
+    if (!el || modal) return;
     const root = document.documentElement;
     const publish = () => root.style.setProperty('--sheet-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
     publish();
@@ -833,7 +836,7 @@ export function BottomSheet({
       ro.disconnect();
       root.style.removeProperty('--sheet-h');
     };
-  }, []);
+  }, [modal]);
   const setRef = (node: HTMLDivElement | null) => {
     own.current = node;
     if (typeof sheetRef === 'function') sheetRef(node);
