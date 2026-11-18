@@ -2324,4 +2324,6 @@ export const en: Record<string, string> = {
   "Bientôt récompensés": "Close to a gift",
   "Cadeau à utiliser avant le {date}": "Gift to use before {date}",
   "Le code promo compte 3 à 12 lettres ou chiffres.": "The promo code has 3 to 12 letters or digits.",
+  "Aucun": "None",
+  "minimum": "minimum",
 };

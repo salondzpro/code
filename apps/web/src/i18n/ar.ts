@@ -2310,4 +2310,6 @@ export const ar: Record<string, string> = {
   "Bientôt récompensés": "قريبون من الهدية",
   "Cadeau à utiliser avant le {date}": "هدية تُستعمل قبل {date}",
   "Le code promo compte 3 à 12 lettres ou chiffres.": "يتكون الرمز الترويجي من 3 إلى 12 حرفًا أو رقمًا.",
+  "Aucun": "بدون",
+  "minimum": "حد أدنى",
 };

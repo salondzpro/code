@@ -179,7 +179,7 @@ export function ProLoyalty() {
           <SectionLabel>{t('Dès un achat de')}</SectionLabel>
           <div className="dp-presets" role="radiogroup" aria-label={t('Dès un achat de')}>
             {LOYALTY_MIN_SPEND_PRESETS.map((v) => (
-              <Tile key={v} on={minSpend === v} onClick={() => setMinSpend(v)} title={v === 0 ? t('Sans minimum') : formatDA(v)} />
+              <Tile key={v} on={minSpend === v} onClick={() => setMinSpend(v)} title={v === 0 ? t('Aucun') : formatDA(v)} sub={v === 0 ? t('minimum') : undefined} />
             ))}
           </div>
 
@@ -198,7 +198,7 @@ export function ProLoyalty() {
             </>
           )}
 
-          {wasOn && loyalty.data?.mode !== 'promo' && (clients.data?.length ?? 0) > 0 && (
+          {wasOn && mode === loyalty.data?.mode && mode !== 'promo' && (clients.data?.length ?? 0) > 0 && (
             <>
               <SectionLabel>{t('Bientôt récompensés')}</SectionLabel>
               <div className="crd !gap-0 !py-1">
