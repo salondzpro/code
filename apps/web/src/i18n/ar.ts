@@ -2356,4 +2356,9 @@ export const ar: Record<string, string> = {
   "Soldé": "مُسدَّد",
   "Vous avez un code promo ?": "هل لديك رمز ترويجي؟",
   "Code promo accepté": "يقبل رمزًا ترويجيًا",
+  "Votre programme": "برنامجك",
+  "Remplacer « {ancien} » par « {nouveau} » ?": "استبدال «{ancien}» بـ «{nouveau}»؟",
+  "Un seul programme à la fois : l’ancien s’arrête.": "برنامج واحد في كل مرة: يتوقف القديم.",
+  "Remplacer": "استبدال",
+  "Garder « {ancien} »": "الإبقاء على «{ancien}»",
 };

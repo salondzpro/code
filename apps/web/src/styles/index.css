@@ -13618,3 +13618,6 @@ html.espace-pro .ag9-v > button.on { background: none; box-shadow: none; border-
 /* Heures à gauche de l'agenda : en ENCRE, plus lisibles (18 nov. 2026, demande du propriétaire). */
 .ag9-hr span,
 html.pro-theme .ag9-hr span { color: var(--color-text); font-weight: 500; }
+/* Choix unique du programme fidélité : rond à cocher de la couleur du type. */
+.fid-radio { width: 24px; height: 24px; flex: none; border-radius: var(--radius-pill); border: 1.5px solid var(--color-line-strong); display: grid; place-items: center; color: #fff; }
+.fid-radio.on { background: var(--fid-c, var(--color-ink)); border-color: var(--fid-c, var(--color-ink)); }

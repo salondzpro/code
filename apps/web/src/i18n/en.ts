@@ -2370,4 +2370,9 @@ export const en: Record<string, string> = {
   "Soldé": "Settled",
   "Vous avez un code promo ?": "Have a promo code?",
   "Code promo accepté": "Promo code accepted",
+  "Votre programme": "Your programme",
+  "Remplacer « {ancien} » par « {nouveau} » ?": "Replace “{ancien}” with “{nouveau}”?",
+  "Un seul programme à la fois : l’ancien s’arrête.": "One programme at a time: the old one stops.",
+  "Remplacer": "Replace",
+  "Garder « {ancien} »": "Keep “{ancien}”",
 };

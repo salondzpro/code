@@ -14,11 +14,11 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { CalendarClock, Hash, ShoppingBag, Target } from 'lucide-react';
+import { CalendarClock, Check, Coins, Hash, Repeat, ShoppingBag, Target, Ticket, type LucideIcon } from 'lucide-react';
 import { useProLoyalty, useProLoyaltyClients, useSaveProLoyalty } from '@salondz/api-client';
 import { LOYALTY_DA_PER_POINT, formatDA, formatDateShortDZ, loyaltyReward, type LoyaltyMode, type LoyaltyRewardKind } from '@salondz/constants';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { Avatar, Badge, BottomSheet, Button, Dim, Input, Segmented, SectionLabel, SettingRow, Toggle, TopBar } from '@/components/ui';
+import { Avatar, Badge, BottomSheet, Button, Dim, Input, SectionLabel, SettingRow, Toggle, TopBar } from '@/components/ui';
 import { PageLoading } from '@/components/PageLoading';
 import { errorText } from '@/components/ErrorMessage';
 import { LoyaltyCardView } from '@/components/Loyalty';
@@ -26,7 +26,14 @@ import { ValueSheet } from '@/components/ValueSheet';
 import { ICONE } from '@/lib/actionIcons';
 import { t } from '@/i18n';
 
-type Sheet = null | 'seuil' | 'cadeau' | 'minimum' | 'validite' | 'code';
+type Sheet = null | 'seuil' | 'cadeau' | 'minimum' | 'validite' | 'code' | 'remplacer';
+
+const MODES: { value: LoyaltyMode; label: string; icon: LucideIcon }[] = [
+  { value: 'visits', label: 'Passages', icon: Repeat },
+  { value: 'points', label: 'Points', icon: Coins },
+  { value: 'promo', label: 'Code promo', icon: Ticket },
+];
+const MODE_LABEL: Record<LoyaltyMode, string> = { visits: 'Passages', points: 'Points', promo: 'Code promo' };
 
 export function ProLoyalty() {
   const navigate = useNavigate();
@@ -69,8 +76,10 @@ export function ProLoyalty() {
     if (m === 'visits' && threshold > 20) setThreshold(5);
   };
 
-  const submit = async () => {
+  const submit = async (remplacer = false) => {
     setError(null);
+    // Un programme actif d'un autre type est REMPLACÉ : on le dit avant (un seul programme à la fois).
+    if (on && wasOn && loyalty.data && loyalty.data.mode !== mode && !remplacer) return setSheet('remplacer');
     if (on && mode === 'promo' && !/^[A-Z0-9]{3,12}$/.test(code)) {
       setSheet('code');
       return setError(t('Le code promo compte 3 à 12 lettres ou chiffres.'));
@@ -96,16 +105,27 @@ export function ProLoyalty() {
 
       {on && (
         <>
-          <Segmented
-            label={t('Type de programme')}
-            value={mode}
-            onChange={changeMode}
-            options={[
-              { value: 'visits', label: t('Passages') },
-              { value: 'points', label: t('Points') },
-              { value: 'promo', label: t('Code promo') },
-            ]}
-          />
+          {/* UN SEUL PROGRAMME (18 nov. 2026, demande du propriétaire) : un choix unique à cocher, pas des
+              onglets qu'on croirait cumulables. */}
+          <SectionLabel>{t('Votre programme')}</SectionLabel>
+          <div className="lst" role="radiogroup" aria-label={t('Votre programme')}>
+            {MODES.map((m) => (
+              <SettingRow
+                key={m.value}
+                className={`fid-c-${m.value}`}
+                icon={m.icon}
+                title={t(m.label)}
+                onClick={() => changeMode(m.value)}
+                right={
+                  <span className={`fid-radio${mode === m.value ? ' on' : ''}`} role="radio" aria-checked={mode === m.value} aria-label={t(m.label)}>
+                    {mode === m.value && <Check size={14} strokeWidth={3} />}
+                  </span>
+                }
+              />
+            ))}
+          </div>
+
+          <SectionLabel>{t('Réglages')}</SectionLabel>
 
           <div className="lst">
             {mode === 'promo' ? (
@@ -254,6 +274,31 @@ export function ProLoyalty() {
               }}
             >
               {t('Valider')}
+            </Button>
+          </BottomSheet>
+        </>
+      )}
+
+      {sheet === 'remplacer' && loyalty.data && (
+        <>
+          <Dim onClose={() => setSheet(null)} />
+          <BottomSheet modal>
+            <div className="h1 !text-[1.429rem]">
+              {t('Remplacer « {ancien} » par « {nouveau} » ?', { ancien: t(MODE_LABEL[loyalty.data.mode]), nouveau: t(MODE_LABEL[mode]) })}
+            </div>
+            <p className="p">{t('Un seul programme à la fois : l’ancien s’arrête.')}</p>
+            <Button
+              icon={ICONE.valider}
+              loading={save.isPending}
+              onClick={() => {
+                setSheet(null);
+                void submit(true);
+              }}
+            >
+              {t('Remplacer')}
+            </Button>
+            <Button icon={ICONE.garder} variant="g" onClick={() => setSheet(null)}>
+              {t('Garder « {ancien} »', { ancien: t(MODE_LABEL[loyalty.data.mode]) })}
             </Button>
           </BottomSheet>
         </>
