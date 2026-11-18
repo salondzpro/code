@@ -2371,4 +2371,11 @@ export const ar: Record<string, string> = {
   "Suivez votre rendez-vous dans l’application": "تابع موعدك في التطبيق",
   "Télécharger sur l’App Store": "حمّل من App Store",
   "Disponible sur Google Play": "متوفر على Google Play",
+  "Votre rendez-vous vous suit dans l’application": "موعدك يرافقك في التطبيق",
+  "Un rappel avant votre rendez-vous": "تذكير قبل موعدك",
+  "Reporter ou annuler en un geste": "التأجيل أو الإلغاء بلمسة واحدة",
+  "Vos cadeaux fidélité": "هدايا الوفاء الخاصة بك",
+  "QR code de l’application": "رمز QR للتطبيق",
+  "Scannez avec votre téléphone": "امسح بهاتفك",
+  "Connectez-vous avec {email}": "سجّل الدخول بـ {email}",
 };
