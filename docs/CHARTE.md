@@ -125,7 +125,7 @@ bouton, libellé gardé) · focus clavier = anneau encre 2 px.
   Étiquette au-dessus, 13 px 600.
 - **Liste** (`.lst` + `SettingRow`, `.li`) : carte blanche, lignes séparées par `#f1f1f3`, icône dans
   un rond gris `#f1f1f3`, titre 16 px, sous-titre 14 px gris, chevron gris au bout.
-- **Segmenté** (`Segmented`, `.seg`) : fond `#ebebee`, choisi = pastille blanche, 13 px 600.
+- **Sélecteur** (`Segmented`, `.seg`) = **onglets soulignés**, partout (18 nov. 2026, demande du propriétaire) : texte gris 15 px 500, choisi en encre 600 souligné de 2 px, filet `#ececef` dessous — l'apparence exacte d'« Aujourd'hui / Demain » (Rappels). Plus de pastille grise ni de bouton noir.
 - **Onglets** (`.rp-tabs`) : texte souligné d'encre sous l'onglet actif, compteur gris.
 - **Pastilles** (`.pill`) : choisie = trait encre, non choisie = trait `#ececef`.
 - **Menu déroulant** (ex. filtre par membre, `StaffFilter`) : bouton pilule blanc cerclé `#e2e2e6`,

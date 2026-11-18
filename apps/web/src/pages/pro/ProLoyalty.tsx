@@ -14,7 +14,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { CalendarClock, Coins, Hash, Repeat, ShoppingBag, Target, Ticket } from 'lucide-react';
+import { CalendarClock, Hash, ShoppingBag, Target } from 'lucide-react';
 import { useProLoyalty, useProLoyaltyClients, useSaveProLoyalty } from '@salondz/api-client';
 import { LOYALTY_DA_PER_POINT, formatDA, formatDateShortDZ, loyaltyReward, type LoyaltyMode, type LoyaltyRewardKind } from '@salondz/constants';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
@@ -97,14 +97,13 @@ export function ProLoyalty() {
       {on && (
         <>
           <Segmented
-            className="fid-seg-mode"
             label={t('Type de programme')}
             value={mode}
             onChange={changeMode}
             options={[
-              { value: 'visits', label: t('Passages'), icon: Repeat },
-              { value: 'points', label: t('Points'), icon: Coins },
-              { value: 'promo', label: t('Code promo'), icon: Ticket },
+              { value: 'visits', label: t('Passages') },
+              { value: 'points', label: t('Points') },
+              { value: 'promo', label: t('Code promo') },
             ]}
           />
 

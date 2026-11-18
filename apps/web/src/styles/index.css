@@ -13558,5 +13558,46 @@ html.pro-theme .ag9-hr span {
 .fid-code { display: flex; flex-direction: column; gap: 10px; }
 .fid-code .row { display: flex; align-items: center; gap: 10px; }
 .fid-code .inp { flex: 1; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-.seg.fid-seg-mode > button { white-space: nowrap; padding-inline: 0.4rem; }
-.seg.fid-seg-mode > button svg { margin-inline-end: 0.25rem !important; }
+
+/* ==========================================================================
+   SÉLECTEUR = ONGLETS SOULIGNÉS, PARTOUT (18 nov. 2026, demande du propriétaire : « pas ce genre de
+   composant, plutôt celui minimaliste d'Aujourd'hui / Demain partout »). `Segmented` (ui.tsx) prend
+   l'apparence exacte des onglets de Rappels (`.rp-tabs`) : texte gris, choisi en encre souligné de
+   2 px, filet fin dessous. Plus de pastille grise ni de bouton noir. Hors couche : l'emporte sur les
+   anciens réglages du segmenté.
+   ========================================================================== */
+.seg {
+  display: flex;
+  gap: 20px;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border-bottom: 1px solid var(--color-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.seg::-webkit-scrollbar { display: none; }
+.seg > button,
+html.espace-pro .seg > button {
+  flex: none;
+  margin-bottom: -1px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-muted);
+  font: 500 calc(15px * var(--fz, 1)) var(--font-display);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.seg > button.on {
+  background: none;
+  box-shadow: none;
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.seg.sm > button { padding: 6px 0; font-size: calc(14px * var(--fz, 1)); }
+.seg > button svg { margin-inline-end: 0.3rem; }
