@@ -6,7 +6,8 @@ import { useBooking } from '@salondz/api-client';
 import { DepositCard } from '@/components/DepositCard';
 import { depositPayNote } from '@/lib/deposit';
 import { formatDA } from '@salondz/constants';
-import { Button, I } from '@/components/ui';
+import { Button, I, TopBar } from '@/components/ui';
+import { AppInstallCard } from '@/components/AppBanner';
 import { BookingSummary } from '@/components/BookingSummary';
 import { ICONE } from '@/lib/actionIcons';
 import { directionsUrl } from './Bookings';
@@ -56,6 +57,8 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
 
   return (
     <Screen gap={14}>
+      {/* Navigation en haut, même après la réservation (18 nov. 2026) : on n'est jamais coincé. */}
+      <TopBar backTo={`/s/${b.salon.slug}`} title={b.salon.name} />
       {state === 'dep' ? (
         // Versement : en-tête compact, le parcours étape par étape tout de suite visible (sans défiler).
         <div className="cf-mini" role="status">
@@ -112,6 +115,8 @@ export function ConfirmedView({ booking: initial }: { booking: BookingWithSalon 
           <I icon={ICONE.itineraire} size={18} /> {t('Itinéraire')}
         </a>
       </div>
+      {/* Sur le site, téléphone : l'application, directement sur le bon store. */}
+      <AppInstallCard />
     </Screen>
   );
 }

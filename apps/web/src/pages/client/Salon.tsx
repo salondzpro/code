@@ -51,6 +51,7 @@ import {
   loyaltyReward,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
+import { autoOpenApp } from '@/lib/appLinks';
 import { LoyaltyCardView } from '@/components/Loyalty';
 import { formatRating } from '@/lib/clientPrefs';
 import { formatDuration } from '@/lib/format';
@@ -138,6 +139,10 @@ export function Salon() {
   const back = useBack(MARCHE);
   const { session } = useAuth();
   const salon = useSalon(slug);
+  // Android, site : l'application installée s'ouvre d'elle-même sur ce salon (une fois par session).
+  useEffect(() => {
+    if (slug) autoOpenApp(`/s/${slug}`);
+  }, [slug]);
   const programmes = useLoyaltyPrograms();
   const maCarte = useMyLoyaltyAt(salon.data?.id, !!session);
   const fidelite = programmes.data?.find((p) => p.salonId === salon.data?.id);

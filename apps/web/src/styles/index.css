@@ -13630,3 +13630,12 @@ html.pro-theme .ag9-hr span { color: var(--color-text); font-weight: 500; }
 /* Choix unique du programme fidélité : rond à cocher de la couleur du type. */
 .fid-radio { width: 24px; height: 24px; flex: none; border-radius: var(--radius-pill); border: 1.5px solid var(--color-line-strong); display: grid; place-items: center; color: #fff; }
 .fid-radio.on { background: var(--fid-c, var(--color-ink)); border-color: var(--fid-c, var(--color-ink)); }
+
+/* FAVORISER L'APPLICATION (18 nov. 2026) — barre « Ouvrir » des pages de salon (site sur téléphone) et
+   bouton du store après la réservation. Charte : carte blanche, encre, logos officiels des stores. */
+.app-bn { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 6px; margin: 0 0 4px; background: var(--color-surface); border-bottom: 1px solid var(--color-line); }
+.app-bn b { display: block; font-size: calc(14px * var(--fz, 1)); font-weight: 600; }
+.app-bn small { display: block; font-size: calc(12px * var(--fz, 1)); color: var(--color-muted); }
+.app-bn-x { width: 28px; height: 28px; display: grid; place-items: center; color: var(--color-muted); flex: none; }
+.app-bn-ic { width: 40px; height: 40px; border-radius: 10px; flex: none; box-shadow: 0 0 0 1px var(--color-line); }
+.btn.store-btn { gap: 10px; }

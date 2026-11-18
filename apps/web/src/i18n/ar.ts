@@ -2375,4 +2375,10 @@ export const ar: Record<string, string> = {
   "Couper le son": "كتم الصوت",
   "Votre pub vidéo, prête à faire réserver": "إعلانك بالفيديو جاهز لجلب الحجوزات",
   "Ma pub": "إعلاني",
+  "Application Salon DZ": "تطبيق Salon DZ",
+  "Sur l’App Store": "على App Store",
+  "Sur Google Play": "على Google Play",
+  "Suivez votre rendez-vous dans l’application": "تابع موعدك في التطبيق",
+  "Télécharger sur l’App Store": "حمّل من App Store",
+  "Disponible sur Google Play": "متوفر على Google Play",
 };

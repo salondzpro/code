@@ -2,22 +2,82 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["PRB75K5S58.dz.salondz.app"],
+        "appIDs": [
+          "PRB75K5S58.dz.salondz.app"
+        ],
         "components": [
-          { "/": "/pro/*", "exclude": true, "comment": "Séparation stricte (16 nov. 2026) : jamais l'espace pro dans l'application client" },
-          { "/": "/s/*", "comment": "Page publique d'un salon, partagée par le professionnel" },
-          { "/": "/rendez-vous/*", "comment": "Un rendez-vous précis, côté client" },
-          { "/": "/favoris" },
-          { "/": "/carte" },
-          { "/": "/salons" },
-          { "/": "/home" },
-          { "/": "/supprimer" }
+          {
+            "/": "/pro/*",
+            "exclude": true,
+            "comment": "Séparation stricte (16 nov. 2026) : jamais l'espace pro dans l'application client"
+          },
+          {
+            "/": "/professionnels",
+            "exclude": true,
+            "comment": "Site des professionnels : jamais dans l'application cliente"
+          },
+          {
+            "/": "/professionnels/*",
+            "exclude": true
+          },
+          {
+            "/": "/admin",
+            "exclude": true
+          },
+          {
+            "/": "/admin/*",
+            "exclude": true
+          },
+          {
+            "/": "/moi",
+            "exclude": true
+          },
+          {
+            "/": "/share/*",
+            "exclude": true
+          },
+          {
+            "/": "/ota/*",
+            "exclude": true
+          },
+          {
+            "/": "/s/*",
+            "comment": "Page publique d'un salon, partagée par le professionnel"
+          },
+          {
+            "/": "/rendez-vous/*",
+            "comment": "Un rendez-vous précis, côté client"
+          },
+          {
+            "/": "/favoris"
+          },
+          {
+            "/": "/carte"
+          },
+          {
+            "/": "/salons"
+          },
+          {
+            "/": "/home"
+          },
+          {
+            "/": "/supprimer"
+          },
+          {
+            "/": "/*",
+            "comment": "Lien court du salon salondz.com/<slug> (lien en bio, étiquettes) et tout le reste du site client : l'application d'abord (18 nov. 2026)"
+          }
         ]
       },
       {
-        "appIDs": ["PRB75K5S58.pro.salondz.app"],
+        "appIDs": [
+          "PRB75K5S58.pro.salondz.app"
+        ],
         "components": [
-          { "/": "/pro/*", "comment": "Espace professionnel : seule adresse de l'application pro" }
+          {
+            "/": "/pro/*",
+            "comment": "Espace professionnel : seule adresse de l'application pro"
+          }
         ]
       }
     ]
