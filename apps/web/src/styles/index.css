@@ -13615,3 +13615,6 @@ html.espace-pro .ag9-v > button {
 .ag9-v button.on,
 html.pro-theme .ag9-v .on,
 html.espace-pro .ag9-v > button.on { background: none; box-shadow: none; border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+/* Heures à gauche de l'agenda : en ENCRE, plus lisibles (18 nov. 2026, demande du propriétaire). */
+.ag9-hr span,
+html.pro-theme .ag9-hr span { color: var(--color-text); font-weight: 500; }
