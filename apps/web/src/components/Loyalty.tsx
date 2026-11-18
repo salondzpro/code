@@ -10,15 +10,15 @@ import { Gift } from 'lucide-react';
 import { formatDA, formatDateShortDZ, loyaltyCondition, loyaltyDiscount, loyaltyHeadline, loyaltyReward, type LoyaltyPublic } from '@salondz/constants';
 import { useApi, useBookingLoyalty } from '@salondz/api-client';
 import { ICONE } from '@/lib/actionIcons';
-import { Button, I } from './ui';
+import { Button, I, SettingRow } from './ui';
 import { t } from '@/i18n';
 
 type Prog = Pick<LoyaltyPublic, 'mode' | 'threshold' | 'rewardKind' | 'rewardValue' | 'minSpend'>;
 
 export function LoyaltyBadge({ program, className = '' }: { program: Prog; className?: string }) {
   return (
-    <span className={`fid-badge ${className}`}>
-      <I icon={ICONE.fidelite} size={15} strokeWidth={1.8} />
+    <span className={`badge b-ok md fid-badge ${className}`}>
+      <I icon={ICONE.fidelite} size={14} strokeWidth={2} />
       {loyaltyHeadline(program)}
     </span>
   );
@@ -75,7 +75,7 @@ export function LoyaltyCardView({
     <div className="crd fid-card">
       <div className="flex items-center gap-2.5">
         <span className="fid-ic" aria-hidden>
-          <I icon={ICONE.fidelite} size={20} strokeWidth={1.7} />
+          <I icon={ICONE.fidelite} size={18} strokeWidth={2} />
         </span>
         <span className="min-w-0 flex-1">
           <b className="block truncate text-[1rem] font-semibold">{title ?? t('Carte fidélité')}</b>
@@ -112,44 +112,30 @@ export function BookingLoyaltyNote({ bookingId, active }: { bookingId: string; p
   const q = useBookingLoyalty(bookingId, active);
   if (!active || (!q.data?.reward && !q.data?.promo)) return null;
   return (
-    <>
+    <div className="lst" role="status">
       {q.data.promo && (
-        <div className="fid-reward" role="status">
-          <span className="fid-ic" aria-hidden>
-            <I icon={ICONE.promo} size={20} strokeWidth={1.7} />
-          </span>
-          <span className="min-w-0">
-            <b>{t('Promotion : {reduction}', { reduction: q.data.promo.label ?? '' })}</b>
-            <span dir="auto">{t('À déduire : {montant}', { montant: formatDA(q.data.promo.discount) })}</span>
-          </span>
-        </div>
+        <SettingRow
+          icon={ICONE.promo}
+          title={t('Promotion : {reduction}', { reduction: q.data.promo.label ?? '' })}
+          right={<b className="text-[1rem] text-ok-fg" dir="ltr">−{formatDA(q.data.promo.discount)}</b>}
+        />
       )}
       {q.data.reward && (
-    <div className="fid-reward" role="status">
-      <span className="fid-ic" aria-hidden>
-        <I icon={ICONE.fidelite} size={20} strokeWidth={1.7} />
-      </span>
-      <span className="min-w-0">
-        <b>{t('Cadeau fidélité : {recompense}', { recompense: q.data.reward })}</b>
-        <span dir="auto">{t('À déduire : {montant}', { montant: formatDA(q.data.discount) })}</span>
-      </span>
-    </div>
+        <SettingRow
+          icon={ICONE.fidelite}
+          title={t('Cadeau fidélité : {recompense}', { recompense: q.data.reward })}
+          right={<b className="text-[1rem] text-ok-fg" dir="ltr">−{formatDA(q.data.discount)}</b>}
+        />
       )}
-    </>
+    </div>
   );
 }
 
 /** L'encadré du cadeau côté client (« Confirmer ») : ce qui sera déduit. */
-export function RewardBox({ title, sub }: { title: string; sub: string }) {
+export function RewardBox({ title, sub, icon = ICONE.fidelite }: { title: string; sub: string; icon?: typeof ICONE.fidelite }) {
   return (
-    <div className="fid-reward" role="status">
-      <span className="fid-ic" aria-hidden>
-        <I icon={ICONE.fidelite} size={22} strokeWidth={1.7} />
-      </span>
-      <span className="min-w-0">
-        <b>{title}</b>
-        <span dir="auto">{sub}</span>
-      </span>
+    <div className="lst" role="status">
+      <SettingRow icon={icon} title={title} sub={<span dir="auto">{sub}</span>} />
     </div>
   );
 }

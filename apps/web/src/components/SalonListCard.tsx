@@ -15,6 +15,7 @@ import { addDaysToKey, categoryLabel, dayChipLabelDZ, toLocalDateKey } from '@sa
 import { formatKm, formatRating } from '@/lib/clientPrefs';
 import { useAuth } from '@/lib/auth';
 import { I, IconButton, Img } from './ui';
+import { ICONE } from '@/lib/actionIcons';
 import { t } from '@/i18n';
 
 /** Catégories affichées sur une carte avant « … ». */
@@ -269,8 +270,13 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
         )}
         {(fidelite || promo) && (
           <div className="absolute start-2.5 top-2.5 flex flex-col items-start gap-1.5">
-            {promo && <span className="promo-tag shadow-sm">{t('Promo {reduction}', { reduction: promoLabel(promo) })}</span>}
-            {fidelite && <LoyaltyBadge program={fidelite} className="shadow-sm" />}
+            {promo && (
+              <span className="badge b-cn md fid-badge">
+                <I icon={ICONE.promo} size={14} strokeWidth={2} />
+                {t('Promo {reduction}', { reduction: promoLabel(promo) })}
+              </span>
+            )}
+            {fidelite && <LoyaltyBadge program={fidelite} />}
           </div>
         )}
         <IconButton

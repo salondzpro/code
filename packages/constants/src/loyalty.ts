@@ -82,7 +82,7 @@ export function normalizeLoyalty(x: unknown): LoyaltyProgram {
   const mode: LoyaltyMode = o.mode === 'points' || o.mode === 'promo' ? o.mode : 'visits';
   const kind: LoyaltyRewardKind = o.rewardKind === 'amount' ? 'amount' : 'percent';
   let value = Math.round(Number(o.rewardValue) || 0);
-  value = kind === 'percent' ? Math.min(100, Math.max(5, value || 20)) : Math.min(100_000, Math.max(100, value || 500));
+  value = kind === 'percent' ? Math.min(100, Math.max(1, value || 20)) : Math.min(100_000, Math.max(50, value || 500));
   const raw = Math.round(Number(o.threshold ?? o.visits) || 0);
   const threshold = mode === 'points' ? Math.min(2000, Math.max(10, raw || 100)) : Math.min(20, Math.max(2, raw || 5));
   return {

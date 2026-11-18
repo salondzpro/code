@@ -11,7 +11,7 @@ export function PromoPrice({ salonId, serviceId, priceDa }: { salonId: string; s
   if (!p) return <>{formatDA(priceDa)}</>;
   return (
     <>
-      <span className="promo-tag me-1.5 align-[1px]">{promoLabel(p)}</span>
+      <span className="badge b-cn me-1.5 align-[1px]">{promoLabel(p)}</span>
       {formatDA(promoPrice(priceDa, p))}
       <span className="promo-old">{formatDA(priceDa)}</span>
     </>

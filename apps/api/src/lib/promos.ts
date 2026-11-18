@@ -50,7 +50,7 @@ const clean = (x: unknown): ServicePromo[] =>
       id: String(p.id ?? randomUUID()),
       serviceIds: p.serviceIds!.map(String).slice(0, 50),
       kind: p.kind === 'amount' ? ('amount' as const) : ('percent' as const),
-      value: p.kind === 'amount' ? Math.min(100_000, Math.max(50, Math.round(Number(p.value) || 0))) : Math.min(90, Math.max(5, Math.round(Number(p.value) || 0))),
+      value: p.kind === 'amount' ? Math.min(100_000, Math.max(50, Math.round(Number(p.value) || 0))) : Math.min(90, Math.max(1, Math.round(Number(p.value) || 0))),
       startsAt: p.startsAt!,
       endsAt: p.endsAt!,
     }));

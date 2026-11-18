@@ -1,13 +1,15 @@
 /**
- * CRÉDIT CLIENT (18 nov. 2026, demande du propriétaire) — sur la fiche du client, côté pro :
- * le solde dû en grand, deux gestes (« Crédit » : une somme due ; « Encaisser » : un paiement), et
- * l'historique (une ligne saisie par erreur se retire). Le client avec compte est prévenu à chaque
- * ligne, et ne peut plus changer son identité ni supprimer son compte tant qu'un solde reste dû.
+ * CRÉDIT CLIENT (18 nov. 2026, demande du propriétaire) — sur la fiche du client, côté pro.
+ * Charte : une liste (`.lst`) — en tête « Crédit » et le solde dû (rouge s'il reste quelque chose),
+ * deux boutons (« Crédit » : une somme due ; « Encaisser » : un paiement), puis l'historique (une ligne
+ * saisie par erreur se retire). Le client avec compte est prévenu à chaque ligne, et ne peut plus
+ * changer son identité ni supprimer son compte tant qu'un solde reste dû.
  */
 import { useState } from 'react';
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useClientCredit, useCreditMutations } from '@salondz/api-client';
 import { creditBalance, formatDA, formatDateShortDZ, type CreditKind } from '@salondz/constants';
-import { BottomSheet, Button, Dim, I, Input } from './ui';
+import { Badge, BottomSheet, Button, Dim, Field, I, Input, SettingRow } from './ui';
 import { errorText } from './ErrorMessage';
 import { ICONE } from '@/lib/actionIcons';
 import { t } from '@/i18n';
@@ -39,19 +41,23 @@ export function CreditPanel({ clientKey }: { clientKey: string }) {
   };
 
   return (
-    <div className="crd !gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <span className="flex items-center gap-2.5">
-          <span className="fid-ic" aria-hidden>
-            <I icon={ICONE.credit} size={19} strokeWidth={1.7} />
-          </span>
-          <b className="text-[1rem] font-semibold">{t('Crédit')}</b>
-        </span>
-        <span className={`cr-bal${balance > 0 ? ' du' : ''}`} dir="ltr">
-          {formatDA(balance)}
-        </span>
-      </div>
-      <div className="flex gap-2.5">
+    <div className="lst">
+      <SettingRow
+        icon={ICONE.credit}
+        title={t('Crédit')}
+        right={
+          balance > 0 ? (
+            <Badge tone="cn" md dot={false}>
+              <span dir="ltr">{formatDA(balance)}</span>
+            </Badge>
+          ) : (
+            <Badge tone="ok" md dot={false}>
+              {t('Soldé')}
+            </Badge>
+          )
+        }
+      />
+      <div className="flex gap-2.5 px-4 pb-3 pt-1">
         <Button icon={ICONE.ajouter} variant="g" sm className="flex-1" onClick={() => setSheet('debt')}>
           {t('Crédit')}
         </Button>
@@ -59,34 +65,34 @@ export function CreditPanel({ clientKey }: { clientKey: string }) {
           {t('Encaisser')}
         </Button>
       </div>
-      {entries.length > 0 && (
-        <div className="flex flex-col">
-          {[...entries].reverse().slice(0, 8).map((e) => (
-            <div key={e.id} className="li !py-2">
-              <span className="min-w-0">
-                <b className={`block text-[0.929rem] font-semibold ${e.kind === 'debt' ? 'text-danger' : 'text-ok-fg'}`} dir="ltr">
-                  {e.kind === 'debt' ? '+' : '−'} {formatDA(e.amount)}
-                </b>
-                <span className="block truncate text-[0.857rem] text-muted">
-                  {formatDateShortDZ(e.at)}
-                  {e.note ? ` · ${e.note}` : ''}
-                </span>
-              </span>
-              <button type="button" className="text-muted" aria-label={t('Retirer cette ligne')} onClick={() => void remove.mutateAsync(e.id)}>
+      {[...entries]
+        .reverse()
+        .slice(0, 8)
+        .map((e) => (
+          <SettingRow
+            key={e.id}
+            icon={e.kind === 'debt' ? ArrowUpRight : ArrowDownLeft}
+            title={<span dir="ltr" className={e.kind === 'debt' ? 'text-danger' : 'text-ok-fg'}>{`${e.kind === 'debt' ? '+' : '−'} ${formatDA(e.amount)}`}</span>}
+            sub={`${formatDateShortDZ(e.at)}${e.note ? ` · ${e.note}` : ''}`}
+            right={
+              <button type="button" className="p-1 text-muted" aria-label={t('Retirer cette ligne')} onClick={() => void remove.mutateAsync(e.id)}>
                 <I icon={ICONE.supprimer} size={16} />
               </button>
-            </div>
-          ))}
-        </div>
-      )}
+            }
+          />
+        ))}
 
       {sheet && (
         <>
           <Dim onClose={() => setSheet(null)} />
           <BottomSheet modal>
             <div className="h1 !text-[1.429rem]">{sheet === 'debt' ? t('Ajouter un crédit') : t('Encaisser un paiement')}</div>
-            <Input lg inputMode="numeric" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} placeholder={t('Montant en DA')} aria-label={t('Montant en DA')} />
-            <Input value={note} maxLength={120} onChange={(e) => setNote(e.target.value)} placeholder={t('Note (facultatif)')} aria-label={t('Note')} />
+            <Field label={t('Montant en DA')} htmlFor="cr-amount">
+              <Input id="cr-amount" lg inputMode="numeric" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} placeholder="1500" />
+            </Field>
+            <Field label={t('Note (facultatif)')} htmlFor="cr-note">
+              <Input id="cr-note" value={note} maxLength={120} onChange={(e) => setNote(e.target.value)} />
+            </Field>
             {error && (
               <p className="text-[0.857rem] text-danger" role="alert">
                 {error}
