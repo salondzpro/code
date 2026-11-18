@@ -2365,4 +2365,10 @@ export const ar: Record<string, string> = {
   "Avance": "تسبيق",
   "Avance chez {salon}": "تسبيق عند {salon}",
   "Avances des clients": "تسبيقات الزبائن",
+  "Application Salon DZ": "تطبيق Salon DZ",
+  "Sur l’App Store": "على App Store",
+  "Sur Google Play": "على Google Play",
+  "Suivez votre rendez-vous dans l’application": "تابع موعدك في التطبيق",
+  "Télécharger sur l’App Store": "حمّل من App Store",
+  "Disponible sur Google Play": "متوفر على Google Play",
 };

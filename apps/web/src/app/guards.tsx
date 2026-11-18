@@ -5,6 +5,7 @@ import { Navigate, Outlet, useLocation } from 'react-router';
 import { useMe, useProPendingUnseenCount, useProSalon } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { PublicHeader } from '@/components/PublicHeader';
+import { AppBanner } from '@/components/AppBanner';
 import { ProHeader } from '@/components/ProHeader';
 import { useRealtimeBookings, useRealtimeMyBookings } from '@/lib/realtime';
 import { api } from '@/lib/api';
@@ -48,9 +49,13 @@ export function ClientLayout() {
  */
 export function ClientPlainLayout() {
   const desktop = useDesktop();
+  const { pathname } = useLocation();
+  // Pages d'un salon et de sa réservation, sur le site en téléphone : « Ouvrir dans l'application ».
+  const banniere = /^\/s\//.test(pathname) || /^\/rendez-vous\/[^/]+\/confirme/.test(pathname);
   return (
     <AppFrame className="cl-frame">
       {desktop && <PublicHeader />}
+      {banniere && <AppBanner />}
       <Outlet />
     </AppFrame>
   );

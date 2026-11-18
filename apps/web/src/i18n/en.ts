@@ -2379,4 +2379,10 @@ export const en: Record<string, string> = {
   "Avance": "Advance",
   "Avance chez {salon}": "Advance at {salon}",
   "Avances des clients": "Client advances",
+  "Application Salon DZ": "Salon DZ app",
+  "Sur l’App Store": "On the App Store",
+  "Sur Google Play": "On Google Play",
+  "Suivez votre rendez-vous dans l’application": "Follow your appointment in the app",
+  "Télécharger sur l’App Store": "Download on the App Store",
+  "Disponible sur Google Play": "Get it on Google Play",
 };
