@@ -1061,3 +1061,136 @@ html.pro-theme .pl-pk-hd .ag9-st {
   font-weight: 600;
   line-height: 28px;
 }
+
+/* ============================================================================================
+   AGENDA « PLANITY PRO MOBILE » (19 nov. 2026, d'après les captures officielles de l'App Store) :
+   barre blanche (cloche · « Vendredi 20.11 ⌄ » + membre en violet · calendrier), grille blanche,
+   rendez-vous en BLOCS PLEINS colorés à texte blanc (« 17:30 - 17:55 Nom », prestation dessous),
+   « Aujourd'hui » en pilule blanche à côté du « + ». La couleur dit l'état.
+   ============================================================================================ */
+.pla-top {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  margin: calc(-0.75rem - var(--safe-top, 0px)) calc(-1 * var(--gutter, 16px)) 0;
+  padding: calc(6px + var(--safe-top, 0px)) 8px 6px;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f2;
+}
+.pla-ic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: #202020;
+}
+.pla-ic i {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+.pla-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+.pla-date b {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 26px;
+  color: #202020;
+  white-space: nowrap;
+}
+.pla-date > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(15px * var(--fz, 1));
+  line-height: 20px;
+  color: var(--color-link);
+}
+.pla-today {
+  position: fixed;
+  z-index: 29;
+  inset-inline-end: calc(16px + 56px + 12px);
+  bottom: calc(106px + var(--safe-bottom, 0px) + 4px);
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #202020;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  box-shadow: 0 0 0 1px #eef0f2, 0 4px 12px -4px rgb(0 0 0 / 0.18);
+}
+/* Grille : heures en gris à gauche, traits gris clair. */
+html.pro-theme .agenda.pla .ag9-hr span {
+  font-size: calc(13px * var(--fz, 1));
+  font-weight: 400;
+  color: #4e5860;
+}
+/* Rendez-vous PLEINS à texte blanc (téléphone et ordinateur). */
+html.pro-theme .agenda .agb {
+  border: 0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: var(--st);
+  color: #ffffff;
+}
+html.pro-theme .agenda .agb.s-pd { --st: #f0961c; }
+html.pro-theme .agenda .agb.s-cf { --st: #4f86d9; }
+html.pro-theme .agenda .agb.s-cur { --st: #2e9b8f; }
+html.pro-theme .agenda .agb.s-ns { --st: #d9445c; }
+html.pro-theme .agenda .agb .agb-t,
+html.pro-theme .agenda .agb.s-cur .agb-t {
+  color: #ffffff;
+  font-weight: 600;
+}
+html.pro-theme .agenda .agb .agb-n {
+  font-weight: 600;
+  color: inherit;
+}
+html.pro-theme .agenda .agb .agb-s {
+  color: inherit;
+  opacity: 0.92;
+  font-weight: 400;
+}
+html.pro-theme .agenda .agb.s-done {
+  --st: #e3e7eb;
+  background: #e3e7eb;
+  color: #4e5860;
+}
+html.pro-theme .agenda .agb.s-done .agb-t {
+  color: #4e5860;
+}
+html.pro-theme .agenda .agb.cn {
+  background: #f7f7f7;
+  color: #8a8a92;
+  border: 1px dashed #c7cfd7;
+}
+/* Panneau déplié : la date est déjà dans la barre du haut, on ne garde que Jour / Semaine / Mois. */
+.agenda.pla .ag9-h > .min-w-0 {
+  display: none;
+}
+.agenda.pla .ag9-h {
+  justify-content: flex-end;
+}
+/* Légende aux couleurs des blocs. */
+html.pro-theme .ag9-lg i.s-pd { --st: #f0961c; }
+html.pro-theme .ag9-lg i.s-cf { --st: #4f86d9; }
+html.pro-theme .ag9-lg i.s-cur { --st: #2e9b8f; }
+html.pro-theme .ag9-lg i.s-ns { --st: #d9445c; }

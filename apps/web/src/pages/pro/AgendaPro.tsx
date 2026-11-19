@@ -9,7 +9,8 @@
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { CalendarCheck, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Bell, CalendarCheck, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { NotificationsSheet } from '@/pages/AccountNotifications';
 import {
   useProBlocks,
   useProBookings,
@@ -17,6 +18,7 @@ import {
   useProUnseenBookings,
   useSeenOnDisplay,
   useMe,
+  useUnreadNotifications,
 } from '@salondz/api-client';
 import {
   DAY_LABELS_FR,
@@ -152,6 +154,12 @@ export function AgendaPro() {
   const [blocked, setBlocked] = useState<BlockedSlot | null>(null);
   const meId = useMe().data?.profile?.id;
   const desktop = useDesktop();
+  // FAÇON PLANITY PRO MOBILE (19 nov. 2026) : la frise des jours et le filtre par membre se déplient
+  // en touchant la date ; la cloche est en haut à gauche.
+  const [panneau, setPanneau] = useState(false);
+  const [bell, setBell] = useState(false);
+  const nonLues = useUnreadNotifications(true);
+  const planity = !desktop && view === 'day';
 
   const toneOf = (b: BookingWithStaff) => statutCle(b);
   const [staffId, setStaffId] = useStaffFilter();
@@ -298,18 +306,48 @@ export function AgendaPro() {
         ? `${Number(week[0]!.slice(8, 10))} – ${Number(week[6]!.slice(8, 10))} ${t(MONTHS[Number(week[6]!.slice(5, 7)) - 1]!)}`
         : t(MONTHS[Number(date.slice(5, 7)) - 1]!).replace(/^\w/, (c) => c.toUpperCase());
 
+  // Sous la date (Planity) : le membre affiché, « Toute l'équipe », ou le seul membre d'un indépendant.
+  const actifs = (salon.staff ?? []).filter((m) => m.isActive);
+  const choisi = actifs.find((m) => m.id === staffId);
+  const membreAffiche = choisi ? choisi.displayName : actifs.length === 1 ? actifs[0]!.displayName : t("Toute l'équipe");
+
   return (
     <Screen
       bottom={NAV_PAD}
       gap={12}
-      className="agenda"
+      className={`agenda${planity ? ' pla' : ''}`}
       // Largeur utile de l'agenda : celle de ses colonnes. Deux membres sur un écran de 1 920 px
       // ne doivent pas donner deux colonnes de 800 px — un agenda se lit en colonnes étroites.
       style={{ ['--ag-max' as string]: `${Math.max(46, columns.length * 20)}rem` }}
     >
       {loadError && <ErrorMessage error={loadError.error} retry={() => void loadError.refetch()} />}
+      {/* EN-TÊTE PLANITY PRO (téléphone, vue jour) : cloche à gauche, « Vendredi 20.11 ⌄ » au centre avec
+          le membre affiché dessous, calendrier du mois à droite. Toucher la date déplie la frise des
+          jours, le filtre par membre et Jour / Semaine / Mois. */}
+      {planity && (
+        <div className="pla-top">
+          <button type="button" className="pla-ic" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
+            <I icon={Bell} size={24} strokeWidth={1.8} />
+            {nonLues > 0 && <i aria-hidden />}
+          </button>
+          <button type="button" className="pla-date" aria-expanded={panneau} onClick={() => setPanneau((v) => !v)}>
+            <b>
+              {new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', timeZone: 'UTC' })
+                .format(new Date(`${date}T12:00:00Z`))
+                .replace(/^\p{L}/u, (c) => c.toUpperCase())}{' '}
+              <span dir="ltr">{date.slice(8, 10)}.{date.slice(5, 7)}</span>
+              <I icon={ChevronDown} size={18} strokeWidth={2.2} className={panneau ? 'rotate-180' : ''} />
+            </b>
+            <span>{membreAffiche}</span>
+          </button>
+          <button type="button" className="pla-ic" aria-label={t('Mois')} onClick={() => setView('month')}>
+            <I icon={CalendarDays} size={24} strokeWidth={1.8} />
+          </button>
+        </div>
+      )}
+      {bell && <NotificationsSheet onClose={() => setBell(false)} />}
       {/* En-tête de la maquette 9 : le jour en surtitre à l'accent, la date en grand, J / S / M. */}
-      <div className="ag9-h">
+      <div className={`ag9-h${planity && !panneau ? ' hidden' : ''}`}>
         <div className="min-w-0 flex-1">
           <span className="ag9-k">
             {view === 'day'
@@ -363,6 +401,7 @@ export function AgendaPro() {
 
       {view === 'day' && (
         <>
+          {(!planity || panneau) && (
           <WeekStrip
             selected={date}
             today={today}
@@ -372,8 +411,11 @@ export function AgendaPro() {
             onSelect={setDate}
             onView={setStripDay}
           />
+          )}
           {/* Filtre par membre (16 nov. 2026) : ronds d'initiales colorés, « Tous » par défaut. */}
-          <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} counts={staffCounts} nameOf={nameOf} />
+          {(!planity || panneau) && (
+            <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} counts={staffCounts} nameOf={nameOf} />
+          )}
           <DayCarousel
             date={date}
             onChange={setDate}
@@ -475,6 +517,11 @@ export function AgendaPro() {
       {freeSlot && <FreeSlotSheet slot={freeSlot} salon={salon} onClose={() => setFreeSlot(null)} />}
       {blocked && <BlockedSlotSheet slot={blocked} onClose={() => setBlocked(null)} />}
       {/* « + » nouveau rendez-vous (maquette 9) : sur téléphone, il n'y a plus d'en-tête qui le portait. */}
+      {planity && date !== today && (
+        <button type="button" className="pla-today" onClick={() => setDate(today)}>
+          {t("Aujourd'hui")}
+        </button>
+      )}
       <Link to="/pro/rendez-vous/nouveau" className="fab fab-ag lg:!hidden" aria-label={t('Nouveau rendez-vous')}>
         <I icon={Plus} size={26} strokeWidth={2.4} />
       </Link>
@@ -895,6 +942,7 @@ function DayColumns({
                     <span className="agb-n">
                       <b className="agb-t" dir="ltr">
                         {formatTimeDZ(b.startsAt)}
+                        {h >= 42 && ` - ${formatTimeDZ(b.endsAt)}`}
                       </b>{' '}
                       {b.clientName}
                     </span>
