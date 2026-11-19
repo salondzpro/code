@@ -848,3 +848,37 @@ html .sheet {
   font-weight: 500;
   color: #202020;
 }
+
+/* Barre du bas des CLIENTES : barre blanche à plat collée en bas, comme l'application Planity
+   (remplace le panneau flottant arrondi, 19 nov. 2026). */
+html.client-theme .nvb {
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  height: calc(4.143rem + var(--safe-bottom, 0px));
+  padding: 0 6px var(--safe-bottom, 0px);
+  gap: 0;
+  border-radius: 0;
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 -1px 0 #eef0f2;
+}
+html.client-theme .nvi {
+  border-radius: 0;
+}
+html.client-theme .nvi.on {
+  background: transparent;
+  color: #202020;
+  font-weight: 600;
+}
+/* Boutons d'outils de la recherche (Prestations, Carte, Filtres) et champ de recherche : 8 px, cerclés. */
+html .tool,
+html.client-theme .tool,
+html .srch,
+html.client-theme .srch {
+  border-radius: 8px;
+  border: 1px solid #c7cfd7;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+  background: #ffffff;
+}
