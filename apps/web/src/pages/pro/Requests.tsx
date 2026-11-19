@@ -75,9 +75,14 @@ export function Requests() {
     );
 
   return (
-    <Screen bottom={NAV_PAD} gap={14}>
+    <Screen bottom={NAV_PAD} gap={14} className="pla-list">
       {/* Nouveau rendez-vous : le « + » de l'en-tête, toujours à portée — pas de second bouton ici. */}
-      <h1 className="h1">{t('Demandes')}</h1>
+      {/* FAÇON PLANITY PRO (19 nov. 2026) : barre blanche, titre centré. */}
+      <div className="pla-bar">
+        <span aria-hidden />
+        <h1>{t('Demandes')}</h1>
+        <span aria-hidden />
+      </div>
 
       {/* Mêmes onglets que Rappels : un mot souligné, le nombre à côté. */}
       <div className="rp-tabs" role="tablist" aria-label={t('Demandes')}>

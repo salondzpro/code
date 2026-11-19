@@ -1194,3 +1194,109 @@ html.pro-theme .ag9-lg i.s-pd { --st: #f0961c; }
 html.pro-theme .ag9-lg i.s-cf { --st: #4f86d9; }
 html.pro-theme .ag9-lg i.s-cur { --st: #2e9b8f; }
 html.pro-theme .ag9-lg i.s-ns { --st: #d9445c; }
+
+/* ============================================================================================
+   DEMANDES et RAPPELS façon PLANITY PRO (19 nov. 2026) : barre blanche à titre centré, onglets
+   blancs pleine largeur, rangées blanches pleine largeur séparées par un filet, liseré coloré à
+   gauche (orange = à valider, bleu = confirmé), boutons carrés arrondis.
+   ============================================================================================ */
+.pla-bar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  min-height: 56px;
+  margin: calc(-0.75rem - var(--safe-top, 0px)) calc(-1 * var(--gutter, 16px)) 0;
+  padding: var(--safe-top, 0px) 8px 0;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f2;
+}
+.pla-bar h1 {
+  text-align: center;
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 26px;
+  color: #202020;
+}
+.pla-bar .rp-i {
+  justify-self: end;
+}
+.pla-list .rp-tabs {
+  margin: 0 calc(-1 * var(--gutter, 16px));
+  gap: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f2;
+}
+.pla-list .rp-tabs button {
+  flex: 1 1 0;
+  padding: 14px 8px 12px;
+  border-bottom: 3px solid transparent;
+  text-align: center;
+  font-size: calc(15px * var(--fz, 1));
+  color: #4e5860;
+}
+.pla-list .rp-tabs button.on {
+  color: #202020;
+  border-bottom-color: #202020;
+  font-weight: 600;
+}
+html.pro-theme .pla-list .rp-r {
+  margin: 0 calc(-1 * var(--gutter, 16px));
+  padding: 14px 16px 14px 13px;
+  border-radius: 0;
+  box-shadow: none;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f2;
+  border-inline-start: 3px solid #4f86d9;
+}
+html.pro-theme .pla-list .rq-r {
+  border-inline-start-color: #f0961c;
+}
+html.pro-theme .pla-list .rp-r:first-of-type,
+html.pro-theme .pla-list .rsv-panel > .rp-r:first-child {
+  border-top: 1px solid #eef0f2;
+}
+html.pro-theme .pla-list .rp-n {
+  font-size: calc(17px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 22px;
+}
+html.pro-theme .pla-list .rp-s {
+  font-size: calc(14px * var(--fz, 1));
+  color: #8a8f96;
+}
+html.pro-theme .pla-list .rp-i {
+  border-radius: 8px;
+}
+/* « À venir » : la liste du jour en bloc blanc pleine largeur. */
+.pla-list .phd {
+  margin: 0 calc(-1 * var(--gutter, 16px));
+  border-radius: 0;
+  border-width: 1px 0;
+  border-color: #eef0f2;
+  box-shadow: none;
+}
+.pla-list .rsv-day {
+  padding-top: 8px;
+}
+/* Liste collée sous la barre et les onglets, rangées jointives (comme Planity Pro). */
+.pla-list.pla-list {
+  gap: 0 !important;
+}
+.pla-list .rsv-panel.gap-4 {
+  gap: 0;
+}
+.pla-list .rsv-panel > section {
+  gap: 0;
+}
+.pla-list .rsv-day {
+  padding: 16px 0 8px;
+}
+.pla-list .h12-h {
+  padding: 18px 0 8px;
+}
+.pla-list .rp-empty {
+  padding-top: 32px;
+}

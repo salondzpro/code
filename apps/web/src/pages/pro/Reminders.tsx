@@ -97,9 +97,11 @@ export function Reminders() {
   const team = salon.staff.filter((m) => m.isActive).length > 1;
 
   return (
-    <Screen bottom={NAV_PAD} gap={8}>
-      <div className="rp-hd">
-        <h1 className="h1">{t('Rappels')}</h1>
+    <Screen bottom={NAV_PAD} gap={8} className="pla-list">
+      {/* FAÇON PLANITY PRO (19 nov. 2026) : barre blanche, titre centré, crayon à droite. */}
+      <div className="rp-hd pla-bar">
+        <span aria-hidden />
+        <h1>{t('Rappels')}</h1>
         <button type="button" className="rp-i" aria-label={t('Modifier le message')} title={t('Modifier le message')} onClick={() => setEditing(true)}>
           <I icon={Pencil} size={18} />
         </button>
