@@ -287,22 +287,8 @@ export function ClientDetail() {
         </Button>
       </div>
 
-      {/* Le prochain rendez-vous, s'il y en a un : c'est la question du moment. */}
-      {c.nextAt && nextKey && (
-        <button
-          type="button"
-          className="crd !py-1 w-full text-start"
-          onClick={() => c.lastBookingId && navigate(`/pro/rendez-vous/${c.lastBookingId}`)}
-        >
-          <FactRow
-            icon={CalendarClock}
-            title={`${t('Prochain rendez-vous')} · ${relativeDayLabelDZ(nextKey)}`}
-            sub={`${formatTimeDZ(c.nextAt)} · ${untilLabelFR(c.nextAt, now)}`}
-            right={<I icon={ChevronRight} size={18} className="text-disabled rtl:-scale-x-100" />}
-          />
-        </button>
-      )}
-
+      {/* Plus de carte « Prochain rendez-vous » (19 nov. 2026, demande du propriétaire) : il figure
+          déjà dans la liste des rendez-vous en bas de la fiche. */}
       {/* Note privée : montrée seulement si elle existe ; sinon un lien pour en ajouter une.
           Enregistrée en quittant le champ. */}
       {notes || ouvrirNote ? (
@@ -340,7 +326,7 @@ export function ClientDetail() {
       {/* Historique COMPLET, ouvert d'office (17 nov. 2026, demande du propriétaire) : onglets et pages,
           plus de « Voir tout l'historique ». */}
       <span className="h3 scroll-mt-[9rem]" ref={historyTop}>
-        {t('Derniers rendez-vous')}
+        {t('Rendez-vous')}
       </span>
       <>
       <Tabs
