@@ -4,7 +4,7 @@
  * une icône sur chaque onglet et chaque action (Itinéraire, Reporter, Appeler, Réserver à nouveau, Noter).
  */
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { pagesItems, useMyBookingsInfinite } from '@salondz/api-client';
 import { LoadMore } from '@/components/LoadMore';
 import {
@@ -73,6 +73,13 @@ function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
   );
 }
 
+/** « Jeudi 20 novembre à 19:00 » — la ligne de tête d'une carte, comme Planity. */
+function jourHeure(iso: string): string {
+  const jour = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
+  const txt = t('{jour} à {heure}', { jour, heure: formatTimeDZ(iso) });
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+
 function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
   const navigate = useNavigate();
   const active = b.status === 'pending' || b.status === 'confirmed';
@@ -87,44 +94,31 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
       tabIndex={0}
       onClick={open}
       onKeyDown={(e) => e.key === 'Enter' && open()}
-      className={`crd !gap-3 cursor-pointer ${today && active ? '!border-ink' : ''}`}
+      className="pl-rdv cursor-pointer"
     >
-      <div className="flex items-center justify-between gap-3">
+      {/* FAÇON PLANITY (19 nov. 2026) : le jour et l'heure sur une ligne, le salon, la prestation • le
+          prix ; boutons cerclés gris dessous. */}
+      <div className="pl-rdv-top">
         <span className="min-w-0">
-          <span
-            className={`block text-[1.143rem] font-semibold tracking-[-0.4px] ${active ? '' : 'text-muted'}`}
-          >
-            {relativeDayLabelDZ(dayKey)}
+          <span className={`pl-rdv-quand${active ? '' : ' text-muted'}`}>
+            {jourHeure(b.startsAt)}
           </span>
           {today && active && (
-            <span className="block text-[0.857rem] font-semibold text-ok-fg">
+            <span className="block text-[1rem] font-medium text-ok-fg">
               {started ? 'En cours' : untilLabelFR(b.startsAt, now)}
             </span>
           )}
         </span>
         <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
       </div>
-      <div className="flex items-end justify-between gap-3">
-        <span
-          className={`mono text-[2.286rem] font-semibold leading-none tracking-[-1px] ${active ? '' : 'text-muted'}`}
-        >
-          {formatTimeDZ(b.startsAt)}
-        </span>
-        <span className="text-[1.429rem] font-semibold leading-none tracking-[-0.5px]">
-          {formatDA(b.priceDa)}
-        </span>
-      </div>
-      <div className="flex items-center gap-3.5">
-        <Img
-          src={b.salon.coverUrl}
-          className={`h-[4.5rem] w-[4.5rem] flex-none !rounded-[var(--radius-card-sm)] ${active ? '' : 'opacity-60'}`}
-        />
+      <div className="pl-rdv-mid">
+        <Img src={b.salon.coverUrl} className={`pl-rdv-img${active ? '' : ' opacity-60'}`} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[1.143rem] font-semibold tracking-[-0.3px]">
-            {b.salon.name}
-          </span>
-          <span className="block text-[1rem] text-muted">
+          <span className="pl-rdv-salon">{b.salon.name}</span>
+          <span className="pl-rdv-sv" dir="auto">
             {b.serviceName}
+            <span className="pl-dot" aria-hidden>•</span>
+            <b dir="ltr">{formatDA(b.priceDa)}</b>
           </span>
         </span>
       </div>
@@ -134,7 +128,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
             href={directionsUrl(b)}
             target={cibleCarte(directionsUrl(b))}
             rel="noreferrer"
-            className="btn g sm flex-1 !text-[1rem]"
+            className="pl-btn pl-btn-out pl-btn-sm flex-1"
           >
             <I icon={Navigation} size={16} /> {t("Itinéraire")}
           </a>
@@ -143,14 +137,9 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           {b.salon.allowClientReschedule !== false &&
             (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 >= rescheduleMinHours(b.salon.cancelMinHours) &&
             b.clientReschedules < MAX_CLIENT_RESCHEDULES && (
-            <LinkButton
-              to={`/rendez-vous/${b.id}/reporter`}
-              variant="g"
-              sm
-              className="flex-1 !text-[1rem]"
-            >
-              <I icon={CalendarClock} size={16} /> {t("Reporter")}
-            </LinkButton>
+            <Link to={`/rendez-vous/${b.id}/reporter`} className="pl-btn pl-btn-out pl-btn-sm flex-1">
+              <I icon={CalendarClock} size={16} /> {t("Déplacer le RDV")}
+            </Link>
           )}
           {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
             <a
@@ -178,22 +167,21 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
       tabIndex={0}
       onClick={open}
       onKeyDown={(e) => e.key === 'Enter' && open()}
-      className="crd !gap-3 cursor-pointer"
+      className="pl-rdv cursor-pointer"
     >
-      <div className="flex items-center gap-3.5">
-        <DateBlock iso={b.startsAt} muted={cancelled} />
-        <span className="min-w-0 flex-1">
-          <span
-            className={`block truncate text-[1.143rem] font-semibold tracking-[-0.3px] ${cancelled ? 'text-muted' : ''}`}
-          >
-            {b.salon.name}
-          </span>
-          <span className="block text-[1rem] text-muted">
-            <span className="mono">{formatTimeDZ(b.startsAt)}</span> · {b.serviceName}
-          </span>
-          <span className="block text-[1rem] font-semibold">{formatDA(b.priceDa)}</span>
-        </span>
+      <div className="pl-rdv-top">
+        <span className={`pl-rdv-quand${cancelled ? ' text-muted' : ''}`}>{jourHeure(b.startsAt)}</span>
         <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} />
+      </div>
+      <div className="pl-rdv-mid">
+        <span className="min-w-0 flex-1">
+          <span className={`pl-rdv-salon${cancelled ? ' text-muted' : ''}`}>{b.salon.name}</span>
+          <span className="pl-rdv-sv" dir="auto">
+            {b.serviceName}
+            <span className="pl-dot" aria-hidden>•</span>
+            <b dir="ltr">{formatDA(b.priceDa)}</b>
+          </span>
+        </span>
       </div>
       {cancelled && b.cancellationReason && (
         <p className="flex items-start gap-1.5 text-[1rem] text-danger">
@@ -202,14 +190,9 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
       )}
       {(b.status === 'completed' || cancelled) && (
         <div className="flex gap-2" onClick={stop} onKeyDown={stop} role="presentation">
-          <LinkButton
-            to={`/s/${b.salon.slug}/prestations`}
-            variant="g"
-            sm
-            className="flex-1 !text-[1rem]"
-          >
+          <Link to={`/s/${b.salon.slug}`} className="pl-btn pl-btn-out pl-btn-sm flex-1">
             <I icon={RotateCcw} size={16} /> {t("Réserver à nouveau")}
-          </LinkButton>
+          </Link>
           {b.status === 'completed' &&
             (b.reviewRating != null ? (
               <span
@@ -219,15 +202,9 @@ function HistoryCard({ b }: { b: BookingWithSalon }) {
                 <I icon={Star} size={18} className="fill-current" /> {b.reviewRating}/5
               </span>
             ) : (
-              <LinkButton
-                to={`/rendez-vous/${b.id}/noter`}
-                variant="g"
-                sm
-                auto
-                className="!px-5 !text-[1rem]"
-              >
+              <Link to={`/rendez-vous/${b.id}/noter`} className="pl-btn pl-btn-out pl-btn-sm !w-auto">
                 <I icon={Star} size={16} /> {t("Noter")}
-              </LinkButton>
+              </Link>
             ))}
         </div>
       )}

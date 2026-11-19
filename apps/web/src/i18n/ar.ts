@@ -3,6 +3,14 @@
  * الحلاقة والتجميل (صالون، حلاق، خدمة، موعد، حجز)، وليست ترجمة حرفية.
  */
 export const ar: Record<string, string> = {
+  'Date et heure sélectionnées': 'اليوم والساعة المختاران',
+  'à {heure}': 'على الساعة {heure}',
+  'Vos informations': 'معلوماتك',
+  'Identification': 'تسجيل الدخول',
+  'Nouveau sur Salon DZ ?': 'جديد على Salon DZ؟',
+  'OU': 'أو',
+  'Vous avez déjà utilisé Salon DZ ?': 'سبق لك استعمال Salon DZ؟',
+  'Déplacer le RDV': 'تغيير الموعد',
   'de la beauté ou du bien-être': 'في التجميل أو العناية',
   'Plus de fonctionnalités dans l’application.': 'ميزات أكثر في التطبيق.',
   'À-propos': 'حول الصالون',

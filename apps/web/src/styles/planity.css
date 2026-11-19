@@ -592,3 +592,128 @@ html.pro-theme .pl-bk-t {
 html.pro-theme .pa-btn {
   border-radius: 8px;
 }
+
+/* ---- Identification (visiteur sans compte) et bouton final ---- */
+.pl-id-box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 24px 16px;
+  text-align: center;
+}
+.pl-id-box p {
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 28px;
+  color: #202020;
+}
+.pl-ou {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4e5860;
+}
+.pl-ou::before,
+.pl-ou::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #c7cfd7;
+}
+.pl-bk-go {
+  margin: 8px 16px 0;
+}
+.pl-bk-go .pl-btn:disabled {
+  opacity: 0.45;
+}
+@media (min-width: 768px) {
+  .pl-bk-go {
+    margin-inline: 0;
+  }
+}
+
+/* ---- Mes rendez-vous ---- */
+.pl-rdv {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+}
+.pl-rdv-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pl-rdv-quand {
+  display: block;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+  color: #202020;
+}
+.pl-rdv-mid {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pl-rdv-img {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: 8px !important;
+}
+.pl-rdv-salon {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 24px;
+  color: #202020;
+}
+.pl-rdv-sv {
+  display: block;
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 24px;
+  color: #4e5860;
+}
+.pl-rdv-sv b {
+  font-weight: 500;
+  color: #202020;
+}
+html.pro-theme .pl-rdv-sv b {
+  font-weight: 500;
+}
+
+/* ---- Pages du compte client : titres, onglets, listes et boutons secondaires de Planity ---- */
+html.client-theme:not(.espace-pro) .cl-frame :is(.crd, .lst) {
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+}
+html.client-theme:not(.espace-pro) .cl-frame .btn.g {
+  background: #ffffff;
+  color: #202020;
+  border: 1px solid #c7cfd7;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+  font-weight: 500;
+}
+html.client-theme:not(.espace-pro) .cl-frame .ph-t,
+html.client-theme:not(.espace-pro) .cl-frame .h1 {
+  font-size: calc(24px * var(--fz, 1));
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.pl-btn-sm {
+  padding: 4px 10px;
+  white-space: nowrap;
+}

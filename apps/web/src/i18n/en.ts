@@ -3,6 +3,14 @@
  * (salons, barbers, nail and lash artists), not word for word.
  */
 export const en: Record<string, string> = {
+  'Date et heure sélectionnées': 'Selected date & time',
+  'à {heure}': 'at {heure}',
+  'Vos informations': 'Your details',
+  'Identification': 'Sign in',
+  'Nouveau sur Salon DZ ?': 'New to Salon DZ?',
+  'OU': 'OR',
+  'Vous avez déjà utilisé Salon DZ ?': 'Already used Salon DZ?',
+  'Déplacer le RDV': 'Move appointment',
   'de la beauté ou du bien-être': 'in beauty or wellness',
   'Plus de fonctionnalités dans l’application.': 'More features in the app.',
   'À-propos': 'About',

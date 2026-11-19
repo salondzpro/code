@@ -9,19 +9,18 @@
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { Ban, ChevronDown, Pencil, StickyNote } from 'lucide-react';
+import { Ban } from 'lucide-react';
 import type { BookingWithSalon } from '@salondz/types';
 import { ApiError, useBookingStanding, useCreateBooking, useLoyaltyPrograms, useMe, useMyLoyaltyAt, usePromos, useSalon } from '@salondz/api-client';
 import { loyaltyDiscount, loyaltyReward, promoDiscount } from '@salondz/constants';
 import { PromoCodeField, RewardBox } from '@/components/Loyalty';
-import { depositFor, formatDA } from '@salondz/constants';
+import { depositFor, formatDA, formatLocale } from '@salondz/constants';
+import { formatDuration } from '@/lib/format';
 import { phoneDZ } from '@salondz/validation';
 import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
 import { clearDraft, readDraft, writeDraft } from '@/lib/bookingDraft';
-import { BottomSheet, Button, Field, I, Input, Segmented, Textarea, TopBar } from '@/components/ui';
-import { BookingSummary } from '@/components/BookingSummary';
+import { Button, Field, I, Input, Segmented, Textarea } from '@/components/ui';
 import { ConfirmedView } from './BookingConfirmed';
-import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import { bookingOrigin } from '@/lib/pageView';
@@ -140,120 +139,171 @@ export function BookingReview() {
     navigate(`/compte/informations?retour=${encodeURIComponent(`/s/${slug}/reserver/recap`)}`);
   };
 
+  const jour = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Algiers' }).format(new Date(draft.startsAt));
+  /** « Supprimer » une prestation : la durée change, donc on rechoisit l'heure (ou la prestation). */
+  const retirer = (id: string) => {
+    const rest = draft.serviceIds.filter((x) => x !== id);
+    writeDraft(slug, { serviceIds: rest, startsAt: undefined });
+    navigate(rest.length ? `/s/${slug}/reserver/quand` : `/s/${slug}`);
+  };
+
+  // FAÇON PLANITY (19 nov. 2026, demande du propriétaire) : nom du salon, puis « 1. Prestation
+  // sélectionnée », « 2. Date et heure sélectionnées » (Modifier), « 3. Vos informations », et le
+  // bouton noir « Confirmer le rendez-vous » dans la page.
   return (
-    <Screen bottom={SHEET_PAD} gap={12}>
-      <TopBar backTo={`/s/${slug}/reserver/quand`} title={t('Confirmer')} />
+    <div className="rd pl-bk h-app">
+      <h1 className="pl-bk-t">{s.name}</h1>
 
       {cannotBook && (
-        <div className="flex items-center gap-2.5 rounded-[var(--radius-card)] bg-cancel-bg p-4 text-cancel-fg" role="alert">
+        <div className="mx-4 flex items-center gap-2.5 rounded-[var(--radius-card)] bg-cancel-bg p-4 text-cancel-fg" role="alert">
           <I icon={Ban} size={20} className="flex-none" />
           <span className="text-[1rem] font-semibold">{standing.data?.message ?? t('Réservation en ligne impossible')}</span>
         </div>
       )}
 
-      <BookingSummary
-        className={cannotBook ? 'opacity-60' : ''}
-        salon={{ name: s.name, logoUrl: s.logoUrl, coverUrl: s.coverUrl }}
-        startsAt={draft.startsAt}
-        lines={chosen.map((sv) => ({ id: sv!.id, name: sv!.name, minutes: sv!.durationMinutes, priceDa: sv!.priceDa }))}
-        priceDa={price}
-        payNote={
-          deposit != null
-            ? t('Versement de {montant} · reste {reste} sur place', { montant: formatDA(deposit), reste: formatDA(price - deposit) })
-            : null
-        }
-      />
+      <h2 className="pl-h2 pl-bk-h">
+        <span className="pl-num">1.</span> {t('Prestation sélectionnée')}
+      </h2>
+      <div className="pl-card pl-bk-sel">
+        {chosen.map((sv) => (
+          <div key={sv!.id} className="pl-bk-sv">
+            <div className="min-w-0">
+              <span className="pl-bk-svn">{sv!.name}</span>
+              <span className="pl-bk-svm" dir="ltr">
+                {formatDuration(sv!.durationMinutes)}
+                <span className="pl-dot" aria-hidden>•</span>
+                <b>{formatDA(sv!.priceDa)}</b>
+              </span>
+            </div>
+            <button type="button" className="pl-link" onClick={() => retirer(sv!.id)}>
+              {t('Supprimer')}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="pl-h2 pl-bk-h">
+        <span className="pl-num">2.</span> {t('Date et heure sélectionnées')}
+      </h2>
+      <div className="pl-card pl-bk-sel">
+        <div className="pl-bk-sv">
+          <div className="min-w-0">
+            <span className="pl-bk-svn">{jour}</span>
+            <span className="pl-bk-svm">{t('à {heure}', { heure: time })}</span>
+          </div>
+          <button type="button" className="pl-link" onClick={() => navigate(`/s/${slug}/reserver/quand`)}>
+            {t('Modifier')}
+          </button>
+        </div>
+      </div>
 
       {/* Promotion en cours sur une prestation choisie : la réduction, déduite par le salon. */}
       {(() => {
         const off = promoDiscount(chosen.map((x) => ({ serviceId: x!.id, priceDa: x!.priceDa })), promosSalon);
-        return off > 0 ? <RewardBox tone="promo" icon={ICONE.promo} title={t('Promotion : −{montant}', { montant: formatDA(off) })} sub={t('À payer au salon : {montant}', { montant: formatDA(price - off) })} /> : null;
+        return off > 0 ? (
+          <div className="mx-4">
+            <RewardBox tone="promo" icon={ICONE.promo} title={t('Promotion : −{montant}', { montant: formatDA(off) })} sub={t('À payer au salon : {montant}', { montant: formatDA(price - off) })} />
+          </div>
+        ) : null;
       })()}
-      {/* Fidélité (18 nov. 2026) : cadeau de la carte, ou code promo du salon. Pour soi seulement. */}
+      {/* Fidélité (18 nov. 2026) : cadeau de la carte. Pour soi seulement. */}
       {!forOther && carte.data?.giftAvailable && (
-        price >= carte.data.program.minSpend ? (
-          <RewardBox
-            title={t('Cadeau fidélité : {recompense}', { recompense: loyaltyReward(carte.data.program) })}
-            sub={t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(carte.data.program, price)) })}
-          />
+        <div className="mx-4">
+          {price >= carte.data.program.minSpend ? (
+            <RewardBox
+              title={t('Cadeau fidélité : {recompense}', { recompense: loyaltyReward(carte.data.program) })}
+              sub={t('{montant} déduits par le salon', { montant: formatDA(loyaltyDiscount(carte.data.program, price)) })}
+            />
+          ) : (
+            <RewardBox
+              title={t('Cadeau fidélité : {recompense}', { recompense: loyaltyReward(carte.data.program) })}
+              sub={t('Valable dès {montant} : ajoutez une prestation.', { montant: formatDA(carte.data.program.minSpend) })}
+            />
+          )}
+        </div>
+      )}
+
+      <h2 className="pl-h2 pl-bk-h">
+        <span className="pl-num">3.</span> {t('Vos informations')}
+      </h2>
+      <div className="pl-card pl-bk-sel">
+        <Segmented
+          label={t('Pour qui')}
+          value={forOther ? 'other' : 'me'}
+          onChange={(v) => {
+            setForOther(v === 'other');
+            setErr(null);
+          }}
+          options={[
+            { value: 'me', label: t('Pour moi') },
+            { value: 'other', label: t('Quelqu’un d’autre') },
+          ]}
+        />
+
+        {forOther ? (
+          <div className="flex flex-col gap-3">
+            <Field label={t('Nom et prénom')} htmlFor="bk-other" error={msg('otherName')}>
+              <Input id="bk-other" lg value={otherName} onChange={(e) => setOtherName(e.target.value)} autoComplete="off" />
+            </Field>
+            <PhoneField label={t('Téléphone')} digits={otherDigits} onDigits={setOtherDigits} error={msg('otherPhone')} />
+          </div>
+        ) : compteComplet ? (
+          <div className="pl-bk-sv">
+            <div className="min-w-0">
+              <span className="pl-bk-svn truncate">{profil!.fullName}</span>
+              <span className="pl-bk-svm" dir="ltr" style={{ textAlign: 'start' }}>
+                +213 {groupLocalDigits((profil!.phone ?? '').replace(/^\+213/, ''))}
+              </span>
+            </div>
+            <button type="button" className="pl-link" onClick={modifierCompte}>
+              {t('Modifier')}
+            </button>
+          </div>
         ) : (
-          <RewardBox
-            title={t('Cadeau fidélité : {recompense}', { recompense: loyaltyReward(carte.data.program) })}
-            sub={t('Valable dès {montant} : ajoutez une prestation.', { montant: formatDA(carte.data.program.minSpend) })}
-          />
-        )
-      )}
-      {!forOther && promo && <PromoCodeField salonId={s.id} priceDa={price} onCode={setPromoCode} />}
+          <div className="flex flex-col gap-3">
+            <Field label={t('Nom et prénom')} htmlFor="bk-name" error={msg('name')}>
+              <Input id="bk-name" lg value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+            </Field>
+            <PhoneField label={t('Téléphone')} digits={digits} onDigits={setDigits} error={msg('phone')} />
+          </div>
+        )}
 
-      <Segmented
-        label={t('Pour qui')}
-        value={forOther ? 'other' : 'me'}
-        onChange={(v) => {
-          setForOther(v === 'other');
-          setErr(null);
-        }}
-        options={[
-          { value: 'me', label: t('Pour moi') },
-          { value: 'other', label: t('Quelqu’un d’autre') },
-        ]}
-      />
+        {!forOther && promo && <PromoCodeField salonId={s.id} priceDa={price} onCode={setPromoCode} />}
 
-      {forOther ? (
-        <div className="crd !gap-3">
-          <Field label={t('Nom et prénom')} htmlFor="bk-other" error={msg('otherName')}>
-            <Input id="bk-other" lg value={otherName} onChange={(e) => setOtherName(e.target.value)} autoComplete="off" />
-          </Field>
-          <PhoneField label={t('Téléphone')} digits={otherDigits} onDigits={setOtherDigits} error={msg('otherPhone')} />
-        </div>
-      ) : compteComplet ? (
-        <div className="crd !flex-row items-center gap-3 !p-3">
-          <span className="flex h-[2.75rem] w-[2.75rem] flex-none items-center justify-center rounded-full bg-fill text-[1rem] font-semibold" aria-hidden>
-            {(profil!.fullName ?? '').trim().charAt(0).toUpperCase()}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[1rem] font-semibold">{profil!.fullName}</span>
-            <span className="block text-[0.857rem] text-muted" dir="ltr" style={{ textAlign: 'start' }}>
-              +213 {groupLocalDigits((profil!.phone ?? '').replace(/^\+213/, ''))}
-            </span>
-          </span>
-          <button type="button" onClick={modifierCompte} className="hdr-b !h-10 !w-10" aria-label={t('Modifier mon nom ou mon numéro')}>
-            <I icon={Pencil} size={17} />
+        {noteOpen ? (
+          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder={t('Note pour le salon')} aria-label={t('Note pour le salon')} />
+        ) : (
+          <button type="button" className="pl-link self-start" onClick={() => setNoteOpen(true)}>
+            {t('Ajouter une note')}
           </button>
-        </div>
-      ) : (
-        <div className="crd !gap-3">
-          <Field label={t('Nom et prénom')} htmlFor="bk-name" error={msg('name')}>
-            <Input id="bk-name" lg value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
-          </Field>
-          <PhoneField label={t('Téléphone')} digits={digits} onDigits={setDigits} error={msg('phone')} />
-        </div>
-      )}
+        )}
+      </div>
 
-      {noteOpen ? (
-        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder={t('Note pour le salon')} aria-label={t('Note pour le salon')} />
-      ) : (
-        <button type="button" className="bk-note" onClick={() => setNoteOpen(true)}>
-          <I icon={StickyNote} size={17} />
-          {t('Ajouter une note')}
-          <I icon={ChevronDown} size={16} className="ms-auto text-subtle" />
-        </button>
+      {deposit != null && (
+        <p className="mx-4 text-[1rem] text-muted">
+          {t('Versement de {montant} · reste {reste} sur place', { montant: formatDA(deposit), reste: formatDA(price - deposit) })}
+        </p>
       )}
 
       {slotError && (
-        <div className="flex flex-col gap-3">
+        <div className="mx-4 flex flex-col gap-3">
           <ErrorMessage error={new Error(slotError)} />
           <Button icon={ICONE.autreCreneau} variant="g" onClick={() => navigate(`/s/${slug}/reserver/quand`)}>
             {t('Choisir un autre créneau')}
           </Button>
         </div>
       )}
-      {!slotError && <ErrorMessage error={create.error} />}
+      {!slotError && create.error && (
+        <div className="mx-4">
+          <ErrorMessage error={create.error} />
+        </div>
+      )}
 
-      <BottomSheet>
-        <Button icon={ICONE.confirmerRdv} onClick={() => void confirm()} loading={create.isPending} disabled={create.isPending || cannotBook || standing.isPending}>
-          {cannotBook ? t('Réservation en ligne impossible') : t('Confirmer · {heure}', { heure: time })}
-        </Button>
-      </BottomSheet>
-    </Screen>
+      <div className="pl-bk-go">
+        <button type="button" className="pl-btn pl-btn-ink" onClick={() => void confirm()} disabled={create.isPending || cannotBook || standing.isPending}>
+          {create.isPending ? t('Réservation…') : cannotBook ? t('Réservation en ligne impossible') : t('Confirmer le rendez-vous')}
+        </button>
+      </div>
+    </div>
   );
 }

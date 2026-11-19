@@ -12,7 +12,7 @@
  */
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
+import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { CalendarDays, ChevronDown } from 'lucide-react';
 import { useAvailability, useSalon } from '@salondz/api-client';
 import {
@@ -64,6 +64,7 @@ export function BookingWhen() {
   const [ouverts, setOuverts] = useState<Set<string> | null>(null);
   const [staffId, setStaffId] = useState<string | null>(draft.staffId ?? null);
   const [ajout, setAjout] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
   const dateInput = useRef<HTMLInputElement>(null);
   const { session } = useAuth();
   const serviceIds = draft.serviceIds;
@@ -101,12 +102,81 @@ export function BookingWhen() {
 
   /** Un créneau choisi = on passe tout de suite à la confirmation. */
   const go = (d: string, iso: string) => {
-    writeDraft(slug, { date: d, startsAt: iso, staffId });
-    if (!session && (s.genderTarget === 'men' || s.genderTarget === 'women')) setGuestMarket(s.genderTarget);
-    navigate(`/s/${s.slug}/reserver/recap`);
+    setDraft(writeDraft(slug, { date: d, startsAt: iso, staffId }));
+    if (session) return navigate(`/s/${s.slug}/reserver/recap`);
+    // Sans compte, comme Planity : la page se replie sur « 2. Date et heure sélectionnées » et
+    // « 3. Identification » ; la connexion ramène sur la confirmation.
+    if (s.genderTarget === 'men' || s.genderTarget === 'women') setGuestMarket(s.genderTarget);
+    setPicked(iso);
+    window.scrollTo({ top: 0 });
   };
 
   const autres = s.services.filter((x) => !serviceIds.includes(x.id));
+
+  if (picked && !session) {
+    const suite = encodeURIComponent(`/s/${s.slug}/reserver/recap`);
+    const jour = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TIMEZONE }).format(new Date(picked));
+    return (
+      <div className="rd pl-bk h-app">
+        <h1 className="pl-bk-t">{s.name}</h1>
+        <h2 className="pl-h2 pl-bk-h">
+          <span className="pl-num">1.</span> {t('Prestation sélectionnée')}
+        </h2>
+        <div className="pl-card pl-bk-sel">
+          {chosen.map((sv) => (
+            <div key={sv.id} className="pl-bk-sv">
+              <div className="min-w-0">
+                <span className="pl-bk-svn">{sv.name}</span>
+                <span className="pl-bk-svm" dir="ltr">
+                  {formatDuration(sv.durationMinutes)}
+                  <span className="pl-dot" aria-hidden>•</span>
+                  <b>{formatDA(sv.priceDa)}</b>
+                </span>
+              </div>
+              <button
+                type="button"
+                className="pl-link"
+                onClick={() => {
+                  setPicked(null);
+                  majServices(serviceIds.filter((x) => x !== sv.id));
+                }}
+              >
+                {t('Supprimer')}
+              </button>
+            </div>
+          ))}
+        </div>
+        <h2 className="pl-h2 pl-bk-h">
+          <span className="pl-num">2.</span> {t('Date et heure sélectionnées')}
+        </h2>
+        <div className="pl-card pl-bk-sel">
+          <div className="pl-bk-sv">
+            <div className="min-w-0">
+              <span className="pl-bk-svn">{jour}</span>
+              <span className="pl-bk-svm">{t('à {heure}', { heure: formatTimeDZ(picked) })}</span>
+            </div>
+            <button type="button" className="pl-link" onClick={() => setPicked(null)}>
+              {t('Modifier')}
+            </button>
+          </div>
+        </div>
+        <h2 className="pl-h2 pl-bk-h">
+          <span className="pl-num">3.</span> {t('Identification')}
+        </h2>
+        <div className="pl-card pl-id-box">
+          <p>{t('Nouveau sur Salon DZ ?')}</p>
+          <Link to={`/acces?next=${suite}`} className="pl-btn pl-btn-out">
+            {t('Créer mon compte')}
+          </Link>
+          <span className="pl-ou">{t('OU')}</span>
+          <p>{t('Vous avez déjà utilisé Salon DZ ?')}</p>
+          <Link to={`/acces?next=${suite}`} className="pl-btn pl-btn-ink">
+            {t('Se connecter')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rd pl-bk h-app">
