@@ -123,7 +123,7 @@ export function ProHome() {
           <b className="h12-hi">
             {t('Bonjour')} {firstName}
           </b>
-          <span className="h12-date">{dateLine}</span>
+          <span className="h12-date">{dateLine.charAt(0).toUpperCase() + dateLine.slice(1)}</span>
         </div>
         <span aria-hidden />
       </div>

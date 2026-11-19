@@ -56,9 +56,6 @@ export function HomeUpcoming({
 }) {
   const total = all.length;
   const done = total - upcoming.length;
-  const [next, ...rest] = upcoming;
-  const shown = rest.slice(0, SHOWN_AFTER);
-  const more = rest.length - shown.length;
 
   return (
     <section className="h13" aria-label={t('Prochains rendez-vous')}>
@@ -77,22 +74,29 @@ export function HomeUpcoming({
         <I icon={ChevronRight} size={20} strokeWidth={2} className="h13-chev" />
       </Link>
 
-      {next && <NextCard b={next} now={now} salon={salon} setStatus={setStatus} onPeek={onPeek} />}
-
-      {shown.length > 0 && (
-        <div className="h13-list">
-          <span className="h13-lbl">{t('Ensuite')}</span>
-          {shown.map((b) => (
-            <button key={b.id} type="button" className="h13-it" onClick={() => onPeek(b.id)}>
-              <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
-              <span className="min-w-0 flex-1">
-                <span className="h13-n" dir="auto">{b.clientName}</span>
-                <span className="h13-s" dir="auto">{b.serviceName}</span>
-              </span>
-              {b.status === 'pending' ? <em>{t('À valider')}</em> : <span className="h13-p" dir="ltr">{formatDA(b.priceDa)}</span>}
-            </button>
-          ))}
-          {more > 0 && <span className="h13-more">{more === 1 ? t('+1 autre plus tard') : t('+{n} autres plus tard', { n: more })}</span>}
+      {/* SIMPLIFIÉ (20 nov. 2026, demande du propriétaire : « le pro a le réflexe de regarder l'agenda,
+          ça sert à rien de dupliquer ») : plus de grande carte ni de liste « Ensuite » — une rangée
+          qui défile de côté, une petite carte par rendez-vous à venir (heure, client), qui ouvre la
+          fenêtre du rendez-vous. Le détail et les actions sont dans l'agenda. */}
+      {upcoming.length > 0 && (
+        <div className="h13-strip" role="list" aria-label={t('Prochains rendez-vous')}>
+          {upcoming.map((b) => {
+            const live = new Date(b.startsAt).getTime() <= now;
+            return (
+              <button
+                key={b.id}
+                type="button"
+                role="listitem"
+                className={`h13-chip${b.status === 'pending' ? ' pd' : ''}${live ? ' live' : ''}`}
+                onClick={() => onPeek(b.id)}
+              >
+                <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
+                <span dir="auto">{b.clientName}</span>
+                {b.status === 'pending' && <em>{t('À valider')}</em>}
+                {live && <em>{t('En ce moment')}</em>}
+              </button>
+            );
+          })}
         </div>
       )}
     </section>
