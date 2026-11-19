@@ -104,7 +104,8 @@ export function ProHome() {
 
   // Thème « minimal éditorial » (11 nov. 2026) : le haut de l'accueil porte la photo du salon,
   // très floutée (`.h12-top::before`). Sans photo, le fond uni de la page suffit.
-  const fondSalon = salon?.photos[0]?.url ?? salon?.works[0]?.url ?? null;
+  // Façon Planity (19 nov. 2026) : fond uni, plus de photo floutée en haut de l’accueil.
+  const fondSalon: string | null = null;
 
   const ps = pageStats.data;
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));

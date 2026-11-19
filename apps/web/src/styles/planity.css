@@ -717,3 +717,134 @@ html.client-theme:not(.espace-pro) .cl-frame .h1 {
   padding: 4px 10px;
   white-space: nowrap;
 }
+
+/* ============================================================================================
+   TOUT LE PRODUIT (espace pro compris, 19 nov. 2026, « tout le projet comme Planity ») : cartes à
+   filet et ombre de Planity, boutons arrondis 8 px (plus de pilule), bouton secondaire blanc cerclé,
+   titres de page 24 px. Les ronds d'action (✓ ✕ ⋯, contacts) restent ronds.
+   ============================================================================================ */
+html :is(.crd, .lst) {
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+}
+html.pro-theme :is(.crd, .lst),
+html.client-theme :is(.crd, .lst) {
+  border-color: #eef0f2;
+}
+html .btn,
+html .btn.\!rounded-full,
+html .h11-b,
+html .pa-btn {
+  border-radius: 8px !important;
+}
+html .btn.g,
+html.pro-theme .h11-b.soft {
+  background: #ffffff;
+  color: #202020;
+  border: 1px solid #c7cfd7;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+  font-weight: 500;
+}
+html .h1,
+html.pro-theme .h1 {
+  font-size: calc(24px * var(--fz, 1));
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+html.pro-theme .h12-hi {
+  font-size: calc(24px * var(--fz, 1));
+  font-weight: 600;
+  letter-spacing: 0;
+}
+/* Sélecteurs à onglets (À valider / À venir…) : ceux de Planity, 14 px, trait de 3 px. */
+html .seg > button {
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  color: #4e5860;
+}
+html .seg > button.on {
+  color: #202020;
+  border-bottom-width: 3px;
+}
+/* Barre du bas : blanche, filet fin, comme la barre de l'application Planity. */
+html.pro-theme .nvb {
+  background: #ffffff;
+  box-shadow: 0 -1px 0 #eef0f2;
+}
+/* Champs de recherche, tuiles et fenêtres : formes de Planity (8 px, fenêtres 16 px). */
+html :is(.search, .srch, .plus-tile, .fld, .inp) {
+  border-radius: 8px;
+}
+html .search {
+  border: 1px solid #c7cfd7;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+  background: #ffffff;
+}
+html .plus-tile {
+  border: 1px solid #eef0f2;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+}
+html .sheet.modal,
+html .sheet {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* ---- Carte d'un rendez-vous (fiche, confirmation) ---- */
+.pl-sum {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+}
+.pl-sum-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0 12px;
+}
+.pl-sum-salon {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 28px;
+  color: #202020;
+}
+.pl-sum-row {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  border-top: 1px solid #eef0f2;
+}
+.pl-sum-sv {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pl-sum-sv b {
+  flex: none;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+  color: #202020;
+}
+.pl-sum > .li {
+  border-top: 1px solid #eef0f2;
+}
+.pl-sum-pay {
+  padding: 12px 0 16px;
+  border-top: 1px solid #eef0f2;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  color: #202020;
+}
