@@ -94,8 +94,8 @@ const STATUTS = {
 } as const;
 type StatutKey = keyof typeof STATUTS;
 
-/** Hauteur d'une heure : 60 px (maquette 9), une journée de travail tient sur un écran de téléphone. */
-const PX = 60 / 60;
+/** Hauteur d’une heure : 80 px (19 nov. 2026, demande du propriétaire : heures plus espacées, comme Planity Pro). */
+const PX = 80 / 60;
 /** Espace entre deux blocs qui se suivent. */
 const GAP = 4;
 /** Largeur de la gouttière des heures. */
