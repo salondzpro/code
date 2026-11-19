@@ -1000,3 +1000,59 @@ html.client-theme .srch {
   gap: 6px;
   white-space: nowrap;
 }
+
+/* ============================================================================================
+   AGENDA PRO FAÇON PLANITY (19 nov. 2026) : grille blanche, colonnes séparées par un filet fin,
+   lignes des heures gris clair, rendez-vous en blocs aux coins de 4 px — fond très pâle de la
+   couleur de l'état, LISERÉ de cette couleur à gauche, texte en encre.
+   ============================================================================================ */
+html.pro-theme .agenda .ag9-g {
+  background: #ffffff;
+  border-top: 1px solid #eef0f2;
+}
+html.pro-theme .agenda .agcol {
+  background: transparent;
+  border-inline-start: 1px solid #eef0f2;
+}
+html.pro-theme .ag9-hr {
+  background: #eef0f2;
+}
+html.pro-theme .ag9-hr.half {
+  border-top: 1px dashed #f2f3f5;
+}
+html.pro-theme .agenda .agb {
+  border-radius: 4px;
+  border-inline-start: 3px solid var(--st);
+  background: color-mix(in srgb, var(--st) 12%, #ffffff);
+  color: #202020;
+  padding-inline: 8px 6px;
+}
+html.pro-theme .agenda .agb .agb-t {
+  color: #202020;
+}
+html.pro-theme .agenda .agb.s-cur {
+  background: color-mix(in srgb, var(--st) 18%, #ffffff);
+  color: #202020;
+}
+html.pro-theme .agenda .agb.s-cur .agb-t {
+  color: #202020;
+}
+html.pro-theme .agenda .agb.s-done {
+  background: #f7f7f7;
+  border-inline-start-color: #c7cfd7;
+  color: #4e5860;
+}
+html.pro-theme .agenda .agb.cn {
+  border-inline-start: 3px solid #c7cfd7;
+  border-radius: 4px;
+}
+html.pro-theme .agb-n {
+  font-weight: 500;
+}
+html.pro-theme .agenda .agb-t {
+  font-weight: 600;
+}
+html.pro-theme .agb-s {
+  color: #4e5860;
+  opacity: 1;
+}

@@ -35,7 +35,7 @@ import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { readAgendaMemory, saveAgendaMemory, takeAgendaFlash } from '@/lib/agendaMemory';
 import { BlockedSlotSheet, FreeSlotSheet, type BlockedSlot, type FreeSlot } from '@/components/FreeSlotSheet';
 import { useShowCancelled, useStaffFilter } from '@/lib/proPrefs';
-import { StaffFilter, teinteColonne } from '@/components/StaffFilter';
+import { StaffFilter } from '@/components/StaffFilter';
 import { STATUT_COULEUR, statutCle, type StatutCle } from '@/lib/statusColors';
 import { formatDuration } from '@/lib/format';
 import { useDesktop } from '@/lib/breakpoint';
@@ -269,8 +269,7 @@ export function AgendaPro() {
           id: m.id,
           name: nameOf(m),
           avatarUrl: m.avatarUrl,
-          // Même couleur que son rond dans le filtre, très atténuée : les rendez-vous restent lisibles.
-          tint: teinteColonne(team.indexOf(m)),
+          // Façon Planity (19 nov. 2026) : colonnes blanches, plus de teinte par membre.
         }));
 
   // Rendez-vous du jour par membre, pour la liste déroulante du filtre (annulés exclus).
