@@ -5,7 +5,7 @@
 import { ICONE } from '@/lib/actionIcons';
 import { PromoPrice } from '@/components/PromoPrice';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useSalon } from '@salondz/api-client';
 import { formatDA, groupServices, localDateTimeToISO } from '@salondz/constants';
 import { readDraft, shortDuration, writeDraft } from '@/lib/bookingDraft';
@@ -38,13 +38,17 @@ export function BookingServices() {
 
   // Créneau proposé sur la carte marketplace (?date=YYYY-MM-DD&time=HH:mm) : pré-rempli dans le brouillon,
   // l'écran « Quand » s'ouvre directement dessus (et le libère s'il n'est plus disponible).
-  useEffect(() => {
+  // Une date SEULE (notification « Un créneau s'est libéré », 19 nov. 2026) : le jour est retenu, la
+  // page du créneau s'ouvrira dessus. Écrit pendant le rendu, avant la redirection ci-dessous.
+  useState(() => {
     const date = params.get('date');
     const time = params.get('time');
-    if (date && time && /^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time)) {
-      writeDraft(slug, { date, startsAt: localDateTimeToISO(date, time) });
+    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const ok = !!time && /^\d{2}:\d{2}$/.test(time);
+      writeDraft(slug, { date, startsAt: ok ? localDateTimeToISO(date, time!) : undefined });
     }
-  }, [slug, params]);
+    return true;
+  });
 
   const s = salon.data;
 
@@ -57,6 +61,9 @@ export function BookingServices() {
     navigate(`/s/${slug}/reserver/quand`, { replace: true });
   }, [pre, s, slug, navigate]);
 
+  // Façon Planity (19 nov. 2026) : le choix de la prestation se fait sur la page du salon ; cette adresse
+  // (liens de notifications, cartes de la place de marché) y mène, le jour éventuel déjà retenu.
+  if (!pre) return <Navigate to={`/s/${slug}`} replace />;
   if (salon.isPending) return <PageLoading />;
   if (isNotFound(salon.error)) return <SalonNotFound />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;

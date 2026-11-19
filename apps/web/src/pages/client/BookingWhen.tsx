@@ -12,7 +12,7 @@
  */
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { CalendarDays, ChevronDown } from 'lucide-react';
 import { useAvailability, useSalon } from '@salondz/api-client';
 import {
@@ -59,7 +59,8 @@ export function BookingWhen() {
   const salon = useSalon(slug);
   const [draft, setDraft] = useState(() => readDraft(slug));
   const today = toLocalDateKey();
-  const [debut, setDebut] = useState(draft.date ?? today);
+  // Jamais dans le passé : un vieux brouillon garde parfois un jour déjà écoulé.
+  const [debut, setDebut] = useState(draft.date && draft.date > today ? draft.date : today);
   const [nbJours, setNbJours] = useState(PAQUET);
   const [ouverts, setOuverts] = useState<Set<string> | null>(null);
   const [staffId, setStaffId] = useState<string | null>(draft.staffId ?? null);
@@ -407,14 +408,31 @@ function Complet({ salon, dateKey, serviceId }: { salon: SalonPublic; dateKey: s
       alive = false;
     };
   }, [session, salon.id, dateKey]);
+  const add = async () => setAlertId((await api.me.addSlotAlert({ salonId: salon.id, day: dateKey, serviceId })).id);
+  // Visiteur sans compte (19 nov. 2026) : on retient le jour et l'intention ; de retour connecté,
+  // l'alerte se crée toute seule sur ce jour, sans avoir à retoucher le bouton.
+  const [params, setParams] = useSearchParams();
+  const voulue = params.get('alerte') === dateKey;
+  useEffect(() => {
+    if (!session || !voulue) return;
+    setParams((p) => {
+      p.delete('alerte');
+      return p;
+    }, { replace: true });
+    void add().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, voulue]);
   const toggle = async () => {
-    if (!session) return navigate(`/acces?next=${encodeURIComponent(`/s/${salon.slug}/reserver/quand`)}`);
+    if (!session) {
+      writeDraft(salon.slug, { date: dateKey });
+      return navigate(`/acces?next=${encodeURIComponent(`/s/${salon.slug}/reserver/quand?alerte=${dateKey}`)}`);
+    }
     setBusy(true);
     try {
       if (alertId) {
         await api.me.removeSlotAlert(alertId);
         setAlertId(null);
-      } else setAlertId((await api.me.addSlotAlert({ salonId: salon.id, day: dateKey, serviceId })).id);
+      } else await add();
     } catch {
       /* l'état reste tel quel */
     } finally {
