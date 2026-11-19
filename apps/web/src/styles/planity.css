@@ -1056,3 +1056,8 @@ html.pro-theme .agb-s {
   color: #4e5860;
   opacity: 1;
 }
+html.pro-theme .pl-pk-hd .ag9-st {
+  font-size: calc(20px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 28px;
+}

@@ -42,13 +42,13 @@ import { t } from '@/i18n';
 const REBOOK_DAYS = 21;
 
 /** « Vendredi 20 novembre » (fuseau d'Alger). */
-function jourLong(iso: string): string {
+export function jourLong(iso: string): string {
   const txt = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 }
 
 /** Bouton de la fenêtre, façon Planity : noir (action de l'état), cerclé, ou cerclé rouge (geste négatif). */
-function PkBtn({
+export function PkBtn({
   kind = 'out',
   icon,
   busy,

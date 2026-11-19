@@ -56,7 +56,8 @@ import { DepositDecision, DepositReview } from '@/components/DepositReview';
 import { BookingLoyaltyNote } from '@/components/Loyalty';
 import { depositPayNote } from '@/lib/deposit';
 import { ClientContact } from '@/components/ClientContact';
-import { ActionRond } from '@/components/ActionRond';
+import { PkBtn, jourLong } from '@/components/BookingPeekSheet';
+import { formatDuration } from '@/lib/format';
 import { originLabel } from '@/lib/pageView';
 import { PageLoading } from '@/components/PageLoading';
 import { SlotSuggestions } from '@/components/SlotSuggestions';
@@ -135,100 +136,101 @@ export function ProBookingDetail() {
   return (
     <Screen bottom={aActions ? SHEET_PAD : undefined} gap={12}>
       <TopBar backTo="/pro/agenda" title={t('Rendez-vous')} />
-      {/* L'ESSENTIEL DU MOMENT (13 nov. 2026, charte `docs/CHARTE.md`) : qui, comment la joindre
-          (ronds WhatsApp au logo officiel, SMS, appel — les mêmes que l'agenda), son état, puis
-          quand en grand. Le détail suit en lignes, sans rien répéter. */}
-      <div className="crd !gap-3">
-        <div className="flex items-center gap-3">
-          <Avatar name={b.clientName} size={48} />
-          <div className="min-w-0 flex-1">
-            <h1 className="h1 truncate !text-[1.286rem]">{initials}</h1>
-          </div>
-          <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
-        </div>
-        <div className="flex items-center justify-between gap-3">
+      {/* FAÇON PLANITY (19 nov. 2026, demande du propriétaire), comme la fenêtre de l'agenda : le nom
+          et les contacts, un bloc blanc à lignes (jour et heures + état, chaque prestation, avec qui,
+          prix, provenance, note, motif, nombre de visites), puis les boutons rectangulaires. */}
+      <div className="ag9-sl pl-pk-hd">
+        <span className="ag9-st">{initials}</span>
+        <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
+      </div>
+      <div className="pl-pk">
+        <div className="pl-pk-row">
           <span className="min-w-0">
-            <b className="block text-[1.143rem] font-semibold" dir="auto">{quand}</b>
-            <span className="mono block text-[1rem] text-muted" dir="ltr">
+            <span className="pl-bk-svn">{jourLong(b.startsAt)}</span>
+            <span className="pl-bk-svm" dir="ltr" style={{ textAlign: 'start' }}>
               {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
             </span>
           </span>
           <StatusBadge status={b.status} md cancelledBy={b.cancelledBy} kind={b.cancellationKind} viewer="pro" />
         </div>
-      </div>
-
-      {/* Quoi, avec qui, combien : une ligne par fait, sans répéter l'heure ni la durée. */}
-      <div className="crd !gap-0 !py-1">
         {lines.map((it) => (
-          <FactRow
-            key={it.id}
-            icon={Scissors}
-            title={it.serviceName}
-            // Une seule prestation : son prix est le total, dit une ligne plus bas.
-            right={
-              lines.length > 1 && 'priceDa' in it && it.priceDa != null ? (
-                <span className="text-[1rem] font-semibold">{formatDA(it.priceDa)}</span>
-              ) : undefined
-            }
-          />
+          <div key={it.id} className="pl-pk-row">
+            <span className="min-w-0">
+              <span className="pl-bk-svn">{it.serviceName}</span>
+              <span className="pl-bk-svm">
+                {'durationMinutes' in it && it.durationMinutes ? formatDuration(it.durationMinutes) : null}
+                {b.staff && team && (
+                  <>
+                    <span className="pl-dot" aria-hidden>•</span>
+                    {t('Avec')} {b.staff.displayName}
+                  </>
+                )}
+              </span>
+            </span>
+            {lines.length > 1 && 'priceDa' in it && it.priceDa != null && (
+              <b className="pl-pk-prix" dir="ltr">{formatDA(it.priceDa)}</b>
+            )}
+          </div>
         ))}
-        {b.staff && team && <FactRow icon={UserRound} title={`${t('Avec')} ${b.staff.displayName}`} />}
-        <FactRow
-          icon={Banknote}
-          title={formatDA(b.priceDa)}
-          sub={depositPayNote(b) ?? undefined}
-        />
+        <div className="pl-pk-row">
+          <span className="min-w-0">
+            <span className="pl-bk-svn">{lines.length > 1 ? t('Total') : t('Prix')}</span>
+            {depositPayNote(b) && <span className="pl-bk-svm">{depositPayNote(b)}</span>}
+          </span>
+          <b className="pl-pk-prix" dir="ltr">{formatDA(b.priceDa)}</b>
+        </div>
         {(originLabel(b.origin) || b.bookedByName) && (
-          <FactRow
-            icon={CalendarDays}
-            title={b.bookedByName ? `${t('Réservé par')} ${b.bookedByName}` : originLabel(b.origin)!}
-          />
+          <p className="pl-pk-note">{b.bookedByName ? `${t('Réservé par')} ${b.bookedByName}` : originLabel(b.origin)}</p>
         )}
-        {b.notes && (
-          <FactRow
-            icon={StickyNote}
-            title={`Note ${salon.genderTarget === 'men' ? 'du client' : 'de la cliente'}`}
-            sub={`« ${b.notes} »`}
-          />
-        )}
-        {b.cancellationReason && (
-          <FactRow icon={XCircle} tone="danger" title={t("Motif")} sub={b.cancellationReason} />
-        )}
-        {/* Fidélité en un mot : première visite, ou combien de fois déjà. */}
-        <FactRow icon={History} title={visits.length > 1 ? t('{n} rendez-vous chez vous', { n: visits.length }) : t('Première visite')} />
+        {b.notes && <p className="pl-pk-note">« {b.notes} »</p>}
+        {b.cancellationReason && <p className="pl-pk-note !text-danger">{b.cancellationReason}</p>}
+        <p className="pl-pk-note">{visits.length > 1 ? t('{n} rendez-vous chez vous', { n: visits.length }) : t('Première visite')}</p>
       </div>
       <DepositReview booking={b} />
       <BookingLoyaltyNote bookingId={b.id} priceDa={b.priceDa} active={active} />
       <ErrorMessage error={setStatus.error ?? cancel.error} />
 
-      {/* Les gestes en ronds (les mêmes que la fenêtre de l'agenda) : vert = oui, rouge = non, blanc
-          = le reste. Rien quand il n'y a rien à faire : le retour est la flèche en haut. */}
+      {/* Les gestes de l'état, en boutons rectangulaires (les mêmes que la fenêtre de l'agenda). Rien
+          quand il n'y a rien à faire : le retour est la flèche en haut. */}
       {aActions && (
         <BottomSheet grab={false}>
-          <div className="ag-acts">
-            {confirmable && b.depositStatus !== 'submitted' && (
-              <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })} />
-            )}
+          <div className="pl-pk-acts">
             {confirmable && b.depositStatus === 'submitted' && <DepositDecision id={b.id} />}
-            {confirmable && b.depositStatus !== 'submitted' && <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />}
+            {confirmable && b.depositStatus !== 'submitted' && (
+              <PkBtn kind="ink" icon={ICONE.accepter} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'confirmed' })}>
+                {b.depositStatus ? t('Sans versement') : t('Accepter')}
+              </PkBtn>
+            )}
             {closable && (
-              <>
-                <ActionRond ton="oui" icon={ICONE.terminer} label={t('Terminé')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'completed' })} />
-                <ActionRond ton="non" icon={ICONE.absent} label={t('Absent')} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'no_show' })} />
-              </>
+              <PkBtn kind="ink" icon={ICONE.terminer} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'completed' })}>
+                {t('Terminé')}
+              </PkBtn>
+            )}
+            {active && !past && (
+              <PkBtn icon={ICONE.reporter} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                {t('Reporter')}
+              </PkBtn>
+            )}
+            {confirmable && b.depositStatus !== 'submitted' && (
+              <PkBtn kind="non" icon={ICONE.refuser} onClick={() => setCancelling(true)}>
+                {t('Refuser')}
+              </PkBtn>
+            )}
+            {closable && (
+              <PkBtn kind="non" icon={ICONE.absent} busy={setStatus.isPending} onClick={() => setStatus.mutate({ id: b.id, status: 'no_show' })}>
+                {t('Absent')}
+              </PkBtn>
             )}
             {late && (
-              <ActionRond
-                ton="non"
-                icon={ICONE.annulerRetard}
-                label={t('Retard')}
-                title={`${t('Annuler pour retard (plus de')} ${LATE_TOLERANCE_MINUTES} ${t('min)')}`}
-                busy={cancel.isPending}
-                onClick={() => cancel.mutate({ id: b.id, late: true })}
-              />
+              <PkBtn kind="non" icon={ICONE.annulerRetard} busy={cancel.isPending} onClick={() => cancel.mutate({ id: b.id, late: true })}>
+                {t('Retard')}
+              </PkBtn>
             )}
-            {active && !past && <ActionRond ton="orange" icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />}
-            {b.status === 'confirmed' && !past && <ActionRond ton="non" icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />}
+            {b.status === 'confirmed' && !past && (
+              <PkBtn kind="non" icon={ICONE.annulerRdv} onClick={() => setCancelling(true)}>
+                {t('Annuler')}
+              </PkBtn>
+            )}
           </div>
         </BottomSheet>
       )}
