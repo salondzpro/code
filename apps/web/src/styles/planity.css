@@ -1357,3 +1357,102 @@ html.pro-theme .pla-acc .h12-top {
 .pla-acc > .pla-bar + .h12-top {
   margin-top: -16px;
 }
+
+/* ============================================================================================
+   EN-TÊTE DES SOUS-PAGES PRO façon PLANITY PRO (19 nov. 2026, captures App Store « Choisir une
+   prestation », « Nouveau RDV ») : barre blanche, flèche seule à gauche, titre centré 18 px.
+   ============================================================================================ */
+@media (max-width: 1023.98px) {
+  html.espace-pro .tb.tb-titre {
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    gap: 0;
+    min-height: 56px;
+    margin: calc(-0.75rem - var(--safe-top, 0px)) calc(-1 * var(--gutter, 16px)) 0;
+    padding: var(--safe-top, 0px) 4px 0;
+    background: #ffffff;
+    border-bottom: 1px solid #eef0f2;
+  }
+}
+html.espace-pro .tb.tb-titre .tb-t {
+  flex: 1;
+  max-width: none;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 26px;
+}
+html.espace-pro .tb.tb-titre > .ib {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #202020;
+}
+html.espace-pro .tb.tb-titre > :last-child:not(.tb-t) {
+  justify-self: end;
+}
+
+/* Barre des pages principales (Clients, Paramètres…) : action à droite, sans rond ni ombre. */
+.pla-bar .pla-act .ib {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.pla-home .pla-date > span::first-letter {
+  text-transform: none;
+}
+.pgh-g {
+  display: none;
+}
+@media (max-width: 1023.98px) {
+  html.espace-pro .pgh {
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) minmax(44px, auto);
+    align-items: center;
+    gap: 8px;
+    min-height: 56px;
+    margin: calc(-0.75rem - var(--safe-top, 0px)) calc(-1 * var(--gutter, 16px)) 0;
+    padding: var(--safe-top, 0px) 8px 0;
+    background: #ffffff;
+    border-bottom: 1px solid #eef0f2;
+  }
+  html.espace-pro .pgh .pgh-g {
+    display: block;
+  }
+  html.espace-pro .pgh > :last-child {
+    justify-self: end;
+  }
+  html.espace-pro .pgh .h1 {
+    text-align: center;
+    font-size: calc(18px * var(--fz, 1));
+    font-weight: 600;
+    line-height: 26px;
+  }
+  html.espace-pro .pgh .pgh-s {
+    text-align: center;
+    color: var(--color-link);
+  }
+}
+@media (max-width: 1023.98px) {
+  html.espace-pro .pgh > .min-w-0 {
+    flex: none;
+    min-width: 0;
+  }
+  html.espace-pro .pgh > :last-child button,
+  html.espace-pro .pgh > button:last-child {
+    white-space: nowrap;
+  }
+}

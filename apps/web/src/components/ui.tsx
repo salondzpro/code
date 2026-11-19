@@ -174,13 +174,15 @@ export function TopBar({
   title?: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      {noBack ? !title && <span /> : <BackButton to={backTo} close={close} />}
+    // `tb` : dans l'espace pro, barre blanche façon Planity Pro (flèche à gauche, titre centré,
+    // `styles/planity.css`) ; trois emplacements toujours présents pour garder le titre au centre.
+    <div className={`tb flex items-center justify-between gap-3${title ? ' tb-titre' : ''}`}>
+      {noBack ? <span className="tb-vide" aria-hidden /> : <BackButton to={backTo} close={close} />}
       {title && <h1 className="h1 tb-t">{title}</h1>}
       {typeof right === 'string' ? (
         <span className="text-[1rem] text-muted">{right}</span>
       ) : (
-        (right ?? null)
+        (right ?? <span className="tb-vide" aria-hidden />)
       )}
     </div>
   );
@@ -625,12 +627,14 @@ export function Card({
  */
 export function PageHead({ title, sub, action }: { title: ReactNode; sub?: ReactNode; action?: ReactNode }) {
   return (
+    // Dans l'espace pro, `pgh` devient la barre blanche à titre centré de Planity Pro (`styles/planity.css`).
     <div className="pgh">
+      <span className="pgh-g" aria-hidden />
       <div className="min-w-0 flex-1">
         <h1 className="h1">{title}</h1>
         {sub && <p className="pgh-s">{sub}</p>}
       </div>
-      {action}
+      {action ?? <span className="pgh-g" aria-hidden />}
     </div>
   );
 }

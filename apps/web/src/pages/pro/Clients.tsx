@@ -94,12 +94,14 @@ export function Clients() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12}>
-      <div className="flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="h1">{t("Clients")}</h1>
-          {total > 0 && <p className="text-[0.857rem] text-muted">{total > 1 ? t('{n} clients', { n: total }) : t('{n} client', { n: total })}</p>}
+      {/* FAÇON PLANITY PRO (19 nov. 2026) : barre blanche, titre centré, nombre de clients dessous. */}
+      <div className="pla-bar pla-home">
+        <span aria-hidden />
+        <div className="pla-date">
+          <b>{t("Clients")}</b>
+          {total > 0 && <span>{total > 1 ? t('{n} clients', { n: total }) : t('{n} client', { n: total })}</span>}
         </div>
-        <span className="flex items-center gap-2">
+        <span className="pla-act flex items-center justify-end gap-2">
           {total > 0 && (
             <IconButton
               lg
