@@ -1518,3 +1518,214 @@ html.espace-pro .tb.tb-titre > :last-child:not(.tb-t) {
 .h13-chip.live em {
   color: #2e9b8f;
 }
+
+/* ============================================================================================
+   ACCUEIL PRO (20 nov. 2026, « plus beau, stylé », sans doubler l'agenda) : carte d'en-tête
+   SOMBRE en aplat (date, cloche, « Bonjour », deux chiffres du jour, rangée des rendez-vous à
+   venir), ronds Ma pub / Conseil, puis quatre raccourcis en tuiles.
+   ============================================================================================ */
+.acc2-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  background: #202020;
+  color: #ffffff;
+}
+.acc2-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.acc2-date {
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.6);
+}
+.acc2-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.1);
+  color: #ffffff;
+}
+.acc2-bell i {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 0 2px #202020;
+}
+html.pro-theme .acc2-hi,
+.acc2-hi {
+  margin-top: -6px;
+  font-size: calc(26px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+}
+.acc2-kpis {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0 2px;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  color: #ffffff;
+}
+.acc2-kpis > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.acc2-kpis > span + span {
+  padding-inline-start: 18px;
+  border-inline-start: 1px solid rgb(255 255 255 / 0.12);
+}
+.acc2-kpis b {
+  font-size: calc(26px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.4px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.acc2-kpis small {
+  font-size: calc(13px * var(--fz, 1));
+  line-height: 18px;
+  color: rgb(255 255 255 / 0.6);
+}
+.acc2-chev {
+  color: rgb(255 255 255 / 0.5);
+}
+.acc2-strip {
+  display: flex;
+  gap: 8px;
+  margin: 0 -18px;
+  padding: 0 18px 2px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.acc2-strip::-webkit-scrollbar {
+  display: none;
+}
+.acc2-chip {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 104px;
+  max-width: 150px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border-inline-start: 3px solid #4f86d9;
+  background: rgb(255 255 255 / 0.08);
+  color: #ffffff;
+  text-align: start;
+  scroll-snap-align: start;
+}
+.acc2-chip.pd {
+  border-inline-start-color: #f0961c;
+}
+.acc2-chip.live {
+  border-inline-start-color: #34c759;
+}
+.acc2-chip b {
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 22px;
+}
+.acc2-chip span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(13px * var(--fz, 1));
+  line-height: 18px;
+  color: rgb(255 255 255 / 0.72);
+}
+.acc2-chip em {
+  font-style: normal;
+  font-size: calc(11px * var(--fz, 1));
+  font-weight: 600;
+  color: #f7b955;
+}
+.acc2-chip.live em {
+  color: #6fdc8c;
+}
+.acc2-rien {
+  font-size: calc(14px * var(--fz, 1));
+  color: rgb(255 255 255 / 0.6);
+}
+.acc2-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.acc2-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid #eef0f2;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.06);
+  text-align: start;
+  color: #202020;
+}
+.acc2-tile:active {
+  background: #f7f7f7;
+}
+.acc2-ic {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f2f3f5;
+  color: #202020;
+}
+.acc2-tile b {
+  font-size: calc(15px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 20px;
+}
+.acc2-tile small {
+  max-width: 100%;
+  margin-top: -8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(12px * var(--fz, 1));
+  color: #4e5860;
+}
+@media (min-width: 768px) {
+  .acc2-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.acc2-kpis > span + span b {
+  font-size: calc(22px * var(--fz, 1));
+}
+@media (min-width: 1024px) {
+  .acc2-bell {
+    display: none;
+  }
+}

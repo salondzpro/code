@@ -3,6 +3,10 @@
  * الحلاقة والتجميل (صالون، حلاق، خدمة، موعد، حجز)، وليست ترجمة حرفية.
  */
 export const ar: Record<string, string> = {
+  'prévus': 'متوقعة',
+  'Plus rien de prévu aujourd’hui.': 'لا شيء آخر مبرمج اليوم.',
+  'prévus aujourd’hui': 'متوقعة اليوم',
+  'Partager mes dispos': 'مشاركة أوقاتي المتاحة',
   'Voir la fiche du rendez-vous': 'عرض تفاصيل الموعد',
   'Date et heure sélectionnées': 'اليوم والساعة المختاران',
   'à {heure}': 'على الساعة {heure}',

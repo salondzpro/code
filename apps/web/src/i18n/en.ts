@@ -3,6 +3,10 @@
  * (salons, barbers, nail and lash artists), not word for word.
  */
 export const en: Record<string, string> = {
+  'prévus': 'expected',
+  'Plus rien de prévu aujourd’hui.': 'Nothing else planned today.',
+  'prévus aujourd’hui': 'expected today',
+  'Partager mes dispos': 'Share my availability',
   'Voir la fiche du rendez-vous': 'See appointment details',
   'Date et heure sélectionnées': 'Selected date & time',
   'à {heure}': 'at {heure}',
