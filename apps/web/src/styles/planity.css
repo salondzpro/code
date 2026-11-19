@@ -899,3 +899,10 @@ html.client-theme .srch {
   padding-top: 16px;
   border-top: 1px solid #eef0f2;
 }
+
+/* Accueil pro sur ordinateur : la cloche est dans l'en-tête (ProHeader), pas une seconde fois dans la page. */
+@media (min-width: 1024px) {
+  .h12-hd .h12-bell {
+    display: none;
+  }
+}
