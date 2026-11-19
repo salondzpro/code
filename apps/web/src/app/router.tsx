@@ -90,7 +90,6 @@ const ProCredits = lazyNamed(() => import('@/pages/pro/ProCredits'), 'ProCredits
 const StepServices = lazyNamed(() => import('@/pages/pro/onboarding/StepServices'), 'StepServices');
 const Step10Availability = lazyNamed(() => import('@/pages/pro/onboarding/Step10Availability'), 'Step10Availability');
 const ProPhotos = lazyNamed(() => import('@/pages/pro/Photos'), 'ProPhotos');
-const ProLink = lazyNamed(() => import('@/pages/pro/Link'), 'ProLink');
 const ProQr = lazyNamed(() => import('@/pages/pro/Link'), 'ProQr');
 const ProHome = lazyNamed(() => import('@/pages/pro/Home'), 'ProHome');
 const Revenue = lazyNamed(() => import('@/pages/pro/Revenue'), 'Revenue');
@@ -309,7 +308,8 @@ export const router = createBrowserRouter([
               // vivaient sous `PlainLayout` (celui de l'inscription) : sur ordinateur, ils s'ouvraient
               // sans le rail ni l'en-tête, comme si l'on avait quitté l'espace pro. Seules les étapes
               // d'inscription restent à part, volontairement concentrées.
-              { path: 'lien', element: <ProLink /> },
+              // « Ma page » (lien, QR, règles) supprimée le 19 nov. 2026 : elle recopiait l'accueil et les règles.
+              { path: 'lien', element: <Navigate to="/pro/ma-page" replace /> },
               { path: 'qr', element: <ProQr /> },
               { path: 'profil/horaires', element: <Step9Hours settings /> },
               { path: 'profil/regles', element: <Step10Availability /> },

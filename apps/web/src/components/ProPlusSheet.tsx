@@ -29,7 +29,7 @@ export function usePlusTiles(): Tile[] {
     // « Clientes » pour un salon de femmes (comme la maquette 11), « Clients » sinon.
     { to: '/pro/clients', label: salon?.genderTarget === 'women' ? t('Clientes') : t('Clients'), icon: ContactRound },
     { to: '/pro/catalogue', label: t('Prestations'), icon: Scissors },
-    { to: '/pro/lien', label: t('Ma page'), icon: Link2 },
+    { to: '/pro/ma-page', label: t('Ma page'), icon: Link2 },
     { to: '/pro/avis', label: t('Avis'), icon: Star, count: unanswered },
     { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },
     ...(team ? [{ to: '/pro/equipe', label: t('Équipe'), icon: Users }] : []),

@@ -174,98 +174,6 @@ export function ShareSheet({
   );
 }
 
-export function ProLink() {
-  const navigate = useNavigate();
-  const salon = useProSalon().data?.salon ?? null;
-  const [sheet, setSheet] = useState(false);
-  const [copied, copy] = useCopy();
-  const { url, short } = usePublicUrl(salon?.slug ?? '');
-  const qr = useQr(url, 400);
-  if (!salon) return <PageLoading />;
-  const lead =
-    salon.bookingLeadTimeMinutes >= 60
-      ? `${Math.round(salon.bookingLeadTimeMinutes / 60)} h`
-      : `${salon.bookingLeadTimeMinutes} min`;
-
-  return (
-    <Screen bottom={24} gap={16}>
-      <TopBar backTo="/pro" title={t('Votre page de réservation')} />
-      <div className="crd items-center !gap-3 !py-4">
-        <button
-          type="button"
-          className="flex h-[15rem] w-[15rem] items-center justify-center overflow-hidden rounded-[var(--radius-card)] bg-fill"
-          onClick={() => navigate('/pro/qr')}
-          aria-label={t("Étiquettes à imprimer")}
-        >
-          {qr ? (
-            <img src={qr} alt={t("QR code de votre page")} className="h-[13rem] w-[13rem]" />
-          ) : (
-            <span className="text-[0.857rem] text-subtle">{t("QR code")}</span>
-          )}
-        </button>
-        <div className="flex w-full items-center justify-between gap-3 rounded-[var(--radius-card-sm)] bg-fill px-5 py-4 text-[1rem]">
-          <span className="truncate">{short}</span>
-          <IconButton
-            aria-label={t("Copier le lien")}
-            onClick={() => copy(url)}
-            className="!h-8 !w-8 !border-0 !bg-transparent"
-          >
-            <I icon={copied ? Check : Copy} size={18} />
-          </IconButton>
-        </div>
-      </div>
-      <div className="g2">
-        <Button icon={ICONE.partager} onClick={() => setSheet(true)}>{t("Partager")}</Button>
-        <Button icon={ICONE.apercu} variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
-          {t("Aperçu")}
-        </Button>
-      </div>
-      {/* Ce que le lien donne aujourd'hui : des faits, chacun menant à l'écran qui le règle
-          (publication sur Compte, délai sur Créneaux et règles, validation sur Rendez-vous). */}
-      <SectionLabel>{t("Ce que voient vos clients")}</SectionLabel>
-      <div className="crd !gap-0 !py-1">
-        <ListRow
-          to="/pro/compte"
-          right={
-            <span className={`text-[1rem] font-semibold ${salon.isPublished ? 'text-ok' : 'text-danger'}`}>
-              {salon.isPublished ? t("Activée") : t("Désactivée")}
-            </span>
-          }
-        >
-          <span className="text-[1rem] text-muted">{t("Réservation en ligne")}</span>
-        </ListRow>
-        <ListRow to="/pro/profil/regles" right={<span className="text-[1rem] font-semibold">{t('{n} avant', { n: lead })}</span>}>
-          <span className="text-[1rem] text-muted">{t("Délai minimum")}</span>
-        </ListRow>
-        <ListRow to="/pro/profil/regles" right={<span className="text-[1rem] font-semibold">{salon.autoConfirm ? t("Non") : t("Oui")}</span>}>
-          <span className="text-[1rem] text-muted">{t("Validation manuelle")}</span>
-        </ListRow>
-      </div>
-      {!salon.isPublished && (
-        <Badge tone="pd" md>
-          {t("Page non publiée · activez la réservation en ligne")}
-        </Badge>
-      )}
-      {copied && <Toast icon={Check}>{t("Lien copié")}</Toast>}
-      {sheet && (
-        <ShareSheet
-          name={salon.name}
-          url={url}
-          short={short}
-          logo={salon.logoUrl}
-          onClose={() => setSheet(false)}
-        />
-      )}
-      <span className="sr-only">{SHEET_PAD}</span>
-    </Screen>
-  );
-}
-
-/**
- * PRO-F 21 — Étiquettes à imprimer (refonte du 29 oct. 2026) : affiche de vitrine A5 et autocollant
- * de comptoir, en PNG 300 ppp, dans les modèles que la plateforme propose (`LabelStudio`). L'ancienne
- * affiche unique (1080 × 1440) était trop légère pour une impression nette au-delà d'un A6.
- */
 export function ProQr() {
   const salon = useProSalon().data?.salon ?? null;
   const settings = useLabelSettings(!!salon);
@@ -278,7 +186,7 @@ export function ProQr() {
   const s = settings.data ?? DEFAULT_LABEL_SETTINGS;
   return (
     <Screen bottom={24} gap={14} className="narrow">
-      <TopBar backTo="/pro/lien" title={t('Étiquettes à imprimer')} />
+      <TopBar backTo="/pro" title={t('Étiquettes à imprimer')} />
       <LabelStudio
         input={{
           name: salon.name,

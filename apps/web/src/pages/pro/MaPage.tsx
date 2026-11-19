@@ -20,7 +20,11 @@ import { useProPageStats, useProSalon } from '@salondz/api-client';
 import { addDaysToKey, formatDA, toLocalDateKey } from '@salondz/constants';
 import type { BookingOrigin } from '@salondz/types';
 import { InstagramLogo, SnapchatLogo } from '@/components/BrandIcons';
-import { I, Segmented, Skeleton, TopBar } from '@/components/ui';
+import { Button, I, Segmented, Skeleton, TopBar } from '@/components/ui';
+import { ICONE } from '@/lib/actionIcons';
+import { env } from '@/lib/env';
+import { openExternal } from '@/lib/openExternal';
+import { ShareSheet, usePublicUrl } from './Link';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
@@ -58,10 +62,27 @@ export function MaPage() {
   const total = o ? Object.values(o).reduce((n, x) => n + x.bookings, 0) : 0;
   const mp = o?.marketplace;
   const taux = s && s.total ? Math.round((s.bookings / s.total) * 1000) / 10 : 0;
+  const [partage, setPartage] = useState(false);
+  const { url, short } = usePublicUrl(salon?.slug ?? '');
 
   return (
     <Screen bottom={NAV_PAD} gap={16}>
       <TopBar backTo="/pro" title={t('Ma page')} />
+      {/* Les deux seules actions propres à l'ancienne page « Ma page » (19 nov. 2026, demande du
+          propriétaire : elle recopiait l'accueil et les règles). Copier et Code QR restent sur l'accueil. */}
+      {salon && (
+        <div className="g2">
+          <Button icon={ICONE.partager} onClick={() => setPartage(true)}>
+            {t('Partager')}
+          </Button>
+          <Button icon={ICONE.apercu} variant="g" onClick={() => void openExternal(`${env.siteUrl}/s/${salon.slug}`)}>
+            {t('Aperçu')}
+          </Button>
+        </div>
+      )}
+      {partage && salon && (
+        <ShareSheet name={salon.name} url={url} short={short} logo={salon.logoUrl} onClose={() => setPartage(false)} />
+      )}
       <Segmented<Periode>
         label={t('Période')}
         value={periode}
