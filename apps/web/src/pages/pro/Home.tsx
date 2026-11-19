@@ -12,7 +12,7 @@ import { Link } from 'react-router';
 import { WhatsAppGlyph } from '@/components/BrandIcons';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Bell, CalendarClock, CalendarPlus, Check, ChevronRight, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
+import { Bell, CalendarClock, Check, Copy, Download, MessageCircle, Phone, QrCode, Send, X } from 'lucide-react';
 import {
   useMe,
   useProBookingMutations,
@@ -23,13 +23,14 @@ import {
   useSeenOnDisplay,
   useUnreadNotifications,
 } from '@salondz/api-client';
-import { addDaysToKey, formatDA, formatLocale, formatTimeDZ, toLocalDateKey, weekKeys } from '@salondz/constants';
+import { addDaysToKey, formatLocale, toLocalDateKey, weekKeys } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { I, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
+import { HomeUpcoming } from '@/components/HomeUpcoming';
 import { DispoSheet } from '@/components/DispoSheet';
 import { ProStoryRail } from '@/components/ProStories';
 import { QuickCloseBanner } from '@/components/QuickClose';
@@ -103,93 +104,57 @@ export function ProHome() {
 
   // Thème « minimal éditorial » (11 nov. 2026) : le haut de l'accueil porte la photo du salon,
   // très floutée (`.h12-top::before`). Sans photo, le fond uni de la page suffit.
-  // Façon Planity (19 nov. 2026) : fond uni, plus de photo floutée en haut de l’accueil.
-  const fondSalon: string | null = null;
+  const fondSalon = salon?.photos[0]?.url ?? salon?.works[0]?.url ?? null;
 
   const ps = pageStats.data;
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
 
   return (
-    <Screen bottom={NAV_PAD} gap={16} className="h12 acc2">
-      {/* ACCUEIL (20 nov. 2026, demande du propriétaire : « plus beau, stylé », sans doubler l'agenda).
-          1. Carte d'en-tête SOMBRE (aplat, sans dégradé) : date et cloche, « Bonjour Karim », les deux
-             chiffres du jour (rendez-vous, montant prévu — toucher mène à l'agenda), puis la rangée
-             horizontale des rendez-vous à venir (une petite carte chacun, ouvre la fenêtre). */}
-      <section className="acc2-hero" aria-label={t('Aujourd’hui')}>
-        <div className="acc2-top">
-          <span className="acc2-date">{dateLine.charAt(0).toUpperCase() + dateLine.slice(1)}</span>
-          <button type="button" className="acc2-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
+    <Screen bottom={NAV_PAD} gap={16} className="h12">
+      <header
+        className={`h12-top${fondSalon ? ' photo' : ''}`}
+        style={fondSalon ? { ['--fond-salon' as string]: `url("${fondSalon}")` } : undefined}
+      >
+        <div className="h12-hd">
+          <div className="min-w-0 flex-1">
+            <span className="h12-date">{dateLine}</span>
+            <span className="h12-hi">
+              {t('Bonjour')} {firstName}
+            </span>
+          </div>
+          <button type="button" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
             <I icon={Bell} size={20} strokeWidth={1.8} />
             {nonLues > 0 && <i aria-hidden />}
           </button>
         </div>
-        <h1 className="acc2-hi">
-          {t('Bonjour')} {firstName}
-        </h1>
-        <Link to="/pro/agenda" className="acc2-kpis" aria-label={t('Ouvrir l’agenda')}>
-          <span>
-            <b>{allToday.length}</b>
-            <small>{t('rendez-vous')}</small>
-          </span>
-          <span>
-            <b dir="ltr">{formatDA(allToday.reduce((n, x) => n + x.priceDa, 0))}</b>
-            <small>{t('prévus')}</small>
-          </span>
-          <I icon={ChevronRight} size={20} className="acc2-chev rtl:-scale-x-100" />
-        </Link>
-        {upcoming.length > 0 ? (
-          <div className="acc2-strip" role="list" aria-label={t('Prochains rendez-vous')}>
-            {upcoming.map((b) => {
-              const live = new Date(b.startsAt).getTime() <= now;
-              return (
-                <button
-                  key={b.id}
-                  type="button"
-                  role="listitem"
-                  className={`acc2-chip${b.status === 'pending' ? ' pd' : ''}${live ? ' live' : ''}`}
-                  onClick={() => setPeek(b.id)}
-                >
-                  <b dir="ltr">{formatTimeDZ(b.startsAt)}</b>
-                  <span dir="auto">{b.clientName}</span>
-                  {b.status === 'pending' ? <em>{t('À valider')}</em> : live ? <em>{t('En ce moment')}</em> : null}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          !todayList.isPending && <p className="acc2-rien">{t('Plus rien de prévu aujourd’hui.')}</p>
-        )}
-      </section>
+        {salon && <PageHorsLigne salon={salon} />}
+        {salon && <ProStoryRail salon={salon} short={link.short} pending={pending.data?.items.length ?? 0} />}
+        <HomeUpcoming all={allToday} upcoming={upcoming} now={now} salon={salon} setStatus={setStatus} onPeek={setPeek} />
+      </header>
 
-      {salon && <PageHorsLigne salon={salon} />}
-      {salon && <ProStoryRail salon={salon} short={link.short} pending={pending.data?.items.length ?? 0} />}
-
-      {/* 2. RACCOURCIS : les quatre gestes du quotidien, en tuiles (ils remplacent la carte du lien). */}
       {salon && (
-        <section className="acc2-grid" aria-label={t('Raccourcis')}>
-          <Link to="/pro/rendez-vous/nouveau" className="acc2-tile">
-            <span className="acc2-ic"><I icon={CalendarPlus} size={20} /></span>
-            <b>{t('Nouveau rendez-vous')}</b>
-          </Link>
-          <button type="button" className="acc2-tile" onClick={() => setSheet({ kind: 'dispo' })}>
-            <span className="acc2-ic"><I icon={CalendarClock} size={20} /></span>
-            <b>{t('Partager mes dispos')}</b>
-          </button>
-          <button type="button" className="acc2-tile" onClick={() => setSheet({ kind: 'qr' })}>
-            <span className="acc2-ic"><I icon={QrCode} size={20} /></span>
-            <b>{t('Code QR')}</b>
-          </button>
-          <button
-            type="button"
-            className="acc2-tile"
-            onClick={() => {
-              copy(link.url);
-              setToast({ text: t('Lien copié'), kind: 'ok' });
-            }}
-          >
-            <span className="acc2-ic"><I icon={Copy} size={20} /></span>
-            <b>{t('Copier mon lien')}</b>
-            <small dir="ltr">{link.short}</small>
+        <section className="h12-card h12-link" aria-label={t('Votre lien de réservation')}>
+          <span className="h12-l">{t('Votre lien de réservation')}</span>
+          <span className="h12-u" dir="ltr">
+            {link.short}
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              className="h11-b soft"
+              onClick={() => {
+                copy(link.url);
+                setToast({ text: t('Lien copié'), kind: 'ok' });
+              }}
+            >
+              <I icon={Copy} size={17} strokeWidth={2} /> {t('Copier')}
+            </button>
+            <button type="button" className="h11-b grad" onClick={() => setSheet({ kind: 'qr' })}>
+              <I icon={QrCode} size={17} strokeWidth={2} /> {t('Code QR')}
+            </button>
+          </div>
+          <button type="button" className="h11-b out" onClick={() => setSheet({ kind: 'dispo' })}>
+            <I icon={CalendarClock} size={17} strokeWidth={2} /> {t('Partager mes disponibilités')}
           </button>
         </section>
       )}
