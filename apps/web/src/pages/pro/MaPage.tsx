@@ -168,9 +168,6 @@ export function MaPage() {
               );
             })}
           </div>
-          <p className="mp-note">
-            {t('Mesuré sans données personnelles : on sait par quel canal une cliente arrive, jamais qui elle est sur ce réseau. Montants : rendez-vous non annulés pris en ligne.')}
-          </p>
         </>
       )}
     </Screen>

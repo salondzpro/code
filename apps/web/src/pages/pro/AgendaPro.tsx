@@ -330,7 +330,12 @@ export function AgendaPro() {
             <I icon={Bell} size={24} strokeWidth={1.8} />
             {nonLues > 0 && <i aria-hidden />}
           </button>
-          <button type="button" className="pla-date" aria-expanded={panneau} onClick={() => setPanneau((v) => !v)}>
+          <button type="button" className="pla-date" aria-expanded={panneau} onClick={() => {
+              // Ouvert depuis le bas de la journée : on remonte, sinon le choix du membre et la frise
+              // s'ouvraient hors de l'écran (19 nov. 2026, capture du propriétaire).
+              if (!panneau) window.scrollTo({ top: 0, behavior: 'smooth' });
+              setPanneau((v) => !v);
+            }}>
             <b>
               {new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', timeZone: 'UTC' })
                 .format(new Date(`${date}T12:00:00Z`))
@@ -942,7 +947,7 @@ function DayColumns({
                     <span className="agb-n">
                       <b className="agb-t" dir="ltr">
                         {formatTimeDZ(b.startsAt)}
-                        {h >= 42 && ` - ${formatTimeDZ(b.endsAt)}`}
+                        {h >= 42 && !narrow && ` - ${formatTimeDZ(b.endsAt)}`}
                       </b>{' '}
                       {b.clientName}
                     </span>
