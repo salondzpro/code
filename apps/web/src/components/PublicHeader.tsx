@@ -1,56 +1,38 @@
 /**
- * En-tête Salon DZ du parcours client : menu à gauche, wordmark au centre (→ accueil),
- * compte à droite. Affiché sur TOUT le parcours client, avec ou sans compte — c'est le
- * repère qui permet de revenir à l'accueil ou d'ouvrir le menu depuis n'importe où.
+ * En-tête du parcours client, FAÇON PLANITY (19 nov. 2026, demande du propriétaire : « refais tout le
+ * design, 100 % comme Planity, remets le drawer exactement comme eux ») : bande blanche, menu à
+ * gauche, marque en capitales espacées au centre, bouton NOIR carré du compte à droite. Affiché sur
+ * téléphone ET ordinateur, sur tout le parcours client.
  *
- * Le menu est un TIROIR qui glisse depuis la gauche par-dessus la page assombrie.
+ * Le menu est un TIROIR blanc qui glisse depuis la gauche par-dessus la page assombrie : croix en
+ * haut à droite, « Se connecter » (bouton noir), « Je suis professionnel… » (bouton cerclé, SITE
+ * seulement — l'application cliente ne mène jamais à l'espace pro, règle n° 4), la liste des métiers,
+ * et en bas « Plus de fonctionnalités dans l'application » (site seulement).
  *
- * Il est monté par un PORTAIL sur `document.body`, et non dans l'en-tête : un en-tête
- * `sticky z-30` crée son propre contexte d'empilement, si bien que le z-index du tiroir ne
- * comptait plus face à la barre d'onglets, elle aussi en 30. La barre passait devant et
- * masquait le bouton de déconnexion.
- *
- * Contenu volontairement court : quelques destinations, puis les catégories séparées par
- * marché — les prestations pour hommes et pour femmes n'ont rien à voir, mélanger les deux
- * listes obligeait la cliente à faire le tri elle-même.
+ * Monté par un PORTAIL sur `document.body` : un en-tête `sticky` crée son propre contexte
+ * d'empilement et la barre d'onglets passait devant le tiroir.
  */
-import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation } from 'react-router';
-import { Bell, CalendarClock, ChevronDown, Home, Menu, Store, User, X } from 'lucide-react';
-import { CATEGORIES, MARKET_LABELS_FR, MARKETS, type Market } from '@salondz/constants';
+import { Bell, CalendarClock, Heart, Home, Menu, User, X } from 'lucide-react';
+import { CATEGORIES, MARKETS } from '@salondz/constants';
 import { useMe, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { guestMarket } from '@/lib/useClientMarket';
-import { I, Dim, LinkButton } from './ui';
+import { I, Dim } from './ui';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { t } from '@/i18n';
-import { MARCHE } from '@/lib/flavor';
-
-/** Trois catégories par marché : au-delà, le tiroir devient une liste à faire défiler. */
-const PER_MARKET = 3;
+import { MARCHE, NATIF } from '@/lib/flavor';
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
-  /**
-   * Marché déplié : celui du compte tant qu'on n'a rien touché, puis celui qu'on ouvre.
-   * « none » existe pour pouvoir tout replier, ce qu'un simple `Market | null` ne
-   * distinguerait pas du « on n'a encore rien choisi ».
-   */
-  const [picked, setPicked] = useState<Market | 'none' | null>(null);
-  // `key` change à CHAQUE navigation, y compris quand seule la recherche (`?category=`) change :
-  // un lien de catégorie depuis la marketplace laissait le tiroir ouvert sur la page.
   const { pathname, key: navKey } = useLocation();
   const [bell, setBell] = useState(false);
   const { session } = useAuth();
   const me = useMe(!!session);
-  // Non lues : la cloche de l'en-tête est le seul accès visible à la liste des notifications du client.
-  // Même requête que la ligne du profil — un seul chiffre, partout, sans compteur optimiste.
   const nonLues = useUnreadNotifications(!!session);
-  // Le marché du compte s'ouvre d'office : c'est celui que la cliente ou le client consulte.
   const market = me.data?.profile.market ?? guestMarket() ?? MARKETS[0];
-  const shown = picked === null ? market : picked === 'none' ? null : picked;
   const next = encodeURIComponent(pathname);
   useEffect(() => setOpen(false), [pathname, navKey]);
   useEffect(() => {
@@ -62,156 +44,96 @@ export function PublicHeader() {
 
   const links = session
     ? [
-        { to: MARCHE, icon: Home, label: t("Accueil") },
-        { to: '/rendez-vous', icon: CalendarClock, label: t("Mes rendez-vous") },
-        { to: '/profil', icon: User, label: t("Mon profil") },
+        { to: MARCHE, icon: Home, label: t('Accueil') },
+        { to: '/rendez-vous', icon: CalendarClock, label: t('Mes rendez-vous') },
+        { to: '/profil', icon: User, label: t('Mon profil') },
       ]
-    : [
-        { to: MARCHE, icon: Home, label: t("Accueil") },
-        {
-          to: `/connexion?next=${encodeURIComponent('/rendez-vous')}`,
-          icon: CalendarClock,
-          label: t("Mes rendez-vous"),
-        },
-      ];
+    : [{ to: MARCHE, icon: Home, label: t('Accueil') }];
+
+  // Les métiers du marché de la personne, puis ceux de l'autre : une seule liste à plat, comme Planity.
+  const metiers = [...MARKETS].sort((a) => (a === market ? -1 : 1)).flatMap((m) =>
+    CATEGORIES.filter((c) => c.market === m && !c.legacy).map((c) => ({ ...c, m })),
+  );
 
   const drawer = (
     <>
-      {/* Le voile passe SOUS le tiroir : en 60 contre 50, il le grisait entièrement et
-          rendait la déconnexion incliquable. */}
-      <Dim onClose={() => setOpen(false)} className="!z-[45]" />
-      <nav className="drw" aria-label={t("Menu Salon DZ")}>
-        <button
-          type="button"
-          className="ib !ml-auto !border-0 !bg-transparent"
-          aria-label={t("Fermer le menu")}
-          onClick={() => setOpen(false)}
-        >
-          <I icon={X} size={24} />
+      <Dim onClose={() => setOpen(false)} className="pl-dim" />
+      <nav className="pl-drw" aria-label={t('Menu Salon DZ')}>
+        <button type="button" className="pl-drw-x" aria-label={t('Fermer le menu')} onClick={() => setOpen(false)}>
+          <I icon={X} size={22} />
         </button>
 
-        {!session && (
-          <LinkButton to={`/connexion?next=${next}`} icon={ICONE.seConnecter}>
-            {t("Se connecter")}
-          </LinkButton>
+        {session ? (
+          <div className="pl-drw-me">
+            <Link to="/rendez-vous" className="pl-drw-a">
+              <I icon={CalendarClock} size={20} /> {t('Mes rendez-vous')}
+            </Link>
+            <Link to="/favoris" className="pl-drw-a">
+              <I icon={Heart} size={20} /> {t('Mes favoris')}
+            </Link>
+            <Link to="/profil" className="pl-drw-a">
+              <I icon={User} size={20} /> {t('Mon profil')}
+            </Link>
+          </div>
+        ) : (
+          <Link to={`/acces?next=${next}`} className="pl-btn pl-btn-ink">
+            {t('Se connecter')}
+          </Link>
         )}
 
-        {/* Chaque marché est une section qui s'ouvre et se ferme, titre en gras : côte à
-            côte et à plat, les deux listes se lisaient comme une seule et on ne savait plus
-            si « Coiffure » était celle des hommes ou celle des femmes. */}
-        {MARKETS.map((market) => {
-          const on = shown === market;
-          return (
-            <div key={market} className="flex flex-col border-t border-line-soft">
-              <button
-                type="button"
-                aria-expanded={on}
-                onClick={() => setPicked(on ? 'none' : market)}
-                className="flex items-center justify-between gap-3 py-3 text-start"
-              >
-                {/* Le MOT « Femmes » en rose, exactement comme le titre de la marketplace : la
-                    couleur dit d'un coup d'œil de quel catalogue on parle, et les deux listes ne
-                    se confondent plus. */}
-                <span className="text-[1.143rem] font-semibold tracking-[-0.3px]">
-                  {market === 'women' ? (
-                    <>
-                      {t('Pour')} <span className="text-women">{t('Femmes')}</span>
-                    </>
-                  ) : (
-                    t(MARKET_LABELS_FR[market])
-                  )}
-                </span>
-                <I
-                  icon={ChevronDown}
-                  size={20}
-                  className={`flex-none text-muted transition-transform duration-150${on ? ' rotate-180' : ''}`}
-                />
-              </button>
-              {on && (
-                <div className="mb-2 flex flex-col border-s-2 border-line ps-3.5">
-                  {CATEGORIES.filter((c) => c.market === market && !c.legacy)
-                    .slice(0, PER_MARKET)
-                    .map((c) => (
-                      <Link
-                        key={c.id}
-                        to={`${MARCHE}?category=${c.id}&market=${market}`}
-                        className="py-2 text-[1.143rem] text-muted"
-                      >
-                        {t(c.labelFr)}
-                      </Link>
-                    ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {!NATIF && (
+          <Link to="/professionnels" className="pl-btn pl-btn-out">
+            {t('Je suis professionnel')}
+            <br />
+            {t('de la beauté ou du bien-être')}
+          </Link>
+        )}
 
-        {/* Dégagement sous le dernier élément : la barre d'onglets flotte à 78 px du bas. */}
-        <div className="mt-auto flex flex-col pt-2" style={{ paddingBottom: '5.5rem' }}>
-          {!session && (
-            <Link to="/pro" className="flex items-center gap-3 py-2.5">
-              <I icon={Store} size={20} className="flex-none text-muted" />
-              <span className="text-[1.143rem]">{t("Je suis professionnel")}</span>
+        <div className="pl-drw-list">
+          {metiers.map((c) => (
+            <Link key={c.id} to={`${MARCHE}?category=${c.id}&market=${c.m}`} className="pl-drw-li">
+              {t(c.labelFr)}
             </Link>
-          )}
+          ))}
         </div>
+
+        {!NATIF && (
+          <Link to="/app" className="pl-drw-app">
+            <span className="pl-drw-logo" aria-hidden>
+              S
+            </span>
+            <span className="underline underline-offset-2">{t('Plus de fonctionnalités dans l’application.')}</span>
+          </Link>
+        )}
       </nav>
     </>
   );
 
   return (
-    <header className="hdr sticky top-0 z-30">
-      <div className="mx-auto flex h-[3.5rem] max-w-[var(--shell-w)] items-center justify-between gap-3 px-[calc(1rem+var(--shell-px))]">
-        <button
-          type="button"
-          className="ib !border-0 !bg-transparent"
-          aria-label={t("Menu")}
-          aria-expanded={open}
-          onClick={() => setOpen(true)}
-        >
-          <I icon={Menu} size={24} />
+    <header className="pl-hdr sticky top-0 z-30">
+      <div className="pl-hdr-in">
+        <button type="button" className="pl-hdr-menu" aria-label={t('Menu')} aria-expanded={open} onClick={() => setOpen(true)}>
+          <I icon={Menu} size={26} strokeWidth={1.8} />
         </button>
-        <Link
-          to="/"
-          // Sur téléphone, la marque est au centre (trois éléments répartis). Sur ordinateur, elle
-          // se range contre le menu et laisse la navigation et le compte à droite.
-          className="text-[1.429rem] leading-none tracking-[-0.6px] lg:me-auto lg:ms-1"
-          aria-label={t("Salon DZ · accueil")}
-        >
-          <span className="font-semibold">Salon</span>
-          <span className="ms-[0.16em] font-light text-muted">DZ</span>
+        <Link to={MARCHE} className="pl-mark" aria-label={t('Salon DZ · accueil')}>
+          SALON DZ
         </Link>
-        {/* À partir de 1 024 px, la barre d'onglets flottante disparaît : les mêmes trois
-            destinations passent dans l'en-tête, à leur place sur un écran large. */}
-        <nav className="hidden items-center gap-1 lg:flex" aria-label={t("Navigation")}>
+        <nav className="pl-hdr-nav" aria-label={t('Navigation')}>
           {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === MARCHE}
-              className={({ isActive }) =>
-                `flex items-center gap-2 rounded-[var(--radius-btn)] px-3 py-2 text-[1rem] ${
-                  isActive ? 'bg-fill font-semibold' : 'text-muted'
-                }`
-              }
-            >
-              <I icon={l.icon} size={18} className="text-current" />
+            <NavLink key={l.to} to={l.to} end={l.to === MARCHE} className={({ isActive }) => (isActive ? 'on' : '')}>
               {l.label}
             </NavLink>
           ))}
         </nav>
-        <span className="flex items-center gap-2">
-          {/* Cloche : la liste des notifications (confirmations, rappels, créneaux libérés), avec le
-              compte des non-lues. Sans elle, la liste n'était atteignable par aucun lien. */}
+        <span className="pl-hdr-r">
           {session && (
             <button
               type="button"
               onClick={() => setBell(true)}
-              className="hdr-b relative"
-              aria-label={nonLues ? `${t("Notifications")} · ${nonLues}` : t("Notifications")}
-              title={t("Notifications")}
+              className="pl-hdr-bell"
+              aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')}
             >
-              <I icon={Bell} size={20} strokeWidth={1.8} className="text-current" />
+              <I icon={Bell} size={22} strokeWidth={1.8} />
               {nonLues > 0 && (
                 <span className="nvd !left-auto !-right-1 !-top-1" aria-hidden>
                   {nonLues > 9 ? '9+' : nonLues}
@@ -219,12 +141,13 @@ export function PublicHeader() {
               )}
             </button>
           )}
-          {/* Connecté, le profil est dans la barre du bas (ou la navigation de l'en-tête sur ordinateur). */}
-          {!session && (
-            <Link to={`/connexion?next=${next}`} className="hdr-b soft" aria-label={t('Se connecter ou créer un compte')}>
-              <I icon={User} size={20} className="text-current" />
-            </Link>
-          )}
+          <Link
+            to={session ? '/profil' : `/acces?next=${next}`}
+            className="pl-hdr-me"
+            aria-label={session ? t('Mon profil') : t('Se connecter ou créer un compte')}
+          >
+            <I icon={User} size={22} strokeWidth={1.8} />
+          </Link>
         </span>
       </div>
       {open && createPortal(drawer, document.body)}

@@ -6,11 +6,11 @@ import { ICONE } from '@/lib/actionIcons';
 import { PromoPrice } from '@/components/PromoPrice';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { useBack } from '@/lib/useBack';
 import {
-  ChevronLeft,
+  ChevronDown,
   Heart,
-  Share2,
+  Share,
+  Star,
   Info,
   MapPin,
   Map as MapIcon,
@@ -59,7 +59,6 @@ import {
   Accordion,
   Button,
   I,
-  IconButton,
   Img,
   LinkButton,
   Pill,
@@ -76,7 +75,7 @@ import { ReportReviewButton } from '@/components/ReportReview';
 import { PageLoading } from '@/components/PageLoading';
 import type { SalonPublic, Service } from '@salondz/types';
 import { cibleCarte, itineraireUrl } from '@/lib/maps';
-import { ETOILE, RatingLine } from '@/components/SalonListCard';
+import { ETOILE } from '@/components/SalonListCard';
 import { getLocale, t } from '@/i18n';
 import { MARCHE } from '@/lib/flavor';
 
@@ -136,7 +135,6 @@ export function OpeningStatus({ status }: { status: ReturnType<typeof openingSta
 export function Salon() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
-  const back = useBack(MARCHE);
   const { session } = useAuth();
   const salon = useSalon(slug);
   // Android, site : l'application installée s'ouvre d'elle-même sur ce salon (une fois par session).
@@ -160,7 +158,8 @@ export function Salon() {
   // Catégories repliées par défaut : le client voit d'abord le salon, puis ouvre la sienne.
   // Catégories OUVERTES par défaut : la cliente voit les prestations et les prix sans avoir à chercher ;
   // elle peut replier celles qui ne l'intéressent pas.
-  const [closedGroups, setClosedGroups] = useState<Set<string>>(new Set());
+  // Façon Planity : catégories REPLIÉES, sauf la première quand il n'y en a qu'une.
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [reviewSort, setReviewSort] = useState<ReviewSort>('best');
   const [aboutOpen, setAboutOpen] = useState(false);
   const reviews = useSalonReviewsInfinite(salon.data?.id ?? '', 5, reviewSort);
@@ -218,21 +217,28 @@ export function Salon() {
 
   return (
     <div className="rd salon-pg h-app pb-6">
-      {/* EN-TÊTE FIXE (14 nov. 2026, capture iPhone du propriétaire : « la nav d'en haut doit être
-          stable et ne pas bouger ») : retour, nom du salon, partager, favori, puis les onglets —
-          tout dans une seule bande opaque collée en haut. Les boutons ne flottent plus sur la photo
-          et plus aucun bout de photo ne passe au-dessus des onglets. */}
-      <div className="salon-hd sticky z-20">
-        <div className="salon-hd-r">
-          <IconButton lg aria-label={t("Retour")} onClick={back}>
-            <I icon={ChevronLeft} className="rtl:-scale-x-100" />
-          </IconButton>
-          <span className="salon-hd-t">{s.name}</span>
-          <IconButton lg aria-label={t("Partager")} onClick={() => void partager()}>
-            <I icon={Share2} size={20} />
-          </IconButton>
-          <IconButton
-            lg
+      {/* FAÇON PLANITY (19 nov. 2026, demande du propriétaire) : l'en-tête du site au-dessus (menu,
+          marque, compte), puis les trois onglets collés, puis la photo pleine largeur avec partager et
+          favori en ronds blancs. */}
+      <Tabs
+        label={t("Sections du salon")}
+        value={tab}
+        onChange={setTab}
+        className="salon-tabs pl-tabs sticky z-20"
+        options={[
+          { value: 'book', label: t("Prendre RDV") },
+          { value: 'reviews', label: t("Avis") },
+          { value: 'about', label: t("À-propos") },
+        ]}
+      />
+      <SalonGallery images={gallery} alt={`Photos de ${s.name}`} className="salon-album pl-album">
+        <div className="absolute end-3 top-3 z-[2] flex gap-3">
+          <button type="button" className="pl-rond" aria-label={t("Partager")} onClick={() => void partager()}>
+            <I icon={Share} size={20} strokeWidth={1.8} />
+          </button>
+          <button
+            type="button"
+            className="pl-rond"
             aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             aria-pressed={isFav}
             disabled={toggle.isPending}
@@ -242,67 +248,36 @@ export function Salon() {
                 : navigate(`/connexion?next=${encodeURIComponent(`/s/${s.slug}`)}`)
             }
           >
-            <Heart size={22} strokeWidth={1.6} fill={isFav ? 'currentColor' : 'none'} />
-          </IconButton>
+            <Heart size={21} strokeWidth={1.8} fill={isFav ? 'currentColor' : 'none'} />
+          </button>
         </div>
-        <Tabs
-          label={t("Sections du salon")}
-          value={tab}
-          onChange={setTab}
-          className="salon-tabs"
-          options={[
-            { value: 'book', label: t("Prendre RDV") },
-            { value: 'reviews', label: t("Avis") },
-            { value: 'about', label: t("À propos") },
-          ]}
-        />
-      </div>
-      {/* Album : couverture, photos du salon et réalisations réunies. */}
-      <SalonGallery images={gallery} alt={`Photos de ${s.name}`} className="salon-album h-[14rem]" />
+      </SalonGallery>
 
       {/* Contenu à plat sous la photo : le chevauchement arrondi rognait l'image et
           n'apportait rien, la référence enchaîne les deux bord à bord. */}
-      <div className="salon-body relative flex flex-col gap-3 bg-bg px-4 pt-4">
+      <div className="salon-body pl-body relative flex flex-col gap-3 bg-bg">
         {/* Identité réservée à l'onglet de réservation : sur « Avis » et « À propos »
             elle répétait nom, adresse, note, prix et horaires alors que chaque onglet
             porte déjà ses propres titres. */}
         {tab === 'book' && (
           <>
-          {/* Identité (16 nov. 2026, demande du propriétaire) : le nom et la note SUR LA MÊME LIGNE
-              (étoile dorée), l'adresse qui ouvre l'itinéraire, le statut en couleur. Plus de
-              fourchette de prix : chaque prestation affiche le sien juste en dessous. */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-3">
-              <h1 className="h1 min-w-0 !text-[1.714rem]">{s.name}</h1>
-              <button
-                type="button"
-                className="flex-none"
-                onClick={() => setTab('reviews')}
-                aria-label={
-                  s.ratingCount > 0
-                    ? `${s.ratingCount} avis, note ${formatRating(s.ratingAvg)} sur 5 : voir les avis`
-                    : 'Avis : voir les avis'
-                }
-              >
-                <RatingLine avg={s.ratingAvg} count={s.ratingCount} />
-              </button>
-            </div>
-            {/* Adresse et horaires sur UNE ligne (17 nov. 2026, demande du propriétaire) : l'état
-                d'ouverture à droite, sous la note ; l'adresse s'abrège si la place manque. */}
-            <div className="flex items-center justify-between gap-3">
-              <a
-                href={mapsUrl}
-                target={cibleCarte(mapsUrl)}
-                rel="noreferrer"
-                className="flex min-w-0 items-center gap-1.5 text-[1rem] underline decoration-line-soft underline-offset-2"
-              >
-                <I icon={MapPin} size={16} className="flex-none text-muted" />
-                <span className="min-w-0 truncate" dir="auto">{s.address ? `${s.address}, ${place}` : place}</span>
-              </a>
-              <div className="flex-none whitespace-nowrap text-[0.929rem]">
-                <OpeningStatus status={status} />
-              </div>
-            </div>
+          {/* Identité façon Planity : nom, adresse soulignée (itinéraire), note et avis. */}
+          <div className="pl-id">
+            <h1>{s.name}</h1>
+            <a href={mapsUrl} target={cibleCarte(mapsUrl)} rel="noreferrer" className="pl-id-adr">
+              <I icon={MapPin} size={18} strokeWidth={1.6} className="flex-none" />
+              <span className="min-w-0" dir="auto">{s.address ? `${s.address}, ${place}` : place}</span>
+            </a>
+            <button type="button" className="pl-id-note" onClick={() => setTab('reviews')}>
+              <I icon={Star} size={16} strokeWidth={1.6} className="flex-none" />
+              {s.ratingCount > 0 ? (
+                <span dir="ltr">{formatRating(s.ratingAvg)} ({t('{n} avis', { n: s.ratingCount })})</span>
+              ) : (
+                <span>{t("Pas encore d'avis")}</span>
+              )}
+              <span className="pl-dot" aria-hidden>•</span>
+              <OpeningStatus status={status} />
+            </button>
           </div>
 
           {/* Carte fidélité du salon (18 nov. 2026) : les tampons du client s'il est connecté, sinon
@@ -328,12 +303,12 @@ export function Salon() {
         )}
 
         {tab === 'book' && (
-          <div className="flex flex-col gap-2.5">
+          <div className="pl-list">
             {/* Blocage ou suspension : dit d'emblée, en haut du choix, et non dans une
                 feuille en bas d'écran que l'on découvre après avoir tout parcouru. */}
             {cannotBook && standing.data?.message && (
               <div
-                className="flex items-start gap-3 rounded-[var(--radius-card-sm)] border border-danger-line bg-cancel-bg px-4 py-3"
+                className="mx-4 flex items-start gap-3 rounded-[var(--radius-card-sm)] border border-danger-line bg-cancel-bg px-4 py-3"
                 role="alert"
               >
                 <I icon={Ban} size={20} className="mt-0.5 flex-none text-danger" />
@@ -355,59 +330,46 @@ export function Salon() {
                 </span>
               </div>
             )}
-            <h2 className="h1 !text-[1.429rem]">{t("Choix de la prestation")}</h2>
-            {groups.map((g) => (
-              <Accordion
-                key={g.name}
-                title={g.name}
-                open={!closedGroups.has(g.name)}
-                onToggle={() =>
-                  setClosedGroups((cur) => {
-                    const next = new Set(cur);
-                    if (next.has(g.name)) next.delete(g.name);
-                    else next.add(g.name);
-                    return next;
-                  })
-                }
-              >
-                {g.services.map((sv) => (
-                  <div key={sv.id} className="li !items-start">
-                    <div className="flex min-w-0 flex-1 items-start gap-3">
-                      {sv.photos?.[0]?.url && (
-                        <Img
-                          src={sv.photos[0].url}
-                          className="h-[3rem] w-[3rem] flex-none !rounded-[var(--radius-card-sm)]"
-                        />
-                      )}
-                      <div className="min-w-0">
-                        <span className="block text-[1.143rem] font-semibold tracking-[-0.3px]">
-                          {sv.name}
-                        </span>
-                        <span className="mt-1 block text-[1rem] font-semibold">
-                          {/* Prix et durée se lisent de gauche à droite, même en arabe. */}
-                          <span dir="ltr">
-                            <PromoPrice salonId={s.id} serviceId={sv.id} priceDa={sv.priceDa} />
-                            <span className="font-normal text-muted">
-                              {' '}
-                              · {formatDuration(sv.durationMinutes)}
-                            </span>
+            <h2 className="pl-h2">{t("Choix de la prestation")}</h2>
+            {groups.map((g) => {
+              const ouvert = openGroups.has(g.name);
+              return (
+                <div key={g.name} className="pl-cat">
+                  <button
+                    type="button"
+                    aria-expanded={ouvert}
+                    className="pl-cat-h"
+                    onClick={() =>
+                      setOpenGroups((cur) => {
+                        const next = new Set(cur);
+                        if (next.has(g.name)) next.delete(g.name);
+                        else next.add(g.name);
+                        return next;
+                      })
+                    }
+                  >
+                    <span className="min-w-0">{g.name}</span>
+                    <I icon={ChevronDown} size={18} strokeWidth={2} className={`flex-none transition-transform duration-150${ouvert ? ' rotate-180' : ''}`} />
+                  </button>
+                  {ouvert &&
+                    g.services.map((sv) => (
+                      <div key={sv.id} className="pl-sv">
+                        <span className="pl-sv-n">{sv.name}</span>
+                        <div className="pl-sv-r">
+                          <span dir="ltr" className="min-w-0">
+                            <b><PromoPrice salonId={s.id} serviceId={sv.id} priceDa={sv.priceDa} /></b>
+                            <span className="pl-dot" aria-hidden>•</span>
+                            {formatDuration(sv.durationMinutes)}
                           </span>
-                        </span>
+                          <button type="button" className="pl-choisir" onClick={() => chooseService(sv.id)} disabled={cannotBook}>
+                            {t("Choisir")}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <Button icon={ICONE.ajouter}
-                      sm
-                      auto
-                      className="mt-0.5 flex-none !rounded-full !px-5"
-                      onClick={() => chooseService(sv.id)}
-                      disabled={cannotBook}
-                    >
-                      {t("Choisir")}
-                    </Button>
-                  </div>
-                ))}
-              </Accordion>
-            ))}
+                    ))}
+                </div>
+              );
+            })}
             {s.services.length === 0 && <p className="p py-3">{t("Aucune prestation pour le moment.")}</p>}
           </div>
         )}

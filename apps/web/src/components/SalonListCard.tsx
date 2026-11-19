@@ -159,7 +159,7 @@ export function NextSlots({
           <button
             key={t}
             type="button"
-            className="pill mono !rounded-[var(--radius-card-sm)] !border-hour !px-3 !py-1.5 !text-[1rem] font-semibold !text-hour hover:!bg-fill"
+            className="pl-hour"
             aria-label={`Réserver ${day} à ${t}`}
             onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
           >
@@ -189,7 +189,7 @@ export function NextSlots({
               <button
                 key={t}
                 type="button"
-                className="pill mono !rounded-[var(--radius-card-sm)] !border-hour !px-3 !py-2 !text-[1rem] font-semibold !text-hour hover:!bg-fill"
+                className="pl-hour"
                 aria-label={`Réserver ${day} ${r.label.toLowerCase()} à ${t}`}
                 onClick={(e) => go(e, `/s/${salon.slug}/prestations?date=${next.date}&time=${t}`)}
               >

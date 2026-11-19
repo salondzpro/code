@@ -3,6 +3,16 @@
  * الحلاقة والتجميل (صالون، حلاق، خدمة، موعد، حجز)، وليست ترجمة حرفية.
  */
 export const ar: Record<string, string> = {
+  'de la beauté ou du bien-être': 'في التجميل أو العناية',
+  'Plus de fonctionnalités dans l’application.': 'ميزات أكثر في التطبيق.',
+  'À-propos': 'حول الصالون',
+  'Prestation sélectionnée': 'الخدمة المختارة',
+  'Choisir avec qui ?': 'مع من؟',
+  'Ajouter une prestation à la suite': 'إضافة خدمة بعدها',
+  'Choix de la date & heure': 'اختيار اليوم والساعة',
+  'Choisir une date': 'اختيار تاريخ',
+  'Aucune disponibilité.': 'لا توجد مواعيد متاحة.',
+  'Afficher plus de disponibilités': 'عرض مواعيد أكثر',
   '— les créneaux redeviennent réservables.': '— تعود الأوقات متاحة للحجز.',
   ': au-delà, le salon peut annuler le rendez-vous pour retard.': ': بعد ذلك يمكن للصالون إلغاء الموعد بسبب التأخر.',
   ': saisissez le code fixe à 4 chiffres.': ': أدخل الرمز الثابت المكوّن من 4 أرقام.',

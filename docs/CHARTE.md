@@ -1,5 +1,7 @@
 # Charte graphique et Design System — Salon DZ (référence UNIQUE)
 
+> **19 nov. 2026 — charte alignée sur Planity (demande du propriétaire).** Les valeurs ci-dessous de couleur, police et arrondi sont remplacées par : Inter ; encre `#202020` ; gris `#4e5860` ; fond `#f7f7f7` ; filets `#eef0f2` ; contours de champ `#c7cfd7` ; ombre de carte `0 4px 8px -2px rgb(26 27 31 / .08)` ; arrondis 8 px partout, créneaux 4 px, fenêtres 16 px ; violet `#625df5` pour les numéros d'étape et les liens d'action seulement. Source : `tokens.css` et `styles/planity.css` (composants `pl-*`).
+
 > **RÈGLE ABSOLUE (15 nov. 2026, demande du propriétaire)** : l'espace Professionnels EN PRODUCTION
 > (thème « minimal éditorial » validé le 11 nov. 2026) est la source de vérité graphique. UNE charte,
 > UN Design System, pour TOUT le produit : espace pro, espace clientes, portails d'accès, fenêtres,

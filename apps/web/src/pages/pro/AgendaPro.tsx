@@ -75,7 +75,7 @@ const TONE: Record<StatutCle, string> = {
   cf: 'bg-[#e5f1ff] border-[#007aff]',
   cur: 'bg-[#e3f7e8] border-[#34c759]',
   ns: 'bg-[#ffe7e5] border-[#ff3b30]',
-  done: 'bg-[#f1f1f3] border-[#aeaeb2]',
+  done: 'bg-[#f2f3f5] border-[#aeaeb2]',
 };
 const DOT = STATUT_COULEUR;
 
@@ -1071,7 +1071,7 @@ function WeekGrid({
                 style={{
                   height: H,
                   background: closed
-                    ? 'repeating-linear-gradient(135deg,#f1f1f3 0 6px,#ececef 6px 12px)'
+                    ? 'repeating-linear-gradient(135deg,#f2f3f5 0 6px,#eef0f2 6px 12px)'
                     : undefined,
                 }}
               >
@@ -1113,7 +1113,7 @@ function WeekGrid({
           <span
             className="h-3 w-5 rounded"
             style={{
-              background: 'repeating-linear-gradient(135deg,#f1f1f3 0 3px,#e2e2e6 3px 6px)',
+              background: 'repeating-linear-gradient(135deg,#f2f3f5 0 3px,#c7cfd7 3px 6px)',
             }}
           />{' '}
           {t("Fermé")}
@@ -1182,7 +1182,7 @@ function MonthGrid({
                 closed && !on
                   ? {
                       background:
-                        'repeating-linear-gradient(135deg,#f1f1f3 0 6px,#ececef 6px 12px)',
+                        'repeating-linear-gradient(135deg,#f2f3f5 0 6px,#eef0f2 6px 12px)',
                     }
                   : undefined
               }
@@ -1219,7 +1219,7 @@ function MonthGrid({
           <span
             className="h-3 w-5 rounded"
             style={{
-              background: 'repeating-linear-gradient(135deg,#f1f1f3 0 3px,#e2e2e6 3px 6px)',
+              background: 'repeating-linear-gradient(135deg,#f2f3f5 0 3px,#c7cfd7 3px 6px)',
             }}
           />{' '}
           {t("Fermé")}

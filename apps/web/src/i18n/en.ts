@@ -3,6 +3,16 @@
  * (salons, barbers, nail and lash artists), not word for word.
  */
 export const en: Record<string, string> = {
+  'de la beauté ou du bien-être': 'in beauty or wellness',
+  'Plus de fonctionnalités dans l’application.': 'More features in the app.',
+  'À-propos': 'About',
+  'Prestation sélectionnée': 'Selected service',
+  'Choisir avec qui ?': 'Choose who with?',
+  'Ajouter une prestation à la suite': 'Add another service after',
+  'Choix de la date & heure': 'Choose date & time',
+  'Choisir une date': 'Choose a date',
+  'Aucune disponibilité.': 'No availability.',
+  'Afficher plus de disponibilités': 'Show more availability',
   '— les créneaux redeviennent réservables.': '— slots become bookable again.',
   ': au-delà, le salon peut annuler le rendez-vous pour retard.': ': after that, the salon may cancel the appointment for lateness.',
   ': saisissez le code fixe à 4 chiffres.': ': enter the fixed 4-digit code.',

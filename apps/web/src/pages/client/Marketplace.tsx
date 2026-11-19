@@ -12,12 +12,11 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { Bell, Search, User } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { pagesItems, useMe, useSalonSearchInfinite, useUnreadNotifications } from '@salondz/api-client';
 import { formatLocale } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
 import { useDesktop } from '@/lib/breakpoint';
-import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { LoadMore } from '@/components/LoadMore';
 import {
   MARKET_LABELS_FR,
@@ -45,9 +44,7 @@ export function Marketplace() {
   const [params, setParams] = useSearchParams();
   const { session } = useAuth();
   const me = useMe(!!session);
-  const nonLues = useUnreadNotifications(!!session);
   const desktop = useDesktop();
-  const [bell, setBell] = useState(false);
   const { market, setMarket, ready } = useClientMarket();
   const [prefs, setPrefs] = useLocationPrefs();
   const category = params.get('category') ?? '';
@@ -115,7 +112,8 @@ export function Marketplace() {
   // premier salon proposé, très floutée (`.h12-top.photo`, thème minimal éditorial). Sur ordinateur,
   // l'en-tête de la coque porte déjà la cloche : on ne la répète pas.
   const firstName = (me.data?.profile.fullName ?? '').split(' ')[0];
-  const fond = items[0]?.photoUrls?.[0] ?? items[0]?.coverUrl ?? null;
+  // Façon Planity (19 nov. 2026) : fond uni, plus de photo floutée ; cloche et compte sont dans l'en-tête.
+  const fond: string | null = null;
   const dateLine = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date());
 
   return (
@@ -128,20 +126,8 @@ export function Marketplace() {
               {t('Bonjour')} {firstName}
             </span>
           </div>
-          {!desktop &&
-            (session ? (
-              <button type="button" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
-                <I icon={Bell} size={20} strokeWidth={1.8} />
-                {nonLues > 0 && <i aria-hidden />}
-              </button>
-            ) : (
-              <Link to={`/intro?next=${encodeURIComponent(MARCHE)}`} className="h12-bell" aria-label={t('Se connecter ou créer un compte')}>
-                <I icon={User} size={20} strokeWidth={1.8} />
-              </Link>
-            ))}
         </div>
       </header>
-      {bell && <NotificationsSheet onClose={() => setBell(false)} />}
       <SearchField
         market={market}
         q={q}

@@ -30,10 +30,10 @@ export function ClientLayout() {
   // Comme l'espace pro (refonte du 1er nov., étendue aux clientes le 14 nov. 2026) : sur téléphone,
   // plus d'en-tête ni de tiroir — le titre est dans la page, la cloche sur l'accueil. L'en-tête ne
   // reste que sur ordinateur, où il porte la navigation.
-  const desktop = useDesktop();
+  // En-tête façon Planity sur TOUS les écrans (19 nov. 2026, demande du propriétaire).
   return (
     <AppFrame className="cl-frame">
-      {desktop && <PublicHeader />}
+      <PublicHeader />
       <AccountSuspendedNotice />
       <Outlet />
       <BottomNav kind="client" />
@@ -48,14 +48,13 @@ export function ClientLayout() {
  * pro, où cet en-tête n'aurait rien à faire.
  */
 export function ClientPlainLayout() {
-  const desktop = useDesktop();
   const { pathname } = useLocation();
   // Pages d'un salon et de sa réservation, sur le site en téléphone : « Ouvrir dans l'application ».
   const banniere = /^\/s\//.test(pathname) || /^\/rendez-vous\/[^/]+\/confirme/.test(pathname);
   return (
     <AppFrame className="cl-frame">
-      {desktop && <PublicHeader />}
       {banniere && <AppBanner />}
+      <PublicHeader />
       <Outlet />
     </AppFrame>
   );

@@ -46,7 +46,7 @@ function Contenu({ onStore }: { onStore?: () => void }) {
   const [qr, setQr] = useState<string | null>(null);
   useEffect(() => {
     if (os) return;
-    void QRCode.toDataURL(APP_LINK, { margin: 1, width: 320, color: { dark: '#111111', light: '#ffffff' } }).then(setQr).catch(() => setQr(null));
+    void QRCode.toDataURL(APP_LINK, { margin: 1, width: 320, color: { dark: '#202020', light: '#ffffff' } }).then(setQr).catch(() => setQr(null));
   }, [os]);
   return (
     <>

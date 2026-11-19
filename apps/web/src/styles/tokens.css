@@ -8,40 +8,40 @@
  * un jeton d'ici ; jamais une valeur au jugé, jamais une ancienne identité (violet #6c5ce7, encre bleu
  * nuit #1e1b30, police Outfit, ombres teintées, couleurs par catégorie — supprimés le 15 nov. 2026).
  *
- *   Encre #111 · gris #6e6e76 · fond #f7f7f9 · surface blanche · aucun accent de marque.
+ *   Encre #202020 · gris #4e5860 · fond #f7f7f7 · surface blanche · aucun accent de marque.
  *   La couleur ne sert qu'à DIRE quelque chose : couleurs système d'iOS (vert oui, rouge non,
  *   orange à valider, bleu confirmé, gris passé).
  */
 
 @theme {
   /* ---------------------------------------------------------------- Fonds et surfaces */
-  --color-canvas: #f7f7f9; /* autour de la colonne sur grand écran */
-  --color-bg: #f7f7f9; /* fond de toutes les pages */
+  --color-canvas: #f7f7f7; /* autour de la colonne sur grand écran */
+  --color-bg: #f7f7f7; /* fond de toutes les pages */
   --color-surface: #ffffff; /* cartes, listes, fenêtres, champs */
-  --color-fill: #f1f1f3; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
-  --color-fill-strong: #ebebee; /* bouton secondaire, sélecteur segmenté */
-  --color-line: #ececef; /* bordures */
-  --color-line-strong: #e2e2e6; /* contour des champs, des ronds blancs, lignes des heures */
-  --color-line-soft: #f1f1f3; /* séparateurs de liste */
+  --color-fill: #f2f3f5; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
+  --color-fill-strong: #eef0f2; /* bouton secondaire, sélecteur segmenté */
+  --color-line: #eef0f2; /* bordures */
+  --color-line-strong: #c7cfd7; /* contour des champs, des ronds blancs, lignes des heures */
+  --color-line-soft: #f2f3f5; /* séparateurs de liste */
 
   /* ---------------------------------------------------------------- Texte */
-  --color-text: #111111;
-  --color-muted: #6e6e76; /* secondaire */
-  --color-subtle: #6e6e76; /* tertiaire : même gris que le secondaire (mesuré en production) */
+  --color-text: #202020;
+  --color-muted: #4e5860; /* secondaire */
+  --color-subtle: #4e5860; /* tertiaire : même gris que le secondaire (mesuré en production) */
   --color-disabled: #c7c7cc;
-  --color-ink: #111111; /* éléments SOMBRES : bouton principal, sélection, onglet actif */
+  --color-ink: #202020; /* éléments SOMBRES : bouton principal, sélection, onglet actif */
   --color-on-ink: #ffffff;
 
   /* Accent = l'encre : il n'y a PAS de couleur de marque (anciens jetons gardés pour les classes
      existantes, tous ramenés à l'encre et aux gris). */
-  --color-accent: #111111;
-  --color-accent-strong: #111111;
-  --color-accent-deep: #111111;
-  --color-accent-soft: #f1f1f3;
-  --color-accent-tint: #ececef;
-  --color-accent-line: #cfcfd4;
+  --color-accent: #202020;
+  --color-accent-strong: #202020;
+  --color-accent-deep: #202020;
+  --color-accent-soft: #f2f3f5;
+  --color-accent-tint: #eef0f2;
+  --color-accent-line: #c7cfd7;
   --color-on-accent: #ffffff;
-  --color-primary: #111111;
+  --color-primary: #202020;
   --color-primary-contrast: #ffffff;
 
   /* ---------------------------------------------------------------- Couleurs de SENS (iOS) */
@@ -68,25 +68,27 @@
   /* Espace clientes : la seule couleur propre, le rose de l'espace féminin. */
   --color-women: #f06a9b;
   /* Heures libres des cartes de la place de marché : encre (le bleu du 19 sept. est retiré). */
-  --color-hour: #111111;
+  --color-hour: #202020;
+  /* Violet Planity : numéros d'étape (« 1. », « 2. ») et liens d'action (« Supprimer »), rien d'autre. */
+  --color-link: #625df5;
 
   /* ---------------------------------------------------------------- Typographie */
-  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: 'Inter', Helvetica, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   /* Plus de seconde police : les titres utilisent la même (l'arabe retombe sur la police système). */
-  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Inter', Helvetica, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /* ---------------------------------------------------------------- Arrondis (racine 14 px) */
-  --radius-card: 1.571rem; /* 22 px — cartes et listes (mesuré en production) */
-  --radius-card-sm: 1rem; /* 14 px — tuiles, petites cartes */
-  --radius-btn: 1rem; /* 14 px — boutons rectangulaires (les petits boutons sont en pilule) */
-  --radius-input: 1rem; /* 14 px — champs */
-  --radius-slot: 0.857rem; /* 12 px — créneaux horaires */
-  --radius-img: 1rem; /* 14 px */
+  --radius-card: 0.571rem; /* 8 px (Planity) */
+  --radius-card-sm: 0.571rem; /* 8 px */
+  --radius-btn: 0.571rem; /* 8 px — boutons */
+  --radius-input: 0.571rem; /* 8 px — champs */
+  --radius-slot: 0.286rem; /* 4 px — créneaux horaires */
+  --radius-img: 0.571rem; /* 8 px */
   --radius-pill: 62.4375rem; /* pastilles, badges, ronds */
-  --radius-sheet: 2rem; /* 28 px — fenêtres du bas */
+  --radius-sheet: 1.143rem; /* 16 px — fenêtres du bas */
 
   /* ---------------------------------------------------------------- Ombres (neutres, jamais teintées) */
-  --shadow-card: 0 10px 28px -16px rgb(0 0 0 / 0.16);
+  --shadow-card: 0 4px 8px -2px rgb(26 27 31 / 0.08);
   --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.18);
   --shadow-fab: 0 10px 24px -8px rgb(0 0 0 / 0.35);
   --shadow-toast: 0 12px 32px -10px rgb(0 0 0 / 0.3);
@@ -99,5 +101,5 @@
 :root {
   color-scheme: light;
   /* Ombre des cartes du thème (alias historique, même valeur que --shadow-card). */
-  --pro-shadow: 0 10px 28px -16px rgb(0 0 0 / 0.16);
+  --pro-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
 }

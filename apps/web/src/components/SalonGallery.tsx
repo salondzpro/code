@@ -5,8 +5,8 @@
  * Les réalisations étaient reléguées dans l'onglet « À propos », alors que ce sont elles qui
  * décident d'une prise de rendez-vous en coiffure : elles rejoignent donc l'album principal.
  *
- * Les dégradés ne sont posés QUE sur les bords gauche et droit, verticalement : ils détachent
- * les flèches de la photo sans l'assombrir au centre, là où il y a quelque chose à regarder.
+ * Façon Planity (19 nov. 2026) : photo nue, flèches blanches à ombre portée, compteur « 1/15 » sur
+ * un pavé sombre en bas à droite.
  */
 import { useRef, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -65,20 +65,6 @@ export function SalonGallery({
         </div>
       )}
 
-      {/* Dégradés latéraux uniquement : le centre de la photo reste intact. */}
-      {count > 0 && (
-        <>
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 start-0 w-1/5 bg-gradient-to-r from-black/45 to-transparent"
-          />
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 end-0 w-1/5 bg-gradient-to-l from-black/45 to-transparent"
-          />
-        </>
-      )}
-
       {children}
 
       {count > 1 && (
@@ -87,19 +73,19 @@ export function SalonGallery({
             type="button"
             aria-label={t("Photo précédente")}
             onClick={() => aller(i - 1)}
-            className="absolute start-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+            className="gal-fl absolute start-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white"
           >
-            <I icon={ChevronLeft} size={20} className="text-current" />
+            <I icon={ChevronLeft} size={28} strokeWidth={2.4} className="text-current" />
           </button>
           <button
             type="button"
             aria-label={t("Photo suivante")}
             onClick={() => aller(i + 1)}
-            className="absolute end-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+            className="gal-fl absolute end-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white"
           >
-            <I icon={ChevronRight} size={20} className="text-current" />
+            <I icon={ChevronRight} size={28} strokeWidth={2.4} className="text-current" />
           </button>
-          <span className="absolute bottom-2 end-3 rounded-full bg-black/45 px-2 py-0.5 text-[0.857rem] font-semibold text-white">
+          <span className="gal-n absolute bottom-3 end-3">
             {i + 1}/{count}
           </span>
         </>

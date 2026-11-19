@@ -1,4 +1,5 @@
 import './styles/index.css';
+import './styles/planity.css';
 import { env } from './lib/env';
 import { startUpdateCheck } from './lib/updateCheck';
 import { getLocale, loadDictionary } from './i18n';

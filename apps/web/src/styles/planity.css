@@ -1,0 +1,594 @@
+/* ============================================================================================
+   THÈME PLANITY (19 nov. 2026, demande du propriétaire : « refais tout le design, 100 % Planity, même
+   background et tout »). Valeurs MESURÉES sur planity.com (390 px) : Inter, encre #202020, gris
+   #4e5860, fond #f7f7f7, cartes blanches à filet #eef0f2 et ombre 0 4px 8px -2px, boutons noirs
+   arrondis 8 px, créneaux gris #f7f7f7 arrondis 4 px, violet #625df5 pour les numéros d'étape et les
+   liens d'action seulement. Les jetons sont dans `tokens.css` ; ici, les composants `pl-*`.
+   Importé APRÈS `index.css` : ces règles l'emportent.
+   ============================================================================================ */
+html.client-theme,
+html.pro-theme {
+  --bar-top-bg: rgb(255 255 255 / 0.92);
+}
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+}
+.cl-frame {
+  --hdr-h: 64px;
+}
+
+/* ---- En-tête ---- */
+.pl-hdr {
+  background: #ffffff;
+}
+.pl-hdr-in {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 64px;
+  max-width: var(--shell-w);
+  margin: 0 auto;
+  padding: 0 calc(16px + var(--shell-px, 0px));
+}
+.pl-hdr-menu {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-inline-start: -8px;
+  color: #202020;
+}
+.pl-mark {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(20px * var(--fz, 1));
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  margin-inline-end: -0.32em;
+  color: #202020;
+  white-space: nowrap;
+}
+.pl-hdr-nav {
+  display: none;
+}
+.pl-hdr-r {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pl-hdr-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: #202020;
+}
+.pl-hdr-me {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 40px;
+  border-radius: 8px;
+  background: #202020;
+  color: #ffffff;
+}
+@media (min-width: 1024px) {
+  .pl-mark {
+    position: static;
+    transform: none;
+    margin-inline-end: auto;
+  }
+  .pl-hdr-nav {
+    display: flex;
+    gap: 24px;
+    margin-inline-end: 16px;
+  }
+  .pl-hdr-nav a {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4e5860;
+  }
+  .pl-hdr-nav a.on {
+    color: #202020;
+  }
+}
+
+/* ---- Tiroir ---- */
+.dim.pl-dim {
+  z-index: 45 !important;
+  background: rgb(32 32 32 / 0.5);
+}
+.pl-drw {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(85vw, 332px);
+  padding: calc(16px + var(--safe-top, 0px)) 24px calc(24px + var(--safe-bottom, 0px));
+  background: #ffffff;
+  overflow-y: auto;
+  animation: drw-in 0.22s ease-out;
+}
+.pl-drw-x {
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 4px -4px -4px 0;
+  color: #202020;
+}
+.pl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+.pl-btn-sm {
+  min-height: 40px;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+}
+.pl-btn-ink {
+  background: #202020;
+  color: #ffffff;
+}
+.pl-btn-out {
+  background: #ffffff;
+  color: #202020;
+  border: 1px solid #202020;
+  font-weight: 500;
+}
+.pl-btn-out.pl-btn-sm {
+  border-color: #c7cfd7;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+}
+.pl-drw-me,
+.pl-drw-list {
+  display: flex;
+  flex-direction: column;
+}
+.pl-drw-a,
+.pl-drw-li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  font-size: calc(16px * var(--fz, 1));
+  color: #202020;
+}
+.pl-drw-a {
+  font-weight: 500;
+}
+.pl-drw-app {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: calc(16px * var(--fz, 1));
+  line-height: 24px;
+  color: #202020;
+}
+.pl-drw-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: #202020;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+/* ---- Briques communes ---- */
+.pl-h2 {
+  font-size: calc(20px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 30px;
+  color: #202020;
+}
+.pl-num {
+  color: var(--color-link);
+}
+.pl-link {
+  flex: none;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pl-dot {
+  margin: 0 6px;
+  color: #c7cfd7;
+}
+.pl-card,
+.pl-cat {
+  background: #ffffff;
+  border-top: 1px solid #eef0f2;
+  border-bottom: 1px solid #eef0f2;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+}
+.pl-choisir {
+  flex: none;
+  height: 32px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #202020;
+  color: #ffffff;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+}
+.pl-choisir:disabled {
+  opacity: 0.4;
+}
+
+/* ---- Page du salon ---- */
+.rd.salon-pg {
+  background: #f7f7f7;
+}
+.pl-tabs.tabs {
+  top: var(--hdr-h, 64px);
+  background: #ffffff;
+  border-bottom: 0;
+  box-shadow: inset 0 -4px 0 #eef0f2;
+}
+.pl-tabs.tabs > button {
+  padding: 16px 8px 20px;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: #4e5860;
+  border-bottom: 4px solid transparent;
+}
+.pl-tabs.tabs > button.on {
+  color: #000000;
+  border-bottom-color: #202020;
+}
+.pl-album {
+  height: 230px;
+}
+.gal-fl svg {
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.55));
+}
+.gal-n {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgb(32 32 32 / 0.6);
+  color: #ffffff;
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 24px;
+}
+.pl-rond {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #202020;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
+}
+.pl-body.salon-body {
+  gap: 16px;
+  padding: 24px 0 32px;
+}
+/* Tout le contenu garde 16 px de marge, SAUF les listes à cartes pleine largeur (Planity). */
+.pl-body > * {
+  margin-inline: 16px;
+}
+.pl-body > .pl-list {
+  margin-inline: 0;
+}
+.pl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pl-list > .pl-h2 {
+  margin: 16px 16px 0;
+}
+.pl-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pl-id h1 {
+  font-size: calc(24px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 36px;
+  letter-spacing: 0;
+  color: #202020;
+}
+.pl-id-adr,
+.pl-id-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 24px;
+  color: #4e5860;
+  text-align: start;
+}
+.pl-id-adr span {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pl-id-note .pl-dot {
+  margin: 0;
+}
+.pl-id-note .font-semibold {
+  font-weight: 500;
+}
+.pl-cat-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+  color: #202020;
+  text-align: start;
+}
+.pl-sv {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 16px;
+  padding: 16px 0;
+  border-top: 1px solid #eef0f2;
+}
+.pl-sv-n {
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 20px;
+  color: #202020;
+}
+.pl-sv-r {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 24px;
+  color: #202020;
+}
+.pl-sv-r b {
+  font-weight: 500;
+}
+
+/* ---- Choix du créneau ---- */
+.pl-bk {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0 40px;
+  background: #f7f7f7;
+}
+.pl-bk-t {
+  margin: 0 16px;
+  font-size: calc(24px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 36px;
+  color: #202020;
+}
+.pl-bk-h {
+  margin: 8px 16px 0;
+}
+.pl-bk-sel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.pl-bk-sv {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pl-bk-svn {
+  display: block;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+}
+.pl-bk-svm {
+  display: block;
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 24px;
+  color: #4e5860;
+}
+.pl-bk-svm b {
+  font-weight: 500;
+  color: #202020;
+}
+.pl-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pl-select select {
+  width: 100%;
+  height: 40px;
+  padding: 0 36px 0 12px;
+  border: 1px solid #c7cfd7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #202020;
+  font-size: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+}
+.pl-select svg {
+  position: absolute;
+  inset-inline-end: 12px;
+}
+.pl-bk-add {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pl-bk-add > .pl-btn {
+  width: auto;
+  margin: 0 16px;
+}
+.pl-bk-date {
+  position: relative;
+  margin: 0 16px;
+}
+.pl-date-in {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+.pl-days {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pl-day-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  line-height: 24px;
+  color: #202020;
+  text-align: start;
+}
+.pl-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.pl-slot {
+  height: 40px;
+  border-radius: 4px;
+  background: #f7f7f7;
+  color: #202020;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+}
+.pl-slot.on,
+.pl-slot:active {
+  background: #202020;
+  color: #ffffff;
+}
+.pl-voir {
+  width: 100%;
+  padding: 12px 10px;
+  border-top: 1px solid #eef0f2;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  color: #202020;
+}
+.pl-more {
+  padding: 16px;
+  font-size: calc(16px * var(--fz, 1));
+  font-weight: 500;
+  color: #202020;
+  letter-spacing: 0.4px;
+}
+
+/* Sur tablette et ordinateur, les cartes reprennent un arrondi et le parcours se centre. */
+@media (min-width: 768px) {
+  .pl-card,
+  .pl-cat {
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+  }
+  .pl-bk {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding-inline: 16px;
+  }
+  .pl-bk > *,
+  .pl-bk-add > .pl-btn {
+    margin-inline: 0;
+  }
+  .pl-body > .pl-list > .pl-h2 {
+    margin-inline: 0;
+  }
+}
+
+/* L'accueil clientes : la photo floutée ne remonte plus derrière la barre d'état — l'en-tête est là. */
+@media (max-width: 1023.98px) {
+  html.pro-theme .cl-frame .h12-top.photo {
+    margin-top: 0;
+    padding-top: 16px;
+  }
+}
+
+/* Le thème pro met tous les titres et gras en 600 : Planity écrit ses sous-titres et prix en 500. */
+html.pro-theme .pl-h2,
+html.pro-theme .pl-sv-r b,
+html.pro-theme .pl-sv-r b *,
+html.pro-theme .pl-bk-svm b,
+html.pro-theme .pl-id-note .font-semibold {
+  font-weight: 500;
+}
+html.pro-theme .pl-id h1,
+html.pro-theme .pl-bk-t {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Heures libres des cartes de salon : pavés gris arrondis 4 px, comme les créneaux de Planity. */
+.pl-hour {
+  min-width: 64px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 4px;
+  background: #f7f7f7;
+  color: #202020;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.pl-hour:active {
+  background: #202020;
+  color: #ffffff;
+}
+/* Pas de couleur de marché : Planity écrit tout en encre. */
+.h12-h.mk-women .mk-t,
+.h12-h .mk-to-women,
+.h12-h .mk-to-men {
+  color: #202020;
+}
+/* Boutons du portail d'accès : arrondis 8 px, plus de pilule. */
+.pa-btn,
+html.pro-theme .pa-btn {
+  border-radius: 8px;
+}
