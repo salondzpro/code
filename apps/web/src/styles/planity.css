@@ -882,3 +882,20 @@ html.client-theme .srch {
   box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
   background: #ffffff;
 }
+
+/* Tiroir : deux blocs « Pour Hommes » / « Pour Femmes », les prestations femmes en rose (19 nov. 2026). */
+.pl-drw-h {
+  padding: 4px 0;
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 28px;
+  color: #202020;
+}
+.pl-drw-list.women .pl-drw-h,
+.pl-drw-list.women .pl-drw-li {
+  color: var(--color-women);
+}
+.pl-drw-list + .pl-drw-list {
+  padding-top: 16px;
+  border-top: 1px solid #eef0f2;
+}

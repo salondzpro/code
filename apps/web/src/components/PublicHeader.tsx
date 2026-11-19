@@ -50,10 +50,11 @@ export function PublicHeader() {
       ]
     : [{ to: MARCHE, icon: Home, label: t('Accueil') }];
 
-  // Les métiers du marché de la personne, puis ceux de l'autre : une seule liste à plat, comme Planity.
-  const metiers = [...MARKETS].sort((a) => (a === market ? -1 : 1)).flatMap((m) =>
-    CATEGORIES.filter((c) => c.market === m && !c.legacy).map((c) => ({ ...c, m })),
-  );
+  // Deux blocs SÉPARÉS (19 nov. 2026, demande du propriétaire) : « Pour Hommes » et « Pour Femmes »,
+  // celui de la personne d'abord ; les prestations femmes en ROSE (`--color-women`).
+  const blocs = [...MARKETS]
+    .sort((a) => (a === market ? -1 : 1))
+    .map((m) => ({ m, items: CATEGORIES.filter((c) => c.market === m && !c.legacy) }));
 
   const drawer = (
     <>
@@ -89,13 +90,16 @@ export function PublicHeader() {
           </Link>
         )}
 
-        <div className="pl-drw-list">
-          {metiers.map((c) => (
-            <Link key={c.id} to={`${MARCHE}?category=${c.id}&market=${c.m}`} className="pl-drw-li">
-              {t(c.labelFr)}
-            </Link>
-          ))}
-        </div>
+        {blocs.map(({ m, items }) => (
+          <div key={m} className={`pl-drw-list${m === 'women' ? ' women' : ''}`}>
+            <span className="pl-drw-h">{m === 'women' ? t('Pour Femmes') : t('Pour Hommes')}</span>
+            {items.map((c) => (
+              <Link key={c.id} to={`${MARCHE}?category=${c.id}&market=${m}`} className="pl-drw-li">
+                {t(c.labelFr)}
+              </Link>
+            ))}
+          </div>
+        ))}
 
         {!NATIF && (
           <Link to="/app" className="pl-drw-app">
