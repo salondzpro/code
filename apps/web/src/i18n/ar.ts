@@ -3,6 +3,7 @@
  * الحلاقة والتجميل (صالون، حلاق، خدمة، موعد، حجز)، وليست ترجمة حرفية.
  */
 export const ar: Record<string, string> = {
+  'Voir la fiche du rendez-vous': 'عرض تفاصيل الموعد',
   'Date et heure sélectionnées': 'اليوم والساعة المختاران',
   'à {heure}': 'على الساعة {heure}',
   'Vos informations': 'معلوماتك',

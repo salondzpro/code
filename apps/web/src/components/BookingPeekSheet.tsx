@@ -11,7 +11,7 @@
  * affiche donc toujours l'état courant, même si l'agenda a été chargé il y a dix minutes.
  */
 import { ICONE } from '@/lib/actionIcons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useMarkBookingSeen, useMe, useProBooking, useProBookingMutations, useProSalon } from '@salondz/api-client';
 import {
@@ -24,14 +24,14 @@ import {
   SALON_CANCEL_REASONS_FR,
   reasonOptions,
   toLocalDateKey,
+  formatLocale,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { originLabel } from '@/lib/pageView';
 import { remindedLabel, useReminded } from '@/lib/reminders';
 import { ErrorMessage } from './ErrorMessage';
 import { PickerField } from './Picker';
-import { ActionRond } from './ActionRond';
-import { Scissors, UserRound } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { BottomSheet, Button, I, Skeleton, Dim, cancelledLabel } from './ui';
 import { ClientContact } from './ClientContact';
 import { DepositDecision, DepositReview } from './DepositReview';
@@ -40,6 +40,33 @@ import { t } from '@/i18n';
 
 /** Délai proposé pour la prochaine visite d'une cliente dont le rendez-vous est terminé. */
 const REBOOK_DAYS = 21;
+
+/** « Vendredi 20 novembre » (fuseau d'Alger). */
+function jourLong(iso: string): string {
+  const txt = new Intl.DateTimeFormat(formatLocale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Algiers' }).format(new Date(iso));
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+
+/** Bouton de la fenêtre, façon Planity : noir (action de l'état), cerclé, ou cerclé rouge (geste négatif). */
+function PkBtn({
+  kind = 'out',
+  icon,
+  busy,
+  onClick,
+  children,
+}: {
+  kind?: 'ink' | 'out' | 'non';
+  icon: LucideIcon;
+  busy?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button type="button" className={`pl-pk-b ${kind}`} disabled={busy} aria-busy={busy || undefined} onClick={onClick}>
+      <I icon={icon} size={18} /> {children}
+    </button>
+  );
+}
 
 export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const navigate = useNavigate();
@@ -130,93 +157,102 @@ export function BookingPeekSheet({ id, onClose }: { id: string; onClose: () => v
         )}
         {b && (
           <>
-            {/* LISIBLE D'UN COUP D'ŒIL (13 nov. 2026, demande du propriétaire : « les barbers doivent
-                comprendre vite quel rendez-vous, quelle heure, quelle prestation, quel client et avec
-                qui ») : le nom et de quoi le joindre ; l'HEURE en très grand dans un pavé teinté de la
-                couleur de l'état ; puis la prestation et le membre, chacun avec son icône. */}
-            <div className="ag9-sl">
+            {/* FAÇON PLANITY (19 nov. 2026, demande du propriétaire) : le nom et de quoi joindre la
+                personne ; un bloc blanc à lignes — jour et heure, prestation (durée • prix), avec qui —
+                puis des boutons rectangulaires : l'action de l'état en noir sur toute la largeur, les
+                autres cerclés, les gestes négatifs en rouge, la fiche en lien. */}
+            <div className="ag9-sl pl-pk-hd">
               <span className="ag9-st">{b.clientName}</span>
               <ClientContact booking={b} salon={salon} remind={b.status === 'confirmed' && !past} />
             </div>
-            <div className={`ag-quand ${chip?.cls ?? ''}`}>
-              <span className="min-w-0">
-                <span className="ag-quand-h" dir="ltr">
-                  {formatTimeDZ(b.startsAt)}
-                  <small> – {formatTimeDZ(b.endsAt)}</small>
-                </span>
-                <span className="ag-quand-j" dir="auto">
-                  {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
-                </span>
-              </span>
-              {chip && <span className={`ag9-sc ${chip.cls}`}>{chip.text}</span>}
-            </div>
-            <div className="ag-faits">
-              <span className="ag-fait">
-                <I icon={Scissors} size={18} />
-                <b>{b.serviceName}</b>
-                <span className="ag-fait-s">{formatDuration(b.durationMinutes)}</span>
-                <b className="ag-fait-p" dir="ltr">{formatDA(b.priceDa)}</b>
-              </span>
-              {b.staff && team > 1 && (
-                <span className="ag-fait">
-                  <I icon={UserRound} size={18} />
-                  <span>
-                    {t('Avec')} <b>{mine ? t('vous') : b.staff.displayName}</b>
+            <div className="pl-pk">
+              <div className="pl-pk-row">
+                <span className="min-w-0">
+                  <span className="pl-bk-svn">{jourLong(b.startsAt)}</span>
+                  <span className="pl-bk-svm" dir="ltr" style={{ textAlign: 'start' }}>
+                    {formatTimeDZ(b.startsAt)} – {formatTimeDZ(b.endsAt)}
                   </span>
                 </span>
-              )}
+                {chip && <span className={`ag9-sc ${chip.cls}`}>{chip.text}</span>}
+              </div>
+              <div className="pl-pk-row">
+                <span className="min-w-0">
+                  <span className="pl-bk-svn">{b.serviceName}</span>
+                  <span className="pl-bk-svm">
+                    {formatDuration(b.durationMinutes)}
+                    {b.staff && team > 1 && (
+                      <>
+                        <span className="pl-dot" aria-hidden>•</span>
+                        {t('Avec')} {mine ? t('vous') : b.staff.displayName}
+                      </>
+                    )}
+                  </span>
+                </span>
+                <b className="pl-pk-prix" dir="ltr">{formatDA(b.priceDa)}</b>
+              </div>
+              {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
+              {!!b.bookedByName && <p className="pl-pk-note">{t('Réservé par')} {b.bookedByName}</p>}
+              {originLabel(b.origin) && <p className="pl-pk-note">{originLabel(b.origin)}</p>}
+              {reminded[b.id] && <p className="pl-pk-note">{remindedLabel(reminded[b.id]!)}</p>}
+              {b.notes && <p className="pl-pk-note">« {b.notes} »</p>}
+              {b.cancellationReason && <p className="pl-pk-note">{b.cancellationReason}</p>}
             </div>
-            {/* Rendez-vous pris par un tiers : le salon doit savoir qui appeler. */}
-            {!!b.bookedByName && (
-              <p className="ag9-sn">
-                {t('Réservé par')} {b.bookedByName}
-              </p>
-            )}
-            {originLabel(b.origin) && <p className="ag9-sn">{originLabel(b.origin)}</p>}
-            {reminded[b.id] && <p className="ag9-sn">{remindedLabel(reminded[b.id]!)}</p>}
-            {b.notes && <p className="ag9-sn">« {b.notes} »</p>}
-            {b.cancellationReason && <p className="ag9-sn">{b.cancellationReason}</p>}
             <DepositReview booking={b} />
             <BookingLoyaltyNote bookingId={b.id} priceDa={b.priceDa} active={active} />
 
             <ErrorMessage error={setStatus.error ?? cancel.error} />
 
-            {/* RONDS D'ACTION (13 nov. 2026, demande du propriétaire) : les mêmes que les Demandes —
-                Accepter en rond VERT ✓, Refuser en rond ROUGE ✕ — et les autres gestes en ronds
-                blancs cerclés, le mot dessous. L'action de l'état en premier, la fiche au bout. */}
             {!cancelling && (
-              <div className="ag-acts">
-                {/* Ordre voulu par le propriétaire (17 nov. 2026) : Confier, Refuser, Accepter, Fiche —
-                    Accepter a pris la place de Confier. */}
-                {confirmable && team > 1 && (
-                  <ActionRond ton="violet" icon={ICONE.confier} label={t('Confier')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
-                )}
+              <div className="pl-pk-acts">
                 {confirmable && b.depositStatus === 'submitted' && <DepositDecision id={b.id} onDone={onClose} />}
                 {confirmable && b.depositStatus !== 'submitted' && (
-                  <ActionRond ton="non" icon={ICONE.refuser} label={t('Refuser')} onClick={() => setCancelling(true)} />
-                )}
-                {confirmable && b.depositStatus !== 'submitted' && (
-                  <ActionRond ton="oui" icon={ICONE.accepter} label={b.depositStatus ? t('Sans versement') : t('Accepter')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))} />
+                  <PkBtn kind="ink" icon={ICONE.accepter} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'confirmed' }))}>
+                    {b.depositStatus ? t('Sans versement') : t('Accepter')}
+                  </PkBtn>
                 )}
                 {closable && (
-                  <>
-                    <ActionRond ton="oui" icon={ICONE.terminer} label={t('Terminé')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))} />
-                    <ActionRond ton="non" icon={ICONE.absent} label={t('Absent')} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))} />
-                  </>
-                )}
-                {b.status === 'confirmed' && !past && (
-                  <ActionRond ton="orange" icon={ICONE.reporter} label={t('Reporter')} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)} />
+                  <PkBtn kind="ink" icon={ICONE.terminer} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'completed' }))}>
+                    {t('Terminé')}
+                  </PkBtn>
                 )}
                 {b.status === 'completed' && (
-                  <ActionRond ton="bleu" icon={ICONE.reprendre} label={t('Dans 3 semaines')} onClick={rebook} />
+                  <PkBtn kind="ink" icon={ICONE.reprendre} onClick={rebook}>
+                    {t('Dans 3 semaines')}
+                  </PkBtn>
                 )}
-                {late && (
-                  <ActionRond ton="non" icon={ICONE.annulerRetard} label={t('Retard')} title={`${t('Annuler pour retard (plus de')} ${LATE_TOLERANCE_MINUTES} ${t('min)')}`} busy={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))} />
+                {confirmable && team > 1 && (
+                  <PkBtn icon={ICONE.confier} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                    {t('Confier')}
+                  </PkBtn>
                 )}
                 {b.status === 'confirmed' && !past && (
-                  <ActionRond ton="non" icon={ICONE.annulerRdv} label={t('Annuler')} onClick={() => setCancelling(true)} />
+                  <PkBtn icon={ICONE.reporter} onClick={() => navigate(`/pro/rendez-vous/${b.id}/reporter`)}>
+                    {t('Reporter')}
+                  </PkBtn>
                 )}
-                <ActionRond ton="bleu" icon={ICONE.fiche} label={t('Fiche')} onClick={() => navigate(`/pro/rendez-vous/${b.id}`)} />
+                {confirmable && b.depositStatus !== 'submitted' && (
+                  <PkBtn kind="non" icon={ICONE.refuser} onClick={() => setCancelling(true)}>
+                    {t('Refuser')}
+                  </PkBtn>
+                )}
+                {closable && (
+                  <PkBtn kind="non" icon={ICONE.absent} busy={setStatus.isPending} onClick={() => void act(setStatus.mutateAsync({ id: b.id, status: 'no_show' }))}>
+                    {t('Absent')}
+                  </PkBtn>
+                )}
+                {late && (
+                  <PkBtn kind="non" icon={ICONE.annulerRetard} busy={cancel.isPending} onClick={() => void act(cancel.mutateAsync({ id: b.id, reason: 'Retard', late: true }))}>
+                    {t('Retard')}
+                  </PkBtn>
+                )}
+                {b.status === 'confirmed' && !past && (
+                  <PkBtn kind="non" icon={ICONE.annulerRdv} onClick={() => setCancelling(true)}>
+                    {t('Annuler')}
+                  </PkBtn>
+                )}
+                <button type="button" className="pl-link pl-pk-fiche" onClick={() => navigate(`/pro/rendez-vous/${b.id}`)}>
+                  {t('Voir la fiche du rendez-vous')}
+                </button>
               </div>
             )}
             {cancelling && (
