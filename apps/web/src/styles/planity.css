@@ -1300,3 +1300,60 @@ html.pro-theme .pla-list .rp-i {
 .pla-list .rp-empty {
   padding-top: 32px;
 }
+
+/* ============================================================================================
+   ACCUEIL PRO façon PLANITY PRO (19 nov. 2026) : barre blanche (cloche · « Bonjour Karim » +
+   date en violet), puis les blocs de l'accueil — même organisation — en blanc pleine largeur,
+   séparés par des filets, titres de section sur le fond gris.
+   ============================================================================================ */
+.pla-home .pla-date b {
+  font-size: calc(18px * var(--fz, 1));
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.pla-home .pla-date > span {
+  font-size: calc(14px * var(--fz, 1));
+  color: var(--color-link);
+}
+.pla-home .pla-date > span::first-letter {
+  text-transform: uppercase;
+}
+/* La cloche de la barre reste visible (la règle « une seule cloche sur ordinateur » visait l'ancien en-tête). */
+@media (min-width: 1024px) {
+  .pla-home {
+    margin-top: 0;
+    border: 1px solid #eef0f2;
+  }
+  .pla-home .pla-ic {
+    visibility: hidden;
+  }
+}
+html.pro-theme .pla-acc .h12-top {
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+@media (max-width: 1023.98px) {
+  html.pro-theme .pla-acc .h12-top {
+    margin-inline: calc(-1 * var(--gutter, 16px));
+    margin-top: -16px;
+    padding: 12px var(--gutter, 16px) 14px;
+    background: #ffffff;
+    border-bottom: 1px solid #eef0f2;
+  }
+  html.pro-theme .pla-acc .nnudge,
+  html.pro-theme .pla-acc .h12-sc,
+  html.pro-theme .pla-acc .h12-card,
+  html.pro-theme .pla-acc .lst,
+  html.pro-theme .pla-acc .crd {
+    margin-inline: calc(-1 * var(--gutter, 16px));
+    border-radius: 0;
+    border-width: 1px 0;
+    border-color: #eef0f2;
+    box-shadow: none;
+  }
+}
+
+/* Accueil : la barre est collée au bloc du haut, sans espace gris entre les deux. */
+.pla-acc > .pla-bar + .h12-top {
+  margin-top: -16px;
+}

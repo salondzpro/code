@@ -77,7 +77,7 @@ export function NotificationsNudge({ role }: { role: 'pro' | 'client' }) {
   };
 
   return (
-    <div className="flex gap-3 rounded-[var(--radius-card)] bg-surface p-3.5 shadow-[var(--pro-shadow)]" role="status">
+    <div className="nnudge flex gap-3 rounded-[var(--radius-card)] bg-surface p-3.5 shadow-[var(--pro-shadow)]" role="status">
       <span className="mt-0.5 flex size-10 flex-none items-center justify-center rounded-[var(--radius-card-sm)] bg-fill">
         <I icon={BellRing} size={20} strokeWidth={1.7} />
       </span>

@@ -111,23 +111,26 @@ export function ProHome() {
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
 
   return (
-    <Screen bottom={NAV_PAD} gap={16} className="h12">
+    <Screen bottom={NAV_PAD} gap={16} className="h12 pla-acc">
+      {/* FAÇON PLANITY PRO (19 nov. 2026) : barre blanche — cloche à gauche, « Bonjour Karim » centré et
+          la date dessous en violet, comme la date et le membre de l'agenda. */}
+      <div className="pla-bar pla-home">
+        <button type="button" className="pla-ic" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
+          <I icon={Bell} size={24} strokeWidth={1.8} />
+          {nonLues > 0 && <i aria-hidden />}
+        </button>
+        <div className="pla-date">
+          <b className="h12-hi">
+            {t('Bonjour')} {firstName}
+          </b>
+          <span className="h12-date">{dateLine}</span>
+        </div>
+        <span aria-hidden />
+      </div>
       <header
         className={`h12-top${fondSalon ? ' photo' : ''}`}
         style={fondSalon ? { ['--fond-salon' as string]: `url("${fondSalon}")` } : undefined}
       >
-        <div className="h12-hd">
-          <div className="min-w-0 flex-1">
-            <span className="h12-date">{dateLine}</span>
-            <span className="h12-hi">
-              {t('Bonjour')} {firstName}
-            </span>
-          </div>
-          <button type="button" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>
-            <I icon={Bell} size={20} strokeWidth={1.8} />
-            {nonLues > 0 && <i aria-hidden />}
-          </button>
-        </div>
         {salon && <PageHorsLigne salon={salon} />}
         {salon && <ProStoryRail salon={salon} short={link.short} pending={pending.data?.items.length ?? 0} />}
         <HomeUpcoming all={allToday} upcoming={upcoming} now={now} salon={salon} setStatus={setStatus} onPeek={setPeek} />
