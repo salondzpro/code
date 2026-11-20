@@ -1,9 +1,9 @@
 /**
  * OFFRES DES PROFESSIONNELS (20 nov. 2026, demande du propriétaire) — une seule source pour le site
- * pro (`/professionnels`) et l'espace pro (`/pro/abonnement`) : trois cartes (Découverte, Pro, Salon),
+ * pro (`/professionnels`) et l'espace pro (`/pro/abonnement`) : trois cartes (Gratuit, Pro, Max),
  * prix de lancement Black Friday −40 % à vie avec le prix normal barré, et le choix d'une offre par
  * WhatsApp (`SUPPORT_WHATSAPP`) — le super admin pose ensuite l'offre dans `/admin/abonnements`.
- * Aussi : le tag d'offre du compte (`PlanTag`, « Free » pour Découverte) et le bouton d'aide WhatsApp.
+ * Aussi : le tag d'offre du compte (`PlanTag`, « Free » pour Gratuit) et le bouton d'aide WhatsApp.
  */
 import { Link } from 'react-router';
 import { Check } from 'lucide-react';
@@ -27,7 +27,7 @@ export function usePlan(enabled = true) {
   return useQuery({ queryKey: ['pro', 'plan'], queryFn: () => api.pro.plan(), enabled, staleTime: 5 * 60_000 });
 }
 
-/** Tag de l'offre du compte : « Free » pour Découverte, sinon le nom de l'offre. */
+/** Tag de l'offre du compte : « Free » pour Gratuit, sinon le nom de l'offre. */
 export function PlanTag({ plan, className = '' }: { plan: PlanId | undefined; className?: string }) {
   if (!plan) return null;
   return <span className={`plan-tag ${plan} ${className}`}>{plan === 'free' ? 'Free' : t(planById(plan).name)}</span>;
@@ -44,7 +44,7 @@ export function SupportWhatsApp({ text, label }: { text?: string; label?: string
 }
 
 /**
- * Les trois offres. `current` = l'offre du salon (espace pro) ; sans elle (site), « Découverte »
+ * Les trois offres. `current` = l'offre du salon (espace pro) ; sans elle (site), « Gratuit »
  * mène à l'inscription. `salonName` complète le message WhatsApp.
  */
 export function PlanCards({ current, salonName, signupTo = '/pro/acces' }: { current?: PlanId; salonName?: string; signupTo?: string }) {
@@ -77,7 +77,10 @@ export function PlanCards({ current, salonName, signupTo = '/pro/acces' }: { cur
               <p className="plan-for">{t(p.tagline)}</p>
               <p className="plan-price">
                 {p.price === 0 ? (
-                  <b>{t('Gratuit')}</b>
+                  <>
+                    <b dir="ltr">{formatDA(0)}</b>
+                    <span>{t('/ mois')}</span>
+                  </>
                 ) : (
                   <>
                     <b dir="ltr">{formatDA(prix)}</b>

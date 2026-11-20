@@ -1,6 +1,6 @@
 /**
  * ABONNEMENTS DES PROFESSIONNELS (20 nov. 2026, demande du propriétaire). Les clientes ne paient
- * jamais. Trois offres : Découverte (gratuite, tag « Free » sur le compte), Pro et Salon. Lancement
+ * jamais. Trois offres : Gratuit (tag « Free » sur le compte), Pro et Max (identifiants `free`, `pro`, `salon`). Lancement
  * « Black Friday » : −40 % À VIE pour tout pro inscrit avant la fin de `PLAN_PROMO_END`.
  *
  * L'abonnement d'un salon est posé par le SUPER ADMIN (`/admin/abonnements`) après paiement
@@ -28,7 +28,7 @@ export interface PlanDef {
 export const PLANS: PlanDef[] = [
   {
     id: 'free',
-    name: 'Découverte',
+    name: 'Gratuit',
     price: 0,
     promo: 0,
     yearly: 0,
@@ -53,7 +53,7 @@ export const PLANS: PlanDef[] = [
   },
   {
     id: 'salon',
-    name: 'Salon',
+    name: 'Max',
     price: 1650,
     promo: 990,
     yearly: 9900,

@@ -2467,4 +2467,5 @@ export const ar: Record<string, string> = {
   "Payé jusqu’au": "مدفوع حتى",
   "Motif (paiement reçu, geste commercial…)": "السبب (دفع مستلم، هدية تجارية…)",
   "Reçu CCP du 20/11, 790 DA": "وصل CCP بتاريخ 20/11، 790 دج",
+  "Max": "Max",
 };

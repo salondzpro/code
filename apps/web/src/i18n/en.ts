@@ -2481,4 +2481,5 @@ export const en: Record<string, string> = {
   "Payé jusqu’au": "Paid until",
   "Motif (paiement reçu, geste commercial…)": "Reason (payment received, goodwill…)",
   "Reçu CCP du 20/11, 790 DA": "CCP receipt 20/11, 790 DA",
+  "Max": "Max",
 };

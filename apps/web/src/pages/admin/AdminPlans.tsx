@@ -1,6 +1,6 @@
 /**
  * Administration — ABONNEMENTS DES SALONS (20 nov. 2026, demande du propriétaire). Chaque salon avec
- * son offre (Free = Découverte, Pro, Salon) et son échéance ; le super admin (`owner`) change l'offre
+ * son offre (Free = Gratuit, Pro, Max) et son échéance ; le super admin (`owner`) change l'offre
  * après paiement (BaridiMob / CCP), avec une échéance et un motif — journal `salon_plan_set`.
  */
 import { useMemo, useState } from 'react';
@@ -45,7 +45,7 @@ export function AdminPlans() {
 
   return (
     <Screen gap={16} width="page">
-      <PageHead title={t('Abonnements')} sub={`${compte('free')} Free · ${compte('pro')} Pro · ${compte('salon')} Salon · ${formatDA(mensuel)} ${t('/ mois')}`} />
+      <PageHead title={t('Abonnements')} sub={`${compte('free')} Free · ${compte('pro')} Pro · ${compte('salon')} Max · ${formatDA(mensuel)} ${t('/ mois')}`} />
       <SearchBox value={q} onChange={setQ} placeholder={t('Nom du salon, lien ou ville')} />
       <Segmented
         sm
@@ -56,7 +56,7 @@ export function AdminPlans() {
           { value: 'all', label: t('Tous') },
           { value: 'free', label: 'Free' },
           { value: 'pro', label: 'Pro' },
-          { value: 'salon', label: 'Salon' },
+          { value: 'salon', label: 'Max' },
         ]}
       />
       {list.isError && <ErrorMessage error={list.error} retry={() => void list.refetch()} />}

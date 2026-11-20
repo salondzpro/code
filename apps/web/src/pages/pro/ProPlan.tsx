@@ -1,6 +1,6 @@
 /**
  * `/pro/abonnement` — MON ABONNEMENT (20 nov. 2026, demande du propriétaire) : l'offre du salon
- * (tag « Free » pour Découverte), les trois offres avec le tarif de lancement, et le contact
+ * (tag « Free » pour Gratuit), les trois offres avec le tarif de lancement, et le contact
  * WhatsApp. Le pro choisit sur WhatsApp ; le super admin pose l'offre après paiement.
  */
 import { useProSalon } from '@salondz/api-client';
