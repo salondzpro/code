@@ -254,6 +254,12 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
         if (/invalid|valid email/i.test(gen.error.message)) throw badRequest('EMAIL_INVALID', 'Adresse e-mail invalide.');
         throw gen.error;
       }
+      // Numéro saisi à l'inscription (écran façon Planity, 20 nov. 2026) : posé sur le profil créé par
+      // le déclencheur, pour que « Vos coordonnées » ne le redemande pas.
+      if (phone && gen.data.user?.id) {
+        const upd = await db.from('profiles').update({ phone }).eq('id', gen.data.user.id);
+        if (upd.error) req.log.error({ err: upd.error }, 'signup pro : numéro');
+      }
       link = mailLink(req, gen.data.properties, to);
     }
     // Toujours vers la VRAIE adresse, même pour un compte interne.

@@ -32,6 +32,7 @@
     "check:push-health": "node --env-file=.env scripts/check-push-health.mjs",
     "check:push-pipeline": "node --env-file=.env scripts/check-push-pipeline.mjs",
     "check:webpush-roles": "node --env-file=.env scripts/check-webpush-roles.mjs",
+    "check:same-email": "node --env-file=.env scripts/check-same-email.mjs",
     "check:slot-alert": "node --env-file=.env scripts/check-slot-alert.mjs",
     "check:badge": "node --env-file=.env scripts/check-pending-badge.mjs",
     "check:control": "node --env-file=.env scripts/check-admin-control.mjs",

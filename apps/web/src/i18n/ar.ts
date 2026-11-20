@@ -3,6 +3,15 @@
  * الحلاقة والتجميل (صالون، حلاق، خدمة، موعد، حجز)، وليست ترجمة حرفية.
  */
 export const ar: Record<string, string> = {
+  'Connexion professionnelle': 'دخول المحترفين',
+  'Email': 'البريد الإلكتروني',
+  'Connexion…': 'جارٍ الدخول…',
+  'Créer mon espace professionnel': 'إنشاء فضائي المهني',
+  'Confirmation du mot de passe': 'تأكيد كلمة السر',
+  'Les deux mots de passe ne sont pas identiques.': 'كلمتا السر غير متطابقتين.',
+  'Acceptez les CGU pour créer votre compte.': 'اقبل الشروط لإنشاء حسابك.',
+  'J’accepte les': 'أقبل',
+  'de Salon DZ.': 'لـ Salon DZ.',
   'prévus': 'متوقعة',
   'Plus rien de prévu aujourd’hui.': 'لا شيء آخر مبرمج اليوم.',
   'prévus aujourd’hui': 'متوقعة اليوم',

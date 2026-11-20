@@ -1513,3 +1513,55 @@ html.espace-pro .tb.tb-titre > :last-child:not(.tb-t) {
 .h13-chip.live em {
   color: #2e9b8f;
 }
+
+/* ============================================================================================
+   PORTAILS D'ACCÈS façon PLANITY (20 nov. 2026) : formulaire de connexion et d'inscription, boutons
+   juste sous les champs, « OU » entre « Se connecter » et « Créer mon compte ».
+   ============================================================================================ */
+.pl-auth {
+  gap: 16px;
+}
+.pl-auth .lbl,
+.pl-auth label > .lbl {
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  color: #202020;
+}
+.pl-auth input:not([type='checkbox']) {
+  border: 1px solid #c7cfd7;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px -1px rgb(26 27 31 / 0.05);
+}
+.pl-auth-oubli {
+  align-self: flex-start;
+  margin-top: -6px;
+  font-size: calc(14px * var(--fz, 1));
+  font-weight: 500;
+  color: #202020;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pl-auth-cgu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: calc(14px * var(--fz, 1));
+  color: #202020;
+}
+.pl-auth-cgu input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  accent-color: #202020;
+}
+.pl-auth-cgu a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pl-auth .pl-btn {
+  margin-top: 4px;
+}
+.pl-auth .pl-btn:disabled {
+  opacity: 0.5;
+}

@@ -22,7 +22,7 @@
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Check, MailCheck } from 'lucide-react';
+import { MailCheck } from 'lucide-react';
 import { VisageFemme, VisageHomme } from '@/components/GenderFaces';
 import { PhoneDZField, numeroDZ } from '@/components/PhoneDZField';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
@@ -78,15 +78,22 @@ function useParcours() {
 
 const retour = (next: string) => `/connexion/retour?next=${encodeURIComponent(next)}`;
 
-/* -------------------------------------------------------------------- 1. Adresse e-mail */
+/* -------------------------------------------------------------------- 1. Connexion (façon Planity) */
 
+/**
+ * CONNEXION FAÇON PLANITY (20 nov. 2026, demande du propriétaire, site ET applications, client ET pro) :
+ * Email, Mot de passe, « Mot de passe oublié ? », « Se connecter », OU, « Créer mon compte ».
+ * Chaque portail n'ouvre que SON compte : une même adresse peut avoir un compte pro et un compte perso
+ * (le second sous son adresse interne, `lib/alias.ts`) ; on essaie la vraie adresse, puis l'interne.
+ */
 export function AccesEmail() {
-  const { session } = useAuth();
+  const { session, signInWithPassword, resendConfirmation, demoLogin, signOut } = useAuth();
   const navigate = useNavigate();
   const { next, email: initial, q, role, base, ouverture } = useParcours();
   const [params] = useSearchParams();
   const [email, setEmail] = useState(initial);
-  const [busy, setBusy] = useState(false);
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState<'password' | 'resend' | null>(null);
   const [error, setError] = useState<Err>(() =>
     params.get('erreur') === 'compte'
       ? { kind: 'credentials', text: texteRefus(role) }
@@ -94,93 +101,19 @@ export function AccesEmail() {
         ? { kind: 'expired', text: t('Ce lien n’est plus valable. Connectez-vous, ou demandez un nouveau lien.') }
         : null,
   );
-
-  if (session) return <Navigate to={retour(next)} replace />;
-
-  const id = () => email.trim().toLowerCase();
-
-  const continuer = async (e: FormEvent) => {
-    e.preventDefault();
-    const adresse = id();
-    if (!EMAIL_RE.test(adresse)) return setError({ kind: 'email', text: t('Adresse e-mail invalide.') });
-    setError(null);
-    writeAuthFlow({ role, next, identifier: adresse, channel: 'email' });
-    // Démonstration : elle s'ouvre par le mot de passe, sans interroger le serveur.
-    if (isDemoEmail(adresse)) return navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
-    setBusy(true);
-    try {
-      // ADRESSE CONNUE = MOT DE PASSE, quel que soit le portail (14 nov. 2026, demande du
-      // propriétaire) : plus d'alerte « cette adresse sert déjà à un compte client / pro », qui
-      // perdait les gens. Le compte s'ouvre ensuite dans SON espace. Adresse inconnue = inscription.
-      // Inscription jamais confirmée : le mot de passe aussi — la connexion le dira et proposera
-      // de renvoyer le lien.
-      const { status } = await api.auth.emailCheck({ email: adresse, role });
-      if (status === 'available') navigate(`${base}/creer${q({ email: adresse })}`);
-      else navigate(`${base}/mot-de-passe${q({ email: adresse })}`);
-    } catch (err) {
-      setError(describeAuthError(err));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <AuthScreen
-      back={ouverture}
-      titre={t('Quelle est votre adresse e-mail ?')}
-      sous={role === 'pro' ? t('Pour vous connecter, ou créer votre espace si c’est votre première fois.') : t('Pour vous connecter, ou créer votre compte si c’est votre première fois.')}
-      actions={
-        <Button icon={ICONE.continuer} type="submit" form="pa-email" loading={busy} disabled={busy}>
-          {t('Continuer')}
-        </Button>
-      }
-    >
-      <form id="pa-email" onSubmit={continuer} noValidate className="pa-form">
-        <Field label={t('Adresse e-mail')} htmlFor="pa-email-i">
-          <Input
-            id="pa-email-i"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="go"
-            placeholder={t('nom@exemple.com')}
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            err={!!error}
-          />
-        </Field>
-        {error && <AuthError texte={error.text} />}
-      </form>
-    </AuthScreen>
-  );
-}
-
-/* -------------------------------------------------------------------- 2a. Compte existant */
-
-export function AccesMotDePasse() {
-  const { session, signInWithPassword, sendMagicLink, resendConfirmation, demoLogin, signOut } = useAuth();
-  const navigate = useNavigate();
-  const { next, email, q, role, base } = useParcours();
-  const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState<'password' | 'link' | 'resend' | null>(null);
-  const [error, setError] = useState<Err>(null);
-  // Voir `Login.tsx` : une référence, pour que la redirection de session n'arrive pas avant le
-  // contrôle du portail.
   const enCours = useRef(false);
 
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
-  if (!email) return <Navigate to={`${base}${q()}`} replace />;
+
+  const adresse = () => email.trim().toLowerCase();
+  const destination = () => retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE);
 
   const connecter = async (e: FormEvent) => {
     e.preventDefault();
-    const demo = demoAccountForCredentials(email, password);
+    const mail = adresse();
     setError(null);
+    if (!EMAIL_RE.test(mail)) return setError({ kind: 'email', text: t('Adresse e-mail invalide.') });
+    const demo = demoAccountForCredentials(mail, password);
     if (demo) {
       if (demo.role !== role) return setError({ kind: 'credentials', text: texteRefus(role) });
       setBusy('password');
@@ -199,35 +132,28 @@ export function AccesMotDePasse() {
     setBusy('password');
     enCours.current = true;
     try {
-      writeAuthFlow({ role, next, identifier: email, channel: 'email' });
-      /**
-       * SÉPARATION STRICTE (16 nov. 2026, demande du propriétaire) : chaque portail n'ouvre que SON
-       * type de compte. Une même adresse peut avoir DEUX comptes (le second sous son adresse interne,
-       * `lib/alias.ts`) : on essaie la vraie adresse, et si elle mène à un compte de l'autre côté ou
-       * à un mot de passe refusé, l'adresse interne de CE portail. Le serveur refuse aussi
-       * (`X-Salondz-App`, gardes de rôle) : ce contrôle-ci n'est que l'écran.
-       */
+      writeAuthFlow({ role, next, identifier: mail, channel: 'email' });
+      /** Le compte ouvert est-il de CE côté ? Le serveur refuse aussi (`X-Salondz-App`, gardes de rôle). */
       const bonCote = async (): Promise<boolean> => {
         try {
           const { profile } = await api.me.get();
           return (profile.role === 'pro') === (role === 'pro');
         } catch (err) {
-          // Application : le serveur a refusé le compte (403). Réseau : on entre, les gardes trancheront.
           return estRefusCompte(err) === null;
         }
       };
       let premiere: unknown = null;
       try {
-        await signInWithPassword(email, password);
-        if (await bonCote()) return navigate(retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE), { replace: true });
+        await signInWithPassword(mail, password);
+        if (await bonCote()) return navigate(destination(), { replace: true });
         await signOut({ voile: false }).catch(() => undefined);
       } catch (err) {
         premiere = err;
       }
-      // Second essai : le compte de CE portail sous l'adresse interne.
+      // Second essai : le compte de CE portail sous l'adresse interne (même adresse, autre côté).
       try {
-        await signInWithPassword(await aliasEmail(email, role), password);
-        if (await bonCote()) return navigate(retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE), { replace: true });
+        await signInWithPassword(await aliasEmail(mail, role), password);
+        if (await bonCote()) return navigate(destination(), { replace: true });
         await signOut({ voile: false }).catch(() => undefined);
       } catch {
         /* pas de compte interne : on garde la première réponse */
@@ -242,25 +168,11 @@ export function AccesMotDePasse() {
     }
   };
 
-  const lien = async () => {
-    setBusy('link');
-    setError(null);
-    try {
-      writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      await sendMagicLink(email, next, role);
-      navigate(`${base}/envoye?mode=link`);
-    } catch (err) {
-      setError(describeAuthError(err));
-    } finally {
-      setBusy(null);
-    }
-  };
-
   const renvoyer = async () => {
     setBusy('resend');
     try {
-      writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      await resendConfirmation(email, next, role);
+      writeAuthFlow({ role, next, identifier: adresse(), channel: 'email', sentAt: Date.now() });
+      await resendConfirmation(adresse(), next, role);
       navigate(`${base}/envoye?mode=confirm`);
     } catch (err) {
       setError(describeAuthError(err));
@@ -269,31 +181,31 @@ export function AccesMotDePasse() {
     }
   };
 
-  const demo = demoAccountFor(email);
-
   return (
-    <AuthScreen
-      back={`${base}${q({ email })}`}
-      titre={t('Bon retour')}
-      sous={t('Entrez votre mot de passe pour ouvrir votre espace.')}
-      actions={
-        <>
-          <Button icon={ICONE.seConnecter} type="submit" form="pa-mdp" loading={busy === 'password'} disabled={busy !== null}>
-            {t('Se connecter')}
-          </Button>
-          {!demo && (
-            <Button icon={ICONE.recevoirLien} variant="g" loading={busy === 'link'} disabled={busy !== null} onClick={() => void lien()}>
-              {t('Recevoir un lien de connexion')}
-            </Button>
-          )}
-        </>
-      }
-    >
-      <CompteCarte email={email} modifier={`${base}${q({ email })}`} />
-      <form id="pa-mdp" onSubmit={connecter} noValidate className="pa-form">
+    <AuthScreen back={ouverture} titre={role === 'pro' ? t('Connexion professionnelle') : t('Se connecter')}>
+      <form onSubmit={connecter} noValidate className="pa-form pl-auth">
+        <Field label={`${t('Email')} *`} htmlFor="pa-email-i">
+          <Input
+            id="pa-email-i"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder={t('Email')}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            err={error?.kind === 'email'}
+          />
+        </Field>
         <PasswordField
           id="pa-mdp-i"
-          label={t('Mot de passe')}
+          label={`${t('Mot de passe')} *`}
+          placeholder={t('Mot de passe')}
           autoComplete="current-password"
           value={password}
           onChange={(v) => {
@@ -302,7 +214,7 @@ export function AccesMotDePasse() {
           }}
           err={error?.kind === 'credentials'}
         />
-        <Link to={`${base}/oubli${q({ email })}`} className="pa-lien">
+        <Link to={`${base}/oubli${q({ email: adresse() })}`} className="pl-auth-oubli">
           {t('Mot de passe oublié ?')}
         </Link>
         {error && (
@@ -312,33 +224,26 @@ export function AccesMotDePasse() {
                 {t('Renvoyer le lien de confirmation')}
               </Button>
             )}
-            {error.kind === 'credentials' && (
-              <LinkButton to={`${base}/oubli${q({ email })}`} variant="g" sm icon={ICONE.motDePasse}>
-                {t('Réinitialiser mon mot de passe')}
-              </LinkButton>
-            )}
           </AuthError>
         )}
+        <button type="submit" className="pl-btn pl-btn-ink" disabled={busy !== null}>
+          {busy === 'password' ? t('Connexion…') : t('Se connecter')}
+        </button>
+        <span className="pl-ou">{t('OU')}</span>
+        <Link to={`${base}/creer${q(adresse() ? { email: adresse() } : {})}`} className="pl-btn pl-btn-out">
+          {t('Créer mon compte')}
+        </Link>
       </form>
     </AuthScreen>
   );
 }
 
-/** L'adresse en cours, avec « Modifier » : c'est la seule façon de voir qu'on l'a mal tapée. */
-function CompteCarte({ email, modifier }: { email: string; modifier: string }) {
-  return (
-    <div className="pa-compte">
-      <span className="pa-compte-av" aria-hidden>
-        {email.charAt(0).toUpperCase()}
-      </span>
-      <span className="pa-compte-e" dir="ltr">
-        {email}
-      </span>
-      <Link to={modifier} className="pa-compte-m">
-        {t('Modifier')}
-      </Link>
-    </div>
-  );
+/* -------------------------------------------------------------------- 2a. Ancienne étape « mot de passe » */
+
+/** Ancienne adresse (« Bon retour ») : la connexion est désormais sur un seul écran. */
+export function AccesMotDePasse() {
+  const { q, base, email } = useParcours();
+  return <Navigate to={`${base}${q(email ? { email } : {})}`} replace />;
 }
 
 /* -------------------------------------------------------------------- 2b. Nouveau compte */
@@ -346,31 +251,40 @@ function CompteCarte({ email, modifier }: { email: string; modifier: string }) {
 export function AccesCreer() {
   const { session, signUpWithPassword } = useAuth();
   const navigate = useNavigate();
-  const { next, email, q, role, base } = useParcours();
+  const { next, email: initial, q, role, base } = useParcours();
+  const [email, setEmail] = useState(initial);
+  const [digits, setDigits] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [cgu, setCgu] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Err>(null);
   /**
-   * CLIENTE (15 nov. 2026, demande du propriétaire) : ici le mot de passe SEUL, puis une page à part
-   * pour le prénom, le nom et « femme / homme » (`AccesVous`), qui crée le compte et fait entrer.
-   * Le mot de passe y voyage dans l'état de navigation (mémoire), jamais dans l'adresse.
+   * INSCRIPTION FAÇON PLANITY (20 nov. 2026) : Téléphone portable, Email, Mot de passe, Confirmation,
+   * CGU, « Créer mon compte », OU, « Se connecter ». CLIENTE : on enchaîne sur « Faisons connaissance »
+   * (prénom et nom, femme / homme), qui crée le compte et fait entrer ; le mot de passe et le numéro
+   * y voyagent dans l'état de navigation (mémoire), jamais dans l'adresse. PRO : lien de confirmation.
    */
   const client = role === 'client';
 
   if (session) return <Navigate to={retour(next)} replace />;
-  if (!email) return <Navigate to={`${base}${q()}`} replace />;
-
-  const assez = password.length >= PASSWORD_MIN;
 
   const creer = async (e: FormEvent) => {
     e.preventDefault();
-    if (!assez) return setError({ kind: 'password', text: t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }) });
+    const mail = email.trim().toLowerCase();
+    const phone = numeroDZ(digits);
+    if (!phone) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
+    if (!EMAIL_RE.test(mail)) return setError({ kind: 'email', text: t('Adresse e-mail invalide.') });
+    if (password.length < PASSWORD_MIN) return setError({ kind: 'password', text: t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }) });
+    if (password !== confirmation) return setError({ kind: 'password', text: t('Les deux mots de passe ne sont pas identiques.') });
+    if (!cgu) return setError({ kind: 'form', text: t('Acceptez les CGU pour créer votre compte.') });
     setError(null);
-    if (client) return navigate(`${base}/vous${q({ email })}`, { state: { password } });
+    writeAuthFlow({ role, next, identifier: mail, channel: 'email', sentAt: Date.now() });
+    if (client) return navigate(`${base}/vous${q({ email: mail })}`, { state: { password, phone } });
     setBusy(true);
     try {
-      writeAuthFlow({ role, next, identifier: email, channel: 'email', sentAt: Date.now() });
-      const ouverte = await signUpWithPassword(email, password, role, next);
+      // Le numéro saisi ici est enregistré sur le compte pro (« Vos coordonnées » ne le redemande pas).
+      const ouverte = await signUpWithPassword(mail, password, role, next, { phone });
       if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(`${base}/envoye?mode=confirm`, { replace: true });
     } catch (err) {
@@ -381,35 +295,39 @@ export function AccesCreer() {
   };
 
   return (
-    <AuthScreen
-      back={`${base}${q({ email })}`}
-      titre={t('Créez votre mot de passe')}
-      sous={
-        client
-          ? t('C’est votre première fois. Choisissez un mot de passe.')
-          : t('C’est votre première fois. Choisissez un mot de passe, puis nous vous envoyons un lien de confirmation.')
-      }
-      actions={
-        <>
-          <Button icon={client ? ICONE.continuer : ICONE.creerEspace} type="submit" form="pa-creer" loading={busy} disabled={busy}>
-            {client ? t('Continuer') : t('Créer mon espace')}
-          </Button>
-          {!client && (
-            <p className="pa-note">
-              {t('En créant votre espace, vous acceptez les')} <Link to="/cgu">{t('conditions d’utilisation')}</Link>.
-            </p>
-          )}
-        </>
-      }
-    >
-      <div className="pa-puce">
-        <span dir="ltr">{email}</span>
-        <Link to={`${base}${q({ email })}`}>{t('Modifier')}</Link>
-      </div>
-      <form id="pa-creer" onSubmit={creer} noValidate className="pa-form">
+    <AuthScreen back={`${base}${q()}`} titre={role === 'pro' ? t('Créer mon espace professionnel') : t('Créer mon compte')}>
+      <form onSubmit={creer} noValidate className="pa-form pl-auth">
+        <PhoneDZField
+          id="pa-creer-tel"
+          digits={digits}
+          onDigits={(v) => {
+            setDigits(v);
+            setError(null);
+          }}
+          error={error?.kind === 'phone' ? error.text : null}
+        />
+        <Field label={`${t('Email')} *`} htmlFor="pa-creer-mail">
+          <Input
+            id="pa-creer-mail"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder={t('Email')}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            err={error?.kind === 'email'}
+          />
+        </Field>
         <PasswordField
           id="pa-creer-i"
-          label={t('Mot de passe')}
+          label={`${t('Mot de passe')} *`}
+          placeholder={t('Mot de passe')}
           autoComplete="new-password"
           value={password}
           onChange={(v) => {
@@ -418,21 +336,40 @@ export function AccesCreer() {
           }}
           err={error?.kind === 'password'}
         />
-        <p className={`pa-regle ${assez ? 'ok' : ''}`}>
-          <span className="pa-regle-r" aria-hidden>
-            {assez && <I icon={Check} size={11} strokeWidth={3} />}
+        <PasswordField
+          id="pa-creer-c"
+          label={`${t('Confirmation du mot de passe')} *`}
+          placeholder={t('Confirmation du mot de passe')}
+          autoComplete="new-password"
+          value={confirmation}
+          onChange={(v) => {
+            setConfirmation(v);
+            setError(null);
+          }}
+          err={error?.kind === 'password'}
+        />
+        <label className="pl-auth-cgu">
+          <input type="checkbox" checked={cgu} onChange={(e) => setCgu(e.target.checked)} />
+          <span>
+            {t('J’accepte les')} <Link to="/cgu">{t('CGU')}</Link> {t('de Salon DZ.')}
           </span>
-          {t('{n} caractères au minimum', { n: PASSWORD_MIN })}
-        </p>
-        {error && (
+        </label>
+        {error && error.kind !== 'phone' && (
           <AuthError texte={error.text}>
             {error.kind === 'exists' && (
-              <LinkButton to={`${base}/mot-de-passe${q({ email })}`} sm icon={ICONE.seConnecter}>
+              <LinkButton to={`${base}${q({ email: email.trim().toLowerCase() })}`} sm icon={ICONE.seConnecter}>
                 {t('Se connecter')}
               </LinkButton>
             )}
           </AuthError>
         )}
+        <button type="submit" className="pl-btn pl-btn-ink" disabled={busy}>
+          {busy ? t('Création…') : t('Créer mon compte')}
+        </button>
+        <span className="pl-ou">{t('OU')}</span>
+        <Link to={`${base}${q(email.trim() ? { email: email.trim().toLowerCase() } : {})}`} className="pl-btn pl-btn-out">
+          {t('Se connecter')}
+        </Link>
       </form>
     </AuthScreen>
   );
@@ -450,7 +387,10 @@ export function AccesVous() {
   const navigate = useNavigate();
   const location = useLocation();
   const { next, email, q, base } = useParcours();
-  const password = (location.state as { password?: string } | null)?.password ?? '';
+  const etat = location.state as { password?: string; phone?: string } | null;
+  const password = etat?.password ?? '';
+  // Numéro déjà saisi à l'inscription (façon Planity) : on ne le redemande pas.
+  const dejaTel = etat?.phone ?? null;
   const [name, setName] = useState('');
   const [digits, setDigits] = useState('');
   const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
@@ -470,7 +410,7 @@ export function AccesVous() {
     e.preventDefault();
     if (name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
     // Numéro OBLIGATOIRE (17 nov. 2026), avec ou sans le 0 du début ; vérifié aussi par le serveur.
-    const phone = numeroDZ(digits);
+    const phone = dejaTel ?? numeroDZ(digits);
     if (!phone) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
     if (!gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
     setError(null);
@@ -525,15 +465,17 @@ export function AccesVous() {
             }}
           />
         </Field>
-        <PhoneDZField
-          id="pa-vous-tel"
-          digits={digits}
-          onDigits={(v) => {
-            setDigits(v);
-            setError(null);
-          }}
-          error={error?.kind === 'phone' ? error.text : null}
-        />
+        {!dejaTel && (
+          <PhoneDZField
+            id="pa-vous-tel"
+            digits={digits}
+            onDigits={(v) => {
+              setDigits(v);
+              setError(null);
+            }}
+            error={error?.kind === 'phone' ? error.text : null}
+          />
+        )}
         <div>
           <span className="lbl">{t('Vous êtes')}</span>
           <div className="pa-genre" role="radiogroup" aria-label={t('Vous êtes')}>

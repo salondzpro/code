@@ -3,6 +3,15 @@
  * (salons, barbers, nail and lash artists), not word for word.
  */
 export const en: Record<string, string> = {
+  'Connexion professionnelle': 'Professional sign in',
+  'Email': 'Email',
+  'Connexion…': 'Signing in…',
+  'Créer mon espace professionnel': 'Create my professional space',
+  'Confirmation du mot de passe': 'Confirm password',
+  'Les deux mots de passe ne sont pas identiques.': 'The two passwords do not match.',
+  'Acceptez les CGU pour créer votre compte.': 'Accept the terms to create your account.',
+  'J’accepte les': 'I accept the',
+  'de Salon DZ.': 'of Salon DZ.',
   'prévus': 'expected',
   'Plus rien de prévu aujourd’hui.': 'Nothing else planned today.',
   'prévus aujourd’hui': 'expected today',
