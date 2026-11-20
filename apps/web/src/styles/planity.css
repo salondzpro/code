@@ -1576,3 +1576,49 @@ html .plus-sheet .font-semibold,
 html .plus-sheet .btn.d2 {
   font-weight: 500;
 }
+
+/* ============================================================================================
+   BORD À BORD DANS L'APPLICATION (20 nov. 2026, capture du propriétaire : « une bande entre l'app
+   et la barre du téléphone », référence mew3id). Plus de fondu noir sous la barre d'état : le haut de
+   chaque écran passe DERRIÈRE l'heure et la batterie (icônes foncées, `lib/native.ts`).
+   - Accueil pro : la photo du salon floutée remonte jusqu'en haut, plus floue, et descend DERRIÈRE
+     les premières cartes.
+   - Barres blanches (en-tête client, barres à titre centré, agenda) : leur blanc couvre la zone de la
+     barre d'état.
+   ============================================================================================ */
+html[data-native] body::before {
+  height: var(--safe-top);
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* En-tête client (façon Planity) : le blanc monte sous la barre d'état. */
+.pl-hdr {
+  margin-top: calc(-1 * var(--safe-top, 0px));
+  padding-top: var(--safe-top, 0px);
+}
+.cl-frame {
+  --hdr-h: calc(64px + var(--safe-top, 0px));
+}
+/* Accueil pro : photo floutée plus forte, qui monte sous la barre d'état et descend derrière les cartes. */
+@media (max-width: 1023.98px) {
+  html.pro-theme .h12-top.photo::before,
+  html.pro-theme .h12-top.photo::after {
+    inset: calc(-40px - var(--safe-top, 0px)) -16px -260px;
+  }
+  html.pro-theme .h12-top.photo::before {
+    filter: blur(70px) saturate(1.25);
+    opacity: 1;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+  }
+  html.pro-theme .h12-top.photo::after {
+    background: linear-gradient(180deg, rgb(247 247 247 / 0.42) 0%, rgb(247 247 247 / 0.32) 45%, rgb(247 247 247 / 0.7) 80%, #f7f7f7 100%);
+  }
+  /* Les cartes posées sur le flou : un peu de verre pour qu'on le devine derrière. */
+  html.pro-theme .h12 > .h12-top.photo ~ *:not(.fab):not(.sheet):not(.dim) {
+    position: relative;
+  }
+}

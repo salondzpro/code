@@ -134,7 +134,9 @@ export function endLaunchAnimation(): void {
   const wait = Math.max(0, MIN_VISIBLE_MS - (Date.now() - startedAt));
   setTimeout(() => {
     el.classList.add('out');
-    barreEtat(true); // icônes blanches sur le fondu noir de la barre d'état (14 nov.)
+    // Icônes FONCÉES une fois l'application affichée (20 nov. 2026) : le haut de chaque écran (photo
+    // floutée claire, barres blanches) passe derrière la barre d'état, sans voile noir, comme mew3id.
+    barreEtat(false);
     setTimeout(() => el.remove(), SORTIE_MS + 40);
   }, wait);
 }

@@ -139,8 +139,9 @@ async function setupChrome(): Promise<void> {
     import('@capacitor/status-bar'),
     import('@capacitor/splash-screen'),
   ]);
-  // Icônes de la barre d'état en BLANC, toujours : elles sont posées sur le fondu noir de `body::before`.
-  if (!document.getElementById('sdz-launch')) await StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
+  // Icônes de la barre d'état FONCÉES (20 nov. 2026) : plus de fondu noir, le haut clair de l'écran
+  // (photo floutée, barres blanches) passe derrière la barre d'état, comme mew3id.
+  if (!document.getElementById('sdz-launch')) await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
   await StatusBar.setOverlaysWebView({ overlay: true }).catch(() => undefined);
   await StatusBar.setBackgroundColor({ color: '#00000000' }).catch(() => undefined);
   await SplashScreen.hide().catch(() => undefined);
