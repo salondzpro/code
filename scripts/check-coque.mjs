@@ -84,11 +84,10 @@ try {
   ok((await page.locator('form input').count()) >= 1, 'son champ e-mail est là');
 
   console.log('\n3. Une session s’ouvre et l’application se charge');
-  // Parcours « e-mail d'abord » (14 nov. 2026) : l'adresse, puis le mot de passe sur l'écran suivant.
+  // Connexion façon Planity (20 nov. 2026) : adresse ET mot de passe sur le même écran.
   await page.locator('input[type="email"]').first().fill('client@salondz.com');
-  await page.getByRole('button', { name: /Continuer/ }).first().click();
   await page.locator('input[type="password"]').first().fill('client@salondz.com');
-  await page.getByRole('button', { name: /Se connecter/ }).first().click();
+  await page.locator('form button[type="submit"]').first().click();
   await page.waitForTimeout(5000);
   const apres = new URL(page.url()).pathname;
   ok(!/connexion|intro|acces/.test(apres), `on a quitté l’entrée (${apres})`);
