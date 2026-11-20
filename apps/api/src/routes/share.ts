@@ -30,12 +30,58 @@ async function loadShell(): Promise<string | null> {
   }
 }
 
+/**
+ * L'en-tête de référencement du site est entre `<!--seo-->` et `<!--/seo-->` (`apps/web/index.html`,
+ * pages publiques écrites par `apps/web/scripts/seo-pages.mjs`) : on le remplace en entier, sinon la
+ * page salon garderait l'adresse canonique de l'accueil et Google la prendrait pour un double.
+ */
+function remplacerBloc(html: string, tags: string): string {
+  const bloc = /<!--seo-->[\s\S]*?<!--\/seo-->/;
+  if (bloc.test(html)) return html.replace(bloc, () => tags);
+  return html.replace(/<title>[^<]*<\/title>/, '').replace(/<meta name="description"[^>]*>/, '').replace('</head>', () => `    ${tags}\n  </head>`);
+}
+
+type SalonSeo = {
+  name: string;
+  description: string | null;
+  city: string | null;
+  zone: string | null;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  rating_avg: number | string | null;
+  rating_count: number | null;
+};
+
+/** Données structurées schema.org du salon (Google : nom, adresse, position, note). */
+function donneesSalon(s: SalonSeo, url: string, image: string): string {
+  const d: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'BeautySalon',
+    '@id': `${url}#salon`,
+    name: s.name,
+    url,
+    image,
+    address: {
+      '@type': 'PostalAddress',
+      ...(s.address ? { streetAddress: s.address } : {}),
+      ...(s.city ? { addressLocality: s.city } : {}),
+      ...(s.zone ? { addressRegion: s.zone } : {}),
+      addressCountry: 'DZ',
+    },
+  };
+  if (s.description?.trim()) d.description = s.description.trim().slice(0, 300);
+  if (s.lat != null && s.lng != null) d.geo = { '@type': 'GeoCoordinates', latitude: s.lat, longitude: s.lng };
+  if (s.rating_count) d.aggregateRating = { '@type': 'AggregateRating', ratingValue: Number(s.rating_avg).toFixed(1), reviewCount: s.rating_count, bestRating: 5 };
+  return JSON.stringify(d).replace(/</g, '\\u003c');
+}
+
 const shareRoutes: FastifyPluginAsyncZod = async (app) => {
   /** Plan du site pour les moteurs : pages fixes et salons publiés (mis en cache une heure). */
   app.get('/sitemap.xml', async (_req, reply) => {
     const res = await db.from('salons').select('slug, updated_at').eq('is_visible', true).order('updated_at', { ascending: false }).limit(5000);
     if (res.error) throw res.error;
-    const fixed = ['/', '/aide', '/cgu', '/confidentialite', '/mentions-legales'];
+    const fixed = ['/', '/professionnels', '/salons', '/aide', '/cgu', '/confidentialite', '/mentions-legales'];
     const urls = [
       ...fixed.map((p) => `  <url><loc>${esc(config.webUrl + p)}</loc></url>`),
       ...(res.data ?? []).map((s) => `  <url><loc>${esc(`${config.webUrl}/s/${s.slug}`)}</loc><lastmod>${String(s.updated_at).slice(0, 10)}</lastmod></url>`),
@@ -65,7 +111,7 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
 
     const res = await db
       .from('salons')
-      .select('slug, name, description, city, zone, cover_url, logo_url, is_visible, rating_avg, rating_count')
+      .select('slug, name, description, city, zone, address, lat, lng, cover_url, logo_url, is_visible, rating_avg, rating_count')
       .eq('slug', req.params.slug)
       .maybeSingle();
     const s = res.data;
@@ -73,7 +119,8 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.removeHeader('content-security-policy');
     reply.header('Content-Type', 'text/html; charset=utf-8');
     reply.header('Cache-Control', 'public, max-age=60, s-maxage=300');
-    if (!s || !s.is_visible) return html; // visible = publié ET non masqué par la plateforme
+    // visible = publié ET non masqué par la plateforme ; sinon, rien à indexer à cette adresse.
+    if (!s || !s.is_visible) return remplacerBloc(html, '<title>Salon DZ</title>\n    <meta name="robots" content="noindex">');
 
     const url = `${config.webUrl}/s/${s.slug}`;
     const where = [s.zone, s.city].filter(Boolean).join(', ');
@@ -96,8 +143,9 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
       `<meta name="twitter:title" content="${esc(title)}">`,
       `<meta name="twitter:description" content="${esc(description)}">`,
       `<meta name="twitter:image" content="${esc(image)}">`,
+      `<script type="application/ld+json">${donneesSalon(s, url, image)}</script>`,
     ].join('\n    ');
-    return html.replace(/<title>[^<]*<\/title>/, '').replace(/<meta name="description"[^>]*>/, '').replace('</head>', `    ${tags}\n  </head>`);
+    return remplacerBloc(html, tags);
   });
 };
 
