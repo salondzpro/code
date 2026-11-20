@@ -33,7 +33,7 @@ export const PLANS: PlanDef[] = [
     promo: 0,
     yearly: 0,
     tagline: 'Pour démarrer seul(e)',
-    features: ['30 réservations en ligne par mois', 'Agenda, demandes et rappels', 'Page publique, lien bio et QR code', 'Visible sur la place de marché'],
+    features: ['Réservations en ligne illimitées', 'Agenda, demandes et rappels', 'Page publique, lien bio et QR code', 'Visible sur la place de marché', 'Stories et vidéo de réservation'],
   },
   {
     id: 'pro',
@@ -43,12 +43,12 @@ export const PLANS: PlanDef[] = [
     yearly: 7900,
     tagline: 'Coiffeur ou esthéticienne indépendant(e)',
     features: [
-      'Réservations illimitées',
+      'Tout Gratuit',
       'Mis en avant dans votre ville',
       'Versement à la réservation (CCP)',
-      'Fidélité, promotions et crédit client',
-      'Stories et vidéo illimitées',
-      'Support WhatsApp prioritaire',
+      'Programme fidélité',
+      'Promotions sur vos prestations',
+      'Crédit client',
     ],
   },
   {
@@ -58,15 +58,12 @@ export const PLANS: PlanDef[] = [
     promo: 990,
     yearly: 9900,
     tagline: 'Salon avec une équipe',
-    features: [
-      'Tout Pro, pour toute l’équipe',
-      'Jusqu’à 8 agendas',
-      'En tête de votre ville',
-      'Chiffre d’affaires sur tout l’historique',
-      'Installation sur place à Alger',
-    ],
+    features: ['Tout Pro', 'Équipe : jusqu’à 8 personnes', 'Un agenda par personne', 'En tête de votre ville'],
   },
 ];
+
+/** Personnes actives au plus dans l'équipe avec l'offre Max (Gratuit et Pro : une). */
+export const PLAN_TEAM_MAX = 8;
 
 /** Dernier jour du tarif de lancement (inclus, heure d'Alger). */
 export const PLAN_PROMO_END = '2026-11-30';

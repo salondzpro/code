@@ -23,7 +23,7 @@ import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
 import { readLabelSettings, readLabelSocials, readLabelStyle, writeLabelSettings } from '../lib/labelSettings';
 import { addProNews, notifyProsOfNews, readProNews, removeProNews } from '../lib/proNews';
-import { readAllPlans, writePlan } from '../lib/plans';
+import { enforceFreeLimits, readAllPlans, writePlan } from '../lib/plans';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
 import { config } from '../config';
@@ -582,6 +582,7 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       if (s0.error) throw s0.error;
       if (!s0.data) throw notFound('Salon');
       const v = await writePlan(req.params.id, { plan: req.body.plan, until: req.body.until ?? null, note: req.body.reason });
+      if (v.plan === 'free') await enforceFreeLimits(req.params.id);
       await trace(req, 'salon_plan_set', 'salon', req.params.id, `${v.plan}${v.until ? ` jusqu'au ${v.until}` : ''} · ${req.body.reason}`);
       return v;
     },

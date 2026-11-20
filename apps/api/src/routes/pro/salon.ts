@@ -1,4 +1,4 @@
-import { readPlan } from '../../lib/plans';
+import { readPlan, requirePlan } from '../../lib/plans';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import {
   DEFAULT_OPENING_HOURS,
@@ -142,6 +142,7 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req) => {
       const b = req.body;
       const id = req.salon!.id;
+      if (b.mode !== 'off') await requirePlan(id, 'pro', 'Le versement à la réservation');
       const acc = await db.from('salon_deposit_accounts').upsert(
         { salon_id: id, method: b.method, holder: b.holder ?? null, account: b.account ?? null, note: b.note ?? null, updated_at: new Date().toISOString() },
         { onConflict: 'salon_id' },
@@ -194,6 +195,7 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       if (req.body.enabled && req.body.mode === 'promo' && !/^[A-Z0-9]{3,12}$/.test((req.body.code ?? '').trim().toUpperCase().replace(/\s+/g, ''))) {
         throw badRequest('INVALID_PROMO_CODE', 'Le code promo compte 3 à 12 lettres ou chiffres, sans espace.');
       }
+      if (req.body.enabled) await requirePlan(req.salon!.id, 'pro', 'Le programme fidélité');
       return writeLoyalty(req.log, { id: req.salon!.id, name: req.salon!.name, slug: req.salon!.slug }, req.body);
     },
   );
@@ -222,6 +224,7 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => {
+      if (req.body.length) await requirePlan(req.salon!.id, 'pro', 'Les promotions');
       const svc = await db.from('services').select('id').eq('salon_id', req.salon!.id);
       if (svc.error) throw svc.error;
       const own = new Set((svc.data ?? []).map((s) => s.id as string));

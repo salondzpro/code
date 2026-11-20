@@ -7,6 +7,7 @@
  * une fenêtre du bas : les prestations (pastilles), la réduction (% ou DA, choix rapides ET « Autre »),
  * la durée (1 semaine, 2 semaines, 1 mois ET « Autre », en jours).
  */
+import { PlanLock } from '@/components/Plans';
 import { useState } from 'react';
 import { CalendarClock, Scissors } from 'lucide-react';
 import { useProPromos, useProSalon, useSaveProPromos } from '@salondz/api-client';
@@ -66,6 +67,7 @@ export function ProPromos() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo="/pro/parametres" title={t('Promotions')} />
+      <PlanLock need="pro" what={t('Les promotions')} />
 
       {!creating && list.length === 0 && <EmptyState icon={ICONE.promo} title={t('Aucune promotion en cours')} />}
       {!creating && list.length > 0 && (

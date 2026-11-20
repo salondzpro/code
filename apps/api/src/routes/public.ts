@@ -1,3 +1,4 @@
+import { planRank, readAllPlans } from '../lib/plans';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
 import { z } from 'zod';
@@ -51,11 +52,13 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
   /** Promotions en cours sur les prestations (tags de la place de marché et des prestations). */
   app.get('/promos', async (_req, reply) => {
     reply.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
-    return activePromos();
+    const plans = await readAllPlans();
+    return (await activePromos()).filter((x) => planRank(plans, x.salonId) >= 1);
   });
   app.get('/loyalty/programs', async (_req, reply) => {
     reply.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
-    return activePrograms();
+    const plans = await readAllPlans();
+    return (await activePrograms()).filter((x) => planRank(plans, x.salonId) >= 1);
   });
   app.get(
     '/categories',
@@ -161,6 +164,12 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
           isOpenNow: !!is_open_now,
         };
       });
+      // MISE EN AVANT DES OFFRES (20 nov. 2026) : en tri « pertinence », Max d'abord, puis Pro, puis
+      // Gratuit — l'ordre de la recherche est gardé à l'intérieur de chaque offre (tri stable).
+      if ((q.sort ?? 'relevance') === 'relevance' && items.length > 1) {
+        const plans = await readAllPlans();
+        items.sort((a, b) => planRank(plans, b.id) - planRank(plans, a.id));
+      }
       // Remplace les 3 créneaux « un par heure » de search_salons_v2 par les 5 premiers créneaux libres.
       await attachNextSlots(items, req.log);
       reply.header('Cache-Control', CACHE_PUBLIC_SHORT);

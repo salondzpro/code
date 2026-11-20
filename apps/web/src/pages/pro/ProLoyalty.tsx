@@ -12,6 +12,7 @@
  *   - Code (mode code promo).
  * Puis l'aperçu (ce que voit le client) et « Bientôt récompensés ».
  */
+import { PlanLock } from '@/components/Plans';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { CalendarClock, Check, Coins, Hash, Repeat, ShoppingBag, Target, Ticket, type LucideIcon } from 'lucide-react';
@@ -98,6 +99,7 @@ export function ProLoyalty() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo="/pro/parametres" title={t('Programme fidélité')} />
+      <PlanLock need="pro" what={t('Le programme fidélité')} />
 
       <div className="lst">
         <SettingRow icon={ICONE.fidelite} title={t('Récompenser mes clients')} right={<Toggle on={on} onChange={setOn} label={t('Récompenser mes clients')} />} />

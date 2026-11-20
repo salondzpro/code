@@ -141,6 +141,11 @@ export function ErrorMessage({ error, retry, className = '' }: { error: unknown;
           ))}
         </ul>
       )}
+      {error instanceof ApiError && error.code === 'PLAN_REQUIRED' && (
+        <Link to="/pro/abonnement" className="mt-2 inline-block underline">
+          {t('Voir les offres')}
+        </Link>
+      )}
       {retry && (
         <button type="button" onClick={retry} className="mt-2 underline">
           {t("Réessayer")}

@@ -1,4 +1,5 @@
 /** Espace pro — Nouveau membre (page dédiée) : prénom, prestations réalisées (toutes ou une sélection). */
+import { PlanLock } from '@/components/Plans';
 import { ICONE } from '@/lib/actionIcons';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -44,6 +45,7 @@ export function TeamNew() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo="/pro/equipe" title={t("Nouveau membre")} />
+      <PlanLock need="salon" what={t('Une équipe de plusieurs personnes')} />
       <Field label={t("Prénom")} htmlFor="staff-name">
         <Input
           id="staff-name"

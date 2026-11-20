@@ -8,6 +8,7 @@
  *   titulaire ni de consigne à remplir.
  * Un versement exigé reste une DEMANDE jusqu'à la validation du justificatif.
  */
+import { PlanLock } from '@/components/Plans';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Check, Landmark } from 'lucide-react';
@@ -99,6 +100,7 @@ export function ProDeposit() {
   return (
     <Screen bottom={SHEET_PAD} gap={16}>
       <TopBar backTo="/pro/parametres" title={t('Versement à la réservation')} />
+      <PlanLock need="pro" what={t('Le versement à la réservation')} />
 
       <div className="crd dp-set-hero">
         <span className="dp-pro-ic" aria-hidden>

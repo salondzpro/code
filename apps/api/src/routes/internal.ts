@@ -1,3 +1,4 @@
+import { expirePlans } from '../lib/plans';
 import { timingSafeEqual } from 'node:crypto';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -186,6 +187,12 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
     const expired = unwrap(expiredRes) as { id: string; salon_id: string; staff_id: string | null; service_id: string | null; starts_at: string; ends_at: string }[];
     for (const b of expired) await notifySlotFreed(log, { salonId: b.salon_id, staffId: b.staff_id, startsAt: b.starts_at, endsAt: b.ends_at, serviceId: b.service_id, excludeBookingId: b.id });
 
+    // 3 bis) Abonnements échus → Gratuit, et ses limites appliquées (versement, fidélité, promotions).
+    const plansExpired = await expirePlans().catch((err) => {
+      log.error({ err }, 'abonnements échus');
+      return 0;
+    });
+
     // 4) Push en attente (rattrape aussi les notifs créées hors API)
     const pushed = await dispatchPendingPush(req.log);
 
@@ -221,7 +228,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .upsert({ key: 'cron_last_tick', value: new Date(now).toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (beat.error) req.log.warn({ err: beat.error }, 'cron heartbeat');
 
-    return { reminders1h: envoyes.reminder_1h_sent_at ?? 0, reminders30m: envoyes.reminder_30m_sent_at ?? 0, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0 };
+    return { reminders1h: envoyes.reminder_1h_sent_at ?? 0, reminders30m: envoyes.reminder_30m_sent_at ?? 0, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0, plansExpired };
   }
 };
 

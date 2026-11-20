@@ -5,6 +5,7 @@
  * saisie par erreur se retire). Le client avec compte est prévenu à chaque ligne, et ne peut plus
  * changer son identité ni supprimer son compte tant qu'un solde reste dû.
  */
+import { PlanLock } from './Plans';
 import { useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useClientCredit, useCreditMutations } from '@salondz/api-client';
@@ -41,6 +42,8 @@ export function CreditPanel({ clientKey }: { clientKey: string }) {
   };
 
   return (
+    <>
+    <PlanLock need="pro" what={t('Le crédit client')} />
     <div className="lst">
       <SettingRow
         icon={ICONE.credit}
@@ -109,5 +112,6 @@ export function CreditPanel({ clientKey }: { clientKey: string }) {
         </>
       )}
     </div>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 /** Espace pro — Clients : fiche agrégée (SQL) et blocage/déblocage propre au salon. */
+import { requirePlan } from '../../lib/plans';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { blockClientSchema, clientHistoryQuerySchema, clientNotesSchema, proClientsQuerySchema } from '@salondz/validation';
@@ -69,6 +70,7 @@ const proClientRoutes: FastifyPluginAsyncZod = async (app) => {
     '/clients/:key/credit',
     { schema: { params: keyParam, body: z.object({ kind: z.enum(['debt', 'payment']), amount: z.number().int().min(1).max(10_000_000), note: z.string().trim().max(120).optional() }) } },
     async (req) => {
+      await requirePlan(req.salon!.id, 'pro', 'Le crédit client');
       const c = await loadClient(req.salon!.id, req.params.key);
       return addCredit(req.log, { id: req.salon!.id, name: req.salon!.name }, { clientKey: req.params.key, clientId: c.clientId, name: c.name, phone: c.phone }, req.body);
     },

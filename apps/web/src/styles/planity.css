@@ -2062,3 +2062,29 @@ a.btn.plan-btn:not(.g),
   font-size: clamp(24px, 3.6vw, 40px);
   line-height: 1.12;
 }
+/* Encart « disponible avec l'offre Pro / Max » en tête d'un écran payant. */
+.plan-lock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+  color: #202020;
+}
+.plan-lock b {
+  display: block;
+  font-weight: 600;
+  font-size: calc(14px * var(--fz, 1));
+}
+.plan-lock small {
+  display: block;
+  color: #4e5860;
+  font-size: calc(13px * var(--fz, 1));
+}
+.plan-lock .btn {
+  flex: none;
+  color: #ffffff;
+}

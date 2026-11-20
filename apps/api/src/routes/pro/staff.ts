@@ -1,3 +1,4 @@
+import { readPlan, requirePlan, teamMax } from '../../lib/plans';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { MAX_STAFF_PER_SALON } from '@salondz/constants';
@@ -30,10 +31,26 @@ const proStaffRoutes: FastifyPluginAsyncZod = async (app) => {
     return mapStaff(res.data as Record<string, unknown>);
   }
 
+  /**
+   * Offres (20 nov. 2026) : Gratuit et Pro = une personne active ; Max = jusqu'à `PLAN_TEAM_MAX`.
+   * Refuse d'AJOUTER ou de RÉACTIVER une personne au-delà ; ne retire jamais personne.
+   */
+  async function checkTeamRoom(salonId: string, exceptId: string | null): Promise<void> {
+    let q = db.from('staff').select('id', { count: 'exact', head: true }).eq('salon_id', salonId).eq('is_active', true);
+    if (exceptId) q = q.neq('id', exceptId);
+    const { count, error } = await q;
+    if (error) throw error;
+    const plan = (await readPlan(salonId)).plan;
+    if ((count ?? 0) < teamMax(plan)) return;
+    if (plan === 'salon') throw conflict('LIMIT_REACHED', `L'offre Max compte au plus ${teamMax(plan)} personnes actives.`);
+    await requirePlan(salonId, 'salon', 'Une équipe de plusieurs personnes');
+  }
+
   app.post('/staff', { schema: { body: createStaffSchema } }, async (req, reply) => {
     const salonId = req.salon!.id;
     const { count } = await db.from('staff').select('id', { count: 'exact', head: true }).eq('salon_id', salonId);
     if ((count ?? 0) >= MAX_STAFF_PER_SALON) throw conflict('LIMIT_REACHED', `Une équipe compte au plus ${MAX_STAFF_PER_SALON} membres.`);
+    await checkTeamRoom(salonId, null);
     const { serviceIds, allServices, ...rest } = req.body;
     // Une sélection vide revient à « toutes les prestations » : un membre sans rien à faire n'a pas de sens.
     const all = allServices || !serviceIds?.length;
@@ -50,6 +67,7 @@ const proStaffRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.patch('/staff/:id', { schema: { params: z.object({ id: uuid }), body: updateStaffSchema } }, async (req) => {
     const salonId = req.salon!.id;
+    if (req.body.isActive === true) await checkTeamRoom(salonId, req.params.id);
     if (req.body.isActive === false) {
       const { count } = await db.from('staff').select('id', { count: 'exact', head: true }).eq('salon_id', salonId).eq('is_active', true).neq('id', req.params.id);
       if ((count ?? 0) === 0) throw conflict('LAST_STAFF', 'Il faut au moins un membre actif.');
