@@ -1783,3 +1783,59 @@ html.espace-pro .scr {
   background: #eceef1;
   pointer-events: none;
 }
+
+/* ============================================================================================
+   BARRE DU BAS FLOTTANTE EN VERRE — clients ET professionnels (20 nov. 2026, demande du
+   propriétaire). Détachée des bords, translucide et floutée façon Apple, aplat sans dégradé ;
+   l'onglet actif est posé dans une pastille. Côté pro, le rond Agenda reste au centre, en relief.
+   Remplace la barre blanche collée en bas (19 nov.).
+   ============================================================================================ */
+html.pro-theme .nvb,
+html.client-theme .nvb {
+  bottom: calc(10px + var(--safe-bottom, 0px));
+  width: calc(100% - 24px);
+  max-width: 30rem;
+  height: 4.143rem;
+  padding: 5px;
+  gap: 2px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.65),
+    0 0 0 0.5px rgb(0 0 0 / 0.08),
+    0 14px 34px -12px rgb(0 0 0 / 0.3);
+}
+html.pro-theme .nvi,
+html.client-theme .nvi {
+  border-radius: 999px;
+  gap: 3px;
+  color: #4e5860;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+html.pro-theme .nvi.on:not(.ctr),
+html.client-theme .nvi.on:not(.ctr) {
+  background: rgb(17 17 17 / 0.07);
+  color: #202020;
+}
+html.pro-theme .nvl,
+html.client-theme .nvl {
+  font-size: calc(11px * var(--fz, 1));
+}
+/* Rond Agenda : un peu plus petit, il dépasse de la pilule, cerclé de verre. */
+html.pro-theme .nvi.ctr {
+  padding-bottom: 6px;
+  color: #4e5860;
+}
+html.pro-theme .nvi.ctr.on {
+  color: #202020;
+}
+html.pro-theme .nvc {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-top: -1.5rem;
+  border: 4px solid rgb(255 255 255 / 0.85);
+  background: #202020;
+  box-shadow: 0 10px 22px -8px rgb(0 0 0 / 0.45);
+}
