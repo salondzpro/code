@@ -1203,7 +1203,10 @@ function MonthGrid({
   onOpen: (id: string) => void;
 }) {
   const month = date.slice(0, 7);
-  const cells = Array.from({ length: 42 }, (_, i) => addDaysToKey(gridStart, i));
+  // Seulement les semaines du mois : pas de rangée entière du mois suivant, et les jours voisins restent vides.
+  const lastDay = addDaysToKey(`${month}-01`, 32).slice(0, 8) + '01';
+  const span = Array.from({ length: 42 }, (_, i) => addDaysToKey(gridStart, i)).findIndex((d) => d >= lastDay);
+  const cells = Array.from({ length: Math.ceil((span < 0 ? 42 : span) / 7) * 7 }, (_, i) => addDaysToKey(gridStart, i));
   const list = (byDay.get(selected) ?? []).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const revenue = list
     .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
@@ -1221,6 +1224,7 @@ function MonthGrid({
         ))}
         {cells.map((d) => {
           const inMonth = d.slice(0, 7) === month;
+          if (!inMonth) return <span key={d} aria-hidden />;
           const closed = closedDays.includes(dayOfWeekFromKey(d));
           const on = d === selected;
           const dots = (byDay.get(d) ?? []).slice(0, 4);
