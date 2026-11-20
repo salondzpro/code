@@ -1773,3 +1773,13 @@ html.espace-pro .scr {
 .pla-pnl .ag9-h {
   margin: 0;
 }
+
+/* Agenda : le temps écoulé en gris (20 nov. 2026, demande du propriétaire). Sous les colonnes et
+   les rendez-vous ; aucun créneau libre n'y est proposé. */
+.ag9-past {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
+  background: #eceef1;
+  pointer-events: none;
+}

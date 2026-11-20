@@ -815,6 +815,7 @@ function DayColumns({
     const y = e.clientY - rect.top;
     const m = startMin + Math.floor(y / PX / step) * step;
     if (m < startMin || m + step > endMin) return;
+    if (date < toLocalDateKey()) return;
     if (hours.length && !hours.some((h) => timeToMinutes(h.opensAt) <= m && m < timeToMinutes(h.closesAt)))
       return;
     if (isToday && m < now) return;
@@ -852,6 +853,15 @@ function DayColumns({
     {/* Plus de rangée de membres au-dessus des colonnes (16 nov. 2026, demande du propriétaire) : on
         choisit qui l'on regarde dans la liste déroulante « Toute l'équipe ». */}
     <div className="ag9-g" style={{ height, paddingInlineStart: GUTTER }}>
+      {/* LE PASSÉ EN GRIS (20 nov. 2026, demande du propriétaire) : jour passé entier, ou aujourd'hui
+          jusqu'à l'heure actuelle. On s'y retrouve d'un coup d'œil, et rien ne s'y crée. */}
+      {(date < toLocalDateKey() || nowShown || (isToday && now > endMin)) && (
+        <div
+          className="ag9-past"
+          style={{ insetInlineStart: GUTTER, height: date < toLocalDateKey() || now > endMin ? height : top(now) }}
+          aria-hidden
+        />
+      )}
       {halfMarks.map((m) => (
         <div key={`h${m}`} className="ag9-hr half" style={{ top: top(m) }} aria-hidden />
       ))}
