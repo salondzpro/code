@@ -2291,3 +2291,10 @@ html.pro-theme .agenda .agoff {
 .agenda .ag9-lg > span {
   display: none;
 }
+/* Légende des états retirée (la couleur est celle du membre) : seul le bouton « annulés » reste. */
+html.pro-theme .agenda .ag9-lg > span[aria-hidden] {
+  display: none !important;
+}
+html.pro-theme .agenda .ag9-lg:not(:has(button)) {
+  display: none;
+}
