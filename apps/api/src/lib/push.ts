@@ -44,6 +44,22 @@ export function appMatchesRole(appId: string | null | undefined, role: string | 
   return true;
 }
 
+/**
+ * Retire des jetons morts, UN PAR UN par égalité exacte (20 nov. 2026). Un abonnement NAVIGATEUR est un
+ * texte JSON (guillemets, virgules, deux-points) : dans un filtre `in.(…)` il ne correspondait jamais,
+ * et les abonnements périmés restaient en base, relancés à chaque notification. `eq` compare la valeur
+ * telle quelle, quelle que soit sa forme.
+ */
+async function retirerJetons(log: FastifyBaseLogger, tokens: string[]): Promise<number> {
+  let n = 0;
+  for (const token of [...new Set(tokens)]) {
+    const del = await db.from('push_tokens').delete().eq('token', token);
+    if (del.error) log.warn({ err: del.error }, 'push : retrait d’un jeton mort impossible');
+    else n++;
+  }
+  return n;
+}
+
 /** Rôle de chaque destinataire, pour `appMatchesRole`. */
 async function rolesOf(userIds: string[]): Promise<Map<string, string>> {
   const res = await db.from('profiles').select('id, role').in('id', userIds);
@@ -273,9 +289,8 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   }
 
   if (invalidTokens.length) {
-    const del = await db.from('push_tokens').delete().in('token', invalidTokens);
-    if (del.error) log.warn({ err: del.error }, 'push : retrait des jetons morts impossible');
-    else log.info({ n: invalidTokens.length }, 'push : jetons morts retirés');
+    const n = await retirerJetons(log, invalidTokens);
+    log.info({ n }, 'push : jetons morts retirés');
   }
 
   // Issue de chaque notification. Un échec PASSAGER sans aucun envoi accepté remet la ligne en
@@ -355,6 +370,6 @@ export async function sendTestPush(log: FastifyBaseLogger, userId: string): Prom
     if (outcome === 'gone') gone.push(t.token);
     devices.push({ platform: t.platform, device: t.device_name, outcome });
   }
-  if (gone.length) await db.from('push_tokens').delete().in('token', gone);
+  if (gone.length) await retirerJetons(log, gone);
   return { devices };
 }
