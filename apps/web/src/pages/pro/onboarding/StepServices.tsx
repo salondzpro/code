@@ -8,19 +8,23 @@
  */
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Check, Scissors } from 'lucide-react';
+import { Check, Scissors, X } from 'lucide-react';
 import { useProSalon, useProSalonMutations, useProServiceMutations } from '@salondz/api-client';
 import { SERVICE_TEMPLATES, categoriesForMarket, categoryLabel, type CategoryId, type Market } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
-import { I } from '@/components/ui';
+import { BottomSheet, Button, Dim, Field, I, Input } from '@/components/ui';
+import { ICONE } from '@/lib/actionIcons';
 import { PageLoading } from '@/components/PageLoading';
 import { errorText } from '@/components/ErrorMessage';
 import { clearProDraft } from '@/lib/proDraft';
 import { StepBar, StepSheet, StepTitle } from './Shared';
 import { t } from '@/i18n';
 
-type Row = { key: string; name: string; minutes: number; priceDa: number; categoryId: CategoryId; on: boolean };
+type Row = { key: string; name: string; minutes: number; priceDa: number; categoryId: CategoryId; on: boolean; custom?: boolean };
+
+/** Durées proposées (minutes) : celles du métier, d'un toucher. */
+const DUREES = [10, 15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300];
 
 /** Cochées d'office : les deux premières de chaque spécialité, six au plus en tout. */
 const PRECHECK_PER_CATEGORY = 2;
@@ -32,6 +36,9 @@ export function StepServices() {
   const { create } = useProServiceMutations();
   const { updateSalon } = useProSalonMutations();
   const [edits, setEdits] = useState<Record<string, Partial<Row>>>({});
+  // Prestations PERSONNALISÉES ajoutées à l'inscription (20 nov. 2026, demande du propriétaire).
+  const [customs, setCustoms] = useState<Row[]>([]);
+  const [ajout, setAjout] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,10 +65,11 @@ export function StepServices() {
   }, [salon]);
 
   if (!salon) return <PageLoading />;
-  const rows = base.map((r) => ({ ...r, ...edits[r.key] }));
+  const rows = [...base, ...customs].map((r) => ({ ...r, ...edits[r.key] }));
   const chosen = rows.filter((r) => r.on && r.priceDa > 0);
   const set = (key: string, patch: Partial<Row>) => setEdits((e) => ({ ...e, [key]: { ...e[key], ...patch } }));
   const groups = [...new Set(rows.map((r) => r.categoryId))];
+  const cats = salon.categoryIds as CategoryId[];
 
   const goLive = async () => {
     setError(null);
@@ -101,10 +109,21 @@ export function StepServices() {
                       {r.on && <I icon={Check} size={14} strokeWidth={2.8} />}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <b className="block truncate">{t(r.name)}</b>
-                      <small>{formatDuration(r.minutes)}</small>
+                      <b className="block truncate">{r.custom ? r.name : t(r.name)}</b>
                     </span>
                   </button>
+                  <select
+                    className="obs-d"
+                    value={r.minutes}
+                    aria-label={`${t('Durée')} · ${r.custom ? r.name : t(r.name)}`}
+                    onChange={(e) => set(r.key, { minutes: Number(e.target.value), on: true })}
+                  >
+                    {[...new Set([...DUREES, r.minutes])].sort((a, b) => a - b).map((m) => (
+                      <option key={m} value={m}>
+                        {formatDuration(m)}
+                      </option>
+                    ))}
+                  </select>
                   <label className="obs-p" dir="ltr">
                     <input
                       inputMode="numeric"
@@ -114,11 +133,30 @@ export function StepServices() {
                     />
                     <span>DA</span>
                   </label>
+                  {r.custom && (
+                    <button type="button" className="obs-x" aria-label={`${t('Retirer')} · ${r.name}`} onClick={() => setCustoms((c) => c.filter((x) => x.key !== r.key))}>
+                      <I icon={X} size={16} />
+                    </button>
+                  )}
                 </div>
               ))}
           </div>
         </section>
       ))}
+
+      <Button variant="g" icon={ICONE.ajouter} onClick={() => setAjout(true)}>
+        {t('Ajouter une prestation')}
+      </Button>
+      {ajout && (
+        <AjoutPrestation
+          cats={cats}
+          onClose={() => setAjout(false)}
+          onAdd={(r) => {
+            setCustoms((c) => [...c, { ...r, key: `custom:${Date.now()}`, on: true, custom: true }]);
+            setAjout(false);
+          }}
+        />
+      )}
 
       {error && (
         <p className="text-[1rem] text-danger" role="alert">
@@ -132,5 +170,64 @@ export function StepServices() {
         onClick={() => void goLive()}
       />
     </Screen>
+  );
+}
+
+/** Fenêtre « Ajouter une prestation » : nom, durée, prix, et la spécialité si le salon en a plusieurs. */
+function AjoutPrestation({
+  cats,
+  onClose,
+  onAdd,
+}: {
+  cats: CategoryId[];
+  onClose: () => void;
+  onAdd: (r: { name: string; minutes: number; priceDa: number; categoryId: CategoryId }) => void;
+}) {
+  const [name, setName] = useState('');
+  const [minutes, setMinutes] = useState(30);
+  const [prix, setPrix] = useState('');
+  const [cat, setCat] = useState<CategoryId>(cats[0]!);
+  const priceDa = Math.min(1_000_000, Number(prix.replace(/\D/g, '')) || 0);
+  const ok = name.trim().length >= 2 && priceDa > 0;
+  return (
+    <>
+      <Dim onClose={onClose} />
+      <BottomSheet modal>
+        <div className="flex flex-col gap-3">
+          <b className="text-[1.143rem]">{t('Nouvelle prestation')}</b>
+          <Field label={t('Nom')} htmlFor="ob-sv-n">
+            <Input id="ob-sv-n" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Ex. Coupe + brushing')} />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t('Durée')} htmlFor="ob-sv-d">
+              <select id="ob-sv-d" className="inp" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
+                {DUREES.map((m) => (
+                  <option key={m} value={m}>
+                    {formatDuration(m)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={t('Prix (DA)')} htmlFor="ob-sv-p">
+              <Input id="ob-sv-p" inputMode="numeric" dir="ltr" value={prix} onChange={(e) => setPrix(e.target.value.replace(/\D/g, ''))} placeholder="1500" />
+            </Field>
+          </div>
+          {cats.length > 1 && (
+            <Field label={t('Spécialité')} htmlFor="ob-sv-c">
+              <select id="ob-sv-c" className="inp" value={cat} onChange={(e) => setCat(e.target.value as CategoryId)}>
+                {cats.map((c) => (
+                  <option key={c} value={c}>
+                    {t(categoryLabel(c))}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
+          <Button icon={ICONE.ajouter} disabled={!ok} onClick={() => onAdd({ name: name.trim(), minutes, priceDa, categoryId: cat })}>
+            {t('Ajouter')}
+          </Button>
+        </div>
+      </BottomSheet>
+    </>
   );
 }

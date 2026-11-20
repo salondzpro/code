@@ -105,16 +105,26 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   // API_PUBLIC_URL est obligatoire là-bas (config.ts) ; le repli ne sert qu'en local.
   const apiOrigin = (req: { protocol: string; headers: { host?: string } }) =>
     config.API_PUBLIC_URL ?? (config.isProd ? config.webUrl : `${req.protocol}://${req.headers.host ?? 'localhost'}`);
+  /**
+   * LIEN D'E-MAIL → L'APPLICATION (20 nov. 2026) : l'adresse écrite dans l'e-mail est une page du SITE
+   * que l'application du compte réclame déjà — `/pro/lien` (Salon DZ Pro) ou `/rendez-vous/lien`
+   * (Salon DZ) : le téléphone ouvre l'application directement, qui vérifie le jeton elle-même
+   * (`pages/auth/EmailLink.tsx`) ; dans un navigateur, la page passe la main à l'application. Le jeton
+   * reste celui de Supabase (`hashed_token`), à usage unique. `r` = la suite, un chemin du site.
+   * L'ancien relais `/v1/auth/go` reste servi pour les e-mails déjà envoyés.
+   */
   const mailLink = (
-    req: { protocol: string; headers: { host?: string } },
+    _req: { protocol: string; headers: { host?: string } },
     gen: { hashed_token: string; verification_type: string } | null | undefined,
     redirectTo: string,
+    role: Portail,
   ) => {
     if (!gen?.hashed_token) throw linkFailed();
-    const url = new URL('/v1/auth/go', apiOrigin(req));
+    const suite = new URL(redirectTo, config.webUrl);
+    const url = new URL(role === 'pro' ? '/pro/lien' : '/rendez-vous/lien', config.webUrl);
     url.searchParams.set('t', gen.hashed_token);
     url.searchParams.set('type', gen.verification_type);
-    url.searchParams.set('r', redirectTo);
+    url.searchParams.set('r', `${suite.pathname}${suite.search}`);
     return url.toString();
   };
 
@@ -241,7 +251,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       // n'importe qui poserait le sien sur le compte d'un autre avant qu'il ne clique le lien).
       const gen = await db.auth.admin.generateLink({ type: 'magiclink', email: existing.email, options: { redirectTo: to } });
       if (gen.error) throw gen.error;
-      link = mailLink(req, gen.data.properties, to);
+      link = mailLink(req, gen.data.properties, to, role);
     } else {
       const gen = await db.auth.admin.generateLink({
         type: 'signup',
@@ -260,7 +270,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
         const upd = await db.from('profiles').update({ phone }).eq('id', gen.data.user.id);
         if (upd.error) req.log.error({ err: upd.error }, 'signup pro : numéro');
       }
-      link = mailLink(req, gen.data.properties, to);
+      link = mailLink(req, gen.data.properties, to, role);
     }
     // Toujours vers la VRAIE adresse, même pour un compte interne.
     await sendMail(req.log, { to: email, ...confirmationMail(link) });
@@ -271,7 +281,8 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   /** Renvoi du lien de confirmation à un compte non confirmé (celui du portail). */
   app.post('/auth/resend-confirmation', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
-    const user = await accountFor(email, portailOf(req.body.role, next));
+    const portail = portailOf(req.body.role, next);
+    const user = await accountFor(email, portail);
     // Adresse inconnue : même réponse qu'un envoi réussi (pas d'oracle « ce compte existe-t-il ? »).
     if (!user) {
       reply.status(204);
@@ -281,7 +292,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const to = redirect('/connexion/retour', next);
     const gen = await db.auth.admin.generateLink({ type: 'magiclink', email: user.email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
-    await sendMail(req.log, { to: email, ...confirmationMail(mailLink(req, gen.data.properties, to)) });
+    await sendMail(req.log, { to: email, ...confirmationMail(mailLink(req, gen.data.properties, to, portail)) });
     reply.status(204);
     return null;
   });
@@ -292,7 +303,8 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
    */
   app.post('/auth/magic-link', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;
-    const user = await accountFor(email, portailOf(req.body.role, next));
+    const portail = portailOf(req.body.role, next);
+    const user = await accountFor(email, portail);
     if (!user) {
       reply.status(204);
       return null;
@@ -300,7 +312,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const to = redirect('/connexion/retour', next);
     const gen = await db.auth.admin.generateLink({ type: 'magiclink', email: user.email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
-    await sendMail(req.log, { to: email, ...magicLinkMail(mailLink(req, gen.data.properties, to)) });
+    await sendMail(req.log, { to: email, ...magicLinkMail(mailLink(req, gen.data.properties, to, portail)) });
     reply.status(204);
     return null;
   });
@@ -308,7 +320,8 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   /** Mot de passe oublié : celui du compte DU PORTAIL (client par défaut). */
   app.post('/auth/password-reset', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email } = req.body;
-    const user = await accountFor(email, req.body.role === 'pro' ? 'pro' : 'client');
+    const portail: Portail = req.body.role === 'pro' ? 'pro' : 'client';
+    const user = await accountFor(email, portail);
     if (!user) {
       reply.status(204);
       return null;
@@ -316,7 +329,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const to = new URL('/connexion/mot-de-passe', config.webUrl).toString();
     const gen = await db.auth.admin.generateLink({ type: 'recovery', email: user.email, options: { redirectTo: to } });
     if (gen.error) throw gen.error;
-    await sendMail(req.log, { to: email, ...recoveryMail(mailLink(req, gen.data.properties, to)) });
+    await sendMail(req.log, { to: email, ...recoveryMail(mailLink(req, gen.data.properties, to, portail)) });
     reply.status(204);
     return null;
   });

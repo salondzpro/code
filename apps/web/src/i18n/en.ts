@@ -2498,4 +2498,10 @@ export const en: Record<string, string> = {
   "Les promotions": "Promotions",
   "Une équipe de plusieurs personnes": "A team of several people",
   "Le crédit client": "Client credit",
+  "Ce lien a expiré ou a déjà servi": "This link has expired or was already used",
+  "Connectez-vous avec votre adresse e-mail et votre mot de passe, ou demandez un nouveau lien.": "Sign in with your email and password, or request a new link.",
+  "Durée": "Duration",
+  "Ex. Coupe + brushing": "E.g. Cut + blow-dry",
+  "Prix (DA)": "Price (DA)",
+  "Spécialité": "Specialty",
 };

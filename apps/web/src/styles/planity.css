@@ -2088,3 +2088,30 @@ a.btn.plan-btn:not(.g),
   flex: none;
   color: #ffffff;
 }
+
+/* Inscription pro, « Vos prestations » : durée modifiable sur chaque ligne et retrait d'une
+   prestation personnalisée (20 nov. 2026). */
+.obs-d {
+  flex: none;
+  max-width: 6.5rem;
+  height: 36px;
+  padding: 0 6px;
+  border: 1px solid #c7cfd7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #202020;
+  font: inherit;
+  font-size: calc(13px * var(--fz, 1));
+}
+.obs-r:not(.on) .obs-d {
+  opacity: 0.5;
+}
+.obs-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #4e5860;
+}

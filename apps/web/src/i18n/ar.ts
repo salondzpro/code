@@ -2484,4 +2484,10 @@ export const ar: Record<string, string> = {
   "Les promotions": "التخفيضات",
   "Une équipe de plusieurs personnes": "فريق من عدة أشخاص",
   "Le crédit client": "ديون الزبائن",
+  "Ce lien a expiré ou a déjà servi": "انتهت صلاحية هذا الرابط أو تم استعماله",
+  "Connectez-vous avec votre adresse e-mail et votre mot de passe, ou demandez un nouveau lien.": "سجّل الدخول ببريدك الإلكتروني وكلمة المرور، أو اطلب رابطًا جديدًا.",
+  "Durée": "المدة",
+  "Ex. Coupe + brushing": "مثال: قص + براشينغ",
+  "Prix (DA)": "السعر (دج)",
+  "Spécialité": "التخصص",
 };

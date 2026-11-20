@@ -85,6 +85,7 @@ const Step8Works = lazyNamed(() => import('@/pages/pro/onboarding/Step8Works'), 
 const Step9Hours = lazyNamed(() => import('@/pages/pro/onboarding/Step9Hours'), 'Step9Hours');
 const ProDeposit = lazyNamed(() => import('@/pages/pro/ProDeposit'), 'ProDeposit');
 const ProLoyalty = lazyNamed(() => import('@/pages/pro/ProLoyalty'), 'ProLoyalty');
+const EmailLink = lazyNamed(() => import('@/pages/auth/EmailLink'), 'EmailLink');
 const ProPlan = lazyNamed(() => import('@/pages/pro/ProPlan'), 'ProPlan');
 const AdminPlans = lazyNamed(() => import('@/pages/admin/AdminPlans'), 'AdminPlans');
 const ProPromos = lazyNamed(() => import('@/pages/pro/ProPromos'), 'ProPromos');
@@ -223,6 +224,10 @@ export const router = createBrowserRouter([
           { path: '/connexion/lien', element: <MagicLink /> },
           { path: '/connexion/mot-de-passe', element: <NewPassword /> },
           { path: '/connexion/retour', element: <WelcomeBack /> },
+          // LIENS D'E-MAIL (20 nov. 2026) : adresses réclamées par l'application concernée, qui s'ouvre
+          // directement ; dans un navigateur, la page passe la main à l'application (`EmailLink`).
+          ...(APPLI === 'client' ? [] : [{ path: '/pro/lien', element: <EmailLink /> }]),
+          ...(APPLI === 'pro' ? [] : [{ path: '/rendez-vous/lien', element: <EmailLink /> }]),
           // SÉPARATION STRICTE (16 nov. 2026) : l'application CLIENT n'a pas la porte pro, l'application
           // PRO n'a pas la porte client — une adresse de l'autre portail ramène à la sienne. Le site
           // garde les deux.
