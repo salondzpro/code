@@ -704,6 +704,8 @@ on('PATCH', '/pro/salon', (c) => {
 });
 // Réseaux de l'étiquette « Vitrine noire » : gardés le temps de la session de démonstration.
 const demoSocials = new Map<string, ReturnType<typeof normalizeLabelSocials>>();
+// Conseils & nouveautés de l'administration (20 nov. 2026) : aucune publication dans la démonstration.
+on('GET', '/pro/news', () => ok({ items: [] }));
 on('GET', '/pro/label-socials', (c) => ok(demoSocials.get(ownedSalon(c).id) ?? normalizeLabelSocials([])));
 on('PUT', '/pro/label-socials', (c) => {
   const v = normalizeLabelSocials(c.body as unknown);

@@ -127,6 +127,7 @@ const AdminBookings = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'Ad
 const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'AdminAudit');
 const AdminReports = lazyNamed(() => import('@/pages/admin/AdminReports'), 'AdminReports');
 const AdminLabels = lazyNamed(() => import('@/pages/admin/AdminLabels'), 'AdminLabels');
+const AdminNews = lazyNamed(() => import('@/pages/admin/AdminNews'), 'AdminNews');
 const AdminHealth = lazyNamed(() => import('@/pages/admin/AdminHealth'), 'AdminHealth');
 const AdminTeam = lazyNamed(() => import('@/pages/admin/AdminTeam'), 'AdminTeam');
 
@@ -368,6 +369,7 @@ export const router = createBrowserRouter([
           { path: 'rendez-vous', element: <AdminBookings /> },
           { path: 'signalements', element: <AdminReports /> },
           { path: 'etiquettes', element: <AdminLabels /> },
+          { path: 'conseils', element: <AdminNews /> },
           { path: 'sante', element: <AdminHealth /> },
           { path: 'equipe', element: <AdminTeam /> },
           { path: 'journal', element: <AdminAudit /> },

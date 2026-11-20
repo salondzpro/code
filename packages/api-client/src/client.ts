@@ -571,6 +571,8 @@ export function createApiClient(opts: ApiClientOptions) {
       depositProof: (id: string, path: string) => post<BookingWithSalon>(`/bookings/${id}/deposit/proof`, { path }),
     },
     pro: {
+      /** Conseils & nouveautés publiés par l'administration (en tête du rond « Conseil »). */
+      news: () => get<{ items: ProNewsItem[] }>('/pro/news'),
       /** Versement à la réservation : montant (fixe ou %), portée, compte où verser. */
       depositSettings: () => get<DepositSettings>('/pro/deposit-settings'),
       /** Programme fidélité du salon. */
@@ -727,6 +729,11 @@ export function createApiClient(opts: ApiClientOptions) {
         post<void>(`/admin/reports/${id}/close`, { outcome, note }),
       /** Modèles d'étiquettes proposés aux professionnels (réglage de la plateforme, niveau owner pour écrire). */
       labelSettings: () => get<LabelSettings>('/admin/label-settings'),
+      /** Conseils & nouveautés pour les professionnels (20 nov. 2026). */
+      news: () => get<{ items: ProNewsItem[] }>('/admin/news'),
+      publishNews: (body: { title: string; body: string; url?: string; action?: string; notify: boolean }) =>
+        post<{ item: ProNewsItem; notified: number }>('/admin/news', body),
+      deleteNews: (id: string) => del<void>(`/admin/news/${id}`),
       saveLabelSettings: (body: LabelSettings) => put<LabelSettings>('/admin/label-settings', body),
       salonLabelSocials: (salonId: string) => get<LabelSocial[]>(`/admin/salons/${salonId}/label-socials`),
       salonLabelStyle: (salonId: string) => get<LabelStyle>(`/admin/salons/${salonId}/label-style`),
@@ -788,4 +795,14 @@ export interface AdminMember {
   email: string | null;
   lastSignInAt: string | null;
   me: boolean;
+}
+
+/** Conseil ou nouveauté publié par l'administration pour les professionnels. */
+export interface ProNewsItem {
+  id: string;
+  title: string;
+  body: string;
+  url: string | null;
+  action: string | null;
+  createdAt: string;
 }

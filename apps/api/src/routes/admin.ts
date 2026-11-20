@@ -22,6 +22,7 @@ import { camelize, snakeize } from '../lib/mappers';
 import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
 import { readLabelSettings, readLabelSocials, readLabelStyle, writeLabelSettings } from '../lib/labelSettings';
+import { addProNews, notifyProsOfNews, readProNews, removeProNews } from '../lib/proNews';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
 import { config } from '../config';
@@ -501,6 +502,40 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       return next;
     },
   );
+
+  // ------------------------------------------------------------------ conseils & nouveautés pour les pros (20 nov. 2026)
+  // Publiés en tête du rond « Conseil » de l'accueil pro ; `notify` prévient tous les professionnels (📣).
+  app.get('/news', async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return { items: await readProNews() };
+  });
+  app.post(
+    '/news',
+    {
+      preHandler: app.requireOwner,
+      schema: {
+        body: z.object({
+          title: z.string().trim().min(3).max(80),
+          body: z.string().trim().min(3).max(600),
+          url: z.string().trim().max(300).regex(/^(\/pro(\/|\?|$)|https:\/\/)/, 'Lien : /pro/… ou https://…').optional().or(z.literal('')),
+          action: z.string().trim().max(40).optional().or(z.literal('')),
+          notify: z.boolean().default(true),
+        }),
+      },
+    },
+    async (req) => {
+      const item = await addProNews(req.body);
+      const notified = req.body.notify ? await notifyProsOfNews(req.log, item) : 0;
+      await trace(req, 'pro_news_publish', 'platform', null, `${item.title}${notified ? ` · ${notified} pros prévenus` : ''}`);
+      return { item, notified };
+    },
+  );
+  app.delete('/news/:id', { preHandler: app.requireOwner, schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    if (!(await removeProNews(req.params.id))) throw notFound('Publication');
+    await trace(req, 'pro_news_delete', 'platform', null, req.params.id);
+    reply.status(204);
+    return null;
+  });
 
   // ------------------------------------------------------------------ signalements d'avis (migration 0047)
   /**

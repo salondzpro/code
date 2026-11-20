@@ -187,7 +187,7 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
     const audience = audienceOf(n.data);
     const url = pushUrl(n, audience);
     return {
-      title: pushTitle(n.type, audience, n.title),
+      title: pushTitle(n.type, audience, n.title, n.data),
       body: n.body,
       badge: badges.get(n.user_id) ?? 0,
       data: { ...n.data, type: n.type, notificationId: n.id, ...(url ? { url } : {}) },

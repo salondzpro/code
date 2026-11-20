@@ -23,6 +23,7 @@ import { dateKey, depositSettingsSchema } from '@salondz/validation';
 import { loadDepositSettings } from '../../lib/deposit';
 import type { ProDashboardStats, ProStatsRange } from '@salondz/types';
 import { db } from '../../lib/supabase';
+import { readProNews } from '../../lib/proNews';
 import { badRequest, conflict, unwrap } from '../../lib/errors';
 import { snakeize } from '../../lib/mappers';
 import { loadOwnerView } from '../../lib/queries';
@@ -110,6 +111,12 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   // Réseaux sociaux de l'étiquette « Vitrine noire » (atelier d'étiquettes, `/pro/qr`).
+  // Conseils & nouveautés publiés par l'administration (20 nov. 2026) : en tête du rond « Conseil ».
+  app.get('/news', { preHandler: app.requireSalon }, async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return { items: await readProNews() };
+  });
+
   app.get('/label-socials', { preHandler: app.requireSalon }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-cache');
     return readLabelSocials(req.salon!.id);

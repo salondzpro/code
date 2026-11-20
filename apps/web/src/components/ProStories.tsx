@@ -5,9 +5,10 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Download, Play, Share, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
-import { useLabelSocials } from '@salondz/api-client';
+import { useApi, useLabelSocials } from '@salondz/api-client';
+import { useQuery } from '@tanstack/react-query';
 import { minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { I } from './ui';
@@ -88,7 +89,8 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
             type="button"
             onClick={() => {
               onClose();
-              navigate(tip.to!);
+              if (tip.to!.startsWith('http')) window.open(tip.to!, '_blank', 'noopener');
+              else navigate(tip.to!);
             }}
           >
             {tip.action}
@@ -329,7 +331,27 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
 
   const dayIndex = Math.floor(Date.parse(`${today}T12:00:00Z`) / 86_400_000);
   const question = profileQuestion(proProfile(salon));
-  const tips = useMemo(() => proTips(salon, pending, dayIndex, question), [salon, pending, dayIndex, question]);
+  // Conseils & nouveautés publiés par l'administration (20 nov. 2026) : EN TÊTE, avant les conseils du jour.
+  const { api } = useApi();
+  const news = useQuery({ queryKey: ['pro', 'news'], queryFn: () => api.pro.news(), staleTime: 5 * 60_000 });
+  const tips = useMemo<ProTip[]>(
+    () => [
+      ...(news.data?.items ?? []).map((n) => ({ id: `news-${n.id}`, title: n.title, body: n.body, to: n.url ?? undefined, action: n.url ? n.action ?? t('Voir') : undefined })),
+      ...proTips(salon, pending, dayIndex, question),
+    ],
+    [news.data, salon, pending, dayIndex, question],
+  );
+  // Ouvert depuis la notification « Nouveauté Salon DZ » (`/pro?conseil=1`) : le Conseil s'affiche d'office.
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (params.get('conseil') !== '1' || !news.isFetched) return;
+    setParams((p) => {
+      p.delete('conseil');
+      return p;
+    }, { replace: true });
+    setOpen('tips');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, news.isFetched]);
   const photos = useMemo(() => profilePhotos(salon), [salon]);
   const loadVideo = () => {
     const instagram = socials.data?.find((s) => s.id === 'instagram')?.handle || null;
@@ -345,9 +367,11 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileKey, ready, socials.isFetched]);
   const tipsKey = seenKey('tips', salon.id);
+  // « Vu » = le jour ET la nouveauté la plus récente : une publication du jour rallume le rond.
+  const tipsSeenValue = `${today}|${news.data?.items[0]?.id ?? ''}`;
   const videoKey = seenKey('video', salon.id);
   const see = (kind: 'tips' | 'video') => {
-    writeSeen(kind === 'tips' ? tipsKey : videoKey, kind === 'tips' ? today : version);
+    writeSeen(kind === 'tips' ? tipsKey : videoKey, kind === 'tips' ? tipsSeenValue : version);
     refresh((n) => n + 1);
     setOpen(kind);
   };
@@ -365,7 +389,7 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
           {t('Ma pub')}
         </button>
         <button type="button" onClick={() => see('tips')}>
-          <span className={`h12-sv${readSeen(tipsKey) === today ? '' : ' on'}`}>
+          <span className={`h12-sv${readSeen(tipsKey) === tipsSeenValue ? '' : ' on'}`}>
             <I icon={Sparkles} size={22} />
           </span>
           {t('Conseil')}

@@ -41,7 +41,9 @@ export function emojiFor(type: string, audience: Public): string {
 }
 
 /** Le titre tel qu'il apparaît sur l'écran verrouillé : l'emoji d'abord, il se lit avant les mots. */
-export function pushTitle(type: string, audience: Public, titre: string): string {
+export function pushTitle(type: string, audience: Public, titre: string, data?: Record<string, unknown>): string {
+  // Nouveautés publiées par l'administration (`lib/proNews.ts`) : leur propre emoji.
+  if (data?.kind === 'news') return `📣 ${titre}`;
   return `${emojiFor(type, audience)} ${titre}`;
 }
 
