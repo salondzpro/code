@@ -56,8 +56,9 @@ export function consigne(ctx: Contexte): string {
     case 'app-ios':
       return t('Ouvrez Réglages, puis {app}, puis Notifications, et activez « Autoriser les notifications ».', { app });
     case 'web-mobile':
+      // iPhone (Safari) : aucune consigne — l'explication de l'écran d'accueil ne servait à rien (20 nov. 2026).
       return estIOS()
-        ? t('Dans Safari, les notifications du site ne marchent qu’une fois le site ajouté à l’écran d’accueil. Le plus simple : installez l’application {app}.', { app })
+        ? ''
         : t('Touchez l’icône à gauche de l’adresse (cadenas ou réglages), puis Autorisations, puis Notifications : Autoriser. Ou installez l’application {app}.', { app });
     case 'web-ordinateur':
       return t('Sur ordinateur, l’autorisation se change dans les réglages du navigateur, à côté de la barre d’adresse.');

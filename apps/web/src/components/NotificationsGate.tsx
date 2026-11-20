@@ -8,7 +8,10 @@
  *     comme Uber : la question du système n'arrive qu'après un geste, elle est donc acceptée) ;
  *   - refusées → « Ouvrir les réglages » emmène à l'écran Notifications du téléphone, sinon le
  *     chemin exact est écrit ;
- *   - impossibles (Safari hors écran d'accueil) → la consigne d'installer l'application.
+ *   - impossibles (Safari hors écran d'accueil) → RIEN (20 nov. 2026 : l'explication ne servait à rien).
+ * MISE À JOUR DU 20 NOV. 2026 : plus de pré-demande, la question de l'appareil est posée directement
+ * (application : à l'ouverture ; navigateur : au premier toucher). La fenêtre ne sert plus qu'aux
+ * notifications REFUSÉES dans l'application (un toucher ouvre les réglages du téléphone).
  * « Plus tard » reste offert : Apple (règle 4.5.4) et Google interdisent d'exiger les notifications
  * pour utiliser l'application. Revenu des réglages avec les notifications allumées, la fenêtre se
  * ferme d'elle-même (état relu au retour, `usePushPermission`).
@@ -55,20 +58,37 @@ export function NotificationsGate() {
   const n = useNotificationStatus();
   const [vu, marquerVu] = useOuverture();
   const [chemin, setChemin] = useState(false);
+  const natif = n.contexte === 'app-android' || n.contexte === 'app-ios';
 
-  // La question de la POSITION passe d'abord (fenêtre « Par défaut : Alger ») : jamais deux fenêtres.
-  if (vu || !n.pret || n.situation === 'actives' || positionADemander()) return null;
-
-  const bloquees = n.situation === 'bloquees';
-  const impossibles = n.situation === 'impossibles';
-
-  const agir = async () => {
-    if (bloquees) {
-      if (n.ouvrable && (await n.ouvrir())) return;
-      setChemin(true);
+  // QUESTION DIRECTE (20 nov. 2026, demande du propriétaire) : plus de fenêtre d'explication — on
+  // pose LA question de l'appareil. Dans l'application, tout de suite ; dans un navigateur, au premier
+  // toucher (les navigateurs n'affichent leur question qu'après un geste de la personne).
+  const aDemander = !vu && n.pret && n.situation === 'a-demander' && !positionADemander();
+  useEffect(() => {
+    if (!aDemander) return;
+    if (natif) {
+      marquerVu();
+      void n.activer();
       return;
     }
-    await n.activer();
+    const auToucher = () => {
+      marquerVu();
+      void n.activer();
+    };
+    document.addEventListener('click', auToucher, { once: true, capture: true });
+    return () => document.removeEventListener('click', auToucher, { capture: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aDemander, natif]);
+
+  // Rien à montrer : actives, impossibles ici (Safari hors écran d'accueil — on ne l'explique plus),
+  // question en cours, ou la position d'abord. Refusées dans un NAVIGATEUR : rien ne peut les rouvrir
+  // d'un geste, on n'insiste pas.
+  if (vu || !n.pret || n.situation !== 'bloquees' || !natif || positionADemander()) return null;
+
+  // Refusées dans l'APPLICATION : un toucher ouvre directement l'écran Notifications du téléphone.
+  const agir = async () => {
+    if (n.ouvrable && (await n.ouvrir())) return;
+    setChemin(true);
   };
 
   return (
@@ -79,19 +99,12 @@ export function NotificationsGate() {
           <span className="flex size-16 items-center justify-center rounded-full bg-fill">
             <I icon={BellRing} size={30} strokeWidth={1.6} />
           </span>
-          <div className="h1 !text-[1.429rem]">{bloquees ? t('Notifications coupées') : t('Activez les notifications')}</div>
-          <p className="p">
-            {impossibles || (bloquees && chemin) ? n.consigne : t('Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.')}
-          </p>
+          <div className="h1 !text-[1.429rem]">{t('Notifications coupées')}</div>
+          <p className="p">{chemin ? n.consigne : t('Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.')}</p>
         </div>
-        {n.erreur && !bloquees && (
-          <p className="text-[0.857rem] text-danger" role="alert">
-            {n.erreur}
-          </p>
-        )}
-        {!impossibles && !(bloquees && chemin) && (
-          <Button icon={bloquees ? ICONE.reglages : ICONE.alerter} loading={n.occupe} onClick={() => void agir()}>
-            {bloquees ? t('Ouvrir les réglages') : t('Activer les notifications')}
+        {!chemin && (
+          <Button icon={ICONE.reglages} loading={n.occupe} onClick={() => void agir()}>
+            {t('Ouvrir les réglages')}
           </Button>
         )}
         <Button icon={ICONE.plusTard} variant="g" onClick={marquerVu}>

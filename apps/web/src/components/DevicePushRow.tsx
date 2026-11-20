@@ -31,6 +31,8 @@ export function DevicePushRow({ sub }: { sub?: string }) {
   const [retour, setRetour] = useState<Retour>(null);
 
   if (!n.pret) return null;
+  // Ce navigateur ne sait pas recevoir de notifications (Safari hors écran d'accueil) : rien à régler ici.
+  if (n.situation === 'impossibles') return null;
   if (n.situation === 'bloquees') return <PushBlocked />;
 
   const actives = n.situation === 'actives';
@@ -88,17 +90,13 @@ export function DevicePushRow({ sub }: { sub?: string }) {
           </span>
           <span className="min-w-0">
             <span className="block text-[1rem] font-semibold">{t('Notifications sur cet appareil')}</span>
-            {(n.situation === 'impossibles' || sub) && (
-              <span className="p block text-[0.857rem]">{n.situation === 'impossibles' ? n.consigne : sub}</span>
-            )}
+            {sub && <span className="p block text-[0.857rem]">{sub}</span>}
           </span>
         </span>
-        {n.situation !== 'impossibles' && (
-          <span className="flex flex-none items-center gap-2">
-            {occupe && <I icon={Loader2} size={16} className="animate-spin text-muted" aria-hidden />}
-            <Toggle on={actives} disabled={occupe} onChange={(v) => void basculer(v)} label={t('Notifications sur cet appareil')} />
-          </span>
-        )}
+        <span className="flex flex-none items-center gap-2">
+          {occupe && <I icon={Loader2} size={16} className="animate-spin text-muted" aria-hidden />}
+          <Toggle on={actives} disabled={occupe} onChange={(v) => void basculer(v)} label={t('Notifications sur cet appareil')} />
+        </span>
       </div>
       {n.erreur && (
         <p className="text-[0.857rem] text-danger" role="alert">

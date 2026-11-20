@@ -1264,7 +1264,6 @@ export const en: Record<string, string> = {
   "Déconnexion…": "Signing out…",
   "Ouvrez Réglages, puis Applications, puis {app}, puis Notifications, et activez-les. Mettez l’application à jour pour y aller en un geste.": "Open Settings, then Apps, then {app}, then Notifications, and turn them on. Update the app to get there in one tap.",
   "Ouvrez Réglages, puis {app}, puis Notifications, et activez « Autoriser les notifications ».": "Open Settings, then {app}, then Notifications, and turn on “Allow Notifications”.",
-  "Dans Safari, les notifications du site ne marchent qu’une fois le site ajouté à l’écran d’accueil. Le plus simple : installez l’application {app}.": "In Safari, site notifications only work once the site is added to the Home Screen. Simplest: install the {app} app.",
   "Touchez l’icône à gauche de l’adresse (cadenas ou réglages), puis Autorisations, puis Notifications : Autoriser. Ou installez l’application {app}.": "Tap the icon left of the address (lock or settings), then Permissions, then Notifications: Allow. Or install the {app} app.",
   "Les notifications de Salon DZ sont coupées sur cet appareil.": "Salon DZ notifications are turned off on this device.",
   "Comment les réactiver": "How to turn them back on",
