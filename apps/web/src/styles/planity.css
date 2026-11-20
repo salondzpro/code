@@ -1698,3 +1698,38 @@ html.pro-theme .h12-violet .h13-chip {
   border-right-color: transparent;
   border-bottom-color: transparent;
 }
+
+/* ACCUEIL PRO : couleur de PLANITY (leur encre #202020) au lieu du violet, et éléments en VERRE façon
+   Apple posés dessus — fond translucide dépoli, liseré clair, reflet en haut (20 nov. 2026, demande
+   du propriétaire). Les cartes du dessous restent blanches. */
+html.pro-theme .h12-violet .h12-top::before {
+  background: #202020;
+}
+html.pro-theme .h12-violet .h12-bell,
+html.pro-theme .h12-violet .h13-chip {
+  background: rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    inset 0 0 0 1px rgb(255 255 255 / 0.16),
+    0 8px 24px -12px rgb(0 0 0 / 0.6);
+  color: #ffffff;
+}
+html.pro-theme .h12-violet .h13-chip {
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+html.pro-theme .h12-violet .h13-chip b {
+  color: #ffffff;
+}
+html.pro-theme .h12-violet .h13-chip span {
+  color: rgb(255 255 255 / 0.72);
+}
+html.pro-theme .h12-violet .h13-chip em {
+  color: #ffb84d;
+}
+html.pro-theme .h12-violet .h13-chip.live em {
+  color: #5fe08a;
+}
