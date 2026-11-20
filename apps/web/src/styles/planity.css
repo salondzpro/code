@@ -2046,3 +2046,19 @@ html.pro-theme .nvc {
 .h12-hd .plan-tag.free {
   box-shadow: none;
 }
+/* Boutons « Choisir Pro / Salon » : texte et logo BLANCS sur le noir — le site pro (`.hx a`)
+   imposait l'encre aux liens et le libellé disparaissait (20 nov. 2026). */
+a.btn.plan-btn:not(.g),
+.hx a.btn.plan-btn:not(.g) {
+  color: #ffffff;
+}
+.hx a.plan-wa,
+.hx a.btn.plan-btn.g {
+  color: #202020;
+}
+/* Titre de la section Offres : plus petit que les autres titres du site. */
+#offres .hx-h2 {
+  max-width: 22ch;
+  font-size: clamp(24px, 3.6vw, 40px);
+  line-height: 1.12;
+}
