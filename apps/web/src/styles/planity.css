@@ -2132,29 +2132,7 @@ a.btn.plan-btn:not(.g),
 .agenda.pla .ag9-d {
   gap: 2px;
 }
-.ag9-dk {
-  display: none;
-}
-.agenda.pla .ag9-dk {
-  display: grid;
-  place-items: center;
-  min-width: 22px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: #eef0f2;
-  color: #4e5860;
-  font-size: calc(11px * var(--fz, 1));
-  font-weight: 600;
-  line-height: 1;
-}
-.agenda.pla .ag9-dk:empty {
-  visibility: hidden;
-}
-.agenda.pla .ag9-d.on .ag9-dk {
-  background: #fde2ea;
-  color: #c2416a;
-}
+/* Le nombre de rendez-vous au-dessus des jours a été retiré (20 nov. 2026, demande du propriétaire). */
 .agenda.pla .ag9-dd {
   display: none;
 }

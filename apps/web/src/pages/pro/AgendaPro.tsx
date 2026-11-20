@@ -95,8 +95,8 @@ const STATUTS = {
 } as const;
 type StatutKey = keyof typeof STATUTS;
 
-/** Hauteur d’une heure : 80 px (19 nov. 2026, demande du propriétaire : heures plus espacées, comme Planity Pro). */
-const PX = 80 / 60;
+/** Hauteur d’une heure : 64 px (20 nov. 2026, demande du propriétaire : agenda un peu dézoomé pour voir la journée ; c'était 80). */
+const PX = 64 / 60;
 /** Espace entre deux blocs qui se suivent. */
 const GAP = 4;
 /** Largeur de la gouttière des heures. */
@@ -718,7 +718,6 @@ function WeekStrip({
             aria-label={`${t(DAY_LABELS_FR[dayOfWeekFromKey(d)])} ${Number(d.slice(8, 10))} ${t(MONTHS[Number(d.slice(5, 7)) - 1]!)}${list.length ? ` · ${t('{n} rendez-vous', { n: list.length })}` : ''}`}
             onClick={() => onSelect(d)}
           >
-            <span className="ag9-dk">{list.length || ''}</span>
             <span className="ag9-dw">{t(DAY_LABELS_FR[dayOfWeekFromKey(d)]).slice(0, 3)}</span>
             <span className="ag9-dn">{Number(d.slice(8, 10))}</span>
             <span className="ag9-dd">
