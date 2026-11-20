@@ -1565,3 +1565,14 @@ html.espace-pro .tb.tb-titre > :last-child:not(.tb-t) {
 .pl-auth .pl-btn:disabled {
   opacity: 0.5;
 }
+
+/* Menu « Plus » du pro : écriture normale, plus de gras (20 nov. 2026, demande du propriétaire). */
+html .plus-sheet .plus-tile,
+html .plus-sheet .plus-tile span:not(.plus-n),
+html.pro-theme .plus-sheet .plus-tile span:not(.plus-n) {
+  font-weight: 400;
+}
+html .plus-sheet .font-semibold,
+html .plus-sheet .btn.d2 {
+  font-weight: 500;
+}
