@@ -79,13 +79,14 @@ async function enregistrer(p, nom, langue) {
 }
 
 /** L'écran courant, rechargé et photographié dans chaque langue, puis remis en français. */
-async function prendre(p, nom) {
+async function prendre(p, nom, preparer) {
   for (const l of LANGUES) {
     await p.evaluate((x) => {
       localStorage.setItem('salondz:locale', x);
       localStorage.setItem('salondz:locale:choisie', '1');
     }, l);
     await p.reload({ waitUntil: 'networkidle' });
+    if (preparer) await preparer(p);
     await enregistrer(p, nom, l);
   }
   await p.evaluate(() => localStorage.setItem('salondz:locale', 'fr'));
@@ -122,6 +123,34 @@ await prendre(p, 'client-quand');
 await p.goto(B + '/rendez-vous', { waitUntil: 'networkidle' });
 await prendre(p, 'client-rdv');
 
+/** Agenda : un jour fermé (le vendredi) ne montre rien ; on passe au prochain jour qui a des rendez-vous. */
+async function jourOuvert(p) {
+  await p.waitForSelector('.pla-date', { timeout: 30000 }).catch(() => undefined);
+  await p.waitForTimeout(1500);
+  // Les jours voisins sont rendus hors écran (carrousel) : seuls comptent les blocs VISIBLES.
+  const visibles = () =>
+    p.evaluate(() => [...document.querySelectorAll('.agb')].filter((x) => { const r = x.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth + 1; }).length);
+  for (let i = 0; i < 6; i++) {
+    if (await visibles()) return;
+    await p.locator('.pla-date').click();
+    await p.waitForTimeout(500);
+    // Le jour affiché est dans la frise (visible à l'écran) : on touche le bouton qui le suit.
+    const ok = await p.evaluate(() => {
+      const n = String(Number((document.querySelector('.pla-date b span[dir=ltr]')?.textContent ?? '').slice(0, 2)));
+      const vu = (x) => { const r = x.getBoundingClientRect(); return r.top < 220 && r.left >= -5 && r.right <= innerWidth + 5; };
+      const cur = [...document.querySelectorAll('button')].find((x) => vu(x) && /\n/.test(x.innerText) && x.innerText.trim().split(/\s+/).pop() === n);
+      const next = cur?.nextElementSibling;
+      if (!(next instanceof HTMLElement)) return false;
+      next.click();
+      return true;
+    });
+    if (!ok) return;
+    await p.waitForTimeout(300);
+    await p.locator('.pla-date').click();
+    await p.waitForTimeout(1500);
+  }
+}
+
 // ---- pro
 p = await mk();
 await login(p, '/pro/acces', 'pro-femme@salondz.com');
@@ -134,6 +163,6 @@ for (const [nom, url] of [
   ['pro-clients', '/pro/clients'],
 ]) {
   await p.goto(B + url, { waitUntil: 'networkidle' });
-  await prendre(p, nom);
+  await prendre(p, nom, nom === 'pro-agenda' ? jourOuvert : undefined);
 }
 await b.close();
