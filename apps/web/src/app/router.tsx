@@ -85,6 +85,8 @@ const Step8Works = lazyNamed(() => import('@/pages/pro/onboarding/Step8Works'), 
 const Step9Hours = lazyNamed(() => import('@/pages/pro/onboarding/Step9Hours'), 'Step9Hours');
 const ProDeposit = lazyNamed(() => import('@/pages/pro/ProDeposit'), 'ProDeposit');
 const ProLoyalty = lazyNamed(() => import('@/pages/pro/ProLoyalty'), 'ProLoyalty');
+const ProPlan = lazyNamed(() => import('@/pages/pro/ProPlan'), 'ProPlan');
+const AdminPlans = lazyNamed(() => import('@/pages/admin/AdminPlans'), 'AdminPlans');
 const ProPromos = lazyNamed(() => import('@/pages/pro/ProPromos'), 'ProPromos');
 const ProCredits = lazyNamed(() => import('@/pages/pro/ProCredits'), 'ProCredits');
 const StepServices = lazyNamed(() => import('@/pages/pro/onboarding/StepServices'), 'StepServices');
@@ -316,6 +318,7 @@ export const router = createBrowserRouter([
               { path: 'profil/regles', element: <Step10Availability /> },
               { path: 'profil/versement', element: <ProDeposit /> },
               { path: 'profil/fidelite', element: <ProLoyalty /> },
+              { path: 'abonnement', element: <ProPlan /> },
               { path: 'promotions', element: <ProPromos /> },
               { path: 'credits', element: <ProCredits /> },
               { path: 'rendez-vous/nouveau', element: <ProBookingNew /> },
@@ -370,6 +373,7 @@ export const router = createBrowserRouter([
           { path: 'signalements', element: <AdminReports /> },
           { path: 'etiquettes', element: <AdminLabels /> },
           { path: 'conseils', element: <AdminNews /> },
+          { path: 'abonnements', element: <AdminPlans /> },
           { path: 'sante', element: <AdminHealth /> },
           { path: 'equipe', element: <AdminTeam /> },
           { path: 'journal', element: <AdminAudit /> },

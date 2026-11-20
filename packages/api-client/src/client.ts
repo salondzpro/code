@@ -573,6 +573,8 @@ export function createApiClient(opts: ApiClientOptions) {
     pro: {
       /** Conseils & nouveautés publiés par l'administration (en tête du rond « Conseil »). */
       news: () => get<{ items: ProNewsItem[] }>('/pro/news'),
+      /** Abonnement du salon (Découverte par défaut, posé par le super admin). */
+      plan: () => get<SalonPlanInfo>('/pro/plan'),
       /** Versement à la réservation : montant (fixe ou %), portée, compte où verser. */
       depositSettings: () => get<DepositSettings>('/pro/deposit-settings'),
       /** Programme fidélité du salon. */
@@ -731,6 +733,10 @@ export function createApiClient(opts: ApiClientOptions) {
       labelSettings: () => get<LabelSettings>('/admin/label-settings'),
       /** Conseils & nouveautés pour les professionnels (20 nov. 2026). */
       news: () => get<{ items: ProNewsItem[] }>('/admin/news'),
+      /** Abonnements de tous les salons (20 nov. 2026). */
+      plans: () => get<{ items: AdminPlanRow[] }>('/admin/plans'),
+      setPlan: (salonId: string, body: { plan: 'free' | 'pro' | 'salon'; until?: string | null; reason: string }) =>
+        put<SalonPlanInfo>(`/admin/salons/${salonId}/plan`, body),
       publishNews: (body: { title: string; body: string; url?: string; action?: string; notify: boolean }) =>
         post<{ item: ProNewsItem; notified: number }>('/admin/news', body),
       deleteNews: (id: string) => del<void>(`/admin/news/${id}`),
@@ -804,5 +810,23 @@ export interface ProNewsItem {
   body: string;
   url: string | null;
   action: string | null;
+  createdAt: string;
+}
+
+/** Abonnement d'un salon. */
+export interface SalonPlanInfo {
+  plan: 'free' | 'pro' | 'salon';
+  until: string | null;
+  note: string | null;
+  updatedAt: string | null;
+}
+
+/** Une ligne de la gestion des abonnements (administration). */
+export interface AdminPlanRow extends SalonPlanInfo {
+  salonId: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  isPublished: boolean;
   createdAt: string;
 }

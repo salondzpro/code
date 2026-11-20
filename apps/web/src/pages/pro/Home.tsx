@@ -8,6 +8,7 @@
  *   3. MA PAGE : visites, réservations et visites par jour ;
  *   4. MA STORY : préparée sur place.
  */
+import { PlanTag, usePlan } from '@/components/Plans';
 import { Link } from 'react-router';
 import { WhatsAppGlyph } from '@/components/BrandIcons';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
@@ -58,6 +59,7 @@ export function ProHome() {
   const me = useMe();
   const proSalon = useProSalon().data;
   const salon = proSalon?.salon ?? null;
+  const plan = usePlan(!!salon).data?.plan;
   const today = toLocalDateKey();
   const tomorrow = addDaysToKey(today, 1);
   const week = weekKeys(today);
@@ -139,8 +141,13 @@ export function ProHome() {
         <div className="h12-hd">
           <div className="min-w-0 flex-1">
             <span className="h12-date">{dateLine}</span>
-            <span className="h12-hi">
-              {t('Bonjour')} {firstName}
+            <span className="h12-hi flex items-center gap-2">
+              <span className="truncate">
+                {t('Bonjour')} {firstName}
+              </span>
+              <Link to="/pro/abonnement" className="flex-none" aria-label={t('Mon abonnement')}>
+                <PlanTag plan={plan} />
+              </Link>
             </span>
           </div>
           <button type="button" className="h12-bell" aria-label={nonLues ? `${t('Notifications')} · ${nonLues}` : t('Notifications')} onClick={() => setBell(true)}>

@@ -23,6 +23,7 @@ import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
 import { readLabelSettings, readLabelSocials, readLabelStyle, writeLabelSettings } from '../lib/labelSettings';
 import { addProNews, notifyProsOfNews, readProNews, removeProNews } from '../lib/proNews';
+import { readAllPlans, writePlan } from '../lib/plans';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
 import { config } from '../config';
@@ -536,6 +537,55 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.status(204);
     return null;
   });
+
+  // ------------------------------------------------------------------ abonnements des salons (20 nov. 2026)
+  // Tous les salons avec leur offre (Découverte par défaut). Le super admin (owner) pose l'offre après
+  // paiement, avec une échéance et un motif ; chaque changement est au journal.
+  app.get('/plans', async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    const r = await db.from('salons').select('id, name, slug, city, is_published, created_at').order('created_at', { ascending: false }).limit(2000);
+    if (r.error) throw r.error;
+    const plans = await readAllPlans();
+    return {
+      items: (r.data ?? []).map((x) => {
+        const p = plans.get(x.id as string);
+        return {
+          salonId: x.id as string,
+          name: x.name as string,
+          slug: x.slug as string,
+          city: (x.city as string | null) ?? null,
+          isPublished: !!x.is_published,
+          createdAt: x.created_at as string,
+          plan: p?.plan ?? 'free',
+          until: p?.until ?? null,
+          note: p?.note ?? null,
+          updatedAt: p?.updatedAt ?? null,
+        };
+      }),
+    };
+  });
+  app.put(
+    '/salons/:id/plan',
+    {
+      preHandler: app.requireOwner,
+      schema: {
+        params: z.object({ id: uuid }),
+        body: z.object({
+          plan: z.enum(['free', 'pro', 'salon']),
+          until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+          reason: z.string().trim().min(3).max(300),
+        }),
+      },
+    },
+    async (req) => {
+      const s0 = await db.from('salons').select('id').eq('id', req.params.id).maybeSingle();
+      if (s0.error) throw s0.error;
+      if (!s0.data) throw notFound('Salon');
+      const v = await writePlan(req.params.id, { plan: req.body.plan, until: req.body.until ?? null, note: req.body.reason });
+      await trace(req, 'salon_plan_set', 'salon', req.params.id, `${v.plan}${v.until ? ` jusqu'au ${v.until}` : ''} · ${req.body.reason}`);
+      return v;
+    },
+  );
 
   // ------------------------------------------------------------------ signalements d'avis (migration 0047)
   /**

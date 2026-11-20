@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink, Outlet, Navigate, useLocation } from 'react-router';
-import { Activity, CalendarSearch, ChevronRight, ContactRound, Flag, LayoutGrid, LockKeyhole, LogOut, Menu, Megaphone, QrCode, ScrollText, ShieldCheck, Store } from 'lucide-react';
+import { Activity, CalendarSearch, Crown, ChevronRight, ContactRound, Flag, LayoutGrid, LockKeyhole, LogOut, Menu, Megaphone, QrCode, ScrollText, ShieldCheck, Store } from 'lucide-react';
 import { ApiError, useAdminMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { Button, I } from '@/components/ui';
@@ -28,6 +28,7 @@ const NAV: { to: string; label: string; icon: typeof Store; end?: boolean; owner
   { to: '/admin/comptes', label: 'Comptes', icon: ContactRound, section: 'Place de marché' },
   { to: '/admin/rendez-vous', label: 'Rendez-vous', icon: CalendarSearch, section: 'Place de marché' },
   { to: '/admin/signalements', label: 'Signalements', icon: Flag, section: 'Modérer' },
+  { to: '/admin/abonnements', label: 'Abonnements', icon: Crown, section: 'Place de marché' },
   { to: '/admin/conseils', label: 'Conseils', icon: Megaphone, section: 'Outils' },
   { to: '/admin/etiquettes', label: 'Étiquettes', icon: QrCode, section: 'Outils' },
   { to: '/admin/equipe', label: 'Équipe', icon: ShieldCheck, owner: true, section: 'Sécurité' },

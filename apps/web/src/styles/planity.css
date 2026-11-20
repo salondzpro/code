@@ -1839,3 +1839,210 @@ html.pro-theme .nvc {
   background: #202020;
   box-shadow: 0 10px 22px -8px rgb(0 0 0 / 0.45);
 }
+
+/* ============================================================================================
+   OFFRES DES PROFESSIONNELS (20 nov. 2026) — site pro (`/professionnels#offres`) et espace pro
+   (`/pro/abonnement`) : trois cartes blanches de la charte, prix de lancement en grand, prix normal
+   barré, tag d'offre (« Free »), bouton WhatsApp du support.
+   ============================================================================================ */
+.plan-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.plan-bf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #202020;
+  color: #ffffff;
+  font-size: calc(14px * var(--fz, 1));
+}
+.plan-bf b {
+  font-weight: 600;
+}
+.plan-bf span {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #202020;
+  font-weight: 600;
+  font-size: calc(13px * var(--fz, 1));
+}
+.plan-grid {
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .plan-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+  text-align: start;
+  color: #202020;
+}
+.plan-card.top {
+  border: 2px solid #202020;
+}
+.plan-card.on {
+  border-color: #625df5;
+}
+.plan-hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.plan-hd h3 {
+  margin: 0;
+  font-size: calc(20px * var(--fz, 1));
+  font-weight: 600;
+}
+.plan-pop,
+.plan-cur {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: calc(12px * var(--fz, 1));
+  font-weight: 600;
+  background: #202020;
+  color: #ffffff;
+}
+.plan-cur {
+  background: #625df5;
+}
+.plan-for {
+  margin: 0;
+  color: #4e5860;
+  font-size: calc(14px * var(--fz, 1));
+}
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+.plan-price b {
+  font-size: calc(30px * var(--fz, 1));
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.plan-price span {
+  color: #4e5860;
+  font-size: calc(14px * var(--fz, 1));
+}
+.plan-price s {
+  color: #8a949c;
+  font-size: calc(15px * var(--fz, 1));
+}
+.plan-price em {
+  font-style: normal;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e5f4e4;
+  color: #1f7a35;
+  font-size: calc(13px * var(--fz, 1));
+  font-weight: 600;
+}
+.plan-year {
+  margin: 0;
+  color: #4e5860;
+  font-size: calc(13px * var(--fz, 1));
+}
+.plan-card ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 4px;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+}
+.plan-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: calc(14px * var(--fz, 1));
+  line-height: 1.4;
+}
+.plan-card li svg {
+  flex: none;
+  margin-top: 2px;
+  color: #1f7a35;
+}
+.plan-btn {
+  width: 100%;
+  justify-content: center;
+}
+.plan-note {
+  margin: 0;
+  text-align: center;
+  color: #4e5860;
+  font-size: calc(13px * var(--fz, 1));
+}
+.plan-wa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid #c7cfd7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #202020;
+  font-weight: 500;
+  font-size: calc(15px * var(--fz, 1));
+  text-decoration: none;
+}
+.plan-now {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 12px;
+}
+/* Tag d'offre du compte : « Free » cerclé, Pro et Salon en encre. */
+.plan-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: calc(12px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  background: #202020;
+  color: #ffffff;
+}
+.plan-tag.free {
+  background: #ffffff;
+  color: #202020;
+  box-shadow: inset 0 0 0 1px #202020;
+}
+.plan-tag.salon {
+  background: #625df5;
+}
+/* Sur le haut noir de l'accueil pro : Free reste blanc cerclé ; Pro et Salon en verre clair. */
+.h12-hd .plan-tag:not(.free) {
+  background: rgb(255 255 255 / 0.16);
+  color: #ffffff;
+}
+.h12-hd .plan-tag.free {
+  box-shadow: none;
+}

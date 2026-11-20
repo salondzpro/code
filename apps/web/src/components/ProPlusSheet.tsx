@@ -6,11 +6,12 @@
  */
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { ChartColumn, CircleHelp, ContactRound, Link2, LogOut, Scissors, Settings, Star, Users, X, type LucideIcon } from 'lucide-react';
+import { ChartColumn, CircleHelp, Crown, ContactRound, Link2, LogOut, Scissors, Settings, Star, Users, X, type LucideIcon } from 'lucide-react';
 import { useProReviewsUnanswered, useProSalon } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
 import { usePublicUrl } from '@/pages/pro/Link';
 import { Avatar, BottomSheet, Dim, I } from './ui';
+import { PlanTag, usePlan } from './Plans';
 import { t } from '@/i18n';
 
 interface Tile {
@@ -33,6 +34,7 @@ export function usePlusTiles(): Tile[] {
     { to: '/pro/avis', label: t('Avis'), icon: Star, count: unanswered },
     { to: '/pro/chiffre-affaires', label: t("Chiffre d'affaires"), icon: ChartColumn },
     ...(team ? [{ to: '/pro/equipe', label: t('Équipe'), icon: Users }] : []),
+    { to: '/pro/abonnement', label: t('Abonnement'), icon: Crown },
     { to: '/pro/parametres', label: t('Paramètres'), icon: Settings },
     { to: '/aide', label: t('Aide'), icon: CircleHelp },
   ];
@@ -42,6 +44,7 @@ export function ProPlusSheet({ onClose }: { onClose: () => void }) {
   const salon = useProSalon().data?.salon ?? null;
   const { short } = usePublicUrl(salon?.slug ?? '');
   const tiles = usePlusTiles();
+  const plan = usePlan(!!salon).data?.plan;
   const { seDeconnecter, enCours } = useSignOut();
   // Portail sur le corps : la barre du bas est TRANSFORMÉE (centrage), elle deviendrait le repère
   // de la feuille fixe, qui s'afficherait dans la barre au lieu de l'écran.
@@ -52,7 +55,12 @@ export function ProPlusSheet({ onClose }: { onClose: () => void }) {
         <div className="flex items-center gap-3">
           {salon && <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={44} />}
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-display text-[1.214rem] font-semibold">{salon?.name ?? 'Salon DZ'}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-display text-[1.214rem] font-semibold">{salon?.name ?? 'Salon DZ'}</span>
+              <Link to="/pro/abonnement" onClick={onClose} className="flex-none">
+                <PlanTag plan={plan} />
+              </Link>
+            </span>
             <span className="block truncate text-[0.929rem] text-muted" dir="ltr">
               {short}
             </span>

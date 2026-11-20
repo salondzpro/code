@@ -22,6 +22,7 @@ import { Wordmark } from '@/components/Wordmark';
 import { LangSwitch } from '@/components/LangSwitch';
 import { I } from '@/components/ui';
 import { Phone, useScene } from '@/pages/Home';
+import { PlanCards, SupportWhatsApp } from '@/components/Plans';
 import { t } from '@/i18n';
 
 /** Quatre écrans de l'espace pro, quatre gestes du quotidien. */
@@ -72,6 +73,7 @@ export function ProSite() {
           </Link>
           <div className="hx-nav-l">
             <a href="#outil">{t('L’outil')}</a>
+            <a href="#offres">{t('Offres')}</a>
             <Link to="/">{t('Pour les clients')}</Link>
           </div>
           <div className="hx-nav-r">
@@ -191,6 +193,26 @@ export function ProSite() {
                 <span className="hx-tuile-t">{t(c.titre)}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ Offres (20 nov. 2026) */}
+      <section id="offres" className="hx-sec">
+        <div className="hx-col">
+          <div className="hx-hd">
+            <p data-reveal className="hx-k">
+              {t('Offres')}
+            </p>
+            <h2 data-reveal style={{ ['--d' as string]: '80ms' }} className="hx-h2">
+              {t('Gratuit pour démarrer. Moins de 1 000 DA par mois pour tout avoir.')}
+            </h2>
+          </div>
+          <div data-reveal style={{ ['--d' as string]: '140ms' }}>
+            <PlanCards signupTo={entrer} />
+          </div>
+          <div data-reveal className="mt-6 flex justify-center">
+            <SupportWhatsApp />
           </div>
         </div>
       </section>

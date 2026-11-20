@@ -38,3 +38,4 @@ export * from './serviceTemplates';
 export * from './publicLinks';
 export * from './loyalty';
 export * from './promos';
+export * from './plans';

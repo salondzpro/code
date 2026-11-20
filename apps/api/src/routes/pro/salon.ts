@@ -1,3 +1,4 @@
+import { readPlan } from '../../lib/plans';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import {
   DEFAULT_OPENING_HOURS,
@@ -112,6 +113,11 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
 
   // Réseaux sociaux de l'étiquette « Vitrine noire » (atelier d'étiquettes, `/pro/qr`).
   // Conseils & nouveautés publiés par l'administration (20 nov. 2026) : en tête du rond « Conseil ».
+  // Abonnement du salon (20 nov. 2026) : posé par le super admin, Découverte par défaut.
+  app.get('/plan', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return readPlan(req.salon!.id);
+  });
   app.get('/news', { preHandler: app.requireSalon }, async (_req, reply) => {
     reply.header('Cache-Control', 'private, no-store');
     return { items: await readProNews() };
