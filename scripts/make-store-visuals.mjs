@@ -84,6 +84,9 @@ async function capturer() {
     // Piège connu (scripts/check-safe-areas.mjs) : une variable posée avant l'analyse du HTML est
     // remplacée par le parseur. Les marges de l'iPhone sont donc réinjectées APRÈS chargement.
     await p.addStyleTag({ content: `:root{--sat:${PT.haut}px !important;--sab:${PT.bas}px !important}` });
+    // L'invite « Activez les notifications » (NotificationsGate) et la barre « Ouvrir l'application »
+    // du SITE (`AppBanner`, absente de l'application) ne sont pas le produit.
+    await p.addStyleTag({ content: 'body:has(.sheet.modal .lucide-bell-ring) .dim, .sheet.modal:has(.lucide-bell-ring), .app-bn { display: none !important; }' });
     await p.waitForTimeout(500);
     // GARDE-FOU (14 nov. 2026) : aucun texte de l'application dans la zone de la barre d'état. La
     // première génération montrait « 9:41 » par-dessus « Samedi 14 novembre » : les marges n'avaient
@@ -118,20 +121,22 @@ async function capturer() {
   try {
     // ---- Salon DZ (client)
     let p = await contexte();
-    await connexion(p, '/acces?next=%2F', 'client@salondz.com');
-    await p.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+    await connexion(p, '/acces?next=%2Fsalons', 'client@salondz.com');
+    await p.goto(`${BASE}/salons`, { waitUntil: 'domcontentloaded' });
     await calme(p, 3000);
     await prendre(p, 'client', 'accueil');
     const salon = await p.evaluate(() => document.querySelector('a[href^="/s/"]')?.getAttribute('href'));
     await p.goto(`${BASE}${salon}`, { waitUntil: 'domcontentloaded' });
     await calme(p, 2500);
     await prendre(p, 'client', 'salon');
-    await p.goto(`${BASE}${salon}/prestations`, { waitUntil: 'domcontentloaded' });
-    await calme(p);
-    await p.getByRole('button', { name: /Choisir/ }).first().click();
-    await calme(p, 2500);
-    await p.locator('button.slot, button[class*=slot]').first().click().catch(() => {});
-    await calme(p, 1200);
+    // Façon Planity (20 nov. 2026) : catégorie repliée → « Choisir » → jours dépliables.
+    await p.locator('.pl-cat-h').first().click();
+    await p.waitForTimeout(500);
+    await p.locator('.pl-choisir').first().click();
+    await p.waitForSelector('.pl-day-h', { timeout: 60_000 });
+    await calme(p, 2000);
+    await p.evaluate(() => window.scrollTo(0, 0));
+    await calme(p, 800);
     await prendre(p, 'client', 'quand');
     await p.goto(`${BASE}/rendez-vous`, { waitUntil: 'domcontentloaded' });
     await calme(p, 2500);
@@ -167,6 +172,26 @@ async function capturer() {
     }
     await p.goto(`${BASE}/pro/agenda`, { waitUntil: 'domcontentloaded' });
     await calme(p, 3000);
+    // Jour fermé (le vendredi) : on avance jusqu'au prochain jour qui a des rendez-vous visibles.
+    for (let i = 0; i < 6; i++) {
+      const vus = await p.evaluate(() => [...document.querySelectorAll('.agb')].filter((x) => { const r = x.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth + 1; }).length);
+      if (vus) break;
+      await p.locator('.pla-date').click();
+      await p.waitForTimeout(500);
+      const ok = await p.evaluate(() => {
+        const n = String(Number((document.querySelector('.pla-date b span[dir=ltr]')?.textContent ?? '').slice(0, 2)));
+        const vu = (x) => { const r = x.getBoundingClientRect(); return r.top < 260 && r.left >= -5 && r.right <= innerWidth + 5; };
+        const cur = [...document.querySelectorAll('button')].find((x) => vu(x) && /\n/.test(x.innerText) && x.innerText.trim().split(/\s+/).pop() === n);
+        const next = cur?.nextElementSibling;
+        if (!(next instanceof HTMLElement)) return false;
+        next.click();
+        return true;
+      });
+      if (!ok) break;
+      await p.waitForTimeout(300);
+      await p.locator('.pla-date').click();
+      await calme(p, 1500);
+    }
     // Un agenda doit montrer des rendez-vous, pas des heures creuses : on descend vers la fin de matinée.
     await p.evaluate(() => {
       const d = [...document.querySelectorAll('*')].find((e) => e.scrollHeight > e.clientHeight + 300 && getComputedStyle(e).overflowY !== 'visible');
