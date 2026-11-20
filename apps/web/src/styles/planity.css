@@ -2115,3 +2115,201 @@ a.btn.plan-btn:not(.g),
   border-radius: 50%;
   color: #4e5860;
 }
+
+/* ============================================================================================
+   AGENDA « COMME COLAVO » (20 nov. 2026, demande du propriétaire : « plus compréhensible ») :
+   frise des jours toujours visible avec le nombre de rendez-vous, rangée des membres (rond pastel,
+   prénom, nombre), un PASTEL PAR MEMBRE pour les blocs (provenance + cliente, prestation, horaire),
+   demande à valider = bloc blanc cerclé, passé estompé, fermetures hachurées.
+   ============================================================================================ */
+.pla-wk {
+  grid-column: 1 / -1;
+  margin: 4px -8px 0;
+}
+.pla-wk .ag9-w {
+  padding-inline: 8px;
+}
+.agenda.pla .ag9-d {
+  gap: 2px;
+}
+.ag9-dk {
+  display: none;
+}
+.agenda.pla .ag9-dk {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #eef0f2;
+  color: #4e5860;
+  font-size: calc(11px * var(--fz, 1));
+  font-weight: 600;
+  line-height: 1;
+}
+.agenda.pla .ag9-dk:empty {
+  visibility: hidden;
+}
+.agenda.pla .ag9-d.on .ag9-dk {
+  background: #fde2ea;
+  color: #c2416a;
+}
+.agenda.pla .ag9-dd {
+  display: none;
+}
+/* Rangée des membres, collée sous la barre du haut. */
+.pla-staff {
+  position: sticky;
+  top: var(--pla-h, 120px);
+  z-index: 20;
+  display: grid;
+  gap: 0;
+  margin: -12px calc(-1 * var(--gutter, 16px)) 0;
+  padding: 6px var(--gutter, 16px) 6px;
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f2;
+}
+.pla-staff-c {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 6px;
+  border-inline-start: 1px solid #eef0f2;
+}
+.pla-staff-a {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 50%;
+  font-size: calc(12px * var(--fz, 1));
+  font-weight: 700;
+}
+.pla-staff-a img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pla-staff-n {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(13px * var(--fz, 1));
+  font-weight: 500;
+  color: #202020;
+}
+.pla-staff-k {
+  flex: none;
+  color: #8a949c;
+  font-size: calc(12px * var(--fz, 1));
+}
+/* Blocs pastel par membre (toutes tailles d'écran). */
+html.pro-theme .agenda .agb.pz {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--pz-bg);
+  color: #202020;
+  text-align: start;
+  overflow: hidden;
+}
+html.pro-theme .agenda .agb.pz .agb-n {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-weight: 600;
+  font-size: calc(13px * var(--fz, 1));
+  color: #202020;
+}
+html.pro-theme .agenda .agb.pz .agb-c {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html.pro-theme .agenda .agb.pz .agb-t {
+  flex: none;
+  color: var(--pz-fg);
+  font-weight: 600;
+}
+html.pro-theme .agenda .agb.pz .agb-s {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  color: #3a4148;
+  opacity: 1;
+  font-size: calc(12px * var(--fz, 1));
+  line-height: 1.3;
+}
+html.pro-theme .agenda .agb.pz .agb-f {
+  margin-top: auto;
+  color: var(--pz-fg);
+  font-size: calc(12px * var(--fz, 1));
+  font-weight: 500;
+}
+.agb-o {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #4e5860;
+}
+.agb-o svg {
+  width: 13px;
+  height: 13px;
+}
+.agb-o.sdz {
+  background: #202020;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+}
+.agb-e {
+  flex: none;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--pz-fg);
+}
+.agb-e.ns {
+  color: #d9445c;
+}
+/* À valider : bloc blanc, cerclé à la couleur du membre. */
+html.pro-theme .agenda .agb.pz.s-pd {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1.5px var(--pz-fg);
+}
+/* En cours : un trait à la couleur du membre sur le côté. */
+html.pro-theme .agenda .agb.pz.s-cur {
+  box-shadow: inset 3px 0 0 var(--pz-fg);
+}
+/* Passé ou terminé : estompé. Absent : estompé, mention rouge. */
+html.pro-theme .agenda .agb.pz.s-done,
+html.pro-theme .agenda .agb.pz.s-ns {
+  background: var(--pz-bg);
+  opacity: 0.55;
+}
+/* Fermetures, pauses : hachurées. */
+html.pro-theme .agenda .agoff {
+  background: repeating-linear-gradient(135deg, #f3f4f6 0 6px, #e8eaee 6px 12px);
+  color: #6b7480;
+  border-radius: 6px;
+}
+/* La légende des statuts n'a plus lieu d'être (la couleur est celle du membre) ; on garde « annulés ». */
+.agenda .ag9-lg > span {
+  display: none;
+}

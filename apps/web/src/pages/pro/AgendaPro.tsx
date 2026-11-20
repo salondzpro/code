@@ -7,9 +7,10 @@
  * Un rendez-vous s'ouvre en FENÊTRE (`BookingPeekSheet`) : l'agenda reste derrière, à sa
  * date et sa position.
  */
+import { InstagramLogo, SnapchatLogo } from '@/components/BrandIcons';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Bell, CalendarCheck, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Bell, CalendarCheck, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Link2, Plus, QrCode } from 'lucide-react';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import {
   useProBlocks,
@@ -115,6 +116,32 @@ const hm = (m: number) =>
   `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
 /** Une colonne du planning : un membre, ou toute l'équipe (`id` nul). */
+/**
+ * COULEUR PAR MEMBRE (20 nov. 2026, demande du propriétaire, d'après l'agenda de Colavo) : chaque
+ * membre a SON pastel — le bloc d'un rendez-vous dit d'abord QUI s'en occupe. L'état se lit au bloc
+ * lui-même : à valider = cerclé blanc « (À valider) », passé = estompé, absent = « (Absent) ».
+ */
+const PASTELS: { bg: string; fg: string }[] = [
+  { bg: '#fde2ea', fg: '#c2416a' },
+  { bg: '#fdf1bf', fg: '#946f00' },
+  { bg: '#e6e0fd', fg: '#5b4bc4' },
+  { bg: '#d9f3e0', fg: '#23804a' },
+  { bg: '#dcebfd', fg: '#2f6db5' },
+  { bg: '#fde5d3', fg: '#b2581a' },
+  { bg: '#d8f1f1', fg: '#1f7f84' },
+  { bg: '#efe4d8', fg: '#7d5a3a' },
+];
+
+/** Petit logo de la provenance d'une réservation en ligne (comme sur l'agenda de référence). */
+function OriginMark({ origin }: { origin: string | null | undefined }) {
+  if (origin === 'instagram') return <span className="agb-o"><InstagramLogo size={13} /></span>;
+  if (origin === 'snapchat') return <span className="agb-o"><SnapchatLogo size={13} /></span>;
+  if (origin === 'marketplace') return <span className="agb-o sdz" aria-hidden>S</span>;
+  if (origin === 'qr') return <span className="agb-o"><I icon={QrCode} size={12} /></span>;
+  if (origin === 'link') return <span className="agb-o"><I icon={Link2} size={12} /></span>;
+  return null;
+}
+
 interface Column {
   id: string | null;
   name: string;
@@ -127,6 +154,16 @@ export function AgendaPro() {
   const navigate = useNavigate();
   const salon = useProSalon().data?.salon ?? null;
   const today = toLocalDateKey();
+  // Hauteur de la barre du haut (date + frise des jours) : la rangée des membres colle juste dessous.
+  useLayoutEffect(() => {
+    const el = document.querySelector('.pla-top');
+    if (!el) return;
+    const poser = () => document.documentElement.style.setProperty('--pla-h', `${Math.round(el.getBoundingClientRect().height)}px`);
+    poser();
+    const ro = new ResizeObserver(poser);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
   // Retour depuis un formulaire : le jour, la vue et le défilement où l'on en était.
   const [memo] = useState(readAgendaMemory);
   const [added] = useState(takeAgendaFlash);
@@ -279,6 +316,12 @@ export function AgendaPro() {
           avatarUrl: m.avatarUrl,
           // Façon Planity (19 nov. 2026) : colonnes blanches, plus de teinte par membre.
         }));
+  // Pastel de chaque membre, dans l'ordre de l'équipe (stable d'un jour à l'autre).
+  const colorOf = (staffId: string | null) => PASTELS[Math.max(0, team.findIndex((m) => m.id === staffId)) % PASTELS.length]!;
+  const staffNameOf = (staffId: string | null) => {
+    const m = team.find((x) => x.id === staffId);
+    return m ? nameOf(m) : '';
+  };
 
   // Rendez-vous du jour par membre, pour la liste déroulante du filtre (annulés exclus).
   const dayLive = (bookings.data?.items ?? []).filter((b) => b.status !== 'cancelled' && localKey(b.startsAt) === date);
@@ -366,21 +409,47 @@ export function AgendaPro() {
       </div>
   );
   // Frise des jours et filtre par membre (vue jour).
+  const jours = (
+    <WeekStrip
+      selected={date}
+      today={today}
+      byDay={stripByDay}
+      closedDays={closedDays}
+      marks={unseenByDate}
+      onSelect={setDate}
+      onView={setStripDay}
+    />
+  );
+  // Filtre par membre (16 nov. 2026) : ronds d'initiales colorés, « Tous » par défaut.
+  const filtre = <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} counts={staffCounts} nameOf={nameOf} />;
   const frise = (
     <>
-          <WeekStrip
-            selected={date}
-            today={today}
-            byDay={stripByDay}
-            closedDays={closedDays}
-            marks={unseenByDate}
-            onSelect={setDate}
-            onView={setStripDay}
-          />
-          {/* Filtre par membre (16 nov. 2026) : ronds d'initiales colorés, « Tous » par défaut. */}
-          <StaffFilter staff={salon.staff} value={staffId} onChange={setStaffId} counts={staffCounts} nameOf={nameOf} />
+      {jours}
+      {filtre}
     </>
   );
+  /**
+   * RANGÉE DES MEMBRES (20 nov. 2026, d'après l'agenda de référence) : rond à la couleur du membre,
+   * prénom et nombre de rendez-vous du jour, au-dessus de SA colonne — collée sous la barre du haut.
+   * Hors du carrousel des jours (un élément collant ne colle pas dans un conteneur qui défile).
+   */
+  const rangeeMembres =
+    columns.length > 1 ? (
+      <div className="pla-staff" style={{ paddingInlineStart: GUTTER, gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
+        {columns.map((c) => {
+          const col = colorOf(c.id);
+          return (
+            <span key={c.id ?? 'all'} className="pla-staff-c">
+              <span className="pla-staff-a" style={{ background: col.bg, color: col.fg }}>
+                {c.avatarUrl ? <img src={c.avatarUrl} alt="" /> : c.name.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="pla-staff-n">{c.name}</span>
+              <span className="pla-staff-k">{c.id ? staffCounts[c.id] ?? 0 : staffCounts.all ?? 0}</span>
+            </span>
+          );
+        })}
+      </div>
+    ) : null;
 
   return (
     <Screen
@@ -418,10 +487,12 @@ export function AgendaPro() {
           </button>
           {/* Le panneau vit DANS la barre collée : il s'ouvre sous la date même en bas de la journée
               (20 nov. 2026, capture du propriétaire). */}
+          {/* Frise des jours TOUJOURS visible, avec le nombre de rendez-vous de chaque jour (20 nov. 2026). */}
+          {view === 'day' && <div className="pla-wk">{jours}</div>}
           {panneau && (
             <div className="pla-pnl">
               {entete}
-              {frise}
+              {filtre}
             </div>
           )}
         </div>
@@ -432,6 +503,7 @@ export function AgendaPro() {
       {view === 'day' && (
         <>
           {!planity && frise}
+          {planity && rangeeMembres}
           <DayCarousel
             date={date}
             onChange={setDate}
@@ -447,6 +519,8 @@ export function AgendaPro() {
               return (
                 <div className="flex flex-col gap-2.5">
                   <DayColumns
+                    colorOf={colorOf}
+                    staffNameOf={staffNameOf}
                     cancelledCount={nCancelled}
                     showCancelled={showCancelled}
                     onToggleCancelled={() => setShowCancelled(!showCancelled)}
@@ -644,6 +718,7 @@ function WeekStrip({
             aria-label={`${t(DAY_LABELS_FR[dayOfWeekFromKey(d)])} ${Number(d.slice(8, 10))} ${t(MONTHS[Number(d.slice(5, 7)) - 1]!)}${list.length ? ` · ${t('{n} rendez-vous', { n: list.length })}` : ''}`}
             onClick={() => onSelect(d)}
           >
+            <span className="ag9-dk">{list.length || ''}</span>
             <span className="ag9-dw">{t(DAY_LABELS_FR[dayOfWeekFromKey(d)]).slice(0, 3)}</span>
             <span className="ag9-dn">{Number(d.slice(8, 10))}</span>
             <span className="ag9-dd">
@@ -664,6 +739,8 @@ function WeekStrip({
  * fermées (pause, blocage) sont hachurées et ne répondent pas.
  */
 function DayColumns({
+  colorOf,
+  staffNameOf,
   date,
   columns,
   items,
@@ -705,6 +782,8 @@ function DayColumns({
   onGap: (slot: FreeSlot) => void;
   onBlock: (slot: BlockedSlot) => void;
   onFree: (timeHM: string, staffId: string | null) => void;
+  colorOf: (staffId: string | null) => { bg: string; fg: string };
+  staffNameOf: (staffId: string | null) => string;
 }) {
   const isToday = date === toLocalDateKey();
   const now = nowMinutes();
@@ -952,6 +1031,10 @@ function DayColumns({
                 // assez haut. L'état se lit à la couleur ; prix, fin, membre et le reste sont dans
                 // la fenêtre du rendez-vous.
                 const showService = h >= 44;
+                const c = colorOf(b.staffId);
+                const debut = formatTimeDZ(b.startsAt);
+                const fin = formatTimeDZ(b.endsAt);
+                const qui = !narrow && columns.length === 1 ? staffNameOf(b.staffId) : '';
                 return (
                   <button
                     key={b.id}
@@ -961,18 +1044,30 @@ function DayColumns({
                       onOpen(b.id);
                     }}
                     data-bk={b.id}
-                    className={`agb ${st}${h < 60 ? ' tight' : ''}${h < 42 ? ' one' : ''}${b.id === flash ? ' flash' : ''}`}
-                    style={{ top: top(s), height: h }}
-                    aria-label={`${formatTimeDZ(b.startsAt)} ${b.clientName} · ${b.serviceName} · ${t(STATUTS[st])}`}
+                    className={`agb pz ${st}${h < 60 ? ' tight' : ''}${h < 42 ? ' one' : ''}${b.id === flash ? ' flash' : ''}`}
+                    style={{ top: top(s), height: h, ['--pz-bg' as string]: c.bg, ['--pz-fg' as string]: c.fg }}
+                    aria-label={`${debut} ${b.clientName} · ${b.serviceName} · ${t(STATUTS[st])}`}
                   >
                     <span className="agb-n">
-                      <b className="agb-t" dir="ltr">
-                        {formatTimeDZ(b.startsAt)}
-                        {h >= 42 && !narrow && ` - ${formatTimeDZ(b.endsAt)}`}
-                      </b>{' '}
-                      {b.clientName}
+                      {h < 64 && (
+                        <b className="agb-t" dir="ltr">
+                          {debut}
+                        </b>
+                      )}
+                      <OriginMark origin={b.origin} />
+                      <span className="agb-c">{b.clientName}</span>
+                      {st === 's-pd' && <em className="agb-e">({t('À valider')})</em>}
+                      {st === 's-ns' && <em className="agb-e ns">({t('Absent')})</em>}
                     </span>
                     {showService && <span className="agb-s">{b.serviceName}</span>}
+                    {h >= 64 && (
+                      <span className="agb-f">
+                        {qui && `${qui} `}
+                        <bdi dir="ltr">
+                          {debut} - {fin}
+                        </bdi>
+                      </span>
+                    )}
                   </button>
                 );
               })}
