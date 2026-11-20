@@ -61,7 +61,7 @@ let serie = series.find((s) => s.attributes.screenshotDisplayType === TYPE);
 if (LIRE) {
   console.log('séries en ligne :', series.map((s) => s.attributes.screenshotDisplayType).join(', ') || 'aucune');
   if (serie) {
-    const shots = (await lire(`/v1/appScreenshotSets/${serie.id}/appScreenshots`)) ?? [];
+    const shots = (await lire(`/v1/appScreenshotSets/${serie.id}/appScreenshots?limit=200`)) ?? [];
     for (const s of shots) console.log(' ', s.attributes.fileName, s.attributes.assetDeliveryState?.state);
   }
   process.exit(0);
@@ -81,7 +81,7 @@ if (!serie) {
 } else {
   // On repart d'une série vide : sinon les nouveaux visuels s'AJOUTENT aux anciens et la fiche
   // montre deux générations mélangées.
-  const anciennes = (await lire(`/v1/appScreenshotSets/${serie.id}/appScreenshots`)) ?? [];
+  const anciennes = (await lire(`/v1/appScreenshotSets/${serie.id}/appScreenshots?limit=200`)) ?? [];
   for (const a of anciennes) await asc('DELETE', `/v1/appScreenshots/${a.id}`);
   if (anciennes.length) console.log(`· ${anciennes.length} ancienne(s) capture(s) retirée(s)`);
 }
