@@ -1754,3 +1754,22 @@ html.espace-pro .scr {
   min-height: 32px;
   font-size: calc(13px * var(--fz, 1));
 }
+
+/* Agenda : panneau (J / S / M, frise des jours, équipe) DANS la barre collée — il s'ouvre sous la
+   date à toute hauteur de la journée (20 nov. 2026, capture du propriétaire). */
+.pla-pnl {
+  --gutter: 8px;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100dvh - 160px - var(--safe-top, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 8px 10px;
+  border-top: 1px solid #eef0f2;
+  margin-top: 6px;
+}
+.pla-pnl .ag9-h {
+  margin: 0;
+}
