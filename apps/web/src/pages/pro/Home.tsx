@@ -39,6 +39,7 @@ import { StoryCard } from '@/components/StoryCard';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { useCopy, useLabelUrl, useQr } from './Link';
 import { t } from '@/i18n';
+import { isNative } from '@/lib/native';
 
 /** Heure courante rafraîchie chaque minute (« dans 25 min », « en cours »). */
 function useNow(): number {
@@ -104,13 +105,33 @@ export function ProHome() {
 
   // Thème « minimal éditorial » (11 nov. 2026) : le haut de l'accueil porte la photo du salon,
   // très floutée (`.h12-top::before`). Sans photo, le fond uni de la page suffit.
-  const fondSalon = salon?.photos[0]?.url ?? salon?.works[0]?.url ?? null;
+  // VIOLET UNI (20 nov. 2026, choix du propriétaire) : plus de photo floutée (elle donnait du marron) ;
+  // le haut est un aplat violet qui monte sous la barre d'état, comme mew3id (`styles/planity.css`).
+  const fondSalon: string | null = null;
+  // Sur cet écran seulement, l'heure et la batterie du téléphone passent en BLANC (sur le violet) ;
+  // elles redeviennent foncées en quittant l'accueil.
+  useEffect(() => {
+    if (!isNative()) return;
+    let actif = true;
+    const poser = (blanc: boolean) =>
+      void import('@capacitor/status-bar')
+        .then(({ StatusBar, Style }) => StatusBar.setStyle({ style: blanc ? Style.Dark : Style.Light }))
+        .catch(() => undefined);
+    poser(true);
+    // L'animation d'ouverture repose des icônes foncées en se retirant : on repasse en blanc après.
+    const id = window.setTimeout(() => actif && poser(true), 2200);
+    return () => {
+      actif = false;
+      window.clearTimeout(id);
+      poser(false);
+    };
+  }, []);
 
   const ps = pageStats.data;
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
 
   return (
-    <Screen bottom={NAV_PAD} gap={16} className="h12">
+    <Screen bottom={NAV_PAD} gap={16} className="h12 h12-violet">
       <header
         className={`h12-top${fondSalon ? ' photo' : ''}`}
         style={fondSalon ? { ['--fond-salon' as string]: `url("${fondSalon}")` } : undefined}

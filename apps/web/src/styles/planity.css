@@ -1622,3 +1622,79 @@ html[data-native] body::before {
     position: relative;
   }
 }
+
+/* ============================================================================================
+   ACCUEIL PRO EN VIOLET UNI (20 nov. 2026, choix du propriétaire, référence mew3id) : aplat #625df5
+   (violet de la charte Planity, `--color-link`), sans dégradé ni photo. Il monte sous la barre d'état
+   (icônes blanches sur cet écran, `pages/pro/Home.tsx`) et s'arrête en arrondi DERRIÈRE la première
+   carte. Textes du haut en blanc ; les cartes restent blanches, au-dessus.
+   ============================================================================================ */
+html.pro-theme .h12-violet .h12-top {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  color: #ffffff;
+}
+html.pro-theme .h12-violet .h12-top::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 -16px -72px;
+  background: #625df5;
+  border-radius: 0 0 28px 28px;
+  pointer-events: none;
+}
+html.pro-theme .h12-violet .h12-top::after {
+  content: none;
+}
+html.pro-theme .h12-violet > .h12-top ~ *:not(.fab):not(.sheet):not(.dim) {
+  position: relative;
+}
+@media (max-width: 1023.98px) {
+  html.pro-theme .h12-violet .h12-top {
+    margin-top: calc(-0.75rem - var(--safe-top, 0px));
+    padding-top: calc(16px + var(--safe-top, 0px));
+  }
+}
+@media (min-width: 1024px) {
+  html.pro-theme .h12-violet .h12-top {
+    padding: 20px 22px 24px;
+  }
+  html.pro-theme .h12-violet .h12-top::before {
+    inset: 0;
+    border-radius: 28px;
+  }
+}
+html.pro-theme .h12-violet .h12-date {
+  color: rgb(255 255 255 / 0.82);
+}
+html.pro-theme .h12-violet .h12-hi,
+html.pro-theme .h12-violet .h12-rail > button,
+html.pro-theme .h12-violet .h13-sum,
+html.pro-theme .h12-violet .h13-sum b,
+html.pro-theme .h12-violet .h13-chev {
+  color: #ffffff;
+}
+html.pro-theme .h12-violet .h13-sum span span,
+html.pro-theme .h12-violet .h13-sum > span > span:last-child {
+  color: rgb(255 255 255 / 0.78);
+}
+html.pro-theme .h12-violet .h13-ring circle {
+  stroke: rgb(255 255 255 / 0.3);
+}
+html.pro-theme .h12-violet .h13-ring circle.on {
+  stroke: #ffffff;
+}
+html.pro-theme .h12-violet .h13-ring b {
+  color: #ffffff;
+}
+html.pro-theme .h12-violet .h12-bell {
+  background: rgb(255 255 255 / 0.18);
+  color: #ffffff;
+  box-shadow: none;
+}
+html.pro-theme .h12-violet .h13-chip {
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
