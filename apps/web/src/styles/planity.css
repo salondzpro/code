@@ -1739,3 +1739,18 @@ html.pro-theme .h12-violet .h13-chip.live em {
 html.espace-pro .scr {
   overflow-x: clip;
 }
+
+/* Accueil pro : « Ma story » est un TITRE DE SECTION, comme « Ma page » (20 nov. 2026, demande du
+   propriétaire) — le jour se choisit à droite du titre, la carte ne garde que l'aperçu et les heures. */
+.h12-h-st {
+  align-items: center;
+}
+.h12-h-st h2 {
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+}
+.h12-h-st .h12-sd > button {
+  min-height: 32px;
+  font-size: calc(13px * var(--fz, 1));
+}

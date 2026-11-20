@@ -69,114 +69,116 @@ export function StoryCard({ salon, url, short }: { salon: SalonOwnerView; url: s
   };
 
   return (
-    <section id="ma-story" className="h12-sc" aria-label={t('Créer ma story')}>
-      <div className="h12-sl">
-        <div className="h12-sp">
-          {input ? (
-            <StoryLive input={input} play />
-          ) : loaded && !times.length ? (
-            <span>{hours.length ? t('Choisissez au moins une heure.') : t('Plus de créneau libre ce jour-là.')}</span>
-          ) : (
-            <Skeleton className="h-full w-full" />
+    <section id="ma-story" className="flex flex-col gap-2" aria-label={t('Créer ma story')}>
+      <div className="h12-h h12-h-st">
+        <h2>{t('Ma story')}</h2>
+        <div className="h12-sd">
+          <button type="button" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)}>
+            {short2(date)}
+            <I icon={ChevronDown} size={16} />
+          </button>
+          {menu && (
+            <>
+              <span className="h12-so" aria-hidden onClick={() => setMenu(false)} />
+              <div className="h12-sm" role="menu">
+                {!noneToday && (
+                  <button type="button" role="menuitem" className={date === today ? 'on' : ''} onClick={() => pick(today)}>
+                    {t("Aujourd'hui")}
+                  </button>
+                )}
+                <button type="button" role="menuitem" className={date === tomorrow ? 'on' : ''} onClick={() => pick(tomorrow)}>
+                  {t('Demain')}
+                </button>
+                <label className={date !== today && date !== tomorrow ? 'on' : ''}>
+                  {t('Autre date')}
+                  <input
+                    type="date"
+                    value={date}
+                    min={today}
+                    aria-label={t('Autre date')}
+                    onChange={(e) => e.target.value && pick(e.target.value)}
+                    onClick={(e) => e.currentTarget.showPicker?.()}
+                  />
+                </label>
+              </div>
+            </>
           )}
-        </div>
-        <div className="h12-st">
-          {salonPhoto && (
-            <button type="button" aria-label={t('Photo du salon')} aria-pressed={!useOwn} className={useOwn ? '' : 'on'} onClick={() => setUseOwn(false)}>
-              <img src={salonPhoto} alt="" />
-            </button>
-          )}
-          <label aria-label={t('Ajouter une photo')} className={useOwn ? 'on' : ''}>
-            {own ? <img src={own} alt="" /> : <I icon={ImagePlus} size={20} />}
-            <input
-              type="file"
-              accept="image/*"
-              onClick={(e) => {
-                // Une photo déjà ajoutée revient d'un toucher ; la touche à nouveau, on la change.
-                if (own && !useOwn) {
-                  e.preventDefault();
-                  setUseOwn(true);
-                }
-              }}
-              onChange={(e) => {
-                addPhoto(e.target.files?.[0]);
-                e.target.value = '';
-              }}
-            />
-          </label>
         </div>
       </div>
-
-      <div className="h12-sr">
-        <div className="h12-shd">
-          <h2>{t('Ma story')}</h2>
-          <div className="h12-sd">
-            <button type="button" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((v) => !v)}>
-              {short2(date)}
-              <I icon={ChevronDown} size={16} />
-            </button>
-            {menu && (
-              <>
-                <span className="h12-so" aria-hidden onClick={() => setMenu(false)} />
-                <div className="h12-sm" role="menu">
-                  {!noneToday && (
-                    <button type="button" role="menuitem" className={date === today ? 'on' : ''} onClick={() => pick(today)}>
-                      {t("Aujourd'hui")}
-                    </button>
-                  )}
-                  <button type="button" role="menuitem" className={date === tomorrow ? 'on' : ''} onClick={() => pick(tomorrow)}>
-                    {t('Demain')}
-                  </button>
-                  <label className={date !== today && date !== tomorrow ? 'on' : ''}>
-                    {t('Autre date')}
-                    <input
-                      type="date"
-                      value={date}
-                      min={today}
-                      aria-label={t('Autre date')}
-                      onChange={(e) => e.target.value && pick(e.target.value)}
-                      onClick={(e) => e.currentTarget.showPicker?.()}
-                    />
-                  </label>
-                </div>
-              </>
+      <div className="h12-sc">
+        <div className="h12-sl">
+          <div className="h12-sp">
+            {input ? (
+              <StoryLive input={input} play />
+            ) : loaded && !times.length ? (
+              <span>{hours.length ? t('Choisissez au moins une heure.') : t('Plus de créneau libre ce jour-là.')}</span>
+            ) : (
+              <Skeleton className="h-full w-full" />
             )}
           </div>
-        </div>
-        {hours.length > 0 && (
-          <div className="h12-hs" role="group" aria-label={t('Heures')}>
-            {hours.map((h) => {
-              const on = !off.includes(h.start);
-              return (
-                <button
-                  key={h.start}
-                  type="button"
-                  dir="ltr"
-                  aria-pressed={on}
-                  className={on ? 'on' : ''}
-                  onClick={() => setOff((o) => (on ? [...o, h.start] : o.filter((x) => x !== h.start)))}
-                >
-                  {minutesToTime(h.start)}
-                </button>
-              );
-            })}
+          <div className="h12-st">
+            {salonPhoto && (
+              <button type="button" aria-label={t('Photo du salon')} aria-pressed={!useOwn} className={useOwn ? '' : 'on'} onClick={() => setUseOwn(false)}>
+                <img src={salonPhoto} alt="" />
+              </button>
+            )}
+            <label aria-label={t('Ajouter une photo')} className={useOwn ? 'on' : ''}>
+              {own ? <img src={own} alt="" /> : <I icon={ImagePlus} size={20} />}
+              <input
+                type="file"
+                accept="image/*"
+                onClick={(e) => {
+                  // Une photo déjà ajoutée revient d'un toucher ; la touche à nouveau, on la change.
+                  if (own && !useOwn) {
+                    e.preventDefault();
+                    setUseOwn(true);
+                  }
+                }}
+                onChange={(e) => {
+                  addPhoto(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+            </label>
           </div>
-        )}
-        <div className="h12-sb">
-          <button type="button" className="ig" disabled={!image} aria-busy={busy === 'instagram' || undefined} onClick={() => void share('instagram')}>
-            {busy === 'instagram' || preparing ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={20} />}
-            {preparing && ready.progress > 0 ? t('Vidéo… {n} %', { n: Math.round(ready.progress * 100) }) : t('Story Instagram')}
-          </button>
-          <button type="button" disabled={!image} aria-busy={busy === 'whatsapp' || undefined} onClick={() => void share('whatsapp')}>
-            {busy === 'whatsapp' ? <span className="btn-spin" aria-hidden /> : <WhatsAppLogo size={20} />}
-            {t('Statut WhatsApp')}
-          </button>
         </div>
-        {note && (
-          <p className="h12-sn" role="status">
-            {note}
-          </p>
-        )}
+
+        <div className="h12-sr">
+          {hours.length > 0 && (
+            <div className="h12-hs" role="group" aria-label={t('Heures')}>
+              {hours.map((h) => {
+                const on = !off.includes(h.start);
+                return (
+                  <button
+                    key={h.start}
+                    type="button"
+                    dir="ltr"
+                    aria-pressed={on}
+                    className={on ? 'on' : ''}
+                    onClick={() => setOff((o) => (on ? [...o, h.start] : o.filter((x) => x !== h.start)))}
+                  >
+                    {minutesToTime(h.start)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div className="h12-sb">
+            <button type="button" className="ig" disabled={!image} aria-busy={busy === 'instagram' || undefined} onClick={() => void share('instagram')}>
+              {busy === 'instagram' || preparing ? <span className="btn-spin" aria-hidden /> : <InstagramGlyph size={20} />}
+              {preparing && ready.progress > 0 ? t('Vidéo… {n} %', { n: Math.round(ready.progress * 100) }) : t('Story Instagram')}
+            </button>
+            <button type="button" disabled={!image} aria-busy={busy === 'whatsapp' || undefined} onClick={() => void share('whatsapp')}>
+              {busy === 'whatsapp' ? <span className="btn-spin" aria-hidden /> : <WhatsAppLogo size={20} />}
+              {t('Statut WhatsApp')}
+            </button>
+          </div>
+          {note && (
+            <p className="h12-sn" role="status">
+              {note}
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );
