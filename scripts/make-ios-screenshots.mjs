@@ -101,9 +101,8 @@ async function connexion(adresse) {
   await calme(2500); // l'animation d'ouverture
   await page.getByRole('button', { name: /Commencer/ }).first().click();
   await page.locator('input[type="email"], input[name="email"]').first().fill(adresse);
-  await page.getByRole('button', { name: /Continuer/ }).first().click();
   await page.locator('input[type="password"]').first().fill(adresse);
-  await page.getByRole('button', { name: /Se connecter/ }).first().click();
+  await page.locator('form button[type=submit]').first().click();
   await calme(3000);
   const ou = new URL(page.url()).pathname;
   if (/connexion|intro|inscription|acces/.test(ou)) {

@@ -1733,3 +1733,9 @@ html.pro-theme .h12-violet .h13-chip em {
 html.pro-theme .h12-violet .h13-chip.live em {
   color: #5fe08a;
 }
+
+/* Barres blanches pleine largeur (`.pla-bar`, `.pla-top`, `.tb-titre`) : leurs marges négatives
+   dépassaient de 2 px ; en arabe, ce débordement faisait dézoomer la page entière sur téléphone. */
+html.espace-pro .scr {
+  overflow-x: clip;
+}

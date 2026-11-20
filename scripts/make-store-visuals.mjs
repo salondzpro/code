@@ -109,9 +109,8 @@ async function capturer() {
     await p.goto(`${BASE}${base}`, { waitUntil: 'domcontentloaded' });
     await calme(p, 1500);
     await p.locator('input[type=email]').first().fill(email);
-    await p.getByRole('button', { name: /Continuer/ }).first().click();
     await p.locator('input[type=password]').first().fill(email);
-    await p.getByRole('button', { name: /Se connecter/ }).first().click();
+    await p.locator('form button[type=submit]').first().click();
     await calme(p, 3500);
     if (/acces|intro|connexion/.test(new URL(p.url()).pathname)) throw new Error(`connexion refusée : ${email}`);
   };

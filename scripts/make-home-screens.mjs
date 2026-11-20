@@ -46,6 +46,10 @@ async function enregistrer(p, nom, langue) {
   await p
     .waitForFunction(() => document.body.innerText.trim().length > 120 && !document.querySelector('.sk, .ldbar'), null, { timeout: 30000 })
     .catch(() => undefined);
+  // L'invite « Activez les notifications » (NotificationsGate) n'a pas sa place sur une vitrine.
+  await p
+    .addStyleTag({ content: 'body:has(.sheet.modal .lucide-bell-ring) .dim, .sheet.modal:has(.lucide-bell-ring) { display: none !important; }' })
+    .catch(() => undefined);
   await p.waitForTimeout(1800);
   let png;
   for (let essai = 1; ; essai++) {
@@ -92,9 +96,9 @@ const login = async (p, base, email) => {
   await p.evaluate(() => localStorage.setItem('salondz:locale', 'fr'));
   await p.reload({ waitUntil: 'networkidle' });
   await p.fill('input[type=email]', email);
-  await p.getByRole('button', { name: /Continuer/ }).click();
+  // Connexion sur un seul écran (20 nov. 2026) : plus de « Continuer » entre l'adresse et le mot de passe.
   await p.fill('input[type=password]', email);
-  await p.getByRole('button', { name: /Se connecter/ }).first().click();
+  await p.locator('form button[type=submit]').first().click();
   await p.waitForURL((u) => !/acces|intro|connexion/.test(u.pathname));
   await p.waitForTimeout(2500);
 };
@@ -107,10 +111,13 @@ await prendre(p, 'client-accueil');
 const href = await p.evaluate(() => [...document.querySelectorAll('a[href^="/s/"]')].map((a) => a.getAttribute('href'))[0]);
 await p.goto(B + href, { waitUntil: 'networkidle' });
 await prendre(p, 'client-salon');
-await p.goto(B + href + '/prestations', { waitUntil: 'networkidle' });
-await p.getByRole('button', { name: /Choisir/ }).first().click();
-await p.waitForTimeout(1500);
-await p.locator('button.slot, button[class*=slot]').first().click().catch(() => {});
+// Façon Planity (20 nov. 2026) : catégories repliées sur la page du salon ; on ouvre la première,
+// on choisit sa première prestation, et l'on photographie le choix du créneau (jours dépliables).
+await p.locator('.pl-cat-h').first().click();
+await p.waitForTimeout(500);
+await p.locator('.pl-choisir').first().click();
+await p.waitForSelector('.pl-day-h', { timeout: 60_000 });
+await p.waitForTimeout(2000);
 await prendre(p, 'client-quand');
 await p.goto(B + '/rendez-vous', { waitUntil: 'networkidle' });
 await prendre(p, 'client-rdv');
