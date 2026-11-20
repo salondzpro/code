@@ -123,9 +123,32 @@ services:
       - type: rewrite
         source: /moi
         destination: https://api.salondz.com/moi
+      # Pages publiques : chacune son en-tête pour Google (apps/web/scripts/seo-pages.mjs).
+      - type: rewrite
+        source: /professionnels
+        destination: /professionnels.html
+      - type: rewrite
+        source: /salons
+        destination: /salons.html
+      - type: rewrite
+        source: /aide
+        destination: /aide.html
+      - type: rewrite
+        source: /cgu
+        destination: /cgu.html
+      - type: rewrite
+        source: /confidentialite
+        destination: /confidentialite.html
+      - type: rewrite
+        source: /mentions-legales
+        destination: /mentions-legales.html
+      - type: rewrite
+        source: /home
+        destination: /index.html
+      # Le reste est l'application : coquille sans adresse canonique.
       - type: rewrite
         source: /*
-        destination: /index.html
+        destination: /app.html
     headers:
       # Le CDN met en cache par URL DEMANDÉE, pas par fichier physique servi : une route comme /supprimer,
       # servie par le même index.html via la réécriture générique /*, restait bloquée sur l'ancienne version

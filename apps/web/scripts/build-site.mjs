@@ -17,6 +17,7 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync }
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { zipSync } from 'fflate';
+import { pagesPubliques } from './seo-pages.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const git = () => {
@@ -71,6 +72,7 @@ function publish(flavor, srcDir) {
 }
 
 vite('dist');
+pagesPubliques(join(ROOT, 'dist'));
 // Variante PRO : construite à part, jamais servie comme site, seulement empaquetée.
 vite('dist-pro', { VITE_APP_FLAVOR: 'pro' });
 const proBundle = readdirSync(join(ROOT, 'dist-pro', 'assets')).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(ROOT, 'dist-pro', 'assets', f), 'utf8')).join('');

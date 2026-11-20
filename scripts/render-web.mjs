@@ -7,6 +7,7 @@
 // Idempotent : relançable sans risque (le site existant est réutilisé, les variables sont réécrites).
 
 import { fileURLToPath } from 'node:url';
+import { REECRITURES_SEO } from '../apps/web/scripts/seo-pages.mjs';
 
 const API = 'https://api.render.com/v1';
 const OWNER_ID = 'tea-dag6rklbedkc73fmbv2g'; // workspace Render « My Workspace »
@@ -67,7 +68,10 @@ const SITE_ROUTES = [
   { type: 'rewrite', source: '/s/*', destination: `${API_URL}/share/s/*` },
   { type: 'rewrite', source: '/sitemap.xml', destination: `${API_URL}/sitemap.xml` },
   { type: 'rewrite', source: '/moi', destination: `${API_URL}/moi` },
-  { type: 'rewrite', source: '/*', destination: '/index.html' },
+  // Pages publiques : chacune son en-tête pour Google (`apps/web/scripts/seo-pages.mjs`).
+  ...REECRITURES_SEO.map((r) => ({ type: 'rewrite', source: r.source, destination: r.fichier })),
+  // Le reste est l'application : coquille sans adresse canonique.
+  { type: 'rewrite', source: '/*', destination: '/app.html' },
 ];
 
 const siteSpec = {
