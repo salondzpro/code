@@ -16,6 +16,7 @@
  * Remplace, côté client, le bandeau `NotificationsNudge` et les réglages « Rappels » /
  * « Confirmations » : rappels et confirmations sont toujours envoyés.
  */
+import { positionADemander } from '@/lib/useAutoLocate';
 import { useEffect, useState } from 'react';
 import { BellRing } from 'lucide-react';
 import { useNotificationStatus } from '@/lib/useNotificationStatus';
@@ -55,7 +56,8 @@ export function NotificationsGate() {
   const [vu, marquerVu] = useOuverture();
   const [chemin, setChemin] = useState(false);
 
-  if (vu || !n.pret || n.situation === 'actives') return null;
+  // La question de la POSITION passe d'abord (fenêtre « Par défaut : Alger ») : jamais deux fenêtres.
+  if (vu || !n.pret || n.situation === 'actives' || positionADemander()) return null;
 
   const bloquees = n.situation === 'bloquees';
   const impossibles = n.situation === 'impossibles';

@@ -2490,4 +2490,7 @@ export const ar: Record<string, string> = {
   "Ex. Coupe + brushing": "مثال: قص + براشينغ",
   "Prix (DA)": "السعر (دج)",
   "Spécialité": "التخصص",
+  "Les salons près de vous": "الصالونات القريبة منك",
+  "Par défaut, nous affichons les salons d’Alger. Autorisez votre position pour voir ceux autour de vous.": "نعرض افتراضيًا صالونات الجزائر العاصمة. اسمح بتحديد موقعك لرؤية الصالونات القريبة منك.",
+  "Rester sur Alger": "البقاء على الجزائر العاصمة",
 };

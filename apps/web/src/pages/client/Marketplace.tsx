@@ -10,6 +10,7 @@
  * L'avatar a disparu d'ici : l'en-tête client porte déjà le bouton de compte à droite, et la
  * même destination deux fois sur un écran ne sert personne. C-H 08 — aucun résultat.
  */
+import { LocationGate } from '@/components/LocationGate';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Search } from 'lucide-react';
@@ -118,6 +119,7 @@ export function Marketplace() {
 
   return (
     <Screen bottom={NAV_PAD} gap={12} width="page" className="h12 cl-home">
+      <LocationGate />
       <header className={`h12-top${fond ? ' photo' : ''}`} style={fond ? { ['--fond-salon' as string]: `url("${fond}")` } : undefined}>
         <div className="h12-hd">
           <div className="min-w-0 flex-1">

@@ -2504,4 +2504,7 @@ export const en: Record<string, string> = {
   "Ex. Coupe + brushing": "E.g. Cut + blow-dry",
   "Prix (DA)": "Price (DA)",
   "Spécialité": "Specialty",
+  "Les salons près de vous": "Salons near you",
+  "Par défaut, nous affichons les salons d’Alger. Autorisez votre position pour voir ceux autour de vous.": "By default, we show salons in Algiers. Allow your location to see the ones around you.",
+  "Rester sur Alger": "Stay on Algiers",
 };

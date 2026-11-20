@@ -24,8 +24,7 @@ import { AccountSuspendedNotice, SalonSuspendedNotice } from '@/components/Suspe
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
 export function ClientLayout() {
-  // La position se détecte d'office à la première ouverture : sans cela l'application démarre sur
-  // Alger, sa valeur par défaut, pour quelqu'un qui est à Oran.
+  // Reprend une mesure de position ACCEPTÉE dans la fenêtre « Par défaut : Alger » (place de marché).
   useAutoLocate();
   // Comme l'espace pro (refonte du 1er nov., étendue aux clientes le 14 nov. 2026) : sur téléphone,
   // plus d'en-tête ni de tiroir — le titre est dans la page, la cloche sur l'accueil. L'en-tête ne
