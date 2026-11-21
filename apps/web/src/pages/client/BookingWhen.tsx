@@ -88,10 +88,20 @@ export function BookingWhen() {
   const jours: string[] = [];
   for (let k = debut; jours.length < nbJours && k <= maxDate; k = addDaysToKey(k, 1)) if (ouvert(k)) jours.push(k);
   const encore = jours.length === nbJours && addDaysToKey(jours[jours.length - 1]!, 1) <= maxDate;
-  const estOuvert = (k: string) => (ouverts ? ouverts.has(k) : k === jours[0]);
+  // JOUR COMPLET DÉPLIÉ D'OFFICE (21 nov. 2026, audit) : la page déplie le jour suivant, et ainsi de
+  // suite (7 jours au plus), jusqu'au premier qui a des créneaux — tant que la personne n'a rien plié.
+  const [autoOuverts, setAutoOuverts] = useState<string[]>([]);
+  const estOuvert = (k: string) => (ouverts ? ouverts.has(k) : k === jours[0] || autoOuverts.includes(k));
+  const jourVide = (k: string) => {
+    if (ouverts) return;
+    const i = jours.indexOf(k);
+    const suivant = jours[i + 1];
+    if (i < 0 || !suivant || autoOuverts.length >= 7) return;
+    setAutoOuverts((cur) => (cur.includes(suivant) ? cur : [...cur, suivant]));
+  };
   const basculer = (k: string) =>
     setOuverts((cur) => {
-      const n = new Set(cur ?? (jours[0] ? [jours[0]] : []));
+      const n = new Set(cur ?? [...(jours[0] ? [jours[0]] : []), ...autoOuverts]);
       if (n.has(k)) n.delete(k);
       else n.add(k);
       return n;
@@ -267,6 +277,7 @@ export function BookingWhen() {
             staffId={staffId}
             open={estOuvert(k)}
             onToggle={() => basculer(k)}
+            onVide={() => jourVide(k)}
             choisi={draft.startsAt ?? null}
             onPick={(iso) => go(k, iso)}
           />
@@ -290,6 +301,7 @@ function Jour({
   staffId,
   open,
   onToggle,
+  onVide,
   choisi,
   onPick,
 }: {
@@ -299,6 +311,8 @@ function Jour({
   staffId: string | null;
   open: boolean;
   onToggle: () => void;
+  /** Jour ouvert sans aucun créneau : le parent déplie le suivant. */
+  onVide?: () => void;
   choisi: string | null;
   onPick: (iso: string) => void;
 }) {
@@ -314,6 +328,11 @@ function Jour({
     [dispo.data],
   );
   const montres = tout ? libres : libres.slice(0, VISIBLES);
+  const vide = open && dispo.isSuccess && libres.length === 0;
+  useEffect(() => {
+    if (vide) onVide?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vide]);
 
   return (
     <div className="pl-card pl-day">
