@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
-import { useMe } from '@salondz/api-client';
+import { useApi, useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { readAuthFlow } from '@/lib/authFlow';
 import { supabase } from '@/lib/supabase';
@@ -67,6 +67,10 @@ export function WelcomeBack() {
   // celui de l'application, sinon celui de la destination. Sinon : session fermée, message de refus.
   const attendu = APPLI ?? (next.startsWith('/pro') ? 'pro' : 'client');
   const refuse = estRefusCompte(me.error);
+  // Google par le PORTAIL PRO (21 nov. 2026) : le compte vient de naître client — on le déclare pro
+  // tant qu'il est neuf ; le serveur refuse tout autre cas (compte existant, déjà utilisé).
+  const googlePro = params.get('google') === '1' && attendu === 'pro' && (refuse === 'pro' || profile?.role === 'client');
+  if (googlePro) return <DevenirPro onFait={() => void me.refetch()} />;
   if (refuse) return <CompteRefuse cote={refuse} />;
   if (!next.startsWith('/admin') && profile && (profile.role === 'pro') !== (attendu === 'pro')) return <CompteRefuse cote={attendu} />;
   // Sans profil (erreur réseau), on ne sait rien de la personne : la renvoyer sur « créer son profil »
@@ -81,4 +85,30 @@ export function WelcomeBack() {
     if (profile.role !== 'pro' && !profile.market) return <Navigate to={`/marche${q}`} replace />;
   }
   return <Navigate to={next} replace />;
+}
+
+/** Passe un compte Google tout neuf en compte professionnel, puis relit le profil. */
+function DevenirPro({ onFait }: { onFait: () => void }) {
+  const { api } = useApi();
+  const [refus, setRefus] = useState(false);
+  useEffect(() => {
+    let vivant = true;
+    api.auth
+      .googlePro()
+      .then(() => {
+        if (!vivant) return;
+        // Plus de `google=1` dans l'adresse : on ne repasse pas par ici.
+        const u = new URL(window.location.href);
+        u.searchParams.delete('google');
+        window.history.replaceState(window.history.state, '', u.pathname + u.search);
+        onFait();
+      })
+      .catch(() => vivant && setRefus(true));
+    return () => {
+      vivant = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (refus) return <CompteRefuse cote="pro" />;
+  return <PageLoading />;
 }

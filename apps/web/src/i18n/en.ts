@@ -2506,4 +2506,6 @@ export const en: Record<string, string> = {
   "Les salons près de vous": "Salons near you",
   "Par défaut, nous affichons les salons d’Alger. Autorisez votre position pour voir ceux autour de vous.": "By default, we show salons in Algiers. Allow your location to see the ones around you.",
   "Rester sur Alger": "Stay on Algiers",
+  "Continuer avec Google": "Continue with Google",
+  "Connexion avec Google impossible pour le moment. Réessayez.": "Google sign-in is unavailable right now. Please try again.",
 };

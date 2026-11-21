@@ -19,6 +19,8 @@
  * qui décide. Les anciennes portes pro (`/connexion?role=pro`, `/inscription?role=pro`) mènent ici.
  * Le serveur refait tous les contrôles : l'écran oriente, il ne protège pas.
  */
+import { GoogleLogo } from '@/components/BrandIcons';
+import { connexionGoogle, useGoogleDisponible } from '@/lib/googleAuth';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
@@ -230,6 +232,7 @@ export function AccesEmail() {
           {busy === 'password' ? t('Connexion…') : t('Se connecter')}
         </button>
         <span className="pl-ou">{t('OU')}</span>
+        <GoogleButton role={role} next={next} />
         <Link to={`${base}/creer${q(adresse() ? { email: adresse() } : {})}`} className="pl-btn pl-btn-out">
           {t('Créer mon compte')}
         </Link>
@@ -367,6 +370,7 @@ export function AccesCreer() {
           {busy ? t('Création…') : t('Créer mon compte')}
         </button>
         <span className="pl-ou">{t('OU')}</span>
+        <GoogleButton role={role} next={next} />
         <Link to={`${base}${q(email.trim() ? { email: email.trim().toLowerCase() } : {})}`} className="pl-btn pl-btn-out">
           {t('Se connecter')}
         </Link>
@@ -659,5 +663,34 @@ export function AccesOubli() {
         {error && <AuthError texte={error} />}
       </form>
     </AuthScreen>
+  );
+}
+
+/** « Continuer avec Google » — affiché seulement quand Google est activé sur Supabase. */
+function GoogleButton({ role, next }: { role: 'client' | 'pro'; next: string }) {
+  const dispo = useGoogleDisponible();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  if (!dispo) return null;
+  return (
+    <>
+      <button
+        type="button"
+        className="pl-btn pl-btn-out pl-google"
+        disabled={busy}
+        onClick={() => {
+          setErr(null);
+          setBusy(true);
+          writeAuthFlow({ role, next, identifier: '', channel: 'email' });
+          connexionGoogle(role, next)
+            .catch(() => setErr(t('Connexion avec Google impossible pour le moment. Réessayez.')))
+            .finally(() => setBusy(false));
+        }}
+      >
+        <GoogleLogo size={20} />
+        {t('Continuer avec Google')}
+      </button>
+      {err && <AuthError texte={err} />}
+    </>
   );
 }

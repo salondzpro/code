@@ -110,6 +110,8 @@ async function wireBackButton(): Promise<void> {
 async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
   const { App } = await import('@capacitor/app');
   await App.addListener('appUrlOpen', ({ url }) => {
+    // Revenu d'une page ouverte dans le navigateur du système (connexion Google) : on le referme.
+    void import('@capacitor/browser').then(({ Browser }) => Browser.close()).catch(() => undefined);
     try {
       const target = new URL(url);
       /**

@@ -2298,3 +2298,11 @@ html.pro-theme .agenda .ag9-lg > span[aria-hidden] {
 html.pro-theme .agenda .ag9-lg:not(:has(button)) {
   display: none;
 }
+
+/* « Continuer avec Google » : bouton cerclé, logo officiel à gauche du libellé. */
+.pl-btn.pl-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}

@@ -64,7 +64,8 @@ export function handoffUrl(ua: string, destination: string, repliVers: string): 
   const d = encodeURIComponent(destination);
   // SÉPARATION STRICTE (16 nov. 2026) : la destination dit QUELLE application réveiller — l'espace
   // pro dans Salon DZ Pro, tout le reste dans Salon DZ. Jamais l'une à la place de l'autre.
-  const pro = destination.startsWith('/pro');
+  // Retour de Google ou d'un lien vers `/connexion/retour` : le portail est dans l'adresse.
+  const pro = destination.startsWith('/pro') || /[?&](portail=pro|next=(%2F|\/)pro)/i.test(destination);
   if (/android/i.test(ua)) {
     // `intent://` prévoit le REPLI : sans application installée, Android revient ici et la personne
     // continue dans son navigateur, sans page d'erreur. Le paquet est NOMMÉ : les deux applications

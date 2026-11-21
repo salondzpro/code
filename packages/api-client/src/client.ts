@@ -469,6 +469,8 @@ export function createApiClient(opts: ApiClientOptions) {
       resendConfirmation: (body: EmailLinkInput) => post<void>('/auth/resend-confirmation', body),
       /** E-mail de réinitialisation du mot de passe. */
       passwordReset: (body: EmailLinkInput) => post<void>('/auth/password-reset', body),
+      /** Compte Google NEUF ouvert par le portail pro : il devient professionnel (21 nov. 2026). */
+      googlePro: () => post<void>('/auth/google-pro'),
       /** Comptes de démonstration à accès direct : renvoie une vraie session Supabase (sans SMS). */
       devLogin: (body: { email?: string; phone?: string; code?: string }) =>
         request<{

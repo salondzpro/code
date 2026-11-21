@@ -278,6 +278,39 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     return null;
   });
 
+  /**
+   * CONNEXION AVEC GOOGLE PAR LE PORTAIL PRO (21 nov. 2026). Un compte créé par Google naît CLIENT
+   * (rien ne transporte le portail jusqu'au déclencheur `handle_new_user`). Juste après sa création,
+   * le portail pro le déclare PROFESSIONNEL — c'est encore l'inscription : le rôle est posé par le
+   * portail emprunté (règle n° 4). Refusé pour tout compte qui n'est pas neuf : créé il y a plus de
+   * 30 min, autre fournisseur que Google, ou qui a déjà servi (rendez-vous, salon).
+   */
+  app.post('/auth/google-pro', { preHandler: app.requireAuth, config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } }, async (req, reply) => {
+    const u = await db.auth.admin.getUserById(req.user!.id);
+    if (u.error || !u.data.user) throw u.error ?? new Error('utilisateur');
+    const user = u.data.user;
+    const providers = (user.identities ?? []).map((i) => i.provider);
+    const neuf = Date.now() - new Date(user.created_at).getTime() < 30 * 60_000;
+    const p = await db.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (p.error) throw p.error;
+    if (p.data?.role === 'pro') {
+      reply.status(204);
+      return null;
+    }
+    const [bk, sl] = await Promise.all([
+      db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', user.id),
+      db.from('salons').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
+    ]);
+    const vierge = (bk.count ?? 0) === 0 && (sl.count ?? 0) === 0;
+    if (!neuf || !vierge || !providers.includes('google') || providers.includes('email'))
+      throw new AppError(403, 'NO_PRO_ACCOUNT', 'Aucun compte professionnel associé à ces identifiants.');
+    const up = await db.from('profiles').update({ role: 'pro' }).eq('id', user.id);
+    if (up.error) throw up.error;
+    await db.auth.admin.updateUserById(user.id, { user_metadata: { ...user.user_metadata, role: 'pro' } });
+    reply.status(204);
+    return null;
+  });
+
   /** Renvoi du lien de confirmation à un compte non confirmé (celui du portail). */
   app.post('/auth/resend-confirmation', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
     const { email, next } = req.body;

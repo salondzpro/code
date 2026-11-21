@@ -2492,4 +2492,6 @@ export const ar: Record<string, string> = {
   "Les salons près de vous": "الصالونات القريبة منك",
   "Par défaut, nous affichons les salons d’Alger. Autorisez votre position pour voir ceux autour de vous.": "نعرض افتراضيًا صالونات الجزائر العاصمة. اسمح بتحديد موقعك لرؤية الصالونات القريبة منك.",
   "Rester sur Alger": "البقاء على الجزائر العاصمة",
+  "Continuer avec Google": "المتابعة عبر Google",
+  "Connexion avec Google impossible pour le moment. Réessayez.": "تعذّر تسجيل الدخول عبر Google حاليًا. أعد المحاولة.",
 };
