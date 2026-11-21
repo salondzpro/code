@@ -50,6 +50,24 @@ export function handOffToApp(): void {
   sessionStorage.setItem(cle, '1');
 
   window.location.href = handoffUrl(navigator.userAgent, `${pathname}${search}${hash}`, window.location.href);
+
+  /**
+   * L'APPLICATION A PRIS LA MAIN (21 nov. 2026) : le navigateur OUBLIE la session qu'il vient de
+   * transmettre. Gardée des deux côtés, elle se renouvelait deux fois — et Supabase, voyant un jeton
+   * de renouvellement réutilisé, fermait la session de l'application. On efface le stockage local
+   * (sans appel au serveur, qui fermerait aussi celle de l'application) et la page repart à blanc.
+   */
+  const oublier = () => {
+    if (document.visibilityState !== 'hidden') return;
+    document.removeEventListener('visibilitychange', oublier);
+    try {
+      localStorage.removeItem('salondz-auth');
+    } catch {
+      /* stockage indisponible */
+    }
+    window.location.replace(pathname.startsWith('/pro') || /portail=pro/.test(search) ? '/professionnels' : '/');
+  };
+  document.addEventListener('visibilitychange', oublier);
 }
 
 /**

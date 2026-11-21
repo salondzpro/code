@@ -109,7 +109,11 @@ async function wireBackButton(): Promise<void> {
  */
 async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
   const { App } = await import('@capacitor/app');
-  await App.addListener('appUrlOpen', ({ url }) => {
+  let dernier = '';
+  const ouvrir = (url: string) => {
+    // Le même lien peut arriver deux fois (lancement + événement) : on ne le suit qu'une fois.
+    if (!url || url === dernier) return;
+    dernier = url;
     // Revenu d'une page ouverte dans le navigateur du système (connexion Google) : on le referme.
     void import('@capacitor/browser').then(({ Browser }) => Browser.close()).catch(() => undefined);
     try {
@@ -121,11 +125,35 @@ async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
        */
       const reprise = target.searchParams.get('d');
       if (reprise && reprise.startsWith('/')) return navigate(reprise);
-      navigate(`${target.pathname}${target.search}${target.hash}`);
+      if (target.protocol === 'https:' || target.protocol === 'http:') navigate(`${target.pathname}${target.search}${target.hash}`);
     } catch {
       /* lien illisible : on reste où l'on est */
     }
-  });
+  };
+  await App.addListener('appUrlOpen', ({ url }) => ouvrir(url));
+  /**
+   * APPLICATION FERMÉE (21 nov. 2026) : quand c'est le lien qui LANCE l'application (retour de Google,
+   * lien d'e-mail), l'événement ci-dessus part avant que la page ne l'écoute — l'application s'ouvrait
+   * sur l'accueil, déconnectée. Le lien de lancement est relu ici.
+   */
+  const lancement = await App.getLaunchUrl().catch(() => undefined);
+  // Une seule fois par lien : après un rechargement (mise à jour automatique), le système redonne
+  // le même lien de lancement — on ne le rejoue pas.
+  const deja = (() => {
+    try {
+      return sessionStorage.getItem('salondz:lancement');
+    } catch {
+      return null;
+    }
+  })();
+  if (lancement?.url && lancement.url !== deja && !/^https?:\/\/(localhost|salondz\.com\/?$)/.test(lancement.url)) {
+    try {
+      sessionStorage.setItem('salondz:lancement', lancement.url);
+    } catch {
+      /* stockage indisponible */
+    }
+    ouvrir(lancement.url);
+  }
 }
 
 /**
