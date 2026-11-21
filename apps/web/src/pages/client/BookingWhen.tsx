@@ -179,7 +179,8 @@ export function BookingWhen() {
           {/* Google d'abord : un toucher, sans mot de passe, puis retour sur la confirmation. */}
           <OAuthButtons role="client" next={`/s/${s.slug}/reserver/recap`} />
           <p>{t('Nouveau sur Salon DZ ?')}</p>
-          <Link to={`/acces?next=${suite}`} className="pl-btn pl-btn-out">
+          {/* Directement sur le formulaire d'inscription : plus d'écran de connexion intermédiaire. */}
+          <Link to={`/acces/creer?next=${suite}`} className="pl-btn pl-btn-out">
             {t('Créer mon compte')}
           </Link>
           <span className="pl-ou">{t('OU')}</span>

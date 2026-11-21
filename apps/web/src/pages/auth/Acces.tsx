@@ -442,16 +442,11 @@ export function AccesVous() {
     <AuthScreen
       back={`${base}/creer${q({ email })}`}
       titre={t('Faisons connaissance')}
-      sous={t('Votre nom pour le salon, et ce que vous recherchez.')}
       actions={
-        <>
-          <Button icon={ICONE.creerCompte} type="submit" form="pa-vous" loading={busy} disabled={busy}>
-            {t('Créer mon compte')}
-          </Button>
-          <p className="pa-note">
-            {t('En créant votre compte, vous acceptez les')} <Link to="/cgu">{t('conditions d’utilisation')}</Link>.
-          </p>
-        </>
+        // Les CGU sont déjà acceptées (case à cocher de l'écran précédent) : pas de doublon ici (audit du 21 nov. 2026).
+        <Button icon={ICONE.creerCompte} type="submit" form="pa-vous" loading={busy} disabled={busy}>
+          {t('Créer mon compte')}
+        </Button>
       }
     >
       <form id="pa-vous" onSubmit={entrer} noValidate className="pa-form">
