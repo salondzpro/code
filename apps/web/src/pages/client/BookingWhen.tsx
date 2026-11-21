@@ -5,7 +5,8 @@
  *  1. Prestation sélectionnée : carte blanche (nom, durée • prix, « Supprimer »), « Choisir avec qui ? »
  *     (équipe ≥ 2), bouton noir « Ajouter une prestation à la suite » (plusieurs prestations = UN
  *     rendez-vous, `create_booking_multi`).
- *  2. Choix de la date & heure : bouton « Choisir une date », puis une carte par jour ouvert qui se
+ *  2. Choix de la date & heure : une carte par jour ouvert qui se (plus de bouton « Choisir une date »,
+ *     retiré le 21 nov. 2026 : il ressemblait à une action principale)
  *     déplie (la première ouverte) : grille de 3 heures, neuf visibles puis « Voir plus » ; en bas,
  *     « Afficher plus de disponibilités ». TOUCHER UNE HEURE = continuer vers la confirmation.
  * Les créneaux viennent toujours de `GET /salons/:id/availability` (jamais calculés au front).
@@ -13,7 +14,7 @@
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
-import { CalendarDays, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useAvailability, useSalon } from '@salondz/api-client';
 import {
   TIMEZONE,
@@ -66,7 +67,6 @@ export function BookingWhen() {
   const [staffId, setStaffId] = useState<string | null>(draft.staffId ?? null);
   const [ajout, setAjout] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
-  const dateInput = useRef<HTMLInputElement>(null);
   const { session } = useAuth();
   const serviceIds = draft.serviceIds;
   const s = salon.data;
@@ -254,46 +254,6 @@ export function BookingWhen() {
       <h2 className="pl-h2 pl-bk-h">
         <span className="pl-num">2.</span> {t('Choix de la date & heure')}
       </h2>
-      <div className="pl-bk-date">
-        <button
-          type="button"
-          className="pl-btn pl-btn-out pl-btn-sm"
-          onClick={() => {
-            const el = dateInput.current;
-            if (!el) return;
-            if ('showPicker' in el) {
-              try {
-                el.showPicker();
-                return;
-              } catch {
-                /* repli ci-dessous */
-              }
-            }
-            el.focus();
-            el.click();
-          }}
-        >
-          <I icon={CalendarDays} size={18} strokeWidth={1.8} /> {t('Choisir une date')}
-        </button>
-        <input
-          ref={dateInput}
-          type="date"
-          className="pl-date-in"
-          min={today}
-          max={maxDate}
-          value={debut}
-          tabIndex={-1}
-          aria-hidden
-          onChange={(e) => {
-            const k = e.target.value;
-            if (!k || k < today || k > maxDate) return;
-            setDebut(k);
-            setNbJours(PAQUET);
-            setOuverts(null);
-          }}
-        />
-      </div>
-
       <div className="pl-days">
         {jours.map((k) => (
           <Jour
