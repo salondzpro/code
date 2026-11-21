@@ -11,7 +11,7 @@
  *     « Afficher plus de disponibilités ». TOUCHER UNE HEURE = continuer vers la confirmation.
  * Les créneaux viennent toujours de `GET /salons/:id/availability` (jamais calculés au front).
  */
-import { GoogleButton } from '@/components/GoogleButton';
+import { OAuthButtons } from '@/components/GoogleButton';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
@@ -167,7 +167,7 @@ export function BookingWhen() {
         </h2>
         <div className="pl-card pl-id-box">
           {/* Google d'abord : un toucher, sans mot de passe, puis retour sur la confirmation. */}
-          <GoogleButton role="client" next={`/s/${s.slug}/reserver/recap`} />
+          <OAuthButtons role="client" next={`/s/${s.slug}/reserver/recap`} />
           <p>{t('Nouveau sur Salon DZ ?')}</p>
           <Link to={`/acces?next=${suite}`} className="pl-btn pl-btn-out">
             {t('Créer mon compte')}

@@ -2494,4 +2494,6 @@ export const ar: Record<string, string> = {
   "Rester sur Alger": "البقاء على الجزائر العاصمة",
   "Continuer avec Google": "المتابعة عبر Google",
   "Connexion avec Google impossible pour le moment. Réessayez.": "تعذّر تسجيل الدخول عبر Google حاليًا. أعد المحاولة.",
+  "Continuer avec Apple": "المتابعة عبر Apple",
+  "Connexion avec Apple impossible pour le moment. Réessayez.": "تعذّر تسجيل الدخول عبر Apple حاليًا. أعد المحاولة.",
 };

@@ -302,7 +302,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       db.from('salons').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
     ]);
     const vierge = (bk.count ?? 0) === 0 && (sl.count ?? 0) === 0;
-    if (!neuf || !vierge || !providers.includes('google') || providers.includes('email'))
+    if (!neuf || !vierge || !(providers.includes('google') || providers.includes('apple')) || providers.includes('email'))
       throw new AppError(403, 'NO_PRO_ACCOUNT', 'Aucun compte professionnel associé à ces identifiants.');
     const up = await db.from('profiles').update({ role: 'pro' }).eq('id', user.id);
     if (up.error) throw up.error;

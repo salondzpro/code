@@ -69,7 +69,7 @@ export function WelcomeBack() {
   const refuse = estRefusCompte(me.error);
   // Google par le PORTAIL PRO (21 nov. 2026) : le compte vient de naître client — on le déclare pro
   // tant qu'il est neuf ; le serveur refuse tout autre cas (compte existant, déjà utilisé).
-  const googlePro = params.get('google') === '1' && attendu === 'pro' && (refuse === 'pro' || profile?.role === 'client');
+  const googlePro = (params.get('oauth') === '1' || params.get('google') === '1') && attendu === 'pro' && (refuse === 'pro' || profile?.role === 'client');
   if (googlePro) return <DevenirPro onFait={() => void me.refetch()} />;
   if (refuse) return <CompteRefuse cote={refuse} />;
   if (!next.startsWith('/admin') && profile && (profile.role === 'pro') !== (attendu === 'pro')) return <CompteRefuse cote={attendu} />;
@@ -100,6 +100,7 @@ function DevenirPro({ onFait }: { onFait: () => void }) {
         // Plus de `google=1` dans l'adresse : on ne repasse pas par ici.
         const u = new URL(window.location.href);
         u.searchParams.delete('google');
+        u.searchParams.delete('oauth');
         window.history.replaceState(window.history.state, '', u.pathname + u.search);
         onFait();
       })

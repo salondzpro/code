@@ -2306,3 +2306,8 @@ html.pro-theme .agenda .ag9-lg:not(:has(button)) {
   justify-content: center;
   gap: 10px;
 }
+
+/* « Continuer avec Apple » : bouton noir, pomme blanche. */
+.pl-btn.pl-apple {
+  color: #ffffff;
+}
