@@ -2,7 +2,7 @@
    THÈME PLANITY (19 nov. 2026, demande du propriétaire : « refais tout le design, 100 % Planity, même
    background et tout »). Valeurs MESURÉES sur planity.com (390 px) : Inter, encre #202020, gris
    #4e5860, fond #f7f7f7, cartes blanches à filet #eef0f2 et ombre 0 4px 8px -2px, boutons noirs
-   arrondis 8 px, créneaux gris #f7f7f7 arrondis 4 px, violet #625df5 pour les numéros d'étape et les
+   arrondis 8 px, créneaux gris #f7f7f7 arrondis 4 px, violet #1a56db pour les numéros d'étape et les
    liens d'action seulement. Les jetons sont dans `tokens.css` ; ici, les composants `pl-*`.
    Importé APRÈS `index.css` : ces règles l'emportent.
    ============================================================================================ */
@@ -145,7 +145,7 @@ body {
   font-weight: 500;
 }
 .pl-btn-ink {
-  background: #202020;
+  background: var(--color-accent, #1a56db);
   color: #ffffff;
 }
 .pl-btn-out {
@@ -1624,7 +1624,7 @@ html[data-native] body::before {
 }
 
 /* ============================================================================================
-   ACCUEIL PRO EN VIOLET UNI (20 nov. 2026, choix du propriétaire, référence mew3id) : aplat #625df5
+   ACCUEIL PRO EN VIOLET UNI (20 nov. 2026, choix du propriétaire, référence mew3id) : aplat #1a56db
    (violet de la charte Planity, `--color-link`), sans dégradé ni photo. Il monte sous la barre d'état
    (icônes blanches sur cet écran, `pages/pro/Home.tsx`) et s'arrête en arrondi DERRIÈRE la première
    carte. Textes du haut en blanc ; les cartes restent blanches, au-dessus.
@@ -1640,7 +1640,7 @@ html.pro-theme .h12-violet .h12-top::before {
   position: absolute;
   z-index: -1;
   inset: 0 -16px -72px;
-  background: #625df5;
+  background: #1a56db;
   border-radius: 0 0 28px 28px;
   pointer-events: none;
 }
@@ -1703,7 +1703,8 @@ html.pro-theme .h12-violet .h13-chip {
    Apple posés dessus — fond translucide dépoli, liseré clair, reflet en haut (20 nov. 2026, demande
    du propriétaire). Les cartes du dessous restent blanches. */
 html.pro-theme .h12-violet .h12-top::before {
-  background: #202020;
+  /* Bleu de marque (22 nov. 2026), à la place du noir Planity. */
+  background: #1a56db;
 }
 html.pro-theme .h12-violet .h12-bell,
 html.pro-theme .h12-violet .h13-chip {
@@ -1900,7 +1901,7 @@ html.pro-theme .nvc {
   border: 2px solid #202020;
 }
 .plan-card.on {
-  border-color: #625df5;
+  border-color: #1a56db;
 }
 .plan-hd {
   display: flex;
@@ -1923,7 +1924,7 @@ html.pro-theme .nvc {
   color: #ffffff;
 }
 .plan-cur {
-  background: #625df5;
+  background: #1a56db;
 }
 .plan-for {
   margin: 0;
@@ -2036,7 +2037,7 @@ html.pro-theme .nvc {
   box-shadow: inset 0 0 0 1px #202020;
 }
 .plan-tag.salon {
-  background: #625df5;
+  background: #1a56db;
 }
 /* Sur le haut noir de l'accueil pro : Free reste blanc cerclé ; Pro et Salon en verre clair. */
 .h12-hd .plan-tag:not(.free) {
@@ -2377,4 +2378,31 @@ html.pro-theme .agenda .ag9-lg:not(:has(button)) {
 }
 .obs-r .obs-x {
   order: 4;
+}
+
+/* ============================================================================================
+   BLEU DE MARQUE #1A56DB (22 nov. 2026, choix du propriétaire) — aplat, jamais de dégradé.
+   Actions principales en bleu : rond Agenda, « + », bandeau des offres. Texte et icônes : encre.
+   ============================================================================================ */
+html.pro-theme .nvc {
+  background: #1a56db;
+}
+html.pro-theme .fab {
+  background: #1a56db;
+}
+.plan-bf {
+  background: #1a56db;
+}
+/* L'onglet actif de la barre du bas garde l'encre : le bleu est réservé aux actions. */
+html.pro-theme .nvi.on:not(.ctr),
+html.client-theme .nvi.on:not(.ctr) {
+  color: #202020;
+}
+.pl-btn-ink:hover {
+  background: #114ec0;
+}
+/* Carte du lien de l'accueil pro : « Code QR » = action principale, en bleu de marque. */
+html.pro-theme .h11-b.grad {
+  background: #1a56db;
+  color: #ffffff;
 }

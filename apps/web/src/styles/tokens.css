@@ -34,7 +34,9 @@
 
   /* Accent = l'encre : il n'y a PAS de couleur de marque (anciens jetons gardés pour les classes
      existantes, tous ramenés à l'encre et aux gris). */
-  --color-accent: #202020;
+  /* BLEU DE MARQUE (22 nov. 2026, choix du propriétaire : le bleu de la bannière Brandlet, en aplat) :
+     boutons principaux, onglet actif, liens. Le TEXTE reste à l'encre (`--color-accent-strong`). */
+  --color-accent: #1a56db;
   --color-accent-strong: #202020;
   --color-accent-deep: #202020;
   --color-accent-soft: #f2f3f5;
@@ -70,7 +72,7 @@
   /* Heures libres des cartes de la place de marché : encre (le bleu du 19 sept. est retiré). */
   --color-hour: #202020;
   /* Violet Planity : numéros d'étape (« 1. », « 2. ») et liens d'action (« Supprimer »), rien d'autre. */
-  --color-link: #625df5;
+  --color-link: #1a56db;
 
   /* ---------------------------------------------------------------- Typographie */
   --font-sans: 'Inter', Helvetica, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
