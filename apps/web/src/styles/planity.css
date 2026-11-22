@@ -2357,3 +2357,24 @@ html.pro-theme .agenda .ag9-lg:not(:has(button)) {
   color: #4e5860;
   font-size: calc(15px * var(--fz, 1));
 }
+
+/* Inscription pro, « Vos prestations » : le NOM garde toute la largeur ; la durée passe dessous
+   (22 nov. 2026, audit : « Manucur… », « Extension… » étaient coupés). */
+.obs-r {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+.obs-r .obs-t {
+  padding-bottom: 4px;
+}
+.obs-r .obs-d {
+  order: 5;
+  margin: 0 0 10px 46px;
+  height: 32px;
+}
+[dir='rtl'] .obs-r .obs-d {
+  margin: 0 46px 10px 0;
+}
+.obs-r .obs-x {
+  order: 4;
+}
