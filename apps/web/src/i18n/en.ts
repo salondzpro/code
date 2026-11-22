@@ -2511,4 +2511,5 @@ export const en: Record<string, string> = {
   "Continuer avec Apple": "Continue with Apple",
   "Connexion avec Apple impossible pour le moment. Réessayez.": "Apple sign-in is unavailable right now. Please try again.",
   "{salon} a été prévenu.": "{salon} has been notified.",
+  "Je suis dans mon salon : utiliser ma position": "I'm at my salon: use my location",
 };

@@ -33,7 +33,7 @@ import { PlacePicker, type LatLng, type PlaceSource, type ReversePlace } from '@
 import { PlaceSuggestions } from '@/components/PlaceSuggestions';
 import { WilayaPicker } from '@/components/WilayaPicker';
 import { useDebounced } from '@/lib/useDebounced';
-import { aplatir, communeProche, dansZone, prechargerLieux, useLieux, zoneWilaya, type Lieu } from '@/lib/places';
+import { aplatir, communeProche, wilayaDePosition, dansZone, prechargerLieux, useLieux, zoneWilaya, type Lieu } from '@/lib/places';
 import { positionPrecise } from '@/lib/position';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { StepBar, StepSheet, StepTitle, stepPath } from './Shared';
@@ -136,9 +136,21 @@ export function Step4Address({ settings }: { settings?: boolean }) {
 
   const fromGps = () => {
     setGps('asking');
+    let premiere = true;
     positionPrecise(
       (m) => {
         setGps('idle');
+        // Sans wilaya encore choisie : celle de la position (22 nov. 2026) — wilaya, adresse et
+        // épingle remplies d'un seul toucher.
+        if (premiere && !wilaya) {
+          premiere = false;
+          void wilayaDePosition(m).then((code) => {
+            if (code) {
+              setWilaya(code);
+              clearErr('wilaya');
+            }
+          });
+        }
         setPos({ lat: m.lat, lng: m.lng });
         setPlaced(true);
         setConfirmed(false);
@@ -247,6 +259,13 @@ export function Step4Address({ settings }: { settings?: boolean }) {
 
       <form id="address" onSubmit={submit} className="adr" noValidate>
         {/* ---------------------------------------------------------------- 1 */}
+        {/* Raccourci d'un toucher (22 nov. 2026) : un pro s'inscrit souvent depuis son salon. */}
+        {!wilaya && !settings && (
+          <button type="button" className="adr-gps" onClick={fromGps} disabled={gps === 'asking'}>
+            <I icon={LocateFixed} size={17} />
+            {gps === 'asking' ? t('Recherche de votre position…') : t('Je suis dans mon salon : utiliser ma position')}
+          </button>
+        )}
         <AdrStep n={1} title={t('Wilaya')} done={!!wilaya} active={step === 1} error={errors.wilaya}>
           <WilayaPicker id="adr-wilaya" value={wilaya} onChange={chooseWilaya} invalid={!!errors.wilaya} />
         </AdrStep>

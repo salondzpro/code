@@ -226,3 +226,22 @@ export async function communeProche(p: { lat: number; lng: number }, wilaya: num
   }
   return best?.nom ?? null;
 }
+
+/**
+ * Wilaya d'une position (commune embarquée la plus proche, 22 nov. 2026) : l'inscription d'un salon
+ * remplit la wilaya d'un toucher sur « Utiliser ma position ». `null` si l'on est loin de l'Algérie.
+ */
+export async function wilayaDePosition(p: { lat: number; lng: number }): Promise<number | null> {
+  const communes = await chargerCommunes().catch(() => [] as Commune[]);
+  let best: Commune | null = null;
+  let d = Infinity;
+  for (const c of communes) {
+    const x = (c.lat - p.lat) ** 2 + ((c.lng - p.lng) * Math.cos((p.lat * Math.PI) / 180)) ** 2;
+    if (x < d) {
+      d = x;
+      best = c;
+    }
+  }
+  // Au-delà d'environ 60 km de toute commune : hors d'Algérie, on ne devine rien.
+  return best && Math.sqrt(d) < 0.55 ? best.wilaya : null;
+}

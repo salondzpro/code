@@ -62,6 +62,8 @@ export function ProSite() {
   };
 
   const entrer = session ? '/pro' : '/pro/acces';
+  // « Créer mon espace » mène au FORMULAIRE d'inscription, pas à la connexion (audit du 22 nov. 2026).
+  const creer = session ? '/pro' : '/pro/acces/creer';
 
   return (
     <div className="hx">
@@ -95,7 +97,7 @@ export function ProSite() {
           {t('Votre agenda, votre page de réservation et vos clientes, au même endroit.')}
         </p>
         <div className="hx-in hx-cta" style={{ ['--d' as string]: '360ms' }}>
-          <Link to={entrer} className="hx-btn">
+          <Link to={creer} className="hx-btn">
             {session ? t('Ouvrir mon espace') : t('Créer mon espace — gratuit')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
           </Link>
           {!session && (
@@ -209,7 +211,7 @@ export function ProSite() {
             </h2>
           </div>
           <div data-reveal style={{ ['--d' as string]: '140ms' }}>
-            <PlanCards signupTo={entrer} />
+            <PlanCards signupTo={creer} />
           </div>
           <div data-reveal className="mt-6 flex justify-center">
             <SupportWhatsApp />
@@ -224,7 +226,7 @@ export function ProSite() {
             {t('Ouvrez votre espace en quelques minutes.')}
           </h2>
           <div data-reveal className="hx-cta centre" style={{ ['--d' as string]: '100ms' }}>
-            <Link to={entrer} className="hx-btn">
+            <Link to={creer} className="hx-btn">
               {session ? t('Ouvrir mon espace') : t('Créer mon espace — gratuit')} <I icon={ArrowRight} size={18} className="rtl:-scale-x-100" />
             </Link>
           </div>

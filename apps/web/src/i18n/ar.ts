@@ -2497,4 +2497,5 @@ export const ar: Record<string, string> = {
   "Continuer avec Apple": "المتابعة عبر Apple",
   "Connexion avec Apple impossible pour le moment. Réessayez.": "تعذّر تسجيل الدخول عبر Apple حاليًا. أعد المحاولة.",
   "{salon} a été prévenu.": "تم إبلاغ {salon}.",
+  "Je suis dans mon salon : utiliser ma position": "أنا في صالوني: استعمل موقعي",
 };
