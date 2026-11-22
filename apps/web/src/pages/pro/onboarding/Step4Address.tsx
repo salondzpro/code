@@ -22,7 +22,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { Check, CheckCircle2, LocateFixed, MapPin, Search, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, useProSalon, useProSalonMutations } from '@salondz/api-client';
-import { WILAYAS, categoriesForMarket, formatDZPhone, wilayaName, type CategoryId, type GeoBBox } from '@salondz/constants';
+import { WILAYAS, categoriesForMarket, formatDZPhone, reverseGeocode, wilayaName, type CategoryId, type GeoBBox } from '@salondz/constants';
 import { phoneDZ } from '@salondz/validation';
 import { useAuth } from '@/lib/auth';
 import { clearProDraft, draftFiles, readProDraft, writeProDraft } from '@/lib/proDraft';
@@ -137,6 +137,7 @@ export function Step4Address({ settings }: { settings?: boolean }) {
   const fromGps = () => {
     setGps('asking');
     let premiere = true;
+    let premiereAdresse = true;
     positionPrecise(
       (m) => {
         setGps('idle');
@@ -155,8 +156,25 @@ export function Step4Address({ settings }: { settings?: boolean }) {
         setPlaced(true);
         setConfirmed(false);
         clearErr('pos');
+        // L'adresse se remplit tout de suite d'après la position (sans attendre un geste sur la carte).
+        if (premiereAdresse) {
+          premiereAdresse = false;
+          void reverseGeocode(m.lat, m.lng).then((r) => {
+            if (!r?.inDZ) return;
+            if (r.quartier || r.commune) setQuartier(r.quartier ?? r.commune ?? '');
+            if (r.commune) setCommune(r.commune);
+            const auto = [r.rue, r.quartier].filter(Boolean).join(', ') || r.label;
+            if (auto) {
+              setAddress(auto);
+              setAddressAuto(true);
+              clearErr('address');
+            }
+          });
+        }
       },
-      () => setGps('denied'),
+      // « Refusée » seulement si AUCUNE position n'a été obtenue et que le refus vient de la personne :
+      // une précision de 30 m non atteinte n'est pas un refus (22 nov. 2026, audit).
+      (err) => setGps(premiereAdresse && err.code === err.PERMISSION_DENIED ? 'denied' : 'idle'),
       { precisionM: 30 },
     );
   };
