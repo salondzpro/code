@@ -115,6 +115,8 @@ export const createServiceSchema = z.object({
   /** Groupe libre du catalogue (catégorie créée par le pro). */
   groupName: p.shortText(40).nullable().optional(),
   isActive: z.boolean().default(true),
+  /** Rang dans le catalogue (création en parallèle à l'inscription, 22 nov. 2026) ; sinon à la suite. */
+  sortOrder: z.number().int().min(0).max(1000).optional(),
 });
 export type CreateServiceInput = z.infer<typeof createServiceSchema>;
 export const updateServiceSchema = createServiceSchema.partial().extend({
