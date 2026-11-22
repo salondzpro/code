@@ -224,7 +224,8 @@ export function ProHome() {
         </section>
       )}
 
-      {salon && <StoryCard salon={salon} url={link.url} short={link.short} />}
+      {/* Pas de story tant que la page n'est pas en ligne : son lien mènerait à « Salon introuvable ». */}
+      {salon?.isPublished && <StoryCard salon={salon} url={link.url} short={link.short} />}
 
       {toast &&
         createPortal(
