@@ -75,10 +75,15 @@ export function StepServices() {
     setError(null);
     setBusy(true);
     try {
-      // Une à une : l'ordre du catalogue suit celui de la liste.
-      for (const r of chosen)
-        if (!salon.services.some((s) => s.name.toLowerCase() === r.name.toLowerCase()))
-          await create.mutateAsync({ name: r.name, durationMinutes: r.minutes, priceDa: r.priceDa, categoryId: r.categoryId, isActive: true });
+      // EN PARALLÈLE (22 nov. 2026, audit : une à une, la mise en ligne prenait plusieurs secondes sur
+      // un réseau lent) ; l'ordre du catalogue suit celui de la liste grâce à `sortOrder`.
+      const base0 = salon.services.length;
+      const aCreer = chosen.filter((r) => !salon.services.some((s) => s.name.toLowerCase() === r.name.toLowerCase()));
+      await Promise.all(
+        aCreer.map((r, i) =>
+          create.mutateAsync({ name: r.name, durationMinutes: r.minutes, priceDa: r.priceDa, categoryId: r.categoryId, isActive: true, sortOrder: base0 + i }),
+        ),
+      );
       if (!salon.isPublished) await updateSalon.mutateAsync({ isPublished: true });
       clearProDraft();
       navigate('/pro', { replace: true });

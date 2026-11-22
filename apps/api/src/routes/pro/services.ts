@@ -172,7 +172,8 @@ const proServiceRoutes: FastifyPluginAsyncZod = async (app) => {
       );
     const res = await db
       .from('services')
-      .insert({ ...snakeize(req.body), salon_id: salonId, sort_order: count ?? 0 })
+      // Ordre fourni par l'écran (création en parallèle à l'inscription, 22 nov. 2026), sinon à la suite.
+      .insert({ ...snakeize(req.body), salon_id: salonId, sort_order: req.body.sortOrder ?? count ?? 0 })
       .select(SERVICE_COLS)
       .single();
     const created = camelize<Service>(unwrap(res));
