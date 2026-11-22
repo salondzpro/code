@@ -203,7 +203,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     // Adresse prise par un compte de l'AUTRE côté : le nouveau compte vit sous l'adresse interne.
     const autre = existing ? null : await findUser(email);
     const cible = autre ? aliasOf(email, role) : email;
-    const meta = { role, ...(autre ? { contact_email: email } : {}) };
+    const meta = { role, ...(autre ? { contact_email: email } : {}), ...(fullName?.trim() ? { full_name: fullName.trim() } : {}) };
     /**
      * CLIENTE : COMPTE OUVERT TOUT DE SUITE (14 nov. 2026, demande du propriétaire : « être
      * facilitateur »). Adresse, mot de passe, nom et « femme / homme », et l'on entre — pas de lien

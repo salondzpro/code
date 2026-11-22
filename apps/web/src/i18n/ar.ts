@@ -2496,4 +2496,5 @@ export const ar: Record<string, string> = {
   "Connexion avec Google impossible pour le moment. Réessayez.": "تعذّر تسجيل الدخول عبر Google حاليًا. أعد المحاولة.",
   "Continuer avec Apple": "المتابعة عبر Apple",
   "Connexion avec Apple impossible pour le moment. Réessayez.": "تعذّر تسجيل الدخول عبر Apple حاليًا. أعد المحاولة.",
+  "{salon} a été prévenu.": "تم إبلاغ {salon}.",
 };

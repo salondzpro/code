@@ -2510,4 +2510,5 @@ export const en: Record<string, string> = {
   "Connexion avec Google impossible pour le moment. Réessayez.": "Google sign-in is unavailable right now. Please try again.",
   "Continuer avec Apple": "Continue with Apple",
   "Connexion avec Apple impossible pour le moment. Réessayez.": "Apple sign-in is unavailable right now. Please try again.",
+  "{salon} a été prévenu.": "{salon} has been notified.",
 };

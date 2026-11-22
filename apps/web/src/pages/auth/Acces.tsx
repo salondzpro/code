@@ -254,51 +254,83 @@ export function AccesCreer() {
   const { session, signUpWithPassword } = useAuth();
   const navigate = useNavigate();
   const { next, email: initial, q, role, base } = useParcours();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState(initial);
   const [digits, setDigits] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmation, setConfirmation] = useState('');
+  const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
+    const m = guestMarket();
+    return m === 'women' ? 'female' : m === 'men' ? 'male' : '';
+  });
   const [cgu, setCgu] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Err>(null);
+  const enCours = useRef(false);
   /**
-   * INSCRIPTION FAÇON PLANITY (20 nov. 2026) : Téléphone portable, Email, Mot de passe, Confirmation,
-   * CGU, « Créer mon compte », OU, « Se connecter ». CLIENTE : on enchaîne sur « Faisons connaissance »
-   * (prénom et nom, femme / homme), qui crée le compte et fait entrer ; le mot de passe et le numéro
-   * y voyagent dans l'état de navigation (mémoire), jamais dans l'adresse. PRO : lien de confirmation.
+   * INSCRIPTION EN UNE SEULE PAGE (22 nov. 2026, audit du parcours) : Prénom et nom, Téléphone,
+   * Email, Mot de passe (l'œil remplace la confirmation tapée deux fois), et pour une cliente
+   * « Vous êtes » Femme / Homme — puis « Créer mon compte ». CLIENTE : compte ouvert tout de suite,
+   * retour à la page visée (réservation en cours comprise). PRO : nom et numéro posés sur le compte,
+   * lien de confirmation par e-mail. Avant : deux pages (« Faisons connaissance ») et deux mots de passe.
    */
   const client = role === 'client';
 
-  if (session) return <Navigate to={retour(next)} replace />;
+  if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
 
   const creer = async (e: FormEvent) => {
     e.preventDefault();
     const mail = email.trim().toLowerCase();
     const phone = numeroDZ(digits);
+    if (name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
     if (!phone) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
     if (!EMAIL_RE.test(mail)) return setError({ kind: 'email', text: t('Adresse e-mail invalide.') });
     if (password.length < PASSWORD_MIN) return setError({ kind: 'password', text: t('Mot de passe trop court : {n} caractères au minimum.', { n: PASSWORD_MIN }) });
-    if (password !== confirmation) return setError({ kind: 'password', text: t('Les deux mots de passe ne sont pas identiques.') });
+    if (client && !gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
     if (!cgu) return setError({ kind: 'form', text: t('Acceptez les CGU pour créer votre compte.') });
     setError(null);
-    writeAuthFlow({ role, next, identifier: mail, channel: 'email', sentAt: Date.now() });
-    if (client) return navigate(`${base}/vous${q({ email: mail })}`, { state: { password, phone } });
     setBusy(true);
+    enCours.current = true;
+    writeAuthFlow({ role, next, identifier: mail, channel: 'email', sentAt: Date.now() });
     try {
-      // Le numéro saisi ici est enregistré sur le compte pro (« Vos coordonnées » ne le redemande pas).
-      const ouverte = await signUpWithPassword(mail, password, role, next, { phone });
+      if (client) {
+        const ouverte = await signUpWithPassword(mail, password, 'client', next, { fullName: name.trim(), gender: gender || undefined, phone });
+        if (gender) setGuestMarket(gender === 'female' ? 'women' : 'men');
+        if (ouverte) navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
+        else navigate(`${base}/envoye?mode=confirm`, { replace: true });
+        return;
+      }
+      // Pro : le nom et le numéro saisis ici sont posés sur le compte (« Vos coordonnées » ne les redemande pas).
+      const ouverte = await signUpWithPassword(mail, password, role, next, { phone, fullName: name.trim() });
       if (ouverte) navigate(`/profil/creer?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(`${base}/envoye?mode=confirm`, { replace: true });
     } catch (err) {
       setError(describeAuthError(err));
     } finally {
+      enCours.current = false;
       setBusy(false);
     }
   };
 
+  const tuiles = [
+    { value: 'female' as const, label: t('Femme'), Visage: VisageFemme, cls: 'f' },
+    { value: 'male' as const, label: t('Homme'), Visage: VisageHomme, cls: 'h' },
+  ];
+
   return (
     <AuthScreen back={`${base}${q()}`} titre={role === 'pro' ? t('Créer mon espace professionnel') : t('Créer mon compte')}>
       <form onSubmit={creer} noValidate className="pa-form pl-auth">
+        <Field label={`${t('Prénom et nom')} *`} htmlFor="pa-creer-nom">
+          <Input
+            id="pa-creer-nom"
+            autoComplete="name"
+            placeholder={t('Inès Rahmani')}
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError(null);
+            }}
+          />
+        </Field>
         <PhoneDZField
           id="pa-creer-tel"
           digits={digits}
@@ -338,18 +370,31 @@ export function AccesCreer() {
           }}
           err={error?.kind === 'password'}
         />
-        <PasswordField
-          id="pa-creer-c"
-          label={`${t('Confirmation du mot de passe')} *`}
-          placeholder={t('Confirmation du mot de passe')}
-          autoComplete="new-password"
-          value={confirmation}
-          onChange={(v) => {
-            setConfirmation(v);
-            setError(null);
-          }}
-          err={error?.kind === 'password'}
-        />
+        {client && (
+          <div>
+            <span className="lbl">{t('Vous êtes')}</span>
+            <div className="pa-genre petit" role="radiogroup" aria-label={t('Vous êtes')}>
+              {tuiles.map((x) => (
+                <button
+                  key={x.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={gender === x.value}
+                  className={`pa-genre-t ${x.cls}${gender === x.value ? ' on' : ''}`}
+                  onClick={() => {
+                    setGender(x.value);
+                    setError(null);
+                  }}
+                >
+                  <span className="pa-genre-i" aria-hidden>
+                    <x.Visage />
+                  </span>
+                  {x.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <label className="pl-auth-cgu">
           <input type="checkbox" checked={cgu} onChange={(e) => setCgu(e.target.checked)} />
           <span>
@@ -386,129 +431,9 @@ export function AccesCreer() {
  * compte déjà confirmé, ouvre la session et la place de marché sur le côté choisi.
  */
 export function AccesVous() {
-  const { session, signUpWithPassword } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { next, email, q, base } = useParcours();
-  const etat = location.state as { password?: string; phone?: string } | null;
-  const password = etat?.password ?? '';
-  // Numéro déjà saisi à l'inscription (façon Planity) : on ne le redemande pas.
-  const dejaTel = etat?.phone ?? null;
-  const [name, setName] = useState('');
-  const [digits, setDigits] = useState('');
-  const [gender, setGender] = useState<'female' | 'male' | ''>(() => {
-    const m = guestMarket();
-    return m === 'women' ? 'female' : m === 'men' ? 'male' : '';
-  });
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<Err>(null);
-  const enCours = useRef(false);
-
-  if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
-  if (!email) return <Navigate to={`${base}${q()}`} replace />;
-  // Page rechargée : le mot de passe (gardé en mémoire seulement) est perdu, on le redemande.
-  if (!password) return <Navigate to={`${base}/creer${q({ email })}`} replace />;
-
-  const entrer = async (e: FormEvent) => {
-    e.preventDefault();
-    if (name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
-    // Numéro OBLIGATOIRE (17 nov. 2026), avec ou sans le 0 du début ; vérifié aussi par le serveur.
-    const phone = dejaTel ?? numeroDZ(digits);
-    if (!phone) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
-    if (!gender) return setError({ kind: 'form', text: t('Choisissez Femme ou Homme.') });
-    setError(null);
-    setBusy(true);
-    enCours.current = true;
-    try {
-      writeAuthFlow({ role: 'client', next, identifier: email, channel: 'email', sentAt: Date.now() });
-      const ouverte = await signUpWithPassword(email, password, 'client', next, { fullName: name.trim(), gender, phone });
-      setGuestMarket(gender === 'female' ? 'women' : 'men');
-      if (ouverte) navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
-      else navigate(`${base}/envoye?mode=confirm`, { replace: true });
-    } catch (err) {
-      setError(describeAuthError(err));
-    } finally {
-      enCours.current = false;
-      setBusy(false);
-    }
-  };
-
-  const tuiles = [
-    { value: 'female' as const, label: t('Femme'), Visage: VisageFemme, cls: 'f' },
-    { value: 'male' as const, label: t('Homme'), Visage: VisageHomme, cls: 'h' },
-  ];
-
-  return (
-    <AuthScreen
-      back={`${base}/creer${q({ email })}`}
-      titre={t('Faisons connaissance')}
-      actions={
-        // Les CGU sont déjà acceptées (case à cocher de l'écran précédent) : pas de doublon ici (audit du 21 nov. 2026).
-        <Button icon={ICONE.creerCompte} type="submit" form="pa-vous" loading={busy} disabled={busy}>
-          {t('Créer mon compte')}
-        </Button>
-      }
-    >
-      <form id="pa-vous" onSubmit={entrer} noValidate className="pa-form">
-        <Field label={t('Prénom et nom')} htmlFor="pa-vous-nom">
-          <Input
-            id="pa-vous-nom"
-            autoComplete="name"
-            enterKeyHint="done"
-            placeholder={t('Inès Rahmani')}
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setError(null);
-            }}
-          />
-        </Field>
-        {!dejaTel && (
-          <PhoneDZField
-            id="pa-vous-tel"
-            digits={digits}
-            onDigits={(v) => {
-              setDigits(v);
-              setError(null);
-            }}
-            error={error?.kind === 'phone' ? error.text : null}
-          />
-        )}
-        <div>
-          <span className="lbl">{t('Vous êtes')}</span>
-          <div className="pa-genre" role="radiogroup" aria-label={t('Vous êtes')}>
-            {tuiles.map((x) => (
-              <button
-                key={x.value}
-                type="button"
-                role="radio"
-                aria-checked={gender === x.value}
-                className={`pa-genre-t ${x.cls}${gender === x.value ? ' on' : ''}`}
-                onClick={() => {
-                  setGender(x.value);
-                  setError(null);
-                }}
-              >
-                <span className="pa-genre-i" aria-hidden>
-                  <x.Visage />
-                </span>
-                {x.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        {error && (
-          <AuthError texte={error.text}>
-            {error.kind === 'exists' && (
-              <LinkButton to={`${base}/mot-de-passe${q({ email })}`} sm icon={ICONE.seConnecter}>
-                {t('Se connecter')}
-              </LinkButton>
-            )}
-          </AuthError>
-        )}
-      </form>
-    </AuthScreen>
-  );
+  // Fondu dans « Créer mon compte » (22 nov. 2026) : une adresse ancienne ou rechargée y revient.
+  const { q, base, email } = useParcours();
+  return <Navigate to={`${base}/creer${q(email ? { email } : {})}`} replace />;
 }
 
 /* -------------------------------------------------------------------- 3. Vérifier l'e-mail */

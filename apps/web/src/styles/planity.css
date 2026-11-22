@@ -2311,3 +2311,49 @@ html.pro-theme .agenda .ag9-lg:not(:has(button)) {
 .pl-btn.pl-apple {
   color: #ffffff;
 }
+
+/* « Vous êtes » dans le formulaire d'inscription en une page (22 nov. 2026) : tuiles compactes,
+   visage à gauche du libellé, à la hauteur d'un champ. */
+.pa-genre.petit .pa-genre-t {
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 12px;
+  font-size: calc(15px * var(--fz, 1));
+}
+.pa-genre.petit .pa-genre-i,
+.pa-genre.petit .pa-genre-i svg {
+  width: 36px;
+  height: 36px;
+}
+
+/* Annulation confirmée (fiche d'un rendez-vous côté client, 22 nov. 2026). */
+.pl-cf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  text-align: center;
+}
+.pl-cf-i {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fbebeb;
+  color: #d9445c;
+}
+.pl-cf-t {
+  margin: 4px 0 0;
+  font-size: calc(22px * var(--fz, 1));
+  font-weight: 600;
+  color: #202020;
+}
+.pl-cf-p {
+  margin: 0;
+  color: #4e5860;
+  font-size: calc(15px * var(--fz, 1));
+}

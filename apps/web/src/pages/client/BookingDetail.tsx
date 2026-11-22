@@ -8,9 +8,7 @@ import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import {
-  ArrowLeft,
   Phone,
-  RotateCcw,
   StickyNote,
   UserRound,
   XCircle,
@@ -26,8 +24,6 @@ import {
   formatDateLongDZ,
   formatDZPhone,
   formatTimeDZ,
-  relativeDayLabelDZ,
-  toLocalDateKey,
   CLIENT_CANCEL_REASONS_FR,
   reasonOptions,
   SHOW_SALON_CONTACT_TO_CLIENTS,
@@ -110,63 +106,44 @@ export function BookingDetail() {
   const cancels = me.data?.standing?.cancellations ?? 0;
 
   if (done) {
-    // C-F 18 — Annulation confirmée : même lecture en grand que la fiche, avec le statut « Annulé » bien visible.
-    // Pas de centrage plein écran : du contenu utile suit la pastille, le centrage ne faisait
-    // que pousser l'ensemble vers le bas de l'écran.
+    // ANNULATION CONFIRMÉE — design actuel (22 nov. 2026, audit) : une pastille sobre, une phrase, UNE
+    // carte (salon, jour et heure barrés, prestations), puis réserver à nouveau ou revenir à la liste.
     return (
-      <Screen gap={12}>
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="flex h-[5rem] w-[5rem] items-center justify-center rounded-full bg-cancel-bg text-cancel-fg">
-            <I icon={XCircle} size={40} />
+      <Screen gap={16}>
+        <div className="pl-cf">
+          <span className="pl-cf-i" aria-hidden>
+            <I icon={XCircle} size={28} strokeWidth={1.8} />
           </span>
-          <h1 className="h1">{t("Rendez-vous annulé")}</h1>
-          <p className="p">
-            {b.salon.name} {t("a été prévenu. Aucun frais ne vous est appliqué.")}
-          </p>
+          <h1 className="pl-cf-t">{t('Rendez-vous annulé')}</h1>
+          <p className="pl-cf-p">{t('{salon} a été prévenu.', { salon: b.salon.name })}</p>
         </div>
-        <div className="crd !gap-3 !border-danger-line">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[1rem] font-semibold">
-              {relativeDayLabelDZ(toLocalDateKey(new Date(b.startsAt)))}
-            </span>
-            <StatusBadge status="cancelled" lg cancelledBy="client" />
-          </div>
-          <div className="flex items-end justify-between gap-3">
-            <span className="mono text-[2.286rem] font-semibold leading-none tracking-[-0.9px] line-through decoration-danger/60 decoration-2">
-              {formatTimeDZ(b.startsAt)}{' '}
-              <span className="text-[1rem] font-medium text-muted">– {formatTimeDZ(b.endsAt)}</span>
-            </span>
-            <span className="text-[1.714rem] font-semibold leading-none tracking-[-0.6px] text-muted line-through decoration-danger/60 decoration-2">
-              {formatDA(b.priceDa)}
-            </span>
-          </div>
-          <span className="text-[0.857rem] text-muted">
-            {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} · {b.salon.name}
-          </span>
-        </div>
-        <div className="crd !gap-0">
-          <div className="li !py-3">
-            <span className="text-[1rem] font-semibold">
-              {lines.length} {t("prestation")}{lines.length > 1 ? 's' : ''}
-            </span>
-            <span className="text-[1rem] text-muted">{t("annulée")}{lines.length > 1 ? 's' : ''}</span>
+        <div className="pl-card pl-bk-sel">
+          <div className="pl-bk-sv">
+            <div className="min-w-0">
+              <span className="pl-bk-svn">{b.salon.name}</span>
+              <span className="pl-bk-svm line-through">
+                {formatDateLongDZ(b.startsAt).replace(/^\w/, (c) => c.toUpperCase())} · {formatTimeDZ(b.startsAt)}
+              </span>
+            </div>
+            <StatusBadge status="cancelled" cancelledBy="client" />
           </div>
           {lines.map((it) => (
-            <div key={it.id} className="li !py-3">
-              <span className="text-[1rem] font-semibold">{it.serviceName}</span>
-              <span className="text-[1rem] text-muted">
-                {it.durationMinutes
-                  ? `${formatDuration(it.durationMinutes)} · ${formatDA(it.priceDa)}`
-                  : formatDA(it.priceDa)}
-              </span>
+            <div key={it.id} className="pl-bk-sv">
+              <div className="min-w-0">
+                <span className="pl-bk-svn">{it.serviceName}</span>
+                <span className="pl-bk-svm" dir="ltr">
+                  {it.durationMinutes ? `${formatDuration(it.durationMinutes)} · ` : ''}
+                  {formatDA(it.priceDa)}
+                </span>
+              </div>
             </div>
           ))}
         </div>
-        <LinkButton to={`/s/${b.salon.slug}/prestations`}>
-          <I icon={RotateCcw} size={18} /> {t("Réserver un autre créneau")}
+        <LinkButton to={`/s/${b.salon.slug}`} icon={ICONE.reserver}>
+          {t('Réserver un autre créneau')}
         </LinkButton>
-        <LinkButton to="/rendez-vous" variant="g">
-          <I icon={ArrowLeft} size={18} /> {t("Retour à mes rendez-vous")}
+        <LinkButton to="/rendez-vous" variant="g" icon={ICONE.retour}>
+          {t('Mes rendez-vous')}
         </LinkButton>
       </Screen>
     );
