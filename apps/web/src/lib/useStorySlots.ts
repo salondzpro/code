@@ -47,7 +47,8 @@ export function rangesOf(hours: StoryPart[]): string[] {
 /** `range` limite aux heures d'un créneau de l'agenda, en minutes. Sans `serviceId`, la prestation la plus courte. */
 export function useStorySlots(salon: SalonOwnerView, date: string, range?: { from: number; to: number }, serviceId?: string) {
   const shortest = [...salon.services.filter((s) => s.isActive)].sort((a, b) => a.durationMinutes - b.durationMinutes)[0];
-  const av = useAvailability(salon.id, { serviceId: serviceId ?? shortest?.id ?? '', date });
+  // Page pas encore en ligne : l'API publique ne sert pas ses créneaux (404) — on ne demande rien.
+  const av = useAvailability(salon.isPublished ? salon.id : '', { serviceId: serviceId ?? shortest?.id ?? '', date });
   const from = range?.from;
   const to = range?.to;
 
