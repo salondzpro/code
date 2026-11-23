@@ -66,6 +66,7 @@ import type {
   EmailCheckInput,
   PhoneCodeInput,
   PhoneVerifyInput,
+  PasswordLoginInput,
   EmailCheckStatus,
   EmailLinkInput,
 } from '@salondz/validation';
@@ -466,6 +467,10 @@ export function createApiClient(opts: ApiClientOptions) {
       /** L'adresse est-elle libre ? Appelée dès la saisie, avant toute création de compte. */
       emailCheck: (body: EmailCheckInput) => post<{ status: EmailCheckStatus }>('/auth/email-check', body),
       /** Connexion par numéro : code envoyé par WhatsApp, puis vérifié contre le ticket. */
+      /** Casse-tête anti-robots commun (inscription, connexion, liens, codes). */
+      challenge: () => get<{ challenge: string; bits: number }>('/auth/challenge', undefined, false),
+      /** Connexion par mot de passe via l'API (preuve anti-robots, verrou par adresse). */
+      login: (body: PasswordLoginInput) => post<{ accessToken: string; refreshToken: string; expiresAt: number | null }>('/auth/login', body),
       phoneChallenge: () => get<{ challenge: string; bits: number }>('/auth/phone/challenge', undefined, false),
       phoneCode: (body: PhoneCodeInput) => post<{ expiresAt: string; resendIn: number | null }>('/auth/phone/code', body),
       phoneVerify: (body: PhoneVerifyInput) =>

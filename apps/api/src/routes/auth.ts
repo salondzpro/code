@@ -4,14 +4,15 @@ import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { ALIAS_DOMAIN, DEMO_LOGIN_CODE, demoAccountFor } from '@salondz/constants';
-import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, phoneCodeSchema, phoneVerifySchema, type EmailCheckStatus } from '@salondz/validation';
+import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, passwordLoginSchema, phoneCodeSchema, phoneVerifySchema, type EmailCheckStatus } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
 import { ensureDemoUser, ensureDemoWorld } from '../lib/demo';
 import { AppError, badRequest, conflict, notFound, unauthorized } from '../lib/errors';
 import { confirmationMail, magicLinkMail, recoveryMail, sendMail } from '../lib/email';
 import { sendWhatsAppCode, whatsappEnabled } from '../lib/whatsapp';
-import { checkProof, CODE_MAX_ATTEMPTS, CODE_TTL_MIN, codeHash, IP_MAX_PER_DAY, IP_MAX_PER_HOUR, isDzMobile, newChallenge, PHONE_MAX_PER_DAY, PHONE_MAX_PER_HOUR, RESEND_WAIT_S, waitAfter } from '../lib/phoneOtp';
+import { forget, guard, hit, seen } from '../lib/antibot';
+import { CODE_MAX_ATTEMPTS, CODE_TTL_MIN, codeHash, IP_MAX_PER_DAY, IP_MAX_PER_HOUR, isDzMobile, newChallenge, PHONE_MAX_PER_DAY, PHONE_MAX_PER_HOUR, RESEND_WAIT_S, waitAfter } from '../lib/phoneOtp';
 
 /**
  * Client anonyme (clé publique) : sert uniquement à échanger un code à usage unique (généré par
@@ -189,6 +190,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: { body: emailCheckSchema },
     },
     async (req, reply) => {
+      guard(req, 'email-check', req.body.email, req.body);
       reply.header('Cache-Control', 'private, no-store');
       const role = req.body.role === 'pro' ? 'pro' : 'client';
       const user = await accountFor(req.body.email, role);
@@ -199,6 +201,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
+    guard(req, 'signup', req.body.email, req.body);
     const { email, password, next, fullName, gender, phone, acq } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
     // Le compte DE CE CÔTÉ, s'il existe déjà (vrai ou interne).
@@ -318,6 +321,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
 
   /** Renvoi du lien de confirmation à un compte non confirmé (celui du portail). */
   app.post('/auth/resend-confirmation', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
+    guard(req, 'resend', req.body.email, req.body);
     const { email, next } = req.body;
     const portail = portailOf(req.body.role, next);
     const user = await accountFor(email, portail);
@@ -340,6 +344,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
    * l'autre application, 16 nov. 2026) — même réponse 204 quoi qu'il arrive.
    */
   app.post('/auth/magic-link', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
+    guard(req, 'magic-link', req.body.email, req.body);
     const { email, next } = req.body;
     const portail = portailOf(req.body.role, next);
     const user = await accountFor(email, portail);
@@ -357,6 +362,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
 
   /** Mot de passe oublié : celui du compte DU PORTAIL (client par défaut). */
   app.post('/auth/password-reset', { ...limit, schema: { body: emailLinkSchema } }, async (req, reply) => {
+    guard(req, 'reset', req.body.email, req.body);
     const { email } = req.body;
     const portail: Portail = req.body.role === 'pro' ? 'pro' : 'client';
     const user = await accountFor(email, portail);
@@ -370,6 +376,50 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     await sendMail(req.log, { to: email, ...recoveryMail(mailLink(req, gen.data.properties, to, portail)) });
     reply.status(204);
     return null;
+  });
+
+  // ---------------------------------------------------------------------------------------
+  // ANTI-ROBOTS (23 nov. 2026) : casse-tête commun à toutes les portes (`lib/antibot.ts`).
+  // ---------------------------------------------------------------------------------------
+  app.get('/auth/challenge', { config: { rateLimit: { max: 60, timeWindow: '10 minutes', keyGenerator: (req: FastifyRequest) => `challenge:${req.ip}` } } }, async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return newChallenge();
+  });
+
+  /**
+   * CONNEXION PAR MOT DE PASSE PAR L'API (23 nov. 2026) : preuve anti-robots + verrou par adresse.
+   * Après `LOGIN_MAX_FAILS` mots de passe faux en 15 min sur une même adresse, elle est verrouillée
+   * 15 min (on ne devine pas un mot de passe par milliers d'essais) ; une adresse IP a
+   * `LOGIN_MAX_PER_IP` essais par quart d'heure, toutes adresses confondues. `proofFor` = l'adresse
+   * tapée : la même preuve vaut pour ses adresses internes (même adresse sur les deux portails).
+   */
+  const LOGIN_MAX_FAILS = 8;
+  const LOGIN_MAX_PER_IP = 40;
+  const Q = 15 * 60_000;
+  app.post('/auth/login', { config: { rateLimit: { max: 60, timeWindow: '15 minutes', keyGenerator: (req: FastifyRequest) => `login:${req.ip}` } }, schema: { body: passwordLoginSchema } }, async (req, reply) => {
+    const { email, password } = req.body;
+    const sujet = req.body.proofFor ?? email;
+    if (email !== sujet && email !== aliasOf(sujet, 'client') && email !== aliasOf(sujet, 'pro')) throw badRequest('PROOF_INVALID', 'Vérification de sécurité expirée. Réessayez.');
+    guard(req, 'login', sujet, req.body, true);
+    if (seen(`login-fail:${sujet}`, Q) >= LOGIN_MAX_FAILS) {
+      throw new AppError(429, 'LOGIN_LOCKED', 'Trop d’essais de mot de passe. Réessayez dans 15 minutes, ou choisissez « Mot de passe oublié ».');
+    }
+    if (hit(`login-ip:${req.ip}`, Q) > LOGIN_MAX_PER_IP) throw new AppError(429, 'RATE_LIMITED', 'Trop de tentatives. Réessayez dans quelques minutes.');
+    const res = await anon.auth.signInWithPassword({ email, password });
+    reply.header('Cache-Control', 'private, no-store');
+    if (res.error || !res.data.session) {
+      const code = (res.error as { code?: string } | null)?.code ?? '';
+      if (code === 'email_not_confirmed') throw new AppError(401, 'EMAIL_NOT_CONFIRMED', 'Votre adresse n’est pas encore confirmée : ouvrez le lien reçu par e-mail.');
+      if (code === 'invalid_credentials' || res.error?.status === 400) {
+        hit(`login-fail:${sujet}`, Q);
+        throw new AppError(401, 'INVALID_CREDENTIALS', 'E-mail ou mot de passe incorrect.');
+      }
+      req.log.error({ err: res.error }, 'login');
+      throw new AppError(503, 'LOGIN_UNAVAILABLE', 'Connexion momentanément indisponible. Réessayez dans un instant.');
+    }
+    forget(`login-fail:${sujet}`);
+    const s = res.data.session;
+    return { accessToken: s.access_token, refreshToken: s.refresh_token, expiresAt: s.expires_at ?? null };
   });
 
   // ---------------------------------------------------------------------------------------
@@ -421,7 +471,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const { phone, lang, challenge, nonce } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
     if (!isDzMobile(phone)) throw badRequest('PHONE_NOT_MOBILE', 'Entrez un numéro de mobile algérien (05, 06 ou 07).');
-    if (!checkProof(challenge, nonce, phone)) throw badRequest('PROOF_INVALID', 'Vérification de sécurité expirée. Réessayez.');
+    guard(req, 'whatsapp', phone, { challenge, nonce }, true);
     const ip = req.ip;
 
     // Délai croissant et plafonds du numéro.

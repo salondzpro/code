@@ -442,6 +442,9 @@ export const emailSignupSchema = z.object({
   phone: p.phoneDZ.optional(),
   /** Provenance de campagne retenue sur l'appareil (23 nov. 2026) : compteur seulement, rien sur la personne. */
   acq: z.object({ src: z.string().trim().max(30), c: z.string().trim().max(40).optional() }).optional(),
+  /** Preuve anti-robots (`GET /auth/challenge`, `apps/api/src/lib/antibot.ts`). */
+  challenge: z.string().max(200).optional(),
+  nonce: z.string().max(32).optional(),
 });
 export type EmailSignupInput = z.infer<typeof emailSignupSchema>;
 /** Lien de connexion, renvoi de confirmation, mot de passe oublié : une adresse (+ retour). */
@@ -450,13 +453,29 @@ export const emailLinkSchema = z.object({
   next: nextPath,
   /** Portail d'où part la demande (client ou pro) : un lien n'ouvre jamais l'autre application. */
   role: z.enum(USER_ROLES).optional(),
+  /** Preuve anti-robots (`GET /auth/challenge`, `apps/api/src/lib/antibot.ts`). */
+  challenge: z.string().max(200).optional(),
+  nonce: z.string().max(32).optional(),
 });
 export type EmailLinkInput = z.infer<typeof emailLinkSchema>;
 /** Vérification d'une adresse AVANT l'inscription (dès la première étape) : libre, ou déjà prise. */
 export const emailCheckSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   role: z.enum(USER_ROLES).default('client'),
+  /** Preuve anti-robots (`GET /auth/challenge`, `apps/api/src/lib/antibot.ts`). */
+  challenge: z.string().max(200).optional(),
+  nonce: z.string().max(32).optional(),
 });
+/** Connexion par mot de passe via l'API (anti-robots, 23 nov. 2026). `proofFor` : l'adresse tapée (la preuve vaut aussi pour ses adresses internes). */
+export const passwordLoginSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(1).max(200),
+  proofFor: z.string().trim().toLowerCase().email().optional(),
+  /** Preuve anti-robots (`GET /auth/challenge`, `apps/api/src/lib/antibot.ts`). */
+  challenge: z.string().max(200).optional(),
+  nonce: z.string().max(32).optional(),
+});
+export type PasswordLoginInput = z.infer<typeof passwordLoginSchema>;
 export type EmailCheckInput = z.infer<typeof emailCheckSchema>;
 /**
  * `available` : aucune inscription ; `pro` / `client` : un compte CONFIRMÉ de ce rôle existe ;

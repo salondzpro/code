@@ -16,6 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, queryKeys } from '@salondz/api-client';
 import { demoAccountFor, type UserRole } from '@salondz/constants';
 import { api } from './api';
+import { preuve } from './antibot';
 import { env } from './env';
 import { supabase } from './supabase';
 import { currentDemo, startDemo, stopDemo, DEMO_USER_IDS } from '@/demo/session';
@@ -62,7 +63,8 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   /** Connexion par e-mail et mot de passe. */
-  signInWithPassword: (email: string, password: string) => Promise<void>;
+  /** `proofFor` : l'adresse tapée quand `email` est son adresse interne (même preuve anti-robots). */
+  signInWithPassword: (email: string, password: string, proofFor?: string) => Promise<void>;
   /**
    * Inscription : crée le compte (rôle en métadonnée, lu par le trigger de profil) et envoie
    * le lien de confirmation. Renvoie `true` si une session est ouverte tout de suite (projet
@@ -121,8 +123,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [qc]);
 
-  const signInWithPassword = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  // Connexion PAR L'API (23 nov. 2026, anti-robots) : preuve de travail + verrou après trop
+  // d'essais sur une adresse ; la session rendue est posée ici.
+  const signInWithPassword = useCallback(async (email: string, password: string, proofFor?: string) => {
+    const sujet = (proofFor ?? email).trim().toLowerCase();
+    const res = await api.auth.login({ email, password, ...(proofFor ? { proofFor: sujet } : {}), ...(await preuve(sujet)) });
+    const { error } = await supabase.auth.setSession({ access_token: res.accessToken, refresh_token: res.refreshToken });
     if (error) throw error;
   }, []);
 
@@ -132,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // le SMTP de Supabase), pas de session avant le clic. Cliente avec nom et genre (14 nov. 2026) :
       // le compte est ouvert d'office, on se connecte aussitôt avec le mot de passe saisi.
       const acq = provenance();
-      const res = await api.auth.signup({ email, password, role, next, ...(extra ?? {}), ...(acq ? { acq } : {}) });
+      const res = await api.auth.signup({ email, password, role, next, ...(extra ?? {}), ...(acq ? { acq } : {}), ...(await preuve(email)) });
       if (!res?.opened) return false;
       // `login` : l'adresse interne quand la vraie sert déjà à un compte de l'autre côté (16 nov. 2026).
       const { error } = await supabase.auth.signInWithPassword({ email: res.login ?? email, password });
@@ -144,15 +150,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Le portail (`role`) dit QUEL compte de l'adresse est visé : un lien n'ouvre jamais l'autre côté.
   const sendMagicLink = useCallback(async (email: string, next: string, role?: UserRole) => {
-    await api.auth.magicLink({ email, next, role });
+    await api.auth.magicLink({ email, next, role, ...(await preuve(email)) });
   }, []);
 
   const resendConfirmation = useCallback(async (email: string, next: string, role?: UserRole) => {
-    await api.auth.resendConfirmation({ email, next, role });
+    await api.auth.resendConfirmation({ email, next, role, ...(await preuve(email)) });
   }, []);
 
   const sendPasswordReset = useCallback(async (email: string, role?: UserRole) => {
-    await api.auth.passwordReset({ email, next: HOME, role });
+    await api.auth.passwordReset({ email, next: HOME, role, ...(await preuve(email)) });
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {
@@ -328,6 +334,9 @@ export const PRO_EMAIL_EXISTS_TEXT =
 
 const API_KINDS: Record<string, AuthErrorKind> = {
   NO_ACCOUNT: 'no_account',
+  INVALID_CREDENTIALS: 'credentials',
+  EMAIL_NOT_CONFIRMED: 'unconfirmed',
+  LOGIN_LOCKED: 'rate',
   EMAIL_EXISTS: 'exists',
   PRO_EMAIL_EXISTS: 'exists',
   ALREADY_CONFIRMED: 'exists',
@@ -340,6 +349,8 @@ export function describeAuthError(err: unknown): { kind: AuthErrorKind; text: st
   // Erreurs de NOTRE API : déjà en français, avec un code métier.
   if (err instanceof ApiError) {
     if (err.isNetwork) return { kind: 'network', text: t("Connexion perdue. Vérifiez votre réseau et réessayez.") };
+    // Nos propres refus 429 portent déjà leur phrase en français (verrou de connexion, codes).
+    if (err.status === 429 && ['LOGIN_LOCKED', 'OTP_WAIT', 'OTP_LIMIT'].includes(err.code)) return { kind: 'rate', text: t(err.message) };
     if (err.status === 429) return { kind: 'rate', text: t("Trop de tentatives. Réessayez dans quelques minutes.") };
     if (err.code === 'PRO_EMAIL_EXISTS') return { kind: 'exists', text: t(PRO_EMAIL_EXISTS_TEXT) };
     return { kind: API_KINDS[err.code] ?? 'other', text: err.message || 'Une erreur est survenue. Réessayez.' };

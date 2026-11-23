@@ -2527,4 +2527,5 @@ export const en: Record<string, string> = {
   "Administration Salon DZ": "Salon DZ administration",
   "Ce compte n’a pas accès à l’administration.": "This account has no access to the administration.",
   "Trop de codes demandés pour ce numéro. Réessayez plus tard, ou connectez-vous par e-mail.": "Too many codes requested for this number. Try again later, or sign in with email.",
+  "Trop d’essais de mot de passe. Réessayez dans 15 minutes, ou choisissez « Mot de passe oublié ».": "Too many password attempts. Try again in 15 minutes, or choose “Forgot password”.",
 };

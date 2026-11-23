@@ -156,7 +156,7 @@ export function AccesEmail() {
       }
       // Second essai : le compte de CE portail sous l'adresse interne (même adresse, autre côté).
       try {
-        await signInWithPassword(await aliasEmail(mail, role), password);
+        await signInWithPassword(await aliasEmail(mail, role), password, mail);
         if (await bonCote()) return navigate(destination(), { replace: true });
         await signOut({ voile: false }).catch(() => undefined);
       } catch {

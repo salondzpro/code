@@ -65,7 +65,7 @@ export function AdminLogin() {
       let premiere: unknown = null;
       for (const adresse of essais) {
         try {
-          await signInWithPassword(adresse, password);
+          await signInWithPassword(adresse, password, mail);
         } catch (err) {
           premiere ??= err;
           continue;
