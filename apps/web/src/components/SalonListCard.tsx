@@ -280,7 +280,7 @@ export function SalonListCard({ salon, to }: { salon: SalonSummary; to?: string 
           </div>
         )}
         <IconButton
-          className="absolute end-2.5 top-2.5 !bg-surface/95 shadow-sm"
+          className="sl-fav absolute end-2.5 top-2.5"
           aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           aria-pressed={isFav}
           disabled={toggle.isPending}
