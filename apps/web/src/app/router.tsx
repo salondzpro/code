@@ -26,7 +26,7 @@ import { WelcomeBack } from '@/pages/auth/WelcomeBack';
 import { ProfileSetup } from '@/pages/auth/ProfileSetup';
 import { Market } from '@/pages/auth/Market';
 import { ProWelcome } from '@/pages/pro/Welcome';
-import { AccesCreer, AccesVous, AccesEmail, AccesEnvoye, AccesMotDePasse, AccesOubli } from '@/pages/auth/Acces';
+import { AccesCreer, AccesVous, AccesEmail, AccesEnvoye, AccesMotDePasse, AccesOubli, AccesWhatsApp } from '@/pages/auth/Acces';
 import { ClientWelcome } from '@/pages/auth/Welcome';
 // Client (design C-H / C-F)
 import { Marketplace } from '@/pages/client/Marketplace';
@@ -241,6 +241,7 @@ export const router = createBrowserRouter([
                 { path: '/pro/acces/creer', element: <AccesCreer /> },
                 { path: '/pro/acces/envoye', element: <AccesEnvoye /> },
                 { path: '/pro/acces/oubli', element: <AccesOubli /> },
+                { path: '/pro/acces/whatsapp', element: <AccesWhatsApp /> },
               ]),
           ...(APPLI === 'pro'
             ? [
@@ -255,6 +256,7 @@ export const router = createBrowserRouter([
                 { path: '/acces/vous', element: <AccesVous /> },
                 { path: '/acces/envoye', element: <AccesEnvoye /> },
                 { path: '/acces/oubli', element: <AccesOubli /> },
+                { path: '/acces/whatsapp', element: <AccesWhatsApp /> },
               ]),
           {
             element: <RequireAuth />,

@@ -2512,4 +2512,13 @@ export const en: Record<string, string> = {
   "Connexion avec Apple impossible pour le moment. Réessayez.": "Apple sign-in is unavailable right now. Please try again.",
   "{salon} a été prévenu.": "{salon} has been notified.",
   "Je suis dans mon salon : utiliser ma position": "I'm at my salon: use my location",
+  "Continuer avec WhatsApp": "Continue with WhatsApp",
+  "Votre numéro de téléphone": "Your phone number",
+  "Recevoir le code sur WhatsApp": "Get the code on WhatsApp",
+  "Entrez le code reçu": "Enter the code you received",
+  "Envoyé sur WhatsApp au": "Sent on WhatsApp to",
+  "Renvoyer le code dans {temps}": "Resend code in {temps}",
+  "Renvoyer le code": "Resend code",
+  "Changer de numéro": "Change number",
+  "Code à 6 chiffres": "6-digit code",
 };

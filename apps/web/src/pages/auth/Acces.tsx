@@ -43,7 +43,8 @@ import { MailAppButton, AuthScreen } from '@/components/AuthKit';
 import { isNative } from '@/lib/native';
 import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
-import { t } from '@/i18n';
+import { getLocale, t } from '@/i18n';
+import { supabase } from '@/lib/supabase';
 import { MARCHE } from '@/lib/flavor';
 
 type Err = { kind: AuthErrorKind | 'form' | 'phone'; text: string } | null;
@@ -580,6 +581,167 @@ export function AccesOubli() {
           />
         </Field>
         {error && <AuthError texte={error} />}
+      </form>
+    </AuthScreen>
+  );
+}
+
+/* -------------------------------------------------------------------- Connexion par WhatsApp */
+
+/**
+ * CONNEXION PAR NUMÉRO, CODE REÇU SUR WHATSAPP (23 nov. 2026, demande du propriétaire). Un écran,
+ * deux temps : le numéro, puis le code à 6 chiffres (vérifié dès le sixième chiffre, sans bouton à
+ * toucher). Première connexion : le compte est créé par le serveur, puis `/profil/creer` demande le
+ * nom (le numéro y est déjà). Le serveur décide du portail : un numéro n'ouvre que le compte de CE
+ * côté (règle n° 4).
+ */
+export function AccesWhatsApp() {
+  const { session } = useAuth();
+  const navigate = useNavigate();
+  const { next, q, role, base } = useParcours();
+  const [digits, setDigits] = useState('');
+  const [phone, setPhone] = useState<string | null>(null);
+  const [ticket, setTicket] = useState('');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState<'send' | 'check' | null>(null);
+  const [error, setError] = useState<Err>(null);
+  const [dans, setDans] = useState(0);
+  const enCours = useRef(false);
+
+  useEffect(() => {
+    if (dans <= 0) return;
+    const id = window.setInterval(() => setDans((v) => Math.max(0, v - 1)), 1000);
+    return () => window.clearInterval(id);
+  }, [dans]);
+
+  if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
+
+  const envoyer = async (numero: string) => {
+    setBusy('send');
+    setError(null);
+    try {
+      const res = await api.auth.phoneCode({ phone: numero, role, lang: getLocale() });
+      setPhone(numero);
+      setTicket(res.ticket);
+      setCode('');
+      setDans(RENVOI_S);
+    } catch (err) {
+      setError({ kind: 'phone', text: describeAuthError(err).text });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const demander = (e: FormEvent) => {
+    e.preventDefault();
+    const numero = numeroDZ(digits);
+    if (!numero) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
+    void envoyer(numero);
+  };
+
+  const verifier = async (valeur: string) => {
+    if (!phone || valeur.length !== 6) return;
+    setBusy('check');
+    setError(null);
+    enCours.current = true;
+    try {
+      const res = await api.auth.phoneVerify({ phone, role, code: valeur, ticket });
+      const { error: e } = await supabase.auth.setSession({ access_token: res.accessToken, refresh_token: res.refreshToken });
+      if (e) throw e;
+      writeAuthFlow({ role, next, identifier: phone, channel: 'whatsapp' });
+      navigate(res.isNew ? `/profil/creer?next=${encodeURIComponent(next)}` : retour(next), { replace: true });
+    } catch (err) {
+      setError({ kind: 'form', text: describeAuthError(err).text });
+      setCode('');
+    } finally {
+      enCours.current = false;
+      setBusy(null);
+    }
+  };
+
+  const minutes = `${Math.floor(dans / 60)}:${String(dans % 60).padStart(2, '0')}`;
+
+  if (!phone) {
+    return (
+      <AuthScreen
+        back={`${base}${q()}`}
+        titre={t('Votre numéro de téléphone')}
+        actions={
+          <Button icon={ICONE.codeWhatsApp} type="submit" form="pa-wa" loading={busy === 'send'} disabled={busy !== null}>
+            {t('Recevoir le code sur WhatsApp')}
+          </Button>
+        }
+      >
+        <form id="pa-wa" onSubmit={demander} noValidate className="pa-form">
+          <PhoneDZField
+            id="pa-wa-tel"
+            digits={digits}
+            onDigits={(v) => {
+              setDigits(v);
+              setError(null);
+            }}
+            error={error?.kind === 'phone' ? error.text : null}
+            aide={null}
+          />
+        </form>
+      </AuthScreen>
+    );
+  }
+
+  return (
+    <AuthScreen
+      back={`${base}${q()}`}
+      titre={t('Entrez le code reçu')}
+      sous={
+        <>
+          {t('Envoyé sur WhatsApp au')} <b dir="ltr">{phone.replace(/^\+213/, '0').replace(/(\d{4})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4')}</b>
+        </>
+      }
+      actions={
+        <>
+          <Button icon={ICONE.seConnecter} type="submit" form="pa-wa-code" loading={busy === 'check'} disabled={busy !== null || code.length !== 6}>
+            {t('Se connecter')}
+          </Button>
+          <Button icon={ICONE.renvoyer} variant="g" loading={busy === 'send'} disabled={busy !== null || dans > 0} onClick={() => void envoyer(phone)}>
+            {dans > 0 ? t('Renvoyer le code dans {temps}', { temps: minutes }) : t('Renvoyer le code')}
+          </Button>
+          <button type="button" className="pa-lien centre" onClick={() => { setPhone(null); setError(null); }}>
+            {t('Changer de numéro')}
+          </button>
+        </>
+      }
+    >
+      <form
+        id="pa-wa-code"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void verifier(code);
+        }}
+        noValidate
+        className="pa-form"
+      >
+        <Field label={t('Code à 6 chiffres')} htmlFor="pa-wa-code-i">
+          <Input
+            id="pa-wa-code-i"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            enterKeyHint="go"
+            maxLength={6}
+            dir="ltr"
+            className="pa-code"
+            placeholder="••••••"
+            value={code}
+            onChange={(e) => {
+              const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+              setCode(v);
+              setError(null);
+              if (v.length === 6) void verifier(v);
+            }}
+            err={!!error}
+          />
+        </Field>
+        {error && <AuthError texte={error.text} />}
       </form>
     </AuthScreen>
   );

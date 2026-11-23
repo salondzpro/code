@@ -479,6 +479,22 @@ export const devLoginSchema = z
   .refine((b) => !!b.email || (!!b.phone && !!b.code), { message: 'E-mail, ou numéro et code' });
 export type DevLoginInput = z.infer<typeof devLoginSchema>;
 
+/** Connexion par numéro : envoi d'un code par WhatsApp (23 nov. 2026). */
+export const phoneCodeSchema = z.object({
+  phone: p.phoneDZ,
+  role: z.enum(USER_ROLES).default('client'),
+  lang: z.enum(['fr', 'ar', 'en']).default('fr'),
+});
+export type PhoneCodeInput = z.input<typeof phoneCodeSchema>;
+/** Vérification du code reçu : le ticket (signé par l'API) porte l'échéance, jamais le code. */
+export const phoneVerifySchema = z.object({
+  phone: p.phoneDZ,
+  role: z.enum(USER_ROLES).default('client'),
+  code: z.string().trim().regex(/^\d{6}$/, 'Code à 6 chiffres'),
+  ticket: z.string().min(10).max(200),
+});
+export type PhoneVerifyInput = z.input<typeof phoneVerifySchema>;
+
 // ---------- Versement à la réservation (migration 0057) ----------
 const optText = (max: number) =>
   z

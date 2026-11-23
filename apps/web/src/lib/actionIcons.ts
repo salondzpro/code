@@ -69,7 +69,7 @@ import {
   BadgePercent,
   HandCoins,
 } from 'lucide-react';
-import { CarteFidelite, UsersEchange } from './customIcons';
+import { BulleWhatsApp, CarteFidelite, UsersEchange } from './customIcons';
 
 export const ICONE = {
   // Rendez-vous
@@ -152,6 +152,8 @@ export const ICONE = {
   // Promotions et crédit client
   promo: BadgePercent,
   credit: HandCoins,
+  // Connexion par numéro (code WhatsApp, 23 nov. 2026)
+  codeWhatsApp: BulleWhatsApp,
 } satisfies Record<string, LucideIcon>;
 
 export type ActionIcone = keyof typeof ICONE;
