@@ -67,6 +67,12 @@ async function capturer() {
         };
         poser();
         document.addEventListener('DOMContentLoaded', poser);
+        // Pas de fenêtre « Les salons près de vous » sur un visuel de boutique.
+        try {
+          localStorage.setItem('salondz:location:auto', 'alger');
+        } catch {
+          /* rien */
+        }
         // Écran du choix de la langue : il n'existe que dans l'application (coque native simulée).
         if (natif) Object.defineProperty(window, 'androidBridge', { value: { postMessage() {} }, configurable: true });
       },

@@ -33,6 +33,12 @@ const mk = async () => {
   await ctx.addInitScript(() => {
     Object.defineProperty(window, 'VideoEncoder', { value: undefined, configurable: true });
     Object.defineProperty(window, 'MediaRecorder', { value: undefined, configurable: true });
+    // La fenêtre « Les salons près de vous » (première visite) n'a pas sa place sur une vitrine.
+    try {
+      localStorage.setItem('salondz:location:auto', 'alger');
+    } catch {
+      /* rien */
+    }
   });
   const p = await ctx.newPage();
   p.setDefaultTimeout(60000);
