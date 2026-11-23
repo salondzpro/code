@@ -2543,3 +2543,15 @@ html .sl-fav {
     backdrop-filter: none;
   }
 }
+/* Site pro : lien « Vous êtes client ? Réserver un salon », sous les deux boutons du haut. */
+.hx .hx-client {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  color: #202020;
+  font-size: calc(15px * var(--fz, 1));
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

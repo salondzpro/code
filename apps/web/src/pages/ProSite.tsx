@@ -10,6 +10,7 @@
  * `node scripts/make-home-screens.mjs`). Chaque carte montre un écran qui existe ; aucun chiffre
  * ni promesse inventés — les montants visibles sont ceux de la démonstration.
  */
+import { MARCHE } from '@/lib/flavor';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ArrowRight, CalendarDays, Inbox, LineChart, Send, Users, Wallet, QrCode, Share2, type LucideIcon } from 'lucide-react';
@@ -106,6 +107,10 @@ export function ProSite() {
             </button>
           )}
         </div>
+        {/* Un client arrivé ici par erreur (23 nov. 2026, demande du propriétaire) : un lien vers la place de marché. */}
+        <Link to={MARCHE} className="hx-in hx-client" style={{ ['--d' as string]: '440ms' }}>
+          {t('Vous êtes client ? Réserver un salon')} <I icon={ArrowRight} size={16} className="rtl:-scale-x-100" />
+        </Link>
         {demo && !session && (
           <div className="hx-demos">
             {demos.map((a) => (

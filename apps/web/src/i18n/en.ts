@@ -2521,4 +2521,5 @@ export const en: Record<string, string> = {
   "Renvoyer le code": "Resend code",
   "Changer de numéro": "Change number",
   "Code à 6 chiffres": "6-digit code",
+  "Vous êtes client ? Réserver un salon": "Are you a client? Book a salon",
 };

@@ -2507,4 +2507,5 @@ export const ar: Record<string, string> = {
   "Renvoyer le code": "إعادة إرسال الرمز",
   "Changer de numéro": "تغيير الرقم",
   "Code à 6 chiffres": "رمز من 6 أرقام",
+  "Vous êtes client ? Réserver un salon": "أنت زبون؟ احجز في صالون",
 };
