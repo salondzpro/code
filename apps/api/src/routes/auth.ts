@@ -409,10 +409,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.header('Cache-Control', 'private, no-store');
     if (res.error || !res.data.session) {
       const code = (res.error as { code?: string } | null)?.code ?? '';
-      if (code === 'email_not_confirmed') throw new AppError(401, 'EMAIL_NOT_CONFIRMED', 'Votre adresse n’est pas encore confirmée : ouvrez le lien reçu par e-mail.');
+      if (code === 'email_not_confirmed') throw new AppError(400, 'EMAIL_NOT_CONFIRMED', 'Votre adresse n’est pas encore confirmée : ouvrez le lien reçu par e-mail.');
       if (code === 'invalid_credentials' || res.error?.status === 400) {
         hit(`login-fail:${sujet}`, Q);
-        throw new AppError(401, 'INVALID_CREDENTIALS', 'E-mail ou mot de passe incorrect.');
+        throw new AppError(400, 'INVALID_CREDENTIALS', 'E-mail ou mot de passe incorrect.');
       }
       req.log.error({ err: res.error }, 'login');
       throw new AppError(503, 'LOGIN_UNAVAILABLE', 'Connexion momentanément indisponible. Réessayez dans un instant.');
@@ -542,7 +542,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       isNew = true;
       user = { id: created.data.user.id, email, email_confirmed_at: new Date().toISOString(), user_metadata: { role } };
     } else if ((await roleOf(user)) !== role) {
-      throw unauthorized(role === 'pro' ? 'Aucun compte professionnel associé à ces identifiants.' : 'Aucun compte client associé à ces identifiants.');
+      throw badRequest('NO_ACCOUNT', role === 'pro' ? 'Aucun compte professionnel associé à ces identifiants.' : 'Aucun compte client associé à ces identifiants.');
     }
     // Numéro vérifié : c'est lui qui figure au profil (rendez-vous, fiche client, rappels).
     const upd = await db.from('profiles').update({ phone }).eq('id', user.id);
