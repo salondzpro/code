@@ -12,7 +12,7 @@ import { AppError, badRequest, conflict, notFound, unauthorized } from '../lib/e
 import { confirmationMail, magicLinkMail, recoveryMail, sendMail } from '../lib/email';
 import { sendWhatsAppCode, whatsappEnabled } from '../lib/whatsapp';
 import { forget, guard, hit, seen } from '../lib/antibot';
-import { CODE_MAX_ATTEMPTS, CODE_TTL_MIN, codeHash, IP_MAX_PER_DAY, IP_MAX_PER_HOUR, isDzMobile, newChallenge, PHONE_MAX_PER_DAY, PHONE_MAX_PER_HOUR, RESEND_WAIT_S, waitAfter } from '../lib/phoneOtp';
+import { CODE_MAX_ATTEMPTS, CODE_TTL_MIN, codeHash, IP_MAX_PER_DAY, IP_MAX_PER_HOUR, isLoginMobile, newChallenge, PHONE_MAX_PER_DAY, PHONE_MAX_PER_HOUR, RESEND_WAIT_S, waitAfter } from '../lib/phoneOtp';
 
 /**
  * Client anonyme (clé publique) : sert uniquement à échanger un code à usage unique (généré par
@@ -470,7 +470,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     if (!whatsappEnabled()) throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
     const { phone, lang, challenge, nonce } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
-    if (!isDzMobile(phone)) throw badRequest('PHONE_NOT_MOBILE', 'Entrez un numéro de mobile algérien (05, 06 ou 07).');
+    if (!isLoginMobile(phone)) throw badRequest('PHONE_NOT_MOBILE', 'Entrez un numéro de mobile algérien (05, 06, 07) ou français (06, 07).');
     guard(req, 'whatsapp', phone, { challenge, nonce }, true);
     const ip = req.ip;
 
@@ -493,6 +493,20 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     if ((await count(null, '', 24 * H)) >= config.WHATSAPP_DAILY_CAP) {
       req.log.error({ cap: config.WHATSAPP_DAILY_CAP }, 'whatsapp plafond quotidien atteint');
       throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
+    }
+    // Sous-plafond pour la France : un message y coûte plusieurs fois plus cher qu'en Algérie.
+    if (phone.startsWith('+33')) {
+      const fr = await db
+        .from('auth_phone_codes')
+        .select('id', { count: 'exact', head: true })
+        .eq('delivered', true)
+        .like('phone', '+33%')
+        .gte('created_at', depuis(24 * H));
+      if (fr.error) throw fr.error;
+      if ((fr.count ?? 0) >= config.WHATSAPP_DAILY_CAP_FR) {
+        req.log.error({ cap: config.WHATSAPP_DAILY_CAP_FR }, 'whatsapp plafond France atteint');
+        throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
+      }
     }
 
     const code = String(randomInt(0, 1_000_000)).padStart(6, '0');

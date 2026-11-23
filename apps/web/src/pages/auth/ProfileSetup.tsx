@@ -42,9 +42,11 @@ export function ProfileSetup() {
     e.preventDefault();
     if (name.trim().length < 2) return setError({ field: 'name', msg: t("Indiquez votre prénom et votre nom.") });
     // Numéro OBLIGATOIRE pour tous (17 nov. 2026, demande du propriétaire), avec ou sans le 0 du début.
+    // Déjà au compte (vérifié par WhatsApp, éventuellement français : 23 nov. 2026) : on n'y touche pas.
+    const dejaTel = !!me.data?.profile.phone;
     const brut = digits.replace(/\D/g, '');
-    const parsed = phoneDZ.safeParse(`0${brut}`);
-    if (!parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
+    const parsed = dejaTel ? null : phoneDZ.safeParse(`0${brut}`);
+    if (parsed && !parsed.success) return setError({ field: 'phone', msg: t("Numéro algérien invalide : 9 chiffres après +213.") });
     setError(null);
     try {
       // Les rappels sont ACQUIS, pas proposés : un interrupteur sur l'écran d'inscription demandait un
@@ -53,7 +55,7 @@ export function ProfileSetup() {
       // défaut en base, donc l'écrire ne servirait qu'à rallumer, en silence, ce que quelqu'un
       // aurait éteint.
       const market = !isPro && !me.data?.profile.market ? guestMarket() : null;
-      await update.mutateAsync({ fullName: name.trim(), phone: parsed.data, ...(market ? { market } : {}) });
+      await update.mutateAsync({ fullName: name.trim(), ...(parsed?.success ? { phone: parsed.data } : {}), ...(market ? { market } : {}) });
       if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market && !market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });

@@ -37,6 +37,26 @@ export const phoneDZ = z
     return normalized;
   });
 
+/**
+ * Numéro de CONNEXION PAR WHATSAPP (23 nov. 2026, demande du propriétaire) : mobile ALGÉRIEN
+ * (+213 5/6/7) ou FRANÇAIS (+33 6/7, la diaspora). Normalisé en E.164. Ailleurs dans le produit
+ * (réservations, fiches clients), le numéro reste algérien (`phoneDZ`).
+ */
+export const phoneLogin = z
+  .string()
+  .trim()
+  .max(24)
+  .transform((v, ctx) => {
+    const brut = v.replace(/[\s.\-()]/g, '');
+    const fr = brut.match(/^(?:\+33|0033)0?([67]\d{8})$/);
+    const normalized = fr ? `+33${fr[1]}` : normalizeDZPhone(v);
+    if (!normalized || !/^\+(?:213[567]|33[67])\d{8}$/.test(normalized)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Numéro de mobile invalide (algérien ou français)' });
+      return z.NEVER;
+    }
+    return normalized;
+  });
+
 /** Regex brute (pour les inputs HTML `pattern`). */
 export const DZ_PHONE_PATTERN = DZ_PHONE_REGEX;
 

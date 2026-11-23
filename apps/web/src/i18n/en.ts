@@ -2528,4 +2528,10 @@ export const en: Record<string, string> = {
   "Ce compte n’a pas accès à l’administration.": "This account has no access to the administration.",
   "Trop de codes demandés pour ce numéro. Réessayez plus tard, ou connectez-vous par e-mail.": "Too many codes requested for this number. Try again later, or sign in with email.",
   "Trop d’essais de mot de passe. Réessayez dans 15 minutes, ou choisissez « Mot de passe oublié ».": "Too many password attempts. Try again in 15 minutes, or choose “Forgot password”.",
+  "Indicatif {code}": "Country code {code}",
+  "Pays": "Country",
+  "Algérie": "Algeria",
+  "France": "France",
+  "Numéro de mobile français invalide : 06 ou 07, puis 8 chiffres.": "Invalid French mobile number: 06 or 07, then 8 digits.",
+  "Numéro de mobile algérien invalide : 05, 06 ou 07, puis 8 chiffres.": "Invalid Algerian mobile number: 05, 06 or 07, then 8 digits.",
 };

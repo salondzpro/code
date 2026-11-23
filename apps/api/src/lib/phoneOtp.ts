@@ -4,7 +4,8 @@
  *
  * Chaque message WhatsApp est FACTURÉ par Meta : un robot qui demande des codes en boucle (« SMS
  * pumping ») vide le budget. Défenses, de la moins chère à la plus chère pour l'attaquant :
- *   1. Numéro MOBILE algérien seulement (+213 5/6/7, 9 chiffres) — aucun fixe, aucun étranger.
+ *   1. Numéro MOBILE algérien (+213 5/6/7) ou français (+33 6/7) — aucun fixe, aucun autre pays ;
+ *      sous-plafond quotidien pour la France (`WHATSAPP_DAILY_CAP_FR`), où un message coûte plus cher.
  *   2. PREUVE DE TRAVAIL invisible (module commun `lib/antibot.ts`) : avant chaque envoi, le téléphone calcule un petit casse-tête
  *      (quelques dixièmes de seconde pour une personne, des heures de calcul pour un robot qui en
  *      veut des milliers), lié au numéro et valable 3 minutes. Aucun service tiers, aucune image.
@@ -36,8 +37,8 @@ const key = createHmac('sha256', config.SUPABASE_SECRET_KEY).update('salondz:wha
 export const codeHash = (phone: string, role: string, code: string) =>
   createHmac('sha256', key).update(`code|${phone}|${role}|${code}`).digest('base64url');
 
-/** Mobile algérien : +213 suivi de 5, 6 ou 7 et de 8 chiffres. */
-export const isDzMobile = (phone: string) => /^\+213[567]\d{8}$/.test(phone);
+/** Mobile de connexion : algérien (+213 5/6/7) ou français (+33 6/7, 23 nov. 2026). */
+export const isLoginMobile = (phone: string) => /^\+(?:213[567]|33[67])\d{8}$/.test(phone);
 
 /** Secondes à attendre avant le prochain envoi, d'après les envois de la dernière heure. */
 export function waitAfter(sentLastHour: number, lastSentAt: Date | null): number {

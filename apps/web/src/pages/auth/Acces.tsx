@@ -25,7 +25,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { MailCheck } from 'lucide-react';
 import { VisageFemme, VisageHomme } from '@/components/GenderFaces';
-import { PhoneDZField, numeroDZ } from '@/components/PhoneDZField';
+import { PhoneDZField, afficherNumero, numeroConnexion, numeroDZ, type PaysTel } from '@/components/PhoneDZField';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
@@ -602,6 +602,7 @@ export function AccesWhatsApp() {
   const navigate = useNavigate();
   const { next, q, role, base } = useParcours();
   const [digits, setDigits] = useState('');
+  const [pays, setPays] = useState<PaysTel>('dz');
   const [phone, setPhone] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState<'send' | 'check' | null>(null);
@@ -650,8 +651,12 @@ export function AccesWhatsApp() {
 
   const demander = (e: FormEvent) => {
     e.preventDefault();
-    const numero = numeroDZ(digits);
-    if (!numero) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
+    const numero = numeroConnexion(pays, digits);
+    if (!numero)
+      return setError({
+        kind: 'phone',
+        text: pays === 'fr' ? t('Numéro de mobile français invalide : 06 ou 07, puis 8 chiffres.') : t('Numéro de mobile algérien invalide : 05, 06 ou 07, puis 8 chiffres.'),
+      });
     void envoyer(numero);
   };
 
@@ -691,6 +696,11 @@ export function AccesWhatsApp() {
         <form id="pa-wa" onSubmit={demander} noValidate className="pa-form">
           <PhoneDZField
             id="pa-wa-tel"
+            pays={pays}
+            onPays={(p) => {
+              setPays(p);
+              setError(null);
+            }}
             digits={digits}
             onDigits={(v) => {
               setDigits(v);
@@ -710,7 +720,7 @@ export function AccesWhatsApp() {
       titre={t('Entrez le code reçu')}
       sous={
         <>
-          {t('Envoyé sur WhatsApp au')} <b dir="ltr">{phone.replace(/^\+213/, '0').replace(/(\d{4})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4')}</b>
+          {t('Envoyé sur WhatsApp au')} <b dir="ltr">{afficherNumero(phone)}</b>
         </>
       }
       actions={

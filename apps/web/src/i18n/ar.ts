@@ -2514,4 +2514,10 @@ export const ar: Record<string, string> = {
   "Ce compte n’a pas accès à l’administration.": "هذا الحساب لا يملك صلاحية الدخول إلى الإدارة.",
   "Trop de codes demandés pour ce numéro. Réessayez plus tard, ou connectez-vous par e-mail.": "طلبات كثيرة لهذا الرقم. أعد المحاولة لاحقًا أو سجّل الدخول عبر البريد الإلكتروني.",
   "Trop d’essais de mot de passe. Réessayez dans 15 minutes, ou choisissez « Mot de passe oublié ».": "محاولات كثيرة لكلمة المرور. أعد المحاولة بعد 15 دقيقة أو اختر « نسيت كلمة المرور ».",
+  "Indicatif {code}": "رمز الدولة {code}",
+  "Pays": "البلد",
+  "Algérie": "الجزائر",
+  "France": "فرنسا",
+  "Numéro de mobile français invalide : 06 ou 07, puis 8 chiffres.": "رقم جوال فرنسي غير صالح: 06 أو 07 ثم 8 أرقام.",
+  "Numéro de mobile algérien invalide : 05, 06 ou 07, puis 8 chiffres.": "رقم جوال جزائري غير صالح: 05 أو 06 أو 07 ثم 8 أرقام.",
 };
