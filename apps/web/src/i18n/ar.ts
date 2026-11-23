@@ -2508,4 +2508,6 @@ export const ar: Record<string, string> = {
   "Changer de numéro": "تغيير الرقم",
   "Code à 6 chiffres": "رمز من 6 أرقام",
   "Vous êtes client ? Réserver un salon": "أنت زبون؟ احجز في صالون",
+  "Disponible sur": "متوفر على",
+  "WhatsApp": "واتساب",
 };

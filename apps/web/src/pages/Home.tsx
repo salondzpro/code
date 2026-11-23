@@ -19,6 +19,7 @@
  * posée au défilement sur la scène d'ouverture — les téléphones s'écartent pendant qu'on descend.
  * Uniquement `transform` et `opacity`. Tout s'arrête sous `prefers-reduced-motion`.
  */
+import { StoreBadges } from '@/components/StoreBadges';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { ArrowRight, BellRing, CalendarCheck, CalendarDays, MapPin, Share2, Store, Users, Wallet, type LucideIcon } from 'lucide-react';
@@ -161,6 +162,7 @@ export function Home() {
             <I icon={Store} size={18} /> {t('Je suis pro')}
           </Link>
         </div>
+        <StoreBadges className="hx-in" />
 
         {/* La scène : trois écrans de l'application. Celui du centre monte, les deux autres
             s'écartent quand on descend (`--s`). */}
@@ -275,12 +277,15 @@ export function Home() {
               <I icon={Store} size={18} /> {t('Espace professionnel')}
             </Link>
           </div>
+          <StoreBadges />
         </div>
       </section>
 
       <footer className="hx-pied">
         <Wordmark size={1.286} />
         <nav>
+          <Link to={MARCHE}>{t('Trouver un salon')}</Link>
+          <Link to="/professionnels">{t('Espace professionnel')}</Link>
           <Link to="/cgu">{t('CGU')}</Link>
           <Link to="/confidentialite">{t('Confidentialité')}</Link>
           <Link to="/mentions-legales">{t('Mentions légales')}</Link>

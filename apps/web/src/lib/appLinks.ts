@@ -16,6 +16,9 @@ import { PRO_ONLY } from './flavor';
 
 export const APP_STORE_URL = 'https://apps.apple.com/app/id6817317513';
 export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=dz.salondz.app';
+/** Salon DZ Pro (pro.salondz.app). */
+export const APP_STORE_PRO_URL = 'https://apps.apple.com/app/id6821947874';
+export const PLAY_STORE_PRO_URL = 'https://play.google.com/store/apps/details?id=pro.salondz.app';
 const PAQUET = 'dz.salondz.app';
 
 const natif = (): boolean => Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());

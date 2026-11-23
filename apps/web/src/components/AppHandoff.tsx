@@ -10,6 +10,7 @@
  *   - `AppHandoffSheet` : la même, en fenêtre, une seule fois par réservation, 1,8 s après la coche.
  * Jamais dans l'application elle-même, ni dans la variante pro.
  */
+import { AppleLogo, GooglePlayLogo } from './BrandIcons';
 import { useEffect, useState } from 'react';
 import { BellRing, CalendarSync } from 'lucide-react';
 import QRCode from 'qrcode';
@@ -22,22 +23,6 @@ import { t } from '@/i18n';
 
 const natif = (): boolean => Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.());
 export const APP_LINK = 'https://salondz.com/app';
-
-/** Logo officiel Apple. */
-const AppleLogo = () => (
-  <svg width={20} height={20} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-    <path d="M16.37 12.73c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.77-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.38-3.66ZM14.1 6c.63-.77 1.06-1.83.94-2.9-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.76-.95 2.8 1.01.08 2.04-.51 2.67-1.27Z" />
-  </svg>
-);
-/** Logo officiel Google Play. */
-const PlayLogo = () => (
-  <svg width={20} height={20} viewBox="0 0 24 24" aria-hidden>
-    <path d="M3.6 1.8 13.4 12 3.6 22.2c-.35-.2-.6-.6-.6-1.1V2.9c0-.5.25-.9.6-1.1Z" fill="#00d7fe" />
-    <path d="M16.9 8.5 13.4 12 3.6 1.8c.3-.2.75-.2 1.15.02L16.9 8.5Z" fill="#00f076" />
-    <path d="m16.9 15.5-12.15 6.68c-.4.22-.85.22-1.15.02L13.4 12l3.5 3.5Z" fill="#ff3a44" />
-    <path d="m20.4 10.4-3.5-1.9L13.4 12l3.5 3.5 3.5-1.9c.95-.53.95-1.67 0-2.2Z" fill="#ffd500" />
-  </svg>
-);
 
 function Contenu({ onStore }: { onStore?: () => void }) {
   const os = mobileOS();
@@ -61,7 +46,7 @@ function Contenu({ onStore }: { onStore?: () => void }) {
       </div>
       {os ? (
         <a href={storeUrl(os)} target="_blank" rel="noreferrer" className="btn store-btn" onClick={onStore}>
-          {os === 'ios' ? <AppleLogo /> : <PlayLogo />}
+          {os === 'ios' ? <AppleLogo size={20} /> : <GooglePlayLogo size={20} />}
           {os === 'ios' ? t('Télécharger sur l’App Store') : t('Disponible sur Google Play')}
         </a>
       ) : (

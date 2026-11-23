@@ -10,6 +10,8 @@
  * `node scripts/make-home-screens.mjs`). Chaque carte montre un écran qui existe ; aucun chiffre
  * ni promesse inventés — les montants visibles sont ceux de la démonstration.
  */
+import { StoreBadges } from '@/components/StoreBadges';
+import { supportWhatsAppUrl } from '@salondz/constants';
 import { MARCHE } from '@/lib/flavor';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -107,6 +109,7 @@ export function ProSite() {
             </button>
           )}
         </div>
+        <StoreBadges pro className="hx-in" />
         {/* Un client arrivé ici par erreur (23 nov. 2026, demande du propriétaire) : un lien vers la place de marché. */}
         <Link to={MARCHE} className="hx-in hx-client" style={{ ['--d' as string]: '440ms' }}>
           {t('Vous êtes client ? Réserver un salon')} <I icon={ArrowRight} size={16} className="rtl:-scale-x-100" />
@@ -238,6 +241,10 @@ export function ProSite() {
         </div>
       </section>
 
+      <div className="hx-col hx-fin-badges">
+        <StoreBadges pro />
+      </div>
+
       <footer className="hx-pied">
         <span className="flex items-center gap-2">
           <Wordmark size={1.286} />
@@ -249,6 +256,9 @@ export function ProSite() {
           <Link to="/confidentialite">{t('Confidentialité')}</Link>
           <Link to="/mentions-legales">{t('Mentions légales')}</Link>
           <Link to="/aide">{t('Aide')}</Link>
+          <a href={supportWhatsAppUrl()} target="_blank" rel="noopener noreferrer">
+            {t('WhatsApp')}
+          </a>
         </nav>
         <p>
           © {new Date().getFullYear()} {t('Salon DZ · Fait en Algérie')}

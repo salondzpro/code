@@ -2555,3 +2555,52 @@ html .sl-fav {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* Badges des boutiques (site clients et site pro, 23 nov. 2026) : boutons noirs à la façon des
+   badges officiels — logo, petite ligne, nom de la boutique. */
+.sb {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.sb-b {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 156px;
+  height: 52px;
+  padding: 0 16px 0 14px;
+  border-radius: 12px;
+  background: #000000;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+.sb.light .sb-b {
+  background: #ffffff;
+  color: #000000 !important;
+  box-shadow: inset 0 0 0 1px #c7cfd7;
+}
+.sb-b span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+.sb-b small {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.sb-b b {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.hx-fin-badges {
+  display: flex;
+  justify-content: center;
+  padding-block: 0 32px;
+}

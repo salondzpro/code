@@ -150,3 +150,15 @@ export function AppleLogo({ size = 20 }: LogoProps) {
     </svg>
   );
 }
+
+/** Le triangle officiel de Google Play (badges des boutiques). */
+export function GooglePlayLogo({ size = 20 }: LogoProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" role="img" aria-label="Google Play" focusable="false">
+      <path d="M3.6 1.8 13.4 12 3.6 22.2c-.35-.2-.6-.6-.6-1.1V2.9c0-.5.25-.9.6-1.1Z" fill="#00d7fe" />
+      <path d="M16.9 8.5 13.4 12 3.6 1.8c.3-.2.75-.2 1.15.02L16.9 8.5Z" fill="#00f076" />
+      <path d="m16.9 15.5-12.15 6.68c-.4.22-.85.22-1.15.02L13.4 12l3.5 3.5Z" fill="#ff3a44" />
+      <path d="m20.4 10.4-3.5-1.9L13.4 12l3.5 3.5 3.5-1.9c.95-.53.95-1.67 0-2.2Z" fill="#ffd500" />
+    </svg>
+  );
+}
