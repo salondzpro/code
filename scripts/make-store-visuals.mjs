@@ -92,7 +92,7 @@ async function capturer() {
     await p.addStyleTag({ content: `:root{--sat:${PT.haut}px !important;--sab:${PT.bas}px !important}` });
     // L'invite « Activez les notifications » (NotificationsGate) et la barre « Ouvrir l'application »
     // du SITE (`AppBanner`, absente de l'application) ne sont pas le produit.
-    await p.addStyleTag({ content: 'body:has(.sheet.modal .lucide-bell-ring) .dim, .sheet.modal:has(.lucide-bell-ring), .app-bn { display: none !important; }' });
+    await p.addStyleTag({ content: 'body:has(.sheet.modal .lucide-bell-ring) .dim, .sheet.modal:has(.lucide-bell-ring), body:has(.sheet.modal .lucide-map-pin) .dim, .sheet.modal:has(.lucide-map-pin), .app-bn { display: none !important; }' });
     await p.waitForTimeout(500);
     // GARDE-FOU (14 nov. 2026) : aucun texte de l'application dans la zone de la barre d'état. La
     // première génération montrait « 9:41 » par-dessus « Samedi 14 novembre » : les marges n'avaient
@@ -178,10 +178,10 @@ async function capturer() {
     }
     await p.goto(`${BASE}/pro/agenda`, { waitUntil: 'domcontentloaded' });
     await calme(p, 3000);
-    // Jour fermé (le vendredi) : on avance jusqu'au prochain jour qui a des rendez-vous visibles.
-    for (let i = 0; i < 6; i++) {
+    // Jamais aujourd'hui (le passé y est grisé) ni un jour fermé : le PROCHAIN jour qui a des rendez-vous.
+    for (let i = 0; i < 7; i++) {
       const vus = await p.evaluate(() => [...document.querySelectorAll('.agb')].filter((x) => { const r = x.getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth + 1; }).length);
-      if (vus) break;
+      if (vus && i > 0) break;
       await p.locator('.pla-date').click();
       await p.waitForTimeout(500);
       const ok = await p.evaluate(() => {
