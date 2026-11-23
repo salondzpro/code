@@ -14,12 +14,15 @@ export function PhoneDZField({
   digits,
   onDigits,
   error,
+  aide,
 }: {
   id: string;
   /** Les 9 chiffres utiles (sans 0 ni indicatif). */
   digits: string;
   onDigits: (digits: string) => void;
   error?: string | null;
+  /** Phrase sous le champ ; `null` : aucune (connexion par WhatsApp, où le code part bien). */
+  aide?: string | null;
 }) {
   return (
     <div>
@@ -42,9 +45,11 @@ export function PhoneDZField({
           aria-required
         />
       </div>
-      <p className={`mt-1 text-[0.857rem] ${error ? 'text-danger' : 'text-subtle'}`}>
-        {error ?? t('Format algérien · aucun SMS envoyé.')}
-      </p>
+      {(error || aide !== null) && (
+        <p className={`mt-1 text-[0.857rem] ${error ? 'text-danger' : 'text-subtle'}`}>
+          {error ?? (aide === undefined ? t('Format algérien · aucun SMS envoyé.') : aide)}
+        </p>
+      )}
     </div>
   );
 }

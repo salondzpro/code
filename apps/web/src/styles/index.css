@@ -13630,3 +13630,12 @@ html.pro-theme .ag9-hr span { color: var(--color-text); font-weight: 500; }
 .app-bn-x { width: 28px; height: 28px; display: grid; place-items: center; color: var(--color-muted); flex: none; }
 .app-bn-ic { width: 40px; height: 40px; border-radius: 10px; flex: none; box-shadow: 0 0 0 1px var(--color-line); }
 .btn.store-btn { gap: 10px; }
+
+/* Code à 6 chiffres reçu sur WhatsApp (`AccesWhatsApp`, 23 nov. 2026) : grand, espacé, centré. */
+.pa .pa-code {
+  text-align: center;
+  font-size: calc(22px * var(--fz, 1)) !important;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  font-variant-numeric: tabular-nums;
+}

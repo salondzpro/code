@@ -2378,4 +2378,13 @@ export const ar: Record<string, string> = {
   "QR code de l’application": "رمز QR للتطبيق",
   "Scannez avec votre téléphone": "امسح بهاتفك",
   "Connectez-vous avec {email}": "سجّل الدخول بـ {email}",
+  "Continuer avec WhatsApp": "المتابعة عبر واتساب",
+  "Votre numéro de téléphone": "رقم هاتفك",
+  "Recevoir le code sur WhatsApp": "استلام الرمز عبر واتساب",
+  "Entrez le code reçu": "أدخل الرمز الذي وصلك",
+  "Envoyé sur WhatsApp au": "أُرسل عبر واتساب إلى",
+  "Renvoyer le code dans {temps}": "إعادة إرسال الرمز بعد {temps}",
+  "Renvoyer le code": "إعادة إرسال الرمز",
+  "Changer de numéro": "تغيير الرقم",
+  "Code à 6 chiffres": "رمز من 6 أرقام",
 };

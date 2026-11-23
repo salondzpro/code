@@ -40,3 +40,12 @@ export const CarteFidelite = createLucideIcon('carte-fidelite', [
  * GRANDES et au trait FIN, sinon elles deviennent une tache grasse (demande du propriétaire, 13 nov.).
  */
 export const ICONES_DETAILLEES = new Set<unknown>([UsersEchange]);
+
+/**
+ * WHATSAPP AU TRAIT (23 nov. 2026) : bulle ronde à pointe en bas à gauche et combiné au centre —
+ * « recevoir un code sur WhatsApp ». Le logo plein et coloré reste `WhatsAppLogo` (BrandIcons).
+ */
+export const BulleWhatsApp = createLucideIcon('bulle-whatsapp', [
+  ['path', { d: 'M7.9 20A9 9 0 1 0 4 16.1L2.5 21.5Z', key: 'bulle' }],
+  ['path', { d: 'M9.2 8.6c.3-.5.9-.5 1.1 0l.5 1.2c.1.3 0 .6-.2.8l-.4.4c.5 1 1.3 1.8 2.3 2.3l.4-.4c.2-.2.5-.3.8-.2l1.2.5c.5.2.5.8 0 1.1-.6.5-1.4.7-2.1.4a7 7 0 0 1-3.9-3.9c-.3-.8-.1-1.6.3-2.2Z', key: 'combine' }],
+]);

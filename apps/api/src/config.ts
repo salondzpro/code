@@ -33,6 +33,10 @@ const schema = z.object({
   /** Synthèse des avis par IA (`lib/reviewSummary.ts`). Absente : pas de synthèse, rien d'autre ne change. */
   ANTHROPIC_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('Salon DZ <noreply@salondz.com>'),
+  /** Codes de connexion par WhatsApp (`lib/whatsapp.ts`). Absentes : connexion par numéro indisponible. */
+  WHATSAPP_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_TEMPLATE: z.string().default('code_connexion'),
   /** Adresse de réponse des e-mails transactionnels (boîte lue par l'équipe). */
   EMAIL_REPLY_TO: z.string().default('support@salondz.com'),
   /** Origine du site web (liens envoyés par e-mail). Absente : première origine CORS en https. */

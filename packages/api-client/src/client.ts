@@ -64,6 +64,8 @@ import type {
   ClientHistoryStatus,
   EmailSignupInput,
   EmailCheckInput,
+  PhoneCodeInput,
+  PhoneVerifyInput,
   EmailCheckStatus,
   EmailLinkInput,
 } from '@salondz/validation';
@@ -463,6 +465,10 @@ export function createApiClient(opts: ApiClientOptions) {
       signup: (body: EmailSignupInput) => post<{ opened: boolean; login?: string } | null>('/auth/signup', body),
       /** L'adresse est-elle libre ? Appelée dès la saisie, avant toute création de compte. */
       emailCheck: (body: EmailCheckInput) => post<{ status: EmailCheckStatus }>('/auth/email-check', body),
+      /** Connexion par numéro : code envoyé par WhatsApp, puis vérifié contre le ticket. */
+      phoneCode: (body: PhoneCodeInput) => post<{ ticket: string; expiresAt: string }>('/auth/phone/code', body),
+      phoneVerify: (body: PhoneVerifyInput) =>
+        post<{ accessToken: string; refreshToken: string; expiresAt: number | null; isNew: boolean }>('/auth/phone/verify', body),
       /** Lien de connexion par e-mail (compte existant). */
       magicLink: (body: EmailLinkInput) => post<void>('/auth/magic-link', body),
       /** Renvoi du lien de confirmation (compte non confirmé). */

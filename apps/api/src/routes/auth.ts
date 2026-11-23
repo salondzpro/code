@@ -1,14 +1,15 @@
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { ALIAS_DOMAIN, DEMO_LOGIN_CODE, demoAccountFor } from '@salondz/constants';
-import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, type EmailCheckStatus } from '@salondz/validation';
+import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, phoneCodeSchema, phoneVerifySchema, type EmailCheckStatus } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
 import { ensureDemoUser, ensureDemoWorld } from '../lib/demo';
 import { AppError, badRequest, conflict, notFound, unauthorized } from '../lib/errors';
 import { confirmationMail, magicLinkMail, recoveryMail, sendMail } from '../lib/email';
+import { sendWhatsAppCode, whatsappEnabled } from '../lib/whatsapp';
 
 /**
  * Client anonyme (clé publique) : sert uniquement à échanger un code à usage unique (généré par
@@ -313,6 +314,85 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     await sendMail(req.log, { to: email, ...recoveryMail(mailLink(req, gen.data.properties, to)) });
     reply.status(204);
     return null;
+  });
+
+  // ---------------------------------------------------------------------------------------
+  // CONNEXION PAR NUMÉRO, CODE ENVOYÉ PAR WHATSAPP (23 nov. 2026, demande du propriétaire).
+  //
+  // Sans table : le code n'est stocké nulle part. L'API rend un TICKET = échéance + HMAC(numéro,
+  // portail, code, échéance) signé par une clé dérivée du secret serveur ; la vérification refait le
+  // calcul. Le ticket ne révèle pas le code (6 chiffres, 10 min, 5 essais par numéro et par quart
+  // d'heure : une chance sur 200 000). Le compte d'un numéro vit sous une adresse interne PAR
+  // PORTAIL (`<rôle>-wa-<empreinte>@alias…`) : un même numéro peut avoir un compte client et un
+  // compte pro, jamais l'un pour l'autre (règle n° 4). Le numéro du profil est celui VÉRIFIÉ ici.
+  // ---------------------------------------------------------------------------------------
+  const CODE_TTL_MS = 10 * 60_000;
+  const otpKey = createHmac('sha256', config.SUPABASE_SECRET_KEY).update('salondz:whatsapp-otp:v1').digest();
+  const otpSig = (phone: string, role: Portail, code: string, exp: number) =>
+    createHmac('sha256', otpKey).update(`${phone}|${role}|${code}|${exp}`).digest('base64url');
+  const phoneAlias = (phone: string, role: Portail) =>
+    `${role}-wa-${createHash('sha256').update(phone).digest('hex').slice(0, 24)}@${ALIAS_DOMAIN}`;
+  const phoneLimit = (prefix: string, max: number) => ({
+    config: {
+      rateLimit: {
+        max,
+        timeWindow: '15 minutes',
+        keyGenerator: (req: FastifyRequest) => `${prefix}:${String((req.body as { phone?: string } | null)?.phone ?? '').replace(/\D/g, '').slice(-9)}`,
+      },
+    },
+  });
+
+  app.post('/auth/phone/code', { ...phoneLimit('wa-send', 3), schema: { body: phoneCodeSchema } }, async (req, reply) => {
+    if (!whatsappEnabled()) throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
+    const { phone, lang } = req.body;
+    const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    const exp = Date.now() + CODE_TTL_MS;
+    await sendWhatsAppCode(req.log, phone, code, lang);
+    reply.header('Cache-Control', 'private, no-store');
+    return { ticket: `${exp}.${otpSig(phone, role, code, exp)}`, expiresAt: new Date(exp).toISOString() };
+  });
+
+  app.post('/auth/phone/verify', { ...phoneLimit('wa-check', 5), schema: { body: phoneVerifySchema } }, async (req, reply) => {
+    const { phone, code, ticket } = req.body;
+    const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
+    const [expTxt, sig] = ticket.split('.');
+    const exp = Number(expTxt);
+    if (!Number.isFinite(exp) || !sig) throw badRequest('CODE_INVALID', 'Code incorrect. Vérifiez le code reçu sur WhatsApp.');
+    if (Date.now() > exp) throw badRequest('CODE_EXPIRED', 'Ce code a expiré. Demandez-en un nouveau.');
+    const attendu = Buffer.from(otpSig(phone, role, code, exp));
+    const recu = Buffer.from(sig);
+    if (attendu.length !== recu.length || !timingSafeEqual(attendu, recu)) throw badRequest('CODE_INVALID', 'Code incorrect. Vérifiez le code reçu sur WhatsApp.');
+
+    // Le compte de CE portail pour ce numéro, créé à la première connexion (déjà confirmé).
+    const email = phoneAlias(phone, role);
+    let user = await findUser(email);
+    let isNew = false;
+    if (!user) {
+      const created = await db.auth.admin.createUser({ email, email_confirm: true, user_metadata: { role, phone, login: 'whatsapp' } });
+      if (created.error || !created.data.user) {
+        req.log.error({ err: created.error }, 'phone createUser');
+        throw new AppError(500, 'PHONE_LOGIN_FAILED', 'Connexion impossible pour le moment. Réessayez dans un instant.');
+      }
+      isNew = true;
+      user = { id: created.data.user.id, email, email_confirmed_at: new Date().toISOString(), user_metadata: { role } };
+    } else if ((await roleOf(user)) !== role) {
+      throw unauthorized(role === 'pro' ? 'Aucun compte professionnel associé à ces identifiants.' : 'Aucun compte client associé à ces identifiants.');
+    }
+    // Numéro vérifié : c'est lui qui figure au profil (rendez-vous, fiche client, rappels).
+    const upd = await db.from('profiles').update({ phone }).eq('id', user.id);
+    if (upd.error) req.log.error({ err: upd.error }, 'phone profil');
+
+    const link = await db.auth.admin.generateLink({ type: 'magiclink', email });
+    const otp = link.data?.properties?.email_otp;
+    const verified = otp ? await anon.auth.verifyOtp({ email, token: otp, type: 'email' }) : null;
+    if (link.error || !verified || verified.error || !verified.data.session) {
+      req.log.error({ err: link.error ?? verified?.error }, 'phone session');
+      throw new AppError(500, 'PHONE_LOGIN_FAILED', 'Connexion impossible pour le moment. Réessayez dans un instant.');
+    }
+    reply.header('Cache-Control', 'private, no-store');
+    const s = verified.data.session;
+    return { accessToken: s.access_token, refreshToken: s.refresh_token, expiresAt: s.expires_at ?? null, isNew };
   });
 };
 

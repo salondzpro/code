@@ -2392,4 +2392,13 @@ export const en: Record<string, string> = {
   "QR code de l’application": "App QR code",
   "Scannez avec votre téléphone": "Scan with your phone",
   "Connectez-vous avec {email}": "Sign in with {email}",
+  "Continuer avec WhatsApp": "Continue with WhatsApp",
+  "Votre numéro de téléphone": "Your phone number",
+  "Recevoir le code sur WhatsApp": "Get the code on WhatsApp",
+  "Entrez le code reçu": "Enter the code you received",
+  "Envoyé sur WhatsApp au": "Sent on WhatsApp to",
+  "Renvoyer le code dans {temps}": "Resend code in {temps}",
+  "Renvoyer le code": "Resend code",
+  "Changer de numéro": "Change number",
+  "Code à 6 chiffres": "6-digit code",
 };
