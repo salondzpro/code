@@ -1,5 +1,5 @@
 import { recordSignupSource } from '../lib/marketing';
-import { createHash, createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHash, randomInt } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -11,6 +11,7 @@ import { ensureDemoUser, ensureDemoWorld } from '../lib/demo';
 import { AppError, badRequest, conflict, notFound, unauthorized } from '../lib/errors';
 import { confirmationMail, magicLinkMail, recoveryMail, sendMail } from '../lib/email';
 import { sendWhatsAppCode, whatsappEnabled } from '../lib/whatsapp';
+import { checkProof, CODE_MAX_ATTEMPTS, CODE_TTL_MIN, codeHash, IP_MAX_PER_DAY, IP_MAX_PER_HOUR, isDzMobile, newChallenge, PHONE_MAX_PER_DAY, PHONE_MAX_PER_HOUR, RESEND_WAIT_S, waitAfter } from '../lib/phoneOtp';
 
 /**
  * Client anonyme (clé publique) : sert uniquement à échanger un code à usage unique (généré par
@@ -374,17 +375,11 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   // ---------------------------------------------------------------------------------------
   // CONNEXION PAR NUMÉRO, CODE ENVOYÉ PAR WHATSAPP (23 nov. 2026, demande du propriétaire).
   //
-  // Sans table : le code n'est stocké nulle part. L'API rend un TICKET = échéance + HMAC(numéro,
-  // portail, code, échéance) signé par une clé dérivée du secret serveur ; la vérification refait le
-  // calcul. Le ticket ne révèle pas le code (6 chiffres, 10 min, 5 essais par numéro et par quart
-  // d'heure : une chance sur 200 000). Le compte d'un numéro vit sous une adresse interne PAR
-  // PORTAIL (`<rôle>-wa-<empreinte>@alias…`) : un même numéro peut avoir un compte client et un
+  // Règles et défenses anti-robots : `lib/phoneOtp.ts`. Les codes vivent dans `auth_phone_codes`
+  // (migration 0060, empreinte HMAC seulement). Le compte d'un numéro vit sous une adresse interne
+  // PAR PORTAIL (`<rôle>-wa-<empreinte>@alias…`) : un même numéro peut avoir un compte client et un
   // compte pro, jamais l'un pour l'autre (règle n° 4). Le numéro du profil est celui VÉRIFIÉ ici.
   // ---------------------------------------------------------------------------------------
-  const CODE_TTL_MS = 10 * 60_000;
-  const otpKey = createHmac('sha256', config.SUPABASE_SECRET_KEY).update('salondz:whatsapp-otp:v1').digest();
-  const otpSig = (phone: string, role: Portail, code: string, exp: number) =>
-    createHmac('sha256', otpKey).update(`${phone}|${role}|${code}|${exp}`).digest('base64url');
   const phoneAlias = (phone: string, role: Portail) =>
     `${role}-wa-${createHash('sha256').update(phone).digest('hex').slice(0, 24)}@${ALIAS_DOMAIN}`;
   const phoneLimit = (prefix: string, max: number) => ({
@@ -396,28 +391,93 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
   });
+  const attendre = (s: number) =>
+    new AppError(
+      429,
+      'OTP_WAIT',
+      s >= 120 ? `Patientez ${Math.ceil(s / 60)} minutes avant de redemander un code.` : `Patientez ${s} secondes avant de redemander un code.`,
+      { retryIn: s },
+    );
+  const plafond = () =>
+    new AppError(429, 'OTP_LIMIT', 'Trop de codes demandés pour ce numéro. Réessayez plus tard, ou connectez-vous par e-mail.');
+  const H = 3_600_000;
+  const depuis = (ms: number) => new Date(Date.now() - ms).toISOString();
+  const count = async (col: 'phone' | 'ip' | null, value: string, sinceMs: number) => {
+    let q = db.from('auth_phone_codes').select('id', { count: 'exact', head: true }).eq('delivered', true).gte('created_at', depuis(sinceMs));
+    if (col) q = q.eq(col, value);
+    const res = await q;
+    if (res.error) throw res.error;
+    return res.count ?? 0;
+  };
 
-  app.post('/auth/phone/code', { ...phoneLimit('wa-send', 3), schema: { body: phoneCodeSchema } }, async (req, reply) => {
-    if (!whatsappEnabled()) throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
-    const { phone, lang } = req.body;
-    const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
-    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-    const exp = Date.now() + CODE_TTL_MS;
-    await sendWhatsAppCode(req.log, phone, code, lang);
+  /** Casse-tête à résoudre avant un envoi (preuve de travail, invisible pour la personne). */
+  app.get('/auth/phone/challenge', { config: { rateLimit: { max: 30, timeWindow: '10 minutes' } } }, async (_req, reply) => {
     reply.header('Cache-Control', 'private, no-store');
-    return { ticket: `${exp}.${otpSig(phone, role, code, exp)}`, expiresAt: new Date(exp).toISOString() };
+    return newChallenge();
   });
 
-  app.post('/auth/phone/verify', { ...phoneLimit('wa-check', 5), schema: { body: phoneVerifySchema } }, async (req, reply) => {
-    const { phone, code, ticket } = req.body;
+  app.post('/auth/phone/code', { ...phoneLimit('wa-send', 4), schema: { body: phoneCodeSchema } }, async (req, reply) => {
+    if (!whatsappEnabled()) throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
+    const { phone, lang, challenge, nonce } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
-    const [expTxt, sig] = ticket.split('.');
-    const exp = Number(expTxt);
-    if (!Number.isFinite(exp) || !sig) throw badRequest('CODE_INVALID', 'Code incorrect. Vérifiez le code reçu sur WhatsApp.');
-    if (Date.now() > exp) throw badRequest('CODE_EXPIRED', 'Ce code a expiré. Demandez-en un nouveau.');
-    const attendu = Buffer.from(otpSig(phone, role, code, exp));
-    const recu = Buffer.from(sig);
-    if (attendu.length !== recu.length || !timingSafeEqual(attendu, recu)) throw badRequest('CODE_INVALID', 'Code incorrect. Vérifiez le code reçu sur WhatsApp.');
+    if (!isDzMobile(phone)) throw badRequest('PHONE_NOT_MOBILE', 'Entrez un numéro de mobile algérien (05, 06 ou 07).');
+    if (!checkProof(challenge, nonce, phone)) throw badRequest('PROOF_INVALID', 'Vérification de sécurité expirée. Réessayez.');
+    const ip = req.ip;
+
+    // Délai croissant et plafonds du numéro.
+    const derniers = await db
+      .from('auth_phone_codes')
+      .select('created_at')
+      .eq('phone', phone)
+      .eq('delivered', true)
+      .gte('created_at', depuis(H))
+      .order('created_at', { ascending: false });
+    if (derniers.error) throw derniers.error;
+    const heure = derniers.data ?? [];
+    const wait = waitAfter(heure.length, heure[0] ? new Date(heure[0].created_at as string) : null);
+    if (wait > 0) throw attendre(wait);
+    if (heure.length >= PHONE_MAX_PER_HOUR || (await count('phone', phone, 24 * H)) >= PHONE_MAX_PER_DAY) throw plafond();
+    // Plafonds de l'adresse IP, tous numéros confondus.
+    if ((await count('ip', ip, H)) >= IP_MAX_PER_HOUR || (await count('ip', ip, 24 * H)) >= IP_MAX_PER_DAY) throw plafond();
+    // Plafond de la plateforme : au-delà, la facture s'arrête là.
+    if ((await count(null, '', 24 * H)) >= config.WHATSAPP_DAILY_CAP) {
+      req.log.error({ cap: config.WHATSAPP_DAILY_CAP }, 'whatsapp plafond quotidien atteint');
+      throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
+    }
+
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    await sendWhatsAppCode(req.log, phone, code, lang);
+    const expiresAt = new Date(Date.now() + CODE_TTL_MIN * 60_000);
+    // Seul le DERNIER code est valable : les précédents encore ouverts sont fermés.
+    const fermer = await db.from('auth_phone_codes').update({ expires_at: new Date().toISOString() }).eq('phone', phone).eq('role', role).is('consumed_at', null);
+    if (fermer.error) req.log.error({ err: fermer.error }, 'otp fermeture');
+    const ins = await db.from('auth_phone_codes').insert({ phone, role, code_hash: codeHash(phone, role, code), ip, expires_at: expiresAt.toISOString() });
+    if (ins.error) throw ins.error;
+    // Ménage : rien n'est gardé plus de deux jours.
+    void db
+      .from('auth_phone_codes')
+      .delete()
+      .lt('created_at', depuis(48 * H))
+      .then(() => undefined);
+
+    const envoyes = heure.length + 1;
+    reply.header('Cache-Control', 'private, no-store');
+    return {
+      expiresAt: expiresAt.toISOString(),
+      /** Secondes avant de pouvoir redemander ; `null` = plus de renvoi possible pour l'heure. */
+      resendIn: envoyes >= PHONE_MAX_PER_HOUR ? null : RESEND_WAIT_S[envoyes - 1],
+    };
+  });
+
+  app.post('/auth/phone/verify', { ...phoneLimit('wa-check', 10), schema: { body: phoneVerifySchema } }, async (req, reply) => {
+    const { phone, code } = req.body;
+    const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
+    const res = await db.rpc('auth_phone_code_check', { p_phone: phone, p_role: role, p_hash: codeHash(phone, role, code), p_max: CODE_MAX_ATTEMPTS });
+    if (res.error) throw res.error;
+    const etat = res.data as string;
+    if (etat === 'invalid') throw badRequest('CODE_INVALID', 'Code incorrect. Vérifiez le code reçu sur WhatsApp.');
+    if (etat === 'locked') throw badRequest('CODE_LOCKED', 'Trop d’essais avec ce code. Demandez-en un nouveau.');
+    if (etat !== 'ok') throw badRequest('CODE_EXPIRED', 'Ce code a expiré. Demandez-en un nouveau.');
 
     // Le compte de CE portail pour ce numéro, créé à la première connexion (déjà confirmé).
     const email = phoneAlias(phone, role);

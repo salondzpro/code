@@ -4,6 +4,8 @@
  * Suivi dans public.schema_migrations. Usage :
  *   node --env-file=.env scripts/db-migrate.mjs           # applique les migrations en attente
  *   node --env-file=.env scripts/db-migrate.mjs --status  # liste l'état
+ *   node --env-file=.env scripts/db-migrate.mjs --only 0060_x.sql  # n'applique QUE ce fichier (une migration
+ *                                                         # en attente refusée par le propriétaire reste en attente)
  *   node --env-file=.env scripts/db-migrate.mjs --reset   # DANGER : drop schema public + réapplique
  */
 import { readdir, readFile } from 'node:fs/promises';
@@ -14,6 +16,8 @@ import pg from 'pg';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.resolve(here, '../supabase/migrations');
 const args = new Set(process.argv.slice(2));
+const onlyIdx = process.argv.indexOf('--only');
+const only = onlyIdx > 0 ? process.argv[onlyIdx + 1] : null;
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -70,6 +74,7 @@ try {
   let n = 0;
   for (const f of files) {
     if (applied.has(f)) continue;
+    if (only && f !== only) continue;
     const sql = await readFile(path.join(migrationsDir, f), 'utf8');
     process.stdout.write(`→ ${f} … `);
     await client.query('begin');

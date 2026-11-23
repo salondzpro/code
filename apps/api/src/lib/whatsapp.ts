@@ -21,9 +21,9 @@ export const whatsappEnabled = () => !!config.WHATSAPP_TOKEN && !!config.WHATSAP
 type Lang = 'fr' | 'ar' | 'en';
 
 const TEXTE: Record<Lang, (code: string) => string> = {
-  fr: (c) => `${c} est votre code de connexion Salon DZ. Il expire dans 10 minutes. Ne le communiquez à personne.`,
-  ar: (c) => `${c} هو رمز الدخول إلى Salon DZ. ينتهي خلال 10 دقائق. لا تشاركه مع أي أحد.`,
-  en: (c) => `${c} is your Salon DZ login code. It expires in 10 minutes. Do not share it.`,
+  fr: (c) => `${c} est votre code de connexion Salon DZ. Il expire dans 15 minutes. Ne le communiquez à personne.`,
+  ar: (c) => `${c} هو رمز الدخول إلى Salon DZ. ينتهي خلال 15 دقيقة. لا تشاركه مع أي أحد.`,
+  en: (c) => `${c} is your Salon DZ login code. It expires in 15 minutes. Do not share it.`,
 };
 
 /** Indisponible : erreur en français, jamais le message brut de Meta. */

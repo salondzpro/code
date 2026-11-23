@@ -45,6 +45,8 @@ import { EMAIL_RE } from './Login';
 import { PASSWORD_MIN } from './SignUp';
 import { getLocale, t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
+import { solveProof } from '@/lib/proofOfWork';
+import { ApiError } from '@salondz/api-client';
 import { MARCHE } from '@/lib/flavor';
 
 type Err = { kind: AuthErrorKind | 'form' | 'phone'; text: string } | null;
@@ -601,11 +603,13 @@ export function AccesWhatsApp() {
   const { next, q, role, base } = useParcours();
   const [digits, setDigits] = useState('');
   const [phone, setPhone] = useState<string | null>(null);
-  const [ticket, setTicket] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState<'send' | 'check' | null>(null);
   const [error, setError] = useState<Err>(null);
+  /** Secondes avant de pouvoir redemander (délai croissant DONNÉ PAR LE SERVEUR). */
   const [dans, setDans] = useState(0);
+  /** Plus aucun renvoi possible pour l'heure : le bouton disparaît. */
+  const [epuise, setEpuise] = useState(false);
   const enCours = useRef(false);
 
   useEffect(() => {
@@ -620,13 +624,25 @@ export function AccesWhatsApp() {
     setBusy('send');
     setError(null);
     try {
-      const res = await api.auth.phoneCode({ phone: numero, role, lang: getLocale() });
+      // Preuve de travail anti-robots, liée au numéro : invisible, quelques dixièmes de seconde.
+      const { challenge, bits } = await api.auth.phoneChallenge();
+      const nonce = await solveProof(challenge, numero, bits);
+      const res = await api.auth.phoneCode({ phone: numero, role, lang: getLocale(), challenge, nonce });
       setPhone(numero);
-      setTicket(res.ticket);
       setCode('');
-      setDans(RENVOI_S);
+      setDans(res.resendIn ?? 0);
+      setEpuise(res.resendIn === null);
     } catch (err) {
-      setError({ kind: 'phone', text: describeAuthError(err).text });
+      const kind = phone ? 'form' : 'phone';
+      if (err instanceof ApiError && err.code === 'OTP_WAIT') {
+        setDans(Number((err.details as { retryIn?: number } | undefined)?.retryIn) || 60);
+        setError({ kind, text: t(err.message) });
+      } else if (err instanceof ApiError && err.code === 'OTP_LIMIT') {
+        setEpuise(true);
+        setError({ kind, text: t(err.message) });
+      } else {
+        setError({ kind, text: describeAuthError(err).text });
+      }
     } finally {
       setBusy(null);
     }
@@ -645,7 +661,7 @@ export function AccesWhatsApp() {
     setError(null);
     enCours.current = true;
     try {
-      const res = await api.auth.phoneVerify({ phone, role, code: valeur, ticket });
+      const res = await api.auth.phoneVerify({ phone, role, code: valeur });
       const { error: e } = await supabase.auth.setSession({ access_token: res.accessToken, refresh_token: res.refreshToken });
       if (e) throw e;
       writeAuthFlow({ role, next, identifier: phone, channel: 'whatsapp' });
@@ -702,10 +718,21 @@ export function AccesWhatsApp() {
           <Button icon={ICONE.seConnecter} type="submit" form="pa-wa-code" loading={busy === 'check'} disabled={busy !== null || code.length !== 6}>
             {t('Se connecter')}
           </Button>
-          <Button icon={ICONE.renvoyer} variant="g" loading={busy === 'send'} disabled={busy !== null || dans > 0} onClick={() => void envoyer(phone)}>
-            {dans > 0 ? t('Renvoyer le code dans {temps}', { temps: minutes }) : t('Renvoyer le code')}
-          </Button>
-          <button type="button" className="pa-lien centre" onClick={() => { setPhone(null); setError(null); }}>
+          {!epuise && (
+            <Button icon={ICONE.renvoyer} variant="g" loading={busy === 'send'} disabled={busy !== null || dans > 0} onClick={() => void envoyer(phone)}>
+              {dans > 0 ? t('Renvoyer le code dans {temps}', { temps: minutes }) : t('Renvoyer le code')}
+            </Button>
+          )}
+          <button
+            type="button"
+            className="pa-lien centre"
+            onClick={() => {
+              setPhone(null);
+              setError(null);
+              setDans(0);
+              setEpuise(false);
+            }}
+          >
             {t('Changer de numéro')}
           </button>
         </>

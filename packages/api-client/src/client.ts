@@ -466,7 +466,8 @@ export function createApiClient(opts: ApiClientOptions) {
       /** L'adresse est-elle libre ? Appelée dès la saisie, avant toute création de compte. */
       emailCheck: (body: EmailCheckInput) => post<{ status: EmailCheckStatus }>('/auth/email-check', body),
       /** Connexion par numéro : code envoyé par WhatsApp, puis vérifié contre le ticket. */
-      phoneCode: (body: PhoneCodeInput) => post<{ ticket: string; expiresAt: string }>('/auth/phone/code', body),
+      phoneChallenge: () => get<{ challenge: string; bits: number }>('/auth/phone/challenge', undefined, false),
+      phoneCode: (body: PhoneCodeInput) => post<{ expiresAt: string; resendIn: number | null }>('/auth/phone/code', body),
       phoneVerify: (body: PhoneVerifyInput) =>
         post<{ accessToken: string; refreshToken: string; expiresAt: number | null; isNew: boolean }>('/auth/phone/verify', body),
       /** Lien de connexion par e-mail (compte existant). */

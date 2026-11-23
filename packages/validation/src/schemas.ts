@@ -486,6 +486,9 @@ export const phoneCodeSchema = z.object({
   phone: p.phoneDZ,
   role: z.enum(USER_ROLES).default('client'),
   lang: z.enum(['fr', 'ar', 'en']).default('fr'),
+  /** Preuve de travail anti-robots (`GET /auth/phone/challenge`) : casse-tête signé + solution. */
+  challenge: z.string().max(200).optional(),
+  nonce: z.string().max(32).optional(),
 });
 export type PhoneCodeInput = z.input<typeof phoneCodeSchema>;
 /** Vérification du code reçu : le ticket (signé par l'API) porte l'échéance, jamais le code. */
@@ -493,7 +496,8 @@ export const phoneVerifySchema = z.object({
   phone: p.phoneDZ,
   role: z.enum(USER_ROLES).default('client'),
   code: z.string().trim().regex(/^\d{6}$/, 'Code à 6 chiffres'),
-  ticket: z.string().min(10).max(200),
+  /** Ancien écran (ticket signé) : ignoré depuis les codes en base (migration 0060). */
+  ticket: z.string().max(200).optional(),
 });
 export type PhoneVerifyInput = z.input<typeof phoneVerifySchema>;
 

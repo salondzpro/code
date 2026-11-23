@@ -37,6 +37,8 @@ const schema = z.object({
   WHATSAPP_TOKEN: z.string().optional(),
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   WHATSAPP_TEMPLATE: z.string().default('code_connexion'),
+  /** Plafond d'envois de codes WhatsApp par 24 h pour TOUTE la plateforme (chaque message est facturé). */
+  WHATSAPP_DAILY_CAP: z.coerce.number().int().positive().default(300),
   /** Adresse de réponse des e-mails transactionnels (boîte lue par l'équipe). */
   EMAIL_REPLY_TO: z.string().default('support@salondz.com'),
   /** Origine du site web (liens envoyés par e-mail). Absente : première origine CORS en https. */

@@ -2526,4 +2526,5 @@ export const en: Record<string, string> = {
   "WhatsApp": "WhatsApp",
   "Administration Salon DZ": "Salon DZ administration",
   "Ce compte n’a pas accès à l’administration.": "This account has no access to the administration.",
+  "Trop de codes demandés pour ce numéro. Réessayez plus tard, ou connectez-vous par e-mail.": "Too many codes requested for this number. Try again later, or sign in with email.",
 };

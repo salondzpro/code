@@ -2512,4 +2512,5 @@ export const ar: Record<string, string> = {
   "WhatsApp": "واتساب",
   "Administration Salon DZ": "إدارة Salon DZ",
   "Ce compte n’a pas accès à l’administration.": "هذا الحساب لا يملك صلاحية الدخول إلى الإدارة.",
+  "Trop de codes demandés pour ce numéro. Réessayez plus tard, ou connectez-vous par e-mail.": "طلبات كثيرة لهذا الرقم. أعد المحاولة لاحقًا أو سجّل الدخول عبر البريد الإلكتروني.",
 };
