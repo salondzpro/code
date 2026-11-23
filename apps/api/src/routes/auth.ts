@@ -1,3 +1,4 @@
+import { recordSignupSource } from '../lib/marketing';
 import { createHash, createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
@@ -197,7 +198,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.post('/auth/signup', { ...limit, schema: { body: emailSignupSchema } }, async (req, reply) => {
-    const { email, password, next, fullName, gender, phone } = req.body;
+    const { email, password, next, fullName, gender, phone, acq } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
     // Le compte DE CE CÔTÉ, s'il existe déjà (vrai ou interne).
     const existing = await accountFor(email, role);
@@ -237,6 +238,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
           .eq('id', created.data.user.id);
         if (upd.error) req.log.error({ err: upd.error }, 'signup profil');
       }
+      void recordSignupSource(req.log, role, acq);
       reply.header('Cache-Control', 'private, no-store');
       // `login` : l'adresse avec laquelle le site doit se connecter (l'interne le cas échéant).
       return { opened: true, login: cible };
@@ -273,6 +275,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       }
       link = mailLink(req, gen.data.properties, to, role);
     }
+    if (!existing) void recordSignupSource(req.log, role, acq);
     // Toujours vers la VRAIE adresse, même pour un compte interne.
     await sendMail(req.log, { to: email, ...confirmationMail(link) });
     reply.status(204);

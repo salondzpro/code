@@ -2604,3 +2604,31 @@ html .sl-fav {
   justify-content: center;
   padding-block: 0 32px;
 }
+
+/* Administration — Marketing (23 nov. 2026). */
+.mk-bloc { display: flex; flex-direction: column; gap: 10px; }
+.mk-bloc h2 { margin: 0; font-size: calc(17px * var(--fz, 1)); font-weight: 600; }
+.mk-table { display: flex; flex-direction: column; border: 1px solid #eef0f2; border-radius: 8px; background: #fff; overflow: hidden; }
+.mk-tr { display: grid; grid-template-columns: 1.2fr 1.2fr 0.6fr 0.6fr; gap: 8px; padding: 10px 12px; border-top: 1px solid #eef0f2; font-variant-numeric: tabular-nums; }
+.mk-tr:first-child { border-top: 0; }
+.mk-th { background: #f7f7f7; color: #4e5860; font-size: calc(12px * var(--fz, 1)); font-weight: 600; }
+.mk-copie { flex: none; color: #4e5860; font-size: calc(13px * var(--fz, 1)); }
+.mk-note { margin: 0; color: #4e5860; font-size: calc(13px * var(--fz, 1)); }
+.mk-scripts { display: grid; gap: 12px; }
+@media (min-width: 900px) { .mk-scripts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mk-script { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid #eef0f2; border-radius: 8px; background: #fff; box-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08); }
+.mk-script-hd { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.mk-script-hd span { flex: none; color: #4e5860; font-size: calc(12px * var(--fz, 1)); }
+.mk-accroche { margin: 0; font-size: calc(13px * var(--fz, 1)); color: #4e5860; }
+.mk-script ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.mk-plan { display: flex; gap: 10px; align-items: flex-start; }
+.mk-plan > span:last-child { display: flex; flex-direction: column; gap: 2px; font-size: calc(14px * var(--fz, 1)); }
+.mk-plan small { color: #8a949c; font-size: calc(12px * var(--fz, 1)); }
+.mk-montrer { color: #4e5860; font-style: italic; }
+.mk-plan-l { flex: none; width: 46px; text-align: center; padding: 2px 0; border-radius: 999px; font-size: calc(11px * var(--fz, 1)); font-weight: 600; background: #f2f3f5; color: #202020; }
+.mk-plan.pA .mk-plan-l { background: #202020; color: #fff; }
+.mk-plan.pC .mk-plan-l { background: #e5f4e4; color: #1f7a35; }
+.mk-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.mk-actions .btn { width: auto; }
+.mk-conseils summary { cursor: pointer; font-weight: 600; }
+.mk-conseils ul { margin: 8px 0 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 4px; color: #4e5860; }

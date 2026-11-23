@@ -24,6 +24,7 @@ import { trace } from '../lib/audit';
 import { readLabelSettings, readLabelSocials, readLabelStyle, writeLabelSettings } from '../lib/labelSettings';
 import { addProNews, notifyProsOfNews, readProNews, removeProNews } from '../lib/proNews';
 import { enforceFreeLimits, readAllPlans, writePlan } from '../lib/plans';
+import { listRushes, readAcqStats, rushReadUrl, rushUploadUrl } from '../lib/marketing';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
 import { issueControlToken } from '../lib/control';
 import { config } from '../config';
@@ -585,6 +586,34 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       if (v.plan === 'free') await enforceFreeLimits(req.params.id);
       await trace(req, 'salon_plan_set', 'salon', req.params.id, `${v.plan}${v.until ? ` jusqu'au ${v.until}` : ''} · ${req.body.reason}`);
       return v;
+    },
+  );
+
+  // ------------------------------------------------------------------ marketing (23 nov. 2026)
+  // Inscriptions par provenance de campagne, et vidéos (rushes) du propriétaire pour le montage.
+  app.get('/marketing/stats', async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return { stats: await readAcqStats() };
+  });
+  app.get('/marketing/videos', { preHandler: app.requireOwner }, async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return { items: await listRushes() };
+  });
+  app.post(
+    '/marketing/videos/upload-url',
+    { preHandler: app.requireOwner, schema: { body: z.object({ name: z.string().trim().min(1).max(200) }) } },
+    async (req) => {
+      const r = await rushUploadUrl(req.body.name);
+      await trace(req, 'marketing_video_upload', 'platform', null, r.path);
+      return r;
+    },
+  );
+  app.get(
+    '/marketing/videos/:name/url',
+    { preHandler: app.requireOwner, schema: { params: z.object({ name: z.string().min(1).max(200).regex(/^[a-zA-Z0-9._-]+$/) }) } },
+    async (req, reply) => {
+      reply.header('Cache-Control', 'private, no-store');
+      return rushReadUrl(req.params.name);
     },
   );
 

@@ -743,6 +743,11 @@ export function createApiClient(opts: ApiClientOptions) {
       news: () => get<{ items: ProNewsItem[] }>('/admin/news'),
       /** Abonnements de tous les salons (20 nov. 2026). */
       plans: () => get<{ items: AdminPlanRow[] }>('/admin/plans'),
+      /** Marketing (23 nov. 2026) : inscriptions par provenance, vidéos du propriétaire. */
+      marketingStats: () => get<{ stats: Record<string, { client: number; pro: number; last: string }> }>('/admin/marketing/stats'),
+      marketingVideos: () => get<{ items: { name: string; size: number; createdAt: string | null }[] }>('/admin/marketing/videos'),
+      marketingUploadUrl: (name: string) => post<{ path: string; token: string }>('/admin/marketing/videos/upload-url', { name }),
+      marketingVideoUrl: (name: string) => get<{ url: string }>(`/admin/marketing/videos/${encodeURIComponent(name)}/url`),
       setPlan: (salonId: string, body: { plan: 'free' | 'pro' | 'salon'; until?: string | null; reason: string }) =>
         put<SalonPlanInfo>(`/admin/salons/${salonId}/plan`, body),
       publishNews: (body: { title: string; body: string; url?: string; action?: string; notify: boolean }) =>

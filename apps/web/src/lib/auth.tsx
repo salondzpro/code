@@ -8,6 +8,7 @@
  * Les comptes de démonstration vivent ENTIÈREMENT dans le navigateur (`@/demo`) : une session
  * factice est posée ici, et l'API client répond depuis le monde local. Aucun serveur sollicité.
  */
+import { provenance } from './acquisition';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import type { Session, User } from '@supabase/supabase-js';
@@ -130,7 +131,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Compte créé par l'API. Professionnel : elle envoie le lien de confirmation (nos e-mails, pas
       // le SMTP de Supabase), pas de session avant le clic. Cliente avec nom et genre (14 nov. 2026) :
       // le compte est ouvert d'office, on se connecte aussitôt avec le mot de passe saisi.
-      const res = await api.auth.signup({ email, password, role, next, ...(extra ?? {}) });
+      const acq = provenance();
+      const res = await api.auth.signup({ email, password, role, next, ...(extra ?? {}), ...(acq ? { acq } : {}) });
       if (!res?.opened) return false;
       // `login` : l'adresse interne quand la vraie sert déjà à un compte de l'autre côté (16 nov. 2026).
       const { error } = await supabase.auth.signInWithPassword({ email: res.login ?? email, password });

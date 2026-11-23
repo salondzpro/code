@@ -88,6 +88,7 @@ const ProLoyalty = lazyNamed(() => import('@/pages/pro/ProLoyalty'), 'ProLoyalty
 const EmailLink = lazyNamed(() => import('@/pages/auth/EmailLink'), 'EmailLink');
 const ProPlan = lazyNamed(() => import('@/pages/pro/ProPlan'), 'ProPlan');
 const AdminPlans = lazyNamed(() => import('@/pages/admin/AdminPlans'), 'AdminPlans');
+const AdminMarketing = lazyNamed(() => import('@/pages/admin/AdminMarketing'), 'AdminMarketing');
 const ProPromos = lazyNamed(() => import('@/pages/pro/ProPromos'), 'ProPromos');
 const ProCredits = lazyNamed(() => import('@/pages/pro/ProCredits'), 'ProCredits');
 const StepServices = lazyNamed(() => import('@/pages/pro/onboarding/StepServices'), 'StepServices');
@@ -381,6 +382,7 @@ export const router = createBrowserRouter([
           { path: 'etiquettes', element: <AdminLabels /> },
           { path: 'conseils', element: <AdminNews /> },
           { path: 'abonnements', element: <AdminPlans /> },
+          { path: 'marketing', element: <AdminMarketing /> },
           { path: 'sante', element: <AdminHealth /> },
           { path: 'equipe', element: <AdminTeam /> },
           { path: 'journal', element: <AdminAudit /> },

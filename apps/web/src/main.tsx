@@ -46,6 +46,8 @@ const inNativeShell = Boolean((window as { Capacitor?: { isNativePlatform?: () =
  * Appelé ICI parce que Supabase efface le fragment dès qu'il l'a lu, et les jetons avec.
  */
 if (!inNativeShell) void import('./lib/appHandoff').then((m) => m.handOffToApp());
+// Lien de campagne (`?src=tiktok&c=…`) : retenu pour compter l'inscription qui suivra (23 nov. 2026).
+void import('./lib/acquisition').then((m) => m.retenirProvenance());
 if (inNativeShell) void import('./lib/launchAnimation').then((m) => m.startLaunchAnimation());
 // Applications embarquées : cherche et télécharge la dernière version du site dès l'ouverture
 // (`lib/liveUpdate.ts`), pendant l'animation, au lieu d'attendre la fin de l'initialisation.

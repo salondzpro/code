@@ -440,6 +440,8 @@ export const emailSignupSchema = z.object({
   gender: z.enum(['male', 'female']).optional(),
   /** Numéro algérien, avec ou sans le 0 du début (17 nov. 2026) : obligatoire à l'écran, contrôlé ici. */
   phone: p.phoneDZ.optional(),
+  /** Provenance de campagne retenue sur l'appareil (23 nov. 2026) : compteur seulement, rien sur la personne. */
+  acq: z.object({ src: z.string().trim().max(30), c: z.string().trim().max(40).optional() }).optional(),
 });
 export type EmailSignupInput = z.infer<typeof emailSignupSchema>;
 /** Lien de connexion, renvoi de confirmation, mot de passe oublié : une adresse (+ retour). */
