@@ -68,6 +68,9 @@ export function BookingWhen() {
   const [staffId, setStaffId] = useState<string | null>(draft.staffId ?? null);
   const [ajout, setAjout] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
+  // Jours dépliés d'office quand le précédent est complet (voir `jourVide`). Déclaré AVANT tout retour
+  // anticipé : un hook placé après faisait planter l'écran (erreur React #310) au rechargement.
+  const [autoOuverts, setAutoOuverts] = useState<string[]>([]);
   const { session } = useAuth();
   const serviceIds = draft.serviceIds;
   const s = salon.data;
@@ -90,7 +93,6 @@ export function BookingWhen() {
   const encore = jours.length === nbJours && addDaysToKey(jours[jours.length - 1]!, 1) <= maxDate;
   // JOUR COMPLET DÉPLIÉ D'OFFICE (21 nov. 2026, audit) : la page déplie le jour suivant, et ainsi de
   // suite (7 jours au plus), jusqu'au premier qui a des créneaux — tant que la personne n'a rien plié.
-  const [autoOuverts, setAutoOuverts] = useState<string[]>([]);
   const estOuvert = (k: string) => (ouverts ? ouverts.has(k) : k === jours[0] || autoOuverts.includes(k));
   const jourVide = (k: string) => {
     if (ouverts) return;
