@@ -121,6 +121,7 @@ const Requests = lazyNamed(() => import('@/pages/pro/Requests'), 'Requests');
 // Administration de la place de marché (`docs/ADMIN.md`). Chargée à la demande : une poignée de
 // personnes l'ouvrent, elle n'a rien à faire dans le premier chargement d'une cliente en 4G.
 const AdminLayout = lazyNamed(() => import('@/pages/admin/AdminShell'), 'AdminLayout');
+const AdminLogin = lazyNamed(() => import('@/pages/admin/AdminLogin'), 'AdminLogin');
 const AdminOverview = lazyNamed(() => import('@/pages/admin/AdminOverview'), 'AdminOverview');
 const AdminSalons = lazyNamed(() => import('@/pages/admin/AdminSalons'), 'AdminSalons');
 const AdminSalon = lazyNamed(() => import('@/pages/admin/AdminSalon'), 'AdminSalon');
@@ -368,6 +369,7 @@ export const router = createBrowserRouter([
       // ---- Administration de la place de marché ----
       // Le garde est SERVEUR (`requireAdmin`) : `AdminLayout` ne fait que renvoyer à l'accueil, sans
       // message, quand l'API répond 403. Une adresse devinée ne donne donc rien.
+      { path: '/admin/connexion', element: <AdminLogin /> },
       {
         path: '/admin',
         element: <AdminLayout />,

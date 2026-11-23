@@ -124,7 +124,7 @@ export function AdminLayout() {
     const id = window.setInterval(() => {
       if (Date.now() - dernier > INACTIVITE_MIN * 60_000) {
         window.clearInterval(id);
-        void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'));
+        void signOut({ voile: false }).finally(() => window.location.assign('/admin/connexion'));
       }
     }, 30_000);
     return () => {
@@ -135,7 +135,7 @@ export function AdminLayout() {
 
   if (loading || (!!session && me.isPending)) return <PageLoading />;
   // Personne de connecté : l'écran de connexion, et on revient ici ensuite.
-  if (!session) return <Navigate to="/connexion?next=%2Fadmin" replace />;
+  if (!session) return <Navigate to={`/admin/connexion?next=${encodeURIComponent(pathname)}`} replace />;
   // Connexion trop ancienne (plus de 12 h, `ADMIN_REAUTH`) : on redemande le mot de passe, sans
   // renvoyer à l'accueil — c'est bien un administrateur.
   if (me.isError && me.error instanceof ApiError && me.error.code === 'ADMIN_REAUTH')
@@ -146,13 +146,14 @@ export function AdminLayout() {
         </span>
         <h1>{t('Reconnectez-vous')}</h1>
         <p>{t('Pour votre sécurité, l’administration demande de se reconnecter toutes les 12 heures.')}</p>
-        <Button icon={ICONE.seConnecter} onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'))}>
+        <Button icon={ICONE.seConnecter} onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/admin/connexion'))}>
           {t('Se reconnecter')}
         </Button>
       </div>
     );
-  // Connecté mais pas administrateur : l'accueil, sans un mot.
-  if (me.isError) return <Navigate to="/" replace />;
+  // Connecté mais pas administrateur (ou réponse illisible) : le portail d'administration le dit et
+  // propose de se connecter avec le bon compte (23 nov. 2026, demande du propriétaire).
+  if (me.isError) return <Navigate to="/admin/connexion?refus=1" replace />;
 
   const owner = me.data?.level === 'owner';
   const liens = NAV.filter((n) => owner || !n.owner);
@@ -181,7 +182,7 @@ export function AdminLayout() {
         ))}
         <div className="ad-qui">
           <span>{owner ? t('Propriétaire') : t('Support')}</span>
-          <button type="button" onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'))}>
+          <button type="button" onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/admin/connexion'))}>
             <I icon={LogOut} size={16} /> {t('Se déconnecter')}
           </button>
         </div>
@@ -232,7 +233,7 @@ export function AdminLayout() {
                     </div>
                   </div>
                 ))}
-                <button type="button" className="ad-plus-out" onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/acces?next=%2Fadmin'))}>
+                <button type="button" className="ad-plus-out" onClick={() => void signOut({ voile: false }).finally(() => window.location.assign('/admin/connexion'))}>
                   <I icon={LogOut} size={18} /> {t('Se déconnecter')} · {owner ? t('Propriétaire') : t('Support')}
                 </button>
               </div>

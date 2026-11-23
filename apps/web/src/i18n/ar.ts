@@ -2510,4 +2510,6 @@ export const ar: Record<string, string> = {
   "Vous êtes client ? Réserver un salon": "أنت زبون؟ احجز في صالون",
   "Disponible sur": "متوفر على",
   "WhatsApp": "واتساب",
+  "Administration Salon DZ": "إدارة Salon DZ",
+  "Ce compte n’a pas accès à l’administration.": "هذا الحساب لا يملك صلاحية الدخول إلى الإدارة.",
 };

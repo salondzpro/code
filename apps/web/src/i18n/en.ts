@@ -2524,4 +2524,6 @@ export const en: Record<string, string> = {
   "Vous êtes client ? Réserver un salon": "Are you a client? Book a salon",
   "Disponible sur": "Get it on",
   "WhatsApp": "WhatsApp",
+  "Administration Salon DZ": "Salon DZ administration",
+  "Ce compte n’a pas accès à l’administration.": "This account has no access to the administration.",
 };
