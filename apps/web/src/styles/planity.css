@@ -2378,3 +2378,41 @@ html.pro-theme .agenda .ag9-lg:not(:has(button)) {
 .obs-r .obs-x {
   order: 4;
 }
+
+/* ============================================================================================
+   ESSAI DU VERRE SUR L'AGENDA (23 nov. 2026, demande du propriétaire : « fais un test sur
+   l'agenda », maquette https://claude.ai/artifact/N8B7btmYS7g7BzbiNb8d7Y n° 1). Barre du haut
+   (date, frise, panneau), rangée des membres et « Aujourd'hui » : blanc 72 % + flou 20 px + liseré
+   clair ; la journée défile dessous en flou. Sans flou possible ou avec moins d'effets demandés :
+   blanc plein. À étendre au reste du projet seulement après validation.
+   ============================================================================================ */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html.pro-theme .agenda .pla-top,
+  html.pro-theme .agenda .pla-staff {
+    background: rgb(255 255 255 / 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgb(0 0 0 / 0.06);
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.65);
+  }
+  /* La rangée des membres colle sous la barre : un seul verre continu, sans double filet. */
+  html.pro-theme .agenda .pla-top:has(~ .pla-staff) {
+    border-bottom-color: transparent;
+    box-shadow: none;
+  }
+  html.pro-theme .agenda .pla-today {
+    background: rgb(255 255 255 / 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.65), 0 0 0 1px rgb(0 0 0 / 0.05), 0 6px 16px -8px rgb(0 0 0 / 0.3);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html.pro-theme .agenda .pla-top,
+  html.pro-theme .agenda .pla-staff,
+  html.pro-theme .agenda .pla-today {
+    background: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
