@@ -46,6 +46,7 @@ import { PASSWORD_MIN } from './SignUp';
 import { getLocale, t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import { solveProof } from '@/lib/proofOfWork';
+import { sortEnvoi, useWhatsAppDispo } from '@/lib/whatsappDispo';
 import { ApiError } from '@salondz/api-client';
 import { MARCHE } from '@/lib/flavor';
 
@@ -612,6 +613,7 @@ export function AccesWhatsApp() {
   /** Plus aucun renvoi possible pour l'heure : le bouton disparaît. */
   const [epuise, setEpuise] = useState(false);
   const enCours = useRef(false);
+  const dispo = useWhatsAppDispo();
 
   useEffect(() => {
     if (dans <= 0) return;
@@ -620,6 +622,8 @@ export function AccesWhatsApp() {
   }, [dans]);
 
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
+  // Canal pas prêt (modèle Meta non approuvé) : cet écran n'existe pas, retour à la connexion.
+  if (dispo.data?.available === false) return <Navigate to={`${base}${q()}`} replace />;
 
   const envoyer = async (numero: string) => {
     setBusy('send');
@@ -629,6 +633,12 @@ export function AccesWhatsApp() {
       const { challenge, bits } = await api.auth.phoneChallenge();
       const nonce = await solveProof(challenge, numero, bits);
       const res = await api.auth.phoneCode({ phone: numero, role, lang: getLocale(), challenge, nonce });
+      // ON N'AFFICHE « Entrez le code » QUE SI WHATSAPP L'A PRIS EN CHARGE (24 nov. 2026) : Meta peut
+      // accepter un envoi puis ne pas le livrer. Son verdict arrive par webhook ; on l'attend 10 s au plus.
+      if (res.ref && (await sortEnvoi(res.ref)) === 'failed') {
+        setError({ kind: phone ? 'form' : 'phone', text: t('WhatsApp n’a pas pu remettre le code à ce numéro. Vérifiez qu’il utilise WhatsApp, ou connectez-vous par e-mail.') });
+        return;
+      }
       setPhone(numero);
       setCode('');
       setDans(res.resendIn ?? 0);

@@ -2534,4 +2534,5 @@ export const en: Record<string, string> = {
   "France": "France",
   "Numéro de mobile français invalide : 06 ou 07, puis 8 chiffres.": "Invalid French mobile number: 06 or 07, then 8 digits.",
   "Numéro de mobile algérien invalide : 05, 06 ou 07, puis 8 chiffres.": "Invalid Algerian mobile number: 05, 06 or 07, then 8 digits.",
+  "WhatsApp n’a pas pu remettre le code à ce numéro. Vérifiez qu’il utilise WhatsApp, ou connectez-vous par e-mail.": "WhatsApp could not deliver the code to this number. Check that it uses WhatsApp, or sign in with email.",
 };

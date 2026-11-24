@@ -20,6 +20,7 @@ import healthRoutes from './routes/health';
 import shareRoutes from './routes/share';
 import planRoutes from './routes/plan';
 import authRoutes from './routes/auth';
+import webhookRoutes from './routes/webhooks';
 import publicRoutes from './routes/public';
 import meRoutes from './routes/me';
 import bookingRoutes from './routes/bookings';
@@ -148,6 +149,7 @@ export async function buildApp(): Promise<App> {
   await app.register(shareRoutes);
   await app.register(planRoutes);
   await app.register(authRoutes, { prefix: '/v1' });
+  await app.register(webhookRoutes, { prefix: '/v1' });
   await app.register(publicRoutes, { prefix: '/v1' });
   await app.register(meRoutes, { prefix: '/v1' });
   await app.register(bookingRoutes, { prefix: '/v1' });

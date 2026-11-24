@@ -2520,4 +2520,5 @@ export const ar: Record<string, string> = {
   "France": "فرنسا",
   "Numéro de mobile français invalide : 06 ou 07, puis 8 chiffres.": "رقم جوال فرنسي غير صالح: 06 أو 07 ثم 8 أرقام.",
   "Numéro de mobile algérien invalide : 05, 06 ou 07, puis 8 chiffres.": "رقم جوال جزائري غير صالح: 05 أو 06 أو 07 ثم 8 أرقام.",
+  "WhatsApp n’a pas pu remettre le code à ce numéro. Vérifiez qu’il utilise WhatsApp, ou connectez-vous par e-mail.": "تعذّر على واتساب إيصال الرمز إلى هذا الرقم. تأكّد أنه يستخدم واتساب، أو سجّل الدخول عبر البريد الإلكتروني.",
 };

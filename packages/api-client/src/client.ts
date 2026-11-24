@@ -472,7 +472,9 @@ export function createApiClient(opts: ApiClientOptions) {
       /** Connexion par mot de passe via l'API (preuve anti-robots, verrou par adresse). */
       login: (body: PasswordLoginInput) => post<{ accessToken: string; refreshToken: string; expiresAt: number | null }>('/auth/login', body),
       phoneChallenge: () => get<{ challenge: string; bits: number }>('/auth/phone/challenge', undefined, false),
-      phoneCode: (body: PhoneCodeInput) => post<{ expiresAt: string; resendIn: number | null }>('/auth/phone/code', body),
+      phoneAvailable: () => get<{ available: boolean }>('/auth/phone/available', undefined, false),
+      phoneStatus: (ref: string) => get<{ status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed' }>('/auth/phone/status', { ref }, false),
+      phoneCode: (body: PhoneCodeInput) => post<{ expiresAt: string; resendIn: number | null; ref?: string }>('/auth/phone/code', body),
       phoneVerify: (body: PhoneVerifyInput) =>
         post<{ accessToken: string; refreshToken: string; expiresAt: number | null; isNew: boolean }>('/auth/phone/verify', body),
       /** Lien de connexion par e-mail (compte existant). */

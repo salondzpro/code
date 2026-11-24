@@ -36,6 +36,16 @@ const schema = z.object({
   /** Codes de connexion par WhatsApp (`lib/whatsapp.ts`). Absentes : connexion par numéro indisponible. */
   WHATSAPP_TOKEN: z.string().optional(),
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  /** Compte WhatsApp Business : lecture de l'état du modèle de code (approuvé ou non). */
+  WHATSAPP_WABA_ID: z.string().optional(),
+  /** Webhook Meta : jeton de vérification de l'abonnement et clé secrète de l'app (signature des envois). */
+  WHATSAPP_VERIFY_TOKEN: z.string().optional(),
+  WHATSAPP_APP_SECRET: z.string().optional(),
+  /** `1` : secours par message texte si le modèle manque (TESTS seulement — non livré hors fenêtre de 24 h). */
+  WHATSAPP_TEXT_FALLBACK: z
+    .string()
+    .optional()
+    .transform((v) => v === '1'),
   WHATSAPP_TEMPLATE: z.string().default('code_connexion'),
   /** Plafond d'envois de codes WhatsApp par 24 h pour TOUTE la plateforme (chaque message est facturé). */
   WHATSAPP_DAILY_CAP: z.coerce.number().int().positive().default(300),

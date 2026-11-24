@@ -1,5 +1,5 @@
 import { recordSignupSource } from '../lib/marketing';
-import { createHash, randomInt } from 'node:crypto';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -10,7 +10,7 @@ import { db } from '../lib/supabase';
 import { ensureDemoUser, ensureDemoWorld } from '../lib/demo';
 import { AppError, badRequest, conflict, notFound, unauthorized } from '../lib/errors';
 import { confirmationMail, magicLinkMail, recoveryMail, sendMail } from '../lib/email';
-import { sendWhatsAppCode, whatsappEnabled } from '../lib/whatsapp';
+import { sendWhatsAppCode, whatsappReady } from '../lib/whatsapp';
 import { forget, guard, hit, seen } from '../lib/antibot';
 import { CODE_MAX_ATTEMPTS, CODE_TTL_MIN, codeHash, IP_MAX_PER_DAY, IP_MAX_PER_HOUR, isLoginMobile, newChallenge, PHONE_MAX_PER_DAY, PHONE_MAX_PER_HOUR, RESEND_WAIT_S, waitAfter } from '../lib/phoneOtp';
 
@@ -467,7 +467,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   });
 
   app.post('/auth/phone/code', { ...phoneLimit('wa-send', 4), schema: { body: phoneCodeSchema } }, async (req, reply) => {
-    if (!whatsappEnabled()) throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
+    if (!(await whatsappReady(req.log))) throw new AppError(503, 'WHATSAPP_UNAVAILABLE', 'Connexion par WhatsApp indisponible pour le moment. Connectez-vous par e-mail.');
     const { phone, lang, challenge, nonce } = req.body;
     const role: Portail = req.body.role === 'pro' ? 'pro' : 'client';
     if (!isLoginMobile(phone)) throw badRequest('PHONE_NOT_MOBILE', 'Entrez un numéro de mobile algérien (05, 06, 07) ou français (06, 07).');
@@ -510,12 +510,13 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     }
 
     const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-    await sendWhatsAppCode(req.log, phone, code, lang);
+    const wamid = await sendWhatsAppCode(req.log, phone, code, lang);
+    const ref = randomBytes(16).toString('base64url');
     const expiresAt = new Date(Date.now() + CODE_TTL_MIN * 60_000);
     // Seul le DERNIER code est valable : les précédents encore ouverts sont fermés.
     const fermer = await db.from('auth_phone_codes').update({ expires_at: new Date().toISOString() }).eq('phone', phone).eq('role', role).is('consumed_at', null);
     if (fermer.error) req.log.error({ err: fermer.error }, 'otp fermeture');
-    const ins = await db.from('auth_phone_codes').insert({ phone, role, code_hash: codeHash(phone, role, code), ip, expires_at: expiresAt.toISOString() });
+    const ins = await db.from('auth_phone_codes').insert({ phone, role, code_hash: codeHash(phone, role, code), ip, expires_at: expiresAt.toISOString(), wamid, ref });
     if (ins.error) throw ins.error;
     // Ménage : rien n'est gardé plus de deux jours.
     void db
@@ -530,7 +531,28 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       expiresAt: expiresAt.toISOString(),
       /** Secondes avant de pouvoir redemander ; `null` = plus de renvoi possible pour l'heure. */
       resendIn: envoyes >= PHONE_MAX_PER_HOUR ? null : RESEND_WAIT_S[envoyes - 1],
+      /** Suivi de livraison de CET envoi (`GET /auth/phone/status?ref=`). */
+      ref,
     };
+  });
+
+  /** Le bouton « Continuer avec WhatsApp » n'apparaît que si le canal est prêt (modèle approuvé par Meta). */
+  app.get('/auth/phone/available', { config: { rateLimit: { max: 120, timeWindow: '10 minutes' } } }, async (req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=300');
+    return { available: await whatsappReady(req.log) };
+  });
+
+  /**
+   * Sort d'UN envoi, d'après le webhook de Meta : `pending` (rien reçu encore), `sent`, `delivered`,
+   * `read` ou `failed`. L'écran attend ce statut avant de demander le code (24 nov. 2026).
+   */
+  app.get('/auth/phone/status', { config: { rateLimit: { max: 120, timeWindow: '10 minutes' } } }, async (req, reply) => {
+    const ref = String((req.query as { ref?: string }).ref ?? '');
+    reply.header('Cache-Control', 'private, no-store');
+    if (!/^[A-Za-z0-9_-]{16,40}$/.test(ref)) return { status: 'pending' };
+    const res = await db.from('auth_phone_codes').select('wa_status').eq('ref', ref).maybeSingle();
+    if (res.error) throw res.error;
+    return { status: (res.data?.wa_status as string | null) ?? 'pending' };
   });
 
   app.post('/auth/phone/verify', { ...phoneLimit('wa-check', 10), schema: { body: phoneVerifySchema } }, async (req, reply) => {
