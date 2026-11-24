@@ -19,6 +19,7 @@
  * qui décide. Les anciennes portes pro (`/connexion?role=pro`, `/inscription?role=pro`) mènent ici.
  * Le serveur refait tous les contrôles : l'écran oriente, il ne protège pas.
  */
+import { estCheminPro } from '@/lib/portail';
 import { OAuthButtons } from '@/components/GoogleButton';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -113,7 +114,7 @@ export function AccesEmail() {
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
 
   const adresse = () => email.trim().toLowerCase();
-  const destination = () => retour(next.startsWith('/pro') === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE);
+  const destination = () => retour(estCheminPro(next) === (role === 'pro') ? next : role === 'pro' ? '/pro' : MARCHE);
 
   const connecter = async (e: FormEvent) => {
     e.preventDefault();
@@ -301,7 +302,7 @@ export function AccesCreer() {
       if (client) {
         const ouverte = await signUpWithPassword(mail, password, 'client', next, { fullName: name.trim(), gender: gender || undefined, phone });
         if (gender) setGuestMarket(gender === 'female' ? 'women' : 'men');
-        if (ouverte) navigate(next.startsWith('/pro') ? MARCHE : next, { replace: true });
+        if (ouverte) navigate(estCheminPro(next) ? MARCHE : next, { replace: true });
         else navigate(`${base}/envoye?mode=confirm`, { replace: true });
         return;
       }

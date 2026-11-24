@@ -4,6 +4,7 @@
  * le numéro que le salon appelle en cas de retard ou de question, et celui qui rattache les
  * rendez-vous pris par quelqu'un d'autre à ce compte.
  */
+import { estCheminPro } from '@/lib/portail';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useState, type FormEvent } from 'react';
 import { guestMarket } from '@/lib/useClientMarket';
@@ -56,7 +57,7 @@ export function ProfileSetup() {
       // aurait éteint.
       const market = !isPro && !me.data?.profile.market ? guestMarket() : null;
       await update.mutateAsync({ fullName: name.trim(), ...(parsed?.success ? { phone: parsed.data } : {}), ...(market ? { market } : {}) });
-      if (isPro) navigate(next.startsWith('/pro') ? next : '/pro', { replace: true });
+      if (isPro) navigate(estCheminPro(next) ? next : '/pro', { replace: true });
       else if (!me.data?.profile.market && !market) navigate(`/marche?next=${encodeURIComponent(next)}`, { replace: true });
       else navigate(next, { replace: true });
     } catch (err) {

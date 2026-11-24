@@ -13,6 +13,7 @@
  * Un compte créé par Google naît client ; par le portail pro, `WelcomeBack` le déclare pro tant
  * qu'il est neuf (`POST /v1/auth/google-pro`).
  */
+import { APPLI } from './flavor';
 import { useEffect, useState } from 'react';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { supabase } from './supabase';
@@ -58,7 +59,7 @@ export async function connexionOAuth(fournisseur: Fournisseur, role: 'client' | 
   const natif = isNative();
   // Demandé PAR L'APPLICATION : la page de retour sait qu'elle doit rendre la session à l'application
   // et ne pas l'ouvrir pour son propre compte (`lib/appHandoff.ts`).
-  if (natif) retour.searchParams.set('app', '1');
+  if (natif) retour.searchParams.set('app', APPLI ?? 'client');
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: fournisseur,
     options: {

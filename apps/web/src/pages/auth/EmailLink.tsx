@@ -15,6 +15,7 @@
  *   3. Sur ordinateur → vérification et suite sur le site.
  * Un jeton ne sert qu'UNE fois : il n'est jamais vérifié à deux endroits.
  */
+import { estCheminPro } from '@/lib/portail';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { EmailOtpType } from '@supabase/supabase-js';
@@ -37,7 +38,7 @@ export function EmailLink() {
   const navigate = useNavigate();
   const fait = useRef(false);
   const [echec, setEchec] = useState(false);
-  const pro = window.location.pathname.startsWith('/pro');
+  const pro = estCheminPro(window.location.pathname);
 
   useEffect(() => {
     if (fait.current) return;

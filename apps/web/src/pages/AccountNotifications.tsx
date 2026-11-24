@@ -5,6 +5,7 @@
  * La cloche l'ouvre dans une fenêtre qui monte du bas (`NotificationsSheet`) : on ne quitte pas l'écran.
  * L'adresse `/notifications` reste servie pour les liens déjà envoyés.
  */
+import { estCheminPro } from '@/lib/portail';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -78,7 +79,7 @@ export function NotificationsSheet({ onClose }: { onClose: () => void }) {
 
 function NotificationsBody({ onLeave }: { onLeave?: () => void }) {
   const navigate = useNavigate();
-  const isPro = useLocation().pathname.startsWith('/pro');
+  const isPro = estCheminPro(useLocation().pathname);
   const notifs = useNotificationsInfinite();
   const items = pagesItems(notifs.data);
   const markRead = useMarkNotificationsRead();

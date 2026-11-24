@@ -3,6 +3,7 @@
  * ouvert) est lue, puis on entre directement : profil incomplet → création, marché manquant → choix,
  * sinon la page visée. L'ancien « Bon retour, Inès · Continuer » n'apportait rien (16 sept. 2026).
  */
+import { estCheminPro } from '@/lib/portail';
 import { useEffect, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
 import { useApi, useMe } from '@salondz/api-client';
@@ -80,7 +81,9 @@ export function WelcomeBack() {
   const q = `?next=${encodeURIComponent(next)}`;
   // SÉPARATION STRICTE (16 nov. 2026) : un lien ne fait entrer que dans le portail de SON type —
   // celui de l'application, sinon celui de la destination. Sinon : session fermée, message de refus.
-  const attendu = APPLI ?? (next.startsWith('/pro') ? 'pro' : 'client');
+  // L'application connaît son portail ; sur le site : `portail=` de l'adresse, sinon la destination.
+  const portailParam = params.get('portail');
+  const attendu = APPLI ?? (portailParam === 'pro' || portailParam === 'client' ? portailParam : estCheminPro(next) ? 'pro' : 'client');
   const refuse = estRefusCompte(me.error);
   // Google par le PORTAIL PRO (21 nov. 2026) : le compte vient de naître client — on le déclare pro
   // tant qu'il est neuf ; le serveur refuse tout autre cas (compte existant, déjà utilisé).

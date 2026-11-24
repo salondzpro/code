@@ -1,3 +1,4 @@
+import { portailDe } from './portail';
 /**
  * PASSATION DU NAVIGATEUR À L'APPLICATION.
  *
@@ -58,7 +59,7 @@ export function handOffToApp(): void {
    * parcours en parallèle (passage en compte pro, refus de compte suivi d'une déconnexion GLOBALE)
    * et pouvait fermer la session que l'application venait de recevoir.
    */
-  if (/[?&]app=1(&|$)/.test(search)) {
+  if (/[?&]app=(1|client|pro)(&|$)/.test(search)) {
     window.history.replaceState(null, '', pathname + search);
     return;
   }
@@ -77,7 +78,7 @@ export function handOffToApp(): void {
     } catch {
       /* stockage indisponible */
     }
-    window.location.replace(pathname.startsWith('/pro') || /portail=pro/.test(search) ? '/professionnels' : '/');
+    window.location.replace(portailDe(`${pathname}${search}`) === 'pro' ? '/professionnels' : '/');
   };
   document.addEventListener('visibilitychange', oublier);
 }
@@ -95,7 +96,7 @@ export function handoffUrl(ua: string, destination: string, repliVers: string): 
   // SÉPARATION STRICTE (16 nov. 2026) : la destination dit QUELLE application réveiller — l'espace
   // pro dans Salon DZ Pro, tout le reste dans Salon DZ. Jamais l'une à la place de l'autre.
   // Retour de Google ou d'un lien vers `/connexion/retour` : le portail est dans l'adresse.
-  const pro = destination.startsWith('/pro') || /[?&](portail=pro|next=(%2F|\/)pro)/i.test(destination);
+  const pro = portailDe(destination) === 'pro';
   if (/android/i.test(ua)) {
     // `intent://` prévoit le REPLI : sans application installée, Android revient ici et la personne
     // continue dans son navigateur, sans page d'erreur. Le paquet est NOMMÉ : les deux applications
