@@ -34,7 +34,7 @@ export function CompteRefuse({ cote }: { cote: Cote }) {
     if (fait.current) return;
     fait.current = true;
     void import('@/lib/traceConnexion').then(({ trace }) => trace('compte-refuse', { cote }));
-    void signOut({ voile: false })
+    void signOut({ voile: false, local: true })
       .catch(() => undefined)
       .finally(() => navigate(porteRefus(cote), { replace: true }));
   }, [cote, navigate, signOut]);

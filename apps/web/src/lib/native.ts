@@ -213,7 +213,9 @@ function lockViewport(): void {
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */
 export async function initNative(navigate: (path: string) => void): Promise<void> {
   if (!isNative()) return;
-  void import('./traceConnexion').then(({ trace }) => trace('demarrage', { h: location.hash ? 'oui' : 'non' }));
+  void import('./traceConnexion').then(({ trace }) =>
+    trace('demarrage', { ota: Capacitor.isPluginAvailable('CapacitorUpdater'), web: Capacitor.isPluginAvailable('ConnexionWeb'), plat: Capacitor.getPlatform() }, true),
+  );
   document.documentElement.dataset.native = 'true';
   lockViewport();
   await Promise.all([

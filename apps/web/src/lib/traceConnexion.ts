@@ -30,8 +30,12 @@ function actif(): boolean {
   }
 }
 
-export function trace(etape: string, infos: Record<string, string | number | boolean | null | undefined> = {}): void {
-  if (!actif()) return;
+export function trace(
+  etape: string,
+  infos: Record<string, string | number | boolean | null | undefined> = {},
+  toujours = false,
+): void {
+  if (!toujours && !actif()) return;
   const q = new URLSearchParams({
     a: APPLI ?? 'site',
     v: String(import.meta.env.VITE_BUNDLE_VERSION || 'dev').slice(0, 7),

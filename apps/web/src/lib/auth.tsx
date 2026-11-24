@@ -89,7 +89,7 @@ interface AuthContextValue {
   /** Compte de démonstration : adresse e-mail (accès direct) ou ancien numéro. */
   demoLogin: (identifier: string) => Promise<void>;
   /** `voile: false` : déconnexion technique (contrôle de portail), sans voile « Déconnexion… ». */
-  signOut: (options?: { voile?: boolean }) => Promise<void>;
+  signOut: (options?: { voile?: boolean; local?: boolean }) => Promise<void>;
   /** Une déconnexion est en cours : les boutons « Se déconnecter » affichent leur indicateur. */
   signingOut: boolean;
 }
@@ -195,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [signingOut, setSigningOut] = useState(false);
   const enCours = useRef<Promise<void> | null>(null);
 
-  const signOut = useCallback((options?: { voile?: boolean }): Promise<void> => {
+  const signOut = useCallback((options?: { voile?: boolean; local?: boolean }): Promise<void> => {
     if (enCours.current) return enCours.current;
     const run = (async () => {
       if (options?.voile !== false) setSigningOut(true);
@@ -224,7 +224,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         // Révoque la session côté serveur (tous les jetons de rafraîchissement) quand le réseau le
         // permet, puis efface TOUJOURS la session de cet appareil.
-        const global = await borne(supabase.auth.signOut(), 4000);
+        // `local` : ne fermer QUE cet appareil (refus de compte, 24 nov. 2026). Une fermeture globale
+        // révoquait aussi la session ouverte au même moment dans l'autre application.
+        const global = options?.local ? null : await borne(supabase.auth.signOut(), 4000);
         if (!global || global.error) await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
         qc.clear();
         setSession(null);
