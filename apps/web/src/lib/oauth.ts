@@ -14,6 +14,7 @@
  * qu'il est neuf (`POST /v1/auth/google-pro`).
  */
 import { useEffect, useState } from 'react';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { supabase } from './supabase';
 import { env } from './env';
 import { isNative } from './native';
@@ -53,6 +54,9 @@ export async function connexionOAuth(fournisseur: Fournisseur, role: 'client' | 
   retour.searchParams.set('portail', role);
   retour.searchParams.set('oauth', '1');
   const natif = isNative();
+  // Demandé PAR L'APPLICATION : la page de retour sait qu'elle doit rendre la session à l'application
+  // et ne pas l'ouvrir pour son propre compte (`lib/appHandoff.ts`).
+  if (natif) retour.searchParams.set('app', '1');
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: fournisseur,
     options: {
@@ -62,5 +66,34 @@ export async function connexionOAuth(fournisseur: Fournisseur, role: 'client' | 
     },
   });
   if (error) throw error;
-  if (natif && data?.url) await openExternal(data.url);
+  if (!natif || !data?.url) return;
+  if (Capacitor.getPlatform() === 'ios' && Capacitor.isPluginAvailable('ConnexionWeb')) {
+    await connexionIOS(data.url);
+    return;
+  }
+  // Android (onglet Chrome, qui partage les comptes du téléphone) et anciennes versions iPhone.
+  await openExternal(data.url);
+}
+
+/**
+ * IPHONE (24 nov. 2026) : fenêtre de connexion d'Apple (`ASWebAuthenticationSession`, greffon
+ * `ConnexionWeb` de `SceneDelegate.swift`). Elle partage les comptes Google de Safari — dans
+ * `SFSafariViewController`, Google n'en voyait aucun — et rend directement l'adresse
+ * `salondz://reprise?d=…` posée par la page de retour, sans la question « Ouvrir dans Salon DZ ? ».
+ */
+const ConnexionWeb = registerPlugin<{ ouvrir(o: { url: string }): Promise<{ url: string }> }>('ConnexionWeb');
+
+async function connexionIOS(url: string): Promise<void> {
+  let retour: string;
+  try {
+    retour = (await ConnexionWeb.ouvrir({ url })).url;
+  } catch (e) {
+    // Fenêtre fermée par la personne : rien à signaler, elle reste sur l'écran de connexion.
+    if (String((e as Error)?.message ?? e).includes('annule')) return;
+    throw e;
+  }
+  const d = new URL(retour).searchParams.get('d');
+  if (!d || !d.startsWith('/')) return;
+  const { router } = await import('@/app/router');
+  await router.navigate(d);
 }

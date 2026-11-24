@@ -52,6 +52,18 @@ export function handOffToApp(): void {
   window.location.href = handoffUrl(navigator.userAgent, `${pathname}${search}${hash}`, window.location.href);
 
   /**
+   * RETOUR DEMANDÉ PAR L'APPLICATION (`app=1`, posé par `lib/oauth.ts`, 24 nov. 2026) : l'application
+   * est forcément installée et c'est elle qui ouvre la session. La fenêtre de connexion ne doit RIEN
+   * en faire : on retire les jetons avant que Supabase ne les lise. Sinon la page menait son propre
+   * parcours en parallèle (passage en compte pro, refus de compte suivi d'une déconnexion GLOBALE)
+   * et pouvait fermer la session que l'application venait de recevoir.
+   */
+  if (/[?&]app=1(&|$)/.test(search)) {
+    window.history.replaceState(null, '', pathname + search);
+    return;
+  }
+
+  /**
    * L'APPLICATION A PRIS LA MAIN (21 nov. 2026) : le navigateur OUBLIE la session qu'il vient de
    * transmettre. Gardée des deux côtés, elle se renouvelait deux fois — et Supabase, voyant un jeton
    * de renouvellement réutilisé, fermait la session de l'application. On efface le stockage local

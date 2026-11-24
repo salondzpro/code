@@ -20,7 +20,16 @@ import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
  * mais resterait déconnectée — c'est-à-dire tout ce que la passation devait éviter.
  */
 function useSessionDepuisFragment(session: unknown): 'inutile' | 'en-cours' | 'fini' {
-  const [etat, setEtat] = useState<'inutile' | 'en-cours' | 'fini'>('inutile');
+  /**
+   * « en-cours » DÈS LE PREMIER RENDU quand le fragment porte des jetons (24 nov. 2026). L'état
+   * partait de « inutile » et n'était corrigé que par l'effet ci-dessous : au premier rendu, sans
+   * session, la page rendait `<Navigate to="/connexion">`, dont l'effet passe AVANT celui du parent —
+   * les jetons étaient perdus et l'application retombait sur son écran d'ouverture (« Commencer »)
+   * au retour de Google, sur iPhone comme sur Android.
+   */
+  const [etat, setEtat] = useState<'inutile' | 'en-cours' | 'fini'>(() =>
+    !session && /(^|[#&])refresh_token=/.test(window.location.hash) ? 'en-cours' : 'inutile',
+  );
   useEffect(() => {
     if (session) return;
     const f = new URLSearchParams(window.location.hash.replace(/^#/, ''));
