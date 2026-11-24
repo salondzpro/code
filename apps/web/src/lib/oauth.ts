@@ -19,6 +19,7 @@ import { supabase } from './supabase';
 import { env } from './env';
 import { isNative } from './native';
 import { openExternal } from './openExternal';
+import { debutConnexionExterne, finConnexionExterne } from './connexionExterne';
 
 /** Fournisseurs de connexion proposés (21 nov. 2026 : Google, puis Apple). */
 export type Fournisseur = 'google' | 'apple';
@@ -67,6 +68,7 @@ export async function connexionOAuth(fournisseur: Fournisseur, role: 'client' | 
   });
   if (error) throw error;
   if (!natif || !data?.url) return;
+  debutConnexionExterne();
   if (Capacitor.getPlatform() === 'ios' && Capacitor.isPluginAvailable('ConnexionWeb')) {
     await connexionIOS(data.url);
     return;
@@ -89,6 +91,7 @@ async function connexionIOS(url: string): Promise<void> {
     retour = (await ConnexionWeb.ouvrir({ url })).url;
   } catch (e) {
     // Fenêtre fermée par la personne : rien à signaler, elle reste sur l'écran de connexion.
+    finConnexionExterne();
     if (String((e as Error)?.message ?? e).includes('annule')) return;
     throw e;
   }

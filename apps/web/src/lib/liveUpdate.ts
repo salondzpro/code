@@ -21,6 +21,7 @@
  * Seul ce qui est WEB se met à jour ainsi (écrans, textes, traductions, styles). Un greffon natif,
  * une permission ou une icône exigent toujours une nouvelle version dans les boutiques.
  */
+import { connexionExterneEnCours } from './connexionExterne';
 import { Capacitor } from '@capacitor/core';
 import { PRO_ONLY } from './flavor';
 import { env } from './env';
@@ -103,7 +104,7 @@ async function check(): Promise<void> {
     // Appliquée au prochain passage en arrière-plan, au prochain lancement, ou après une minute de calme.
     await CapacitorUpdater.next({ id: bundle.id });
     pending = bundle.id;
-    if (!touched) await CapacitorUpdater.set({ id: bundle.id });
+    if (!touched && !connexionExterneEnCours()) await CapacitorUpdater.set({ id: bundle.id });
   } catch (err) {
     console.warn('[mise à jour] vérification impossible', err);
   } finally {
@@ -113,6 +114,8 @@ async function check(): Promise<void> {
 
 /** Applique la version en attente (embarquée : changement de paquet ; en ligne : rechargement). */
 async function apply(): Promise<void> {
+  // Connexion Google / Apple en cours : recharger perdrait la session en transit.
+  if (connexionExterneEnCours()) return;
   if (reloadPending) {
     reloadPending = false;
     location.reload();

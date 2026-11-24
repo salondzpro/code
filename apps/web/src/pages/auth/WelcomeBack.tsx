@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { PageLoading } from '@/components/PageLoading';
 import { APPLI, MARCHE } from '@/lib/flavor';
 import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
+import { finConnexionExterne } from '@/lib/connexionExterne';
 
 /**
  * Jetons arrivés par une PASSATION depuis le navigateur (`lib/appHandoff.ts`). Supabase ne lit le
@@ -41,6 +42,7 @@ function useSessionDepuisFragment(session: unknown): 'inutile' | 'en-cours' | 'f
       .setSession({ access_token, refresh_token })
       .catch(() => undefined)
       .finally(() => {
+        finConnexionExterne();
         // Les jetons ne doivent pas rester dans la barre d'adresse ni dans l'historique.
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
         setEtat('fini');
