@@ -70,6 +70,24 @@ export async function buildApp(): Promise<App> {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
   await app.register(etag);
+  // DIAGNOSTIC TEMPORAIRE (24 nov. 2026, connexion Google dans les applications iPhone) : qui
+  // demande le profil et les traces — l'application (WebView) ou la fenêtre de connexion ? Aucun
+  // jeton journalisé, seulement sa présence. À retirer une fois la cause trouvée.
+  app.addHook('onRequest', async (req) => {
+    if (!/^\/v1\/(me(\?|$)|_trace\/)/.test(req.url)) return;
+    req.log.info(
+      {
+        diag: {
+          origin: req.headers.origin ?? null,
+          ua: String(req.headers['user-agent'] ?? '').slice(0, 140),
+          appli: req.headers['x-salondz-app'] ?? null,
+          jeton: Boolean(req.headers.authorization),
+          preflight: req.method === 'OPTIONS' ? req.headers['access-control-request-headers'] ?? '' : undefined,
+        },
+      },
+      'diag connexion',
+    );
+  });
   await app.register(authPlugin);
   // Après l'authentification : une clé d'idempotence appartient à la personne qui l'a posée, et il
   // faut donc savoir qui elle est. Avant les routes : le garde doit pouvoir rejouer une réponse
