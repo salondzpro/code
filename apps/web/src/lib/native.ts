@@ -114,6 +114,7 @@ async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
     // Le même lien peut arriver deux fois (lancement + événement) : on ne le suit qu'une fois.
     if (!url || url === dernier) return;
     dernier = url;
+    void import('./traceConnexion').then(({ trace }) => trace('lien', { schema: url.split(':')[0], d: /[?&]d=/.test(url), jetons: /refresh_token/.test(decodeURIComponent(url)) }));
     // Revenu d'une page ouverte dans le navigateur du système (connexion Google) : on le referme.
     void import('@capacitor/browser').then(({ Browser }) => Browser.close()).catch(() => undefined);
     try {
@@ -212,6 +213,7 @@ function lockViewport(): void {
 /** À appeler une fois au démarrage. Sans effet sur le site ouvert dans un navigateur. */
 export async function initNative(navigate: (path: string) => void): Promise<void> {
   if (!isNative()) return;
+  void import('./traceConnexion').then(({ trace }) => trace('demarrage', { h: location.hash ? 'oui' : 'non' }));
   document.documentElement.dataset.native = 'true';
   lockViewport();
   await Promise.all([

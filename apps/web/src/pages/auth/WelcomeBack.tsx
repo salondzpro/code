@@ -13,6 +13,7 @@ import { PageLoading } from '@/components/PageLoading';
 import { APPLI, MARCHE } from '@/lib/flavor';
 import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
 import { finConnexionExterne } from '@/lib/connexionExterne';
+import { trace } from '@/lib/traceConnexion';
 
 /**
  * Jetons arrivés par une PASSATION depuis le navigateur (`lib/appHandoff.ts`). Supabase ne lit le
@@ -38,9 +39,11 @@ function useSessionDepuisFragment(session: unknown): 'inutile' | 'en-cours' | 'f
     const refresh_token = f.get('refresh_token');
     if (!access_token || !refresh_token) return;
     setEtat('en-cours');
+    trace('setSession');
     void supabase.auth
       .setSession({ access_token, refresh_token })
-      .catch(() => undefined)
+      .then(({ data, error }) => trace('setSession-fin', { ok: !!data.session, err: error?.message }))
+      .catch((e) => trace('setSession-exc', { m: String((e as Error)?.message ?? e) }))
       .finally(() => {
         finConnexionExterne();
         // Les jetons ne doivent pas rester dans la barre d'adresse ni dans l'historique.
@@ -60,6 +63,7 @@ export function WelcomeBack() {
   // Lien expiré ou déjà utilisé : Supabase le dit dans le fragment de l'URL. On le traduit
   // sur l'écran de connexion plutôt que d'y arriver sans explication.
   const reprise = useSessionDepuisFragment(session);
+  trace('retour-rendu', { reprise, session: !!session, loading, jetons: /refresh_token/.test(window.location.hash), me: me.status, err: (me.error as { code?: string } | null)?.code, next: params.get('next') });
   const hashErr = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   // Session en cours d'installation depuis les jetons : on attend, sinon on repartirait sur la
   // connexion alors que tout est là.

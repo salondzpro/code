@@ -33,6 +33,7 @@ export function CompteRefuse({ cote }: { cote: Cote }) {
   useEffect(() => {
     if (fait.current) return;
     fait.current = true;
+    void import('@/lib/traceConnexion').then(({ trace }) => trace('compte-refuse', { cote }));
     void signOut({ voile: false })
       .catch(() => undefined)
       .finally(() => navigate(porteRefus(cote), { replace: true }));
