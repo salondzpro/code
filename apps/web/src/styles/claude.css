@@ -1,0 +1,798 @@
+/*
+ * THÈME « STYLE CLAUDE, NOIR BRILLANT » (25 nov. 2026, demande du propriétaire : « le même design que
+ * la maquette, à 100 %, de A à Z » — maquettes/pro-2026/claude-ui-couleur.html#noir).
+ *
+ *   Fond crème #faf9f5 · cartes blanches à trait beige #e8e6dc, sans ombre · texte brun très foncé
+ *   #2f2c28 (jamais de noir pur pour le texte) · titres, noms et heures en Lora (empattements) ·
+ *   interface en Poppins · actions principales en NOIR BRILLANT (laque : reflet en haut, ombre douce)
+ *   · états adoucis : oui vert olive, non contour argile, confirmé bleu doux.
+ *
+ * Chargé APRÈS index.css et planity.css (main.tsx) : il l'emporte sans toucher aux écrans. Les
+ * sélecteurs commencent par `html:root` pour passer devant `html.pro-theme …` des feuilles d'avant.
+ */
+
+@font-face { font-family: 'Lora'; font-style: normal; font-weight: 400 600; font-display: swap; src: url('/fonts/lora-400-600.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/poppins-400.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/poppins-500.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/poppins-600.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* ------------------------------------------------------------------ Jetons */
+html:root {
+  --cl-bg: #faf9f5;
+  --cl-card: #ffffff;
+  --cl-ink: #2f2c28;
+  --cl-ink2: #6a675f;
+  --cl-ink3: #8f8d86;
+  --cl-line: #e8e6dc;
+  --cl-field: #ddd9cc;
+  --cl-soft: #f0eee6;
+  --cl-black: #1d1d20;
+  --cl-ok: #5f8a4e;
+  --cl-no: #c6613f;
+  --cl-no-line: #ecc9bb;
+  --cl-blue: #6a9bcc;
+  --cl-blue-soft: #e3ecf5;
+  --cl-serif: 'Lora', Georgia, 'Times New Roman', serif;
+  --cl-sans: 'Poppins', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --cl-gloss: linear-gradient(180deg, #45454b 0%, #232327 48%, #121214 100%);
+  --cl-gloss-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.4), 0 4px 12px rgb(20 20 22 / 0.18);
+
+  --color-canvas: var(--cl-bg) !important;
+  --color-bg: var(--cl-bg) !important;
+  --color-surface: var(--cl-card) !important;
+  --color-fill: var(--cl-soft) !important;
+  --color-fill-strong: var(--cl-soft) !important;
+  --color-line: var(--cl-line) !important;
+  --color-line-strong: var(--cl-field) !important;
+  --color-line-soft: var(--cl-line) !important;
+  --color-text: var(--cl-ink) !important;
+  --color-muted: var(--cl-ink2) !important;
+  --color-subtle: var(--cl-ink3) !important;
+  --color-ink: var(--cl-black) !important;
+  --color-accent: var(--cl-black) !important;
+  --color-accent-strong: var(--cl-black) !important;
+  --color-accent-deep: var(--cl-black) !important;
+  --color-accent-soft: var(--cl-soft) !important;
+  --color-accent-tint: var(--cl-soft) !important;
+  --color-accent-line: var(--cl-field) !important;
+  --color-primary: var(--cl-black) !important;
+  --color-hour: var(--cl-ink) !important;
+  --color-link: var(--cl-ink) !important;
+  --color-ok: var(--cl-ok) !important;
+  --color-ok-bg: #e7eedf !important;
+  --color-ok-fg: #4b6e3d !important;
+  --color-danger: var(--cl-no) !important;
+  --color-danger-line: var(--cl-no-line) !important;
+  --color-info: var(--cl-blue) !important;
+  --color-info-bg: var(--cl-blue-soft) !important;
+  --font-sans: var(--cl-sans) !important;
+  --font-display: var(--cl-serif) !important;
+  --radius-card: 14px !important;
+  --radius-card-sm: 12px !important;
+  --radius-btn: 10px !important;
+  --radius-input: 10px !important;
+  --radius-img: 12px !important;
+  --radius-sheet: 20px !important;
+  --shadow-card: none !important;
+  --pro-shadow: none !important;
+}
+html:root body {
+  background: var(--cl-bg);
+  color: var(--cl-ink);
+  font-family: var(--cl-sans);
+}
+html:root :is(body, button, input, select, textarea) {
+  font-family: var(--cl-sans);
+}
+
+/* ------------------------------------------------------------------ Primitives */
+html:root :is(.crd, .h12-card, .pl-sum, .plus-tile) {
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+html:root .search {
+  height: 46px;
+  border: 1px solid var(--cl-line);
+  border-radius: 12px;
+  background: var(--cl-card);
+  box-shadow: none;
+  color: var(--cl-ink3);
+}
+/* Bouton principal (`Button` variante « ink » : `.btn` sans autre variante), « + » et Code QR. */
+html:root :is(.btn:not(.g):not(.d):not(.ok):not(.off):not(.soft):not(.ghost), .h11-b.grad, .fab, .fab-ag) {
+  background: var(--cl-gloss);
+  color: #fff;
+  box-shadow: var(--cl-gloss-shadow);
+  border-color: transparent;
+}
+html:root .btn.g {
+  background: var(--cl-soft);
+  color: var(--cl-ink);
+  box-shadow: none;
+}
+html:root .btn.soft {
+  background: var(--cl-soft);
+  color: var(--cl-ink);
+  box-shadow: none;
+}
+html:root .btn.ok {
+  background: var(--cl-ok);
+  color: #fff;
+  box-shadow: none;
+}
+html:root .btn.d {
+  background: var(--cl-card);
+  color: var(--cl-no);
+  border: 1px solid var(--cl-no-line);
+  box-shadow: none;
+}
+html:root :is(.h11-b.soft) {
+  background: var(--cl-soft);
+  color: var(--cl-ink);
+  border: none;
+}
+html:root :is(.h11-b.out) {
+  background: var(--cl-card);
+  color: var(--cl-ink);
+  border: 1px solid var(--cl-line);
+}
+html:root .h11-b {
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------------ Barre du bas */
+html:root.pro-theme .nvb {
+  background: rgb(250 249 245 / 0.94);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 -1px 0 var(--cl-line);
+  border: none;
+}
+html:root .nvb .nvi {
+  color: var(--cl-ink3);
+  background: transparent;
+}
+html:root .nvb .nvi.on {
+  color: var(--cl-ink);
+  background: transparent;
+  box-shadow: none;
+}
+html:root .nvb .nvi.on .nvl {
+  font-weight: 500;
+}
+html:root .nvb .nvc {
+  background: var(--cl-gloss);
+  color: #fff;
+  box-shadow: 0 0 0 5px var(--cl-bg), inset 0 1px 0 rgb(255 255 255 / 0.22), 0 6px 14px rgb(20 20 22 / 0.22);
+}
+html:root .nvb .nvd {
+  background: var(--cl-gloss);
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--cl-bg);
+}
+html:root .nvb .nvl {
+  font-family: var(--cl-sans);
+}
+
+/* ------------------------------------------------------------------ Accueil */
+html:root.pro-theme .h12-claude .h12-top {
+  background: transparent;
+  color: var(--cl-ink);
+}
+html:root.pro-theme .h12-claude .h12-top.photo::before {
+  filter: blur(30px) saturate(0.6) sepia(0.25);
+  opacity: 0.55;
+}
+html:root.pro-theme .h12-claude .h12-top.photo::after {
+  background: linear-gradient(180deg, rgb(250 249 245 / 0.35) 0%, rgb(250 249 245 / 0.55) 55%, var(--cl-bg) 100%);
+}
+html:root .h12-claude .h12-date {
+  font-size: 13.5px;
+  color: var(--cl-ink2);
+}
+html:root .h12-claude .h12-hi,
+html:root .h12-claude .h12-hi span {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 29px;
+  letter-spacing: -0.4px;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .plan-tag {
+  font-family: var(--cl-sans);
+  font-size: 12px;
+  background: var(--cl-soft);
+  color: var(--cl-ink2);
+  border: none;
+}
+html:root .h12-claude .h12-bell {
+  width: 42px;
+  height: 42px;
+  background: var(--cl-card);
+  color: var(--cl-ink);
+  border: 1px solid var(--cl-line);
+  box-shadow: none;
+}
+html:root .h12-claude .h12-rail > button {
+  color: var(--cl-ink2);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+html:root .h12-claude .h12-sv {
+  width: 70px;
+  height: 70px;
+  background-color: var(--cl-card);
+  box-shadow: inset 0 0 0 3px #fff, 0 0 0 1.5px var(--cl-black);
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-sum,
+html:root .h12-claude .h13-sum b {
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-sum > span > b {
+  font-family: var(--cl-serif);
+  font-weight: 400;
+  font-size: 18px;
+}
+html:root .h12-claude .h13-sum > span > span {
+  font-size: 13px;
+  color: var(--cl-ink3);
+}
+html:root .h12-claude .h13-ring b {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 19px;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-ring circle {
+  stroke: var(--cl-line);
+}
+html:root .h12-claude .h13-ring circle.on {
+  stroke: var(--cl-black);
+}
+html:root .h12-claude .h13-chev {
+  color: #c9c6bb;
+}
+/* Carte du prochain rendez-vous */
+html:root .h12-claude .h13-hero {
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  border-radius: 14px;
+  box-shadow: none;
+  padding: 14px;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-tag {
+  background: var(--cl-soft);
+  color: var(--cl-ink2);
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 7px;
+  padding: 3px 9px;
+}
+html:root .h12-claude .h13-when {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-time {
+  background: var(--cl-soft);
+  border-radius: 10px;
+  padding: 7px 0;
+  min-width: 66px;
+  text-align: center;
+}
+html:root .h12-claude .h13-time b {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-time small {
+  font-size: 11.5px;
+  color: var(--cl-ink3);
+}
+html:root .h12-claude .h13-info b {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-info span {
+  font-size: 13px;
+  color: var(--cl-ink3);
+}
+html:root .h12-claude .h13-price {
+  font-family: var(--cl-sans);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-ft {
+  border-top: 1px solid var(--cl-line);
+}
+html:root .h12-claude .h13-ft :is(a, button) {
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  color: var(--cl-ink2);
+  box-shadow: none;
+}
+/* « Ensuite » */
+html:root .h12-claude .h13-list {
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+html:root .h12-claude .h13-lbl {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--cl-ink3);
+  margin: 6px 4px 0;
+}
+html:root .h12-claude .h13-it {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  border-radius: 14px;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h13-it > b {
+  font-family: var(--cl-serif);
+  font-weight: 400;
+  font-size: 15px;
+  width: 56px;
+  flex: none;
+}
+html:root .h12-claude .h13-it .h13-n {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 16px;
+}
+html:root .h12-claude .h13-it .h13-p {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+html:root .h12-claude .h13-more {
+  font-size: 13px;
+  color: var(--cl-ink3);
+}
+/* Carte du lien */
+html:root .h12-claude .h12-link .h12-l {
+  font-size: 13px;
+  color: var(--cl-ink3);
+}
+html:root .h12-claude .h12-link .h12-u {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+html:root .h12-claude :is(.h12-h, .h12-h h2) {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+html:root .h12-claude .h12-kp b {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------------ Titres de page (Demandes, Clients…) */
+html:root.pro-theme .pla-bar {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  justify-content: flex-start;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html:root.pro-theme .pla-bar > h1,
+html:root.pro-theme .pla-bar .pla-date b {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 29px;
+  letter-spacing: -0.4px;
+  color: var(--cl-ink);
+  text-align: start;
+}
+html:root.pro-theme .pla-bar .pla-date {
+  align-items: flex-start;
+  text-align: start;
+}
+html:root.pro-theme .pla-bar .pla-date span {
+  font-size: 13.5px;
+  color: var(--cl-ink2);
+}
+html:root.pro-theme .pla-bar .ib {
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  border-radius: 50%;
+  color: var(--cl-ink);
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------ Demandes */
+html:root .rp-tabs {
+  justify-content: flex-start;
+  gap: 22px;
+  background: transparent;
+  border-bottom: 1px solid var(--cl-line);
+}
+html:root .rp-tabs > button {
+  flex: none;
+  padding: 0 0 10px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--cl-ink3);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+html:root .rp-tabs > button.on {
+  color: var(--cl-ink);
+  font-weight: 500;
+  box-shadow: inset 0 -2px 0 var(--cl-black);
+}
+html:root .rp-tabs .rq-c {
+  font-size: 13px;
+  color: inherit;
+  background: none;
+}
+html:root .rp-r.rq-r {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+html:root .rp-r.rq-r::before {
+  content: none;
+}
+html:root .rp-r .rp-t {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--cl-ink);
+}
+html:root .rp-r .rp-t small {
+  font-family: var(--cl-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--cl-ink3);
+}
+html:root .rp-r .rp-n {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 16.5px;
+  color: var(--cl-ink);
+}
+html:root .rp-r .rp-s,
+html:root .rp-r .rp-s span {
+  font-size: 13px;
+  color: var(--cl-ink3);
+}
+html:root .rp-i {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  color: var(--cl-ink2);
+  box-shadow: none;
+}
+html:root .rp-i.yes {
+  background: var(--cl-ok);
+  border-color: var(--cl-ok);
+  color: #fff;
+}
+html:root .rp-i.no {
+  background: var(--cl-card);
+  border-color: var(--cl-no-line);
+  color: var(--cl-no);
+}
+
+/* ------------------------------------------------------------------ Clients */
+html:root .li .cl-nom,
+html:root .li .cl-nom span {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 16.5px;
+  color: var(--cl-ink);
+}
+html:root .li .cl-sub,
+html:root .li .cl-sub span {
+  font-size: 13px;
+  color: var(--cl-ink3);
+}
+html:root .av {
+  background: var(--cl-soft);
+  color: var(--cl-ink2);
+  font-family: var(--cl-serif);
+  font-weight: 400;
+  font-size: 16px;
+}
+html:root .cl-tag {
+  background: var(--cl-soft);
+  color: var(--cl-ink2);
+  font-family: var(--cl-serif);
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 7px;
+  border: none;
+}
+html:root .li .text-ok-fg {
+  color: var(--cl-ink);
+}
+
+/* ------------------------------------------------------------------ Agenda */
+html:root.pro-theme .pla-top {
+  background: rgb(250 249 245 / 0.9);
+  box-shadow: none;
+}
+html:root .pla-top .pla-date b,
+html:root .pla-top .pla-date b span {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--cl-ink);
+}
+html:root .pla-top .pla-date > span {
+  color: var(--cl-ink2);
+  font-size: 13.5px;
+}
+html:root .pla-top .pla-ic {
+  color: var(--cl-ink);
+}
+html:root .ag9-d .ag9-dw {
+  font-size: 12px;
+  color: var(--cl-ink3);
+}
+html:root .ag9-d .ag9-dn {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--cl-ink);
+}
+html:root .ag9-d.on .ag9-dn,
+html:root .ag9-d[aria-current] .ag9-dn,
+html:root .ag9-d[aria-pressed='true'] .ag9-dn {
+  background: var(--cl-gloss);
+  color: #fff;
+  box-shadow: var(--cl-gloss-shadow);
+}
+html:root .ag9-d.off .ag9-dn {
+  color: #c9c6bb;
+}
+html:root .pla-staff {
+  background: transparent;
+  box-shadow: inset 0 -1px 0 var(--cl-line);
+}
+html:root .pla-staff .pla-staff-n {
+  font-size: 14px;
+  color: var(--cl-ink);
+}
+html:root .pla-staff .pla-staff-k {
+  font-size: 11px;
+  color: var(--cl-ink3);
+}
+html:root .ag9-hr bdi {
+  font-size: 12px;
+  color: var(--cl-ink3);
+}
+html:root .ag9-hr {
+  border-color: var(--cl-line);
+}
+html:root .agb {
+  background: var(--cl-blue-soft);
+  border: none;
+  border-inline-start: 3px solid var(--cl-blue);
+  border-radius: 9px;
+  color: var(--cl-ink);
+  box-shadow: none;
+}
+html:root .agb .agb-t {
+  color: #3d6f9e;
+  font-weight: 500;
+}
+html:root .agb .agb-c {
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+html:root .agb .agb-s {
+  color: var(--cl-ink2);
+}
+html:root .agb.s-done {
+  background: var(--cl-soft);
+  border-inline-start-color: #c9c6bb;
+}
+html:root .agb.s-done :is(.agb-t, .agb-c, .agb-s) {
+  color: var(--cl-ink3);
+}
+html:root .agb.s-pd {
+  background: #f6ecdc;
+  border-inline-start-color: #d39a4a;
+}
+html:root .agb.s-pd .agb-t {
+  color: #9a6420;
+}
+html:root .agb.s-cur {
+  background: #e7eedf;
+  border-inline-start-color: var(--cl-ok);
+}
+html:root .agb.s-cur .agb-t {
+  color: #4b6e3d;
+}
+html:root .agb.s-ns {
+  background: #f7e6df;
+  border-inline-start-color: var(--cl-no);
+}
+html:root .ag9-nw {
+  border-color: var(--cl-black);
+  background: var(--cl-black);
+}
+html:root .ag9-nw span {
+  background: var(--cl-gloss);
+  color: #fff;
+  box-shadow: var(--cl-gloss-shadow);
+}
+html:root .ag9-past {
+  background: rgb(240 238 230 / 0.6);
+}
+
+/* ------------------------------------------------------------------ Ajustements (passe 2) */
+html:root.pro-theme .pla-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--gutter, 16px);
+  min-height: 64px;
+  border-bottom: none;
+}
+html:root.pro-theme .pla-bar > h1 {
+  flex: 1;
+}
+html:root .rp-tabs {
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+html:root .rp-r.rq-r {
+  margin-inline: 0 !important;
+  width: auto !important;
+}
+html:root .rp-r .rp-i,
+html:root .rp-i {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  background: var(--cl-card) !important;
+  border: 1px solid var(--cl-line) !important;
+  color: var(--cl-ink2) !important;
+  box-shadow: none !important;
+}
+html:root .rp-r .rp-i.yes,
+html:root .rp-i.yes {
+  background: var(--cl-ok) !important;
+  border-color: var(--cl-ok) !important;
+  color: #fff !important;
+}
+html:root .rp-r .rp-i.no,
+html:root .rp-i.no {
+  background: var(--cl-card) !important;
+  border-color: var(--cl-no-line) !important;
+  color: var(--cl-no) !important;
+}
+@media (max-width: 1023.98px) {
+  html:root.pro-theme .nvb {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* ------------------------------------------------------------------ Ajustements (passe 3) */
+html:root .h12-claude .h12-hi .plan-tag,
+html:root .h12-claude .h12-hi a .plan-tag {
+  font-family: var(--cl-sans) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  padding: 2px 8px;
+  line-height: 18px;
+}
+html:root .h12-claude .h13-it .h13-p,
+html:root .h12-claude .h12-link .h12-u,
+html:root .h12-claude .h13-price {
+  font-family: var(--cl-sans) !important;
+}
+html:root.pro-theme .pla-bar > :first-child:empty {
+  display: none;
+}
+html:root .li .cl-nom .cl-tag {
+  font-family: var(--cl-serif) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 1px 8px;
+  line-height: 20px;
+}
+html:root .agb,
+html:root .agb.pz {
+  background: var(--cl-blue-soft) !important;
+  border: none !important;
+  border-inline-start: 3px solid var(--cl-blue) !important;
+  color: var(--cl-ink) !important;
+}
+html:root .agb .agb-t { color: #3d6f9e !important; }
+html:root .agb :is(.agb-c) { color: var(--cl-ink) !important; }
+html:root .agb .agb-s { color: var(--cl-ink2) !important; }
+html:root .agb.s-done { background: var(--cl-soft) !important; border-inline-start-color: #c9c6bb !important; }
+html:root .agb.s-done :is(.agb-t, .agb-c, .agb-s) { color: var(--cl-ink3) !important; }
+html:root .agb.s-pd { background: #f6ecdc !important; border-inline-start-color: #d39a4a !important; }
+html:root .agb.s-pd .agb-t { color: #9a6420 !important; }
+html:root .agb.s-cur { background: #e7eedf !important; border-inline-start-color: var(--cl-ok) !important; }
+html:root .agb.s-cur .agb-t { color: #4b6e3d !important; }
+html:root .agb.s-ns { background: #f7e6df !important; border-inline-start-color: var(--cl-no) !important; }
+html:root .agb.s-ns .agb-t { color: var(--cl-no) !important; }
+
+/* ------------------------------------------------------------------ Écrans d'accès et formulaires */
+html:root .pa,
+html:root .pa-main {
+  background: var(--cl-bg);
+}
+html:root .pa-t {
+  font-family: var(--cl-serif);
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  color: var(--cl-ink);
+}
+html:root .lbl {
+  font-family: var(--cl-sans);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--cl-ink);
+}
+html:root :is(.inp, .fld) {
+  background: var(--cl-card);
+  border: 1px solid var(--cl-field);
+  border-radius: 10px;
+  color: var(--cl-ink);
+  box-shadow: none;
+}
+html:root :is(.inp, .fld):focus {
+  border-color: var(--cl-ink2);
+  outline: none;
+}
+html:root .pl-btn {
+  border-radius: 10px;
+}
+html:root .pl-btn.pl-btn-ink {
+  background: var(--cl-gloss);
+  color: #fff;
+  border: none;
+  box-shadow: var(--cl-gloss-shadow);
+}
+html:root .pl-btn.pl-btn-out {
+  background: var(--cl-card);
+  color: var(--cl-ink);
+  border: 1px solid var(--cl-line);
+}
+html:root .pl-ou {
+  color: var(--cl-ink3);
+}
+html:root .pa-top .ib {
+  background: var(--cl-card);
+  border: 1px solid var(--cl-line);
+  box-shadow: none;
+  color: var(--cl-ink);
+}

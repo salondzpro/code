@@ -109,7 +109,9 @@ export function ProHome() {
   // très floutée (`.h12-top::before`). Sans photo, le fond uni de la page suffit.
   // VIOLET UNI (20 nov. 2026, choix du propriétaire) : plus de photo floutée (elle donnait du marron) ;
   // le haut est un aplat violet qui monte sous la barre d'état, comme mew3id (`styles/planity.css`).
-  const fondSalon: string | null = null;
+  // STYLE CLAUDE (25 nov. 2026, demande du propriétaire) : retour de la photo du salon, très floutée
+  // et éclaircie sur le fond crème, comme la maquette ; plus d'aplat sombre.
+  const fondSalon: string | null = salon?.coverUrl ?? null;
   // Sur cet écran seulement, l'heure et la batterie du téléphone passent en BLANC (sur le violet) ;
   // elles redeviennent foncées en quittant l'accueil.
   useEffect(() => {
@@ -119,9 +121,9 @@ export function ProHome() {
       void import('@capacitor/status-bar')
         .then(({ StatusBar, Style }) => StatusBar.setStyle({ style: blanc ? Style.Dark : Style.Light }))
         .catch(() => undefined);
-    poser(true);
-    // L'animation d'ouverture repose des icônes foncées en se retirant : on repasse en blanc après.
-    const id = window.setTimeout(() => actif && poser(true), 2200);
+    // En-tête CLAIR depuis le 25 nov. 2026 : icônes foncées, comme sur les autres écrans.
+    poser(false);
+    const id = window.setTimeout(() => actif && poser(false), 2200);
     return () => {
       actif = false;
       window.clearTimeout(id);
@@ -133,7 +135,7 @@ export function ProHome() {
   const maxViews = Math.max(1, ...(ps?.byDay.map((d) => d.views) ?? [1]));
 
   return (
-    <Screen bottom={NAV_PAD} gap={16} className="h12 h12-violet">
+    <Screen bottom={NAV_PAD} gap={16} className="h12 h12-claude">
       <header
         className={`h12-top${fondSalon ? ' photo' : ''}`}
         style={fondSalon ? { ['--fond-salon' as string]: `url("${fondSalon}")` } : undefined}
