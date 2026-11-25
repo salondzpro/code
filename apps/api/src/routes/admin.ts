@@ -23,6 +23,7 @@ import { loadOwnerView } from '../lib/queries';
 import { trace } from '../lib/audit';
 import { readLabelSettings, readLabelSocials, readLabelStyle, writeLabelSettings } from '../lib/labelSettings';
 import { addProNews, notifyProsOfNews, readProNews, removeProNews } from '../lib/proNews';
+import { cancelCampaign, createCampaign, previewAudience, readCampaigns, runCampaign, testCampaign } from '../lib/campaigns';
 import { enforceFreeLimits, readAllPlans, writePlan } from '../lib/plans';
 import { listRushes, readAcqStats, rushReadUrl, rushUploadUrl } from '../lib/marketing';
 import { cancelAsPlatform, eraseClientAccount } from '../lib/moderation';
@@ -537,6 +538,71 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     await trace(req, 'pro_news_delete', 'platform', null, req.params.id);
     reply.status(204);
     return null;
+  });
+
+  // ------------------------------------------------------------------ campagnes de notifications (25 nov. 2026)
+  // Public filtré, texte, destination du toucher, envoi tout de suite / programmé / répété. Niveau
+  // owner pour envoyer ; chaque geste au journal (`campaign_send`, `campaign_cancel`, `campaign_test`).
+  const chemin = (prefixe: RegExp) =>
+    z.string().trim().max(200).regex(prefixe, 'Destination : un chemin de l’application').optional().or(z.literal('')).transform((v) => v || null);
+  const audience = z.object({
+    role: z.enum(['all', 'client', 'pro']).default('all'),
+    device: z.enum(['any', 'app', 'no_app', 'push', 'no_push']).default('any'),
+    plan: z.enum(['any', 'free', 'paid', 'pro', 'salon']).default('any'),
+    market: z.enum(['any', 'women', 'men']).default('any'),
+    newSinceDays: z.number().int().min(1).max(3650).nullable().default(null),
+    olderThanDays: z.number().int().min(1).max(3650).nullable().default(null),
+  });
+  const contenu = {
+    title: z.string().trim().min(2).max(65),
+    body: z.string().trim().min(2).max(240),
+    // Côté clientes : tout chemin hors de l'espace pro ; côté pro : l'espace pro seulement (règle n° 4).
+    urlClient: chemin(/^\/(?!pro(\/|$|\?))[^\s]*$/),
+    urlPro: chemin(/^\/pro(\/|\?|$)[^\s]*$/),
+  };
+  app.get('/campaigns', async (_req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return { items: await readCampaigns() };
+  });
+  app.post('/campaigns/preview', { schema: { body: z.object({ audience }) } }, async (req) => previewAudience(req.body.audience));
+  app.post(
+    '/campaigns',
+    {
+      preHandler: app.requireOwner,
+      schema: {
+        body: z.object({
+          ...contenu,
+          audience,
+          sendAt: z.string().datetime({ offset: true }).nullable().default(null),
+          repeat: z.enum(['none', 'daily', 'weekly', 'monthly']).default('none'),
+        }),
+      },
+    },
+    async (req) => {
+      const b = req.body;
+      if (b.repeat !== 'none' && !b.sendAt) throw badRequest('REPEAT_NEEDS_DATE', 'Une campagne répétée a besoin d’une date de premier envoi.');
+      const c = await createCampaign(req.log, { ...b, sendAt: b.sendAt ? new Date(b.sendAt).toISOString() : null, createdBy: req.user!.id });
+      const dernier = c.runs[0];
+      await trace(req, 'campaign_send', 'platform', null, `${c.title} · ${dernier ? `${dernier.created} notifications` : `programmée ${c.nextAt}`}${c.repeat !== 'none' ? ` · ${c.repeat}` : ''}`);
+      return { campaign: c };
+    },
+  );
+  app.post('/campaigns/test', { preHandler: app.requireOwner, schema: { body: z.object(contenu) } }, async (req) => {
+    const run = await testCampaign(req.log, { id: req.user!.id, role: req.profile!.role === 'pro' ? 'pro' : 'client' }, req.body);
+    await trace(req, 'campaign_test', 'platform', null, req.body.title);
+    return run;
+  });
+  app.post('/campaigns/:id/run', { preHandler: app.requireOwner, schema: { params: z.object({ id: uuid }) } }, async (req) => {
+    const c = await runCampaign(req.log, req.params.id);
+    if (!c) throw notFound('Campagne');
+    await trace(req, 'campaign_send', 'platform', null, `${c.title} · envoi immédiat`);
+    return { campaign: c };
+  });
+  app.post('/campaigns/:id/cancel', { preHandler: app.requireOwner, schema: { params: z.object({ id: uuid }) } }, async (req) => {
+    const c = await cancelCampaign(req.params.id);
+    if (!c) throw notFound('Campagne');
+    await trace(req, 'campaign_cancel', 'platform', null, c.title);
+    return { campaign: c };
   });
 
   // ------------------------------------------------------------------ abonnements des salons (20 nov. 2026)

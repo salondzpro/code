@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
-import {
+import { BellRing,
   Activity,
   CalendarSearch,
   ContactRound,
@@ -71,6 +71,7 @@ export const FONCTIONS: Fonction[] = [
   { titre: 'Signalements', texte: 'Avis signalés à traiter', to: '/admin/signalements', icone: Flag, mots: 'signalement avis modération masquer avis report' },
   { titre: 'Marketing', texte: 'Textes à lire pour les vidéos, liens de campagne par réseau, inscriptions par réseau, envoi des vidéos', to: '/admin/marketing', icone: Clapperboard, mots: 'marketing vidéo ugc tiktok instagram snapchat facebook campagne publicité lien bio script texte réseaux' },
   { titre: 'Abonnements', texte: 'Offre de chaque salon (Free, Pro, Salon), échéance et changement après paiement', to: '/admin/abonnements', icone: Crown, mots: 'abonnement offre plan free gratuit pro salon payer paiement black friday tarif prix' },
+  { titre: 'Notifications', texte: 'Envoyer une notification à un public filtré, maintenant, programmée ou répétée, avec sa destination', to: '/admin/notifications', icone: BellRing, mots: 'notification push campagne envoyer message annonce tous clients pros abonnés application programmer répéter automatique bienvenue relance' },
   { titre: 'Conseils & nouveautés', texte: 'Publier un conseil ou une nouveauté aux professionnels, avec notification', to: '/admin/conseils', icone: Megaphone, mots: 'conseil nouveauté actualité annonce publier notification professionnels story' },
   { titre: 'Étiquettes et QR', texte: 'Modèles d’affiche, étiquette d’un salon', to: '/admin/etiquettes', icone: QrCode, mots: 'étiquette qr code affiche autocollant imprimer modèle' },
   { titre: 'Équipe de la plateforme', texte: 'Nommer ou retirer un administrateur', to: '/admin/equipe', icone: ShieldCheck, mots: 'équipe administrateur admin accès droit niveau owner support sécurité', owner: true },

@@ -44,6 +44,8 @@ export function emojiFor(type: string, audience: Public): string {
 export function pushTitle(type: string, audience: Public, titre: string, data?: Record<string, unknown>): string {
   // Nouveautés publiées par l'administration (`lib/proNews.ts`) : leur propre emoji.
   if (data?.kind === 'news') return `📣 ${titre}`;
+  // Campagnes de l'administration (`lib/campaigns.ts`) : le titre tel qu'écrit — l'auteur choisit son emoji.
+  if (data?.kind === 'campaign') return titre;
   return `${emojiFor(type, audience)} ${titre}`;
 }
 

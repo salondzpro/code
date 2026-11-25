@@ -6,6 +6,7 @@ import { config } from '../config';
 import { db } from '../lib/supabase';
 import { unauthorized, unwrap } from '../lib/errors';
 import { dispatchPendingPush } from '../lib/push';
+import { runDueCampaigns } from '../lib/campaigns';
 import { CLIENT_REMINDER_MINUTES, NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS, PRO_REMINDER_LEAD_MINUTES } from '@salondz/constants';
 import { notifySlotFreed } from '../lib/waitlist';
 
@@ -193,6 +194,12 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       return 0;
     });
 
+    // 3 bis) Campagnes de notifications arrivées à échéance (programmées, répétées) — 25 nov. 2026.
+    const campaigns = await runDueCampaigns(req.log).catch((err) => {
+      req.log.error({ err }, 'cron: campagnes');
+      return 0;
+    });
+
     // 4) Push en attente (rattrape aussi les notifs créées hors API)
     const pushed = await dispatchPendingPush(req.log);
 
@@ -228,7 +235,7 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .upsert({ key: 'cron_last_tick', value: new Date(now).toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (beat.error) req.log.warn({ err: beat.error }, 'cron heartbeat');
 
-    return { reminders1h: envoyes.reminder_1h_sent_at ?? 0, reminders30m: envoyes.reminder_30m_sent_at ?? 0, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0, plansExpired };
+    return { reminders1h: envoyes.reminder_1h_sent_at ?? 0, reminders30m: envoyes.reminder_30m_sent_at ?? 0, proReminders: toRemindPro.length, autoCompleted: completed.length, expired: expired.length, pushed, purged, purgedKeys: purgedKeys.count ?? 0, plansExpired, campaigns };
   }
 };
 

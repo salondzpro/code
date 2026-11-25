@@ -761,6 +761,15 @@ export function createApiClient(opts: ApiClientOptions) {
       publishNews: (body: { title: string; body: string; url?: string; action?: string; notify: boolean }) =>
         post<{ item: ProNewsItem; notified: number }>('/admin/news', body),
       deleteNews: (id: string) => del<void>(`/admin/news/${id}`),
+      /** Campagnes de notifications (25 nov. 2026) : publics filtrés, envoi immédiat / programmé / répété. */
+      campaigns: () => get<{ items: AdminCampaign[] }>('/admin/campaigns'),
+      campaignPreview: (audience: CampaignAudience) =>
+        post<{ total: number; clients: number; pros: number; reachable: number }>('/admin/campaigns/preview', { audience }),
+      createCampaign: (body: CampaignInput & { audience: CampaignAudience; sendAt: string | null; repeat: CampaignRepeat }) =>
+        post<{ campaign: AdminCampaign }>('/admin/campaigns', body),
+      testCampaign: (body: CampaignInput) => post<{ targeted: number; created: number }>('/admin/campaigns/test', body),
+      runCampaign: (id: string) => post<{ campaign: AdminCampaign }>(`/admin/campaigns/${id}/run`, {}),
+      cancelCampaign: (id: string) => post<{ campaign: AdminCampaign }>(`/admin/campaigns/${id}/cancel`, {}),
       saveLabelSettings: (body: LabelSettings) => put<LabelSettings>('/admin/label-settings', body),
       salonLabelSocials: (salonId: string) => get<LabelSocial[]>(`/admin/salons/${salonId}/label-socials`),
       salonLabelStyle: (salonId: string) => get<LabelStyle>(`/admin/salons/${salonId}/label-style`),
@@ -825,6 +834,35 @@ export interface AdminMember {
 }
 
 /** Conseil ou nouveauté publié par l'administration pour les professionnels. */
+export type CampaignRepeat = 'none' | 'daily' | 'weekly' | 'monthly';
+export interface CampaignAudience {
+  role: 'all' | 'client' | 'pro';
+  device: 'any' | 'app' | 'no_app' | 'push' | 'no_push';
+  plan: 'any' | 'free' | 'paid' | 'pro' | 'salon';
+  market: 'any' | 'women' | 'men';
+  newSinceDays: number | null;
+  olderThanDays: number | null;
+}
+export interface CampaignInput {
+  title: string;
+  body: string;
+  urlClient: string;
+  urlPro: string;
+}
+export interface AdminCampaign {
+  id: string;
+  title: string;
+  body: string;
+  urlClient: string | null;
+  urlPro: string | null;
+  audience: CampaignAudience;
+  status: 'scheduled' | 'sending' | 'done' | 'cancelled';
+  repeat: CampaignRepeat;
+  nextAt: string | null;
+  createdAt: string;
+  runs: { at: string; targeted: number; created: number }[];
+}
+
 export interface ProNewsItem {
   id: string;
   title: string;

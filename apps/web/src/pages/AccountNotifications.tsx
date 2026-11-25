@@ -10,7 +10,7 @@ import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
-import {
+import { Megaphone,
   Bell,
   BellOff,
   BellRing,
@@ -42,6 +42,7 @@ import { Screen, NAV_PAD } from '@/components/AppFrame';
 import { t } from '@/i18n';
 
 /** Une icône par type : le pro ou la cliente reconnaît la nature de l'événement avant de lire. */
+const ANNONCE = { icon: Megaphone, tone: 'bg-fill text-ink' };
 const KIND: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   booking_created: { icon: CalendarPlus, tone: 'bg-fill text-ink' },
   booking_confirmed: { icon: CalendarCheck, tone: 'bg-ok/10 text-ok' },
@@ -119,7 +120,7 @@ function NotificationsBody({ onLeave }: { onLeave?: () => void }) {
   const open = (n: Notification) => {
     // Créneau libéré : vers la réservation du salon, le jour concerné.
     const url = typeof n.data?.url === 'string' ? n.data.url : null;
-    if (n.type === 'slot_freed' && url) {
+    if (url && url.startsWith('/')) {
       onLeave?.();
       return navigate(url);
     }
@@ -167,7 +168,8 @@ function NotificationsBody({ onLeave }: { onLeave?: () => void }) {
           <SectionLabel>{key === addDaysToKey(today, -1) ? t("Hier") : relativeDayLabelDZ(key, today)}</SectionLabel>
           <div className="crd !gap-0 !py-1">
             {list.map((n) => {
-              const k = KIND[n.type] ?? KIND.booking_reminder;
+              // Campagnes et nouveautés de la plateforme : le porte-voix, pas l'étoile de « terminé ».
+              const k = n.data?.kind === 'campaign' || n.data?.kind === 'news' ? ANNONCE : KIND[n.type] ?? KIND.booking_reminder;
               const fresh = !n.readAt || unseen.current?.has(n.id);
               return (
                 <button
@@ -175,7 +177,7 @@ function NotificationsBody({ onLeave }: { onLeave?: () => void }) {
                   type="button"
                   className="li w-full text-start"
                   onClick={() => open(n)}
-                  disabled={!n.bookingId && !(n.type === 'slot_freed' && typeof n.data?.url === 'string')}
+                  disabled={!n.bookingId && !(typeof n.data?.url === 'string' && n.data.url.startsWith('/'))}
                 >
                   <span className="flex min-w-0 flex-1 items-center gap-3">
                     <span className={`relative flex h-11 w-11 flex-none items-center justify-center rounded-full ${k.tone}`}>

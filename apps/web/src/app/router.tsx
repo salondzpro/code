@@ -133,6 +133,7 @@ const AdminAudit = lazyNamed(() => import('@/pages/admin/AdminBookings'), 'Admin
 const AdminReports = lazyNamed(() => import('@/pages/admin/AdminReports'), 'AdminReports');
 const AdminLabels = lazyNamed(() => import('@/pages/admin/AdminLabels'), 'AdminLabels');
 const AdminNews = lazyNamed(() => import('@/pages/admin/AdminNews'), 'AdminNews');
+const AdminCampaigns = lazyNamed(() => import('@/pages/admin/AdminCampaigns'), 'AdminCampaigns');
 const AdminHealth = lazyNamed(() => import('@/pages/admin/AdminHealth'), 'AdminHealth');
 const AdminTeam = lazyNamed(() => import('@/pages/admin/AdminTeam'), 'AdminTeam');
 
@@ -383,6 +384,7 @@ export const router = createBrowserRouter([
           { path: 'signalements', element: <AdminReports /> },
           { path: 'etiquettes', element: <AdminLabels /> },
           { path: 'conseils', element: <AdminNews /> },
+          { path: 'notifications', element: <AdminCampaigns /> },
           { path: 'abonnements', element: <AdminPlans /> },
           { path: 'marketing', element: <AdminMarketing /> },
           { path: 'sante', element: <AdminHealth /> },
