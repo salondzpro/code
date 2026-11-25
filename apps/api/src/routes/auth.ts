@@ -3,7 +3,8 @@ import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { ALIAS_DOMAIN, DEMO_LOGIN_CODE, demoAccountFor } from '@salondz/constants';
+import { ALIAS_DOMAIN, DEMO_LOGIN_CODE, demoAccountFor, isAliasEmail } from '@salondz/constants';
+import { verifySupabaseJwt } from '../plugins/auth';
 import { authGoQuerySchema, devLoginSchema, emailCheckSchema, emailLinkSchema, emailSignupSchema, passwordLoginSchema, phoneCodeSchema, phoneVerifySchema, type EmailCheckStatus } from '@salondz/validation';
 import { config } from '../config';
 import { db } from '../lib/supabase';
@@ -284,6 +285,91 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     await sendMail(req.log, { to: email, ...confirmationMail(link) });
     reply.status(204);
     return null;
+  });
+
+  /** Une session pour un compte précis (adresse vraie ou interne), sans e-mail envoyé. */
+  const sessionFor = async (email: string) => {
+    const link = await db.auth.admin.generateLink({ type: 'magiclink', email });
+    const otp = link.data?.properties?.email_otp;
+    const verified = otp ? await anon.auth.verifyOtp({ email, token: otp, type: 'email' }) : null;
+    if (link.error || !verified || verified.error || !verified.data.session) throw link.error ?? verified?.error ?? new Error('session');
+    return verified.data.session;
+  };
+
+  /**
+   * GOOGLE / APPLE : LE COMPTE DU PORTAIL EMPRUNTÉ (25 nov. 2026, demande du propriétaire : « un
+   * client ne peut pas se connecter par le portail pro, et l'inverse »).
+   *
+   * Supabase rattache Google au compte qui porte DÉJÀ l'adresse, quel que soit son type : une
+   * cliente qui touchait « Continuer avec Google » sur le portail pro entrait dans son compte
+   * CLIENT. Juste après le retour de Google, le site appelle cette route avec le portail emprunté :
+   *   - le compte ouvert est du bon type → rien à faire ;
+   *   - il vient de naître par Google sur le portail pro → il devient pro (c'est son inscription) ;
+   *   - sinon → le compte DE CE PORTAIL pour la même adresse (adresse interne, comme l'inscription
+   *     par e-mail), créé au besoin, et une session pour lui ; celle de l'autre compte est fermée.
+   * Preuve exigée : une connexion Google/Apple de moins de 15 min (`amr` du jeton) dont l'identité
+   * porte l'adresse — une session ordinaire (mot de passe, lien) n'ouvre jamais l'autre portail.
+   */
+  app.post('/auth/oauth-portail', { preHandler: app.requireAuth, config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    const portail: Portail = (req.body as { portail?: string } | null)?.portail === 'pro' ? 'pro' : 'client';
+    const refus = () => new AppError(403, portail === 'pro' ? 'NO_PRO_ACCOUNT' : 'NO_CLIENT_ACCOUNT', portail === 'pro' ? 'Aucun compte professionnel associé à ces identifiants.' : 'Aucun compte client associé à ces identifiants.');
+    const payload = await verifySupabaseJwt(req.user!.token);
+    const amr = Array.isArray(payload.amr) ? (payload.amr as { method?: string; timestamp?: number }[]) : [];
+    const oauthRecent = amr.some((x) => x?.method === 'oauth' && typeof x.timestamp === 'number' && Date.now() / 1000 - x.timestamp < 15 * 60);
+    const u = await db.auth.admin.getUserById(req.user!.id);
+    if (u.error || !u.data.user) throw u.error ?? new Error('utilisateur');
+    const user = u.data.user;
+    const identites = (user.identities ?? []).filter((i) => i.provider === 'google' || i.provider === 'apple');
+    const email = (user.email ?? '').toLowerCase();
+    if (!oauthRecent || !email || isAliasEmail(email) || !identites.some((i) => String(i.identity_data?.email ?? '').toLowerCase() === email)) throw refus();
+
+    if ((await roleOf(user)) === portail) return { switched: false };
+
+    // Compte NÉ à l'instant par Google sur le portail pro : il devient pro (son inscription).
+    if (portail === 'pro') {
+      const providers = (user.identities ?? []).map((i) => i.provider);
+      const neuf = Date.now() - new Date(user.created_at).getTime() < 30 * 60_000;
+      const [bk, sl] = await Promise.all([
+        db.from('bookings').select('id', { count: 'exact', head: true }).eq('client_id', user.id),
+        db.from('salons').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
+      ]);
+      if (neuf && !providers.includes('email') && (bk.count ?? 0) === 0 && (sl.count ?? 0) === 0) {
+        const up = await db.from('profiles').update({ role: 'pro' }).eq('id', user.id);
+        if (up.error) throw up.error;
+        await db.auth.admin.updateUserById(user.id, { user_metadata: { ...user.user_metadata, role: 'pro' } });
+        return { switched: false };
+      }
+    }
+
+    // Le compte de CE portail pour cette adresse (adresse interne), créé au besoin.
+    const cible = aliasOf(email, portail);
+    let compte = await findUser(cible);
+    let isNew = false;
+    if (!compte) {
+      const nom = user.user_metadata?.full_name ?? user.user_metadata?.name;
+      const created = await db.auth.admin.createUser({
+        email: cible,
+        email_confirm: true,
+        user_metadata: { role: portail, contact_email: email, login: identites[0]!.provider, ...(typeof nom === 'string' && nom.trim() ? { full_name: nom.trim() } : {}) },
+      });
+      if (created.error || !created.data.user) {
+        req.log.error({ err: created.error }, 'oauth-portail createUser');
+        throw new AppError(500, 'OAUTH_FAILED', 'Connexion impossible pour le moment. Réessayez dans un instant.');
+      }
+      compte = { id: created.data.user.id, email: cible, email_confirmed_at: new Date().toISOString(), user_metadata: { role: portail } };
+      isNew = true;
+    } else if ((await roleOf(compte)) !== portail) throw refus();
+    let s;
+    try {
+      s = await sessionFor(cible);
+    } catch (err) {
+      req.log.error({ err }, 'oauth-portail session');
+      throw new AppError(500, 'OAUTH_FAILED', 'Connexion impossible pour le moment. Réessayez dans un instant.');
+    }
+    // La session de l'autre compte, ouverte par Google, ne sert plus.
+    void db.auth.admin.signOut(req.user!.token, 'local').catch(() => undefined);
+    return { switched: true, accessToken: s.access_token, refreshToken: s.refresh_token, expiresAt: s.expires_at ?? null, isNew };
   });
 
   /**

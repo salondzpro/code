@@ -485,6 +485,9 @@ export function createApiClient(opts: ApiClientOptions) {
       passwordReset: (body: EmailLinkInput) => post<void>('/auth/password-reset', body),
       /** Compte Google NEUF ouvert par le portail pro : il devient professionnel (21 nov. 2026). */
       googlePro: () => post<void>('/auth/google-pro'),
+      /** Retour de Google/Apple : le compte DU PORTAIL emprunté (25 nov. 2026) — nouvelle session s'il faut changer de compte. */
+      oauthPortail: (body: { portail: 'client' | 'pro' }) =>
+        post<{ switched: false } | { switched: true; accessToken: string; refreshToken: string; expiresAt: number | null; isNew: boolean }>('/auth/oauth-portail', body),
       /** Comptes de démonstration à accès direct : renvoie une vraie session Supabase (sans SMS). */
       devLogin: (body: { email?: string; phone?: string; code?: string }) =>
         request<{

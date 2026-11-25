@@ -4,8 +4,9 @@
  * sinon la page visée. L'ancien « Bon retour, Inès · Continuer » n'apportait rien (16 sept. 2026).
  */
 import { estCheminPro } from '@/lib/portail';
-import { useEffect, useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useApi, useMe } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { readAuthFlow } from '@/lib/authFlow';
@@ -73,6 +74,13 @@ export function WelcomeBack() {
     return <Navigate to={`/connexion?erreur=${encodeURIComponent(hashErr.get('error_code') ?? hashErr.get('error') ?? 'lien')}`} replace />;
   if (loading) return <PageLoading />;
   if (!session) return <Navigate to="/connexion" replace />;
+  // L'application connaît son portail ; sur le site : `portail=` de l'adresse, sinon la destination.
+  const portailParam = params.get('portail');
+  const nextBrut = params.get('next') ?? readAuthFlow()?.next ?? '';
+  const attendu = APPLI ?? (portailParam === 'pro' || portailParam === 'client' ? portailParam : estCheminPro(nextBrut) ? 'pro' : 'client');
+  // Retour de Google / Apple (25 nov. 2026) : d'abord le compte DU PORTAIL emprunté, jamais celui de
+  // l'autre côté que Supabase a ouvert parce qu'il porte la même adresse.
+  if (params.get('oauth') === '1' || params.get('google') === '1') return <ComptePortail portail={attendu} />;
   // Profil injoignable (réseau) : on entre quand même, les gardes des pages feront le reste.
   if (!me.data && !me.isError) return <PageLoading />;
 
@@ -81,14 +89,7 @@ export function WelcomeBack() {
   const q = `?next=${encodeURIComponent(next)}`;
   // SÉPARATION STRICTE (16 nov. 2026) : un lien ne fait entrer que dans le portail de SON type —
   // celui de l'application, sinon celui de la destination. Sinon : session fermée, message de refus.
-  // L'application connaît son portail ; sur le site : `portail=` de l'adresse, sinon la destination.
-  const portailParam = params.get('portail');
-  const attendu = APPLI ?? (portailParam === 'pro' || portailParam === 'client' ? portailParam : estCheminPro(next) ? 'pro' : 'client');
   const refuse = estRefusCompte(me.error);
-  // Google par le PORTAIL PRO (21 nov. 2026) : le compte vient de naître client — on le déclare pro
-  // tant qu'il est neuf ; le serveur refuse tout autre cas (compte existant, déjà utilisé).
-  const googlePro = (params.get('oauth') === '1' || params.get('google') === '1') && attendu === 'pro' && (refuse === 'pro' || profile?.role === 'client');
-  if (googlePro) return <DevenirPro onFait={() => void me.refetch()} />;
   if (refuse) return <CompteRefuse cote={refuse} />;
   if (!next.startsWith('/admin') && profile && (profile.role === 'pro') !== (attendu === 'pro')) return <CompteRefuse cote={attendu} />;
   // Sans profil (erreur réseau), on ne sait rien de la personne : la renvoyer sur « créer son profil »
@@ -105,29 +106,41 @@ export function WelcomeBack() {
   return <Navigate to={next} replace />;
 }
 
-/** Passe un compte Google tout neuf en compte professionnel, puis relit le profil. */
-function DevenirPro({ onFait }: { onFait: () => void }) {
+/**
+ * Retour de Google / Apple : le serveur rend le compte DU PORTAIL emprunté (`POST /auth/oauth-portail`)
+ * — le même s'il est du bon type, sinon celui de la même adresse de ce côté-ci (créé au besoin), avec
+ * une nouvelle session. Puis on relit tout, sans `oauth=1` dans l'adresse.
+ */
+function ComptePortail({ portail }: { portail: 'client' | 'pro' }) {
   const { api } = useApi();
+  const qc = useQueryClient();
   const [refus, setRefus] = useState(false);
+  const navigate = useNavigate();
+  const lance = useRef(false);
   useEffect(() => {
-    let vivant = true;
-    api.auth
-      .googlePro()
-      .then(() => {
-        if (!vivant) return;
-        // Plus de `google=1` dans l'adresse : on ne repasse pas par ici.
+    if (lance.current) return;
+    lance.current = true;
+    void (async () => {
+      try {
+        const r = await api.auth.oauthPortail({ portail });
+        if (r.switched) {
+          const { error } = await supabase.auth.setSession({ access_token: r.accessToken, refresh_token: r.refreshToken });
+          if (error) throw error;
+        }
+        trace('oauth-portail', { portail, switched: r.switched });
+        qc.clear();
         const u = new URL(window.location.href);
         u.searchParams.delete('google');
         u.searchParams.delete('oauth');
-        window.history.replaceState(window.history.state, '', u.pathname + u.search);
-        onFait();
-      })
-      .catch(() => vivant && setRefus(true));
-    return () => {
-      vivant = false;
-    };
+        // Le routeur doit voir l'adresse sans `oauth=1` : navigation interne, état conservé.
+        navigate(u.pathname + u.search, { replace: true });
+      } catch (e) {
+        trace('oauth-portail-refus', { portail, m: String((e as Error)?.message ?? e) });
+        setRefus(true);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  if (refus) return <CompteRefuse cote="pro" />;
+  if (refus) return <CompteRefuse cote={portail} />;
   return <PageLoading />;
 }

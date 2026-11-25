@@ -10,8 +10,8 @@
  *   - dans l'APPLICATION, Google refuse les vues web intégrées : la page de Google s'ouvre dans le
  *     navigateur du système (`openExternal`), et au retour la passation (`lib/appHandoff.ts`) rouvre
  *     la BONNE application (pro si `portail=pro`) avec la session.
- * Un compte créé par Google naît client ; par le portail pro, `WelcomeBack` le déclare pro tant
- * qu'il est neuf (`POST /v1/auth/google-pro`).
+ * Au retour, `WelcomeBack` demande le compte DU PORTAIL emprunté (`POST /v1/auth/oauth-portail`,
+ * 25 nov. 2026) : jamais celui de l'autre côté qui porterait la même adresse.
  */
 import { APPLI } from './flavor';
 import { useEffect, useState } from 'react';
