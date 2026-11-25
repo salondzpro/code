@@ -157,6 +157,7 @@ export const citiesResponse = z.object({ items: z.array(cityCount) });
 
 /** `GET /v1/salons/suggest` */
 export const suggestResponse = z.object({
+  categories: z.array(z.object({ id: z.string(), label: z.string(), salonCount: num() })),
   salons: z.array(
     z.object({
       id: z.string(),

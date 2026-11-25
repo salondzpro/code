@@ -246,6 +246,7 @@ export const en: Record<string, string> = {
   'E-mail envoyé': 'E-mail sent',
   'E-mail ou mot de passe incorrect.': 'Incorrect e-mail or password.',
   'Effacer la recherche': 'Clear search',
+  "Effacer l'historique": 'Clear history',
   'en attente': 'pending',
   'En attente': 'Pending',
   'En créant un compte vous acceptez que Salon DZ vous envoie les confirmations et rappels de vos rendez-vous.': 'By creating an account you agree that Salon DZ sends you appointment confirmations and reminders.',

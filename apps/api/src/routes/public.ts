@@ -113,7 +113,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       });
       const data = unwrap(res) as SearchSuggestions | null;
       reply.header('Cache-Control', CACHE_PUBLIC_SHORT);
-      return data ?? { salons: [], services: [], places: [] };
+      return { categories: [], salons: [], services: [], places: [], ...(data ?? {}) };
     },
   );
 

@@ -34,6 +34,7 @@ import {
   Check,
   ChevronRight,
   Crosshair,
+  History,
   List,
   Map as MapIcon,
   MapPin,
@@ -57,6 +58,7 @@ import {
 } from '@/lib/clientPrefs';
 import { useDebounced } from '@/lib/useDebounced';
 import { prechargerLieux, useLieux, type Lieu } from '@/lib/places';
+import { decouper, extraireLieu, oublierRecherches, recherchesRecentes, retenirRecherche } from '@/lib/smartSearch';
 import { arrondir, positionPrecise } from '@/lib/position';
 import { Accordion, Avatar, Button, I, Pill } from './ui';
 import { PlaceSuggestions } from './PlaceSuggestions';
@@ -117,9 +119,23 @@ export function SearchField({
     setPlaceDraft('');
     setFocus('q');
   };
+  const [recentes, setRecentes] = useState<string[]>(() => recherchesRecentes());
+  /**
+   * Soumettre (25 nov. 2026) : un lieu écrit dans la saisie (« coupe akbou », « barbier à Oran »)
+   * règle le lieu, et seul le « quoi » part en recherche. La saisie est retenue sur l'appareil.
+   */
   const submit = (v: string) => {
-    onQuery(v.trim());
+    const brut = v.trim();
+    retenirRecherche(brut);
+    setRecentes(recherchesRecentes());
     close();
+    if (!brut) return onQuery('');
+    void extraireLieu(brut)
+      .then(({ lieu, reste }) => {
+        if (lieu) pickLieu(lieu);
+        onQuery(reste.trim());
+      })
+      .catch(() => onQuery(brut));
   };
   const pickPlace = (city: string, parentCity: string | null, wilayaCode: number) => {
     const label = parentCity ? `${city}, ${parentCity}` : city;
@@ -249,8 +265,70 @@ export function SearchField({
       </div>
 
       {/* Suggestions du champ qui a le focus. */}
+      {focus === 'q' && !qDraft.trim() && (recentes.length > 0 || categoriesForMarket(market).length > 0) && (
+        <div className="crd !gap-0 !py-1">
+          {recentes.map((r) => (
+            <button key={`rec-${r}`} type="button" className="li w-full text-start" onClick={() => submit(r)}>
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
+                  <I icon={History} size={18} />
+                </span>
+                <span className="block truncate text-[1rem] font-semibold">{r}</span>
+              </span>
+              <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
+            </button>
+          ))}
+          {recentes.length > 0 && (
+            <button
+              type="button"
+              className="px-3 py-2 text-start text-[0.857rem] text-muted underline"
+              onClick={() => {
+                oublierRecherches();
+                setRecentes([]);
+              }}
+            >
+              {t("Effacer l'historique")}
+            </button>
+          )}
+          <div className="flex flex-wrap gap-2 px-3 pb-3 pt-2">
+            {categoriesForMarket(market)
+              .slice(0, 6)
+              .map((c) => (
+                <Pill key={c.id} onClick={() => submit(t(c.labelFr))}>
+                  {t(c.labelFr)}
+                </Pill>
+              ))}
+          </div>
+        </div>
+      )}
+
       {focus === 'q' && !!data && (
         <div className="crd !gap-0 !py-1" aria-live="polite">
+          <button type="button" className="li w-full text-start" onClick={() => submit(qDraft)}>
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
+                <I icon={Search} size={18} />
+              </span>
+              <span className="block truncate text-[1rem] font-semibold">{qDraft.trim()}</span>
+            </span>
+            <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
+          </button>
+          {(data.categories ?? []).map((c) => (
+            <button key={`cat-${c.id}`} type="button" className="li w-full text-start" onClick={() => submit(t(c.label))}>
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-fill">
+                  <I icon={Tag} size={18} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[1rem] font-semibold">{t(c.label)}</span>
+                  <span className="block truncate text-[0.857rem] text-muted">
+                    {`${c.salonCount} ${noun}${c.salonCount > 1 ? 's' : ''}`}
+                  </span>
+                </span>
+              </span>
+              <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
+            </button>
+          ))}
           {data.services.map((h) => (
             <button
               key={`svc-${h.name}`}
@@ -263,7 +341,7 @@ export function SearchField({
                   <I icon={Scissors} size={18} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-[1rem] font-semibold">{h.name}</span>
+                  <span className="block truncate text-[1rem] font-semibold"><Gras texte={h.name} q={dq} /></span>
                   <span className="block truncate text-[0.857rem] text-muted">
                     {`${h.salonCount} ${noun}${h.salonCount > 1 ? 's' : ''}${h.minPriceDa != null ? ` · dès ${formatDA(h.minPriceDa)}` : ''}`}
                   </span>
@@ -277,7 +355,7 @@ export function SearchField({
               <span className="flex min-w-0 items-center gap-3">
                 <Avatar src={s.logoUrl ?? s.coverUrl} name={s.name} size={40} />
                 <span className="min-w-0">
-                  <span className="block truncate text-[1rem] font-semibold">{s.name}</span>
+                  <span className="block truncate text-[1rem] font-semibold"><Gras texte={s.name} q={dq} /></span>
                   <span className="block truncate text-[0.857rem] text-muted">
                     {[s.zone ?? s.city, s.ratingCount > 0 ? `★ ${formatRating(Number(s.ratingAvg))}` : null]
                       .filter(Boolean)
@@ -288,12 +366,6 @@ export function SearchField({
               <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
             </Link>
           ))}
-          {data.services.length === 0 && data.salons.length === 0 && (
-            <button type="button" className="li w-full text-start" onClick={() => submit(qDraft)}>
-              <span className="text-[1rem] font-semibold">{t("Rechercher «")}{' '}{qDraft.trim()} »</span>
-              <I icon={ChevronRight} size={18} className="flex-none text-disabled" />
-            </button>
-          )}
         </div>
       )}
 
@@ -371,6 +443,19 @@ export function SearchField({
         />
       )}
     </div>
+  );
+}
+
+/** La partie du libellé qui correspond à la saisie, en gras ; le reste en normal. */
+function Gras({ texte, q }: { texte: string; q: string }) {
+  const d = decouper(texte, q);
+  if (!d) return <>{texte}</>;
+  return (
+    <span className="font-normal">
+      {d.avant}
+      <span className="font-semibold">{d.gras}</span>
+      {d.apres}
+    </span>
   );
 }
 

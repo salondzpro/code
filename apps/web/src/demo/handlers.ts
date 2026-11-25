@@ -7,6 +7,7 @@
 import {
   CANCEL_ABUSE_WINDOW_DAYS,
   CATEGORIES,
+  categoriesForMarket,
   CLIENT_CANCEL_MIN_HOURS,
   LATE_TOLERANCE_MINUTES,
   MAX_CLIENT_RESCHEDULES,
@@ -251,7 +252,12 @@ on('GET', '/salons/suggest', (c) => {
     cur.salonCount++;
     places.set(city, cur);
   }
-  return ok({ salons, services: [...svc.entries()].slice(0, 6).map(([name, v]) => ({ name, ...v })), places: [...places.values()].slice(0, 5) });
+  const cats = categoriesForMarket(gender === 'women' ? 'women' : 'men')
+    .filter((x) => text.length >= 2 && unaccent(x.labelFr).includes(text))
+    .slice(0, 3)
+    .map((x) => ({ id: x.id, label: x.labelFr, salonCount: list.filter((s) => s.categoryIds.includes(x.id)).length }))
+    .filter((x) => x.salonCount > 0);
+  return ok({ categories: cats, salons, services: [...svc.entries()].slice(0, 6).map(([name, v]) => ({ name, ...v })), places: [...places.values()].slice(0, 5) });
 });
 
 on('GET', '/salons', (c) => {

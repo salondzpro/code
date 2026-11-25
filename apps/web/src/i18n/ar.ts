@@ -246,6 +246,7 @@ export const ar: Record<string, string> = {
   'E-mail envoyé': 'تم إرسال البريد',
   'E-mail ou mot de passe incorrect.': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
   'Effacer la recherche': 'مسح البحث',
+  "Effacer l'historique": 'مسح السجل',
   'en attente': 'قيد الانتظار',
   'En attente': 'قيد الانتظار',
   'En créant un compte vous acceptez que Salon DZ vous envoie les confirmations et rappels de vos rendez-vous.': 'بإنشاء حساب توافق على أن يرسل لك Salon DZ تأكيدات مواعيدك وتذكيراتها.',

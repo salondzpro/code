@@ -335,6 +335,8 @@ export interface CityCount {
 
 /** Suggestions de recherche (design C-H 07) : salons, prestations et lieux correspondant à la saisie. */
 export interface SearchSuggestions {
+  /** Catégories reconnues dans la saisie (synonymes fr/ar/en/darija, fautes tolérées) — 25 nov. 2026. */
+  categories: { id: string; label: string; salonCount: number }[];
   salons: {
     id: UUID;
     slug: string;
