@@ -1,105 +1,119 @@
 /*
- * JETONS DE DESIGN — CHARTE OFFICIELLE UNIQUE (15 nov. 2026, demande du propriétaire).
+ * JETONS DE DESIGN — LA SEULE SOURCE DE LA CHARTE (centralisée le 25 nov. 2026, demande du
+ * propriétaire : « uniformise et centralise, pour que changer soit rapide et maintenable »).
  *
- * Source de vérité : l'ESPACE PROFESSIONNELS EN PRODUCTION (thème « minimal éditorial » validé le
- * 11 nov. 2026), mesuré sur salondz.com. Documentation complète : `docs/CHARTE.md`.
+ * Charte en vigueur : « style Claude, noir brillant » (maquette maquettes/pro-2026/claude-ui-couleur.html#noir).
+ *   Fond crème #faf9f5 · cartes blanches à trait #e8e6dc, sans ombre · texte #2f2c28 · gris #6a675f /
+ *   #8f8d86 · actions en noir brillant (--gloss) · titres, noms, heures en Lora (--font-serif) ·
+ *   interface en Poppins · sens adoucis : oui olive, non argile, à valider ocre, confirmé bleu doux.
  *
- * Ces valeurs sont les SEULES autorisées. Toute couleur, police, ombre ou arrondi d'un écran passe par
- * un jeton d'ici ; jamais une valeur au jugé, jamais une ancienne identité (violet #6c5ce7, encre bleu
- * nuit #1e1b30, police Outfit, ombres teintées, couleurs par catégorie — supprimés le 15 nov. 2026).
- *
- *   Encre #202020 · gris #4e5860 · fond #f7f7f7 · surface blanche · aucun accent de marque.
- *   La couleur ne sert qu'à DIRE quelque chose : couleurs système d'iOS (vert oui, rouge non,
- *   orange à valider, bleu confirmé, gris passé).
+ * CHANGER LE DESIGN = CHANGER CE FICHIER. Les feuilles d'écrans (index.css, planity.css, claude.css)
+ * n'écrivent plus de couleur en dur pour la charte : elles lisent ces jetons (`var(--color-…)`).
+ * Les blancs (#fff) restent écrits tels quels quand ils désignent du texte sur un aplat foncé.
  */
 
 @theme {
   /* ---------------------------------------------------------------- Fonds et surfaces */
-  --color-canvas: #f7f7f7; /* autour de la colonne sur grand écran */
-  --color-bg: #f7f7f7; /* fond de toutes les pages */
+  --color-canvas: #faf9f5; /* autour de la colonne sur grand écran */
+  --color-bg: #faf9f5; /* fond de toutes les pages */
   --color-surface: #ffffff; /* cartes, listes, fenêtres, champs */
-  --color-fill: #f2f3f5; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
-  --color-fill-strong: #eef0f2; /* bouton secondaire, sélecteur segmenté */
-  --color-line: #eef0f2; /* bordures */
-  --color-line-strong: #c7cfd7; /* contour des champs, des ronds blancs, lignes des heures */
-  --color-line-soft: #f2f3f5; /* séparateurs de liste */
+  --color-fill: #f0eee6; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
+  --color-fill-strong: #f0eee6; /* bouton secondaire, sélecteur segmenté */
+  --color-line: #e8e6dc; /* bordures */
+  --color-line-strong: #ddd9cc; /* contour des champs, des ronds blancs, lignes des heures */
+  --color-line-soft: #efede6; /* séparateurs de liste */
 
   /* ---------------------------------------------------------------- Texte */
-  --color-text: #202020;
-  --color-muted: #4e5860; /* secondaire */
-  --color-subtle: #4e5860; /* tertiaire : même gris que le secondaire (mesuré en production) */
-  --color-disabled: #c7c7cc;
-  --color-ink: #202020; /* éléments SOMBRES : bouton principal, sélection, onglet actif */
+  --color-text: #2f2c28;
+  --color-muted: #6a675f; /* secondaire */
+  --color-subtle: #8f8d86; /* tertiaire : même gris que le secondaire (mesuré en production) */
+  --color-disabled: #c9c6bb;
+  --color-ink: #1d1d20; /* éléments SOMBRES : bouton principal, sélection, onglet actif */
   --color-on-ink: #ffffff;
 
   /* Accent = l'encre : il n'y a PAS de couleur de marque (anciens jetons gardés pour les classes
      existantes, tous ramenés à l'encre et aux gris). */
-  --color-accent: #202020;
-  --color-accent-strong: #202020;
-  --color-accent-deep: #202020;
-  --color-accent-soft: #f2f3f5;
-  --color-accent-tint: #eef0f2;
-  --color-accent-line: #c7cfd7;
+  --color-accent: #1d1d20;
+  --color-accent-strong: #1d1d20;
+  --color-accent-deep: #1d1d20;
+  --color-accent-soft: #f0eee6;
+  --color-accent-tint: #f0eee6;
+  --color-accent-line: #ddd9cc;
   --color-on-accent: #ffffff;
-  --color-primary: #202020;
+  --color-primary: #1d1d20;
   --color-primary-contrast: #ffffff;
 
   /* ---------------------------------------------------------------- Couleurs de SENS (iOS) */
-  --color-ok: #34c759; /* oui, fait, en cours */
-  --color-ok-bg: #e3f7e8;
-  --color-ok-fg: #1d8a3c;
-  --color-danger: #ff3b30; /* non, danger, absent */
-  --color-danger-line: #ffd6d3;
-  --color-cancel-bg: #ffe7e5;
-  --color-cancel-fg: #c81e14;
-  --color-pending: #ff9500; /* à valider */
-  --color-pending-bg: #fff1dc;
-  --color-pending-fg: #a35f00;
-  --color-info: #007aff; /* confirmé */
-  --color-info-bg: #e5f1ff;
-  --color-past: #aeaeb2; /* passé, terminé */
+  --color-ok: #5f8a4e; /* oui, fait, en cours */
+  --color-ok-bg: #e7eedf;
+  --color-ok-fg: #4b6e3d;
+  --color-danger: #c6613f; /* non, danger, absent */
+  --color-danger-line: #ecc9bb;
+  --color-cancel-bg: #f7e6df;
+  --color-cancel-fg: #a8482a;
+  --color-pending: #d39a4a; /* à valider */
+  --color-pending-bg: #f6ecdc;
+  --color-pending-fg: #9a6420;
+  --color-info: #6a9bcc; /* confirmé */
+  --color-info-bg: #e3ecf5;
+  --color-past: #c9c6bb; /* passé, terminé */
   /* « Le plus tôt » (réservation la plus rapide, 15 nov. 2026, demande du propriétaire) : orange iOS + éclair. */
   --color-fast: #ff9500;
-  --color-success: #1d8a3c;
-  --color-warning: #a35f00;
+  --color-success: #4b6e3d;
+  --color-warning: #9a6420;
 
   /* Couleurs de MARQUE tierces (logos officiels seulement, `BrandIcons.tsx`). */
   --color-green: #25d366; /* WhatsApp */
   /* Espace clientes : la seule couleur propre, le rose de l'espace féminin. */
   --color-women: #f06a9b;
   /* Heures libres des cartes de la place de marché : encre (le bleu du 19 sept. est retiré). */
-  --color-hour: #202020;
+  --color-hour: #2f2c28;
   /* Violet Planity : numéros d'étape (« 1. », « 2. ») et liens d'action (« Supprimer »), rien d'autre. */
-  --color-link: #625df5;
+  --color-link: #2f2c28;
 
   /* ---------------------------------------------------------------- Typographie */
-  --font-sans: 'Inter', Helvetica, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   /* Plus de seconde police : les titres utilisent la même (l'arabe retombe sur la police système). */
-  --font-display: 'Inter', Helvetica, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Lora', Georgia, 'Times New Roman', serif;
 
   /* ---------------------------------------------------------------- Arrondis (racine 14 px) */
-  --radius-card: 0.571rem; /* 8 px (Planity) */
-  --radius-card-sm: 0.571rem; /* 8 px */
-  --radius-btn: 0.571rem; /* 8 px — boutons */
-  --radius-input: 0.571rem; /* 8 px — champs */
+  --radius-card: 1rem; /* 14 px */
+  --radius-card-sm: 0.857rem; /* 12 px */
+  --radius-btn: 0.714rem; /* 10 px — boutons */
+  --radius-input: 0.714rem; /* 10 px — champs */
   --radius-slot: 0.286rem; /* 4 px — créneaux horaires */
-  --radius-img: 0.571rem; /* 8 px */
+  --radius-img: 0.857rem; /* 12 px */
   --radius-pill: 62.4375rem; /* pastilles, badges, ronds */
-  --radius-sheet: 1.143rem; /* 16 px — fenêtres du bas */
+  --radius-sheet: 1.429rem; /* 20 px — fenêtres du bas */
 
   /* ---------------------------------------------------------------- Ombres (neutres, jamais teintées) */
-  --shadow-card: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+  --shadow-card: none; /* cartes : trait beige, pas d'ombre */
   --shadow-sheet: 0 -12px 40px -12px rgb(0 0 0 / 0.18);
   --shadow-fab: 0 10px 24px -8px rgb(0 0 0 / 0.35);
   --shadow-toast: 0 12px 32px -10px rgb(0 0 0 / 0.3);
   --shadow-menu: 0 18px 44px -12px rgb(0 0 0 / 0.28), 0 0 0 1px rgb(0 0 0 / 0.05);
+
+  /* Couleurs de SENS adoucies, pour les blocs de l'agenda. */
+  --color-cur-bg: #e7eedf;
+  --color-ns-bg: #f7e6df;
+  --color-info-fg: #3d6f9e;
 
   /* Largeur de la colonne app (écran du design = 390 px) */
   --app-max-width: 430px;
 }
 
 :root {
+  /* ---------------------------------------------------------------- Noir brillant (25 nov. 2026)
+     Actions principales : dégradé laqué + reflet en haut + ombre douce. Seule exception voulue à
+     « aplats sans reflet ». Toujours par ces deux jetons, jamais recopié. */
+  --gloss: linear-gradient(180deg, #45454b 0%, #232327 48%, #121214 100%);
+  /* AGRÉGAT UNIQUE des aplats foncés (boutons, sélections, pastilles, rond Agenda…) : mettre
+     var(--color-ink) ici pour revenir au noir mat partout d'un coup. */
+  --surface-ink: var(--gloss);
+  --gloss-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.4), 0 4px 12px rgb(20 20 22 / 0.18);
+  /* Titres, noms, heures : la police à empattements (Lora) ; le reste : Poppins. */
+  --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
   color-scheme: light;
   /* Ombre des cartes du thème (alias historique, même valeur que --shadow-card). */
-  --pro-shadow: 0 4px 8px -2px rgb(26 27 31 / 0.08);
+  --pro-shadow: none;
 }

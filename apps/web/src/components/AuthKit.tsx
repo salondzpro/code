@@ -95,7 +95,7 @@ export function MailLogo({ id }: { id: MailAppId }) {
       </svg>
     );
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#202020" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <path d="M3 7l9 6 9-6" />
     </svg>

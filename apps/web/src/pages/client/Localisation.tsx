@@ -259,7 +259,7 @@ export function Localisation() {
             <MiniMap lat={point.lat} lng={point.lng} radiusKm={radius} label={`Rayon de ${radius} km`} className="h-[11rem]" />
           ) : (
             <div className="relative h-[6rem] overflow-hidden rounded-[var(--radius-card)] border border-line bg-fill">
-              <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(#eef0f2 2px, transparent 2px), linear-gradient(90deg, #eef0f2 2px, transparent 2px)', backgroundSize: '90px 70px' }} />
+              <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(var(--color-line) 2px, transparent 2px), linear-gradient(90deg, var(--color-line) 2px, transparent 2px)', backgroundSize: '90px 70px' }} />
               <span className="absolute bottom-3 start-4 rounded-full bg-surface px-3 py-1.5 text-[0.857rem] font-semibold shadow-card">{label}</span>
             </div>
           )}

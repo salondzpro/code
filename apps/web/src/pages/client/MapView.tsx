@@ -529,13 +529,13 @@ export function MapView() {
   return (
     <div className="map-page relative h-app">
       <style>{`.map-tiles{filter:grayscale(1) brightness(1.06) contrast(.92)}
-.map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:#202020;border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 "Plus Jakarta Sans",Inter,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
-.map-bubble.on{background:#202020;color:#fff}
-.map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #eef0f2;transform:translateX(-50%)}
-.map-bubble.on::after{background:#202020;border-color:#202020}
+.map-bubble{width:max-content;transform:translate(-50%,-100%);margin-top:-8px;background:#fff;color:var(--color-ink);border:0;border-radius:999px;padding:0.5rem 0.875rem;font:600 1rem/1 var(--font-sans);white-space:nowrap;box-shadow:0 6px 18px -6px rgba(0,0,0,.35);position:relative;cursor:pointer}
+.map-bubble.on{background:var(--color-ink);color:#fff}
+.map-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--color-line);transform:translateX(-50%)}
+.map-bubble.on::after{background:var(--color-ink);border-color:var(--color-ink)}
 .leaflet-container{background:#e9e9ef;font-family:inherit}
-.map-place{display:inline-flex;align-items:center;gap:6px;width:max-content;transform:translate(-11px,-50%);padding:3px 8px 3px 3px;border-radius:999px;background:#fff;border:1px solid #eef0f2;font:600 12px/1.2 "Plus Jakarta Sans",Inter,system-ui,sans-serif;color:#202020;white-space:nowrap}
-.map-place-d{width:10px;height:10px;border-radius:50%;background:#202020;border:2px solid #fff;outline:1px solid #202020}
+.map-place{display:inline-flex;align-items:center;gap:6px;width:max-content;transform:translate(-11px,-50%);padding:3px 8px 3px 3px;border-radius:999px;background:#fff;border:1px solid var(--color-line);font:600 12px/1.2 var(--font-sans);color:var(--color-ink);white-space:nowrap}
+.map-place-d{width:10px;height:10px;border-radius:50%;background:var(--color-ink);border:2px solid #fff;outline:1px solid var(--color-ink)}
 [dir=rtl] .map-place{transform:translate(calc(-100% + 11px),-50%);padding:3px 3px 3px 8px}`}</style>
       {/* `isolate` : les calques de Leaflet (z-index 200 à 700) restent DANS la carte. Sans lui, ils
           passaient devant la barre du bas, qui disparaissait sous le plan (capture iPhone, 14 nov.). */}
