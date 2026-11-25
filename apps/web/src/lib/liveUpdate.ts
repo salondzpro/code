@@ -87,6 +87,7 @@ async function check(): Promise<void> {
   busy = true;
   try {
     const l = await latest();
+    ota('verifie', { dispo: l?.version?.slice(0, 7) ?? 'aucune' });
     if (!l || l.version === BUNDLE_VERSION || BUNDLE_VERSION === 'dev') return;
     if (online()) {
       // Le site a changé : un rechargement suffit (au retour dans l'application, ou après une minute de calme).
@@ -104,9 +105,11 @@ async function check(): Promise<void> {
     // Appliquée au prochain passage en arrière-plan, au prochain lancement, ou après une minute de calme.
     await CapacitorUpdater.next({ id: bundle.id });
     pending = bundle.id;
+    ota('telecharge', { dispo: l.version.slice(0, 7), touche: touched });
     if (!touched && !connexionExterneEnCours()) await CapacitorUpdater.set({ id: bundle.id });
   } catch (err) {
     console.warn('[mise à jour] vérification impossible', err);
+    ota('erreur', { m: String((err as Error)?.message ?? err) });
   } finally {
     busy = false;
   }
@@ -123,7 +126,8 @@ async function apply(): Promise<void> {
   }
   if (!pending) return;
   const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
-  await CapacitorUpdater.set({ id: pending }).catch(() => undefined);
+  ota('applique', {});
+  await CapacitorUpdater.set({ id: pending }).catch((e) => ota('erreur-set', { m: String((e as Error)?.message ?? e) }));
 }
 
 const actif = () => (embedded() && Capacitor.isPluginAvailable('CapacitorUpdater')) || online();
@@ -132,6 +136,11 @@ const actif = () => (embedded() && Capacitor.isPluginAvailable('CapacitorUpdater
  * Le paquet en cours a DÉMARRÉ : il est gardé. Sans ce signal dans les 10 s, le greffon revient de
  * lui-même à la version d'avant. Appelé dès que l'interface est rendue.
  */
+/** DIAGNOSTIC TEMPORAIRE (25 nov. 2026) : les mises à jour n'arrivaient pas sur iPhone. */
+function ota(etape: string, infos: Record<string, string | boolean>): void {
+  void import('./traceConnexion').then(({ trace }) => trace(`ota-${etape}`, infos, true)).catch(() => undefined);
+}
+
 export async function confirmBundleReady(): Promise<void> {
   if (!embedded() || !Capacitor.isPluginAvailable('CapacitorUpdater')) return;
   const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
