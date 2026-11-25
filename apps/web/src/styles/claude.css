@@ -1015,3 +1015,25 @@ html:root .plan-bf {
 html:root :is(.h11-b.soft, .btn.g, .btn.soft, .seg, .cl-tag, .h13-tag, .h13-time, .av, .cp-count, .plan-card.on) {
   border: 1px solid var(--color-line);
 }
+
+/* Abonnement : cartes moins hautes (25 nov. 2026, demande du propriétaire) — même texte, mêmes
+   tailles ; espacements resserrés et chaque carte à sa propre hauteur (plus d'étirement). */
+.plan-rail {
+  align-items: flex-start;
+}
+html:root .plan-rail > .plan-card {
+  padding: 16px 18px;
+  gap: 6px;
+}
+html:root .plan-rail .plan-card ul {
+  gap: 5px;
+  margin: 6px 0 4px;
+  flex: none;
+}
+html:root .plan-rail .plan-price {
+  margin-top: 0;
+}
+html:root .plan-rail .plan-for,
+html:root .plan-rail .plan-year {
+  margin: 0;
+}
