@@ -33,6 +33,8 @@ interface Latest {
   version: string;
   url: string;
   checksum?: string;
+  /** Même empreinte, nom des premiers `latest.json`. */
+  sha256?: string;
   minNativeBuild?: number;
 }
 
@@ -101,7 +103,7 @@ async function check(): Promise<void> {
     }
     const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
     const url = new URL(l.url, `${env.siteUrl}/`).toString();
-    const bundle = await CapacitorUpdater.download({ url, version: l.version, ...(l.checksum ? { checksum: l.checksum } : {}) });
+    const bundle = await CapacitorUpdater.download({ url, version: l.version, ...((l.checksum ?? l.sha256) ? { checksum: l.checksum ?? l.sha256 } : {}) });
     // Appliquée au prochain passage en arrière-plan, au prochain lancement, ou après une minute de calme.
     await CapacitorUpdater.next({ id: bundle.id });
     pending = bundle.id;

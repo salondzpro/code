@@ -64,6 +64,9 @@ function publish(flavor, srcDir) {
     version,
     url: `/ota/${flavor}/${version}.zip`,
     sha256: createHash('sha256').update(zip).digest('hex'),
+    // Lu par l'application sous ce nom (`liveUpdate.ts`) : le greffon iPhone 8.x REFUSE tout paquet
+    // sans empreinte (« Checksum required ») — les mises à jour n'arrivaient plus sur iPhone (25 nov. 2026).
+    checksum: createHash('sha256').update(zip).digest('hex'),
     minNativeBuild,
     builtAt: new Date().toISOString(),
   };
