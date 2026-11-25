@@ -10,15 +10,16 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { AppleLogo, GoogleLogo, WhatsAppLogo } from './BrandIcons';
 import { AuthError } from './AuthShell';
-import { connexionOAuth, useFournisseurs, type Fournisseur } from '@/lib/oauth';
+import { connexionOAuth, useFournisseursEtat, type Fournisseur } from '@/lib/oauth';
 import { useWhatsAppDispo } from '@/lib/whatsappDispo';
 import { writeAuthFlow } from '@/lib/authFlow';
 import { t } from '@/i18n';
 
 export function OAuthButtons({ role, next }: { role: 'client' | 'pro'; next: string }) {
-  const actifs = useFournisseurs(['apple', 'google']);
+  const { actifs, pret } = useFournisseursEtat(['apple', 'google']);
   // WhatsApp seulement quand le serveur peut VRAIMENT livrer un code (modèle approuvé par Meta).
-  const whatsapp = useWhatsAppDispo().data?.available === true;
+  const wa = useWhatsAppDispo();
+  const whatsapp = wa.data?.available === true;
   const [busy, setBusy] = useState<Fournisseur | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const go = (f: Fournisseur) => {
@@ -31,6 +32,9 @@ export function OAuthButtons({ role, next }: { role: 'client' | 'pro'; next: str
       )
       .finally(() => setBusy(null));
   };
+  // Réponse pas encore connue (toute première visite) : un squelette À LA PLACE du bouton, pour que
+  // rien ne saute quand il arrive (25 nov. 2026).
+  if (!pret) return <span className="pl-btn pl-btn-sk sk" aria-hidden />;
   return (
     <>
       {actifs.includes('apple') && (

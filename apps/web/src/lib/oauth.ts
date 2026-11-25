@@ -28,27 +28,65 @@ export type Fournisseur = 'google' | 'apple';
 
 let reglages: Promise<Record<string, boolean>> | null = null;
 
+/**
+ * BOUTONS QUI NE SURGISSENT PLUS (25 nov. 2026, signalé par le propriétaire : « le bouton Google
+ * s'affiche après la page »). La liste des fournisseurs actifs est lue sur le serveur
+ * d'authentification ; la DERNIÈRE réponse est gardée sur l'appareil et sert dès l'affichage
+ * suivant (relue en arrière-plan). Sans mémoire (toute première visite), l'écran montre un
+ * squelette à la place du bouton tant que la réponse n'est pas là (`OAuthButtons`).
+ */
+const MEMOIRE = 'salondz:oauth-actifs';
+function memoire(): Record<string, boolean> | null {
+  try {
+    const v = localStorage.getItem(MEMOIRE);
+    return v ? (JSON.parse(v) as Record<string, boolean>) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Fournisseurs ACTIVÉS sur le projet Supabase (une seule lecture par lancement). */
-function fournisseursActifs(): Promise<Record<string, boolean>> {
+export function fournisseursActifs(): Promise<Record<string, boolean>> {
   reglages ??= fetch(`${env.supabaseUrl}/auth/v1/settings`, { headers: { apikey: env.supabasePublishableKey } })
     .then((r) => (r.ok ? r.json() : null))
-    .then((j: { external?: Record<string, boolean> } | null) => j?.external ?? {})
-    .catch(() => ({}));
+    .then((j: { external?: Record<string, boolean> } | null) => {
+      const ext = j?.external ?? null;
+      if (ext) {
+        try {
+          localStorage.setItem(MEMOIRE, JSON.stringify({ google: !!ext.google, apple: !!ext.apple }));
+        } catch {
+          /* stockage indisponible */
+        }
+      }
+      return ext ?? memoire() ?? {};
+    })
+    .catch(() => memoire() ?? {});
   return reglages;
 }
 
-/** Ceux des fournisseurs demandés qui sont activés, dans l'ordre demandé. */
-export function useFournisseurs(liste: Fournisseur[]): Fournisseur[] {
-  const [ok, setOk] = useState<Fournisseur[]>([]);
+/**
+ * Ceux des fournisseurs demandés qui sont activés, dans l'ordre demandé, et si la réponse est
+ * connue (`pret`). Mémoire de l'appareil = prêt tout de suite.
+ */
+export function useFournisseursEtat(liste: Fournisseur[]): { actifs: Fournisseur[]; pret: boolean } {
+  const [etat, setEtat] = useState(() => {
+    const m = memoire();
+    return { actifs: m ? liste.filter((f) => m[f]) : [], pret: m !== null };
+  });
   useEffect(() => {
     let vivant = true;
-    void fournisseursActifs().then((ext) => vivant && setOk(liste.filter((f) => ext[f])));
+    void fournisseursActifs().then((ext) => vivant && setEtat({ actifs: liste.filter((f) => ext[f]), pret: true }));
     return () => {
       vivant = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return ok;
+  return etat;
+}
+
+/** Ceux des fournisseurs demandés qui sont activés (sans l'état de chargement). */
+export function useFournisseurs(liste: Fournisseur[]): Fournisseur[] {
+  return useFournisseursEtat(liste).actifs;
 }
 
 export async function connexionOAuth(fournisseur: Fournisseur, role: 'client' | 'pro', next: string): Promise<void> {

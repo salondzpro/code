@@ -1037,3 +1037,11 @@ html:root .plan-rail .plan-for,
 html:root .plan-rail .plan-year {
   margin: 0;
 }
+
+/* Portail : squelette à la place exacte d'un bouton de connexion pendant la vérification (25 nov. 2026). */
+html:root .pl-btn.pl-btn-sk {
+  display: block;
+  min-height: 56px;
+  border: none;
+  background-color: var(--color-line-soft);
+}

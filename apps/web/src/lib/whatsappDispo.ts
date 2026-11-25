@@ -9,10 +9,31 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api';
 
+const MEMOIRE = 'salondz:wa-dispo';
+function memoire(): { available: boolean } | undefined {
+  try {
+    const v = localStorage.getItem(MEMOIRE);
+    return v === null ? undefined : { available: v === '1' };
+  } catch {
+    return undefined;
+  }
+}
+
+/** Dernière réponse gardée sur l'appareil : le bouton est à sa place dès l'affichage (25 nov. 2026). */
 export function useWhatsAppDispo() {
   return useQuery({
     queryKey: ['auth', 'whatsapp-dispo'],
-    queryFn: () => api.auth.phoneAvailable(),
+    queryFn: async () => {
+      const r = await api.auth.phoneAvailable();
+      try {
+        localStorage.setItem(MEMOIRE, r.available ? '1' : '0');
+      } catch {
+        /* stockage indisponible */
+      }
+      return r;
+    },
+    initialData: memoire,
+    initialDataUpdatedAt: 0,
     staleTime: 5 * 60_000,
     retry: 1,
   });
