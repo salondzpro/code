@@ -82,6 +82,8 @@ export async function buildApp(): Promise<App> {
           ua: String(req.headers['user-agent'] ?? '').slice(0, 140),
           appli: req.headers['x-salondz-app'] ?? null,
           jeton: Boolean(req.headers.authorization),
+          // Étape et détails de la trace (jamais de jeton ni d’adresse : voir lib/traceConnexion.ts).
+          trace: req.url.startsWith("/v1/_trace/") ? decodeURIComponent(req.url.split("?")[1] ?? "").slice(0, 400) : undefined,
           preflight: req.method === 'OPTIONS' ? req.headers['access-control-request-headers'] ?? '' : undefined,
         },
       },
