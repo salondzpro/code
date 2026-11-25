@@ -14,8 +14,8 @@
 
 @theme {
   /* ---------------------------------------------------------------- Fonds et surfaces */
-  --color-canvas: #faf9f5; /* autour de la colonne sur grand écran */
-  --color-bg: #faf9f5; /* fond de toutes les pages */
+  --color-canvas: #ffffff; /* autour de la colonne sur grand écran */
+  --color-bg: #ffffff; /* fond général : blanc partout (25 nov. 2026, demande du propriétaire) */ /* fond de toutes les pages */
   --color-surface: #ffffff; /* cartes, listes, fenêtres, champs */
   --color-fill: #f0eee6; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
   --color-fill-strong: #f0eee6; /* bouton secondaire, sélecteur segmenté */
