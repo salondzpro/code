@@ -629,16 +629,25 @@ html:root .rp-i.no {
   border-color: var(--color-danger-line) !important;
   color: var(--color-danger) !important;
 }
+/* BARRE DU BAS FLOTTANTE (25 nov. 2026, demande du propriétaire) : détachée des bords, en pilule
+   de verre crème, posée au-dessus de la barre gestuelle ; le rond Agenda en noir brillant dépasse. */
 @media (max-width: 1023.98px) {
   html:root.pro-theme .nvb {
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: calc(10px + var(--safe-bottom, 0px)) !important;
     transform: none !important;
-    width: 100% !important;
+    width: auto !important;
     max-width: none !important;
+    height: 66px !important;
     margin: 0 !important;
-    border-radius: 0 !important;
+    padding: 0 6px !important;
+    border-radius: 33px !important;
+    border: 1px solid var(--color-line) !important;
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: 0 10px 30px -12px rgb(40 30 10 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.7) !important;
   }
 }
 
