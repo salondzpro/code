@@ -1009,3 +1009,9 @@ html:root .plan-bf {
     transition: none;
   }
 }
+
+/* Fonds doux passés du beige au BLANC (25 nov. 2026, demande du propriétaire) : les éléments qui ne
+   tenaient que par leur fond beige gardent leur forme par le trait fin de la charte. */
+html:root :is(.h11-b.soft, .btn.g, .btn.soft, .seg, .cl-tag, .h13-tag, .h13-time, .av, .cp-count, .plan-card.on) {
+  border: 1px solid var(--color-line);
+}

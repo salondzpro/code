@@ -17,8 +17,8 @@
   --color-canvas: #ffffff; /* autour de la colonne sur grand écran */
   --color-bg: #ffffff; /* fond général : blanc partout (25 nov. 2026, demande du propriétaire) */ /* fond de toutes les pages */
   --color-surface: #ffffff; /* cartes, listes, fenêtres, champs */
-  --color-fill: #f0eee6; /* fond doux : icône dans un rond, bouton secondaire, champ inactif */
-  --color-fill-strong: #f0eee6; /* bouton secondaire, sélecteur segmenté */
+  --color-fill: #ffffff; /* blanc depuis le 25 nov. 2026 (demande du propriétaire, ex-beige #f0eee6) — fond doux : icône dans un rond, bouton secondaire, champ inactif */
+  --color-fill-strong: #ffffff; /* bouton secondaire, sélecteur segmenté */
   --color-line: #e8e6dc; /* bordures */
   --color-line-strong: #ddd9cc; /* contour des champs, des ronds blancs, lignes des heures */
   --color-line-soft: #efede6; /* séparateurs de liste */
@@ -36,8 +36,8 @@
   --color-accent: #1d1d20;
   --color-accent-strong: #1d1d20;
   --color-accent-deep: #1d1d20;
-  --color-accent-soft: #f0eee6;
-  --color-accent-tint: #f0eee6;
+  --color-accent-soft: #ffffff;
+  --color-accent-tint: #ffffff;
   --color-accent-line: #ddd9cc;
   --color-on-accent: #ffffff;
   --color-primary: #1d1d20;
