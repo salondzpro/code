@@ -91,12 +91,8 @@ export function PlanCards({
   };
   return (
     <div className="plan-wrap">
-      {promo && (
-        <p className="plan-bf">
-          <b>{t('Black Friday −40 % à vie')}</b>
-          <span>{jours === 0 ? t('Dernier jour') : t('Encore {n} jours', { n: jours + 1 })}</span>
-        </p>
-      )}
+      {/* Bandeau « Black Friday −40 % à vie · Encore N jours » retiré (25 nov. 2026, demande du
+          propriétaire) : les prix gardent leur −40 % et le prix normal barré. */}
       <div ref={piste} className={rail ? 'plan-rail' : 'plan-grid'} onScroll={rail ? suivre : undefined}>
         {PLANS.map((p) => {
           const actuel = current === p.id;
