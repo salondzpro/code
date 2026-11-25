@@ -919,3 +919,9 @@ html:root .bg-ink {
   background: var(--color-cancel-bg);
   color: var(--color-cancel-fg);
 }
+
+/* Fond général de l'espace pro : blanc (jeton --color-bg-pro, tokens.css). Rien d'autre ne change. */
+html:root.espace-pro {
+  --color-bg: var(--color-bg-pro);
+  --color-canvas: var(--color-bg-pro);
+}

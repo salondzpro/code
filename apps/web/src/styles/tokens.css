@@ -111,6 +111,9 @@
      var(--color-ink) ici pour revenir au noir mat partout d'un coup. */
   --surface-ink: var(--gloss);
   --gloss-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.4), 0 4px 12px rgb(20 20 22 / 0.18);
+  /* Fond général de l'ESPACE PRO (25 nov. 2026, demande du propriétaire) : blanc ; les clients
+     gardent le crème de --color-bg. Appliqué par `html.espace-pro` dans claude.css. */
+  --color-bg-pro: #ffffff;
   /* Titres, noms, heures : la police à empattements (Lora) ; le reste : Poppins. */
   --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
   color-scheme: light;
