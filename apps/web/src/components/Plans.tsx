@@ -5,6 +5,7 @@
  * WhatsApp (`SUPPORT_WHATSAPP`) — le super admin pose ensuite l'offre dans `/admin/abonnements`.
  * Aussi : le tag d'offre du compte (`PlanTag`, « Free » pour Gratuit) et le bouton d'aide WhatsApp.
  */
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Check, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -47,9 +48,47 @@ export function SupportWhatsApp({ text, label }: { text?: string; label?: string
  * Les trois offres. `current` = l'offre du salon (espace pro) ; sans elle (site), « Gratuit »
  * mène à l'inscription. `salonName` complète le message WhatsApp.
  */
-export function PlanCards({ current, salonName, signupTo = '/pro/acces' }: { current?: PlanId; salonName?: string; signupTo?: string }) {
+export function PlanCards({
+  current,
+  salonName,
+  signupTo = '/pro/acces',
+  rail = false,
+}: {
+  current?: PlanId;
+  salonName?: string;
+  signupTo?: string;
+  /**
+   * DÉFILANT GAUCHE ⇄ DROITE (25 nov. 2026, demande du propriétaire, espace pro) : une carte presque
+   * pleine largeur, la suivante qui dépasse, arrêt net sur chaque carte, points cliquables. S'ouvre
+   * sur l'offre UTILE : Pro pour un compte Gratuit, sinon l'offre actuelle.
+   */
+  rail?: boolean;
+}) {
   const jours = joursRestants();
   const promo = jours !== null;
+  const piste = useRef<HTMLDivElement | null>(null);
+  const depart = Math.max(0, PLANS.findIndex((p) => p.id === (!current || current === 'free' ? 'pro' : current)));
+  const [vue, setVue] = useState(depart);
+  const aller = (i: number, behavior: ScrollBehavior = 'smooth') => {
+    const el = piste.current;
+    const carte = el?.children[i] as HTMLElement | undefined;
+    if (el && carte) el.scrollTo({ left: carte.offsetLeft - el.offsetLeft - (el.clientWidth - carte.clientWidth) / 2, behavior });
+  };
+  useEffect(() => {
+    if (rail) aller(depart, 'auto');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rail, depart]);
+  const suivre = () => {
+    const el = piste.current;
+    if (!el) return;
+    const milieu = el.scrollLeft + el.clientWidth / 2;
+    let i = 0;
+    [...el.children].forEach((c, k) => {
+      const e = c as HTMLElement;
+      if (Math.abs(e.offsetLeft - el.offsetLeft + e.clientWidth / 2 - milieu) < Math.abs((el.children[i] as HTMLElement).offsetLeft - el.offsetLeft + (el.children[i] as HTMLElement).clientWidth / 2 - milieu)) i = k;
+    });
+    setVue(i);
+  };
   return (
     <div className="plan-wrap">
       {promo && (
@@ -58,7 +97,7 @@ export function PlanCards({ current, salonName, signupTo = '/pro/acces' }: { cur
           <span>{jours === 0 ? t('Dernier jour') : t('Encore {n} jours', { n: jours + 1 })}</span>
         </p>
       )}
-      <div className="plan-grid">
+      <div ref={piste} className={rail ? 'plan-rail' : 'plan-grid'} onScroll={rail ? suivre : undefined}>
         {PLANS.map((p) => {
           const actuel = current === p.id;
           const prix = promo ? p.promo : p.price;
@@ -123,6 +162,13 @@ export function PlanCards({ current, salonName, signupTo = '/pro/acces' }: { cur
           );
         })}
       </div>
+      {rail && (
+        <div className="plan-dots" role="tablist" aria-label={t('Offres')}>
+          {PLANS.map((p, i) => (
+            <button key={p.id} type="button" role="tab" aria-selected={i === vue} aria-label={t(p.name)} className={i === vue ? 'on' : ''} onClick={() => aller(i)} />
+          ))}
+        </div>
+      )}
       <p className="plan-note">{t('Paiement par BaridiMob ou CCP. Les clientes ne paient jamais.')}</p>
     </div>
   );

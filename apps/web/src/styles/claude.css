@@ -925,3 +925,87 @@ html:root.espace-pro {
   --color-bg: var(--color-bg-pro);
   --color-canvas: var(--color-bg-pro);
 }
+
+/* ------------------------------------------------------------------ Abonnement : offres défilantes (25 nov. 2026) */
+.plan-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  margin-inline: calc(-1 * var(--gutter, 16px));
+  padding: 4px var(--gutter, 16px) 8px;
+  scroll-padding-inline: var(--gutter, 16px);
+}
+.plan-rail::-webkit-scrollbar {
+  display: none;
+}
+.plan-rail > .plan-card {
+  flex: 0 0 84%;
+  max-width: 360px;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+html:root .plan-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: none;
+  padding: 20px;
+}
+html:root .plan-card.top {
+  border: 1.5px solid var(--color-ink);
+}
+html:root .plan-card.on {
+  background: var(--color-fill);
+}
+html:root .plan-hd h3,
+html:root .plan-price b {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+html:root .plan-pop {
+  background: var(--surface-ink);
+  color: #fff;
+  box-shadow: var(--gloss-shadow);
+}
+html:root .plan-bf {
+  background: var(--surface-ink);
+  box-shadow: var(--gloss-shadow);
+  border-radius: var(--radius-card-sm);
+}
+.plan-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.plan-dots button {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+.plan-dots button.on {
+  width: 22px;
+  background: var(--color-ink);
+}
+.plan-now-l {
+  display: block;
+  font-size: 13px;
+  color: var(--color-subtle);
+}
+.plan-now-n {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-dots button {
+    transition: none;
+  }
+}
