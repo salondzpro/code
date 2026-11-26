@@ -36,7 +36,7 @@ export function ProServices() {
           <span className="block truncate text-[1rem] text-muted">
             {groups.length
               ? groups.map((g) => g.name).join(' · ')
-              : 'Coupe, barbe, coloration, soins…'}
+              : t('Coupe, barbe, coloration, soins…')}
           </span>
         </span>
         <I icon={ChevronRight} size={18} className="text-disabled" />

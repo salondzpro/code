@@ -145,12 +145,12 @@ export function TeamMember() {
           <h1 className="h1 truncate !text-[1.429rem]">{member.displayName}</h1>
           <span className="p block">
             {avatarBusy
-              ? 'Envoi de la photo…'
+              ? t('Envoi de la photo…')
               : isOwner
-                ? 'Propriétaire'
+                ? t('Propriétaire')
                 : member.isActive
-                  ? 'Membre actif'
-                  : 'Inactif — masqué à la réservation'}
+                  ? t('Membre actif')
+                  : t('Inactif — masqué à la réservation')}
           </span>
           {member.phone && (
             <a
@@ -397,7 +397,7 @@ export function TeamMemberServices() {
       )}
       <BottomSheet grab={false}>
         <Button icon={ICONE.enregistrer} onClick={() => void save()} disabled={update.isPending || invalid}>
-          {update.isPending ? 'Enregistrement…' : 'Enregistrer'}
+          {update.isPending ? t('Enregistrement…') : t('Enregistrer')}
         </Button>
       </BottomSheet>
     </Screen>

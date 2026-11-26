@@ -88,7 +88,7 @@ export function Step8Works({ settings }: { settings?: boolean }) {
             aria-label={t("Ajouter des réalisations")}
           >
             <I icon={Plus} size={26} />
-            <span className="text-[1rem]">{busy ? 'Envoi…' : 'Ajouter'}</span>
+            <span className="text-[1rem]">{busy ? t('Envoi…') : t('Ajouter')}</span>
           </button>
         )}
       </div>

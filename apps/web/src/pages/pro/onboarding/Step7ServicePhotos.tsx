@@ -87,7 +87,7 @@ export function Step7ServicePhotos() {
         )}
         {photo && (
           <span className="absolute bottom-3 end-3 flex items-center gap-1.5 rounded-full bg-surface/95 px-3 py-1.5 text-[0.857rem] font-semibold shadow-sm">
-            <I icon={Camera} size={16} /> {busy ? 'Envoi…' : 'Changer'}
+            <I icon={Camera} size={16} /> {busy ? t('Envoi…') : t('Changer')}
           </span>
         )}
       </button>

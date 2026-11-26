@@ -6,6 +6,7 @@
  *   3. Textes à lire pour les vidéos UGC (`marketingScripts.ts`) et conseils de tournage ;
  *   4. Envoi des vidéos du propriétaire (seau privé `marketing`, 50 Mo par fichier) pour le montage.
  */
+import { t } from '@/i18n';
 import { useRef, useState } from 'react';
 import { Copy, Film, Upload } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -119,7 +120,7 @@ export function AdminMarketing() {
                   {r[0]!.toUpperCase() + r.slice(1)}
                   <small dir="ltr" className="block truncate">{lien}</small>
                 </span>
-                <span className="mk-copie">{copie === lien ? 'Copié' : <I icon={Copy} size={16} />}</span>
+                <span className="mk-copie">{copie === lien ? t('Copié') : <I icon={Copy} size={16} />}</span>
               </button>
             );
           })}
@@ -145,7 +146,7 @@ export function AdminMarketing() {
                 <ol>
                   {s.plans.map((p, i) => (
                     <li key={i} className={`mk-plan p${p.plan}`}>
-                      <span className="mk-plan-l">{p.plan === 'A' ? 'Toi' : p.plan === 'B' ? 'Écran' : 'Fin'}</span>
+                      <span className="mk-plan-l">{p.plan === 'A' ? t('Toi') : p.plan === 'B' ? t('Écran') : t('Fin')}</span>
                       <span className="min-w-0">
                         {p.dire && <b dir="auto">« {p.dire} »</b>}
                         {p.montrer && <span className="mk-montrer">{p.montrer}</span>}
@@ -156,10 +157,10 @@ export function AdminMarketing() {
                 </ol>
                 <div className="mk-actions">
                   <button type="button" className="btn g sm" onClick={() => copier(texte, setCopie, s.id)}>
-                    <I icon={Copy} size={16} /> {copie === s.id ? 'Copié' : 'Copier le texte à lire'}
+                    <I icon={Copy} size={16} /> {copie === s.id ? t('Copié') : t('Copier le texte à lire')}
                   </button>
                   <button type="button" className="btn g sm" onClick={() => copier(`${s.legende}\n${s.lien}`, setCopie, `${s.id}-l`)}>
-                    <I icon={Copy} size={16} /> {copie === `${s.id}-l` ? 'Copié' : 'Copier la légende'}
+                    <I icon={Copy} size={16} /> {copie === `${s.id}-l` ? t('Copié') : t('Copier la légende')}
                   </button>
                 </div>
               </article>
@@ -194,7 +195,7 @@ export function AdminMarketing() {
             }}
           />
           <button type="button" className="btn" disabled={envoyer.isPending} onClick={() => fichier.current?.click()}>
-            <I icon={Upload} size={18} /> {envoyer.isPending ? 'Envoi…' : 'Envoyer des vidéos'}
+            <I icon={Upload} size={18} /> {envoyer.isPending ? t('Envoi…') : t('Envoyer des vidéos')}
           </button>
           {envoi && <p className="mk-note">{envoi}</p>}
           {erreur && <p className="text-[0.929rem] text-danger">{erreur}</p>}

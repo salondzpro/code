@@ -1037,6 +1037,9 @@ export function bioSoundCues(d: BioVideoData): BioSoundCues {
 const VOICE_AT = [150, 2650, 5900, 8500, 11000, 14500, STORES_AT + 100];
 export function bioVoiceLines(d: BioVideoData): VoiceLine[] {
   const lang = getLocale();
+  // Seule la voix FRANÇAISE est enregistrée (`public/video/voix/fr-*`) : ailleurs, pas de voix plutôt
+  // que sept requêtes en 404 à chaque fabrication de la vidéo (audit du 26 nov. 2026).
+  if (lang !== 'fr') return [];
   const who = d.men ? 'h' : 'f';
   return VOICE_AT.map((at, i) => ({ at, file: `/video/voix/${lang}-${who}-${i + 1}.mp3` }));
 }

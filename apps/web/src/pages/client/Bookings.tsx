@@ -104,7 +104,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
           </span>
           {today && active && (
             <span className="block text-[1rem] font-medium text-ok-fg">
-              {started ? 'En cours' : untilLabelFR(b.startsAt, now)}
+              {started ? t('En cours') : untilLabelFR(b.startsAt, now)}
             </span>
           )}
         </span>

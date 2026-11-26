@@ -339,7 +339,7 @@ export function AdminCampaigns() {
                 <span className="cp-ico">S</span>
                 <div className="min-w-0 flex-1">
                   <div className="cp-top">
-                    <b>{aud.role === 'pro' ? 'Salon DZ Pro' : 'Salon DZ'}</b>
+                    <b>{aud.role === 'pro' ? t('Salon DZ Pro') : t('Salon DZ')}</b>
                     <span>{t('maintenant')}</span>
                   </div>
                   <p className="cp-tt">{titre || t('Titre de la notification')}</p>

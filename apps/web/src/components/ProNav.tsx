@@ -131,7 +131,7 @@ export function ProNav({
             <span className="block truncate text-[0.857rem] text-muted">{short}</span>
           </span>
           <Badge tone={salon.isPublished ? 'ok' : 'pd'}>
-            {salon.isPublished ? 'En ligne' : 'Non publiée'}
+            {salon.isPublished ? t('En ligne') : t('Non publiée')}
           </Badge>
         </Link>
       )}

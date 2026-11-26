@@ -249,7 +249,7 @@ export function Localisation() {
             </span>
             <span className="min-w-0 flex-1 text-start">
               <span className="block text-[1rem] font-semibold">{t("Utiliser ma position actuelle")}</span>
-              <span className="p block">{geo === 'asking' ? 'Recherche de votre position…' : pos ? `${posLabel?.label ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : 'Autorisez la localisation'}</span>
+              <span className="p block">{geo === 'asking' ? t('Recherche de votre position…') : pos ? `${posLabel?.label ?? 'Position trouvée'}${pos.accuracy ? ` · précision ${pos.accuracy} m` : ''}` : t('Autorisez la localisation')}</span>
             </span>
             {choice.kind === 'gps' && pos && <I icon={Check} size={22} />}
           </Card>
@@ -277,10 +277,10 @@ export function Localisation() {
             </>
           )}
 
-          {farAway && <p className="p">{t("Vous êtes hors d'Algérie : les professionnels les plus proches sont à")}{' '}{formatKm(nearest?.distanceKm) ?? 'plus de 100 km'}{t(". Choisissez un quartier ci-dessous pour préparer une réservation.")}</p>}
-          <SectionLabel>{pos ? 'Quartiers les plus proches' : `Quartiers · ${wilayaName(prefs.wilaya)}`}</SectionLabel>
+          {farAway && <p className="p">{t("Vous êtes hors d'Algérie : les professionnels les plus proches sont à")}{' '}{formatKm(nearest?.distanceKm) ?? t('plus de 100 km')}{t(". Choisissez un quartier ci-dessous pour préparer une réservation.")}</p>}
+          <SectionLabel>{pos ? t('Quartiers les plus proches') : `Quartiers · ${wilayaName(prefs.wilaya)}`}</SectionLabel>
           <Card className="!gap-0 !py-1">
-            {places.length === 0 && <p className="p py-3">{cities.isPending ? 'Chargement…' : 'Aucun quartier ici pour l’instant. Cherchez une autre ville ci-dessus.'}</p>}
+            {places.length === 0 && <p className="p py-3">{cities.isPending ? t('Chargement…') : t('Aucun quartier ici pour l’instant. Cherchez une autre ville ci-dessus.')}</p>}
             {places.map((c) => {
               const on = choice.kind === 'city' && choice.city === c.city && choice.wilaya === c.wilayaCode;
               const label = c.parentCity ? `${c.city}, ${c.parentCity}` : c.city;
@@ -311,7 +311,7 @@ export function Localisation() {
               {preview.isFetching ? '…' : `${count} résultat${count > 1 ? 's' : ''}`}
             </div>
             <div className="p">
-              {label} · {withRadius ? `${radius} km` : choice.kind === 'wilaya' ? 'toute la wilaya' : 'quartier'}
+              {label} · {withRadius ? `${radius} km` : choice.kind === 'wilaya' ? t('toute la wilaya') : 'quartier'}
             </div>
           </div>
           <Button icon={ICONE.valider} auto className="!rounded-full !px-7 !py-3.5" onClick={apply}>

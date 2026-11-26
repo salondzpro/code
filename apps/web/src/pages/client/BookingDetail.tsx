@@ -314,7 +314,7 @@ export function BookingDetail() {
                 setDone(true);
               }}
             >
-              {cancel.isPending ? 'Annulation…' : 'Annuler le rendez-vous'}
+              {cancel.isPending ? t('Annulation…') : t('Annuler le rendez-vous')}
             </Button>
             <Button icon={ICONE.garder} variant="g" onClick={() => setCancelling(false)}>
               {t("Garder le rendez-vous")}

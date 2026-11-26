@@ -31,7 +31,7 @@ export function usePlan(enabled = true) {
 /** Tag de l'offre du compte : « Free » pour Gratuit, sinon le nom de l'offre. */
 export function PlanTag({ plan, className = '' }: { plan: PlanId | undefined; className?: string }) {
   if (!plan) return null;
-  return <span className={`plan-tag ${plan} ${className}`}>{plan === 'free' ? 'Free' : t(planById(plan).name)}</span>;
+  return <span className={`plan-tag ${plan} ${className}`}>{plan === 'free' ? t('Free') : t(planById(plan).name)}</span>;
 }
 
 /** Bouton « Une question ? WhatsApp » — le contact direct du support pro. */

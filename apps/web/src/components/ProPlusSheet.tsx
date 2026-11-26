@@ -56,7 +56,7 @@ export function ProPlusSheet({ onClose }: { onClose: () => void }) {
           {salon && <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={44} />}
           <span className="min-w-0 flex-1">
             <span className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-display text-[1.214rem] font-semibold">{salon?.name ?? 'Salon DZ'}</span>
+              <span className="truncate font-display text-[1.214rem] font-semibold">{salon?.name ?? t('Salon DZ')}</span>
               <Link to="/pro/abonnement" onClick={onClose} className="flex-none">
                 <PlanTag plan={plan} />
               </Link>

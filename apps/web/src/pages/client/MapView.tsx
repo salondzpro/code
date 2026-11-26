@@ -524,7 +524,6 @@ export function MapView() {
 
   // Compté sur les bulles réellement posées, filtre « ouvert » compris.
   const total = prefs.openNow ? items.length : (query.data?.total ?? 0);
-  const noun = market === 'men' ? 'barbier' : 'salon';
 
   return (
     <div className="map-page relative h-app">
@@ -585,7 +584,9 @@ export function MapView() {
                 ? t('Zoomez pour voir les professionnels')
                 : query.isFetching
                   ? t('Recherche…')
-                  : `${total} ${noun}${total > 1 ? 's' : ''}`}
+                  : market === 'men'
+                    ? t(total > 1 ? '{n} barbiers' : '{n} barbier', { n: total })
+                    : t(total > 1 ? '{n} salons' : '{n} salon', { n: total })}
             </span>
           )}
         </div>
@@ -621,9 +622,9 @@ export function MapView() {
         {items.length === 0 ? (
           <p className="p py-2 text-center">
             {tooWide
-              ? 'Zoomez sur un quartier pour voir les professionnels.'
+              ? t('Zoomez sur un quartier pour voir les professionnels.')
               : query.isPending
-                ? 'Chargement…'
+                ? t('Chargement…')
                 : t('Aucun salon dans cette zone.')}
           </p>
         ) : (

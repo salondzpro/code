@@ -91,7 +91,7 @@ export function BookingReschedule() {
             navigate(`/rendez-vous/${b.id}`, { replace: true });
           }}
         >
-          {reschedule.isPending ? 'Envoi…' : 'Demander le report'}
+          {reschedule.isPending ? t('Envoi…') : t('Demander le report')}
         </Button>
       </BottomSheet>
     </Screen>

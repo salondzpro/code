@@ -76,7 +76,7 @@ export function TeamNew() {
       )}
       <BottomSheet grab={false}>
         <Button icon={ICONE.ajouterMembre} onClick={() => void add()} disabled={create.isPending || invalid}>
-          {create.isPending ? 'Ajout…' : 'Ajouter le membre'}
+          {create.isPending ? t('Ajout…') : t('Ajouter le membre')}
         </Button>
       </BottomSheet>
     </Screen>

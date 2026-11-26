@@ -150,7 +150,7 @@ export function ShareSheet({
           <I icon={Lock} size={20} className="text-muted" />
           <span className="flex-1 truncate">{short}</span>
           <button type="button" className="font-semibold" onClick={() => copy(url)}>
-            {copied ? 'Copié' : 'Copier'}
+            {copied ? t('Copié') : t('Copier')}
           </button>
         </div>
         <div className="grid grid-cols-4 gap-3">

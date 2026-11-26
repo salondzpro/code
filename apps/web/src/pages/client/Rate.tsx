@@ -132,7 +132,7 @@ export function Rate() {
       <ErrorMessage error={review.error} />
       <BottomSheet>
         <Button icon={ICONE.envoyer} disabled={!rating || review.isPending} onClick={() => void send()}>
-          {review.isPending ? 'Envoi…' : 'Envoyer mon avis'}
+          {review.isPending ? t('Envoi…') : t('Envoyer mon avis')}
         </Button>
       </BottomSheet>
     </Screen>

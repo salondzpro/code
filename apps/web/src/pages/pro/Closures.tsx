@@ -193,7 +193,7 @@ export function Closures() {
                 <span className="mono block text-[1rem] text-muted">{describeBlock(b)}</span>
               </span>
               <Badge tone={allDay ? 'cn' : 'pd'} md dot={false}>
-                {allDay ? 'Fermé' : 'Modifié'}
+                {allDay ? t('Fermé') : t('Modifié')}
               </Badge>
             </button>
           );
@@ -305,7 +305,7 @@ export function Closures() {
 
       <BottomSheet>
         <Button icon={ICONE.fermer} onClick={() => void submit()} disabled={create.isPending}>
-          {create.isPending ? 'Ajout…' : "Ajouter l'exception"}
+          {create.isPending ? t('Ajout…') : t("Ajouter l'exception")}
         </Button>
       </BottomSheet>
 

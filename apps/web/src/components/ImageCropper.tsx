@@ -182,7 +182,7 @@ export function ImageCropper({
             {t("Annuler")}
           </Button>
           <Button icon={ICONE.valider} onClick={() => void validate()} disabled={busy || !img}>
-            {busy ? 'Recadrage…' : 'Valider'}
+            {busy ? t('Recadrage…') : t('Valider')}
           </Button>
         </div>
       </BottomSheet>

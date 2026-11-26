@@ -46,7 +46,7 @@ import {
   ARRIVAL_ADVANCE_MINUTES,
   LATE_TOLERANCE_MINUTES,
   dayOfWeekFromKey,
-  toLocalDateKey,
+  toLocalDateKey,
   loyaltyReward,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
@@ -294,7 +294,7 @@ export function Salon() {
           {/* Plus de boutons « Partager » et « Itinéraire » (16 nov. 2026, demande du propriétaire) :
               partager est en haut, l'itinéraire est l'adresse elle-même. */}
           {s.phone && (
-            <a href={`tel:${s.phone}`} className="btn g sm">
+            <a href={`tel:${s.phone}`} className="btn g sm auto self-start">
               <I icon={Phone} size={18} /> {t('Appeler')}
             </a>
           )}
@@ -465,7 +465,7 @@ export function Salon() {
                 return (
                   <div key={d} className="li">
                     <span className={`text-[1rem] ${idx === 0 ? 'font-semibold' : ''}`}>
-                      {idx === 0 ? "Aujourd'hui" : idx === 1 ? 'Demain' : t(DAY_LABELS_FR[d])}
+                      {idx === 0 ? t("Aujourd'hui") : idx === 1 ? t('Demain') : t(DAY_LABELS_FR[d])}
                       {idx <= 1 && (
                         <span className="ms-1.5 text-[1rem] font-normal text-muted">
                           {t(DAY_LABELS_FR[d])}
@@ -477,7 +477,7 @@ export function Salon() {
                     >
                       {rows.length
                         ? rows.map((h) => `${h.opensAt} – ${h.closesAt}`).join(', ')
-                        : 'Fermé'}
+                        : t('Fermé')}
                     </span>
                   </div>
                 );
@@ -488,7 +488,7 @@ export function Salon() {
             {s.staff.length > 0 && (
               <>
                 <h2 className="h1 !text-[1.429rem]">
-                  {s.staff.length > 1 ? 'Collaborateurs' : 'Collaborateur'}
+                  {s.staff.length > 1 ? t('Collaborateurs') : t('Collaborateur')}
                 </h2>
                 <div className="crd !gap-0 !py-1">
                   {s.staff.map((m) => (

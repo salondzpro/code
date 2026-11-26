@@ -163,7 +163,7 @@ export function ProCategories() {
                     disabled={deleteCategory.isPending}
                   >
                     <I icon={Trash2} size={18} />{' '}
-                    {deleteCategory.isPending ? 'Suppression…' : 'Confirmer'}
+                    {deleteCategory.isPending ? t('Suppression…') : t('Confirmer')}
                   </Button>
                 </div>
               </>

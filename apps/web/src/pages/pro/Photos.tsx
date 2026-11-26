@@ -81,7 +81,7 @@ export function ProPhotos() {
         <Avatar src={salon.logoUrl ?? salon.coverUrl} name={salon.name} size={80} />
         <span className="min-w-0 flex-1">
           <span className="block text-[1rem] font-semibold">
-            {salon.logoUrl ? 'Votre logo' : 'Aucun logo : la couverture est utilisée'}
+            {salon.logoUrl ? t('Votre logo') : t('Aucun logo : la couverture est utilisée')}
           </span>
         </span>
         <div className="flex flex-col items-end gap-1.5">
@@ -92,7 +92,7 @@ export function ProPhotos() {
             onClick={() => logoInput.current?.click()}
             disabled={busy !== null}
           >
-            <I icon={Camera} size={16} /> {busy === 'logo' ? 'Envoi…' : 'Changer'}
+            <I icon={Camera} size={16} /> {busy === 'logo' ? t('Envoi…') : t('Changer')}
           </Button>
           {salon.logoUrl && (
             <button
@@ -166,7 +166,7 @@ export function ProPhotos() {
           >
             <I icon={Plus} size={22} />
             <span className="text-[0.857rem] font-semibold">
-              {busy === 'photos' ? 'Envoi…' : 'Ajouter'}
+              {busy === 'photos' ? t('Envoi…') : t('Ajouter')}
             </span>
           </button>
         )}

@@ -353,7 +353,7 @@ export function ClientDetail() {
           ))}
           {shown.length === 0 && (
             <p className="p py-3">
-              {filter === 'all' ? "Aucun rendez-vous pour l'instant." : 'Rien dans cette catégorie.'}
+              {filter === 'all' ? t("Aucun rendez-vous pour l'instant.") : t('Rien dans cette catégorie.')}
             </p>
           )}
         </div>
