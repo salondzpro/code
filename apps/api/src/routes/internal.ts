@@ -7,6 +7,7 @@ import { db } from '../lib/supabase';
 import { unauthorized, unwrap } from '../lib/errors';
 import { dispatchPendingPush } from '../lib/push';
 import { runDueCampaigns } from '../lib/campaigns';
+import { runDailyRecaps } from '../lib/dailyRecap';
 import { CLIENT_REMINDER_MINUTES, NOTIFICATION_MAX_AGE_DAYS, NOTIFICATION_READ_TTL_DAYS, PENDING_REMINDER_HOURS, PENDING_REQUEST_TTL_HOURS, PRO_REMINDER_LEAD_MINUTES } from '@salondz/constants';
 import { notifySlotFreed } from '../lib/waitlist';
 
@@ -199,6 +200,13 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       req.log.error({ err }, 'cron: campagnes');
       return 0;
     });
+
+    // 3 ter) Bilan du soir des professionnels, 2 h après leur fermeture (26 nov. 2026, `lib/dailyRecap.ts`).
+    const recaps = await runDailyRecaps(req.log).catch((err) => {
+      req.log.error({ err }, 'cron: bilan du soir');
+      return 0;
+    });
+    if (recaps) req.log.info({ recaps }, 'cron: bilans du soir créés');
 
     // 4) Push en attente (rattrape aussi les notifs créées hors API)
     const pushed = await dispatchPendingPush(req.log);

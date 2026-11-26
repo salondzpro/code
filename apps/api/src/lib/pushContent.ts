@@ -46,6 +46,8 @@ export function pushTitle(type: string, audience: Public, titre: string, data?: 
   if (data?.kind === 'news') return `📣 ${titre}`;
   // Campagnes de l'administration (`lib/campaigns.ts`) : le titre tel qu'écrit — l'auteur choisit son emoji.
   if (data?.kind === 'campaign') return titre;
+  // Bilan du soir des pros (`lib/dailyRecap.ts`) : son emoji est déjà dans le titre.
+  if (data?.kind === 'daily_recap') return titre;
   return `${emojiFor(type, audience)} ${titre}`;
 }
 
