@@ -89,7 +89,10 @@ export function WelcomeBack() {
   // Client déjà connu (25 nov. 2026, demande du propriétaire) : se connecter mène à l'ACCUEIL, pas à
   // l'onglet Profil qui avait envoyé à la connexion (`/acces?next=/profil`).
   const demande = params.get('next') ?? readAuthFlow()?.next ?? (profile?.role === 'pro' ? '/pro' : MARCHE);
-  const next = attendu === 'client' && demande.split(/[?#]/)[0] === '/profil' ? MARCHE : demande;
+  // Dans une APPLICATION, jamais une page de l'autre portail (26 nov. 2026 : l'application Pro
+  // recevait `/salons` et affichait « Page introuvable ») : son propre accueil à la place.
+  const autrePortail = APPLI != null && estCheminPro(demande) !== (APPLI === 'pro');
+  const next = autrePortail ? (APPLI === 'pro' ? '/pro' : MARCHE) : attendu === 'client' && demande.split(/[?#]/)[0] === '/profil' ? MARCHE : demande;
   const q = `?next=${encodeURIComponent(next)}`;
   // SÉPARATION STRICTE (16 nov. 2026) : un lien ne fait entrer que dans le portail de SON type —
   // celui de l'application, sinon celui de la destination. Sinon : session fermée, message de refus.

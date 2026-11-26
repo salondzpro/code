@@ -9,6 +9,8 @@
  * Les greffons sont importés À LA DEMANDE : un visiteur du site ne télécharge rien de tout cela.
  */
 import { Capacitor } from '@capacitor/core';
+import { portailDe } from './portail';
+import { APPLI } from './flavor';
 
 export const isNative = (): boolean => Capacitor.isNativePlatform();
 
@@ -125,7 +127,16 @@ async function wireDeepLinks(navigate: (path: string) => void): Promise<void> {
        * adresse `intent://` porte déjà son propre fragment, le nôtre ne pouvait pas y tenir.
        */
       const reprise = target.searchParams.get('d');
-      if (reprise && reprise.startsWith('/')) return navigate(reprise);
+      if (reprise && reprise.startsWith('/')) {
+        /**
+         * PAGE DE L'AUTRE PORTAIL (26 nov. 2026, vu sur iPhone) : une ANCIENNE application Pro répond
+         * encore au lien `salondz://` de l'application cliente — iOS peut donc lui remettre une page
+         * cliente (`/salons`, « Page introuvable ») avec la session d'un compte client. On ne la suit
+         * pas et on n'utilise pas cette session : l'application ouvre son propre accueil.
+         */
+        const autre = (APPLI === 'pro' && portailDe(reprise) === 'client') || (APPLI === 'client' && portailDe(reprise) === 'pro');
+        return navigate(autre ? (APPLI === 'pro' ? '/pro' : '/') : reprise);
+      }
       if (target.protocol === 'https:' || target.protocol === 'http:') navigate(`${target.pathname}${target.search}${target.hash}`);
     } catch {
       /* lien illisible : on reste où l'on est */
