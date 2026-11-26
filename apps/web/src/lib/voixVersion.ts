@@ -1,2 +1,2 @@
 /** Empreinte de l'enregistrement de la voix off : écrite par `scripts/import-voix.mjs`. Change → vidéos refaites. */
-export const VOIX_VERSION = 'aucune';
+export const VOIX_VERSION = 'a9d96cc0da17';

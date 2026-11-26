@@ -281,7 +281,7 @@ export async function renderBioSound(cues: BioSoundCues, durationMs: number, voi
   master.threshold.value = -14;
   master.ratio.value = 4;
   const outGain = ctx.createGain();
-  outGain.gain.value = 0.95;
+  outGain.gain.value = 0.85;
   master.connect(outGain);
   outGain.connect(ctx.destination);
 
@@ -301,7 +301,7 @@ export async function renderBioSound(cues: BioSoundCues, durationMs: number, voi
   // Voix : chaque réplique attend la fin de la précédente, jamais deux voix l'une sur l'autre.
   const clips = await Promise.all(voice.map((v) => fetchClip(ctx, v.file)));
   const voiceBus = ctx.createGain();
-  voiceBus.gain.value = 1.3;
+  voiceBus.gain.value = 1.05;
   voiceBus.connect(master);
   let free = 0;
   const spans: [number, number][] = [];

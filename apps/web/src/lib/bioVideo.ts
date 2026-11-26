@@ -100,13 +100,13 @@ export type BioVideoData = {
  * Le texte s'affiche en SOUS-TITRES mot à mot, comme sur TikTok : il doit rester celui qui est dit.
  */
 export const VOIX: { at: number; text: string }[] = [
-  { at: 200, text: 'Salam ! Réserver chez nous, rahi sahla bezzaf.' },
+  { at: 100, text: 'Salam ! Réservi, sahla bezzaf !' },
   { at: 3000, text: 'Clique sur le lien f la bio.' },
   { at: 5300, text: 'Khayer la prestation li t’hab.' },
   { at: 7800, text: 'Le jour w l’heure, kima yjik.' },
-  { at: 10500, text: 'Connecte-toi b Google, f une seconde.' },
-  { at: 12650, text: 'W hadi hiya, c’est réservé ! Sahit !' },
-  { at: 18700, text: 'Salon DZ, f l’App Store w Google Play. Yallah, réserve dorka !' },
+  { at: 10500, text: 'Connecti toi b Google, f une seconde.' },
+  { at: 12650, text: 'Hadi hiya ! C’est réservé !' },
+  { at: 18700, text: 'Salon DZ ! Yallah, réservi dorka !' },
 ];
 export type VoixLigne = { start: number; dur: number; text: string; file: string | null };
 

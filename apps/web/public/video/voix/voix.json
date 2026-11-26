@@ -1,0 +1,32 @@
+{
+  "lignes": [
+    {
+      "file": "voix-1.wav",
+      "dur": 3320
+    },
+    {
+      "file": "voix-2.wav",
+      "dur": 2296
+    },
+    {
+      "file": "voix-3.wav",
+      "dur": 2455
+    },
+    {
+      "file": "voix-4.wav",
+      "dur": 2524
+    },
+    {
+      "file": "voix-5.wav",
+      "dur": 2682
+    },
+    {
+      "file": "voix-6.wav",
+      "dur": 2432
+    },
+    {
+      "file": "voix-7.wav",
+      "dur": 3488
+    }
+  ]
+}
