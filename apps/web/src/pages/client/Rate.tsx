@@ -1,6 +1,6 @@
 /** C-F 20 — Noter la prestation : étoiles, « Ce qui vous a plu », commentaire, publication sous prénom + initiale. */
 import { ICONE } from '@/lib/actionIcons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Star } from 'lucide-react';
 import { useBooking, useCreateReview, useMe } from '@salondz/api-client';
@@ -26,6 +26,41 @@ export function Rate() {
   const [rating, setRating] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [comment, setComment] = useState('');
+  // AVIS PRIS EN COMPTE (26 nov. 2026, demande du propriétaire) : coche animée + étoiles, puis retour
+  // tout seul aux rendez-vous passés. Affiché AVANT le garde « déjà noté », que l'envoi rend vrai.
+  const [envoye, setEnvoye] = useState(false);
+  useEffect(() => {
+    if (!envoye) return;
+    try {
+      navigator.vibrate?.([18, 60, 18]);
+    } catch {
+      /* pas de vibreur */
+    }
+    const id = window.setTimeout(() => navigate('/rendez-vous?scope=past', { replace: true }), 2400);
+    return () => window.clearTimeout(id);
+  }, [envoye, navigate]);
+
+  if (envoye)
+    return (
+      <Screen gap={16}>
+        <div className="cf ok rv-merci" role="status">
+          <span className="cf-badge" aria-hidden>
+            <i className="cf-wave" />
+            <i className="cf-wave w2" />
+            <svg viewBox="0 0 24 24" width="30" height="30">
+              <path className="cf-draw" d="M5 12.5l4.2 4.2L19 7" pathLength={24} fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <h1 className="cf-t">{t('Merci pour votre avis')}</h1>
+          <span className="rv-etoiles" aria-label={t('{n} sur 5', { n: rating })}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Star key={n} size={22} strokeWidth={1.6} className={n <= rating ? 'text-ink' : 'text-disabled'} fill={n <= rating ? 'currentColor' : 'none'} style={{ animationDelay: `${0.5 + n * 0.08}s` }} />
+            ))}
+          </span>
+        </div>
+      </Screen>
+    );
+
 
   if (booking.isPending) return <PageLoading />;
   if (booking.isError) return <ErrorMessage error={booking.error} retry={() => booking.refetch()} />;
@@ -39,7 +74,7 @@ export function Rate() {
     const text = [tags.length ? tags.join(' · ') : '', comment.trim()].filter(Boolean).join(' — ');
     try {
       await review.mutateAsync({ bookingId: b.id, rating, comment: text || undefined });
-      navigate('/rendez-vous?scope=past', { replace: true });
+      setEnvoye(true);
     } catch {
       /* affiché par `review.error` sous le formulaire */
     }

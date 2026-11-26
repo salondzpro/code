@@ -2302,6 +2302,7 @@ export const en: Record<string, string> = {
   "Notifications coupées": "Notifications off",
   "Activez les notifications": "Turn on notifications",
   "Nouvelles réservations, demandes à valider, rappels : ne manquez aucune cliente.": "New bookings, requests to confirm, reminders: never miss a client.",
+  "Merci pour votre avis": "Thank you for your review",
   "Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.": "Salon confirmation, reminders 1 h and 30 min before: never miss an appointment.",
   "Ouvert jusqu’à {time}": "Open until {time}",
   "Ouvre à {time}": "Opens at {time}",

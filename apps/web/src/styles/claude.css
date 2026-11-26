@@ -1096,3 +1096,76 @@ html:root .pl-btn.pl-btn-sk {
 /* Logo blanc posé sur une photo : « DZ » en blanc voilé, le gris s'y perdait (26 nov. 2026). */
 .sdz-logo.light i { color: rgba(255, 255, 255, 0.72); }
 .sdz-logo.light { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.18); }
+
+/* AMBIANCE « POUR FEMMES » (26 nov. 2026, `components/AmbianceFemmes.tsx`) : verre rose très léger
+   derrière la place de marché, 5 s puis plus rien. Fixe, sous le contenu, jamais cliquable. */
+html.amb-f-on body,
+html.amb-f-on .h-app.bg-bg { background-color: transparent; }
+.amb-f {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  animation: amb-f-vie 5s ease-in-out both;
+}
+.amb-f-h {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(48px);
+  will-change: transform;
+}
+.amb-f-h.h1 {
+  width: 70vmax; height: 70vmax; left: -28vmax; top: -30vmax;
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-women) 30%, transparent), transparent 66%);
+  animation: amb-f-d1 5s ease-in-out both;
+}
+.amb-f-h.h2 {
+  width: 60vmax; height: 60vmax; right: -30vmax; top: 18vh;
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-women) 22%, transparent), transparent 66%);
+  animation: amb-f-d2 5s ease-in-out both;
+}
+.amb-f-h.h3 {
+  width: 54vmax; height: 54vmax; left: 8vw; bottom: -34vmax;
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-women) 16%, white 8%), transparent 66%);
+  animation: amb-f-d3 5s ease-in-out both;
+}
+/* Le « verre » : un reflet blanc doux, en biais, qui traverse une fois. */
+.amb-f-reflet {
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.55) 48%, color-mix(in srgb, var(--color-women) 10%, transparent) 52%, transparent 62%);
+  animation: amb-f-reflet 3.2s cubic-bezier(0.45, 0, 0.25, 1) 0.6s both;
+}
+@keyframes amb-f-vie {
+  0% { opacity: 0; }
+  16% { opacity: 1; }
+  68% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes amb-f-d1 { from { transform: translate3d(0, 0, 0) scale(0.92); } to { transform: translate3d(8vw, 6vh, 0) scale(1.06); } }
+@keyframes amb-f-d2 { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(-10vw, -4vh, 0) scale(1.1); } }
+@keyframes amb-f-d3 { from { transform: translate3d(0, 0, 0) scale(0.95); } to { transform: translate3d(6vw, -8vh, 0) scale(1.04); } }
+@keyframes amb-f-reflet {
+  0% { transform: translateX(-45%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(45%); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .amb-f { display: none; }
+}
+
+/* AVIS PRIS EN COMPTE (26 nov. 2026, `pages/client/Rate.tsx`) : centré, étoiles qui arrivent une à une. */
+.rv-merci {
+  min-height: 62vh;
+  justify-content: center;
+}
+.rv-etoiles {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.rv-etoiles svg { animation: cf-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .rv-etoiles svg { animation: none; }
+}
