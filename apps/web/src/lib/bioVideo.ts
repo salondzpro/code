@@ -92,21 +92,22 @@ export type BioVideoData = {
 /* ------------------------------ La voix off ------------------------------ */
 
 /**
- * VOIX OFF EN DARIJA ET FRANÇAIS (26 nov. 2026, demande du propriétaire : « un homme avec l'accent
- * algérien, qui mélange l'arabe algérien et le français, comme le marketing d'Uber Eats »). Une VRAIE
+ * VOIX OFF FRANÇAISE, STYLE UGC (26 nov. 2026, demande du propriétaire) : une vraie cliente / un vrai
+ * client qui montre son téléphone et raconte, à la première personne, avec émotion — « Les filles… »
+ * pour un salon de femmes (voix de femme), « Les gars… » pour un salon d'hommes (voix d'homme). Une VRAIE
  * voix, enregistrée : 7 phrases, `node scripts/import-voix.mjs <7 fichiers>` les range dans
  * `public/video/voix/` (WAV) et écrit leurs durées dans `voix.json`. Sans enregistrement, la vidéo
  * garde ses sous-titres animés et sa musique, sans voix de synthèse.
  * Le texte s'affiche en SOUS-TITRES mot à mot, comme sur TikTok : il doit rester celui qui est dit.
  */
-export const VOIX: { at: number; text: string }[] = [
-  { at: 150, text: 'Réserver chez nous ? Trop simple !' },
-  { at: 3000, text: 'Touchez le lien dans la bio.' },
-  { at: 5300, text: 'Choisissez votre prestation.' },
-  { at: 7800, text: 'Le jour, l’heure… comme vous voulez !' },
-  { at: 10500, text: 'Connectez-vous avec Google, en une seconde.' },
-  { at: 12650, text: 'Et voilà, c’est réservé !' },
-  { at: 18700, text: 'Salon DZ. Réservez dès maintenant !' },
+export const VOIX: { at: number; f: string; h: string }[] = [
+  { at: 150, f: 'Les filles, je vous montre comment je réserve !', h: 'Les gars, regardez comment je réserve !' },
+  { at: 3000, f: 'Je clique sur le lien dans sa bio…', h: 'Je clique sur le lien dans sa bio…' },
+  { at: 5300, f: 'Je choisis ma prestation…', h: 'Je choisis ma prestation…' },
+  { at: 7800, f: 'Le jour, l’heure… franchement, trop facile !', h: 'Le jour, l’heure… franchement, ultra simple !' },
+  { at: 10500, f: 'Je me connecte avec Google, et hop !', h: 'Je me connecte avec Google, et hop !' },
+  { at: 12650, f: 'C’est réservé ! Trop contente !', h: 'C’est réservé ! Trop facile !' },
+  { at: 18700, f: 'Allez, foncez, le lien est dans la bio !', h: 'Allez, foncez, le lien est dans la bio !' },
 ];
 export type VoixLigne = { start: number; dur: number; text: string; file: string | null };
 
@@ -124,10 +125,11 @@ async function chargerVoix(men: boolean): Promise<VoixLigne[]> {
   let libre = 0;
   return VOIX.map((v, i) => {
     const p = pistes[i];
-    const dur = p?.dur ?? Math.max(1200, v.text.length * 70);
+    const text = men ? v.h : v.f;
+    const dur = p?.dur ?? Math.max(1200, text.length * 70);
     const start = Math.max(v.at, libre + 120);
     libre = start + dur;
-    return { start, dur, text: v.text, file: p ? `/video/voix/${p.file}` : null };
+    return { start, dur, text, file: p ? `/video/voix/${p.file}` : null };
   });
 }
 
@@ -1460,7 +1462,12 @@ const CAP_Y = 1150;
 function drawCaptions(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   const v = d.voix.find((x) => ms >= x.start - 80 && ms <= x.start + x.dur + 450);
   if (!v) return;
-  const words = v.text.split(' ');
+  // La ponctuation française (« bio ! ») reste collée à son mot : jamais un « ! » seul en début de ligne.
+  const words = v.text.split(' ').reduce<string[]>((acc, w) => {
+    if (acc.length && /^[!?:;…»]+$/.test(w)) acc[acc.length - 1] += ` ${w}`;
+    else acc.push(w);
+    return acc;
+  }, []);
   const poids = words.map((w) => w.length + 2);
   const total = poids.reduce((a, b) => a + b, 0);
   let acc = 0;

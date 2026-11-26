@@ -1,62 +1,62 @@
 {
-  "h": [
-    {
-      "file": "voix-h-1.wav",
-      "dur": 2103
-    },
-    {
-      "file": "voix-h-2.wav",
-      "dur": 1279
-    },
-    {
-      "file": "voix-h-3.wav",
-      "dur": 1570
-    },
-    {
-      "file": "voix-h-4.wav",
-      "dur": 2150
-    },
-    {
-      "file": "voix-h-5.wav",
-      "dur": 2468
-    },
-    {
-      "file": "voix-h-6.wav",
-      "dur": 1503
-    },
-    {
-      "file": "voix-h-7.wav",
-      "dur": 2489
-    }
-  ],
   "f": [
     {
       "file": "voix-f-1.wav",
-      "dur": 1915
+      "dur": 2250
     },
     {
       "file": "voix-f-2.wav",
-      "dur": 1126
+      "dur": 1503
     },
     {
       "file": "voix-f-3.wav",
-      "dur": 1494
+      "dur": 1471
     },
     {
       "file": "voix-f-4.wav",
-      "dur": 1934
+      "dur": 2772
     },
     {
       "file": "voix-f-5.wav",
-      "dur": 2171
+      "dur": 1908
     },
     {
       "file": "voix-f-6.wav",
-      "dur": 1475
+      "dur": 2063
     },
     {
       "file": "voix-f-7.wav",
-      "dur": 2345
+      "dur": 2162
+    }
+  ],
+  "h": [
+    {
+      "file": "voix-h-1.wav",
+      "dur": 2134
+    },
+    {
+      "file": "voix-h-2.wav",
+      "dur": 1490
+    },
+    {
+      "file": "voix-h-3.wav",
+      "dur": 1336
+    },
+    {
+      "file": "voix-h-4.wav",
+      "dur": 2646
+    },
+    {
+      "file": "voix-h-5.wav",
+      "dur": 1983
+    },
+    {
+      "file": "voix-h-6.wav",
+      "dur": 2437
+    },
+    {
+      "file": "voix-h-7.wav",
+      "dur": 2139
     }
   ]
 }
