@@ -26,17 +26,18 @@ export const chargilyReady = () => KEY().length > 10;
 const isTest = () => KEY().startsWith('test_');
 
 /**
- * (HISTOIRE — remplacé le 26 nov. 2026 à la demande du propriétaire : le paiement en ligne est
- * proposé à TOUS les pros, même avec la clé de test ; chaque abonnement payé en test porte « (test) »
- * dans sa note pour être repéré et annulé dans l'administration.)
- * MODE TEST = ADMINISTRATEURS SEULEMENT. Avec la clé de test, la page de Chargily « paie » sans argent
- * réel : ouverte à tous, elle donnerait Pro ou Max gratuitement à n'importe quel professionnel. Tant que
- * la clé de production n'est pas posée, seul un administrateur actif de la plateforme peut lancer un
- * paiement (pour essayer le parcours) ; les autres gardent le contact WhatsApp.
+ * MODE TEST = ADMINISTRATEURS SEULEMENT (rétabli le 26 nov. 2026 au soir, décision du propriétaire
+ * avant le lancement public). Avec la clé de test, la page de Chargily « paie » sans argent réel :
+ * ouverte à tous, elle donnerait Pro ou Max gratuitement à n'importe quel professionnel. Tant que la
+ * clé de PRODUCTION n'est pas posée, seul un administrateur actif peut lancer un paiement (pour
+ * essayer le parcours) ; les pros gardent le bouton WhatsApp. Clé de production posée → tout le monde.
+ * (Du 26 nov. après-midi au soir, le paiement de test était ouvert à tous à la demande du propriétaire.)
  */
 export async function paymentOpenTo(userId: string): Promise<boolean> {
-  void userId;
-  return chargilyReady();
+  if (!chargilyReady()) return false;
+  if (!isTest()) return true;
+  const admin = await db.from('platform_admins').select('user_id').eq('user_id', userId).is('disabled_at', null).maybeSingle();
+  return !!admin.data;
 }
 const BASE = () => (isTest() ? 'https://pay.chargily.net/test/api/v2' : 'https://pay.chargily.net/api/v2');
 
