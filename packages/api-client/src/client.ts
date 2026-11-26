@@ -611,6 +611,15 @@ export function createApiClient(opts: ApiClientOptions) {
       depositSettings: () => get<DepositSettings>('/pro/deposit-settings'),
       /** Bouclier de réservation (26 nov. 2026). */
       bookingGuard: () => get<BookingGuard>('/pro/booking-guard'),
+      /** Paiement de l'abonnement en ligne (Chargily Pay, 26 nov. 2026). */
+      planPrices: () =>
+        get<{ available: boolean; pro: Record<'1' | '12', number>; salon: Record<'1' | '12', number> }>('/pro/plan/prices'),
+      planCheckout: (body: { plan: 'pro' | 'salon'; months: 1 | 12 }) =>
+        post<{ paymentId: string; checkoutUrl: string; amount: number }>('/pro/plan/checkout', body),
+      planPayment: (id: string) =>
+        get<{ id: string; plan: string; months: number; amount: number; status: 'pending' | 'paid' | 'failed' | 'canceled' | 'expired'; until: string | null }>(
+          `/pro/plan/payments/${id}`,
+        ),
       saveBookingGuard: (body: BookingGuard) => put<BookingGuard>('/pro/booking-guard', body),
       /** Programme fidélité du salon. */
       loyalty: () => get<LoyaltyProgram>('/pro/loyalty'),

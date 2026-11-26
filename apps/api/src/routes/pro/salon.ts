@@ -34,6 +34,8 @@ import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } 
 import { proClientsClose, readLoyalty, writeLoyalty } from '../../lib/loyalty';
 import { readPromos, writePromos } from '../../lib/promos';
 import { readBookingGuard, saveBookingGuard } from '../../lib/fraud';
+import { chargilyReady, createPlanCheckout, paymentStatus, planPrice } from '../../lib/chargily';
+import { AppError } from '../../lib/errors';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -119,6 +121,43 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.header('Cache-Control', 'private, no-store');
     return readPlan(req.salon!.id);
   });
+  /**
+   * PAYER SON ABONNEMENT EN LIGNE (Chargily Pay, 26 nov. 2026). Prix calculés ici, jamais par l'écran.
+   * Un administrateur qui pilote l'espace d'un pro ne paie pas à sa place.
+   */
+  app.get('/plan/prices', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    const id = req.salon!.id;
+    const [p1, p12, s1, s12] = await Promise.all([planPrice(id, 'pro', 1), planPrice(id, 'pro', 12), planPrice(id, 'salon', 1), planPrice(id, 'salon', 12)]);
+    return { available: chargilyReady(), pro: { 1: p1, 12: p12 }, salon: { 1: s1, 12: s12 } };
+  });
+  app.post(
+    '/plan/checkout',
+    {
+      preHandler: app.requireSalon,
+      config: { rateLimit: { max: 10, timeWindow: '10 minutes' } },
+      schema: { body: z.object({ plan: z.enum(['pro', 'salon']), months: z.union([z.literal(1), z.literal(12)]) }) },
+    },
+    async (req, reply) => {
+      if (req.actingAs) throw new AppError(403, 'ACTING_NO_PAYMENT', 'Le professionnel paie lui-même son abonnement.');
+      reply.header('Cache-Control', 'private, no-store');
+      const loc = req.profile?.locale;
+      return createPlanCheckout(req.log, {
+        salonId: req.salon!.id,
+        userId: req.user!.id,
+        plan: req.body.plan,
+        months: req.body.months,
+        locale: loc === 'ar' || loc === 'en' ? loc : 'fr',
+      });
+    },
+  );
+  app.get('/plan/payments/:id', { preHandler: app.requireSalon, schema: { params: z.object({ id: z.string().uuid() }) } }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    const p = await paymentStatus(req.log, req.salon!.id, req.params.id);
+    if (!p) throw new AppError(404, 'NOT_FOUND', 'Paiement introuvable.');
+    return p;
+  });
+
   app.get('/news', { preHandler: app.requireSalon }, async (_req, reply) => {
     reply.header('Cache-Control', 'private, no-store');
     return { items: await readProNews() };

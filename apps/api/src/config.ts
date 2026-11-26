@@ -35,6 +35,8 @@ const schema = z.object({
   EMAIL_FROM: z.string().default('Salon DZ <noreply@salondz.com>'),
   /** Codes de connexion par WhatsApp (`lib/whatsapp.ts`). Absentes : connexion par numéro indisponible. */
   WHATSAPP_TOKEN: z.string().optional(),
+  /** Paiement des abonnements des pros (Chargily Pay V2). `test_sk_…` = environnement de test. Absente : paiement en ligne indisponible. */
+  CHARGILY_SECRET_KEY: z.string().optional(),
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   /** Compte WhatsApp Business : lecture de l'état du modèle de code (approuvé ou non). */
   WHATSAPP_WABA_ID: z.string().optional(),

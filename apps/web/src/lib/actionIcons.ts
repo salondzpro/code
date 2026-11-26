@@ -11,6 +11,7 @@
  * et on l'ajoute ici — jamais une icône approximative.
  */
 import {
+  CreditCard,
   Globe,
   MoreHorizontal,
   Navigation,
@@ -98,6 +99,8 @@ export const ICONE = {
   // Formulaires et fenêtres
   valider: Check,
   enregistrer: Check,
+  // Abonnement payé en ligne (Chargily, 26 nov. 2026).
+  payer: CreditCard,
   modifier: Pencil,
   ajouter: Plus,
   continuer: ArrowRight,

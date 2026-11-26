@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { Check, Crown } from 'lucide-react';
+import { Check, CreditCard, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@salondz/api-client';
 import { PLANS, PLAN_PROMO_END, formatDA, planById, supportWhatsAppUrl, type PlanId } from '@salondz/constants';
@@ -53,8 +53,11 @@ export function PlanCards({
   salonName,
   signupTo = '/pro/acces',
   rail = false,
+  onPay,
 }: {
   current?: PlanId;
+  /** Espace pro (26 nov. 2026) : payer en ligne (Chargily, CIB / Edahabia) au lieu de passer par WhatsApp. */
+  onPay?: (plan: 'pro' | 'salon') => void;
   salonName?: string;
   signupTo?: string;
   /**
@@ -138,7 +141,12 @@ export function PlanCards({
                   </li>
                 ))}
               </ul>
-              {actuel ? (
+              {onPay && p.id !== 'free' ? (
+                <button type="button" className="btn plan-btn" onClick={() => onPay(p.id as 'pro' | 'salon')}>
+                  <I icon={CreditCard} size={18} />
+                  {actuel ? t('Prolonger') : t('Payer {offre}', { offre: t(p.name) })}
+                </button>
+              ) : actuel ? (
                 <span className="btn g plan-btn" aria-disabled>
                   {t('Offre actuelle')}
                 </span>
@@ -165,7 +173,9 @@ export function PlanCards({
           ))}
         </div>
       )}
-      <p className="plan-note">{t('Paiement par BaridiMob ou CCP. Les clientes ne paient jamais.')}</p>
+      <p className="plan-note">
+        {onPay ? t('Paiement sécurisé par carte CIB ou Edahabia. Les clientes ne paient jamais.') : t('Paiement par BaridiMob ou CCP. Les clientes ne paient jamais.')}
+      </p>
     </div>
   );
 }

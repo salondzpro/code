@@ -14,12 +14,39 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { FastifyPluginAsync } from 'fastify';
 import { config } from '../config';
 import { db } from '../lib/supabase';
+import { reconcilePayment, signatureValide } from '../lib/chargily';
 
 type Statut = { id?: string; status?: string; errors?: { code?: number; title?: string }[] };
 type Evenement = { entry?: { changes?: { value?: { statuses?: Statut[] } }[] }[] };
 
+
 const webhookRoutes: FastifyPluginAsync = async (app) => {
   app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (_req, body, done) => done(null, body));
+
+  /**
+   * CHARGILY PAY (26 nov. 2026) : paiement d'un abonnement pro. Cru seulement SIGNÉ (`signature` =
+   * HMAC-SHA256 hex du corps brut avec la clé secrète) ; la décision vient ensuite d'une RELECTURE du
+   * paiement chez Chargily (`reconcilePayment`), jamais du contenu de l'événement seul. Toujours 200
+   * une fois la signature valide : un événement qu'on ignore ne doit pas être renvoyé en boucle.
+   */
+  app.post('/webhooks/chargily', { config: { rateLimit: { max: 300, timeWindow: '1 minute' } } }, async (req, reply) => {
+    const brut = req.body as Buffer;
+    if (!Buffer.isBuffer(brut) || !signatureValide(brut, req.headers.signature as string | undefined)) {
+      req.log.warn('webhook chargily : signature invalide');
+      return reply.status(401).send();
+    }
+    let ev: { id?: string; type?: string; data?: { id?: string } };
+    try {
+      ev = JSON.parse(brut.toString('utf8')) as typeof ev;
+    } catch {
+      return reply.status(400).send();
+    }
+    const checkoutId = ev.data?.id;
+    if (checkoutId && typeof ev.type === 'string' && ev.type.startsWith('checkout.')) {
+      await reconcilePayment(req.log, checkoutId, ev.id ?? null).catch((err) => req.log.error({ err }, 'webhook chargily'));
+    }
+    return reply.status(200).send({ ok: true });
+  });
 
   app.get('/webhooks/whatsapp', async (req, reply) => {
     const q = req.query as Record<string, string | undefined>;
