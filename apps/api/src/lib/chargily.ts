@@ -24,6 +24,19 @@ import { readPlan, writePlan } from './plans';
 const KEY = () => config.CHARGILY_SECRET_KEY ?? '';
 export const chargilyReady = () => KEY().length > 10;
 const isTest = () => KEY().startsWith('test_');
+
+/**
+ * MODE TEST = ADMINISTRATEURS SEULEMENT. Avec la clé de test, la page de Chargily « paie » sans argent
+ * réel : ouverte à tous, elle donnerait Pro ou Max gratuitement à n'importe quel professionnel. Tant que
+ * la clé de production n'est pas posée, seul un administrateur actif de la plateforme peut lancer un
+ * paiement (pour essayer le parcours) ; les autres gardent le contact WhatsApp.
+ */
+export async function paymentOpenTo(userId: string): Promise<boolean> {
+  if (!chargilyReady()) return false;
+  if (!isTest()) return true;
+  const a = await db.from('platform_admins').select('user_id').eq('user_id', userId).is('disabled_at', null).maybeSingle();
+  return !!a.data;
+}
 const BASE = () => (isTest() ? 'https://pay.chargily.net/test/api/v2' : 'https://pay.chargily.net/api/v2');
 
 export interface ChargilyCheckout {
@@ -91,7 +104,7 @@ export async function createPlanCheckout(
   log: FastifyBaseLogger,
   p: { salonId: string; userId: string; plan: Exclude<PlanId, 'free'>; months: 1 | 12; locale: 'fr' | 'ar' | 'en' },
 ): Promise<{ paymentId: string; checkoutUrl: string; amount: number }> {
-  if (!chargilyReady()) throw new AppError(503, 'PAYMENT_UNAVAILABLE', 'Le paiement en ligne n’est pas encore disponible. Contactez-nous sur WhatsApp.');
+  if (!(await paymentOpenTo(p.userId))) throw new AppError(503, 'PAYMENT_UNAVAILABLE', 'Le paiement en ligne n’est pas encore disponible. Contactez-nous sur WhatsApp.');
   const amount = await planPrice(p.salonId, p.plan, p.months);
   const ins = await db
     .from('plan_payments')

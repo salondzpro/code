@@ -34,7 +34,7 @@ import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } 
 import { proClientsClose, readLoyalty, writeLoyalty } from '../../lib/loyalty';
 import { readPromos, writePromos } from '../../lib/promos';
 import { readBookingGuard, saveBookingGuard } from '../../lib/fraud';
-import { chargilyReady, createPlanCheckout, paymentStatus, planPrice } from '../../lib/chargily';
+import { createPlanCheckout, paymentOpenTo, paymentStatus, planPrice } from '../../lib/chargily';
 import { AppError } from '../../lib/errors';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -129,7 +129,7 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
     reply.header('Cache-Control', 'private, no-store');
     const id = req.salon!.id;
     const [p1, p12, s1, s12] = await Promise.all([planPrice(id, 'pro', 1), planPrice(id, 'pro', 12), planPrice(id, 'salon', 1), planPrice(id, 'salon', 12)]);
-    return { available: chargilyReady(), pro: { 1: p1, 12: p12 }, salon: { 1: s1, 12: s12 } };
+    return { available: await paymentOpenTo(req.user!.id), pro: { 1: p1, 12: p12 }, salon: { 1: s1, 12: s12 } };
   });
   app.post(
     '/plan/checkout',
