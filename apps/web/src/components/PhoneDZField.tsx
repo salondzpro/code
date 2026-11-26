@@ -92,11 +92,8 @@ export function PhoneDZField({
           aria-required
         />
       </div>
-      {(error || aide !== null) && (
-        <p className={`mt-1 text-[0.857rem] ${error ? 'text-danger' : 'text-subtle'}`}>
-          {error ?? (aide === undefined ? t('Format algérien · aucun SMS envoyé.') : aide)}
-        </p>
-      )}
+      {/* Plus d'aide par défaut sous le champ (26 nov. 2026, demande du propriétaire) : l'erreur, ou une aide passée exprès. */}
+      {(error || aide) && <p className={`mt-1 text-[0.857rem] ${error ? 'text-danger' : 'text-subtle'}`}>{error ?? aide}</p>}
     </div>
   );
 }

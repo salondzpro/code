@@ -104,9 +104,7 @@ export function AccountInfo({ backTo: defaut = '/profil' }: { backTo?: string })
               err={error?.field === 'phone'}
             />
           </div>
-          <p className={`mt-1.5 text-[0.857rem] ${error?.field === 'phone' ? 'text-danger' : 'text-subtle'}`}>
-            {error?.field === 'phone' ? error.msg : t('Format algérien · aucun SMS envoyé.')}
-          </p>
+          {error?.field === 'phone' && <p className="mt-1.5 text-[0.857rem] text-danger">{error.msg}</p>}
         </div>
         {visibleEmail(user) && (
           <div>
