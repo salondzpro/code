@@ -118,19 +118,13 @@ export async function enableNativePush(api: ApiClient): Promise<boolean> {
 }
 
 /**
- * À chaque ouverture de l'application : si les notifications ne sont pas accordées et que le
- * système peut encore poser sa question (première fois, ou Android après un refus), on la REPOSE —
- * au plus une fois tous les trois jours, pour ne pas harceler. Quand le système ne peut plus
- * demander (iPhone après un refus, Android après deux), c'est le bandeau de l'application qui
- * emmène dans les réglages du téléphone.
+ * À chaque ouverture de l'application : permission accordée → le jeton est (ré)enregistré.
+ * La QUESTION du système et le renvoi vers ses réglages appartiennent à `NotificationsGate`.
  *
  * Pourquoi : sans jeton natif, le serveur n'a que l'abonnement du NAVIGATEUR — et la personne
  * reçoit des notifications qui portent l'icône de Chrome et le nom du site, alors qu'elle a
  * l'application. Les notifications sont la raison d'être de cette application.
  */
-const DEJA_DEMANDE = 'salondz:push:demande';
-const REDEMANDE_MS = 3 * 24 * 3600_000;
-
 export async function ensureNativePush(api: ApiClient): Promise<void> {
   try {
     const { PushNotifications: Push } = await load();
@@ -139,14 +133,10 @@ export async function ensureNativePush(api: ApiClient): Promise<void> {
       await enableNativePush(api);
       return;
     }
-    if (!canAsk(receive)) return; // le système ne peut plus demander : bandeau → réglages
-    // Application CLIENT : la question du système ne part qu'après « Activer » dans la fenêtre
-    // `NotificationsGate` (pré-demande façon Uber, reposée à chaque ouverture).
-    if (!PRO_ONLY) return;
-    const last = Number(localStorage.getItem(DEJA_DEMANDE) || 0);
-    if (last > 1 && Date.now() - last < REDEMANDE_MS) return;
-    localStorage.setItem(DEJA_DEMANDE, String(Date.now()));
-    await enableNativePush(api);
+    // Plus rien n'est demandé ici (26 nov. 2026) : `NotificationsGate`, monté côté client ET pro,
+    // pose la question du système à CHAQUE ouverture tant qu'elle peut l'être, et emmène dans les
+    // réglages du téléphone quand elles sont refusées. Deux demandes en même temps se gêneraient.
+    return;
   } catch {
     /* sans conséquence : l'application reste utilisable */
   }
@@ -189,20 +179,46 @@ export async function disableNativePush(api: ApiClient): Promise<void> {
  * toucher. L'interrupteur réel, lu par le greffon `ReglagesNotifications`, a le dernier mot.
  */
 export async function nativePushPermission(): Promise<NotificationPermission> {
-  try {
-    const { PushNotifications: Push } = await load();
-    const { receive } = await Push.checkPermissions();
-    const { notificationsActivesSurLeTelephone } = await import('./pushSettings');
-    const actives = await notificationsActivesSurLeTelephone();
-    if (actives === true) return 'granted';
-    if (actives === false) {
-      // Coupées : si le système peut encore demander, on demande ; sinon, direction les réglages.
-      return receive === 'prompt' || receive === 'prompt-with-rationale' ? 'default' : 'denied';
+  // 26 nov. 2026 (le propriétaire voyait « Ne manquez plus une réservation » avec des notifications
+  // ACTIVES sur l'application Pro) : une lecture qui échoue n'est plus prise pour « jamais demandé ».
+  // Deux essais, puis le DERNIER ÉTAT CONNU de cet appareil — jamais une supposition.
+  for (let essai = 0; essai < 2; essai++) {
+    try {
+      const { PushNotifications: Push } = await load();
+      const { receive } = await Push.checkPermissions();
+      const { notificationsActivesSurLeTelephone } = await import('./pushSettings');
+      const actives = await notificationsActivesSurLeTelephone();
+      // Interrupteur de l'application coupé alors que la permission dit « accordé » (Android < 13) :
+      // seuls les réglages le rallument → « refusé ».
+      const p: NotificationPermission =
+        actives === true || (actives === null && receive === 'granted')
+          ? 'granted'
+          : actives === false || receive === 'denied'
+            ? canAsk(receive) ? 'default' : 'denied'
+            : 'default';
+      memoriserEtat(p);
+      return p;
+    } catch {
+      await new Promise((r) => setTimeout(r, 400));
     }
-    // Application sans le greffon : on ne connaît que la permission.
-    return receive === 'granted' ? 'granted' : receive === 'denied' ? 'denied' : 'default';
+  }
+  return etatMemorise() ?? 'default';
+}
+
+const ETAT_CONNU = 'salondz:push:etat';
+function memoriserEtat(p: NotificationPermission): void {
+  try {
+    localStorage.setItem(ETAT_CONNU, p);
   } catch {
-    return 'default';
+    /* rien */
+  }
+}
+function etatMemorise(): NotificationPermission | null {
+  try {
+    const v = localStorage.getItem(ETAT_CONNU);
+    return v === 'granted' || v === 'denied' || v === 'default' ? v : null;
+  } catch {
+    return null;
   }
 }
 

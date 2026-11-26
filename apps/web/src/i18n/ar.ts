@@ -2287,6 +2287,7 @@ export const ar: Record<string, string> = {
   "Mon rendez-vous": "موعدي",
   "Notifications coupées": "الإشعارات متوقفة",
   "Activez les notifications": "فعّل الإشعارات",
+  "Nouvelles réservations, demandes à valider, rappels : ne manquez aucune cliente.": "الحجوزات الجديدة، الطلبات التي تنتظر التأكيد، التذكيرات: لا تفوّت أي زبونة.",
   "Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.": "تأكيد الصالون وتذكير قبل ساعة ثم قبل 30 دقيقة: لا يفوتك أي موعد.",
   "Ouvert jusqu’à {time}": "مفتوح حتى {time}",
   "Ouvre à {time}": "يفتح على {time}",

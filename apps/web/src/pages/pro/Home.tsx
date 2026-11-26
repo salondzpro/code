@@ -28,7 +28,6 @@ import { addDaysToKey, formatLocale, toLocalDateKey, weekKeys } from '@salondz/c
 import type { SalonOwnerView } from '@salondz/types';
 import { I, Skeleton } from '@/components/ui';
 import { Screen, NAV_PAD } from '@/components/AppFrame';
-import { NotificationsNudge } from '@/components/NotificationsNudge';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { BookingPeekSheet } from '@/components/BookingPeekSheet';
 import { HomeUpcoming } from '@/components/HomeUpcoming';
@@ -189,7 +188,6 @@ export function ProHome() {
         </section>
       )}
 
-      <NotificationsNudge role="pro" />
       {salon && <QuickCloseBanner />}
 
       {setStatus.error && <ErrorMessage error={setStatus.error} />}

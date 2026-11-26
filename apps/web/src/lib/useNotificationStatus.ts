@@ -1,6 +1,6 @@
 /**
  * ÉTAT RÉEL DES NOTIFICATIONS, POUR CE COMPTE SUR CET APPAREIL — une seule source pour le bandeau
- * de relance (`NotificationsNudge`) et la ligne des réglages (`PushBlocked`).
+ * de demande (`NotificationsGate`) et la ligne des réglages (`PushBlocked`).
  *
  * Pourquoi (25 oct. 2026) : le bandeau affichait « Ouvrir les réglages » à des personnes dont les
  * notifications étaient bel et bien actives. Trois causes, toutes corrigées ici :

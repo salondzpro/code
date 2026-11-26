@@ -239,5 +239,11 @@ export function RequirePro() {
   }
   if (onboarding && (step === null || step <= 4) && !path.endsWith('/prestations'))
     return <Navigate to={salon.services.length === 0 ? '/pro/onboarding/prestations' : '/pro'} replace />;
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      {/* Notifications toujours actives (26 nov. 2026) ; jamais pour l'administrateur qui pilote. */}
+      {!acting && <NotificationsGate role="pro" />}
+    </>
+  );
 }

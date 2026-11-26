@@ -16,6 +16,10 @@
  * pour utiliser l'application. Revenu des réglages avec les notifications allumées, la fenêtre se
  * ferme d'elle-même (état relu au retour, `usePushPermission`).
  *
+ * ÉTENDUE AUX PROS le 26 nov. 2026 (demande du propriétaire, « comme Uber Eats ») : montée par
+ * `RequirePro`, elle remplace le bandeau de l'accueil pro. Un toucher sur « Ouvrir les réglages »
+ * ouvre l'écran Notifications de Salon DZ Pro dans le téléphone (greffon natif, Android et iPhone).
+ *
  * Remplace, côté client, le bandeau `NotificationsNudge` et les réglages « Rappels » /
  * « Confirmations » : rappels et confirmations sont toujours envoyés.
  */
@@ -54,16 +58,18 @@ function useOuverture(): [boolean, () => void] {
   ];
 }
 
-export function NotificationsGate() {
+export function NotificationsGate({ role = 'client' }: { role?: 'client' | 'pro' }) {
   const n = useNotificationStatus();
   const [vu, marquerVu] = useOuverture();
   const [chemin, setChemin] = useState(false);
   const natif = n.contexte === 'app-android' || n.contexte === 'app-ios';
+  // La fenêtre de la position (place de marché) passe d'abord — côté client seulement.
+  const position = role === 'client' && positionADemander();
 
   // QUESTION DIRECTE (20 nov. 2026, demande du propriétaire) : plus de fenêtre d'explication — on
   // pose LA question de l'appareil. Dans l'application, tout de suite ; dans un navigateur, au premier
   // toucher (les navigateurs n'affichent leur question qu'après un geste de la personne).
-  const aDemander = !vu && n.pret && n.situation === 'a-demander' && !positionADemander();
+  const aDemander = !vu && n.pret && n.situation === 'a-demander' && !position;
   useEffect(() => {
     if (!aDemander) return;
     if (natif) {
@@ -83,7 +89,7 @@ export function NotificationsGate() {
   // Rien à montrer : actives, impossibles ici (Safari hors écran d'accueil — on ne l'explique plus),
   // question en cours, ou la position d'abord. Refusées dans un NAVIGATEUR : rien ne peut les rouvrir
   // d'un geste, on n'insiste pas.
-  if (vu || !n.pret || n.situation !== 'bloquees' || !natif || positionADemander()) return null;
+  if (vu || !n.pret || n.situation !== 'bloquees' || !natif || position) return null;
 
   // Refusées dans l'APPLICATION : un toucher ouvre directement l'écran Notifications du téléphone.
   const agir = async () => {
@@ -100,7 +106,13 @@ export function NotificationsGate() {
             <I icon={BellRing} size={30} strokeWidth={1.6} />
           </span>
           <div className="h1 !text-[1.429rem]">{t('Notifications coupées')}</div>
-          <p className="p">{chemin ? n.consigne : t('Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.')}</p>
+          <p className="p">
+            {chemin
+              ? n.consigne
+              : role === 'pro'
+                ? t('Nouvelles réservations, demandes à valider, rappels : ne manquez aucune cliente.')
+                : t('Confirmation du salon, rappel 1 h puis 30 min avant : ne ratez aucun rendez-vous.')}
+          </p>
         </div>
         {!chemin && (
           <Button icon={ICONE.reglages} loading={n.occupe} onClick={() => void agir()}>
