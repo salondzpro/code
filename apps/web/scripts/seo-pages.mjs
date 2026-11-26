@@ -13,7 +13,10 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SITE = 'https://salondz.com';
-const IMAGE = `${SITE}/icon-512.png`;
+// Images de partage 1200 × 630 (`scripts/make-og-image.mjs`, 26 nov. 2026) : l'icône 512 px donnait
+// une vignette minuscule sur Facebook, Instagram et WhatsApp. Page pro → image pro.
+const IMAGE = `${SITE}/og/salondz.png`;
+const IMAGE_PRO = `${SITE}/og/pro.png`;
 const CLIENT = {
   '@type': 'MobileApplication',
   name: 'Salon DZ',
@@ -38,7 +41,7 @@ const ORG = {
   name: 'Salon DZ',
   alternateName: ['SalonDZ', 'salondz.com'],
   url: `${SITE}/`,
-  logo: IMAGE,
+  logo: `${SITE}/icon-512.png`,
   areaServed: { '@type': 'Country', name: 'Algérie' },
 };
 
@@ -85,8 +88,11 @@ function bloc({ chemin, titre, description, donnees }) {
     url && `<meta property="og:url" content="${url}" />`,
     `<meta property="og:title" content="${esc(titre)}" />`,
     `<meta property="og:description" content="${esc(description)}" />`,
-    `<meta property="og:image" content="${IMAGE}" />`,
-    `<meta name="twitter:card" content="summary" />`,
+    `<meta property="og:image" content="${chemin === '/professionnels' ? IMAGE_PRO : IMAGE}" />`,
+    `<meta property="og:image:width" content="1200" />`,
+    `<meta property="og:image:height" content="630" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:image" content="${chemin === '/professionnels' ? IMAGE_PRO : IMAGE}" />`,
     donnees && `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': donnees }).replace(/</g, '\u003c')}</script>`,
   ].filter(Boolean);
   return `<!--seo-->\n    ${l.join('\n    ')}\n    <!--/seo-->`;

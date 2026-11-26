@@ -123,11 +123,13 @@ const shareRoutes: FastifyPluginAsyncZod = async (app) => {
     if (!s || !s.is_visible) return remplacerBloc(html, '<title>Salon DZ</title>\n    <meta name="robots" content="noindex">');
 
     const url = `${config.webUrl}/s/${s.slug}`;
-    const where = [s.zone, s.city].filter(Boolean).join(', ');
+    // Quartier et commune portent souvent le même nom (« Daïra Akbou, Daïra Akbou ») : une seule fois.
+    const where = [...new Map([s.zone, s.city].filter((x): x is string => !!x?.trim()).map((x) => [x.trim().toLowerCase(), x.trim()])).values()].join(', ');
     const rating = s.rating_count ? ` · ${Number(s.rating_avg).toFixed(1).replace('.', ',')} ★ (${s.rating_count})` : '';
     const title = `${s.name} · Salon DZ`;
     const description = (s.description?.trim() || `${where ? `${where} · ` : ''}Réservez en ligne, 24 h/24${rating}.`).slice(0, 200);
-    const image = s.cover_url || s.logo_url || `${config.webUrl}/icon-maskable.svg`;
+    // Image de partage : la photo du salon, sinon l'image 1200 × 630 de Salon DZ (les réseaux refusent le SVG).
+    const image = s.cover_url || s.logo_url || `${config.webUrl}/og/salondz.png`;
     const tags = [
       `<title>${esc(title)}</title>`,
       `<meta name="description" content="${esc(description)}">`,
