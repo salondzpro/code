@@ -45,7 +45,7 @@ export const FRAUD = {
   refuse: 60,
   block: 100,
   /** Tentatives d'un même compte. */
-  burst10min: 3,
+  burst10min: 5,
   perHour: 6,
   perDay: 12,
   /** Comptes différents depuis une même adresse IP en une heure. */
@@ -55,7 +55,7 @@ export const FRAUD = {
   /** Réservations annulées par le client moins d'une heure après les avoir prises, sur 24 h. */
   churnDay: 2,
   /** Tentatives refusées sur 24 h. */
-  refusedDay: 3,
+  refusedDay: 4,
   /** Un compte de moins de 24 h est surveillé de plus près. */
   newAccountHours: 24,
 } as const;
