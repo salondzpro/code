@@ -62,7 +62,7 @@ export function ClientWelcome() {
         <p className="pwo-k">{t('Bienvenue sur')}</p>
         {/* Le titre EST le logo (26 nov. 2026, identité unique) : mêmes lettres que l'icône, mot à mot. */}
         <h1 className="pwo-t" aria-label="Salon DZ">
-          <span className="sdz-logo light" dir="ltr" aria-hidden>
+          <span className="sdz-logo" dir="ltr" aria-hidden>
             <b className="pwo-mot" style={{ animationDelay: '0.25s' }}>Salon</b>
             <i className="pwo-mot" style={{ animationDelay: '0.39s' }}>DZ</i>
           </span>

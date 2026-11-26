@@ -1089,3 +1089,7 @@ html:root .pl-btn.pl-btn-sk {
 .pl-qui-c.on { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
 .pl-qui-tous { width: 52px; height: 52px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--color-fill); color: var(--color-text); }
 .pl-qui-n { font-size: calc(13.5px * var(--fz, 1)); font-weight: 500; line-height: 1.2; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+/* Titre des écrans d'ouverture : posé sur la partie CLAIRE du dégradé (26 nov. 2026, capture du
+   propriétaire) — « Salon » en encre, et la pastille PRO en noir pour rester lisible. */
+.pwo-t .sdz-logo { color: var(--color-text); }
+.pwo-t .pwo-pro { background: var(--color-logo-bg); color: #fff; border-color: transparent; }

@@ -85,7 +85,7 @@ export function ProWelcome() {
         <p className="pwo-k">{t('Bienvenue sur')}</p>
         {/* Le titre EST le logo de Salon DZ Pro (26 nov. 2026, identité unique). */}
         <h1 className="pwo-t" aria-label="Salon DZ Pro">
-          <span className="sdz-logo light" dir="ltr" aria-hidden>
+          <span className="sdz-logo" dir="ltr" aria-hidden>
             <b>Salon</b>
             <i>DZ</i>
           </span>{' '}
