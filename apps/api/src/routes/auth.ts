@@ -322,9 +322,11 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const user = u.data.user;
     const identites = (user.identities ?? []).filter((i) => i.provider === 'google' || i.provider === 'apple');
     const email = (user.email ?? '').toLowerCase();
-    if (!oauthRecent || !email || isAliasEmail(email) || !identites.some((i) => String(i.identity_data?.email ?? '').toLowerCase() === email)) throw refus();
-
+    // Déjà le compte de CE portail : rien à prouver, rien à changer (26 nov. 2026 : la preuve Google
+    // était exigée avant, et un compte du bon type sans `amr` oauth récent était refusé à tort).
     if ((await roleOf(user)) === portail) return { switched: false };
+    // Changer de compte exige une vraie connexion Google/Apple récente portant cette adresse.
+    if (!oauthRecent || !email || isAliasEmail(email) || !identites.some((i) => String(i.identity_data?.email ?? '').toLowerCase() === email)) throw refus();
 
     // Compte NÉ à l'instant par Google sur le portail pro : il devient pro (son inscription).
     if (portail === 'pro') {
