@@ -19,7 +19,7 @@ import { formatDuration } from '@/lib/format';
 import { phoneDZ } from '@salondz/validation';
 import { groupLocalDigits, phoneDigits } from '@/lib/authFlow';
 import { clearDraft, readDraft, writeDraft } from '@/lib/bookingDraft';
-import { Button, Field, I, Input, Segmented, Textarea } from '@/components/ui';
+import { BottomSheet, Button, Dim, Field, I, Input, Segmented, Textarea } from '@/components/ui';
 import { ConfirmedView } from './BookingConfirmed';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
@@ -63,6 +63,11 @@ export function BookingReview() {
   const [notes, setNotes] = useState(draft.notes ?? '');
   const [noteOpen, setNoteOpen] = useState(!!draft.notes);
   const [err, setErr] = useState<{ field: FieldName; msg: string } | null>(null);
+  /**
+   * DÉJÀ UN RENDEZ-VOUS (26 nov. 2026, demande du propriétaire) : le refus du serveur s'affiche en
+   * FENÊTRE, avec le bouton qui ouvre le rendez-vous concerné (renvoyé par l'API dans `details`).
+   */
+  const [dejaPris, setDejaPris] = useState<{ message: string; bookingId: string | null } | null>(null);
   const [slotError, setSlotError] = useState<string | null>(null);
   const [done, setDone] = useState<BookingWithSalon | null>(null);
 
@@ -130,7 +135,10 @@ export function BookingReview() {
       window.history.replaceState(window.history.state, '', `/rendez-vous/${b.id}/confirme`);
       setDone(b);
     } catch (e) {
-      if (e instanceof ApiError && ['SLOT_TAKEN', 'TOO_SOON', 'OUTSIDE_OPENING_HOURS', 'ALREADY_BOOKED'].includes(e.code ?? '')) setSlotError(e.message);
+      if (e instanceof ApiError && ['SALON_BOOKING_LIMIT', 'ALREADY_BOOKED'].includes(e.code ?? '')) {
+        const id = (e.details as { bookingId?: unknown } | undefined)?.bookingId;
+        setDejaPris({ message: e.message, bookingId: typeof id === 'string' ? id : null });
+      } else if (e instanceof ApiError && ['SLOT_TAKEN', 'TOO_SOON', 'OUTSIDE_OPENING_HOURS'].includes(e.code ?? '')) setSlotError(e.message);
     }
   };
   const msg = (f: FieldName) => (err?.field === f ? err.msg : null);
@@ -293,7 +301,20 @@ export function BookingReview() {
           </Button>
         </div>
       )}
-      {!slotError && create.error && (
+      {dejaPris && (
+        <>
+          <Dim onClose={() => setDejaPris(null)} />
+          <BottomSheet modal>
+            <p className="text-[1.125rem] font-semibold leading-snug" role="alert">
+              {dejaPris.message}
+            </p>
+            <Button icon={ICONE.voirRdv} onClick={() => navigate(dejaPris.bookingId ? `/rendez-vous/${dejaPris.bookingId}` : '/rendez-vous')}>
+              {dejaPris.bookingId ? t('Voir mon rendez-vous') : t('Mes rendez-vous')}
+            </Button>
+          </BottomSheet>
+        </>
+      )}
+      {!slotError && !dejaPris && create.error && (
         <div className="mx-4">
           <ErrorMessage error={create.error} />
         </div>

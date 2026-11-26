@@ -419,7 +419,7 @@ async function assertClientCanBook(
   const endIso = new Date(new Date(startsAt).getTime() + t.duration_minutes * 60_000).toISOString();
   const dup = await db
     .from('bookings')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'exact' })
     .or(mine)
     .eq('salon_id', salonId)
     .in('status', ACTIVE_STATUSES)
@@ -427,11 +427,14 @@ async function assertClientCanBook(
     .gt('ends_at', startIso);
   if (dup.error) throw dup.error;
   if (dup.count)
-    throw conflict(
+    throw new AppError(
+      409,
       'ALREADY_BOOKED',
       forOther
         ? 'Cette personne a déjà un rendez-vous dans ce salon à cet horaire.'
         : 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.',
+      // Pour soi : le rendez-vous en question, que l'écran propose d'ouvrir (26 nov. 2026).
+      !forOther && dup.data?.[0] ? { bookingId: (dup.data[0] as { id: string }).id } : undefined,
     );
   if (!guard) return;
   /**
@@ -441,7 +444,7 @@ async function assertClientCanBook(
    */
   const [ailleurs, chezLui] = await Promise.all([
     db.from('bookings').select('id', { count: 'exact', head: true }).or(mine).neq('salon_id', salonId).in('status', ACTIVE_STATUSES).lt('starts_at', endIso).gt('ends_at', startIso),
-    db.from('bookings').select('id', { count: 'exact', head: true }).or(mine).eq('salon_id', salonId).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso),
+    db.from('bookings').select('id', { count: 'exact' }).or(mine).eq('salon_id', salonId).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso).order('starts_at').limit(1),
   ]);
   if (ailleurs.error) throw ailleurs.error;
   if (chezLui.error) throw chezLui.error;
@@ -451,13 +454,16 @@ async function assertClientCanBook(
       forOther ? 'Cette personne a déjà un rendez-vous à cette heure dans un autre salon.' : 'Vous avez déjà un rendez-vous à cette heure dans un autre salon.',
     );
   if ((chezLui.count ?? 0) >= guard.maxUpcoming)
-    throw conflict(
+    throw new AppError(
+      409,
       'SALON_BOOKING_LIMIT',
       guard.maxUpcoming === 1
         ? forOther
           ? 'Cette personne a déjà un rendez-vous à venir dans ce salon.'
           : 'Vous avez déjà un rendez-vous à venir dans ce salon. Modifiez-le ou annulez-le pour en prendre un autre.'
         : `${forOther ? 'Cette personne a' : 'Vous avez'} déjà ${guard.maxUpcoming} rendez-vous à venir dans ce salon.`,
+      // Pour soi : le prochain rendez-vous chez ce salon, que l'écran propose d'ouvrir (26 nov. 2026).
+      !forOther && chezLui.data?.[0] ? { bookingId: (chezLui.data[0] as { id: string }).id } : undefined,
     );
 }
 
