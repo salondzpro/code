@@ -2617,4 +2617,6 @@ export const en: Record<string, string> = {
   "{n} barbiers": "{n} barbers",
   "{n} salon": "{n} salon",
   "{n} salons": "{n} salons",
+  "Le jour et l’heure": "Day and time",
+  "Identifiez-vous en un geste": "Sign in with one tap",
 };

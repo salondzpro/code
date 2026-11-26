@@ -2603,4 +2603,6 @@ export const ar: Record<string, string> = {
   "{n} barbiers": "{n} حلاقين",
   "{n} salon": "{n} صالون",
   "{n} salons": "{n} صالونات",
+  "Le jour et l’heure": "اليوم والساعة",
+  "Identifiez-vous en un geste": "سجّل دخولك بلمسة واحدة",
 };

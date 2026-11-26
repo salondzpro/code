@@ -47,8 +47,21 @@ async function save(key: string, blob: Blob) {
   db.transaction(STORE, 'readwrite').objectStore(STORE).put({ key, blob }, LATEST);
 }
 
-export const loadVideoFonts = () =>
-  Promise.all(['700 60px "Plus Jakarta Sans"', '500 16px "Plus Jakarta Sans"'].map((f) => document.fonts.load(f).catch(() => undefined)));
+/**
+ * Polices de la charte (Lora pour les titres, Poppins pour l'interface) ; en arabe, Cairo, qui n'est
+ * pas déclarée en CSS : chargée ici à la demande (même fichier que les étiquettes).
+ */
+export const loadVideoFonts = async () => {
+  if (typeof FontFace !== 'undefined' && ![...document.fonts].some((x) => x.family.replace(/"/g, '') === 'Cairo')) {
+    try {
+      const cairo = new FontFace('Cairo', 'url(/fonts/cairo-arabic.woff2)', { weight: '200 1000' });
+      document.fonts.add(await cairo.load());
+    } catch {
+      /* repli : police du système */
+    }
+  }
+  await Promise.all(['600 60px "Lora"', '400 16px "Poppins"', '500 16px "Poppins"', '600 16px "Poppins"'].map((f) => document.fonts.load(f).catch(() => undefined)));
+};
 
 /** La bande son, rendue une fois par vidéo : sert au fichier ET à la lecture à l'écran. */
 let sound: { key: string; buffer: Promise<AudioBuffer | null> } | null = null;

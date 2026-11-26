@@ -132,6 +132,48 @@ function pop(ctx: BaseAudioContext, at: number, out: AudioNode) {
   o.stop(at + 0.25);
 }
 
+/** Impact sourd (« boom » de bande-annonce) : la photo du salon qui apparaît. */
+function impact(ctx: BaseAudioContext, noise: AudioBuffer, at: number, out: AudioNode) {
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(90, at);
+  o.frequency.exponentialRampToValueAtTime(38, at + 0.6);
+  o.connect(envGain(ctx, at, 0.75, 0.004, 0.9, out));
+  o.start(at);
+  o.stop(at + 1);
+  const n = ctx.createBufferSource();
+  n.buffer = noise;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 700;
+  n.connect(lp);
+  lp.connect(envGain(ctx, at, 0.25, 0.002, 0.35, out));
+  n.start(at);
+  n.stop(at + 0.5);
+}
+
+/** Montée (« riser ») : souffle filtré qui s'ouvre jusqu'à l'instant `at`, avant la confirmation. */
+function riser(ctx: BaseAudioContext, noise: AudioBuffer, at: number, dur: number, out: AudioNode) {
+  const from = Math.max(0, at - dur);
+  const n = ctx.createBufferSource();
+  n.buffer = noise;
+  n.loop = true;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = 1.4;
+  bp.frequency.setValueAtTime(300, from);
+  bp.frequency.exponentialRampToValueAtTime(5200, at);
+  const gn = ctx.createGain();
+  gn.gain.setValueAtTime(0.0001, from);
+  gn.gain.exponentialRampToValueAtTime(0.16, at - 0.02);
+  gn.gain.linearRampToValueAtTime(0, at + 0.05);
+  n.connect(bp);
+  bp.connect(gn);
+  gn.connect(out);
+  n.start(from);
+  n.stop(at + 0.1);
+}
+
 /* ------------------------------ La musique ------------------------------ */
 
 const BPM = 104;
@@ -282,7 +324,11 @@ export async function renderBioSound(cues: BioSoundCues, durationMs: number, voi
 
   const s = (ms: number) => ms / 1000;
   pop(ctx, s(cues.pop), fx);
+  if (cues.impact != null) impact(ctx, noise, s(cues.impact), fx);
+  if (cues.riser != null) riser(ctx, noise, s(cues.riser), 1.1, fx);
   cues.whooshes.forEach((ms) => whoosh(ctx, noise, s(ms), fx));
+  // Mouvements de caméra : un souffle plus léger que les changements d'écran.
+  (cues.zooms ?? []).forEach((ms) => whoosh(ctx, noise, s(ms), fx, 0.12));
   cues.taps.forEach((ms) => click(ctx, noise, s(ms), fx));
   cues.typing.forEach(([from, to, letters]) => {
     for (let i = 0; i < letters; i += 1) key(ctx, noise, s(from + ((to - from) * i) / Math.max(1, letters)), fx);

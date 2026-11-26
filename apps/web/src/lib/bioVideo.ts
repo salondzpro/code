@@ -1,20 +1,24 @@
 /**
- * « MA VIDÉO » — comment réserver chez ce professionnel, à publier sur ses réseaux.
+ * « MA PUB » — la vidéo qui montre comment réserver chez ce professionnel, à publier en story / Reel.
  *
- * REFONTE DU 16 NOV. 2026 (demande du propriétaire : « au nouveau thème Apple / Uber, rapide, un clic
- * de souris sur chaque bouton pour que ses clientes comprennent tout de suite ») :
- *   - 14,5 s au lieu de 27,6 : une ouverture au nom du salon, trois étapes, la confirmation, la fin ;
- *   - les écrans sont ceux de l'application AUJOURD'HUI (page du salon avec note dorée et « + Choisir »,
- *     « Quand ? » avec ses créneaux cerclés, récapitulatif, confirmation verte), avec les vraies photos,
- *     prestations, prix et heures libres du salon ;
- *   - un CURSEUR MAIN (blanc, contour noir, ombre) vient sur chaque bouton et CLIQUE : le bouton
- *     s'enfonce, une onde et trois éclats partent du doigt — on voit où toucher ;
- *   - au-dessus du téléphone, l'étape en grand (« 1 sur 3 · Choisissez la prestation »…) ;
- *   - la fin rappelle le lien, que le curseur vient cliquer une dernière fois.
- * Dessinée sur le téléphone du pro, rien sur un serveur. `bioVideoVersion` change avec les données ET
- * avec `DESIGN` : un nouveau dessin refait la vidéo déjà préparée.
+ * REFONTE DU 26 NOV. 2026 (demande du propriétaire : « rénove-le avec plus d'animation, en expert
+ * photo, montage vidéo et audio ») — un vrai montage de pub, 23 s, 9:16 :
+ *   1. ACCROCHE (0–2,8 s) : la PHOTO DU SALON plein cadre en lent zoom (Ken Burns), le nom qui monte
+ *      mot à mot, les étoiles qui se posent une à une, l'accroche « Réservez en 3 clics, sans appeler »,
+ *      puis une ouverture en cercle vers le téléphone ;
+ *   2. LE PARCOURS, dans les écrans de l'application D'AUJOURD'HUI (charte crème / encre, Lora + Poppins,
+ *      boutons noir brillant) : le lien de la bio Instagram, la page du salon, « Choisir », le jour et
+ *      l'heure, « Continuer avec Google ». Une CAMÉRA VIRTUELLE zoome sur chaque geste (« punch-in »
+ *      des montages produit) et revient au plan large entre deux ; le curseur main clique ;
+ *   3. LA CONFIRMATION : coche qui se dessine, ondes et CONFETTIS aux couleurs du salon ;
+ *   4. LA FIN : halos qui respirent, photo cerclée d'un anneau tournant, nom, note, « Réservez en 30
+ *      secondes. », le lien en noir brillant traversé d'un reflet, puis l'App Store et Google Play.
+ * Au-dessus du téléphone : l'étape en titre animé et une barre de progression en quatre segments.
+ * Le son (`bioVideoSound.ts`) suit les mêmes instants (`bioSoundCues`) ; voix off française
+ * (`bioVoiceLines`, fichiers `public/video/voix/fr-<f|h>-<n>.wav`, `scripts/make-video-voices.ps1`).
+ * Dessinée sur le téléphone du pro, rien sur un serveur ; `DESIGN` refait les vidéos déjà préparées.
  */
-import { formatDA, formatLocale, weekKeys } from '@salondz/constants';
+import { formatDA, formatLocale } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { proProfile, profileJob, profilePhotos } from './proProfile';
 import { loadImage } from './storyImage';
@@ -25,37 +29,34 @@ import type { VoiceLine } from './bioVideoSound';
 const W = 720;
 const H = 1280;
 export const BIO_VIDEO_SIZE = { width: W, height: H };
-export const BIO_VIDEO_MS = 21000;
-/** Change à chaque nouveau dessin : la vidéo préparée et gardée sur l'appareil est refaite. */
-const DESIGN = 5;
+export const BIO_VIDEO_MS = 23000;
+/** Change avec le dessin : les vidéos déjà préparées sont refaites. */
+const DESIGN = 6;
 
-// Charte actuelle (docs/CHARTE.md) : encre, gris, fond, vert de « oui », étoile dorée.
-const INK = '#111111';
-const MUTED = '#6e6e76';
-const SUBTLE = '#8e8e93';
-const BG = '#f7f7f9';
-const FILL = '#ececf0';
-const LINE = '#e6e6ea';
-const GREEN = '#34c759';
-const GOLD = '#f5a623';
-const FONT = '"Plus Jakarta Sans", Inter, system-ui, sans-serif';
-const f = (w: number, px: number) => `${w} ${px}px ${FONT}`;
+/* Charte « Claude noir brillant » (styles/claude.css, tokens.css). */
+const CREAM = '#faf9f5';
+const INK = '#2f2c28';
+const MUTED = '#77726a';
+const SUBTLE = '#a8a397';
+const LINE = '#e8e6dc';
+const FILL = '#f0eee6';
+const OK = '#5f8a4e';
+const GOLD = '#e3a233';
+const SERIF = '"Lora", Georgia, serif';
+const SANS = '"Poppins", "Cairo", system-ui, sans-serif';
+const f = (weight: number, size: number) => `${weight} ${size}px ${SANS}`;
+const fl = (weight: number, size: number) => `${weight} ${size}px ${SERIF}`;
 
-/** Le téléphone mesure 390 × 844, comme l'écran pour lequel l'application est dessinée. */
+/** L'écran du téléphone est dessiné à la taille de l'application (390 × 844), puis mis à l'échelle. */
 const PW = 390;
 const PH = 844;
-/**
- * FORMAT STORY INSTAGRAM (17 nov. 2026 : la vidéo se publie en story). Instagram couvre le HAUT (barres
- * de progression, photo et nom du compte : ~170 px ici) et le BAS (« Envoyer un message » : ~230 px).
- * Tout ce qui compte tient donc entre 170 et 1050 : titres en haut de cette zone, téléphone réduit
- * dessous, ses boutons du bas toujours visibles.
- */
-const SAFE_TOP = 176;
-const PHONE_S = 0.82;
-const PHONE = { x: (W - PW * PHONE_S) / 2, y: 356, s: PHONE_S };
+/** Zone haute laissée aux barres d'Instagram (story) : rien d'important au-dessus. */
+const SAFE_TOP = 150;
+const PHONE_S = 1.06;
+const PHONE = { x: (W - PW * PHONE_S) / 2, y: 352 };
 
 type Picture = HTMLImageElement | null;
-type Day = { label: string; n: string; past: boolean; on: boolean };
+
 export type BioVideoData = {
   salon: string;
   link: string;
@@ -64,15 +65,17 @@ export type BioVideoData = {
   city: string;
   address: string;
   rating: string;
+  ratingValue: number;
   initials: string;
   /** Sans validation manuelle, le rendez-vous est pris tout de suite. */
   confirmed: boolean;
-  /** Salon d'hommes : voix off d'homme, sinon de femme. */
+  /** Salon d'hommes : voix off d'homme, sinon de femme ; couleur d'accent. */
   men: boolean;
+  accent: string;
   services: { name: string; price: string; meta: string }[];
   picked: { name: string; price: string; meta: string };
-  month: string;
-  week: Day[];
+  /** Le jour proposé puis les trois suivants (« Jeudi 26 novembre »…). */
+  days: string[];
   dateLong: string;
   hours: string[];
   /** Exemple affiché à l'écran : un prénom courant, jamais une vraie cliente. */
@@ -85,6 +88,7 @@ export type BioVideoData = {
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const pretty = (key: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(formatLocale(), { ...o, timeZone: 'UTC' }).format(new Date(`${key}T12:00:00Z`));
+const plusJours = (key: string, n: number) => new Date(Date.parse(`${key}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 /** Sans heure libre ce jour-là, la vidéo montre les heures d'ouverture du salon. */
 function openingHours(salon: SalonOwnerView): string[] {
@@ -101,6 +105,7 @@ export async function loadBioVideo(salon: SalonOwnerView, link: string, date: st
   const photos = profilePhotos(salon);
   const [logo, cover, ...grid] = await Promise.all([salon.logoUrl ? loadImage(salon.logoUrl) : null, loadImage(photos[0]!), ...photos.slice(0, 3).map((p) => loadImage(p))]);
   const men = salon.genderTarget === 'men';
+  const jour = (k: string) => capitalize(pretty(k, { weekday: 'long', day: 'numeric', month: 'long' }));
   return {
     salon: salon.name,
     link,
@@ -110,19 +115,16 @@ export async function loadBioVideo(salon: SalonOwnerView, link: string, date: st
     // Quartier et ville, sans doublon (« Hydra, Hydra » quand les deux portent le même nom).
     address: [...new Set([salon.zone, salon.city].filter(Boolean))].join(', ') || salon.city,
     rating: salon.ratingCount ? `${salon.ratingAvg.toFixed(1).replace('.', ',')} (${salon.ratingCount})` : '',
+    ratingValue: salon.ratingCount ? salon.ratingAvg : 0,
     initials: salon.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase(),
     confirmed: salon.autoConfirm,
     men,
+    // Rose de l'espace féminin (--color-women), bleu doux de la charte pour les salons d'hommes.
+    accent: men ? '#6a9bcc' : '#f06a9b',
     services,
     picked: services[0] ?? { name: salon.name, price: '', meta: '' },
-    month: capitalize(pretty(date, { month: 'long', year: 'numeric' })),
-    week: weekKeys(date).map((k) => ({
-      label: capitalize(pretty(k, { weekday: 'short' }).replace(/\.$/, '')),
-      n: String(Number(k.slice(8, 10))),
-      past: k < date,
-      on: k === date,
-    })),
-    dateLong: capitalize(pretty(date, { weekday: 'long', day: 'numeric', month: 'long' })),
+    days: [0, 1, 2, 3].map((n) => jour(plusJours(date, n))),
+    dateLong: jour(date),
     hours: (hours.length ? hours : openingHours(salon)).slice(0, 6),
     typedName: men ? 'Yacine B.' : 'Sarah K.',
     typedPhone: '0555 00 00 00',
@@ -153,25 +155,34 @@ export function bioVideoTypes(): string[] {
   );
 }
 
-/* ------------------------------ Outils de dessin ------------------------------ */
+/* ------------------------------ Courbes d'animation ------------------------------ */
 
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
+/** Entrée-sortie douce (montage) ; `out` : décélération (ce qui arrive) ; `inn` : accélération (ce qui part). */
 const ease = (x: number) => {
   const k = clamp(x);
   return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
 };
 const out = (x: number) => 1 - Math.pow(1 - clamp(x), 3);
-/** Arrivée avec un léger dépassement (ressort) : l'élément « se pose ». */
+const outQuint = (x: number) => 1 - Math.pow(1 - clamp(x), 5);
+const inn = (x: number) => Math.pow(clamp(x), 3);
+/** Arrivée avec un léger dépassement (ressort) : l'élément « se pose ». Jamais négatif (rayon d'`arc`). */
 const spring = (x: number): number => {
   const k = clamp(x);
-  // Jamais négatif : un rayon de -5e-15 à l’instant 0 faisait échouer `arc()` et toute la fabrication.
   return Math.max(0, 1 + 1.6 * Math.pow(k - 1, 3) + 0.6 * Math.pow(k - 1, 2));
 };
 const mix = (a: number, b: number, k: number) => a + (b - a) * k;
+/** Hasard reproductible : la même vidéo est dessinée pareil à chaque fabrication. */
+const rand = (n: number) => {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
 
-function box(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, fill: string | null, stroke?: string, lw = 1) {
+/* ------------------------------ Outils de dessin ------------------------------ */
+
+function box(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, fill: string | CanvasGradient | null, stroke?: string, lw = 1) {
   g.beginPath();
-  g.roundRect(x, y, w, h, r);
+  g.roundRect(x, y, w, h, Math.max(0, r));
   if (fill) {
     g.fillStyle = fill;
     g.fill();
@@ -183,13 +194,31 @@ function box(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: nu
   }
 }
 
-/** Carte blanche à ombre légère, comme les cartes de l'application. */
-function card(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r = 18) {
+/** Carte blanche à trait fin, sans ombre (charte : cartes `#fff` trait `#e8e6dc`, arrondi 14). */
+function card(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r = 14) {
+  box(g, x, y, w, h, r, '#ffffff', LINE, 1);
+}
+
+/** Bouton noir brillant de la charte (`--gloss`) : dégradé, reflet en haut, ombre douce. */
+function gloss(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   g.save();
-  g.shadowColor = 'rgba(17,17,17,.07)';
-  g.shadowBlur = 14;
-  g.shadowOffsetY = 3;
-  box(g, x, y, w, h, r, '#ffffff');
+  g.shadowColor = 'rgba(18,18,20,.28)';
+  g.shadowBlur = 16;
+  g.shadowOffsetY = 6;
+  const gr = g.createLinearGradient(0, y, 0, y + h);
+  gr.addColorStop(0, '#45454b');
+  gr.addColorStop(1, '#121214');
+  box(g, x, y, w, h, r, gr);
+  g.restore();
+  g.save();
+  g.beginPath();
+  g.roundRect(x, y, w, h, r);
+  g.clip();
+  const hl = g.createLinearGradient(0, y, 0, y + h * 0.5);
+  hl.addColorStop(0, 'rgba(255,255,255,.22)');
+  hl.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = hl;
+  g.fillRect(x, y, w, h * 0.5);
   g.restore();
 }
 
@@ -208,24 +237,25 @@ function line(g: CanvasRenderingContext2D, text: string, x: number, y: number, f
 }
 
 /** La plus grande taille qui tient : un long nom de salon reste entier. */
-function fit(g: CanvasRenderingContext2D, text: string, weight: number, size: number, max: number): number {
+function fit(g: CanvasRenderingContext2D, text: string, font: (px: number) => string, size: number, max: number): number {
   let px = size;
-  g.font = f(weight, px);
-  while (px > 22 && g.measureText(text).width > max) {
+  g.font = font(px);
+  while (px > 20 && g.measureText(text).width > max) {
     px -= 2;
-    g.font = f(weight, px);
+    g.font = font(px);
   }
   return px;
 }
 
-function picture(g: CanvasRenderingContext2D, img: Picture, x: number, y: number, w: number, h: number, r = 0) {
+/** Image recadrée (« cover »), avec un zoom et un décalage facultatifs (Ken Burns). */
+function picture(g: CanvasRenderingContext2D, img: Picture, x: number, y: number, w: number, h: number, r = 0, zoom = 1, dx = 0, dy = 0) {
   g.save();
   g.beginPath();
   g.roundRect(x, y, w, h, r);
   g.clip();
   if (img) {
-    const k = Math.max(w / img.width, h / img.height);
-    g.drawImage(img, x + (w - img.width * k) / 2, y + (h - img.height * k) / 2, img.width * k, img.height * k);
+    const k = Math.max(w / img.width, h / img.height) * zoom;
+    g.drawImage(img, x + (w - img.width * k) / 2 + dx, y + (h - img.height * k) / 2 + dy, img.width * k, img.height * k);
   } else {
     g.fillStyle = FILL;
     g.fillRect(x, y, w, h);
@@ -234,23 +264,21 @@ function picture(g: CanvasRenderingContext2D, img: Picture, x: number, y: number
 }
 
 function avatar(g: CanvasRenderingContext2D, d: BioVideoData, x: number, y: number, r: number) {
-  if (d.logo) {
-    picture(g, d.logo, x - r, y - r, r * 2, r * 2, r);
-    return;
-  }
-  if (d.cover) {
-    picture(g, d.cover, x - r, y - r, r * 2, r * 2, r);
+  const img = d.logo ?? d.cover;
+  if (img) {
+    picture(g, img, x - r, y - r, r * 2, r * 2, r);
     return;
   }
   g.fillStyle = INK;
   g.beginPath();
   g.arc(x, y, r, 0, Math.PI * 2);
   g.fill();
-  line(g, d.initials, x, y + r * 0.34, f(600, Math.round(r * 0.9)), '#ffffff', 'center');
+  line(g, d.initials, x, y + r * 0.34, fl(600, Math.round(r * 0.9)), '#ffffff', 'center');
 }
 
-/** Étoile pleine à cinq branches, dorée. */
-function star(g: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+/** Étoile à cinq branches ; `fill` = part remplie (note 4,5 → la dernière à moitié). */
+function star(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, color = GOLD, fill = 1) {
+  g.save();
   g.beginPath();
   for (let i = 0; i < 10; i += 1) {
     const a = -Math.PI / 2 + (i * Math.PI) / 5;
@@ -258,13 +286,17 @@ function star(g: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
     g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
   }
   g.closePath();
-  g.fillStyle = GOLD;
+  g.fillStyle = 'rgba(255,255,255,.28)';
   g.fill();
+  g.clip();
+  g.fillStyle = color;
+  g.fillRect(cx - r, cy - r, r * 2 * fill, r * 2);
+  g.restore();
 }
 
 /** Le repère de lieu (épingle), au trait. */
-function pin(g: CanvasRenderingContext2D, x: number, y: number) {
-  g.strokeStyle = MUTED;
+function pin(g: CanvasRenderingContext2D, x: number, y: number, color = MUTED) {
+  g.strokeStyle = color;
   g.lineWidth = 1.5;
   g.beginPath();
   g.arc(x, y - 3, 5, Math.PI * 0.85, Math.PI * 2.15);
@@ -273,8 +305,29 @@ function pin(g: CanvasRenderingContext2D, x: number, y: number) {
   g.stroke();
 }
 
+/** Le « G » de Google, aux quatre couleurs officielles. */
+function googleG(g: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const seg: [string, number, number][] = [
+    ['#ea4335', -2.6, -0.62],
+    ['#fbbc05', 2.25, 3.68],
+    ['#34a853', 0.7, 2.25],
+    ['#4285f4', -0.62, 0.7],
+  ];
+  g.save();
+  g.lineWidth = r * 0.42;
+  seg.forEach(([c, a, b]) => {
+    g.strokeStyle = c;
+    g.beginPath();
+    g.arc(cx, cy, r * 0.79, a, b);
+    g.stroke();
+  });
+  g.fillStyle = '#4285f4';
+  g.fillRect(cx, cy - r * 0.2, r * 0.98, r * 0.4);
+  g.restore();
+}
+
 /** « Appuyé » : un bouton qu'on vient de cliquer s'enfonce un instant. */
-const pressedAt = (ms: number, tap: number) => Math.abs(ms - tap) < 160;
+const pressedAt = (ms: number, tap: number) => Math.abs(ms - tap) < 170;
 function pressScale(g: CanvasRenderingContext2D, cx: number, cy: number, on: boolean) {
   if (!on) return;
   g.translate(cx, cy);
@@ -284,268 +337,298 @@ function pressScale(g: CanvasRenderingContext2D, cx: number, cy: number, on: boo
 
 /* ------------------------------ Le minutage ------------------------------ */
 
-/**
- * Le parcours RÉEL d'une cliente (17 nov. 2026, demande du propriétaire) : le profil Instagram du
- * salon, le lien de sa bio touché, la page du salon qui s'ouvre, la prestation, le jour et l'heure, la
- * fenêtre d'inscription, la confirmation, puis la fin.
- */
+/** Les grandes scènes du montage (ms). */
 const T = {
-  phoneIn: 700,
-  browser: 2600,
-  stepWhen: 4700,
-  signup: 8200,
-  stepRecap: 10900,
-  done: 12500,
-  end: 14200,
+  /** Fin de l'accroche : ouverture en cercle vers le téléphone. */
+  iris: 2450,
+  phoneIn: 2900,
+  /** La page du salon monte par-dessus Instagram (navigateur intégré). */
+  browser: 5000,
+  when: 7650,
+  /** Après le choix de l'heure, la page défile jusqu'à « 3. Identification ». */
+  ident: 10150,
+  done: 12550,
+  end: 15400,
 };
 /** Les clics du curseur, dans l'ordre du parcours. */
-const TAP = { bio: 2250, choose: 4050, day: 5500, hour: 6600, next: 7700, femme: 9800, create: 10500, confirm: 12050, link: 16900 };
+const TAP = { bio: 4450, choose: 7050, day: 8650, hour: 9650, google: 11850, link: 17400 };
+/** Les deux boutiques apparaissent après le dernier clic sur le lien. */
+const STORES_AT = 18700;
 
-/* ------------------------------ Les écrans ------------------------------ */
+/* ------------------------------ Les écrans (coordonnées 390 × 844) ------------------------------ */
 
-const SERVICE_Y = 446;
-const SERVICE_H = 84;
-const WEEK_Y = 236;
-const HOUR_Y = 360;
-const HOUR_W = 114;
-const HOUR_H = 48;
-const hourAt = (i: number) => ({ x: 16 + (i % 3) * (HOUR_W + 8), y: HOUR_Y + Math.floor(i / 3) * (HOUR_H + 10) });
-const dayX = (d: BioVideoData) => 16 + (358 / 7) * (Math.max(0, d.week.findIndex((x) => x.on)) + 0.5);
-const PICK_HOUR = (d: BioVideoData) => Math.min(1, d.hours.length - 1);
-const BTN_Y = 770;
-
-/** Rond blanc à ombre légère (retour, partager, favori). */
-function roundBtn(g: CanvasRenderingContext2D, cx: number, cy: number, draw: () => void) {
-  g.save();
-  g.shadowColor = 'rgba(17,17,17,.08)';
-  g.shadowBlur = 10;
-  g.shadowOffsetY = 2;
+/** Barre du haut de l'application : menu, logo « Salon DZ », cloche, compte noir. */
+function appBar(g: CanvasRenderingContext2D) {
   g.fillStyle = '#ffffff';
-  g.beginPath();
-  g.arc(cx, cy, 19, 0, Math.PI * 2);
-  g.fill();
-  g.restore();
-  g.save();
+  g.fillRect(0, 50, PW, 56);
+  g.fillStyle = LINE;
+  g.fillRect(0, 105, PW, 1);
   g.strokeStyle = INK;
   g.lineWidth = 1.8;
   g.lineCap = 'round';
-  g.lineJoin = 'round';
-  draw();
-  g.restore();
-}
-const chevronLeft = (g: CanvasRenderingContext2D, cx: number, cy: number) => {
+  [70, 77, 84].forEach((y) => {
+    g.beginPath();
+    g.moveTo(18, y);
+    g.lineTo(36, y);
+    g.stroke();
+  });
+  g.font = `600 20px ${SANS}`;
+  const w1 = g.measureText('Salon ').width;
+  g.font = `400 20px ${SANS}`;
+  const w2 = g.measureText('DZ').width;
+  const x0 = PW / 2 - (w1 + w2) / 2;
+  line(g, 'Salon ', x0, 85, `600 20px ${SANS}`, INK);
+  line(g, 'DZ', x0 + w1, 85, `400 20px ${SANS}`, SUBTLE);
+  gloss(g, 330, 61, 46, 36, 10);
+  g.strokeStyle = '#ffffff';
+  g.lineWidth = 1.6;
   g.beginPath();
-  g.moveTo(cx + 3, cy - 6);
-  g.lineTo(cx - 3, cy);
-  g.lineTo(cx + 3, cy + 6);
+  g.arc(353, 75, 4.5, 0, Math.PI * 2);
   g.stroke();
-};
+  g.beginPath();
+  g.arc(353, 90, 8, Math.PI * 1.1, Math.PI * 1.9);
+  g.stroke();
+}
 
-/** 1 · La page du salon : photo, nom et note dorée, adresse, prestations avec « + Choisir ». */
+/** 1 · La page du salon : onglets, photo, nom en Lora, adresse, note, prestations avec « Choisir ». */
+const SERVICE_Y = 492;
+const SERVICE_H = 72;
 function screenSalon(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
-  g.fillStyle = BG;
+  g.fillStyle = CREAM;
   g.fillRect(0, 0, PW, PH);
-  roundBtn(g, 36, 74, () => chevronLeft(g, 36, 74));
-  line(g, d.salon, 66, 80, f(600, 16), INK, 'left', 200);
-  roundBtn(g, 306, 74, () => {
-    [[-5, 0], [5, -6], [5, 6]].forEach(([x, y]) => {
-      g.beginPath();
-      g.arc(306 + x!, 74 + y!, 2.6, 0, Math.PI * 2);
-      g.stroke();
-    });
-    g.beginPath();
-    g.moveTo(303, 72);
-    g.lineTo(309, 69);
-    g.moveTo(303, 76);
-    g.lineTo(309, 79);
-    g.stroke();
-  });
-  roundBtn(g, 352, 74, () => {
-    g.beginPath();
-    g.moveTo(352, 81);
-    g.bezierCurveTo(340, 72, 344, 64, 352, 70);
-    g.bezierCurveTo(360, 64, 364, 72, 352, 81);
-    g.stroke();
-  });
-  [t('Prendre RDV'), t('Avis'), t('À propos')].forEach((x, i) => line(g, x, 65 + i * 130, 124, f(i ? 500 : 600, 14), i ? MUTED : INK, 'center'));
+  appBar(g);
+  [t('Prendre RDV'), t('Avis'), t('À propos')].forEach((x, i) => line(g, x, 65 + i * 130, 134, f(i ? 400 : 500, 13.5), i ? MUTED : INK, 'center'));
   g.fillStyle = INK;
-  g.fillRect(0, 136, 130, 2.5);
-  picture(g, d.cover, 0, 140, PW, 176);
-  // Nom + note dorée sur la même ligne.
-  line(g, d.salon, 16, 352, f(700, 22), INK, 'left', d.rating ? 250 : 358);
-  g.font = f(500, 14);
-  const note = d.rating || t('Nouveau');
-  const nw = g.measureText(note).width;
-  star(g, PW - 16 - nw - 12, 346, 8);
-  line(g, note, PW - 16, 351, f(d.rating ? 600 : 500, 14), d.rating ? INK : MUTED, 'right');
-  pin(g, 22, 376);
-  line(g, d.address, 34, 381, f(400, 14), INK, 'left', 330);
-  line(g, t('Choix de la prestation'), 16, 422, f(700, 18), INK);
+  g.fillRect(0, 146, 130, 2.5);
+  // La photo glisse doucement : la page « vit » pendant qu'on la regarde.
+  picture(g, d.cover, 0, 148, PW, 190, 0, 1.08, Math.sin(ms / 900) * 6, 0);
+  line(g, d.salon, 16, 378, fl(600, fit(g, d.salon, (px) => fl(600, px), 25, 358)), INK);
+  pin(g, 22, 401);
+  line(g, d.address, 34, 406, f(400, 13.5), INK, 'left', 330);
+  star(g, 22, 427, 7.5, INK, d.ratingValue ? 1 : 0);
+  line(g, d.rating || t("Pas encore d'avis"), 36, 432, f(400, 13.5), INK, 'left', 200);
+  line(g, `•  ${t('Ouvert')}`, 210, 432, f(500, 13.5), OK);
+  line(g, t('Choix de la prestation'), 16, 476, f(500, 18), INK);
   d.services.slice(0, 4).forEach((s, i) => {
     const y = SERVICE_Y + i * SERVICE_H;
-    card(g, 16, y, 358, SERVICE_H - 10, 18);
-    line(g, s.name, 32, y + 31, f(600, 15.5), INK, 'left', 210);
-    const pw = line(g, s.price, 32, y + 54, f(600, 13.5), INK);
-    line(g, ` · ${s.meta}`, 32 + pw, y + 54, f(400, 13.5), MUTED);
+    g.fillStyle = '#ffffff';
+    g.fillRect(0, y, PW, SERVICE_H - 1);
+    g.fillStyle = LINE;
+    g.fillRect(0, y + SERVICE_H - 1, PW, 1);
+    line(g, s.name, 16, y + 30, f(500, 15), INK, 'left', 230);
+    line(g, `${s.meta}  •  ${s.price}`, 16, y + 52, f(400, 12.5), MUTED, 'left', 230);
     g.save();
-    pressScale(g, 318, y + 37, i === 0 && pressedAt(ms, TAP.choose));
-    box(g, 268, y + 17, 96, 40, 20, i === 0 && ms > TAP.choose ? '#3a3a3c' : INK);
-    line(g, `+  ${t('Choisir')}`, 316, y + 42, f(600, 14), '#ffffff', 'center');
+    pressScale(g, 330, y + 36, i === 0 && pressedAt(ms, TAP.choose));
+    gloss(g, 282, y + 17, 94, 38, 10);
+    line(g, t('Choisir'), 329, y + 41, f(500, 14), '#ffffff', 'center');
     g.restore();
   });
 }
 
-function stepHead(g: CanvasRenderingContext2D, title: string) {
-  g.fillStyle = BG;
-  g.fillRect(0, 0, PW, PH);
-  roundBtn(g, 36, 74, () => chevronLeft(g, 36, 74));
-  line(g, title, PW / 2, 81, f(700, 18), INK, 'center');
+/** 2 · « Prestation sélectionnée », puis le jour déplié et ses heures. */
+const DAY_Y = 338;
+const HOUR_Y = DAY_Y + 64;
+const HOUR_W = 110;
+const HOUR_H = 46;
+const hourAt = (i: number) => ({ x: 16 + (i % 3) * (HOUR_W + 14), y: HOUR_Y + Math.floor(i / 3) * (HOUR_H + 12) });
+const PICK_HOUR = (d: BioVideoData) => Math.min(1, d.hours.length - 1);
+
+function stepTitle(g: CanvasRenderingContext2D, n: number, title: string, y: number) {
+  line(g, `${n}. ${title}`, 16, y, f(500, 18), INK);
 }
 
-/** Le panneau du bas et son bouton principal noir. */
-function bottomButton(g: CanvasRenderingContext2D, label: string, on: boolean, pressed: boolean) {
-  g.save();
-  g.shadowColor = 'rgba(17,17,17,.08)';
-  g.shadowBlur = 18;
-  g.shadowOffsetY = -4;
-  box(g, 0, 740, PW, 120, 26, '#ffffff');
-  g.restore();
-  g.save();
-  pressScale(g, PW / 2, BTN_Y + 26, pressed);
-  box(g, 16, BTN_Y, 358, 52, 26, on ? INK : FILL);
-  line(g, label, PW / 2, BTN_Y + 33, f(600, 16), on ? '#ffffff' : SUBTLE, 'center', 320);
-  g.restore();
+function pickedCard(g: CanvasRenderingContext2D, d: BioVideoData, y: number) {
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, y, PW, 74);
+  g.fillStyle = LINE;
+  g.fillRect(0, y, PW, 1);
+  g.fillRect(0, y + 73, PW, 1);
+  line(g, d.picked.name, 16, y + 31, f(500, 15), INK, 'left', 260);
+  line(g, `${d.picked.meta}  •  ${d.picked.price}`, 16, y + 54, f(400, 12.5), MUTED, 'left', 260);
+  line(g, t('Supprimer'), PW - 16, y + 31, f(500, 13), INK, 'right');
+  g.fillStyle = INK;
+  g.font = f(500, 13);
+  const w = g.measureText(t('Supprimer')).width;
+  g.fillRect(PW - 16 - w, y + 35, w, 1.2);
 }
 
-/** 2 · « Quand ? » : le jour, puis l'heure, puis Continuer. */
 function screenWhen(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
-  stepHead(g, t('Quand ?'));
-  card(g, 16, 112, 358, 64, 18);
-  avatar(g, d, 46, 144, 18);
-  line(g, d.picked.name, 74, 140, f(600, 14.5), INK, 'left', 210);
-  line(g, `${d.picked.price} · ${d.picked.meta}`, 74, 160, f(400, 12.5), MUTED, 'left', 210);
-  line(g, d.month, 16, 218, f(600, 14), MUTED);
-  const dayOn = ms > TAP.day;
-  const w = 358 / 7;
-  d.week.forEach((x, i) => {
-    const cx = 16 + i * w + w / 2;
-    const on = dayOn && x.on;
+  g.fillStyle = CREAM;
+  g.fillRect(0, 0, PW, PH);
+  appBar(g);
+  line(g, d.salon, 16, 152, fl(600, fit(g, d.salon, (px) => fl(600, px), 24, 358)), INK);
+  stepTitle(g, 1, t('Prestation sélectionnée'), 196);
+  pickedCard(g, d, 214);
+  stepTitle(g, 2, t('Choix de la date & heure'), 322);
+  // Les jours, comme dans l'application : le premier se déplie au toucher.
+  const open = clamp((ms - TAP.day) / 380);
+  const slotsH = (HOUR_H + 12) * Math.ceil(d.hours.length / 3) + 8;
+  d.days.forEach((label, i) => {
+    const y = DAY_Y + i * 58 + (i > 0 ? out(open) * slotsH : 0);
+    if (y > PH) return;
+    g.fillStyle = '#ffffff';
+    g.fillRect(0, y, PW, 56);
+    g.fillStyle = LINE;
+    g.fillRect(0, y + 56, PW, 1);
     g.save();
-    pressScale(g, cx, WEEK_Y + 30, x.on && pressedAt(ms, TAP.day));
-    if (on) box(g, cx - 22, WEEK_Y, 44, 60, 16, INK);
-    line(g, x.label, cx, WEEK_Y + 24, f(500, 11.5), on ? '#ffffff' : SUBTLE, 'center');
-    line(g, x.n, cx, WEEK_Y + 47, f(700, 17), on ? '#ffffff' : x.past ? '#c8c8ce' : INK, 'center');
+    if (i === 0) pressScale(g, PW / 2, y + 28, pressedAt(ms, TAP.day));
+    line(g, label, 16, y + 34, f(500, 15), INK, 'left', 300);
+    g.strokeStyle = INK;
+    g.lineWidth = 1.6;
+    g.beginPath();
+    const up = i === 0 ? open : 0;
+    g.moveTo(PW - 30, y + (up > 0.5 ? 31 : 25));
+    g.lineTo(PW - 24, y + (up > 0.5 ? 25 : 31));
+    g.lineTo(PW - 18, y + (up > 0.5 ? 31 : 25));
+    g.stroke();
     g.restore();
   });
-  if (dayOn) {
-    const a = out((ms - TAP.day) / 350);
-    g.save();
-    g.globalAlpha = a;
-    g.translate(0, (1 - a) * 12);
-    line(g, Number(d.hours[0]!.slice(0, 2)) < 12 ? t('Matin') : t('Après-midi'), 16, 340, f(700, 15), INK);
+  if (open > 0) {
     const pick = PICK_HOUR(d);
+    g.save();
+    g.beginPath();
+    g.rect(0, DAY_Y + 57, PW, out(open) * slotsH);
+    g.clip();
     d.hours.forEach((x, i) => {
       const p = hourAt(i);
+      // Les heures arrivent l'une après l'autre (cascade).
+      const a = out((ms - TAP.day - 120 - i * 45) / 280);
       const on = ms > TAP.hour && i === pick;
       g.save();
+      g.globalAlpha = a;
+      g.translate(0, (1 - a) * 10);
       pressScale(g, p.x + HOUR_W / 2, p.y + HOUR_H / 2, i === pick && pressedAt(ms, TAP.hour));
-      box(g, p.x, p.y, HOUR_W, HOUR_H, 14, on ? INK : '#ffffff', on ? undefined : INK, 1.5);
-      line(g, x, p.x + HOUR_W / 2, p.y + 31, f(600, 16), on ? '#ffffff' : INK, 'center');
+      if (on) gloss(g, p.x, p.y, HOUR_W, HOUR_H, 10);
+      else box(g, p.x, p.y, HOUR_W, HOUR_H, 10, FILL);
+      line(g, x, p.x + HOUR_W / 2, p.y + 29, f(500, 15), on ? '#ffffff' : INK, 'center');
       g.restore();
     });
     g.restore();
   }
-  const ready = ms > TAP.hour;
-  bottomButton(g, ready ? `${t('Continuer')} · ${d.hours[PICK_HOUR(d)]}` : t('Choisissez un créneau'), ready, pressedAt(ms, TAP.next));
 }
 
-/** 3 · Récapitulatif : quand, quoi, pour qui — puis « Confirmer ». */
-function screenRecap(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
-  stepHead(g, t('Récapitulatif'));
-  card(g, 16, 112, 358, 236, 20);
-  avatar(g, d, 44, 146, 18);
-  line(g, d.salon, 72, 142, f(600, 15), INK, 'left', 280);
-  line(g, d.address, 72, 161, f(400, 12.5), MUTED, 'left', 280);
-  g.fillStyle = LINE;
-  g.fillRect(32, 184, 326, 1);
-  line(g, d.dateLong, 32, 214, f(600, 15), INK, 'left', 230);
-  line(g, d.hours[PICK_HOUR(d)] ?? '', 358, 220, f(700, 28), INK, 'right');
-  g.fillStyle = LINE;
-  g.fillRect(32, 240, 326, 1);
-  line(g, d.picked.name, 32, 272, f(600, 15), INK, 'left', 220);
-  line(g, d.picked.meta, 32, 293, f(400, 13), MUTED);
-  line(g, d.picked.price, 358, 276, f(700, 16), INK, 'right');
-  line(g, t('Paiement sur place'), 32, 330, f(400, 12.5), MUTED);
-  card(g, 16, 364, 358, 64, 18);
-  line(g, t('Pour moi'), 32, 392, f(400, 12.5), MUTED);
-  line(g, d.typedName, 32, 414, f(600, 15), INK);
-  bottomButton(g, t('Confirmer le rendez-vous'), true, pressedAt(ms, TAP.confirm));
-}
-
-/** 4 · Confirmation : la pastille verte se pose, la coche se dessine. */
-function screenDone(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
-  g.fillStyle = BG;
+/** 3 · Le créneau retenu, puis « Identification » : Continuer avec Google (un geste). */
+function screenIdent(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
+  g.fillStyle = CREAM;
   g.fillRect(0, 0, PW, PH);
-  const k = spring(ms / 520);
-  g.fillStyle = 'rgba(52,199,89,.14)';
+  appBar(g);
+  line(g, d.salon, 16, 152, fl(600, fit(g, d.salon, (px) => fl(600, px), 24, 358)), INK);
+  stepTitle(g, 1, t('Prestation sélectionnée'), 196);
+  pickedCard(g, d, 214);
+  stepTitle(g, 2, t('Date et heure sélectionnées'), 330);
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, 348, PW, 74);
+  g.fillStyle = LINE;
+  g.fillRect(0, 348, PW, 1);
+  g.fillRect(0, 421, PW, 1);
+  line(g, d.dateLong, 16, 379, f(500, 15), INK, 'left', 280);
+  line(g, `${t('à')} ${d.hours[PICK_HOUR(d)] ?? ''}`, 16, 402, f(400, 13), MUTED);
+  line(g, t('Modifier'), PW - 16, 379, f(500, 13), INK, 'right');
+  // « 3. Identification » arrive en glissant : la page a défilé jusque-là.
+  const a = out((ms - T.ident - 150) / 420);
+  g.save();
+  g.globalAlpha = a;
+  g.translate(0, (1 - a) * 24);
+  stepTitle(g, 3, t('Identification'), 470);
+  g.save();
+  pressScale(g, PW / 2, 522, pressedAt(ms, TAP.google));
+  box(g, 16, 494, 358, 56, 12, '#ffffff', LINE, 1.2);
+  g.font = f(500, 15.5);
+  const gw = g.measureText(t('Continuer avec Google')).width;
+  const gx = PW / 2 - (gw + 34) / 2;
+  googleG(g, gx + 11, 522, 11);
+  line(g, t('Continuer avec Google'), gx + 34, 528, f(500, 15.5), INK);
+  g.restore();
+  line(g, t('Nouveau sur Salon DZ ?'), PW / 2, 590, f(500, 15), INK, 'center');
+  box(g, 16, 606, 358, 52, 12, '#ffffff', LINE, 1.2);
+  line(g, t('Créer mon compte'), PW / 2, 638, f(500, 15), INK, 'center');
+  g.restore();
+}
+
+/** 4 · Confirmation : la pastille verte se pose, la coche se dessine, deux ondes partent. */
+function screenDone(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
+  g.fillStyle = CREAM;
+  g.fillRect(0, 0, PW, PH);
+  appBar(g);
+  const cx = PW / 2;
+  const cy = 250;
+  [0, 260].forEach((delay) => {
+    const k = clamp((ms - 180 - delay) / 1100);
+    if (k <= 0 || k >= 1) return;
+    g.fillStyle = `rgba(95,138,78,${0.32 * (1 - k)})`;
+    g.beginPath();
+    g.arc(cx, cy, 48 + k * 80, 0, Math.PI * 2);
+    g.fill();
+  });
+  const k = spring(ms / 560);
+  g.fillStyle = OK;
   g.beginPath();
-  g.arc(195, 230, 70 * clamp(ms / 420), 0, Math.PI * 2);
-  g.fill();
-  g.fillStyle = GREEN;
-  g.beginPath();
-  g.arc(195, 230, 46 * k, 0, Math.PI * 2);
+  g.arc(cx, cy, 50 * k, 0, Math.PI * 2);
   g.fill();
   g.strokeStyle = '#ffffff';
-  g.lineWidth = 6;
+  g.lineWidth = 7;
   g.lineCap = 'round';
   g.lineJoin = 'round';
-  const c = clamp((ms - 260) / 320);
+  const c = clamp((ms - 280) / 340);
   g.beginPath();
-  g.moveTo(175, 231);
-  if (c > 0) g.lineTo(mix(175, 189, clamp(c * 2)), mix(231, 245, clamp(c * 2)));
-  if (c > 0.5) g.lineTo(mix(189, 217, (c - 0.5) * 2), mix(245, 215, (c - 0.5) * 2));
+  g.moveTo(cx - 21, cy + 1);
+  if (c > 0) g.lineTo(mix(cx - 21, cx - 6, clamp(c * 2)), mix(cy + 1, cy + 16, clamp(c * 2)));
+  if (c > 0.5) g.lineTo(mix(cx - 6, cx + 23, (c - 0.5) * 2), mix(cy + 16, cy - 15, (c - 0.5) * 2));
   g.stroke();
   g.lineCap = 'butt';
-  const a = out((ms - 300) / 400);
+  const a = out((ms - 320) / 420);
   g.globalAlpha = a;
-  line(g, d.confirmed ? t('Rendez-vous confirmé') : t('Demande envoyée'), 195, 330, f(700, 23), INK, 'center', 350);
-  line(g, `${d.dateLong} · ${d.hours[PICK_HOUR(d)] ?? ''}`, 195, 358, f(400, 14), MUTED, 'center', 350);
-  card(g, 16, 390, 358, 84, 18);
-  avatar(g, d, 50, 432, 20);
-  line(g, d.salon, 82, 427, f(600, 15), INK, 'left', 270);
-  line(g, `${d.picked.name} · ${d.picked.price}`, 82, 448, f(400, 13), MUTED, 'left', 270);
+  g.save();
+  g.translate(0, (1 - a) * 14);
+  line(g, d.confirmed ? t('Rendez-vous confirmé') : t('Demande envoyée'), cx, 360, fl(600, 25), INK, 'center', 350);
+  line(g, `${d.dateLong} · ${d.hours[PICK_HOUR(d)] ?? ''}`, cx, 390, f(400, 14), MUTED, 'center', 350);
+  card(g, 16, 420, 358, 92);
+  avatar(g, d, 52, 466, 22);
+  line(g, d.salon, 86, 459, f(500, 15), INK, 'left', 270);
+  line(g, `${d.picked.name} · ${d.picked.price}`, 86, 482, f(400, 13), MUTED, 'left', 270);
+  g.restore();
   g.globalAlpha = 1;
 }
 
-/* ------------------------------ Instagram et inscription ------------------------------ */
+/* ------------------------------ Instagram ------------------------------ */
 
 /** Le lien de la bio, là où le curseur clique (coordonnées de l'écran du téléphone). */
 const BIO_LINK = { x: 150, y: 289 };
 /** Dégradé de la bague Instagram (couleurs officielles de la marque). */
 const IG = ['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5'];
+const IG_INK = '#111111';
+const IG_MUTED = '#6e6e76';
+
+function chevronLeft(g: CanvasRenderingContext2D, cx: number, cy: number) {
+  g.beginPath();
+  g.moveTo(cx + 3, cy - 6);
+  g.lineTo(cx - 3, cy);
+  g.lineTo(cx + 3, cy + 6);
+  g.stroke();
+}
 
 /** Le profil Instagram DU SALON : son nom de compte, ses vraies photos, son lien en bio. */
 function screenInstagram(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
   g.fillStyle = '#ffffff';
   g.fillRect(0, 0, PW, PH);
-  // En-tête : retour, nom du compte, menu.
   g.save();
-  g.strokeStyle = INK;
+  g.strokeStyle = IG_INK;
   g.lineWidth = 2;
   g.lineCap = 'round';
   g.lineJoin = 'round';
   chevronLeft(g, 26, 82);
   g.restore();
-  line(g, d.handle, 50, 88, f(700, 17), INK, 'left', 260);
+  line(g, d.handle, 50, 88, `700 17px system-ui, sans-serif`, IG_INK, 'left', 260);
   [0, 1, 2].forEach((i) => {
-    g.fillStyle = INK;
+    g.fillStyle = IG_INK;
     g.beginPath();
     g.arc(352 + i * 7, 82, 2, 0, Math.PI * 2);
     g.fill();
   });
-  // Photo du profil dans la bague Instagram.
-  const ring = g.createLinearGradient(20, 200, 108, 120);
-  IG.forEach((c, i) => ring.addColorStop(i / (IG.length - 1), c));
+  // Photo du profil dans la bague Instagram, qui tourne doucement (story à voir).
+  const ring = g.createConicGradient(ms / 700, 64, 160);
+  IG.forEach((c, i) => ring.addColorStop(i / IG.length, c));
+  ring.addColorStop(1, IG[0]!);
   g.strokeStyle = ring;
   g.lineWidth = 3.5;
   g.beginPath();
@@ -556,13 +639,15 @@ function screenInstagram(g: CanvasRenderingContext2D, d: BioVideoData, ms: numbe
   [t('publications'), t('abonnés'), t('suivis')].forEach((x, i) => {
     const cx = 178 + i * 76;
     box(g, cx - 18, 140, 36, 14, 7, '#ececf0');
-    line(g, x, cx, 178, f(400, 12.5), INK, 'center');
+    line(g, x, cx, 178, `400 12.5px system-ui, sans-serif`, IG_INK, 'center');
   });
-  line(g, d.salon, 18, 234, f(700, 15), INK, 'left', 354);
-  line(g, `${d.job} · ${d.city}`, 18, 255, f(400, 14), MUTED, 'left', 354);
-  line(g, t('Réservez en ligne, c’est ici :'), 18, 275, f(400, 14), INK, 'left', 354);
-  // Le lien de la bio : il s'éclaire quand on le touche.
-  if (pressedAt(ms, TAP.bio) || (ms > TAP.bio && ms < TAP.bio + 350)) box(g, 12, 280, 300, 24, 8, '#e8eefc');
+  line(g, d.salon, 18, 234, `700 15px system-ui, sans-serif`, IG_INK, 'left', 354);
+  line(g, `${d.job} · ${d.city}`, 18, 255, `400 14px system-ui, sans-serif`, IG_MUTED, 'left', 354);
+  line(g, t('Réservez en ligne, c’est ici :'), 18, 275, `400 14px system-ui, sans-serif`, IG_INK, 'left', 354);
+  // Le lien de la bio : il « pulse » pour attirer l'œil, puis s'éclaire quand on le touche.
+  const pulse = ms < TAP.bio ? 0.5 + 0.5 * Math.sin(ms / 160) : 0;
+  if (ms > 3300 && ms < TAP.bio) box(g, 12, 280, 316, 24, 8, `rgba(0,149,246,${0.08 + 0.1 * pulse})`);
+  if (pressedAt(ms, TAP.bio) || (ms > TAP.bio && ms < TAP.bio + 380)) box(g, 12, 280, 316, 24, 8, '#d7e7ff');
   g.save();
   g.strokeStyle = '#00376b';
   g.lineWidth = 1.6;
@@ -576,15 +661,14 @@ function screenInstagram(g: CanvasRenderingContext2D, d: BioVideoData, ms: numbe
   g.roundRect(26, 286, 9, 5, 2.5);
   g.stroke();
   g.restore();
-  line(g, d.link, 40, 297, f(600, 14), '#00376b', 'left', 330);
+  line(g, d.link, 40, 297, `600 14px system-ui, sans-serif`, '#00376b', 'left', 330);
   box(g, 16, 316, 114, 34, 9, '#0095f6');
-  line(g, t('Suivre'), 73, 338, f(600, 14), '#ffffff', 'center');
+  line(g, t('Suivre'), 73, 338, `600 14px system-ui, sans-serif`, '#ffffff', 'center');
   box(g, 138, 316, 114, 34, 9, '#efefef');
-  line(g, t('Message'), 195, 338, f(600, 14), INK, 'center');
+  line(g, t('Message'), 195, 338, `600 14px system-ui, sans-serif`, IG_INK, 'center');
   box(g, 260, 316, 114, 34, 9, '#efefef');
-  line(g, t('Contacter'), 317, 338, f(600, 14), INK, 'center');
-  // Grille de publications : les vraies photos du salon.
-  g.fillStyle = INK;
+  line(g, t('Contacter'), 317, 338, `600 14px system-ui, sans-serif`, IG_INK, 'center');
+  g.fillStyle = IG_INK;
   g.fillRect(0, 372, PW / 3, 1.5);
   const size = (PW - 4) / 3;
   const pics = [d.cover, ...d.grid].filter(Boolean) as HTMLImageElement[];
@@ -602,87 +686,28 @@ function browserBar(g: CanvasRenderingContext2D, d: BioVideoData, alpha: number)
   g.save();
   g.globalAlpha = alpha;
   g.fillStyle = '#ffffff';
-  g.fillRect(0, 44, PW, 52);
+  g.fillRect(0, 44, PW, 62);
   g.fillStyle = '#ececf0';
-  g.fillRect(0, 95, PW, 1);
-  g.strokeStyle = INK;
+  g.fillRect(0, 105, PW, 1);
+  g.strokeStyle = IG_INK;
   g.lineWidth = 1.8;
   g.lineCap = 'round';
   g.beginPath();
-  g.moveTo(20, 63);
-  g.lineTo(32, 75);
-  g.moveTo(32, 63);
-  g.lineTo(20, 75);
+  g.moveTo(20, 68);
+  g.lineTo(32, 80);
+  g.moveTo(32, 68);
+  g.lineTo(20, 80);
   g.stroke();
   const host = d.link.split('/')[0] ?? d.link;
-  line(g, host, PW / 2, 68, f(600, 14), INK, 'center');
-  line(g, d.salon, PW / 2, 86, f(400, 11.5), MUTED, 'center', 240);
+  line(g, host, PW / 2, 73, `600 14px system-ui, sans-serif`, IG_INK, 'center');
+  line(g, d.salon, PW / 2, 92, `400 11.5px system-ui, sans-serif`, IG_MUTED, 'center', 240);
   g.restore();
-}
-
-/** La fenêtre d'inscription : adresse, prénom, femme ou homme, « Créer mon compte ». */
-function signupSheet(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
-  const k = out((ms - T.signup) / 420);
-  g.fillStyle = `rgba(0,0,0,${0.35 * k})`;
-  g.fillRect(0, 0, PW, PH);
-  g.save();
-  g.translate(0, (1 - k) * 560);
-  g.save();
-  g.shadowColor = 'rgba(17,17,17,.18)';
-  g.shadowBlur = 24;
-  box(g, 0, 290, PW, PH - 270, 28, '#ffffff');
-  g.restore();
-  box(g, 175, 302, 40, 5, 3, '#d8d8de');
-  line(g, t('Créez votre compte'), 20, 350, f(700, 22), INK);
-  const prenom = d.typedName.split(' ')[0] ?? d.typedName;
-  const email = `${prenom.toLowerCase()}@gmail.com`;
-  const field = (label: string, y: number, value: string, on: boolean) => {
-    line(g, label, 20, y, f(600, 13.5), INK);
-    box(g, 16, y + 8, 358, 50, 14, '#f4f4f6', on ? INK : undefined, on ? 1.5 : 1);
-    line(g, value, 32, y + 40, f(400, 16), INK);
-    if (on && Math.floor(ms / 400) % 2 === 0) {
-      g.font = f(400, 16);
-      g.fillStyle = INK;
-      g.fillRect(33 + g.measureText(value).width, y + 22, 1.5, 22);
-    }
-  };
-  const tEmail = typed(email, ms, T.signup + 450, T.signup + 1150);
-  const tPrenom = typed(prenom, ms, T.signup + 1300, T.signup + 1650);
-  field(t('Adresse e-mail'), 384, tEmail, ms < T.signup + 1250);
-  field(t('Prénom'), 460, tPrenom, ms >= T.signup + 1250 && ms < TAP.femme - 200);
-  line(g, t('Vous êtes'), 20, 550, f(600, 13.5), INK);
-  const homme = d.typedName.startsWith('Yacine');
-  const choisi = ms > TAP.femme;
-  [
-    { label: t('Femme'), x: 16, fond: '#fde7ef', on: choisi && !homme, tap: !homme },
-    { label: t('Homme'), x: 203, fond: '#e3efff', on: choisi && homme, tap: homme },
-  ].forEach((tile) => {
-    g.save();
-    pressScale(g, tile.x + 85, 604, tile.tap && pressedAt(ms, TAP.femme));
-    box(g, tile.x, 560, 171, 92, 18, '#ffffff', tile.on ? INK : '#e6e6ea', tile.on ? 2 : 1);
-    g.fillStyle = tile.fond;
-    g.beginPath();
-    g.arc(tile.x + 85, 592, 20, 0, Math.PI * 2);
-    g.fill();
-    line(g, tile.label, tile.x + 85, 638, f(600, 15), INK, 'center');
-    g.restore();
-  });
-  g.save();
-  pressScale(g, PW / 2, BTN_Y + 26, pressedAt(ms, TAP.create));
-  box(g, 16, BTN_Y, 358, 52, 26, choisi ? INK : '#ececf0');
-  line(g, t('Créer mon compte'), PW / 2, BTN_Y + 33, f(600, 16), choisi ? '#ffffff' : SUBTLE, 'center');
-  g.restore();
-  g.restore();
-}
-
-function typed(text: string, ms: number, from: number, to: number) {
-  return text.slice(0, Math.round(text.length * clamp((ms - from) / Math.max(1, to - from))));
 }
 
 /* ------------------------------ Le curseur ------------------------------ */
 
 /**
- * Curseur MAIN (index levé), comme le curseur d'un ordinateur : blanc, contour noir épais, ombre grise
+ * Curseur MAIN (index levé), comme le curseur d'un ordinateur : blanc, contour encre, ombre grise
  * décalée. La pointe de l'index est en (8,1) dans un dessin de 24 × 24.
  */
 const HAND = new Path2D(
@@ -690,33 +715,30 @@ const HAND = new Path2D(
 );
 const FINGERS = new Path2D('M10.1 9.5v3.4M14 10.4v2.7M17.8 11.5v2');
 
+const serviceBtn = { x: 330, y: SERVICE_Y + 36 };
+const GOOGLE = { x: 250, y: 522 };
+
 /** Images clés du curseur, en coordonnées de l'écran du téléphone : [ms, x, y]. */
 function cursorPath(d: BioVideoData): [number, number, number][] {
   const p = hourAt(PICK_HOUR(d));
-  const choose = { x: 316, y: SERVICE_Y + 37 };
-  const tile = d.typedName.startsWith('Yacine') ? { x: 288, y: 604 } : { x: 101, y: 604 };
+  const hx = p.x + HOUR_W / 2;
+  const hy = p.y + HOUR_H / 2;
   return [
-    [1100, 360, 900],
-    [TAP.bio - 450, BIO_LINK.x, BIO_LINK.y],
-    [TAP.bio + 250, BIO_LINK.x, BIO_LINK.y],
-    [T.browser + 700, 330, 700],
-    [TAP.choose - 450, choose.x, choose.y],
-    [TAP.choose + 200, choose.x, choose.y],
-    [TAP.day - 450, dayX(d), WEEK_Y + 32],
-    [TAP.day + 200, dayX(d), WEEK_Y + 32],
-    [TAP.hour - 450, p.x + HOUR_W / 2, p.y + HOUR_H / 2],
-    [TAP.hour + 200, p.x + HOUR_W / 2, p.y + HOUR_H / 2],
-    [TAP.next - 450, 250, BTN_Y + 28],
-    [TAP.next + 250, 250, BTN_Y + 28],
-    [T.signup + 900, 330, 700],
-    [TAP.femme - 450, tile.x, tile.y],
-    [TAP.femme + 150, tile.x, tile.y],
-    [TAP.create - 400, 240, BTN_Y + 28],
-    [TAP.create + 250, 240, BTN_Y + 28],
-    [T.stepRecap + 300, 300, 620],
-    [TAP.confirm - 450, 230, BTN_Y + 28],
-    [TAP.confirm + 250, 230, BTN_Y + 28],
-    [T.done + 300, 360, 900],
+    [3200, 340, 820],
+    [TAP.bio - 500, BIO_LINK.x, BIO_LINK.y],
+    [TAP.bio + 260, BIO_LINK.x, BIO_LINK.y],
+    [T.browser + 700, 300, 760],
+    [TAP.choose - 520, serviceBtn.x, serviceBtn.y],
+    [TAP.choose + 240, serviceBtn.x, serviceBtn.y],
+    [T.when + 400, 280, 640],
+    [TAP.day - 480, 210, DAY_Y + 30],
+    [TAP.day + 200, 210, DAY_Y + 30],
+    [TAP.hour - 520, hx, hy],
+    [TAP.hour + 260, hx, hy],
+    [T.ident + 600, 300, 700],
+    [TAP.google - 520, GOOGLE.x, GOOGLE.y],
+    [TAP.google + 300, GOOGLE.x, GOOGLE.y],
+    [T.done + 200, 360, 900],
   ];
 }
 
@@ -730,22 +752,31 @@ function cursorAt(keys: [number, number, number][], ms: number): [number, number
     const b = keys[i + 1]!;
     if (ms >= a[0] && ms <= b[0]) {
       const k = ease((ms - a[0]) / Math.max(1, b[0] - a[0]));
-      return [mix(a[1], b[1], k), mix(a[2], b[2], k)];
+      // Trajectoire en léger arc, comme un vrai geste de la main.
+      const arc = Math.sin(k * Math.PI) * Math.min(40, Math.hypot(b[1] - a[1], b[2] - a[2]) * 0.12);
+      return [mix(a[1], b[1], k) + arc, mix(a[2], b[2], k) - arc * 0.5];
     }
   }
   return [last[1], last[2]];
 }
 
 /** Le clic : une onde qui s'ouvre et trois éclats autour du doigt. */
-function clickBurst(g: CanvasRenderingContext2D, x: number, y: number, k: number, scale: number) {
+function clickBurst(g: CanvasRenderingContext2D, x: number, y: number, k: number, scale: number, color: string) {
   if (k <= 0 || k >= 1) return;
   g.save();
-  g.strokeStyle = `rgba(17,17,17,${0.5 * (1 - k)})`;
+  g.fillStyle = color;
+  g.globalAlpha = 0.18 * (1 - k);
+  g.beginPath();
+  g.arc(x, y, (8 + k * 30) * scale, 0, Math.PI * 2);
+  g.fill();
+  g.globalAlpha = 0.7 * (1 - k);
+  g.strokeStyle = color;
   g.lineWidth = 2.5 * scale;
   g.beginPath();
   g.arc(x, y, (10 + k * 34) * scale, 0, Math.PI * 2);
   g.stroke();
-  g.strokeStyle = `rgba(17,17,17,${0.9 * (1 - k)})`;
+  g.globalAlpha = 0.95 * (1 - k);
+  g.strokeStyle = INK;
   g.lineWidth = 3 * scale;
   g.lineCap = 'round';
   [-2.4, -1.57, -0.74].forEach((a) => {
@@ -759,18 +790,16 @@ function clickBurst(g: CanvasRenderingContext2D, x: number, y: number, k: number
   g.restore();
 }
 
-function drawCursor(g: CanvasRenderingContext2D, x: number, y: number, ms: number, taps: number[], scale = 1) {
-  const tap = taps.find((v) => ms >= v - 60 && ms <= v + 520);
-  if (tap !== undefined) clickBurst(g, x, y, (ms - tap) / 520, scale);
+function drawCursor(g: CanvasRenderingContext2D, x: number, y: number, ms: number, taps: number[], color: string, scale = 1) {
+  const tap = taps.find((v) => ms >= v - 60 && ms <= v + 560);
+  if (tap !== undefined) clickBurst(g, x, y, (ms - tap) / 560, scale, color);
   const down = tap !== undefined && Math.abs(ms - tap) < 140;
-  const s = 2.9 * scale * (down ? 0.88 : 1);
+  const s = 2.7 * scale * (down ? 0.86 : 1);
   g.save();
-  // La pointe de l'index se pose un peu sous le centre du bouton : le libellé reste lisible.
   g.translate(x + 10 * scale, y + 12 * scale);
   g.rotate(-0.18);
   g.scale(s, s);
   g.translate(-8, -1.2);
-  // Ombre portée grise, décalée, comme le curseur de l'ordinateur.
   g.save();
   g.translate(1.6, 1.8);
   g.fillStyle = 'rgba(0,0,0,.22)';
@@ -788,17 +817,64 @@ function drawCursor(g: CanvasRenderingContext2D, x: number, y: number, ms: numbe
   g.restore();
 }
 
+/* ------------------------------ La caméra virtuelle ------------------------------ */
+
+/**
+ * Le « punch-in » des montages produit : avant chaque geste, la caméra s'approche de l'endroit
+ * touché ; après, elle revient au plan large. [ms, zoom, x, y] en coordonnées de l'écran du téléphone.
+ */
+function cameraKeys(d: BioVideoData): [number, number, number, number][] {
+  const p = hourAt(PICK_HOUR(d));
+  const C = [195, 430] as const;
+  return [
+    [T.phoneIn, 1, ...C],
+    [3500, 1, ...C],
+    [4050, 1.42, BIO_LINK.x + 40, BIO_LINK.y + 30],
+    [4850, 1.42, BIO_LINK.x + 40, BIO_LINK.y + 30],
+    [5250, 1, ...C],
+    [6100, 1, ...C],
+    [6600, 1.34, 260, SERVICE_Y + 60],
+    [7350, 1.34, 260, SERVICE_Y + 60],
+    [7750, 1, ...C],
+    [8300, 1, ...C],
+    [9050, 1.3, p.x + 80, p.y + 10],
+    [9950, 1.3, p.x + 80, p.y + 10],
+    [10350, 1, ...C],
+    [11100, 1, ...C],
+    [11500, 1.36, 200, 540],
+    [12150, 1.36, 200, 540],
+    [12600, 1, ...C],
+    [13300, 1.06, 195, 330],
+    [T.end, 1.12, 195, 330],
+  ];
+}
+
+function cameraAt(keys: [number, number, number, number][], ms: number): [number, number, number] {
+  if (ms <= keys[0]![0]) return [keys[0]![1], keys[0]![2], keys[0]![3]];
+  for (let i = 0; i + 1 < keys.length; i += 1) {
+    const a = keys[i]!;
+    const b = keys[i + 1]!;
+    if (ms >= a[0] && ms <= b[0]) {
+      const k = ease((ms - a[0]) / Math.max(1, b[0] - a[0]));
+      return [mix(a[1], b[1], k), mix(a[2], b[2], k), mix(a[3], b[3], k)];
+    }
+  }
+  const l = keys[keys.length - 1]!;
+  return [l[1], l[2], l[3]];
+}
+
 /* ------------------------------ Le montage ------------------------------ */
 
 function phoneFrame(g: CanvasRenderingContext2D, x: number, y: number, s: number, draw: () => void, overlay: () => void) {
   g.save();
   g.translate(x, y);
   g.scale(s, s);
-  g.shadowColor = 'rgba(17,17,17,.20)';
-  g.shadowBlur = 60;
-  g.shadowOffsetY = 24;
+  g.save();
+  g.shadowColor = 'rgba(47,44,40,.28)';
+  g.shadowBlur = 70;
+  g.shadowOffsetY = 30;
   box(g, -12, -12, PW + 24, PH + 24, 60, '#0b0b0c');
-  g.shadowColor = 'transparent';
+  g.restore();
   box(g, -9, -9, PW + 18, PH + 18, 57, null, '#2c2c2e', 1.5);
   g.save();
   g.beginPath();
@@ -806,11 +882,17 @@ function phoneFrame(g: CanvasRenderingContext2D, x: number, y: number, s: number
   g.clip();
   draw();
   // Barre d'état et îlot.
-  line(g, '9:41', 54, 33, f(600, 15), INK, 'center');
+  line(g, '9:41', 54, 33, `600 15px system-ui, sans-serif`, IG_INK, 'center');
   box(g, 137, 12, 116, 32, 16, '#000000');
-  [5, 8, 11, 14].forEach((h, i) => box(g, 314 + i * 5, 30 - h, 3, h, 1, INK));
-  box(g, 338, 19, 26, 12, 4, null, INK, 1.4);
-  box(g, 340, 21, 18, 8, 2, INK);
+  [5, 8, 11, 14].forEach((h, i) => box(g, 314 + i * 5, 30 - h, 3, h, 1, IG_INK));
+  box(g, 338, 19, 26, 12, 4, null, IG_INK, 1.4);
+  box(g, 340, 21, 18, 8, 2, IG_INK);
+  // Reflet de verre sur l'écran : une diagonale très légère.
+  const shine = g.createLinearGradient(0, 0, PW, PH);
+  shine.addColorStop(0, 'rgba(255,255,255,.10)');
+  shine.addColorStop(0.35, 'rgba(255,255,255,0)');
+  g.fillStyle = shine;
+  g.fillRect(0, 0, PW, PH);
   g.restore();
   overlay();
   g.restore();
@@ -818,84 +900,152 @@ function phoneFrame(g: CanvasRenderingContext2D, x: number, y: number, s: number
 
 function drawScreens(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   // Instagram, puis la page du salon qui MONTE par-dessus (le navigateur d'Instagram s'ouvre).
-  if (ms < T.stepWhen) {
-    if (ms < T.browser + 500) screenInstagram(g, d, ms);
+  if (ms < T.when) {
+    if (ms < T.browser + 520) screenInstagram(g, d, ms);
     if (ms >= T.browser) {
-      const k = out((ms - T.browser) / 460);
+      const k = outQuint((ms - T.browser) / 520);
       g.save();
       g.translate(0, (1 - k) * PH);
       screenSalon(g, d, ms);
-      browserBar(g, d, 1 - clamp((ms - T.browser - 1100) / 350));
+      browserBar(g, d, 1 - clamp((ms - T.browser - 1200) / 350));
       g.restore();
     }
     return;
   }
-  // Ensuite les étapes glissent de droite à gauche, comme dans l'application.
-  const steps: [number, () => void][] = [
-    [T.stepWhen, () => screenWhen(g, d, ms)],
-    [T.stepRecap, () => screenRecap(g, d, ms)],
-    [T.done, () => screenDone(g, d, ms - T.done)],
+  // Ensuite les écrans glissent de droite à gauche (« Quand ? »), la page défile (identification),
+  // puis la confirmation se pose.
+  const steps: [number, () => void, 'slide' | 'scroll' | 'fade'][] = [
+    [T.when, () => screenWhen(g, d, ms), 'slide'],
+    [T.ident, () => screenIdent(g, d, ms), 'scroll'],
+    [T.done, () => screenDone(g, d, ms - T.done), 'fade'],
   ];
   const i = steps.reduce((a, s, n) => (ms >= s[0] ? n : a), 0);
-  const k = out((ms - steps[i]![0]) / 380);
+  const [from, draw, kind] = steps[i]!;
+  const k = outQuint((ms - from) / 460);
   const prev = i > 0 ? steps[i - 1]![1] : () => screenSalon(g, d, ms);
-  if (k < 1) {
+  if (k >= 1) {
+    draw();
+    return;
+  }
+  if (kind === 'slide') {
     g.save();
     g.translate(-k * PW * 0.3, 0);
     prev();
     g.fillStyle = `rgba(0,0,0,${0.12 * k})`;
     g.fillRect(0, 0, PW, PH);
     g.restore();
-  }
-  g.save();
-  g.translate((1 - k) * PW, 0);
-  steps[i]![1]();
-  g.restore();
-  // La fenêtre d'inscription monte sur « Quand ? », après « Continuer ».
-  if (ms >= T.signup && ms < T.stepRecap + 380) {
     g.save();
-    if (ms >= T.stepRecap) g.translate(-k * PW * 0.3, 0);
-    signupSheet(g, d, ms);
+    g.translate((1 - k) * PW, 0);
+    draw();
+    g.restore();
+  } else if (kind === 'scroll') {
+    // Le contenu remonte d'un bloc : l'heure choisie se replie, l'identification apparaît.
+    g.save();
+    g.globalAlpha = 1 - k;
+    g.translate(0, -k * 60);
+    prev();
+    g.restore();
+    g.save();
+    g.globalAlpha = k;
+    g.translate(0, (1 - k) * 60);
+    draw();
+    g.restore();
+  } else {
+    prev();
+    g.save();
+    g.globalAlpha = k;
+    g.translate(PW / 2, PH / 2);
+    g.scale(mix(1.04, 1, k), mix(1.04, 1, k));
+    g.translate(-PW / 2, -PH / 2);
+    draw();
     g.restore();
   }
 }
 
-/** Le titre au-dessus du téléphone : l'étape en pastille, puis ce qu'il faut faire, en grand. */
+/* ------------------------------ Titres et progression ------------------------------ */
+
 type Step = { from: number; n: number; title: string };
-const ETAPES = 4;
 function stepsOf(d: BioVideoData): Step[] {
   return [
-    { from: T.phoneIn, n: -1, title: t('Touchez le lien de la bio') },
+    { from: T.phoneIn, n: 0, title: t('Touchez le lien de la bio') },
     { from: T.browser, n: 1, title: t('Choisissez la prestation') },
-    { from: T.stepWhen, n: 2, title: t('Choisissez le jour et l’heure') },
-    { from: T.signup, n: 3, title: t('Créez votre compte') },
-    { from: T.stepRecap, n: 4, title: t('Confirmez en un clic') },
-    { from: T.done, n: 0, title: d.confirmed ? t('C’est réservé.') : t('Demande envoyée.') },
+    { from: T.when, n: 2, title: t('Le jour et l’heure') },
+    { from: T.ident, n: 3, title: t('Identifiez-vous en un geste') },
+    { from: T.done, n: 4, title: d.confirmed ? t('C’est réservé.') : t('Demande envoyée.') },
   ];
 }
 
+const ARABE = /[؀-ۿ]/;
+/** Écrit de droite à gauche (arabe) : titres alignés à droite. */
+const rtl = () => getLocale() === 'ar';
+
+/**
+ * Un titre qui monte MOT À MOT, chaque mot sortant d'un masque (typographie animée). En arabe, la
+ * phrase monte d'un bloc, alignée à droite : découpée en mots, elle se lisait dans le désordre.
+ */
+function kinetic(g: CanvasRenderingContext2D, text: string, x: number, y: number, font: string, color: string, ms: number, stagger = 70, align: 'left' | 'center' = 'left') {
+  g.font = font;
+  if (ARABE.test(text)) {
+    const k = outQuint(ms / 560);
+    if (k <= 0) return;
+    const size = Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 40);
+    g.save();
+    g.globalAlpha *= k;
+    g.direction = 'rtl';
+    line(g, text, align === 'center' ? x : W - x, y + (1 - k) * size * 0.6, font, color, align === 'center' ? 'center' : 'right');
+    g.restore();
+    return;
+  }
+  const words = text.split(' ');
+  const space = g.measureText(' ').width;
+  const widths = words.map((w) => g.measureText(w).width);
+  const total = widths.reduce((a, b) => a + b, 0) + space * (words.length - 1);
+  let cx = align === 'center' ? x - total / 2 : x;
+  const size = Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 40);
+  words.forEach((w, i) => {
+    const k = outQuint((ms - i * stagger) / 520);
+    if (k > 0) {
+      g.save();
+      g.beginPath();
+      g.rect(cx - 4, y - size * 1.05, widths[i]! + 8, size * 1.4);
+      g.clip();
+      g.globalAlpha = k;
+      line(g, w, cx, y + (1 - k) * size * 0.9, font, color);
+      g.restore();
+    }
+    cx += widths[i]! + space;
+  });
+}
+
 function drawStepTitle(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
-  const step = [...stepsOf(d)].reverse().find((x) => ms >= x.from);
-  if (!step) return;
+  const steps = stepsOf(d);
+  const idx = steps.reduce((a, s, i) => (ms >= s.from ? i : a), -1);
+  if (idx < 0) return;
+  const step = steps[idx]!;
   const k = ms - step.from;
-  // Pas de barres de progression : en story, Instagram affiche déjà les siennes juste au-dessus.
-  const y0 = SAFE_TOP + 8;
-  const a = out(k / 380);
+  // Voile crème derrière les titres : lisibles même quand la caméra approche le téléphone.
+  const v = g.createLinearGradient(0, 0, 0, 350);
+  v.addColorStop(0, 'rgba(250,249,245,.98)');
+  v.addColorStop(0.82, 'rgba(250,249,245,.95)');
+  v.addColorStop(1, 'rgba(250,249,245,0)');
+  g.fillStyle = v;
+  g.fillRect(0, 0, W, 350);
+  const y0 = SAFE_TOP;
+  // La pastille : Instagram, le numéro d'étape, ou la coche verte.
+  const a = out(k / 360);
   g.save();
   g.globalAlpha = a;
-  g.translate(0, (1 - a) * 18);
-  if (step.n > 0) {
-    box(g, 48, y0, 148, 40, 20, INK);
-    line(g, t('Étape {n} sur {total}', { n: step.n, total: ETAPES }), 122, y0 + 27, f(600, 18), '#ffffff', 'center');
-  } else if (step.n < 0) {
-    const ig = g.createLinearGradient(48, y0 + 40, 210, y0);
+  g.translate((1 - a) * -20, 0);
+  if (step.n === 0) {
+    const ig = g.createLinearGradient(48, y0 + 40, 220, y0);
     IG.forEach((c, i) => ig.addColorStop(i / (IG.length - 1), c));
-    box(g, 48, y0, 156, 40, 20, null);
-    g.fillStyle = ig;
-    g.fill();
-    line(g, 'Instagram', 126, y0 + 27, f(700, 18), '#ffffff', 'center');
+    box(g, 48, y0, 150, 40, 20, ig);
+    line(g, 'Instagram', 123, y0 + 27, f(600, 17), '#ffffff', 'center');
+  } else if (step.n < 4) {
+    gloss(g, 48, y0, 150, 40, 20);
+    line(g, t('Étape {n} sur {total}', { n: step.n, total: 3 }), 123, y0 + 27, f(500, 16), '#ffffff', 'center');
   } else {
-    g.fillStyle = GREEN;
+    g.fillStyle = OK;
     g.beginPath();
     g.arc(68, y0 + 20, 20, 0, Math.PI * 2);
     g.fill();
@@ -908,66 +1058,161 @@ function drawStepTitle(g: CanvasRenderingContext2D, ms: number, d: BioVideoData)
     g.lineTo(78, y0 + 13);
     g.stroke();
   }
-  const px = fit(g, step.title, 800, 46, W - 96);
-  line(g, step.title, 48, y0 + 92, f(800, px), INK);
   g.restore();
-  line(g, step.n < 0 ? `@${d.handle}` : d.salon, 48, y0 + 128, f(500, 20), MUTED, 'left', W - 96);
+  const px = fit(g, step.title, (p) => fl(600, p), 50, W - 96);
+  kinetic(g, step.title, 48, y0 + 102, fl(600, px), INK, k - 80);
+  g.globalAlpha = out((k - 300) / 400);
+  line(g, step.n === 0 ? `@${d.handle}` : d.salon, rtl() ? W - 48 : 48, y0 + 140, f(400, 20), MUTED, rtl() ? 'right' : 'left', W - 96);
+  g.globalAlpha = 1;
+  // Barre de progression en quatre segments : lien, prestation, créneau, confirmé.
+  const segs = 4;
+  const gap = 8;
+  const sw = (W - 96 - gap * (segs - 1)) / segs;
+  const yb = y0 + 166;
+  for (let i = 0; i < segs; i += 1) {
+    box(g, 48 + i * (sw + gap), yb, sw, 5, 3, 'rgba(47,44,40,.10)');
+    const start = [T.phoneIn, T.browser, T.when, T.ident][i]!;
+    const stop = [T.browser, T.when, T.ident, T.done][i]!;
+    const p = clamp((ms - start) / (stop - start));
+    if (p > 0) box(g, 48 + i * (sw + gap), yb, sw * p, 5, 3, i === segs - 1 && ms >= T.done ? OK : INK);
+  }
 }
 
-/** L'ouverture, brève : le logo et le nom du salon, « Comment réserver chez nous ». */
-function drawIntro(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
-  const leave = ease((ms - 450) / 450);
-  g.save();
-  g.globalAlpha = 1 - leave;
-  g.translate(0, -leave * 120);
-  const a = spring(ms / 500);
-  g.save();
-  g.translate(W / 2, 470);
-  g.scale(a, a);
-  g.strokeStyle = '#ffffff';
-  g.lineWidth = 10;
-  g.beginPath();
-  g.arc(0, 0, 104, 0, Math.PI * 2);
-  g.stroke();
-  avatar(g, d, 0, 0, 98);
-  g.restore();
-  g.globalAlpha = (1 - leave) * out((ms - 120) / 350);
-  line(g, d.salon, W / 2, 680, f(800, fit(g, d.salon, 800, 62, W - 80)), INK, 'center');
-  // L'accroche, dès la première seconde : ce qui fait rester sur la story.
-  line(g, t('Réservez en 3 clics, sans appeler'), W / 2, 740, f(600, 32), INK, 'center', W - 80);
-  g.restore();
-}
+/* ------------------------------ L'accroche ------------------------------ */
 
-/** Le fond : la photo du salon très floutée sous un voile clair (repli : fond uni). */
-function drawBackdrop(g: CanvasRenderingContext2D, d: BioVideoData) {
-  g.fillStyle = BG;
-  g.fillRect(0, 0, W, H);
-  if (!d.cover) return;
-  g.save();
-  g.filter = 'blur(48px) saturate(1.1)';
-  picture(g, d.cover, -80, -80, W + 160, 1100);
-  g.filter = 'none';
-  g.restore();
-  // Voile clair qui s'épaissit vers le bas, sans démarcation : la photo se fond dans le fond.
-  const v = g.createLinearGradient(0, 0, 0, 980);
-  v.addColorStop(0, 'rgba(247,247,249,.70)');
-  v.addColorStop(0.5, 'rgba(247,247,249,.88)');
-  v.addColorStop(1, BG);
+/** Plein cadre sur la photo du salon : lent zoom, nom mot à mot, étoiles, accroche. */
+function drawHook(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  const z = mix(1.18, 1.04, ease(ms / T.iris));
+  if (d.cover) picture(g, d.cover, 0, 0, W, H, 0, z, Math.sin(ms / 1400) * 12, -ms * 0.01);
+  else {
+    const gr = g.createLinearGradient(0, 0, W, H);
+    gr.addColorStop(0, d.accent);
+    gr.addColorStop(1, INK);
+    g.fillStyle = gr;
+    g.fillRect(0, 0, W, H);
+  }
+  // Dégradé cinéma : lisibilité du texte, sans écraser la photo.
+  const v = g.createLinearGradient(0, H * 0.35, 0, H);
+  v.addColorStop(0, 'rgba(18,16,14,0)');
+  v.addColorStop(0.55, 'rgba(18,16,14,.55)');
+  v.addColorStop(1, 'rgba(18,16,14,.86)');
   g.fillStyle = v;
-  g.fillRect(0, 0, W, 980);
-  g.fillStyle = BG;
-  g.fillRect(0, 979, W, H - 979);
+  g.fillRect(0, 0, W, H);
+  const top = g.createLinearGradient(0, 0, 0, 300);
+  top.addColorStop(0, 'rgba(18,16,14,.45)');
+  top.addColorStop(1, 'rgba(18,16,14,0)');
+  g.fillStyle = top;
+  g.fillRect(0, 0, W, 300);
+  // Lumière qui traverse (« light leak ») aux couleurs du salon.
+  const lk = clamp((ms - 300) / 1800);
+  if (lk > 0 && lk < 1) {
+    const lx = mix(-300, W + 300, lk);
+    const leak = g.createRadialGradient(lx, 420, 10, lx, 420, 420);
+    leak.addColorStop(0, `${d.accent}55`);
+    leak.addColorStop(1, `${d.accent}00`);
+    g.fillStyle = leak;
+    g.fillRect(0, 0, W, H);
+  }
+  // Marque discrète en haut.
+  g.globalAlpha = out((ms - 100) / 500);
+  g.font = `600 26px ${SANS}`;
+  const w1 = g.measureText('Salon ').width;
+  line(g, 'Salon ', 48, SAFE_TOP + 20, `600 26px ${SANS}`, '#ffffff');
+  line(g, 'DZ', 48 + w1, SAFE_TOP + 20, `400 26px ${SANS}`, 'rgba(255,255,255,.72)');
+  g.globalAlpha = 1;
+  // Le nom du salon, mot à mot.
+  const px = fit(g, d.salon, (p) => fl(600, p), 76, W - 96);
+  g.save();
+  g.shadowColor = 'rgba(0,0,0,.35)';
+  g.shadowBlur = 24;
+  kinetic(g, d.salon, 48, 900, fl(600, px), '#ffffff', ms - 250, 110);
+  g.restore();
+  // Les étoiles se posent une à une.
+  if (d.ratingValue) {
+    for (let i = 0; i < 5; i += 1) {
+      const k = spring((ms - 750 - i * 80) / 420);
+      if (k <= 0) continue;
+      g.save();
+      g.translate(64 + i * 40, 950);
+      g.scale(k, k);
+      star(g, 0, 0, 15, GOLD, clamp(d.ratingValue - i));
+      g.restore();
+    }
+    g.globalAlpha = out((ms - 1150) / 400);
+    line(g, d.rating, 64 + 5 * 40 - 4, 960, f(500, 24), '#ffffff');
+    g.globalAlpha = 1;
+  }
+  // L'accroche, dans une pastille de verre qui glisse.
+  const a = outQuint((ms - 1250) / 600);
+  if (a > 0) {
+    const text = t('Réservez en 3 clics, sans appeler');
+    g.font = f(500, 28);
+    const tw = Math.min(W - 96, g.measureText(text).width + 52);
+    g.save();
+    g.globalAlpha = a;
+    g.translate((1 - a) * -40, 0);
+    box(g, 48, 1000, tw, 62, 31, 'rgba(255,255,255,.18)', 'rgba(255,255,255,.35)', 1.5);
+    g.fillStyle = d.accent;
+    g.beginPath();
+    g.arc(76, 1031, 7, 0, Math.PI * 2);
+    g.fill();
+    line(g, text, 94, 1041, f(500, 26), '#ffffff', 'left', tw - 60);
+    g.restore();
+  }
 }
 
-const LINK_Y = 640;
-/** Les deux boutiques apparaissent après le dernier clic sur le lien. */
-const STORES_AT = 17500;
+/* ------------------------------ Confettis ------------------------------ */
+
+function drawConfetti(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  if (ms < 0 || ms > 2800) return;
+  const colors = [d.accent, GOLD, OK, INK, '#e3ecf5'];
+  for (let i = 0; i < 70; i += 1) {
+    const delay = rand(i) * 350;
+    const k = (ms - delay) / 2400;
+    if (k <= 0 || k >= 1) continue;
+    // Partent du centre en éventail, puis retombent en flottant.
+    const ang = -Math.PI / 2 + (rand(i + 7) - 0.5) * 2.4;
+    const v = 520 + rand(i + 3) * 520;
+    const x = W / 2 + Math.cos(ang) * v * k + Math.sin(k * 9 + i) * 18;
+    const y = 640 + Math.sin(ang) * v * k + 900 * k * k;
+    g.save();
+    g.globalAlpha = 1 - Math.pow(k, 3);
+    g.translate(x, y);
+    g.rotate(k * 12 * (rand(i + 11) - 0.5) * 2);
+    g.scale(1, Math.abs(Math.cos(k * 14 + i)));
+    g.fillStyle = colors[i % colors.length]!;
+    if (i % 3 === 0) {
+      g.beginPath();
+      g.arc(0, 0, 6, 0, Math.PI * 2);
+      g.fill();
+    } else g.fillRect(-6, -10, 12, 20);
+    g.restore();
+  }
+}
+
+/* ------------------------------ Le fond ------------------------------ */
+
+/** Fond crème et deux halos qui respirent (couleur du salon et bleu doux). */
+function drawBackdrop(g: CanvasRenderingContext2D, d: BioVideoData, ms: number) {
+  g.fillStyle = CREAM;
+  g.fillRect(0, 0, W, H);
+  const halo = (x: number, y: number, r: number, c: string) => {
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, c);
+    gr.addColorStop(1, 'rgba(250,249,245,0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, W, H);
+  };
+  halo(W * 0.85 + Math.sin(ms / 2200) * 40, 260 + Math.cos(ms / 2600) * 30, 520, `${d.accent}30`);
+  halo(W * 0.1 + Math.cos(ms / 2400) * 40, H * 0.78, 560, 'rgba(201,198,187,.38)');
+}
+
+/* ------------------------------ Les boutiques ------------------------------ */
 
 /** Logos officiels des boutiques (tracés 24 × 24, Simple Icons, CC0). */
 const APPLE = new Path2D(
   'M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701',
 );
-/** Le triangle de Google Play en quatre pièces, chacune à sa couleur officielle. */
 const PLAY: [string, Path2D][] = [
   ['#00a0ff', new Path2D('M1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924z')],
   ['#00f076', new Path2D('M13.544 10.989l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973z')],
@@ -978,9 +1223,9 @@ const PLAY: [string, Path2D][] = [
 /** Badge de boutique, noir comme les badges officiels : logo, petite ligne, nom de la boutique. */
 function storeBadge(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, kind: 'apple' | 'google') {
   g.save();
-  g.shadowColor = 'rgba(17,17,17,.18)';
-  g.shadowBlur = 16;
-  g.shadowOffsetY = 5;
+  g.shadowColor = 'rgba(47,44,40,.22)';
+  g.shadowBlur = 18;
+  g.shadowOffsetY = 6;
   box(g, x, y, w, h, 16, '#000000');
   g.restore();
   box(g, x + 1, y + 1, w - 2, h - 2, 15, null, '#a6a6a6', 1.5);
@@ -1001,8 +1246,8 @@ function storeBadge(g: CanvasRenderingContext2D, x: number, y: number, w: number
   const tx = x + 22 + 24 * s + 14;
   const max = w - (tx - x) - 12;
   const store = kind === 'apple' ? t('l’App Store') : 'Google Play';
-  line(g, kind === 'apple' ? t('Télécharger dans') : t('DISPONIBLE SUR'), tx, y + 31, f(500, 15), '#ffffff', 'left', max);
-  line(g, store, tx, y + 60, f(700, Math.min(28, fit(g, 'Google Play', 700, 28, max), fit(g, store, 700, 28, max))), '#ffffff', 'left', max);
+  line(g, kind === 'apple' ? t('Télécharger dans') : t('DISPONIBLE SUR'), tx, y + 31, `500 15px system-ui, sans-serif`, '#ffffff', 'left', max);
+  line(g, store, tx, y + 60, `700 ${Math.min(28, fit(g, 'Google Play', (p) => `700 ${p}px system-ui, sans-serif`, 28, max))}px system-ui, sans-serif`, '#ffffff', 'left', max);
 }
 
 /* ------------------------------ Le son ------------------------------ */
@@ -1016,73 +1261,116 @@ export type BioSoundCues = {
   typing: [number, number, number][];
   success: number;
   stores: number;
+  /** Impact sourd de l'accroche, montée avant la confirmation, souffles de caméra (26 nov. 2026). */
+  impact?: number;
+  riser?: number;
+  zooms?: number[];
 };
 
-export function bioSoundCues(d: BioVideoData): BioSoundCues {
-  const prenom = d.typedName.split(' ')[0] ?? d.typedName;
+export function bioSoundCues(_d: BioVideoData): BioSoundCues {
   return {
-    pop: 40,
-    taps: [TAP.bio, TAP.choose, TAP.day, TAP.hour, TAP.next, TAP.femme, TAP.create, TAP.confirm, TAP.link],
-    whooshes: [T.phoneIn - 200, T.browser, T.stepWhen, T.signup, T.stepRecap, T.done, T.end],
-    typing: [
-      [T.signup + 450, T.signup + 1150, prenom.length + 10],
-      [T.signup + 1300, T.signup + 1650, prenom.length],
-    ],
-    success: T.done + 250,
+    pop: 260,
+    taps: [TAP.bio, TAP.choose, TAP.day, TAP.hour, TAP.google, TAP.link],
+    whooshes: [T.iris - 120, T.browser, T.when, T.ident, T.done, T.end],
+    typing: [],
+    success: T.done + 300,
     stores: STORES_AT + 150,
+    impact: 60,
+    riser: T.done + 120,
+    zooms: [3600, 6150, 8350, 11150],
   };
 }
 
-/** La voix off : sept répliques, calées sur les écrans ; la voix suit le type de salon. */
-const VOICE_AT = [150, 2650, 5900, 8500, 11000, 14500, STORES_AT + 100];
+/** La voix off : sept répliques calées sur le montage ; la voix suit le type de salon. */
+const VOICE_AT = [200, 3000, 5300, 7800, 10500, 12650, STORES_AT];
 export function bioVoiceLines(d: BioVideoData): VoiceLine[] {
   const lang = getLocale();
-  // Seule la voix FRANÇAISE est enregistrée (`public/video/voix/fr-*`) : ailleurs, pas de voix plutôt
-  // que sept requêtes en 404 à chaque fabrication de la vidéo (audit du 26 nov. 2026).
+  // Seule la voix FRANÇAISE est enregistrée : ailleurs, pas de voix plutôt que des requêtes en 404.
   if (lang !== 'fr') return [];
   const who = d.men ? 'h' : 'f';
-  return VOICE_AT.map((at, i) => ({ at, file: `/video/voix/${lang}-${who}-${i + 1}.mp3` }));
+  return VOICE_AT.map((at, i) => ({ at, file: `/video/voix/${lang}-${who}-${i + 1}.wav` }));
 }
 
-/** La fin : le nom, « Réservez en 30 secondes », et le lien — que le curseur vient cliquer. */
+/* ------------------------------ La fin ------------------------------ */
+
+const LINK_Y = 690;
+
 function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
-  const a = spring(ms / 600);
+  // Photo cerclée d'un anneau qui tourne (couleur du salon → or).
+  const a = spring(ms / 700);
   g.save();
-  g.translate(W / 2, 320);
+  g.translate(W / 2, 330);
   g.scale(a, a);
-  g.strokeStyle = '#ffffff';
-  g.lineWidth = 8;
+  const ring = g.createConicGradient(ms / 900, 0, 0);
+  ring.addColorStop(0, d.accent);
+  ring.addColorStop(0.5, GOLD);
+  ring.addColorStop(1, d.accent);
+  g.strokeStyle = ring;
+  g.lineWidth = 7;
   g.beginPath();
-  g.arc(0, 0, 82, 0, Math.PI * 2);
+  g.arc(0, 0, 100, 0, Math.PI * 2);
   g.stroke();
-  avatar(g, d, 0, 0, 78);
+  g.strokeStyle = CREAM;
+  g.lineWidth = 6;
+  g.beginPath();
+  g.arc(0, 0, 93, 0, Math.PI * 2);
+  g.stroke();
+  avatar(g, d, 0, 0, 90);
   g.restore();
-  g.globalAlpha = out((ms - 250) / 450);
-  line(g, d.salon, W / 2, 478, f(800, fit(g, d.salon, 800, 56, W - 80)), INK, 'center');
-  if (d.rating) {
-    g.font = f(600, 26);
-    const w = g.measureText(d.rating).width;
-    star(g, W / 2 - w / 2 - 6, 517, 13);
-    line(g, d.rating, W / 2 + 14, 526, f(600, 26), INK, 'center');
+  const px = fit(g, d.salon, (p) => fl(600, p), 58, W - 80);
+  kinetic(g, d.salon, W / 2, 500, fl(600, px), INK, ms - 250, 90, 'center');
+  if (d.ratingValue) {
+    for (let i = 0; i < 5; i += 1) {
+      const k = spring((ms - 600 - i * 70) / 380);
+      if (k <= 0) continue;
+      g.save();
+      g.translate(W / 2 - 110 + i * 34, 546);
+      g.scale(k, k);
+      star(g, 0, 0, 13, GOLD, clamp(d.ratingValue - i));
+      g.restore();
+    }
+    g.globalAlpha = out((ms - 950) / 400);
+    line(g, d.rating, W / 2 + 62, 555, f(500, 22), INK);
+    g.globalAlpha = 1;
   }
-  g.globalAlpha = out((ms - 550) / 450);
-  line(g, t('Réservez en 30 secondes.'), W / 2, 600, f(700, 40), INK, 'center', W - 80);
-  // Le lien, en gros bouton noir : le curseur vient le cliquer.
-  g.globalAlpha = out((ms - 850) / 450);
-  const pressed = pressedAt(ms + T.end, TAP.link);
-  g.save();
-  pressScale(g, W / 2, LINK_Y + 42, pressed);
-  box(g, 50, LINK_Y, W - 100, 84, 42, INK);
-  // Le lien EN ENTIER : la taille baisse plutôt que de le couper.
-  const lp = fit(g, d.link, 700, 30, W - 150);
-  line(g, d.link, W / 2, LINK_Y + 53, f(700, lp), '#ffffff', 'center', W - 140);
-  g.restore();
-  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 768, f(500, 24), MUTED, 'center', W - 80);
+  kinetic(g, t('Réservez en 30 secondes.'), W / 2, 630, f(500, 34), INK, ms - 800, 70, 'center');
+  // Le lien, en noir brillant, traversé d'un reflet ; le curseur vient le cliquer.
+  const la = outQuint((ms - 1100) / 520);
+  if (la > 0) {
+    g.save();
+    g.globalAlpha = la;
+    g.translate(0, (1 - la) * 30);
+    const pressed = pressedAt(ms + T.end, TAP.link);
+    pressScale(g, W / 2, LINK_Y + 44, pressed);
+    gloss(g, 50, LINK_Y, W - 100, 88, 44);
+    g.save();
+    g.beginPath();
+    g.roundRect(50, LINK_Y, W - 100, 88, 44);
+    g.clip();
+    const sh = ((ms - 1400) % 1900) / 1900;
+    if (ms > 1400) {
+      const sx = mix(-200, W + 200, sh);
+      const gr = g.createLinearGradient(sx - 90, 0, sx + 90, 0);
+      gr.addColorStop(0, 'rgba(255,255,255,0)');
+      gr.addColorStop(0.5, 'rgba(255,255,255,.28)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr;
+      g.fillRect(50, LINK_Y, W - 100, 88);
+    }
+    g.restore();
+    const lp = fit(g, d.link, (p) => f(500, p), 30, W - 160);
+    line(g, d.link, W / 2, LINK_Y + 55, f(500, lp), '#ffffff', 'center', W - 150);
+    g.restore();
+  }
+  g.globalAlpha = out((ms - 1500) / 450);
+  line(g, `${t('Lien dans la bio')} · @${d.handle}`, W / 2, 822, f(400, 23), MUTED, 'center', W - 80);
+  g.globalAlpha = 1;
   // « Disponible en application » : les deux boutiques, qui se posent l'une après l'autre.
   const sIn = ms - (STORES_AT - T.end);
   if (sIn > 0) {
     g.globalAlpha = out(sIn / 400);
-    line(g, t('Disponible en application'), W / 2, 862, f(700, 30), INK, 'center', W - 80);
+    line(g, t('Disponible en application'), W / 2, 920, f(500, 28), INK, 'center', W - 80);
+    g.globalAlpha = 1;
     const bw = 280;
     const gap = 16;
     const x0 = (W - bw * 2 - gap) / 2;
@@ -1092,48 +1380,100 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
       g.save();
       g.globalAlpha = clamp((sIn - 150 - i * 140) / 200);
       const cx = x0 + i * (bw + gap) + bw / 2;
-      g.translate(cx, 930);
+      g.translate(cx, 988);
       g.scale(k, k);
-      g.translate(-cx, -930);
-      storeBadge(g, x0 + i * (bw + gap), 892, bw, 76, kind);
+      g.translate(-cx, -988);
+      storeBadge(g, x0 + i * (bw + gap), 950, bw, 76, kind);
       g.restore();
     });
   }
+  // Marque en pied.
+  g.globalAlpha = out((ms - 2000) / 600) * 0.9;
+  g.font = `600 24px ${SANS}`;
+  const w1 = g.measureText('Salon ').width;
+  g.font = `400 24px ${SANS}`;
+  const w2 = g.measureText('DZ').width;
+  const bx = W / 2 - (w1 + w2) / 2;
+  line(g, 'Salon ', bx, 1150, `600 24px ${SANS}`, INK);
+  line(g, 'DZ', bx + w1, 1150, `400 24px ${SANS}`, SUBTLE);
   g.globalAlpha = 1;
   // Dernier clic, sur le lien.
   const keys: [number, number, number][] = [
-    [T.end + 1300, 600, 1000],
-    [TAP.link - 150, W - 150, LINK_Y + 30],
-    [TAP.link + 700, W - 150, LINK_Y + 30],
+    [T.end + 1500, 620, 1060],
+    [TAP.link - 160, W - 160, LINK_Y + 34],
+    [TAP.link + 800, W - 160, LINK_Y + 34],
   ];
   const at = cursorAt(keys, ms + T.end);
-  if (at) drawCursor(g, at[0], at[1], ms + T.end, [TAP.link], 1.5);
+  if (at) drawCursor(g, at[0], at[1], ms + T.end, [TAP.link], d.accent, 1.5);
 }
+
+/* ------------------------------ L'image ------------------------------ */
 
 /** Dessine l'image de la vidéo à l'instant `ms`. */
 export function drawBioFrame(g: CanvasRenderingContext2D, at: number, d: BioVideoData) {
   const ms = Math.max(0, at);
   g.textBaseline = 'alphabetic';
-  drawBackdrop(g, d);
-  if (ms >= T.end) {
-    // Le téléphone descend, la fin s'installe.
-    const k = ease((ms - T.end) / 500);
+  g.globalAlpha = 1;
+  g.filter = 'none';
+
+  // 1 · L'accroche plein cadre, puis l'ouverture en cercle vers le fond crème.
+  if (ms < T.iris + 520) {
+    drawBackdrop(g, d, ms);
+    const k = clamp((ms - T.iris) / 520);
     if (k < 1) {
-      phoneFrame(g, PHONE.x, mix(PHONE.y, H + 40, k), PHONE.s, () => drawScreens(g, ms, d), () => undefined);
+      g.save();
+      if (k > 0) {
+        // Le cercle de la photo se referme sur le centre (iris) pendant qu'elle s'approche.
+        g.beginPath();
+        g.arc(W / 2, H * 0.55, Math.hypot(W, H) * (1 - inn(k)), 0, Math.PI * 2);
+        g.clip();
+        g.translate(W / 2, H * 0.55);
+        g.scale(1 + k * 0.25, 1 + k * 0.25);
+        g.translate(-W / 2, -H * 0.55);
+      }
+      drawHook(g, ms, d);
+      g.restore();
+    }
+    if (ms < T.phoneIn - 200) return;
+  } else drawBackdrop(g, d, ms);
+
+  // 4 · La fin : le téléphone s'éloigne, la fin s'installe.
+  if (ms >= T.end) {
+    const k = ease((ms - T.end) / 600);
+    if (k < 1) {
+      g.save();
+      g.globalAlpha = 1 - k;
+      const s = PHONE_S * mix(1.12, 0.7, k);
+      phoneFrame(g, W / 2 - (PW * s) / 2, mix(PHONE.y - 40, PHONE.y + 220, k), s, () => drawScreens(g, ms, d), () => undefined);
+      g.restore();
     }
     drawEnd(g, ms - T.end, d);
     return;
   }
-  if (ms < T.phoneIn + 500) drawIntro(g, ms, d);
-  if (ms >= T.phoneIn - 200) {
-    drawStepTitle(g, ms, d);
-    const k = spring((ms - (T.phoneIn - 200)) / 700);
-    const y = mix(H + 60, PHONE.y, k);
-    const keys = cursorPath(d);
-    const taps = [TAP.bio, TAP.choose, TAP.day, TAP.hour, TAP.next, TAP.femme, TAP.create, TAP.confirm];
-    phoneFrame(g, PHONE.x, y, PHONE.s, () => drawScreens(g, ms, d), () => {
-      const c = cursorAt(keys, ms);
-      if (c) drawCursor(g, c[0], c[1], ms, taps);
-    });
-  }
+
+  // 2 · Le téléphone arrive (ressort + légère rotation), la caméra suit chaque geste.
+  const ink = spring((ms - (T.phoneIn - 200)) / 760);
+  const y = mix(H + 80, PHONE.y, ink);
+  const rot = (1 - clamp((ms - (T.phoneIn - 200)) / 760)) * -0.12;
+  const [zoom, fx, fy] = cameraAt(cameraKeys(d), ms);
+  const keys = cursorPath(d);
+  const taps = [TAP.bio, TAP.choose, TAP.day, TAP.hour, TAP.google];
+  g.save();
+  // Le point visé de l'écran glisse vers le centre utile de l'image à mesure qu'on zoome.
+  const Fx = PHONE.x + fx * PHONE_S;
+  const Fy = y + fy * PHONE_S;
+  const pull = clamp((zoom - 1) / 0.45);
+  const Tx = mix(Fx, W / 2, pull);
+  const Ty = mix(Fy, 800, pull);
+  g.translate(Tx, Ty);
+  g.scale(zoom, zoom);
+  g.rotate(rot);
+  g.translate(-Fx, -Fy);
+  phoneFrame(g, PHONE.x, y, PHONE_S, () => drawScreens(g, ms, d), () => {
+    const c = cursorAt(keys, ms);
+    if (c) drawCursor(g, c[0], c[1], ms, taps, d.accent);
+  });
+  g.restore();
+  drawConfetti(g, ms - T.done - 200, d);
+  drawStepTitle(g, ms, d);
 }
