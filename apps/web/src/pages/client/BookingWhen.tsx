@@ -15,7 +15,7 @@ import { OAuthButtons } from '@/components/GoogleButton';
 import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Users } from 'lucide-react';
 import { useAvailability, useSalon, useSalonBookingLimits } from '@salondz/api-client';
 import {
   TIMEZONE,
@@ -33,7 +33,7 @@ import { setGuestMarket } from '@/lib/useClientMarket';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDuration } from '@/lib/format';
-import { Button, I, Skeleton } from '@/components/ui';
+import { Avatar, Button, I, Skeleton } from '@/components/ui';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { PageLoading } from '@/components/PageLoading';
 import { t } from '@/i18n';
@@ -67,6 +67,13 @@ export function BookingWhen() {
   const [nbJours, setNbJours] = useState(PAQUET);
   const [ouverts, setOuverts] = useState<Set<string> | null>(null);
   const [staffId, setStaffId] = useState<string | null>(draft.staffId ?? null);
+  /**
+   * AVEC QUI ? (26 nov. 2026, demande du propriétaire) : une vraie question quand plusieurs personnes
+   * réalisent la prestation — tuiles photo + nom, et « Sans préférence ». Les jours n'apparaissent
+   * qu'une fois la réponse donnée. Un pro seul (ou une seule personne pour cette prestation) : pas de
+   * question. `choixFait` vrai si un brouillon avait déjà un créneau (retour depuis « Confirmer »).
+   */
+  const [choixFait, setChoixFait] = useState<boolean>(!!draft.staffId || !!draft.startsAt);
   const [ajout, setAjout] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
   // Jours dépliés d'office quand le précédent est complet (voir `jourVide`). Déclaré AVANT tout retour
@@ -85,7 +92,11 @@ export function BookingWhen() {
   if (salon.isPending) return <PageLoading />;
   if (salon.isError || !s) return <ErrorMessage error={salon.error} retry={() => salon.refetch()} />;
 
+  // L'équipe publique du salon (nom et photo). Une personne qui ne réalise pas la prestation n'aura
+  // simplement aucun créneau : les disponibilités viennent du serveur, par personne.
   const team = s.staff ?? [];
+  const demanderQui = team.length >= 2;
+  const quiRegle = !demanderQui || choixFait;
   const maxDate = addDaysToKey(today, s.bookingHorizonDays);
   const ouvert = (k: string) => s.openingHours.some((h) => h.dayOfWeek === dayOfWeekFromKey(k) && !h.isClosed);
   // Les jours OUVERTS à partir du début choisi, dans l'horizon de réservation du salon.
@@ -221,20 +232,41 @@ export function BookingWhen() {
             </button>
           </div>
         ))}
-        {team.length >= 2 && (
-          <label className="pl-select">
-            <select value={staffId ?? ''} onChange={(e) => setStaffId(e.target.value || null)} aria-label={t('Choisir avec qui ?')}>
-              <option value="">{t('Choisir avec qui ?')}</option>
-              {team.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.displayName}
-                </option>
-              ))}
-            </select>
-            <I icon={ChevronDown} size={16} strokeWidth={2} className="pointer-events-none" />
-          </label>
-        )}
       </div>
+
+      {demanderQui && (
+        <section className="pl-qui" aria-labelledby="pl-qui-t">
+          <h3 id="pl-qui-t" className="pl-qui-t">{t('Avec qui ?')}</h3>
+          <div className="pl-qui-l" role="radiogroup" aria-labelledby="pl-qui-t">
+            {[{ id: null as string | null, displayName: t('Sans préférence'), avatarUrl: null as string | null }, ...team].map((m) => {
+              const on = choixFait && staffId === m.id;
+              return (
+                <button
+                  key={m.id ?? 'tous'}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  className={`pl-qui-c${on ? ' on' : ''}`}
+                  onClick={() => {
+                    setStaffId(m.id);
+                    setChoixFait(true);
+                    setDraft(writeDraft(slug, { staffId: m.id, startsAt: undefined }));
+                  }}
+                >
+                  {m.id ? (
+                    <Avatar src={m.avatarUrl} name={m.displayName} size={52} />
+                  ) : (
+                    <span className="pl-qui-tous" aria-hidden>
+                      <I icon={Users} size={22} />
+                    </span>
+                  )}
+                  <span className="pl-qui-n">{m.displayName}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {autres.length > 0 && peutAjouter && (
         <div className="pl-bk-add">
@@ -270,6 +302,8 @@ export function BookingWhen() {
         </div>
       )}
 
+      {quiRegle && (
+        <>
       <h2 className="pl-h2 pl-bk-h">
         <span className="pl-num">2.</span> {t('Choix de la date & heure')}
       </h2>
@@ -295,6 +329,8 @@ export function BookingWhen() {
           </button>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }
