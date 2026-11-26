@@ -227,6 +227,9 @@ export const router = createBrowserRouter([
           { path: '/connexion/lien', element: <MagicLink /> },
           { path: '/connexion/mot-de-passe', element: <NewPassword /> },
           { path: '/connexion/retour', element: <WelcomeBack /> },
+          // Retour de Google / Apple lancé SUR LE SITE (`RETOUR_WEB`, lib/oauth.ts) : adresse qu'aucune
+          // application ne réclame, la connexion reste sur le site (26 nov. 2026).
+          { path: '/professionnels/connexion', element: <WelcomeBack /> },
           // LIENS D'E-MAIL (20 nov. 2026) : adresses réclamées par l'application concernée, qui s'ouvre
           // directement ; dans un navigateur, la page passe la main à l'application (`EmailLink`).
           ...(APPLI === 'client' ? [] : [{ path: '/pro/lien', element: <EmailLink /> }]),

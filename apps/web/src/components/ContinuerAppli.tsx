@@ -48,7 +48,7 @@ export function ContinuerAppli() {
 
   // On attend d'être ARRIVÉ dans l'espace (pas sur l'écran de retour ni sur un écran de connexion).
   useEffect(() => {
-    if (isNative() || pathname.startsWith('/connexion') || pathname.includes('/acces')) return;
+    if (isNative() || pathname.startsWith('/connexion') || pathname.startsWith('/professionnels/connexion') || pathname.includes('/acces')) return;
     let v: string | null = null;
     try {
       v = sessionStorage.getItem(CLE);

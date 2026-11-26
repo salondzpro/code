@@ -89,8 +89,19 @@ export function useFournisseurs(liste: Fournisseur[]): Fournisseur[] {
   return useFournisseursEtat(liste).actifs;
 }
 
+/**
+ * ADRESSE DE RETOUR D'UNE CONNEXION LANCÉE SUR LE SITE (26 nov. 2026, signalé par le propriétaire :
+ * Google depuis le portail pro du site ouvrait l'application CLIENTE sur iPhone). Un iPhone garde en
+ * cache, parfois des jours, l'ancienne liste des adresses réclamées par l'application cliente (`/*`,
+ * donc aussi `/connexion/retour`). `/professionnels/*` est la seule famille d'adresses qu'AUCUNE
+ * application ne réclame, dans l'ancienne liste comme dans la nouvelle : le retour y reste sur le
+ * site, quel que soit le cache du téléphone. Une connexion lancée PAR UNE APPLICATION garde
+ * `/connexion/retour` : sa passation rend la main à l'application qui l'a lancée.
+ */
+export const RETOUR_WEB = '/professionnels/connexion';
+
 export async function connexionOAuth(fournisseur: Fournisseur, role: 'client' | 'pro', next: string): Promise<void> {
-  const retour = new URL('/connexion/retour', env.siteUrl);
+  const retour = new URL(isNative() ? '/connexion/retour' : RETOUR_WEB, env.siteUrl);
   retour.searchParams.set('next', next);
   retour.searchParams.set('portail', role);
   retour.searchParams.set('oauth', '1');
