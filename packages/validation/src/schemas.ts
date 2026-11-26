@@ -384,6 +384,17 @@ export const suggestQuerySchema = z.object({
   q: z.string().trim().min(1).max(80),
   gender: z.enum(GENDER_TARGETS).optional(),
   wilaya: z.coerce.number().int().min(1).max(58).optional(),
+  /** Même périmètre que la liste des résultats (26 nov. 2026) : les compteurs doivent dire vrai. */
+  city: z.string().trim().max(80).optional(),
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lng: z.coerce.number().min(-180).max(180).optional(),
+  radiusKm: z.coerce.number().min(0.5).max(100).optional(),
+  category: p.categoryId.optional(),
+  ratingMin: z.coerce.number().min(1).max(5).optional(),
+  availableToday: z
+    .enum(['1', '0', 'true', 'false'])
+    .transform((v) => v === '1' || v === 'true')
+    .optional(),
 });
 export type SuggestQuery = z.infer<typeof suggestQuerySchema>;
 export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;

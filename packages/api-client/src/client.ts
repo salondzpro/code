@@ -505,7 +505,18 @@ export function createApiClient(opts: ApiClientOptions) {
         get<Paginated<SalonSummary> & { total: number }>('/salons', q as Query, false),
       cities: (q: { wilaya?: number; gender?: string; lat?: number; lng?: number; q?: string }) =>
         get<{ items: CityCount[] }>('/salons/cities', q as Query, false),
-      suggest: (q: { q: string; gender?: string; wilaya?: number }) =>
+      suggest: (q: {
+        q: string;
+        gender?: string;
+        wilaya?: number;
+        city?: string;
+        lat?: number;
+        lng?: number;
+        radiusKm?: number;
+        category?: string;
+        ratingMin?: number;
+        availableToday?: boolean;
+      }) =>
         get<SearchSuggestions>('/salons/suggest', q as Query, false),
       salon: (slug: string) => get<SalonPublic>(`/salons/${encodeURIComponent(slug)}`),
       availability: (salonId: string, q: AvailabilityQuery) =>

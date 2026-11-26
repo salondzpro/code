@@ -110,6 +110,14 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
         p_q: q.q,
         p_gender: q.gender ?? null,
         p_wilaya: q.wilaya ?? null,
+        // Même périmètre que GET /salons : sans cela, « Barbe · 3 » menait à « Aucun professionnel ».
+        p_city: q.city ?? null,
+        p_lat: q.lat ?? null,
+        p_lng: q.lng ?? null,
+        p_radius_km: q.radiusKm ?? null,
+        p_category: q.category ?? null,
+        p_rating_min: q.ratingMin ?? null,
+        p_available_today: q.availableToday ?? false,
       });
       const data = unwrap(res) as SearchSuggestions | null;
       reply.header('Cache-Control', CACHE_PUBLIC_SHORT);

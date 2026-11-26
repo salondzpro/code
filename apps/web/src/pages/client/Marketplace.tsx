@@ -136,6 +136,7 @@ export function Marketplace() {
         place={prefs.label}
         radiusKm={prefs.radiusKm}
         wilaya={prefs.wilaya}
+        category={category}
         onQuery={setQuery}
       />
       <SearchTools

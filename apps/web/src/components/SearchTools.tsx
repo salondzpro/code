@@ -79,10 +79,13 @@ export function SearchField({
   radiusKm,
   wilaya,
   onQuery,
+  category = '',
   shadow,
   className = '',
 }: {
   market: Market;
+  /** Prestation choisie dans la liste : les suggestions comptent dans ce filtre aussi. */
+  category?: string;
   q: string;
   place: string;
   /** Absent : zone de la carte (pas de rayon à afficher). */
@@ -106,7 +109,24 @@ export function SearchField({
 
   const dq = useDebounced((focus === 'q' ? qDraft : placeDraft).trim(), 250);
   const active = open && dq.length >= 2;
-  const suggest = useSalonSuggest({ q: dq, gender: market, wilaya }, active);
+  // MÊME PÉRIMÈTRE QUE LA LISTE (26 nov. 2026) : lieu ou rayon, prestation choisie, note, « aujourd'hui ».
+  // Sinon « Barbe · 3 » comptait toute l'Algérie et la liste répondait « Aucun professionnel ».
+  const situe = prefs.lat != null && prefs.lng != null;
+  const suggest = useSalonSuggest(
+    {
+      q: dq,
+      gender: market,
+      wilaya: prefs.city || situe ? undefined : wilaya,
+      city: situe ? undefined : (prefs.city ?? undefined),
+      lat: situe ? prefs.lat! : undefined,
+      lng: situe ? prefs.lng! : undefined,
+      radiusKm: situe && radiusKm != null ? radiusKm : undefined,
+      category: category || undefined,
+      ratingMin: prefs.ratingMin ?? undefined,
+      availableToday: prefs.availableToday || undefined,
+    },
+    active,
+  );
   const data = active ? suggest.data : undefined;
   const noun = market === 'men' ? 'barbier' : 'salon';
   // Wilayas, communes et adresses : dès la PREMIÈRE lettre, et sans dépendre de ce que la place de
