@@ -5,7 +5,9 @@
 import {
   forwardRef,
   useEffect,
+  useLayoutEffect,
   useRef,
+  useState,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -310,18 +312,36 @@ export function Textarea({
   err,
   elRef,
   className = '',
+  value,
+  defaultValue,
+  style,
   ...props
 }: TextareaHTMLAttributes<HTMLTextAreaElement> & {
   err?: boolean;
   /** Rappel recevant l'élément (mise au point, mesure) — la primitive ne transmet pas `ref`. */
   elRef?: (el: HTMLTextAreaElement | null) => void;
 }) {
+  // CHAMP NON PILOTÉ PAR REACT (26 nov. 2026, demande du propriétaire : « l'application s'actualise
+  // à chaque caractère » en écrivant un avis). Avec `value`, React réécrit le TEXTE INTÉRIEUR de la
+  // zone à chaque frappe (nœud remplacé) : dans l'application, le clavier et ses suggestions
+  // repartaient à chaque lettre. On ne touche plus au champ pendant la saisie ; une valeur imposée
+  // de l'extérieur (remise à zéro, brouillon chargé) est recopiée seulement si elle diffère.
+  const el = useRef<HTMLTextAreaElement | null>(null);
+  const [initiale] = useState(() => (value ?? defaultValue ?? '') as string);
+  useLayoutEffect(() => {
+    const n = el.current;
+    if (n && value != null && n.value !== String(value)) n.value = String(value);
+  }, [value]);
   return (
     <textarea
       {...props}
-      ref={elRef}
+      defaultValue={initiale}
+      ref={(n) => {
+        el.current = n;
+        elRef?.(n);
+      }}
       className={['inp', err ? 'err' : '', className].filter(Boolean).join(' ')}
-      style={{ resize: 'none', minHeight: '6rem' }}
+      style={{ resize: 'none', minHeight: '6rem', ...style }}
     />
   );
 }

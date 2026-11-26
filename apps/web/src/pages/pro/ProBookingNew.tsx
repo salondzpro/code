@@ -51,7 +51,7 @@ import {
   SearchBox,
   Segmented,
   Skeleton,
-  TopBar, Dim } from '@/components/ui';
+  TopBar, Dim, Textarea } from '@/components/ui';
 import { DayScroller } from '@/components/DayCarousel';
 import { Screen, SHEET_PAD } from '@/components/AppFrame';
 import { PageLoading } from '@/components/PageLoading';
@@ -605,15 +605,15 @@ export function ProBookingNew() {
           <label htmlFor="nb-note" className="text-[0.857rem] font-semibold text-muted">
             {t('Note (facultatif)')}
           </label>
-          <textarea
+          <Textarea
             id="nb-note"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength={300}
             rows={2}
             placeholder={t('Coloration à préparer, cliente pressée…')}
-            className="inp !p-2.5 !text-[1rem]"
-            style={{ resize: 'none' }}
+            className="!p-2.5 !text-[1rem]"
+            style={{ minHeight: 0 }}
           />
         </div>
       ) : (
