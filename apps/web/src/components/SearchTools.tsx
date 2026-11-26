@@ -265,7 +265,7 @@ export function SearchField({
       </div>
 
       {/* Suggestions du champ qui a le focus. */}
-      {focus === 'q' && !qDraft.trim() && (recentes.length > 0 || categoriesForMarket(market).length > 0) && (
+      {focus === 'q' && !qDraft.trim() && recentes.length > 0 && (
         <div className="crd !gap-0 !py-1">
           {recentes.map((r) => (
             <button key={`rec-${r}`} type="button" className="li w-full text-start" onClick={() => submit(r)}>
@@ -290,15 +290,6 @@ export function SearchField({
               {t("Effacer l'historique")}
             </button>
           )}
-          <div className="flex flex-wrap gap-2 px-3 pb-3 pt-2">
-            {categoriesForMarket(market)
-              .slice(0, 6)
-              .map((c) => (
-                <Pill key={c.id} onClick={() => submit(t(c.labelFr))}>
-                  {t(c.labelFr)}
-                </Pill>
-              ))}
-          </div>
         </div>
       )}
 
