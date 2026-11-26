@@ -246,6 +246,7 @@ export const en: Record<string, string> = {
   'E-mail envoyé': 'E-mail sent',
   'E-mail ou mot de passe incorrect.': 'Incorrect e-mail or password.',
   'Effacer la recherche': 'Clear search',
+  'Payer sur WhatsApp': "Pay on WhatsApp",
   'Avec qui ?': "With whom?",
   'Afficher mon numéro aux clients': "Show my number to clients",
   'Voir mon rendez-vous': "View my appointment",

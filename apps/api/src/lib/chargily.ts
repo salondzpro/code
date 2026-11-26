@@ -26,16 +26,17 @@ export const chargilyReady = () => KEY().length > 10;
 const isTest = () => KEY().startsWith('test_');
 
 /**
+ * (HISTOIRE — remplacé le 26 nov. 2026 à la demande du propriétaire : le paiement en ligne est
+ * proposé à TOUS les pros, même avec la clé de test ; chaque abonnement payé en test porte « (test) »
+ * dans sa note pour être repéré et annulé dans l'administration.)
  * MODE TEST = ADMINISTRATEURS SEULEMENT. Avec la clé de test, la page de Chargily « paie » sans argent
  * réel : ouverte à tous, elle donnerait Pro ou Max gratuitement à n'importe quel professionnel. Tant que
  * la clé de production n'est pas posée, seul un administrateur actif de la plateforme peut lancer un
  * paiement (pour essayer le parcours) ; les autres gardent le contact WhatsApp.
  */
 export async function paymentOpenTo(userId: string): Promise<boolean> {
-  if (!chargilyReady()) return false;
-  if (!isTest()) return true;
-  const a = await db.from('platform_admins').select('user_id').eq('user_id', userId).is('disabled_at', null).maybeSingle();
-  return !!a.data;
+  void userId;
+  return chargilyReady();
 }
 const BASE = () => (isTest() ? 'https://pay.chargily.net/test/api/v2' : 'https://pay.chargily.net/api/v2');
 
@@ -183,7 +184,7 @@ export async function reconcilePayment(log: FastifyBaseLogger, checkoutId: strin
     const jour = today();
     const depart = cur.plan === pay.plan && cur.until && cur.until >= jour ? cur.until : jour;
     const until = addMonths(depart, pay.months);
-    await writePlan(pay.salon_id, { plan: pay.plan, until, note: `Payé en ligne (Chargily) · ${pay.amount_da} DA · ${pay.months} mois` });
+    await writePlan(pay.salon_id, { plan: pay.plan, until, note: `Payé en ligne (Chargily${pay.livemode ? '' : ', TEST sans argent réel'}) · ${pay.amount_da} DA · ${pay.months} mois` });
     await db.from('plan_payments').update({ plan_until: until }).eq('id', pay.id);
     log.info({ salonId: pay.salon_id, plan: pay.plan, until }, 'chargily : abonnement prolongé');
     return;

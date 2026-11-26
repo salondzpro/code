@@ -142,10 +142,17 @@ export function PlanCards({
                 ))}
               </ul>
               {onPay && p.id !== 'free' ? (
-                <button type="button" className="btn plan-btn" onClick={() => onPay(p.id as 'pro' | 'salon')}>
-                  <I icon={CreditCard} size={18} />
-                  {actuel ? t('Prolonger') : t('Payer {offre}', { offre: t(p.name) })}
-                </button>
+                <>
+                  <button type="button" className="btn plan-btn" onClick={() => onPay(p.id as 'pro' | 'salon')}>
+                    <I icon={CreditCard} size={18} />
+                    {actuel ? t('Prolonger') : t('Payer {offre}', { offre: t(p.name) })}
+                  </button>
+                  {/* WhatsApp reste proposé, en BLANC (26 nov. 2026, demande du propriétaire). */}
+                  <a className="plan-wa plan-btn" href={supportWhatsAppUrl(msg)} target="_blank" rel="noopener noreferrer">
+                    <WhatsAppLogo size={18} />
+                    {t('Payer sur WhatsApp')}
+                  </a>
+                </>
               ) : actuel ? (
                 <span className="btn g plan-btn" aria-disabled>
                   {t('Offre actuelle')}
@@ -157,7 +164,7 @@ export function PlanCards({
                   </Link>
                 )
               ) : (
-                <a className="btn plan-btn" href={supportWhatsAppUrl(msg)} target="_blank" rel="noopener noreferrer">
+                <a className="plan-wa plan-btn" href={supportWhatsAppUrl(msg)} target="_blank" rel="noopener noreferrer">
                   <WhatsAppLogo size={18} />
                   {t('Choisir {offre}', { offre: t(p.name) })}
                 </a>
