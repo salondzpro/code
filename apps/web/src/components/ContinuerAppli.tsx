@@ -111,7 +111,7 @@ export function ContinuerAppli() {
       <Dim onClose={fermer} />
       <BottomSheet modal>
         <div className="flex flex-col items-center gap-3 pt-1 text-center">
-          <img src="/apple-touch-icon.png" alt="" width={64} height={64} className="rounded-[16px]" />
+          <img src={pro ? '/logo/app-pro.png' : '/logo/app-client.png'} alt="" width={64} height={64} className="rounded-[16px]" />
           <h2 className="text-[1.25rem] font-semibold">{pro ? t('Continuez dans Salon DZ Pro') : t('Continuez dans l’application Salon DZ')}</h2>
           <p className="text-[0.938rem] text-muted">{pro ? t('Votre agenda et vos demandes, plus rapides, avec les notifications.') : t('Vos rendez-vous, rappels et notifications, plus rapides.')}</p>
         </div>

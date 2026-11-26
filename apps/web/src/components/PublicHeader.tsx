@@ -21,6 +21,7 @@ import { useMe, useUnreadNotifications } from '@salondz/api-client';
 import { useAuth } from '@/lib/auth';
 import { guestMarket } from '@/lib/useClientMarket';
 import { I, Dim } from './ui';
+import { Wordmark } from './Wordmark';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
 import { t } from '@/i18n';
 import { MARCHE, NATIF } from '@/lib/flavor';
@@ -120,7 +121,7 @@ export function PublicHeader() {
           <I icon={Menu} size={26} strokeWidth={1.8} />
         </button>
         <Link to={MARCHE} className="pl-mark" aria-label={t('Salon DZ · accueil')}>
-          SALON DZ
+          <Wordmark size={1.6} />
         </Link>
         <nav className="pl-hdr-nav" aria-label={t('Navigation')}>
           {links.map((l) => (

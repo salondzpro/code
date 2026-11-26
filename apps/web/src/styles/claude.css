@@ -1045,3 +1045,24 @@ html:root .pl-btn.pl-btn-sk {
   border: none;
   background-color: var(--color-line-soft);
 }
+
+
+/* ------------------------------------------------------------------------------------------------
+ * LOGO UNIQUE (26 nov. 2026, demande du propriétaire : « le logo de l'application Salon DZ sur iOS,
+ * partout ») — « Salon » Inter 600, « DZ » Inter 400 gris, serrés comme sur l'icône. Encre sur fond
+ * clair, blanc sur fond foncé (`Wordmark light`). Police dédiée pour ne jamais retomber sur Poppins.
+ * ---------------------------------------------------------------------------------------------- */
+@font-face { font-family: 'SdzLogo'; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
+@font-face { font-family: 'SdzLogo'; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
+.sdz-logo {
+  font-family: 'SdzLogo', Inter, -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-text);
+}
+.sdz-logo b { font-weight: 600; }
+.sdz-logo i { font-style: normal; font-weight: 400; color: var(--color-logo-dz); margin-inline-start: 0.18em; }
+.sdz-logo.light { color: #fff; }
+/* L'en-tête écrivait « S A L O N  D Z » espacé : le logo y prend sa graphie. */
+.pl-mark { letter-spacing: normal; text-transform: none; }

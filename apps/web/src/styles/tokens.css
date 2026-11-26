@@ -28,6 +28,9 @@
   --color-muted: #6a675f; /* secondaire */
   --color-subtle: #8f8d86; /* tertiaire : même gris que le secondaire (mesuré en production) */
   --color-disabled: #c9c6bb;
+  /* LOGO (26 nov. 2026) : celui de l'icône de l'application — « Salon » blanc ou encre, « DZ » gris, sur noir. */
+  --color-logo-bg: #111214;
+  --color-logo-dz: #9aa0a6;
   --color-ink: #1d1d20; /* éléments SOMBRES : bouton principal, sélection, onglet actif */
   --color-on-ink: #ffffff;
 

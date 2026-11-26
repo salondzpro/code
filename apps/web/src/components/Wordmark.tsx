@@ -1,10 +1,9 @@
 /**
- * Logo « Salon DZ », en UN SEUL endroit. Il apparaît dans l'en-tête de la place de marché, en pied des
- * pages de compte, dans l'animation d'ouverture de l'application et en tête des pages de connexion :
- * ces quatre emplacements doivent montrer exactement la même chose, sinon la marque se délite.
- *
- * `Salon` en demi-gras, `DZ` en maigre et gris : c'est la graphie de référence, celle de l'icône de
- * l'application et de l'affiche QR.
+ * Logo « Salon DZ », en UN SEUL endroit (règle « zéro doublon »). Depuis le 26 nov. 2026 (demande du
+ * propriétaire) c'est EXACTEMENT le logo de l'icône de l'application iPhone : « Salon » en Inter 600,
+ * « DZ » en Inter 400 gris, serrés. Encre sur fond clair, blanc sur fond foncé (`light`). Style :
+ * `.sdz-logo` en fin de `styles/claude.css`. Icônes (écran d'accueil, appli web, Pro) : `public/logo/`,
+ * `apple-touch-icon.png`, `icon-*.png` — même dessin ; l'icône d'onglet garde le « S » seul (16 px).
  */
 export function Wordmark({
   size = 1.429,
@@ -13,15 +12,14 @@ export function Wordmark({
 }: {
   size?: number;
   className?: string;
-  /** Posé sur une photo ou un fond sombre : le gris du « DZ » y disparaîtrait. */
+  /** Posé sur une photo ou un fond sombre. */
   light?: boolean;
 }) {
   return (
-    // La marque s'écrit de gauche à droite dans toutes les langues : en arabe, la marge « de début »
-    // passait à droite de « DZ » et collait les deux mots (« SalonDZ »).
-    <span dir="ltr" className={`leading-none tracking-[-0.6px] ${light ? 'text-white' : ''} ${className}`} style={{ fontSize: `${size}rem` }}>
-      <span className="font-semibold">Salon</span>
-      <span className={`ms-[0.16em] font-light ${light ? 'text-white/70' : 'text-muted'}`}>DZ</span>
+    // La marque s'écrit de gauche à droite dans toutes les langues.
+    <span dir="ltr" className={`sdz-logo${light ? ' light' : ''} ${className}`} style={{ fontSize: `${size}rem` }}>
+      <b>Salon</b>
+      <i>DZ</i>
     </span>
   );
 }
