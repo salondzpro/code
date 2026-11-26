@@ -18,7 +18,7 @@ import type {
 import type { ApiClient } from './client';
 import { makeQueries, queryKeys, type Queries } from './queries';
 import type { LoyaltyInput, ReviewSort, ServicePromoInput } from './client';
-import type { ReportReason } from '@salondz/constants';
+import type { BookingGuard, ReportReason } from '@salondz/constants';
 import type { DepositSettings } from '@salondz/types';
 
 interface ApiContextValue {
@@ -828,6 +828,28 @@ export function useSaveDepositSettings() {
     },
   });
 }
+/** Bouclier de réservation (26 nov. 2026) : réglage du pro et limites lues par l'écran client. */
+export const useBookingGuard = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'booking-guard'], queryFn: () => api.pro.bookingGuard(), staleTime: 60_000, enabled });
+};
+export function useSaveBookingGuard() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: BookingGuard) => api.pro.saveBookingGuard(body),
+    onSuccess: (data) => qc.setQueryData(['pro', 'booking-guard'], data),
+  });
+}
+export const useSalonBookingLimits = (salonId: string | undefined) => {
+  const { api } = useApi();
+  return useQuery({
+    queryKey: ['salon', 'booking-limits', salonId],
+    queryFn: () => api.public.bookingLimits(salonId!),
+    staleTime: 60_000,
+    enabled: !!salonId,
+  });
+};
 /** Ce que la cliente voit pour verser (montant, compte, état, heure limite). */
 export const useBookingDeposit = (id: string, enabled = true) => {
   const { api } = useApi();

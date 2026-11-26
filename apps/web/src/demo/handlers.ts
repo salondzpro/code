@@ -8,6 +8,9 @@ import {
   CANCEL_ABUSE_WINDOW_DAYS,
   CATEGORIES,
   categoriesForMarket,
+  BOOKING_GUARD_DEFAULT,
+  cleanBookingGuard,
+  type BookingGuard,
   CLIENT_CANCEL_MIN_HOURS,
   LATE_TOLERANCE_MINUTES,
   MAX_CLIENT_RESCHEDULES,
@@ -574,6 +577,15 @@ const depositSettingsOf = (s: SalonOwnerView): DepositSettings => {
   const a = xs(s).depositAccount;
   return { mode: s.depositMode ?? 'off', value: s.depositValue ?? 0, scope: s.depositScope ?? 'all', method: a?.method ?? 'ccp', holder: a?.holder ?? null, account: a?.account ?? null, note: a?.note ?? null };
 };
+// Bouclier de réservation (26 nov. 2026) : réglage du pro, gardé dans le monde de la démonstration.
+const gardes = new Map<string, BookingGuard>();
+on('GET', '/pro/booking-guard', (c) => ok(gardes.get(ownedSalon(c).id) ?? { ...BOOKING_GUARD_DEFAULT }));
+on('PUT', '/pro/booking-guard', (c) => {
+  const v = cleanBookingGuard(c.body as Partial<BookingGuard>);
+  gardes.set(ownedSalon(c).id, v);
+  return ok(v);
+});
+on('GET', '/salons/:id/booking-limits', (_c, p) => ok(gardes.get(p.id!) ?? { ...BOOKING_GUARD_DEFAULT }));
 on('GET', '/pro/deposit-settings', (c) => ok(depositSettingsOf(ownedSalon(c))));
 on('PUT', '/pro/deposit-settings', (c) => {
   const s = ownedSalon(c);

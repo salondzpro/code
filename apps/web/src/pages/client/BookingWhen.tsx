@@ -16,7 +16,7 @@ import { ICONE } from '@/lib/actionIcons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { ChevronDown } from 'lucide-react';
-import { useAvailability, useSalon } from '@salondz/api-client';
+import { useAvailability, useSalon, useSalonBookingLimits } from '@salondz/api-client';
 import {
   TIMEZONE,
   addDaysToKey,
@@ -59,6 +59,7 @@ export function BookingWhen() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
   const salon = useSalon(slug);
+  const limites = useSalonBookingLimits(salon.data?.id);
   const [draft, setDraft] = useState(() => readDraft(slug));
   const today = toLocalDateKey();
   // Jamais dans le passé : un vieux brouillon garde parfois un jour déjà écoulé.
@@ -126,6 +127,8 @@ export function BookingWhen() {
   };
 
   const autres = s.services.filter((x) => !serviceIds.includes(x.id));
+  // Limite du salon (bouclier, 26 nov. 2026) : 1 prestation par rendez-vous par défaut, réglable par le pro.
+  const peutAjouter = serviceIds.length < (limites.data?.maxServices ?? 1);
 
   if (picked && !session) {
     const suite = encodeURIComponent(`/s/${s.slug}/reserver/recap`);
@@ -233,7 +236,7 @@ export function BookingWhen() {
         )}
       </div>
 
-      {autres.length > 0 && (
+      {autres.length > 0 && peutAjouter && (
         <div className="pl-bk-add">
           <button type="button" className="pl-btn pl-btn-ink pl-btn-sm" onClick={() => setAjout((v) => !v)} aria-expanded={ajout}>
             {t('Ajouter une prestation à la suite')}

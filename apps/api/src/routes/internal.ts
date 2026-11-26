@@ -227,6 +227,10 @@ const internalRoutes: FastifyPluginAsyncZod = async (app) => {
       .lt('created_at', new Date(Date.now() - 24 * 3600_000).toISOString());
     if (purgedKeys.error) throw purgedKeys.error;
 
+    // Journal des tentatives de réservation (bouclier, migration 0067) : 30 jours suffisent au moteur de fraude.
+    const purgedAttempts = await db.from('booking_attempts').delete().lt('created_at', new Date(Date.now() - 30 * 86_400_000).toISOString());
+    if (purgedAttempts.error) req.log.error({ err: purgedAttempts.error }, 'purge booking_attempts');
+
     // Battement de cœur : le tableau de bord d'administration lit cette clé pour dire si la
     // machine tourne. Écriture volontairement non bloquante — un tic réussi ne doit pas échouer
     // parce qu'un réglage n'a pas pu s'enregistrer.

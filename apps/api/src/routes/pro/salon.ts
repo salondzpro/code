@@ -33,6 +33,7 @@ import { loadOwnedSalon, noAccount } from '../../plugins/auth';
 import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } from '../../lib/labelSettings';
 import { proClientsClose, readLoyalty, writeLoyalty } from '../../lib/loyalty';
 import { readPromos, writePromos } from '../../lib/promos';
+import { readBookingGuard, saveBookingGuard } from '../../lib/fraud';
 
 const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
   /**
@@ -132,6 +133,20 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
    * (publics : la cliente est prévenue avant de réserver) ; le compte va dans `salon_deposit_accounts`,
    * que seule l'API lit.
    */
+  /** Bouclier de réservation (26 nov. 2026) : prestations par rendez-vous, rendez-vous à venir par client. */
+  app.get('/booking-guard', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return readBookingGuard(req.salon!.id);
+  });
+  app.put(
+    '/booking-guard',
+    {
+      preHandler: app.requireSalon,
+      schema: { body: z.object({ maxServices: z.number().int().min(1).max(5), maxUpcoming: z.number().int().min(1).max(5) }) },
+    },
+    async (req) => saveBookingGuard(req.salon!.id, req.body),
+  );
+
   app.get('/deposit-settings', { preHandler: app.requireSalon }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-store');
     return loadDepositSettings(req.salon!.id);

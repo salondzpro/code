@@ -246,6 +246,8 @@ export const ar: Record<string, string> = {
   'E-mail envoyé': 'تم إرسال البريد',
   'E-mail ou mot de passe incorrect.': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
   'Effacer la recherche': 'مسح البحث',
+  'Prestations par rendez-vous': 'خدمات لكل موعد',
+  'Rendez-vous à venir par client': 'مواعيد قادمة لكل زبون',
   "Effacer l'historique": 'مسح السجل',
   'en attente': 'قيد الانتظار',
   'En attente': 'قيد الانتظار',

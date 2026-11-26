@@ -14,13 +14,15 @@ import {
 } from '@salondz/validation';
 import type { Review } from '@salondz/types';
 import { db } from '../lib/supabase';
-import { badRequest, conflict, forbidden, notFound, unwrap } from '../lib/errors';
+import { AppError, badRequest, conflict, forbidden, notFound, unwrap } from '../lib/errors';
 import { camelize } from '../lib/mappers';
 import { BOOKING_WITH_SALON_SELECT, getBookingWithSalon, mapBookingWithSalon } from '../lib/queries';
 import { pushAfterBooking } from '../lib/push';
 import { applyPromo } from '../lib/loyalty';
 import { notifySlotFreed } from '../lib/waitlist';
 import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
+import { readBookingGuard, recordAttempt, scoreAttempt, suspendForFraud } from '../lib/fraud';
+import { FRAUD_SUSPENSION_REASON, type BookingGuard } from '@salondz/constants';
 import { depositDeadline, loadDepositAccount, notifyDepositSubmitted, proofExt } from '../lib/deposit';
 import { STORAGE_BUCKETS } from '@salondz/constants';
 import type { BookingDepositInfo } from '@salondz/types';
@@ -120,14 +122,42 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
     }
 
     const serviceIds = body.serviceIds?.length ? body.serviceIds : [body.serviceId!];
-    // Les règles se lisent sur la PERSONNE CONCERNÉE, par compte et par numéro.
-    await assertClientCanBook(
-      { id: clientId, phone: clientPhone },
-      body.salonId,
-      serviceIds,
-      body.startsAt,
-      forOther,
-    );
+
+    /**
+     * BOUCLIER DE RÉSERVATION (26 nov. 2026, `lib/fraud.ts`). Le score se calcule sur le COMPTE qui
+     * réserve ; les limites du salon et les chevauchements, sur la PERSONNE CONCERNÉE. Chaque tentative
+     * est inscrite au journal, refusée ou non : c'est ce qui mesure la vitesse de la suivante.
+     */
+    const [risque, guard] = await Promise.all([
+      scoreAttempt({ userId: profile.id, ip: req.ip ?? null, accountCreatedAt: profile.createdAt ?? null }),
+      readBookingGuard(body.salonId),
+    ]);
+    let issue: 'ok' | 'refused' | 'blocked' = 'ok';
+    try {
+      if (risque.verdict === 'block') {
+        issue = 'blocked';
+        throw new AppError(403, 'CLIENT_SUSPENDED', FRAUD_SUSPENSION_REASON);
+      }
+      if (risque.verdict === 'refuse') {
+        issue = 'refused';
+        throw new AppError(429, 'BOOKING_TOO_FAST', 'Trop de tentatives de réservation en peu de temps. Réessayez dans un moment.');
+      }
+      if (serviceIds.length > guard.maxServices)
+        throw badRequest(
+          'TOO_MANY_SERVICES',
+          guard.maxServices === 1
+            ? 'Ce salon accepte une prestation par rendez-vous.'
+            : `Ce salon accepte au plus ${guard.maxServices} prestations par rendez-vous.`,
+        );
+      // Les règles se lisent sur la PERSONNE CONCERNÉE, par compte et par numéro.
+      await assertClientCanBook({ id: clientId, phone: clientPhone }, body.salonId, serviceIds, body.startsAt, forOther, guard);
+    } catch (err) {
+      if (issue === 'ok') issue = 'refused';
+      throw err;
+    } finally {
+      await recordAttempt(req.log, { userId: profile.id, salonId: body.salonId, ip: req.ip ?? null, outcome: issue, score: risque.score, reasons: risque.reasons });
+      if (issue === 'blocked') await suspendForFraud(req.log, profile.id, risque).catch((err) => req.log.error({ err }, 'fraude : suspension'));
+    }
 
     const res = await db.rpc('create_booking_multi', {
       p_salon_id: body.salonId,
@@ -353,7 +383,14 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
  * plafond de rendez-vous à venir par client, et pas de doublon du même client sur un horaire
  * qui chevauche un rendez-vous déjà pris dans ce salon (double clic, réessai réseau).
  */
-async function assertClientCanBook(who: ClientRef, salonId: string, serviceIds: string[], startsAt: string, forOther = false): Promise<void> {
+async function assertClientCanBook(
+  who: ClientRef,
+  salonId: string,
+  serviceIds: string[],
+  startsAt: string,
+  forOther = false,
+  guard?: BookingGuard,
+): Promise<void> {
   const nowIso = new Date().toISOString();
   const mine = clientFilter(who);
   if (!mine) throw badRequest('NAME_REQUIRED', 'Indiquez le numéro de la personne concernée.');
@@ -395,6 +432,32 @@ async function assertClientCanBook(who: ClientRef, salonId: string, serviceIds: 
       forOther
         ? 'Cette personne a déjà un rendez-vous dans ce salon à cet horaire.'
         : 'Vous avez déjà un rendez-vous dans ce salon à cet horaire.',
+    );
+  if (!guard) return;
+  /**
+   * Limites FERMES du bouclier (26 nov. 2026) : on ne peut pas être dans deux salons à la fois, et un
+   * client ne garde chez un salon que le nombre de rendez-vous à venir que ce salon accepte (1 par
+   * défaut, réglable par le pro) — sinon une seule personne remplit la journée d'un professionnel.
+   */
+  const [ailleurs, chezLui] = await Promise.all([
+    db.from('bookings').select('id', { count: 'exact', head: true }).or(mine).neq('salon_id', salonId).in('status', ACTIVE_STATUSES).lt('starts_at', endIso).gt('ends_at', startIso),
+    db.from('bookings').select('id', { count: 'exact', head: true }).or(mine).eq('salon_id', salonId).in('status', ACTIVE_STATUSES).gte('ends_at', nowIso),
+  ]);
+  if (ailleurs.error) throw ailleurs.error;
+  if (chezLui.error) throw chezLui.error;
+  if (ailleurs.count)
+    throw conflict(
+      'ALREADY_BOOKED_ELSEWHERE',
+      forOther ? 'Cette personne a déjà un rendez-vous à cette heure dans un autre salon.' : 'Vous avez déjà un rendez-vous à cette heure dans un autre salon.',
+    );
+  if ((chezLui.count ?? 0) >= guard.maxUpcoming)
+    throw conflict(
+      'SALON_BOOKING_LIMIT',
+      guard.maxUpcoming === 1
+        ? forOther
+          ? 'Cette personne a déjà un rendez-vous à venir dans ce salon.'
+          : 'Vous avez déjà un rendez-vous à venir dans ce salon. Modifiez-le ou annulez-le pour en prendre un autre.'
+        : `${forOther ? 'Cette personne a' : 'Vous avez'} déjà ${guard.maxUpcoming} rendez-vous à venir dans ce salon.`,
     );
 }
 

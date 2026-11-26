@@ -40,3 +40,4 @@ export * from './publicLinks';
 export * from './loyalty';
 export * from './promos';
 export * from './plans';
+export * from './bookingGuard';

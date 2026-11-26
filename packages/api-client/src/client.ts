@@ -1,4 +1,4 @@
-import type { ClientCredit, CreditFile, CreditKind, LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyClientRow, LoyaltyProgram, LoyaltyPublic, LoyaltyState, SalonCreditRow, SalonPromos, ServicePromo } from '@salondz/constants';
+import type { BookingGuard, ClientCredit, CreditFile, CreditKind, LabelSettings, LabelSocial, LabelStyle, LoyaltyCard, LoyaltyClientRow, LoyaltyProgram, LoyaltyPublic, LoyaltyState, SalonCreditRow, SalonPromos, ServicePromo } from '@salondz/constants';
 
 /** Fidélité d'un rendez-vous (fenêtre du pro) : la récompense à offrir, s'il y en a une. */
 export interface BookingLoyalty {
@@ -519,6 +519,8 @@ export function createApiClient(opts: ApiClientOptions) {
       }) =>
         get<SearchSuggestions>('/salons/suggest', q as Query, false),
       salon: (slug: string) => get<SalonPublic>(`/salons/${encodeURIComponent(slug)}`),
+      /** Limites du salon pour réserver en ligne (prestations par rendez-vous, rendez-vous à venir). */
+      bookingLimits: (salonId: string) => get<BookingGuard>(`/salons/${salonId}/booking-limits`, undefined, false),
       availability: (salonId: string, q: AvailabilityQuery) =>
         get<AvailabilityResponse>(`/salons/${salonId}/availability`, q as Query, false),
       /** Visite de la page d'un salon (compteur anonyme, jamais bloquant). */
@@ -607,6 +609,9 @@ export function createApiClient(opts: ApiClientOptions) {
       plan: () => get<SalonPlanInfo>('/pro/plan'),
       /** Versement à la réservation : montant (fixe ou %), portée, compte où verser. */
       depositSettings: () => get<DepositSettings>('/pro/deposit-settings'),
+      /** Bouclier de réservation (26 nov. 2026). */
+      bookingGuard: () => get<BookingGuard>('/pro/booking-guard'),
+      saveBookingGuard: (body: BookingGuard) => put<BookingGuard>('/pro/booking-guard', body),
       /** Programme fidélité du salon. */
       loyalty: () => get<LoyaltyProgram>('/pro/loyalty'),
       saveLoyalty: (body: LoyaltyInput) => put<LoyaltyProgram & { announced: number }>('/pro/loyalty', body),

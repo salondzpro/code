@@ -246,6 +246,8 @@ export const en: Record<string, string> = {
   'E-mail envoyé': 'E-mail sent',
   'E-mail ou mot de passe incorrect.': 'Incorrect e-mail or password.',
   'Effacer la recherche': 'Clear search',
+  'Prestations par rendez-vous': 'Services per appointment',
+  'Rendez-vous à venir par client': 'Upcoming appointments per client',
   "Effacer l'historique": 'Clear history',
   'en attente': 'pending',
   'En attente': 'Pending',

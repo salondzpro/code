@@ -20,6 +20,7 @@ import type {
 import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
+import { readBookingGuard } from '../lib/fraud';
 import { loadPublicBySlug } from '../lib/queries';
 import { getReviewSummary } from '../lib/reviewSummary';
 import {
@@ -320,6 +321,12 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       return body;
     },
   );
+
+  /** Limites du salon pour une réservation en ligne (bouclier, 26 nov. 2026) : l'écran n'offre pas ce que le serveur refuserait. */
+  app.get('/salons/:id/booking-limits', { schema: { params: z.object({ id: uuid }) } }, async (req, reply) => {
+    reply.header('Cache-Control', 'public, no-cache');
+    return readBookingGuard(req.params.id);
+  });
 
   app.get(
     '/salons/:id/reviews',
