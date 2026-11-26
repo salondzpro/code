@@ -585,6 +585,13 @@ on('PUT', '/pro/booking-guard', (c) => {
   gardes.set(ownedSalon(c).id, v);
   return ok(v);
 });
+const contacts = new Map<string, boolean>();
+on('GET', '/pro/contact-settings', (c) => ok({ showPhone: contacts.get(ownedSalon(c).id) ?? false }));
+on('PUT', '/pro/contact-settings', (c) => {
+  const v = (c.body as { showPhone?: unknown }).showPhone === true;
+  contacts.set(ownedSalon(c).id, v);
+  return ok({ showPhone: v });
+});
 on('GET', '/salons/:id/booking-limits', (_c, p) => ok(gardes.get(p.id!) ?? { ...BOOKING_GUARD_DEFAULT }));
 on('GET', '/pro/deposit-settings', (c) => ok(depositSettingsOf(ownedSalon(c))));
 on('PUT', '/pro/deposit-settings', (c) => {

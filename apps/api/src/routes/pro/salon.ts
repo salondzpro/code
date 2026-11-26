@@ -34,6 +34,7 @@ import { readLabelSocials, readLabelStyle, writeLabelSocials, writeLabelStyle } 
 import { proClientsClose, readLoyalty, writeLoyalty } from '../../lib/loyalty';
 import { readPromos, writePromos } from '../../lib/promos';
 import { readBookingGuard, saveBookingGuard } from '../../lib/fraud';
+import { readShowPhone, writeShowPhone } from '../../lib/salonContact';
 import { createPlanCheckout, paymentOpenTo, paymentStatus, planPrice } from '../../lib/chargily';
 import { AppError } from '../../lib/errors';
 
@@ -172,6 +173,17 @@ const proSalonRoutes: FastifyPluginAsyncZod = async (app) => {
    * (publics : la cliente est prévenue avant de réserver) ; le compte va dans `salon_deposit_accounts`,
    * que seule l'API lit.
    */
+  /** Numéro visible par les clients (26 nov. 2026) : choix du professionnel, désactivé par défaut. */
+  app.get('/contact-settings', { preHandler: app.requireSalon }, async (req, reply) => {
+    reply.header('Cache-Control', 'private, no-store');
+    return { showPhone: await readShowPhone(req.salon!.id) };
+  });
+  app.put(
+    '/contact-settings',
+    { preHandler: app.requireSalon, schema: { body: z.object({ showPhone: z.boolean() }) } },
+    async (req) => writeShowPhone(req.salon!.id, req.body.showPhone),
+  );
+
   /** Bouclier de réservation (26 nov. 2026) : prestations par rendez-vous, rendez-vous à venir par client. */
   app.get('/booking-guard', { preHandler: app.requireSalon }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-store');

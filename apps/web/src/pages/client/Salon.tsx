@@ -46,8 +46,7 @@ import {
   ARRIVAL_ADVANCE_MINUTES,
   LATE_TOLERANCE_MINUTES,
   dayOfWeekFromKey,
-  toLocalDateKey,
-  SHOW_SALON_CONTACT_TO_CLIENTS,
+  toLocalDateKey,
   loyaltyReward,
 } from '@salondz/constants';
 import { useAuth } from '@/lib/auth';
@@ -294,7 +293,7 @@ export function Salon() {
 
           {/* Plus de boutons « Partager » et « Itinéraire » (16 nov. 2026, demande du propriétaire) :
               partager est en haut, l'itinéraire est l'adresse elle-même. */}
-          {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
+          {s.phone && (
             <a href={`tel:${s.phone}`} className="btn g sm">
               <I icon={Phone} size={18} /> {t('Appeler')}
             </a>
@@ -319,7 +318,7 @@ export function Salon() {
                   <span className="block text-[1rem] text-cancel-fg">
                     {standing.data.message}
                   </span>
-                  {SHOW_SALON_CONTACT_TO_CLIENTS && s.phone && (
+                  {s.phone && (
                     <a
                       href={`tel:${s.phone}`}
                       className="mt-1 inline-flex items-center gap-1.5 text-[1rem] font-semibold text-cancel-fg underline"

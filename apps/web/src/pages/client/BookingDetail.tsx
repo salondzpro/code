@@ -25,8 +25,7 @@ import {
   formatDZPhone,
   formatTimeDZ,
   CLIENT_CANCEL_REASONS_FR,
-  reasonOptions,
-  SHOW_SALON_CONTACT_TO_CLIENTS,
+  reasonOptions,
 } from '@salondz/constants';
 import { formatDuration } from '@/lib/format';
 import {
@@ -90,7 +89,7 @@ export function BookingDetail() {
   const tropTardReport = (new Date(b.startsAt).getTime() - Date.now()) / 3_600_000 < reportMinHours;
   const canReschedule = active && !tropTardReport && b.salon.allowClientReschedule !== false && !rescheduled;
   const wa =
-    SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone
+    b.salon.phone
       ? `https://wa.me/${b.salon.phone.replace(/\D/g, '')}`
       : null;
   const lines = b.items?.length
@@ -219,6 +218,12 @@ export function BookingDetail() {
         return (
           <div className="flex gap-2.5">
             {visibles}
+            {/* Le salon a choisi de montrer son numéro (26 nov. 2026) : l'appeler d'un toucher. */}
+            {active && b.salon.phone && (
+              <a href={`tel:${b.salon.phone}`} className="btn g sm !w-[3.25rem] flex-none !px-0" aria-label={t('Appeler le salon')}>
+                <I icon={Phone} size={20} />
+              </a>
+            )}
             <button
               type="button"
               className="btn g sm !w-[3.25rem] flex-none !px-0"
@@ -241,7 +246,7 @@ export function BookingDetail() {
             <LinkButton to={`/s/${b.salon.slug}`} variant="g" icon={ICONE.voirSalon}>
               {t('Voir le salon')}
             </LinkButton>
-            {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
+            {!active && b.salon.phone && (
               <a href={`tel:${b.salon.phone}`} className="btn g">
                 <I icon={Phone} size={18} /> {t('Appeler le salon')}
               </a>

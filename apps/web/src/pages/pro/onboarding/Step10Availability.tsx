@@ -10,7 +10,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useBookingGuard, useProSalon, useProSalonMutations, useSaveBookingGuard } from '@salondz/api-client';
+import { useBookingGuard, useContactSettings, useProSalon, useProSalonMutations, useSaveBookingGuard, useSaveContactSettings } from '@salondz/api-client';
 import { BOOKING_GUARD_DEFAULT, BOOKING_GUARD_SERVICES_CHOICES, BOOKING_GUARD_UPCOMING_CHOICES } from '@salondz/constants';
 import { errorText } from '@/components/ErrorMessage';
 import { Toggle } from '@/components/ui';
@@ -37,6 +37,13 @@ export function Step10Availability() {
   const [lead, setLead] = useState(120);
   const [cancel, setCancel] = useState(2);
   const [error, setError] = useState<string | null>(null);
+  // Numéro visible par les clients (26 nov. 2026) : bouton « Appeler » côté client si oui.
+  const contactQ = useContactSettings();
+  const saveContact = useSaveContactSettings();
+  const [showPhone, setShowPhone] = useState(false);
+  useEffect(() => {
+    if (contactQ.data) setShowPhone(contactQ.data.showPhone);
+  }, [contactQ.data]);
   const guardQ = useBookingGuard();
   const saveGuard = useSaveBookingGuard();
   const [maxServices, setMaxServices] = useState<number>(BOOKING_GUARD_DEFAULT.maxServices);
@@ -64,6 +71,7 @@ export function Step10Availability() {
       await Promise.all([
         updateSalon.mutateAsync({ bookingLeadTimeMinutes: lead, cancelMinHours: cancel, autoConfirm: !manual }),
         saveGuard.mutateAsync({ maxServices, maxUpcoming }),
+        saveContact.mutateAsync({ showPhone }),
       ]);
       navigate('/pro/parametres');
     } catch (err) {
@@ -87,6 +95,10 @@ export function Step10Availability() {
           <span className="text-[1rem] font-semibold">{t("Annulation gratuite jusqu'à")}</span>
           <PickerField inline label={t("Annulation gratuite jusqu'à")} value={cancel} onChange={setCancel} options={cancels.map((c) => ({ value: c, label: t('{n} h avant', { n: c }) }))} />
         </label>
+        <div className="li">
+          <span className="text-[1rem] font-semibold">{t('Afficher mon numéro aux clients')}</span>
+          <Toggle on={showPhone} onChange={setShowPhone} label={t('Afficher mon numéro aux clients')} />
+        </div>
         <label className="li">
           <span className="text-[1rem] font-semibold">{t('Prestations par rendez-vous')}</span>
           <PickerField inline label={t('Prestations par rendez-vous')} value={maxServices} onChange={setMaxServices} options={BOOKING_GUARD_SERVICES_CHOICES.map((n) => ({ value: n, label: String(n) }))} />
@@ -101,7 +113,7 @@ export function Step10Availability() {
           {error}
         </p>
       )}
-      <StepSheet label={t('Enregistrer')} onClick={() => void save()} busy={updateSalon.isPending || saveGuard.isPending} />
+      <StepSheet label={t('Enregistrer')} onClick={() => void save()} busy={updateSalon.isPending || saveGuard.isPending || saveContact.isPending} />
     </Screen>
   );
 }

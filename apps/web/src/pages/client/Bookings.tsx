@@ -12,8 +12,7 @@ import {
   formatTimeDZ,
   relativeDayLabelDZ,
   toLocalDateKey,
-  untilLabelFR,
-  SHOW_SALON_CONTACT_TO_CLIENTS, formatLocale, MAX_CLIENT_RESCHEDULES, rescheduleMinHours } from '@salondz/constants';
+  untilLabelFR, formatLocale, MAX_CLIENT_RESCHEDULES, rescheduleMinHours } from '@salondz/constants';
 import {
   CalendarClock,
   CalendarX,
@@ -141,7 +140,7 @@ function UpcomingCard({ b, now }: { b: BookingWithSalon; now: number }) {
               <I icon={CalendarClock} size={16} /> {t("Déplacer le RDV")}
             </Link>
           )}
-          {SHOW_SALON_CONTACT_TO_CLIENTS && b.salon.phone && (
+          {b.salon.phone && (
             <a
               href={`tel:${b.salon.phone}`}
               className="ib lg flex-none"

@@ -1,6 +1,5 @@
 import { planRank, readAllPlans } from '../lib/plans';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { SHOW_SALON_CONTACT_TO_CLIENTS } from '@salondz/constants';
 import { z } from 'zod';
 import { WILAYAS } from '@salondz/constants';
 import {
@@ -21,6 +20,7 @@ import { db } from '../lib/supabase';
 import { camelize } from '../lib/mappers';
 import { badRequest, notFound, unwrap } from '../lib/errors';
 import { readBookingGuard } from '../lib/fraud';
+import { readShowPhone } from '../lib/salonContact';
 import { loadPublicBySlug } from '../lib/queries';
 import { getReviewSummary } from '../lib/reviewSummary';
 import {
@@ -234,7 +234,9 @@ const publicRoutes: FastifyPluginAsyncZod = async (app) => {
       // L'identifiant du propriétaire (compte auth) ne fait pas partie de la fiche publique.
       // Le NUMÉRO du salon non plus tant que le drapeau le cache : l'écran ne l'affichait pas, mais
       // la réponse le servait à qui lisait l'API — le propriétaire, lui, voit le sien.
-      return SHOW_SALON_CONTACT_TO_CLIENTS || isOwner ? pub : { ...pub, phone: null };
+      // Numéro : le propriétaire voit le sien ; les clients seulement si le professionnel l'a choisi
+      // (« Afficher mon numéro aux clients », 26 nov. 2026, `lib/salonContact.ts`).
+      return isOwner || (await readShowPhone(pub.id)) ? pub : { ...pub, phone: null };
     },
   );
 

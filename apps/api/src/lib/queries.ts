@@ -10,6 +10,7 @@ import { db } from './supabase';
 import { camelize, hm } from './mappers';
 import { notFound, unwrap } from './errors';
 import { mapSalon, SALON_COLUMNS } from '../plugins/auth';
+import { maskSalonPhones } from './salonContact';
 
 export const PHOTO_COLS = 'id, salon_id, url, sort_order, kind';
 export const SERVICE_COLS =
@@ -155,7 +156,7 @@ export function mapBookingWithSalon(row: Row): BookingWithSalon {
 
 export const BOOKING_ITEM_COLS =
   'id, service_id, service_name, duration_minutes, price_da, sort_order';
-export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, address, cancel_min_hours, allow_client_reschedule), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS}), reviews(rating)`;
+export const BOOKING_WITH_SALON_SELECT = `${BOOKING_COLS}, salons!inner(id, slug, name, city, cover_url, logo_url, address, cancel_min_hours, allow_client_reschedule, phone), staff(id, display_name), booking_items(${BOOKING_ITEM_COLS}), reviews(rating)`;
 export const BOOKING_WITH_STAFF_SELECT = `${BOOKING_COLS}, staff(id, display_name), booking_items(${BOOKING_ITEM_COLS})`;
 
 export async function getBookingWithSalon(id: string): Promise<BookingWithSalon> {
@@ -166,7 +167,8 @@ export async function getBookingWithSalon(id: string): Promise<BookingWithSalon>
     .maybeSingle();
   if (res.error) throw res.error;
   if (!res.data) throw notFound('Réservation');
-  return mapBookingWithSalon(res.data as Row);
+  // Numéro du salon : seulement si le professionnel l'a choisi (26 nov. 2026, `lib/salonContact.ts`).
+  return (await maskSalonPhones([mapBookingWithSalon(res.data as Row)]))[0]!;
 }
 
 export async function getBookingWithStaff(id: string): Promise<BookingWithStaff> {

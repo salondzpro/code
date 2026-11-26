@@ -22,6 +22,7 @@ import { applyPromo } from '../lib/loyalty';
 import { notifySlotFreed } from '../lib/waitlist';
 import { clientFilter, clientStanding, type ClientRef } from '../lib/standing';
 import { readBookingGuard, recordAttempt, scoreAttempt, suspendForFraud } from '../lib/fraud';
+import { maskSalonPhones } from '../lib/salonContact';
 import { FRAUD_SUSPENSION_REASON, type BookingGuard } from '@salondz/constants';
 import { depositDeadline, loadDepositAccount, notifyDepositSubmitted, proofExt } from '../lib/deposit';
 import { STORAGE_BUCKETS } from '@salondz/constants';
@@ -291,7 +292,7 @@ const bookingRoutes: FastifyPluginAsyncZod = async (app) => {
           ? q.eq('status', 'cancelled').order('cancelled_at', { ascending: false, nullsFirst: false })
           : q.neq('status', 'cancelled').or(`ends_at.lt.${nowIso},status.in.(completed,no_show)`).order('starts_at', { ascending: false });
     const rows = unwrap(await q.range(offset, offset + limit - 1)) as Record<string, unknown>[];
-    const items = rows.map(mapBookingWithSalon);
+    const items = await maskSalonPhones(rows.map(mapBookingWithSalon));
     reply.header('Cache-Control', 'private, no-store');
     return { items, nextCursor: items.length === limit ? String(offset + limit) : null };
   });

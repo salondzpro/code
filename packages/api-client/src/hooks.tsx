@@ -841,6 +841,19 @@ export function useSaveBookingGuard() {
     onSuccess: (data) => qc.setQueryData(['pro', 'booking-guard'], data),
   });
 }
+/** Numéro visible par les clients (26 nov. 2026) : réglage du pro. */
+export const useContactSettings = (enabled = true) => {
+  const { api } = useApi();
+  return useQuery({ queryKey: ['pro', 'contact-settings'], queryFn: () => api.pro.contactSettings(), staleTime: 60_000, enabled });
+};
+export function useSaveContactSettings() {
+  const { api } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { showPhone: boolean }) => api.pro.saveContactSettings(body),
+    onSuccess: (data) => qc.setQueryData(['pro', 'contact-settings'], data),
+  });
+}
 export const useSalonBookingLimits = (salonId: string | undefined) => {
   const { api } = useApi();
   return useQuery({
