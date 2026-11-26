@@ -188,77 +188,81 @@ const CHORDS = [
 ];
 
 function music(ctx: BaseAudioContext, noise: AudioBuffer, seconds: number, out: AudioNode) {
+  /*
+   * FOND MUSICAL DOUX (refonte du 26 nov. 2026, demande du propriétaire : « la musique ne doit pas
+   * être trop forte ») : un piano électrique feutré (sinus + harmonique douce, léger trémolo), une
+   * basse ronde et une pulsation à peine audible. Plus de nappe en dents de scie ni d'arpège brillant :
+   * rien qui dispute la place à la voix. Tout passe sous un filtre à 2,8 kHz, la zone de la voix reste libre.
+   */
   const bars = Math.ceil(seconds / (BEAT * 4)) + 1;
-  // Pad chaud, filtré, qui respire.
-  const padLp = ctx.createBiquadFilter();
-  padLp.type = 'lowpass';
-  padLp.frequency.value = 1100;
-  const pad = ctx.createGain();
-  pad.gain.value = 0.05;
-  padLp.connect(pad);
-  pad.connect(out);
+  const tone = ctx.createBiquadFilter();
+  tone.type = 'lowpass';
+  tone.frequency.value = 2800;
+  tone.connect(out);
+  const keys = ctx.createGain();
+  keys.gain.value = 0.11;
+  keys.connect(tone);
+  // Trémolo lent : le piano « respire ».
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = 4.2;
+  const lfoAmt = ctx.createGain();
+  lfoAmt.gain.value = 0.025;
+  lfo.connect(lfoAmt);
+  lfoAmt.connect(keys.gain);
+  lfo.start(0);
+  lfo.stop(seconds + 1);
+  const note = (m: number, at: number, len: number, level: number) => {
+    [
+      [1, 'sine', level],
+      [2, 'sine', level * 0.18],
+    ].forEach(([mult, type, lv]) => {
+      const o = ctx.createOscillator();
+      o.type = type as OscillatorType;
+      o.frequency.value = hz(m) * (mult as number);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(lv as number, at + 0.012);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, (lv as number) * 0.25), at + len * 0.6);
+      g.gain.linearRampToValueAtTime(0, at + len);
+      o.connect(g);
+      g.connect(keys);
+      o.start(at);
+      o.stop(at + len + 0.05);
+    });
+  };
   for (let b = 0; b < bars; b += 1) {
     const chord = CHORDS[b % CHORDS.length]!;
     const t = b * BEAT * 4;
-    chord.forEach((m) => {
-      [-6, 6].forEach((cents) => {
-        const o = ctx.createOscillator();
-        o.type = 'sawtooth';
-        o.frequency.value = hz(m);
-        o.detune.value = cents;
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(0.5, t + 0.35);
-        g.gain.setValueAtTime(0.5, t + BEAT * 4 - 0.25);
-        g.gain.linearRampToValueAtTime(0, t + BEAT * 4 + 0.05);
-        o.connect(g);
-        g.connect(padLp);
-        o.start(t);
-        o.stop(t + BEAT * 4 + 0.1);
-      });
-    });
-    // Basse ronde sur les temps 1 et 3.
-    [0, 2].forEach((beat) => {
-      const tb = t + beat * BEAT;
-      const o = ctx.createOscillator();
-      o.type = 'sine';
-      o.frequency.value = hz(chord[0]! - 12);
-      o.connect(envGain(ctx, tb, 0.22, 0.01, BEAT * 1.6, out));
-      o.start(tb);
-      o.stop(tb + BEAT * 2);
-    });
-    // Arpège en croches, une octave au-dessus.
-    for (let s = 0; s < 8; s += 1) {
-      const ts = t + s * (BEAT / 2);
-      const note = chord[[1, 2, 3, 2, 1, 3, 2, 3][s]!]! + 12;
-      const o = ctx.createOscillator();
-      o.type = 'triangle';
-      o.frequency.value = hz(note);
-      o.connect(envGain(ctx, ts, 0.055, 0.004, 0.28, out));
-      o.start(ts);
-      o.stop(ts + 0.35);
-    }
-    // Battement discret : grosse caisse feutrée et charleston.
+    // Accord plaqué au temps 1, repris en douceur au temps 3 (sur le contretemps).
+    chord.forEach((m, i) => note(m, t + i * 0.018, BEAT * 2.2, 0.32));
+    chord.slice(1).forEach((m, i) => note(m + 12, t + BEAT * 2.5 + i * 0.02, BEAT * 1.3, 0.12));
+    // Basse ronde, discrète.
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = hz(chord[0]! - 12);
+    o.connect(envGain(ctx, t, 0.1, 0.02, BEAT * 3, tone));
+    o.start(t);
+    o.stop(t + BEAT * 4);
+    // Pulsation feutrée sur 1 et 3, souffle de shaker sur les contretemps.
     for (let beat = 0; beat < 4; beat += 1) {
       const tk = t + beat * BEAT;
       if (beat % 2 === 0) {
         const k = ctx.createOscillator();
         k.type = 'sine';
-        k.frequency.setValueAtTime(120, tk);
-        k.frequency.exponentialRampToValueAtTime(45, tk + 0.12);
-        k.connect(envGain(ctx, tk, 0.32, 0.002, 0.2, out));
+        k.frequency.setValueAtTime(95, tk);
+        k.frequency.exponentialRampToValueAtTime(42, tk + 0.14);
+        k.connect(envGain(ctx, tk, 0.12, 0.003, 0.22, out));
         k.start(tk);
         k.stop(tk + 0.3);
       }
-      const th = tk + BEAT / 2;
       const n = ctx.createBufferSource();
       n.buffer = noise;
       const hp = ctx.createBiquadFilter();
       hp.type = 'highpass';
-      hp.frequency.value = 8000;
+      hp.frequency.value = 7000;
       n.connect(hp);
-      hp.connect(envGain(ctx, th, 0.06, 0.001, 0.05, out));
-      n.start(th, (beat * 0.11) % 0.5, 0.08);
+      hp.connect(envGain(ctx, tk + BEAT / 2, 0.025, 0.004, 0.07, out));
+      n.start(tk + BEAT / 2, (beat * 0.13) % 0.5, 0.1);
     }
   }
 }
@@ -288,15 +292,16 @@ export async function renderBioSound(cues: BioSoundCues, durationMs: number, voi
   // La musique entre en fondu, s'efface sous la voix, et sort en fondu.
   const musicBus = ctx.createGain();
   musicBus.connect(master);
-  const base = 0.55;
-  const duck = 0.22;
+  // Niveaux (26 nov. 2026) : fond nettement plus bas, et presque effacé sous la voix.
+  const base = 0.3;
+  const duck = 0.07;
   musicBus.gain.setValueAtTime(0, 0);
   musicBus.gain.linearRampToValueAtTime(base, 0.6);
 
   // Voix : chaque réplique attend la fin de la précédente, jamais deux voix l'une sur l'autre.
   const clips = await Promise.all(voice.map((v) => fetchClip(ctx, v.file)));
   const voiceBus = ctx.createGain();
-  voiceBus.gain.value = 1.15;
+  voiceBus.gain.value = 1.3;
   voiceBus.connect(master);
   let free = 0;
   const spans: [number, number][] = [];

@@ -25,13 +25,14 @@ import { loadImage } from './storyImage';
 import { formatDuration } from './format';
 import { getLocale, t } from '@/i18n';
 import type { VoiceLine } from './bioVideoSound';
+import { VOIX_VERSION } from './voixVersion';
 
 const W = 720;
 const H = 1280;
 export const BIO_VIDEO_SIZE = { width: W, height: H };
 export const BIO_VIDEO_MS = 23000;
 /** Change avec le dessin : les vidéos déjà préparées sont refaites. */
-const DESIGN = 6;
+const DESIGN = 7;
 
 /* Charte « Claude noir brillant » (styles/claude.css, tokens.css). */
 const CREAM = '#faf9f5';
@@ -84,7 +85,50 @@ export type BioVideoData = {
   logo: Picture;
   cover: Picture;
   grid: Picture[];
+  /** Voix off : chaque phrase, son début réel (ms), sa durée, son fichier (null tant qu'il n'est pas enregistré). */
+  voix: VoixLigne[];
 };
+
+/* ------------------------------ La voix off ------------------------------ */
+
+/**
+ * VOIX OFF EN DARIJA ET FRANÇAIS (26 nov. 2026, demande du propriétaire : « un homme avec l'accent
+ * algérien, qui mélange l'arabe algérien et le français, comme le marketing d'Uber Eats »). Une VRAIE
+ * voix, enregistrée : 7 phrases, `node scripts/import-voix.mjs <7 fichiers>` les range dans
+ * `public/video/voix/` (WAV) et écrit leurs durées dans `voix.json`. Sans enregistrement, la vidéo
+ * garde ses sous-titres animés et sa musique, sans voix de synthèse.
+ * Le texte s'affiche en SOUS-TITRES mot à mot, comme sur TikTok : il doit rester celui qui est dit.
+ */
+export const VOIX: { at: number; text: string }[] = [
+  { at: 200, text: 'Salam ! Réserver chez nous, rahi sahla bezzaf.' },
+  { at: 3000, text: 'Clique sur le lien f la bio.' },
+  { at: 5300, text: 'Khayer la prestation li t’hab.' },
+  { at: 7800, text: 'Le jour w l’heure, kima yjik.' },
+  { at: 10500, text: 'Connecte-toi b Google, f une seconde.' },
+  { at: 12650, text: 'W hadi hiya, c’est réservé ! Sahit !' },
+  { at: 18700, text: 'Salon DZ, f l’App Store w Google Play. Yallah, réserve dorka !' },
+];
+export type VoixLigne = { start: number; dur: number; text: string; file: string | null };
+
+/** Les vraies durées (`voix.json`) ; à défaut, une estimation (≈ 70 ms par caractère). */
+async function chargerVoix(): Promise<VoixLigne[]> {
+  let pistes: { file: string; dur: number }[] = [];
+  try {
+    const r = await fetch('/video/voix/voix.json', { cache: 'no-cache' });
+    if (r.ok) pistes = ((await r.json()) as { lignes?: { file: string; dur: number }[] }).lignes ?? [];
+  } catch {
+    /* pas d'enregistrement : sous-titres seuls */
+  }
+  // Même règle que le mixage : une phrase attend la fin de la précédente (+ 120 ms).
+  let libre = 0;
+  return VOIX.map((v, i) => {
+    const p = pistes[i];
+    const dur = p?.dur ?? Math.max(1200, v.text.length * 70);
+    const start = Math.max(v.at, libre + 120);
+    libre = start + dur;
+    return { start, dur, text: v.text, file: p ? `/video/voix/${p.file}` : null };
+  });
+}
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const pretty = (key: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(formatLocale(), { ...o, timeZone: 'UTC' }).format(new Date(`${key}T12:00:00Z`));
@@ -131,6 +175,7 @@ export async function loadBioVideo(salon: SalonOwnerView, link: string, date: st
     logo,
     cover,
     grid: grid.filter((x): x is HTMLImageElement => !!x),
+    voix: await chargerVoix(),
   };
 }
 
@@ -141,7 +186,7 @@ export function bioVideoVersion(salon: SalonOwnerView, link: string): string {
     .map((s) => `${s.id}:${s.name}:${s.priceDa}`)
     .sort();
   // La langue aussi : les textes ET la voix off changent avec elle.
-  return JSON.stringify([DESIGN, getLocale(), salon.genderTarget, link, salon.coverUrl, salon.logoUrl, salon.autoConfirm, salon.ratingCount, services]);
+  return JSON.stringify([DESIGN, VOIX_VERSION, getLocale(), salon.genderTarget, link, salon.coverUrl, salon.logoUrl, salon.autoConfirm, salon.ratingCount, services]);
 }
 
 /**
@@ -1281,14 +1326,9 @@ export function bioSoundCues(_d: BioVideoData): BioSoundCues {
   };
 }
 
-/** La voix off : sept répliques calées sur le montage ; la voix suit le type de salon. */
-const VOICE_AT = [200, 3000, 5300, 7800, 10500, 12650, STORES_AT];
+/** La voix off enregistrée (homme, darija + français), pour tous les salons et toutes les langues. */
 export function bioVoiceLines(d: BioVideoData): VoiceLine[] {
-  const lang = getLocale();
-  // Seule la voix FRANÇAISE est enregistrée : ailleurs, pas de voix plutôt que des requêtes en 404.
-  if (lang !== 'fr') return [];
-  const who = d.men ? 'h' : 'f';
-  return VOICE_AT.map((at, i) => ({ at, file: `/video/voix/${lang}-${who}-${i + 1}.wav` }));
+  return d.voix.filter((v) => v.file).map((v) => ({ at: v.start, file: v.file! }));
 }
 
 /* ------------------------------ La fin ------------------------------ */
@@ -1394,8 +1434,8 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   g.font = `400 24px ${SANS}`;
   const w2 = g.measureText('DZ').width;
   const bx = W / 2 - (w1 + w2) / 2;
-  line(g, 'Salon ', bx, 1150, `600 24px ${SANS}`, INK);
-  line(g, 'DZ', bx + w1, 1150, `400 24px ${SANS}`, SUBTLE);
+  line(g, 'Salon ', bx, 1250, `600 24px ${SANS}`, INK);
+  line(g, 'DZ', bx + w1, 1250, `400 24px ${SANS}`, SUBTLE);
   g.globalAlpha = 1;
   // Dernier clic, sur le lien.
   const keys: [number, number, number][] = [
@@ -1405,6 +1445,69 @@ function drawEnd(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
   ];
   const at = cursorAt(keys, ms + T.end);
   if (at) drawCursor(g, at[0], at[1], ms + T.end, [TAP.link], d.accent, 1.5);
+}
+
+
+/* ------------------------------ Les sous-titres ------------------------------ */
+
+/**
+ * Sous-titres de la voix off, façon TikTok : les mots arrivent un à un (petit rebond), le mot dit est
+ * en OR, sur un bandeau sombre lisible par-dessus n'importe quel écran. Le minutage des mots suit leur
+ * longueur dans la durée réelle de la phrase.
+ */
+const CAP_Y = 1150;
+function drawCaptions(g: CanvasRenderingContext2D, ms: number, d: BioVideoData) {
+  const v = d.voix.find((x) => ms >= x.start - 80 && ms <= x.start + x.dur + 450);
+  if (!v) return;
+  const words = v.text.split(' ');
+  const poids = words.map((w) => w.length + 2);
+  const total = poids.reduce((a, b) => a + b, 0);
+  let acc = 0;
+  const debut = words.map((_, i) => {
+    const t0 = v.start + (acc / total) * v.dur;
+    acc += poids[i]!;
+    return t0;
+  });
+  const font = f(600, 34);
+  g.font = font;
+  const space = g.measureText(' ').width;
+  // Deux lignes au plus, coupées au mot.
+  const maxW = W - 120;
+  const lignes: number[][] = [[]];
+  let lw = 0;
+  words.forEach((w, i) => {
+    const ww = g.measureText(w).width;
+    if (lw && lw + space + ww > maxW) {
+      lignes.push([]);
+      lw = 0;
+    }
+    lignes[lignes.length - 1]!.push(i);
+    lw += (lw ? space : 0) + ww;
+  });
+  const sortie = clamp((ms - (v.start + v.dur + 150)) / 300);
+  const entree = out((ms - v.start + 80) / 220);
+  const lh = 50;
+  const y0 = CAP_Y - ((lignes.length - 1) * lh) / 2;
+  g.save();
+  g.globalAlpha = entree * (1 - sortie);
+  lignes.forEach((idx, li) => {
+    const largeurs = idx.map((i) => g.measureText(words[i]!).width);
+    const lwid = largeurs.reduce((a, b) => a + b, 0) + space * (idx.length - 1);
+    const y = y0 + li * lh;
+    box(g, W / 2 - lwid / 2 - 18, y - 36, lwid + 36, 48, 14, 'rgba(24,22,20,.78)');
+    let x = W / 2 - lwid / 2;
+    idx.forEach((i, n) => {
+      // Karaoké : déjà dit = blanc, en cours = OR avec un petit rebond, à venir = blanc voilé.
+      const dit = ms >= debut[i]! && (i === words.length - 1 || ms < debut[i + 1]!);
+      const passe = ms >= debut[i]!;
+      const k = dit ? spring((ms - debut[i]!) / 240) : 1;
+      // Le mot dit saute légèrement vers le haut (sans grossir : il ne mord jamais sur ses voisins).
+      const saut = dit ? Math.sin(clamp(k) * Math.PI) * 5 : 0;
+      line(g, words[i]!, x, y - saut, font, dit ? '#ffd166' : passe ? '#ffffff' : 'rgba(255,255,255,.5)');
+      x += largeurs[n]! + space;
+    });
+  });
+  g.restore();
 }
 
 /* ------------------------------ L'image ------------------------------ */
@@ -1434,7 +1537,10 @@ export function drawBioFrame(g: CanvasRenderingContext2D, at: number, d: BioVide
       drawHook(g, ms, d);
       g.restore();
     }
-    if (ms < T.phoneIn - 200) return;
+    if (ms < T.phoneIn - 200) {
+      drawCaptions(g, ms, d);
+      return;
+    }
   } else drawBackdrop(g, d, ms);
 
   // 4 · La fin : le téléphone s'éloigne, la fin s'installe.
@@ -1448,6 +1554,7 @@ export function drawBioFrame(g: CanvasRenderingContext2D, at: number, d: BioVide
       g.restore();
     }
     drawEnd(g, ms - T.end, d);
+    drawCaptions(g, ms, d);
     return;
   }
 
@@ -1476,4 +1583,5 @@ export function drawBioFrame(g: CanvasRenderingContext2D, at: number, d: BioVide
   g.restore();
   drawConfetti(g, ms - T.done - 200, d);
   drawStepTitle(g, ms, d);
+  drawCaptions(g, ms, d);
 }
