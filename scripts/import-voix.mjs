@@ -20,7 +20,15 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'apps
 const OUT = path.join(ROOT, 'public', 'video', 'voix');
 const RATE = 24000;
 const N = 7;
-const fichiers = process.argv.slice(2);
+// `--genre h|f` : voix des salons d'hommes (h) ou de femmes (f) ; sans : la même pour les deux.
+const args = process.argv.slice(2);
+const gi = args.indexOf('--genre');
+const genre = gi >= 0 ? args[gi + 1] : null;
+if (gi >= 0 && genre !== 'h' && genre !== 'f') {
+  console.error('--genre h ou f');
+  process.exit(1);
+}
+const fichiers = gi >= 0 ? args.filter((_, i) => i !== gi && i !== gi + 1) : args;
 if (fichiers.length !== 1 && fichiers.length !== N) {
   console.error(`Donnez ${N} fichiers (une phrase chacun), ou un seul fichier avec les ${N} phrases à la suite.`);
   process.exit(1);
@@ -124,14 +132,25 @@ function wav(pcm) {
 fs.mkdirSync(OUT, { recursive: true });
 const hash = crypto.createHash('sha256');
 const lignes = resultats.map((r, i) => {
-  const file = `voix-${i + 1}.wav`;
+  const file = `voix-${genre ? `${genre}-` : ''}${i + 1}.wav`;
   const buf = wav(r.pcm);
   hash.update(buf);
   fs.writeFileSync(path.join(OUT, file), buf);
   console.log(`${file}  ${(r.dur / 1000).toFixed(2)} s  ${Math.round(buf.length / 1024)} ko`);
   return { file, dur: r.dur };
 });
-fs.writeFileSync(path.join(OUT, 'voix.json'), JSON.stringify({ lignes }, null, 2) + '\n');
+// voix.json : { h: [...], f: [...] } — un genre importé ne remplace que le sien.
+const cheminJson = path.join(OUT, 'voix.json');
+let index = {};
+try {
+  index = JSON.parse(fs.readFileSync(cheminJson, 'utf8'));
+} catch {
+  /* premier import */
+}
+delete index.lignes;
+for (const g of genre ? [genre] : ['h', 'f']) index[g] = lignes;
+fs.writeFileSync(cheminJson, JSON.stringify(index, null, 2) + '\n');
+hash.update(JSON.stringify(index));
 const version = hash.digest('hex').slice(0, 12);
 fs.writeFileSync(
   path.join(ROOT, 'src', 'lib', 'voixVersion.ts'),

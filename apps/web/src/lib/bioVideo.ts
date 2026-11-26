@@ -100,22 +100,23 @@ export type BioVideoData = {
  * Le texte s'affiche en SOUS-TITRES mot à mot, comme sur TikTok : il doit rester celui qui est dit.
  */
 export const VOIX: { at: number; text: string }[] = [
-  { at: 100, text: 'Salam ! Réservi, sahla bezzaf !' },
-  { at: 3000, text: 'Clique sur le lien f la bio.' },
-  { at: 5300, text: 'Khayer la prestation li t’hab.' },
-  { at: 7800, text: 'Le jour w l’heure, kima yjik.' },
-  { at: 10500, text: 'Connecti toi b Google, f une seconde.' },
-  { at: 12650, text: 'Hadi hiya ! C’est réservé !' },
-  { at: 18700, text: 'Salon DZ ! Yallah, réservi dorka !' },
+  { at: 150, text: 'Réserver chez nous ? Trop simple !' },
+  { at: 3000, text: 'Touchez le lien dans la bio.' },
+  { at: 5300, text: 'Choisissez votre prestation.' },
+  { at: 7800, text: 'Le jour, l’heure… comme vous voulez !' },
+  { at: 10500, text: 'Connectez-vous avec Google, en une seconde.' },
+  { at: 12650, text: 'Et voilà, c’est réservé !' },
+  { at: 18700, text: 'Salon DZ. Réservez dès maintenant !' },
 ];
 export type VoixLigne = { start: number; dur: number; text: string; file: string | null };
 
 /** Les vraies durées (`voix.json`) ; à défaut, une estimation (≈ 70 ms par caractère). */
-async function chargerVoix(): Promise<VoixLigne[]> {
+async function chargerVoix(men: boolean): Promise<VoixLigne[]> {
   let pistes: { file: string; dur: number }[] = [];
   try {
     const r = await fetch('/video/voix/voix.json', { cache: 'no-cache' });
-    if (r.ok) pistes = ((await r.json()) as { lignes?: { file: string; dur: number }[] }).lignes ?? [];
+    // Voix d'homme pour un salon d'hommes, de femme pour un salon de femmes.
+    if (r.ok) pistes = ((await r.json()) as Record<string, { file: string; dur: number }[]>)[men ? 'h' : 'f'] ?? [];
   } catch {
     /* pas d'enregistrement : sous-titres seuls */
   }
@@ -175,7 +176,7 @@ export async function loadBioVideo(salon: SalonOwnerView, link: string, date: st
     logo,
     cover,
     grid: grid.filter((x): x is HTMLImageElement => !!x),
-    voix: await chargerVoix(),
+    voix: await chargerVoix(men),
   };
 }
 
@@ -1326,7 +1327,7 @@ export function bioSoundCues(_d: BioVideoData): BioSoundCues {
   };
 }
 
-/** La voix off enregistrée (homme, darija + français), pour tous les salons et toutes les langues. */
+/** La voix off en français : homme pour un salon d'hommes, femme pour un salon de femmes. */
 export function bioVoiceLines(d: BioVideoData): VoiceLine[] {
   return d.voix.filter((v) => v.file).map((v) => ({ at: v.start, file: v.file! }));
 }
