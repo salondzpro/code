@@ -1169,3 +1169,49 @@ html.amb-f-on .h-app.bg-bg { background-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   .rv-etoiles svg { animation: none; }
 }
+
+/* CONSEIL = DIAGNOSTIC (26 nov. 2026, `lib/proTips.ts`) : pastille au-dessus du titre (« À faire »,
+   « Offre Pro · 790 DA / mois »), avantages cochés, bouton blanc pleine largeur pour l'offre supérieure. */
+.sv-t .sv-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font: 500 calc(13px * var(--fz, 1)) / 1.2 var(--font-sans);
+}
+.sv-t .sv-tag.up {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--color-text);
+}
+.sv-t .sv-pts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: calc(15px * var(--fz, 1));
+}
+.sv-t .sv-pts li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sv-t .sv-pts svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+/* Le fond du conseil est déjà noir : l'offre supérieure se distingue par un bouton blanc PLEINE LARGEUR. */
+.sv-t button.up {
+  align-self: stretch;
+  min-height: 50px;
+  background: #ffffff;
+  color: var(--color-text);
+}

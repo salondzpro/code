@@ -6,12 +6,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Download, Play, Share, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { Check, Download, Play, Share, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { useApi, useLabelSocials } from '@salondz/api-client';
 import { useQuery } from '@tanstack/react-query';
 import { minutesToTime, toLocalDateKey } from '@salondz/constants';
 import type { SalonOwnerView } from '@salondz/types';
 import { I } from './ui';
+import { usePlan } from './Plans';
 import { BIO_VIDEO_MS, BIO_VIDEO_SIZE, bioVideoTypes, bioVideoVersion, drawBioFrame, loadBioVideo, type BioVideoData } from '@/lib/bioVideo';
 import { proProfile, profilePhotos, profileQuestion } from '@/lib/proProfile';
 import { proTips, type ProTip } from '@/lib/proTips';
@@ -58,11 +59,13 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
   const navigate = useNavigate();
   const [i, setI] = useState(0);
   useFullScreen(onClose);
-  useEffect(() => {
-    const id = window.setTimeout(() => (i + 1 < tips.length ? setI(i + 1) : onClose()), TIP_MS);
-    return () => window.clearTimeout(id);
-  }, [i, tips.length, onClose]);
   const tip = tips[i]!;
+  // Un conseil qui liste des avantages reste plus longtemps : le temps de les lire.
+  const dur = tip.points ? TIP_MS + 2500 : TIP_MS;
+  useEffect(() => {
+    const id = window.setTimeout(() => (i + 1 < tips.length ? setI(i + 1) : onClose()), dur);
+    return () => window.clearTimeout(id);
+  }, [i, tips.length, onClose, dur]);
   const step = (n: number) => (i + n < 0 ? setI(0) : i + n >= tips.length ? onClose() : setI(i + n));
 
   return createPortal(
@@ -70,7 +73,7 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
       <img className="sv-i" src={photos[i % photos.length]} alt="" />
       <div className="sv-b" aria-hidden>
         {tips.map((x, n) => (
-          <i key={x.id}>{n < i ? <b className="full" /> : n === i ? <b key={i} className="run" style={{ animationDuration: `${TIP_MS}ms` }} /> : null}</i>
+          <i key={x.id}>{n < i ? <b className="full" /> : n === i ? <b key={i} className="run" style={{ animationDuration: `${dur}ms` }} /> : null}</i>
         ))}
       </div>
       <header className="sv-h">
@@ -82,10 +85,22 @@ function TipsViewer({ tips, photos, onClose }: { tips: ProTip[]; photos: string[
       <button type="button" className="sv-z p" aria-label={t('Précédent')} onClick={() => step(-1)} />
       <button type="button" className="sv-z n" aria-label={t('Suivant')} onClick={() => step(1)} />
       <div className="sv-t">
+        {tip.tag && <span className={`sv-tag${tip.upsell ? ' up' : ''}`}>{tip.tag}</span>}
         <h2>{tip.title}</h2>
         <p>{tip.body}</p>
+        {tip.points && (
+          <ul className="sv-pts">
+            {tip.points.map((x) => (
+              <li key={x}>
+                <I icon={Check} size={16} strokeWidth={2.2} />
+                {x}
+              </li>
+            ))}
+          </ul>
+        )}
         {tip.to && (
           <button
+            className={tip.upsell ? 'up' : undefined}
             type="button"
             onClick={() => {
               onClose();
@@ -334,12 +349,32 @@ export function ProStoryRail({ salon, short, pending }: { salon: SalonOwnerView;
   // Conseils & nouveautés publiés par l'administration (20 nov. 2026) : EN TÊTE, avant les conseils du jour.
   const { api } = useApi();
   const news = useQuery({ queryKey: ['pro', 'news'], queryFn: () => api.pro.news(), staleTime: 5 * 60_000 });
+  // Le diagnostic du Conseil (26 nov. 2026) : offre, fidélité, promotions, avis sans réponse, numéro
+  // affiché (mêmes clés de cache que les écrans de réglage). Une lecture qui échoue retire seulement
+  // le conseil concerné.
+  const plan = usePlan();
+  const opt = { staleTime: 5 * 60_000, retry: false } as const;
+  const loyalty = useQuery({ queryKey: ['pro', 'loyalty'], queryFn: () => api.pro.loyalty(), ...opt });
+  const promos = useQuery({ queryKey: ['pro', 'promos'], queryFn: () => api.pro.promos(), ...opt });
+  const unanswered = useQuery({ queryKey: ['pro', 'reviews', 'unanswered'], queryFn: () => api.pro.reviews.unanswered(), ...opt });
+  const contact = useQuery({ queryKey: ['pro', 'contact-settings'], queryFn: () => api.pro.contactSettings(), ...opt });
   const tips = useMemo<ProTip[]>(
     () => [
       ...(news.data?.items ?? []).map((n) => ({ id: `news-${n.id}`, title: n.title, body: n.body, to: n.url ?? undefined, action: n.url ? n.action ?? t('Voir') : undefined })),
-      ...proTips(salon, pending, dayIndex, question),
+      ...proTips({
+        salon,
+        pending,
+        dayIndex,
+        question,
+        plan: plan.data?.plan,
+        loyaltyOn: loyalty.data ? loyalty.data.enabled : undefined,
+        promosOn: promos.data ? promos.data.some((x) => Date.parse(x.endsAt) > Date.now()) : undefined,
+        depositOn: salon.depositMode ? salon.depositMode !== 'off' : undefined,
+        unansweredReviews: unanswered.data?.count,
+        showPhone: contact.data?.showPhone,
+      }),
     ],
-    [news.data, salon, pending, dayIndex, question],
+    [news.data, salon, pending, dayIndex, question, plan.data, loyalty.data, promos.data, unanswered.data, contact.data],
   );
   // Ouvert depuis la notification « Nouveauté Salon DZ » (`/pro?conseil=1`) : le Conseil s'affiche d'office.
   const [params, setParams] = useSearchParams();
