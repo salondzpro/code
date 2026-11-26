@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { PageLoading } from '@/components/PageLoading';
 import { APPLI, MARCHE } from '@/lib/flavor';
 import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
+import { demanderContinuerAppli } from '@/components/ContinuerAppli';
 import { finConnexionExterne } from '@/lib/connexionExterne';
 import { trace } from '@/lib/traceConnexion';
 
@@ -106,6 +107,8 @@ export function WelcomeBack() {
     if (!profile?.fullName || !profile.phone) return <Navigate to={`/profil/creer${q}`} replace />;
     if (profile.role !== 'pro' && !profile.market) return <Navigate to={`/marche${q}`} replace />;
   }
+  // Connexion sur le SITE d'un téléphone : l'espace s'ouvre, puis « Continuer dans l'application ».
+  if (!next.startsWith('/admin')) demanderContinuerAppli(attendu);
   return <Navigate to={next} replace />;
 }
 

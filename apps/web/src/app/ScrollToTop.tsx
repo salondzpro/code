@@ -8,6 +8,7 @@ import { languageChosen } from '@/i18n';
 import { isNative } from '@/lib/native';
 import { PRO_ONLY } from '@/lib/flavor';
 import { LangChoice } from '@/components/LangChoice';
+import { ContinuerAppli } from '@/components/ContinuerAppli';
 import { HERO_MIXTE, HERO_PRO } from '@/components/HeroSlides';
 import { Outlet, useLocation, useNavigationType } from 'react-router';
 import { useProTheme } from '@/lib/proTheme';
@@ -27,5 +28,11 @@ export function ScrollToTop() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
   }, [pathname, type]);
   if (!langue) return <LangChoice photos={PRO_ONLY ? HERO_PRO : HERO_MIXTE} pro={PRO_ONLY} onDone={() => setLangue(true)} />;
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      {/* Après une connexion sur le site d'un téléphone : « Continuer dans l'application » (26 nov. 2026). */}
+      {!isNative() && <ContinuerAppli />}
+    </>
+  );
 }

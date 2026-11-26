@@ -43,6 +43,14 @@ export function handOffToApp(): void {
   // Sans jeton dans le fragment, il n'y a pas de session à transmettre : ouvrir l'application
   // renverrait simplement sur son écran de connexion, ce qui n'aide personne.
   if (!/access_token=|refresh_token=|code=/.test(hash)) return;
+  /**
+   * CONNEXION FAITE SUR LE SITE (26 nov. 2026, demande du propriétaire) : elle RESTE sur le site — la
+   * personne entre dans son espace, puis une fenêtre propose l'application du bon portail
+   * (`components/ContinuerAppli.tsx`, façon Uber Eats). Avant, le retour de Google réveillait d'office
+   * une application, parfois la mauvaise. La passation automatique ne sert plus qu'aux connexions
+   * LANCÉES PAR UNE APPLICATION (`app=` posé par `lib/oauth.ts`), qui attendent leur session.
+   */
+  if (!/[?&]app=(1|client|pro)(&|$)/.test(search)) return;
 
   // Une seule tentative par adresse : sans cela, revenir en arrière dans le navigateur relancerait
   // l'application en boucle.

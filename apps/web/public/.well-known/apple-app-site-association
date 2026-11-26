@@ -41,6 +41,19 @@
             "exclude": true
           },
           {
+            "/": "/connexion/*",
+            "exclude": true,
+            "comment": "Retour de Google / Apple et des liens de connexion OUVERTS SUR LE SITE : la connexion reste sur le site, puis « Continuer dans l'application » (26 nov. 2026). Sinon le portail pro rouvrait l'application CLIENTE."
+          },
+          {
+            "/": "/acces",
+            "exclude": true
+          },
+          {
+            "/": "/acces/*",
+            "exclude": true
+          },
+          {
             "/": "/s/*",
             "comment": "Page publique d'un salon, partagée par le professionnel"
           },
