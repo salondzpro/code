@@ -281,13 +281,38 @@ export function AccesCreer() {
    * lien de confirmation par e-mail. Avant : deux pages (« Faisons connaissance ») et deux mots de passe.
    */
   const client = role === 'client';
+  /**
+   * PRO EN DEUX ÉCRANS (26 nov. 2026, demande du propriétaire) : d'abord le NUMÉRO, seul ; puis le
+   * reste (prénom et nom, e-mail, mot de passe, CGU). L'étape vit dans l'adresse (`?etape=2`) : le
+   * retour ramène au numéro, saisi gardé. La cliente garde sa page unique.
+   */
+  const [params, setParams] = useSearchParams();
+  const etape2 = !client && params.get('etape') === '2';
+  const versEtape = (deux: boolean) => {
+    const n = new URLSearchParams(params);
+    if (deux) n.set('etape', '2');
+    else n.delete('etape');
+    setParams(n, { replace: !deux });
+  };
 
   if (session && !enCours.current) return <Navigate to={retour(next)} replace />;
+
+  const continuer = (e: FormEvent) => {
+    e.preventDefault();
+    if (!numeroDZ(digits)) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
+    setError(null);
+    versEtape(true);
+  };
 
   const creer = async (e: FormEvent) => {
     e.preventDefault();
     const mail = email.trim().toLowerCase();
     const phone = numeroDZ(digits);
+    // Numéro perdu (page rechargée à l'étape 2) : on revient le demander.
+    if (!client && !phone) {
+      setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
+      return versEtape(false);
+    }
     if (name.trim().length < 2) return setError({ kind: 'form', text: t('Indiquez votre prénom et votre nom.') });
     if (!phone) return setError({ kind: 'phone', text: t('Numéro algérien invalide : 9 chiffres après +213.') });
     if (!EMAIL_RE.test(mail)) return setError({ kind: 'email', text: t('Adresse e-mail invalide.') });
@@ -323,8 +348,33 @@ export function AccesCreer() {
     { value: 'male' as const, label: t('Homme'), Visage: VisageHomme, cls: 'h' },
   ];
 
+  if (!client && !etape2)
+    return (
+      <AuthScreen back={`${base}${q()}`} titre={t('Créer mon espace professionnel')}>
+        <form onSubmit={continuer} noValidate className="pa-form pl-auth">
+          <PhoneDZField
+            id="pa-creer-tel"
+            digits={digits}
+            onDigits={(v) => {
+              setDigits(v);
+              setError(null);
+            }}
+            error={error?.kind === 'phone' ? error.text : null}
+          />
+          <button type="submit" className="pl-btn pl-btn-ink">
+            {t('Continuer')}
+          </button>
+          <span className="pl-ou">{t('OU')}</span>
+          <OAuthButtons role={role} next={next} />
+          <Link to={`${base}${q()}`} className="pl-btn pl-btn-out">
+            {t('Se connecter')}
+          </Link>
+        </form>
+      </AuthScreen>
+    );
+
   return (
-    <AuthScreen back={`${base}${q()}`} titre={role === 'pro' ? t('Créer mon espace professionnel') : t('Créer mon compte')}>
+    <AuthScreen back={etape2 ? `${base}/creer${q()}` : `${base}${q()}`} titre={role === 'pro' ? t('Créer mon espace professionnel') : t('Créer mon compte')}>
       <form onSubmit={creer} noValidate className="pa-form pl-auth">
         <Field label={`${t('Prénom et nom')} *`} htmlFor="pa-creer-nom">
           <Input
@@ -338,15 +388,17 @@ export function AccesCreer() {
             }}
           />
         </Field>
-        <PhoneDZField
-          id="pa-creer-tel"
-          digits={digits}
-          onDigits={(v) => {
-            setDigits(v);
-            setError(null);
-          }}
-          error={error?.kind === 'phone' ? error.text : null}
-        />
+        {client && (
+          <PhoneDZField
+            id="pa-creer-tel"
+            digits={digits}
+            onDigits={(v) => {
+              setDigits(v);
+              setError(null);
+            }}
+            error={error?.kind === 'phone' ? error.text : null}
+          />
+        )}
         <Field label={`${t('Email')} *`} htmlFor="pa-creer-mail">
           <Input
             id="pa-creer-mail"
@@ -420,11 +472,15 @@ export function AccesCreer() {
         <button type="submit" className="pl-btn pl-btn-ink" disabled={busy}>
           {busy ? t('Création…') : t('Créer mon compte')}
         </button>
-        <span className="pl-ou">{t('OU')}</span>
-        <OAuthButtons role={role} next={next} />
-        <Link to={`${base}${q(email.trim() ? { email: email.trim().toLowerCase() } : {})}`} className="pl-btn pl-btn-out">
-          {t('Se connecter')}
-        </Link>
+        {client && (
+          <>
+            <span className="pl-ou">{t('OU')}</span>
+            <OAuthButtons role={role} next={next} />
+            <Link to={`${base}${q(email.trim() ? { email: email.trim().toLowerCase() } : {})}`} className="pl-btn pl-btn-out">
+              {t('Se connecter')}
+            </Link>
+          </>
+        )}
       </form>
     </AuthScreen>
   );
