@@ -1093,3 +1093,6 @@ html:root .pl-btn.pl-btn-sk {
    propriétaire) — « Salon » en encre, et la pastille PRO en noir pour rester lisible. */
 .pwo-t .sdz-logo { color: var(--color-text); }
 .pwo-t .pwo-pro { background: var(--color-logo-bg); color: #fff; border-color: transparent; }
+/* Logo blanc posé sur une photo : « DZ » en blanc voilé, le gris s'y perdait (26 nov. 2026). */
+.sdz-logo.light i { color: rgba(255, 255, 255, 0.72); }
+.sdz-logo.light { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.18); }
