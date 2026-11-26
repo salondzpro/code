@@ -36,7 +36,7 @@ function Contenu({ onStore }: { onStore?: () => void }) {
   return (
     <>
       <div className="flex items-center gap-3">
-        <img src="/icon-192.png" alt="" className="app-bn-ic" />
+        <img src="/logo/app-client.png" alt="" className="app-bn-ic" />
         <b className="min-w-0 flex-1 text-[1.071rem] font-semibold leading-snug">{t('Votre rendez-vous vous suit dans l’application')}</b>
       </div>
       <div className="lst">

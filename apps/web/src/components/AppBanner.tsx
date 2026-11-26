@@ -40,7 +40,7 @@ export function AppBanner() {
       <button type="button" className="app-bn-x" aria-label={t('Fermer')} onClick={fermer}>
         <I icon={X} size={16} />
       </button>
-      <img src="/icon-192.png" alt="" className="app-bn-ic" />
+      <img src="/logo/app-client.png" alt="" className="app-bn-ic" />
       <span className="min-w-0 flex-1">
         <b>Salon DZ</b>
         <small>{os === 'ios' ? t('Sur l’App Store') : t('Sur Google Play')}</small>

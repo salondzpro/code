@@ -369,19 +369,20 @@ async function renderVitrine(format: LabelFormat, input: LabelInput): Promise<HT
   // Signature de la plateforme, centrée tout en bas.
   {
     const brandPx = (square ? 34 : 36) * u;
-    ctx.font = `700 ${brandPx}px ${SANS}`;
-    const wSalon = ctx.measureText('Salon').width;
+    // Graphie du LOGO (26 nov. 2026, identité unique) : « Salon » 600, « DZ » 400 gris.
     ctx.font = `600 ${brandPx}px ${SANS}`;
+    const wSalon = ctx.measureText('Salon').width;
+    ctx.font = `400 ${brandPx}px ${SANS}`;
     const wDz = ctx.measureText('DZ').width;
-    const gapB = brandPx * 0.2;
+    const gapB = brandPx * 0.18;
     const x0 = cx - (wSalon + gapB + wDz) / 2;
     const yB = H - (square ? 52 : 74) * u;
     ctx.textAlign = 'left';
     ctx.fillStyle = ink;
-    ctx.font = `700 ${brandPx}px ${SANS}`;
+    ctx.font = `600 ${brandPx}px ${SANS}`;
     ctx.fillText('Salon', x0, yB);
     ctx.fillStyle = muted;
-    ctx.font = `600 ${brandPx}px ${SANS}`;
+    ctx.font = `400 ${brandPx}px ${SANS}`;
     ctx.fillText('DZ', x0 + wSalon + gapB, yB);
   }
 

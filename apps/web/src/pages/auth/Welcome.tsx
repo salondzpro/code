@@ -40,7 +40,6 @@ export function ClientWelcome() {
     navigate(`/acces?next=${encodeURIComponent(next)}`);
   };
 
-  const mots = t('Salon DZ').split(' ');
 
   return (
     <div className="pwo pwo-anim h-app">
@@ -61,12 +60,12 @@ export function ClientWelcome() {
 
       <main className="pwo-copy">
         <p className="pwo-k">{t('Bienvenue sur')}</p>
+        {/* Le titre EST le logo (26 nov. 2026, identité unique) : mêmes lettres que l'icône, mot à mot. */}
         <h1 className="pwo-t" aria-label="Salon DZ">
-          {mots.map((m, i) => (
-            <span key={i} className="pwo-mot" style={{ animationDelay: `${0.25 + i * 0.14}s` }} aria-hidden>
-              {m}
-            </span>
-          ))}
+          <span className="sdz-logo light" dir="ltr" aria-hidden>
+            <b className="pwo-mot" style={{ animationDelay: '0.25s' }}>Salon</b>
+            <i className="pwo-mot" style={{ animationDelay: '0.39s' }}>DZ</i>
+          </span>
         </h1>
         <p className="pwo-s">{t('Les meilleurs salons près de chez vous, réservés en quelques secondes.')}</p>
       </main>

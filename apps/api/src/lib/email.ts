@@ -52,7 +52,7 @@ function layout(title: string, intro: string, cta: string, url: string, footer: 
   const html = `<!doctype html><html lang="fr"><body style="margin:0;background:#f4f5f6;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;color:#17181a">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f5f6;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background:#ffffff;border:1px solid #e6e7e9;border-radius:8px">
-<tr><td style="padding:28px 24px 8px;font-size:20px;font-weight:600;letter-spacing:-0.3px">Salon<span style="color:#6b6f73;font-weight:300"> DZ</span></td></tr>
+<tr><td style="padding:28px 24px 8px;font-size:22px;font-weight:600;letter-spacing:-0.045em;color:#111214">Salon<span style="color:#9aa0a6;font-weight:400"> DZ</span></td></tr>
 <tr><td style="padding:8px 24px 0;font-size:22px;font-weight:600;letter-spacing:-0.4px">${esc(title)}</td></tr>
 <tr><td style="padding:12px 24px 0;font-size:15px;line-height:1.5;color:#3d4043">${esc(intro)}</td></tr>
 <tr><td style="padding:24px 24px 8px"><a href="${esc(url)}" style="display:block;background:#111214;color:#ffffff;text-decoration:none;text-align:center;font-weight:600;font-size:16px;padding:14px 16px;border-radius:6px">${esc(cta)}</a></td></tr>
