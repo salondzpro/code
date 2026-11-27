@@ -101,7 +101,7 @@ if (LIRE) {
 // ---------------------------------------------------------------------------------------------
 // Les textes. Repris mot pour mot de docs/STORES.md, pour que les deux boutiques disent la même chose.
 // ---------------------------------------------------------------------------------------------
-const SOUS_TITRE = PRO ? 'L’agenda de votre salon' : 'Coiffeur, barbier, institut';
+const SOUS_TITRE = PRO ? 'L’agenda de votre salon' : 'Coiffeur, barbier, réservation';
 const PROMO = PRO
   ? 'Agenda, demandes en direct, clientèle et chiffre d’affaires : votre salon dans votre poche. ' +
     'Réservé aux professionnels de la beauté en Algérie.'
@@ -109,7 +109,9 @@ const PROMO = PRO
     'Pour les professionnels : agenda, demandes et rappels en direct.';
 const MOTS_CLES = PRO
   ? 'salon,coiffeur,barbier,agenda,rendez-vous,réservation,institut,ongles,beauté,gestion,Algérie,pro'
-  : 'coiffeur,barbier,salon,beauté,rendez-vous,réservation,ongles,cils,institut,Algérie,agenda,Alger';
+  // 98 caractères (limite Apple : 100). Pas de mots déjà présents dans le nom ou le sous-titre ;
+  // « salon da » et « salondz » attrapent les fautes de frappe les plus fréquentes.
+  : 'salon da,salondz,coiffure,esthetique,ongles,cils,institut,rdv,beaute,alger,oran,constantine,algerie';
 const DESCRIPTION_PRO = `Salon DZ Pro, c'est votre salon dans votre poche. Réservé aux professionnels de la beauté en Algérie : barbiers, coiffeurs, coiffeuses, ongleries, instituts, cils et soins.
 
 VOTRE JOURNÉE, D'UN COUP D'ŒIL
