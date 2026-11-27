@@ -29,7 +29,6 @@ import { VisageFemme, VisageHomme } from '@/components/GenderFaces';
 import { PhoneDZField, afficherNumero, numeroConnexion, numeroDZ, type PaysTel } from '@/components/PhoneDZField';
 import { demoAccountFor, demoAccountForCredentials, isDemoEmail } from '@salondz/constants';
 import { describeAuthError, useAuth, type AuthErrorKind } from '@/lib/auth';
-import { trace } from '@/lib/traceConnexion';
 import { readAuthFlow, writeAuthFlow } from '@/lib/authFlow';
 import { api } from '@/lib/api';
 import { Button, Field, I, Input, LinkButton } from '@/components/ui';
@@ -95,7 +94,6 @@ const retour = (next: string) => `/connexion/retour?next=${encodeURIComponent(ne
  */
 export function AccesEmail() {
   const { session, signInWithPassword, resendConfirmation, demoLogin, signOut } = useAuth();
-  trace('portail', { session: !!session, erreur: new URLSearchParams(location.search).get('erreur') });
   const navigate = useNavigate();
   const { next, email: initial, q, role, base, ouverture } = useParcours();
   const [params] = useSearchParams();

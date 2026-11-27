@@ -54,6 +54,7 @@ try {
   const page = await ctx.newPage();
   page.setDefaultTimeout(30_000);
   page.on('console', (m) => m.type() === 'error' && erreurs.push(m.text().slice(0, 200)));
+  page.on('requestfailed', (r) => console.log('    [requête échouée]', r.failure()?.errorText, r.url().slice(0, 140)));
   page.on('pageerror', (e) => erreurs.push(`exception : ${String(e).slice(0, 200)}`));
 
   const rempli = () => page.evaluate(() => (document.getElementById('root')?.innerHTML.length ?? 0) > 500);

@@ -20,7 +20,6 @@ import { useAutoLocate } from '@/lib/useAutoLocate';
 import { ActingAsBanner } from '@/components/ActingAsBanner';
 import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
 import { APPLI } from '@/lib/flavor';
-import { trace } from '@/lib/traceConnexion';
 import { AccountSuspendedNotice, SalonSuspendedNotice } from '@/components/SuspensionNotice';
 
 /** Colonne app + barre d'onglets client (Marketplace · Rendez-vous · Profil). */
@@ -135,7 +134,6 @@ export function RequireClient() {
   const { session, loading } = useAuth();
   const location = useLocation();
   const me = useMe(!!session);
-  trace('garde-client', { session: !!session, loading, me: me.status, err: (me.error as { code?: string } | null)?.code });
   // Mes rendez-vous et notifications se rafraîchissent quand le salon confirme, déplace ou annule.
   useRealtimeMyBookings(session?.user.id);
   /**
@@ -203,7 +201,6 @@ export function RequirePro() {
   const onboarding = path.startsWith('/pro/onboarding');
   const salonQuery = useProSalon(!!session);
   const me = useMe(!!session);
-  trace('garde-pro', { session: !!session, loading, me: me.status, salon: salonQuery.status, err: (salonQuery.error as { code?: string } | null)?.code ?? (me.error as { code?: string } | null)?.code });
   // Même rafraîchissement de l'abonnement push que côté client : le pro est le premier à devoir
   // recevoir une demande, même l'application fermée.
   const pushRefreshed = useRef(false);

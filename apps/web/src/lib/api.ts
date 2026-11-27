@@ -60,7 +60,6 @@ async function sessionRefusee(): Promise<void> {
     const { data } = await supabase.auth.getSession();
     if (!data.session) return;
     const { data: u, error } = await supabase.auth.getUser();
-    void import('./traceConnexion').then(({ trace }) => trace('401', { valide: !!u?.user && !error }));
     if (u?.user && !error) return;
     await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
     const next = window.location.pathname + window.location.search;
