@@ -11,11 +11,15 @@ Textes et réponses à copier dans les consoles. Écrit le 21 septembre 2026 ; �
 
 | | Play Store | App Store |
 |---|---|---|
-| Nom (30 max) | `Salon DZ` | `Salon DZ` (sinon `Salon DZ – Réservation`) |
-| Sous-titre (30 max) | — | `Coiffeur, barbier, institut` |
-| Description courte (80 max) | `Réservez coiffeur, barbier ou institut en Algérie, sans appeler.` | — |
+| Nom (30 max) | `Salon DZ – coiffeur et barbier` (script `play-fiche.mjs`) | `Salon DZ` (sinon `Salon DZ – Réservation`) |
+| Sous-titre (30 max) | — | `Coiffeur, barbier, réservation` (script `asc-fiche.mjs`) |
+| Description courte (80 max) | `Réservez coiffeur, barbier, institut ou ongles en Algérie, sans appeler.` | — |
 | Texte promotionnel (170 max) | — | `Trouvez un salon près de vous, réservez en quelques secondes et recevez vos rappels par notification. Pour les professionnels : agenda, demandes et rappels en direct.` |
-| Mots-clés (100 max) | — | `coiffeur,barbier,salon,beauté,rendez-vous,réservation,ongles,cils,institut,Algérie,agenda,Alger` |
+| Mots-clés (100 max) | — | `salon da,salondz,coiffure,esthetique,ongles,cils,institut,rdv,beaute,alger,oran,constantine,algerie` (98 car. ; « salon da » attrape la faute de frappe la plus courante) |
+
+Description longue (Play) : la première phrase devient « Salon DZ, c’est la réservation de salon en ligne en Algérie : coiffeur, barbier, esthétique, ongles, cils et institut à Alger, Oran, Constantine et partout en Algérie. » (écrite par `play-fiche.mjs`, idempotente).
+
+**Apple verrouille le sous-titre et les mots-clés** tant que la version en vente (ou sa révision) est en cours : `asc-fiche.mjs` les signale en 409. Les valeurs ci-dessus sont dans le script ; le relancer quand la fiche est déverrouillée.
 | Catégorie | Beauté | Style de vie |
 | Langue | Français | Français |
 
