@@ -16,6 +16,7 @@ import { APPLI, MARCHE } from '@/lib/flavor';
 import { CompteRefuse, estRefusCompte } from '@/components/CompteRefuse';
 import { demanderContinuerAppli } from '@/components/ContinuerAppli';
 import { finConnexionExterne } from '@/lib/connexionExterne';
+import { provenance } from '@/lib/acquisition';
 
 /**
  * Jetons arrivés par une PASSATION depuis le navigateur (`lib/appHandoff.ts`). Supabase ne lit le
@@ -127,7 +128,9 @@ function ComptePortail({ portail }: { portail: 'client' | 'pro' }) {
     lance.current = true;
     void (async () => {
       try {
-        const r = await api.auth.oauthPortail({ portail });
+        // Provenance (réseau, campagne) : comptée par le serveur si le compte vient de naître.
+        const acq = provenance();
+        const r = await api.auth.oauthPortail({ portail, ...(acq ? { acq } : {}) });
         if (r.switched) {
           const { error } = await supabase.auth.setSession({ access_token: r.accessToken, refresh_token: r.refreshToken });
           if (error) throw error;

@@ -313,6 +313,15 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post('/auth/oauth-portail', { preHandler: app.requireAuth, config: { rateLimit: { max: 10, timeWindow: '10 minutes' } } }, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-store');
     const portail: Portail = (req.body as { portail?: string } | null)?.portail === 'pro' ? 'pro' : 'client';
+    // Provenance de l'inscription (réseau, campagne), comme pour l'inscription par e-mail (27 nov. 2026) :
+    // comptée UNE fois, et seulement pour un compte qui vient de naître par Google / Apple.
+    const brut = (req.body as { acq?: { src?: unknown; c?: unknown } } | null)?.acq;
+    const acq = brut && typeof brut.src === 'string' ? { src: brut.src.slice(0, 40), ...(typeof brut.c === 'string' ? { c: brut.c.slice(0, 40) } : {}) } : undefined;
+    const compter = async (id: string, meta: Record<string, unknown> | undefined, createdAt: string | undefined, role: Portail) => {
+      if (!acq || meta?.acq_counted || !createdAt || Date.now() - new Date(createdAt).getTime() > 30 * 60_000) return;
+      await db.auth.admin.updateUserById(id, { user_metadata: { ...(meta ?? {}), acq_counted: true } }).catch(() => undefined);
+      void recordSignupSource(req.log, role, acq);
+    };
     const refus = () => new AppError(403, portail === 'pro' ? 'NO_PRO_ACCOUNT' : 'NO_CLIENT_ACCOUNT', portail === 'pro' ? 'Aucun compte professionnel associé à ces identifiants.' : 'Aucun compte client associé à ces identifiants.');
     const payload = await verifySupabaseJwt(req.user!.token);
     const amr = Array.isArray(payload.amr) ? (payload.amr as { method?: string; timestamp?: number }[]) : [];
@@ -324,7 +333,10 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const email = (user.email ?? '').toLowerCase();
     // Déjà le compte de CE portail : rien à prouver, rien à changer (26 nov. 2026 : la preuve Google
     // était exigée avant, et un compte du bon type sans `amr` oauth récent était refusé à tort).
-    if ((await roleOf(user)) === portail) return { switched: false };
+    if ((await roleOf(user)) === portail) {
+      if (!(user.identities ?? []).some((i) => i.provider === 'email')) await compter(user.id, user.user_metadata, user.created_at, portail);
+      return { switched: false };
+    }
     // Changer de compte exige une vraie connexion Google/Apple récente portant cette adresse.
     if (!oauthRecent || !email || isAliasEmail(email) || !identites.some((i) => String(i.identity_data?.email ?? '').toLowerCase() === email)) throw refus();
 
@@ -340,6 +352,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
         const up = await db.from('profiles').update({ role: 'pro' }).eq('id', user.id);
         if (up.error) throw up.error;
         await db.auth.admin.updateUserById(user.id, { user_metadata: { ...user.user_metadata, role: 'pro' } });
+        await compter(user.id, { ...user.user_metadata, role: 'pro' }, user.created_at, 'pro');
         return { switched: false };
       }
     }
@@ -361,6 +374,7 @@ const authRoutes: FastifyPluginAsyncZod = async (app) => {
       }
       compte = { id: created.data.user.id, email: cible, email_confirmed_at: new Date().toISOString(), user_metadata: { role: portail } };
       isNew = true;
+      await compter(created.data.user.id, created.data.user.user_metadata, created.data.user.created_at, portail);
     } else if ((await roleOf(compte)) !== portail) throw refus();
     let s;
     try {
