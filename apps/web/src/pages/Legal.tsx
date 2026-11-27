@@ -3,7 +3,7 @@
  * aide et contact. Rédigées pour l'Algérie : loi 18-07 (données personnelles, ANPDP), loi 18-05 (commerce
  * électronique), loi 09-03 (protection du consommateur), loi 04-02 (pratiques commerciales, prix en DA),
  * ordonnance 03-05 (droits d'auteur), code civil. Aucune information technique ou confidentielle du projet
- * n'y figure : les prestataires sont décrits par catégorie. Identité de l'éditeur : `EDITOR` ci-dessous
+ * n'y figure : les prestataires sont décrits par catégorie. Identité de l'éditeur : `EDITOR` (`legal/commun.tsx`)
  * (celle de Coligo, même exploitant) ; relecture par un conseil recommandée avant l'ouverture.
  */
 import type { ReactNode } from 'react';
@@ -12,50 +12,53 @@ import { Mail, MessageCircle, Store } from 'lucide-react';
 import { TopBar } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { BrandFooter } from '@/components/BrandFooter';
+import { getLocale } from '@/i18n';
+import { CONTACT, EDITOR, Mailto, PRO_MAIL, SUPPORT, UPDATED, UPDATED_AR, UPDATED_EN } from './legal/commun';
+import * as AR from './legal/ar';
+import * as EN from './legal/en';
 
-const UPDATED = '14 novembre 2026';
-const SUPPORT = 'support@salondz.com';
-const CONTACT = 'contact@salondz.com';
-
-/** Identité de l'éditeur : à renseigner par le propriétaire (registre de commerce, NIF, adresse). */
-/**
- * Identité de l'éditeur (14 nov. 2026) : la même que pour Coligo (`coligo.app`, `lib/config/legal.ts`) —
- * le même exploitant, en auto-entrepreneur. Un auto-entrepreneur est inscrit au Registre national de
- * l'auto-entrepreneur, pas au registre du commerce : pas de numéro RC ni de NIF distinct à afficher.
- */
-const EDITOR = {
-  name: 'Salon DZ',
-  owner: 'GACI Noufel',
-  legal: 'GACI Noufel, auto-entrepreneur (loi n° 22-23 du 18 décembre 2022 portant statut de l’auto-entrepreneur)',
-  registrationLabel: 'Registre national de l’auto-entrepreneur',
-  registrationNumber: '10981022005702687',
-  address: 'Akbou, Béjaïa 06001, Algérie',
+type Langue = typeof AR | typeof EN;
+/** Traduction de la page (arabe, anglais) ; null en français, qui fait foi. */
+const tr = (): Langue | null => {
+  const l = getLocale();
+  return l === 'ar' ? AR : l === 'en' ? EN : null;
 };
 
 function Doc({ title, children }: { title: string; children: ReactNode }) {
+  const T = tr();
   return (
     <Screen className="h-app" gap={16}>
       <TopBar backTo="/" title={title} />
-      <p className="p -mt-2 text-[0.857rem]">Dernière mise à jour : {UPDATED}</p>
+      <p className="p -mt-2 text-[0.857rem]">
+        {T ? `${T.TITRES.updated} ${T === AR ? UPDATED_AR : UPDATED_EN}` : `Dernière mise à jour : ${UPDATED}`}
+      </p>
+      {T && <p className="p text-[0.857rem]">{T.TITRES.foi}</p>}
       <div className="flex flex-col gap-5 text-[1rem] leading-[1.55] [&_h2]:mt-2 [&_h2]:text-[1.143rem] [&_h2]:font-semibold [&_h3]:mt-1 [&_h3]:font-semibold [&_p]:text-ink [&_ul]:list-disc [&_ul]:ps-5 [&_li]:mb-1">
         {children}
       </div>
       <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.857rem] text-muted">
-        <Link to="/cgu">CGU</Link>
-        <Link to="/confidentialite">Confidentialité</Link>
-        <Link to="/mentions-legales">Mentions légales</Link>
-        <Link to="/aide">Aide et contact</Link>
+        <Link to="/cgu">{T ? T.TITRES.terms : 'CGU'}</Link>
+        <Link to="/confidentialite">{T ? T.TITRES.privacy : 'Confidentialité'}</Link>
+        <Link to="/mentions-legales">{T ? T.TITRES.notice : 'Mentions légales'}</Link>
+        <Link to="/aide">{T ? T.TITRES.help : 'Aide et contact'}</Link>
       </nav>
       <BrandFooter />
     </Screen>
   );
 }
 
-const Mailto = ({ to }: { to: string }) => <a href={`mailto:${to}`}>{to}</a>;
-
 export function Terms() {
+  const T = tr();
   return (
-    <Doc title="Conditions générales d'utilisation">
+    <Doc title={T ? T.TITRES.terms : "Conditions générales d'utilisation"}>
+      {T ? <T.Terms /> : <TermsFr />}
+    </Doc>
+  );
+}
+
+function TermsFr() {
+  return (
+    <>
       <h2>1. Objet et acceptation</h2>
       <p>
         Les présentes conditions générales d'utilisation (« CGU ») régissent l'accès et l'usage de la plateforme Salon DZ, accessible sur
@@ -159,13 +162,22 @@ export function Terms() {
         juridictions algériennes compétentes ; le consommateur conserve la possibilité de saisir les services de la protection du
         consommateur de sa wilaya ou une association agréée.
       </p>
-    </Doc>
+    </>
   );
 }
 
 export function Privacy() {
+  const T = tr();
   return (
-    <Doc title="Politique de confidentialité">
+    <Doc title={T ? T.TITRES.privacy : 'Politique de confidentialité'}>
+      {T ? <T.Privacy /> : <PrivacyFr />}
+    </Doc>
+  );
+}
+
+function PrivacyFr() {
+  return (
+    <>
       <p>
         Cette politique explique quelles données Salon DZ collecte, pourquoi, avec qui elles sont partagées et quels sont vos droits, en
         application de la loi n° 18-07 du 10 juin 2018 relative à la protection des personnes physiques dans le traitement des données à
@@ -233,13 +245,22 @@ export function Privacy() {
         Cette politique peut évoluer ; la date de mise à jour figure en tête et tout changement important vous est signalé dans
         l'application.
       </p>
-    </Doc>
+    </>
   );
 }
 
 export function LegalNotice() {
+  const T = tr();
   return (
-    <Doc title="Mentions légales">
+    <Doc title={T ? T.TITRES.notice : 'Mentions légales'}>
+      {T ? <T.LegalNotice /> : <LegalNoticeFr />}
+    </Doc>
+  );
+}
+
+function LegalNoticeFr() {
+  return (
+    <>
       <h2>Éditeur</h2>
       <p>
         {EDITOR.name} — exploité par {EDITOR.legal}. {EDITOR.registrationLabel} : {EDITOR.registrationNumber}. Siège : {EDITOR.address}.
@@ -269,13 +290,22 @@ export function LegalNotice() {
         vente ni aucun paiement n'est réalisé sur la Plateforme. Les prestations sont vendues et réglées auprès de chaque Professionnel, dans
         son établissement, aux prix affichés en dinars algériens.
       </p>
-    </Doc>
+    </>
   );
 }
 
 export function DeleteAccount() {
+  const T = tr();
   return (
-    <Doc title="Supprimer mon compte">
+    <Doc title={T ? T.TITRES.delete : 'Supprimer mon compte'}>
+      {T ? <T.DeleteAccount /> : <DeleteAccountFr />}
+    </Doc>
+  );
+}
+
+function DeleteAccountFr() {
+  return (
+    <>
       <p>
         Vous pouvez supprimer votre compte Salon DZ (client ou professionnel) à tout moment, directement depuis l'application ou le site,
         sans avoir besoin de contacter le support.
@@ -307,51 +337,62 @@ export function DeleteAccount() {
       <p>
         Voir aussi la <Link to="/confidentialite">politique de confidentialité</Link> complète.
       </p>
-    </Doc>
+    </>
   );
 }
 
+/** L'aide en français (fait foi) ; arabe et anglais dans `legal/ar.tsx` et `legal/en.tsx`. */
+const AIDE_FR = {
+  support: 'Support',
+  supportSub: 'réponse sous 48 h',
+  pro: 'Vous êtes professionnel',
+  proSub: 'ouverture de salon, accompagnement',
+  autre: 'Autre demande',
+  faq: 'Questions fréquentes',
+  questions: [
+    ["Je n'ai pas reçu l'e-mail de confirmation.", "Regardez dans les courriers indésirables ; le lien reste valable une heure. Sinon, demandez-en un nouveau depuis l'écran de connexion."],
+    ['Comment annuler ou déplacer un rendez-vous ?', 'Depuis Rendez-vous → le rendez-vous → Annuler ou Reporter, dans le délai fixé par le salon.'],
+    ['Je ne reçois pas les rappels.', "Ils arrivent sur l'application Salon DZ si elle est installée, sinon par le navigateur : acceptez les notifications quand Salon DZ vous les demande à l'ouverture. Ils restent visibles dans l'application dans tous les cas."],
+    ['Ma réservation en ligne est suspendue.', 'Plusieurs annulations tardives ou absences déclenchent une suspension temporaire, dont la fin est affichée. Vous pouvez toujours contacter le salon directement.'],
+    ['Modifier mon numéro de téléphone.', 'Il identifie vos rendez-vous auprès des salons : écrivez au support pour le changer une fois un rendez-vous pris.'],
+    ['Supprimer mon compte.', 'Réglages → Supprimer mon compte. Vos rendez-vous passés sont anonymisés, le reste est effacé.'],
+    ["Professionnel : ma page n'apparaît pas.", 'Elle doit être publiée (Compte → Page publiée) avec au moins une prestation, des horaires et un membre actif.'],
+    ['Professionnel : je ne reçois pas les nouvelles demandes.', "Activez les notifications sur cet appareil, ou installez l'application Salon DZ Pro : elle est prévenue en priorité."],
+  ] as [string, string][],
+};
+
 export function Help() {
+  const T = tr();
+  const a = T ? T.AIDE : AIDE_FR;
+  const ligne = (href: string, Icone: typeof Mail, titre: string, sous: string) => (
+    <a className="li" href={href}>
+      <span className="flex items-center gap-3.5">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-fill">
+          <Icone size={18} />
+        </span>
+        <span>
+          <span className="block font-semibold">{titre}</span>
+          <span className="p block text-[0.857rem]">
+            <span dir="ltr">{href.replace('mailto:', '')}</span>
+            {sous ? ` · ${sous}` : ''}
+          </span>
+        </span>
+      </span>
+    </a>
+  );
   return (
-    <Doc title="Aide et contact">
+    <Doc title={T ? T.TITRES.help : 'Aide et contact'}>
       <div className="crd !gap-0 !py-1">
-        <a className="li" href={`mailto:${SUPPORT}`}>
-          <span className="flex items-center gap-3.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-fill"><Mail size={18} /></span>
-            <span>
-              <span className="block font-semibold">Support</span>
-              <span className="p block text-[0.857rem]">{SUPPORT} · réponse sous 48 h</span>
-            </span>
-          </span>
-        </a>
-        <a className="li" href="mailto:pro@salondz.com">
-          <span className="flex items-center gap-3.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-fill"><Store size={18} /></span>
-            <span>
-              <span className="block font-semibold">Vous êtes professionnel</span>
-              <span className="p block text-[0.857rem]">pro@salondz.com · ouverture de salon, accompagnement</span>
-            </span>
-          </span>
-        </a>
-        <a className="li" href={`mailto:${CONTACT}`}>
-          <span className="flex items-center gap-3.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-fill"><MessageCircle size={18} /></span>
-            <span>
-              <span className="block font-semibold">Autre demande</span>
-              <span className="p block text-[0.857rem]">{CONTACT}</span>
-            </span>
-          </span>
-        </a>
+        {ligne(`mailto:${SUPPORT}`, Mail, a.support, a.supportSub)}
+        {ligne(`mailto:${PRO_MAIL}`, Store, a.pro, a.proSub)}
+        {ligne(`mailto:${CONTACT}`, MessageCircle, a.autre, '')}
       </div>
-      <h2>Questions fréquentes</h2>
-      <p><strong>Je n'ai pas reçu l'e-mail de confirmation.</strong> Regardez dans les courriers indésirables ; le lien reste valable une heure. Sinon, demandez-en un nouveau depuis l'écran de connexion.</p>
-      <p><strong>Comment annuler ou déplacer un rendez-vous ?</strong> Depuis Rendez-vous → le rendez-vous → Annuler ou Reporter, dans le délai fixé par le salon.</p>
-      <p><strong>Je ne reçois pas les rappels.</strong> Ils arrivent sur l'application Salon DZ si elle est installée, sinon par le navigateur : acceptez les notifications quand Salon DZ vous les demande à l'ouverture. Ils restent visibles dans l'application dans tous les cas.</p>
-      <p><strong>Ma réservation en ligne est suspendue.</strong> Plusieurs annulations tardives ou absences déclenchent une suspension temporaire, dont la fin est affichée. Vous pouvez toujours contacter le salon directement.</p>
-      <p><strong>Modifier mon numéro de téléphone.</strong> Il identifie vos rendez-vous auprès des salons : écrivez au support pour le changer une fois un rendez-vous pris.</p>
-      <p><strong>Supprimer mon compte.</strong> Réglages → Supprimer mon compte. Vos rendez-vous passés sont anonymisés, le reste est effacé.</p>
-      <p><strong>Professionnel : ma page n'apparaît pas.</strong> Elle doit être publiée (Compte → Page publiée) avec au moins une prestation, des horaires et un membre actif.</p>
-      <p><strong>Professionnel : je ne reçois pas les nouvelles demandes.</strong> Activez « Notifications sur cet appareil » dans Compte, ou installez l'application mobile : elle est prévenue en priorité.</p>
+      <h2>{a.faq}</h2>
+      {a.questions.map(([q, r]) => (
+        <p key={q}>
+          <strong>{q}</strong> {r}
+        </p>
+      ))}
     </Doc>
   );
 }

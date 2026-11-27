@@ -369,6 +369,7 @@ Ce sont des instructions, pas des recommandations : elles s'appliquent à TOUT d
 - Texte nu interdit hors `<Text>` : toujours passer par `Tx` / `P` / `InfoBox` (un fragment mixte dans une `View` plante sur iOS/Android).
 
 ## Textes légaux
+- **En arabe et en anglais (27 nov. 2026)** : CGU, confidentialité, mentions légales, suppression du compte et aide traduites intégralement dans `pages/legal/ar.tsx` et `pages/legal/en.tsx` (données communes dans `legal/commun.tsx`), choisies d'après la langue ; mention en tête « la version française fait foi ». Toute modification du texte français se reporte dans les deux traductions.
 - `apps/web/src/pages/Legal.tsx` : CGU, confidentialité, mentions légales, aide — rédigés pour l'ALGÉRIE (lois 18-07 données personnelles/ANPDP, 18-05 commerce électronique, 09-03 consommateur, 04-02 prix en DA, ordonnance 03-05 droits d'auteur). Règle : jamais de nom de prestataire technique ni de détail d'architecture dans ces pages (confidentiel) ; les prestataires sont décrits par catégorie. Identité de l'éditeur dans la constante `EDITOR` : remplie le 14 nov. 2026 avec celle de Coligo (même exploitant, GACI Noufel, auto-entrepreneur, Registre national de l'auto-entrepreneur, siège à Akbou) — pas de RC ni de NIF pour ce statut.
 
 ## Domaine
