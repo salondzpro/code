@@ -93,21 +93,22 @@ export type BioVideoData = {
 
 /**
  * VOIX OFF FRANÇAISE, STYLE UGC (26 nov. 2026, demande du propriétaire) : une vraie cliente / un vrai
- * client qui montre son téléphone et raconte, à la première personne, avec émotion — « Les filles… »
- * pour un salon de femmes (voix de femme), « Les gars… » pour un salon d'hommes (voix d'homme). Une VRAIE
+ * client qui montre son téléphone et raconte, à la première personne, avec émotion — ton fun et « médiatique »,
+ * jamais street (27 nov. 2026 : ni « les gars » ni « les filles ») ; voix de femme pour un salon de
+ * femmes, d'homme pour un salon d'hommes. Une VRAIE
  * voix, enregistrée : 7 phrases, `node scripts/import-voix.mjs <7 fichiers>` les range dans
  * `public/video/voix/` (WAV) et écrit leurs durées dans `voix.json`. Sans enregistrement, la vidéo
  * garde ses sous-titres animés et sa musique, sans voix de synthèse.
  * Le texte s'affiche en SOUS-TITRES mot à mot, comme sur TikTok : il doit rester celui qui est dit.
  */
 export const VOIX: { at: number; f: string; h: string }[] = [
-  { at: 150, f: 'Les filles, je vous montre comment je réserve !', h: 'Les gars, regardez comment je réserve !' },
-  { at: 3000, f: 'Je clique sur le lien dans sa bio…', h: 'Je clique sur le lien dans sa bio…' },
+  { at: 150, f: 'Vous allez adorer : je réserve en 30 secondes !', h: 'Vous allez adorer : je réserve en 30 secondes !' },
+  { at: 3000, f: 'Un clic sur le lien dans la bio…', h: 'Un clic sur le lien dans la bio…' },
   { at: 5300, f: 'Je choisis ma prestation…', h: 'Je choisis ma prestation…' },
-  { at: 7800, f: 'Le jour, l’heure… franchement, trop facile !', h: 'Le jour, l’heure… franchement, ultra simple !' },
-  { at: 10500, f: 'Je me connecte avec Google, et hop !', h: 'Je me connecte avec Google, et hop !' },
-  { at: 12650, f: 'C’est réservé ! Trop contente !', h: 'C’est réservé ! Trop facile !' },
-  { at: 18700, f: 'Allez, foncez, le lien est dans la bio !', h: 'Allez, foncez, le lien est dans la bio !' },
+  { at: 7800, f: 'Le jour, l’heure… c’est moi qui décide !', h: 'Le jour, l’heure… c’est moi qui décide !' },
+  { at: 10500, f: 'Je me connecte avec Google, en un instant.', h: 'Je me connecte avec Google, en un instant.' },
+  { at: 12650, f: 'Et voilà, c’est réservé ! Bluffant, non ?', h: 'Et voilà, c’est réservé ! Bluffant, non ?' },
+  { at: 18700, f: 'À vous de jouer : le lien est dans la bio !', h: 'À vous de jouer : le lien est dans la bio !' },
 ];
 export type VoixLigne = { start: number; dur: number; text: string; file: string | null };
 

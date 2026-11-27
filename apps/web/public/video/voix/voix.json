@@ -2,11 +2,11 @@
   "f": [
     {
       "file": "voix-f-1.wav",
-      "dur": 2250
+      "dur": 2336
     },
     {
       "file": "voix-f-2.wav",
-      "dur": 1503
+      "dur": 1396
     },
     {
       "file": "voix-f-3.wav",
@@ -14,29 +14,29 @@
     },
     {
       "file": "voix-f-4.wav",
-      "dur": 2772
+      "dur": 2186
     },
     {
       "file": "voix-f-5.wav",
-      "dur": 1908
+      "dur": 2061
     },
     {
       "file": "voix-f-6.wav",
-      "dur": 2063
+      "dur": 3114
     },
     {
       "file": "voix-f-7.wav",
-      "dur": 2162
+      "dur": 1884
     }
   ],
   "h": [
     {
       "file": "voix-h-1.wav",
-      "dur": 2134
+      "dur": 2277
     },
     {
       "file": "voix-h-2.wav",
-      "dur": 1490
+      "dur": 1414
     },
     {
       "file": "voix-h-3.wav",
@@ -44,19 +44,19 @@
     },
     {
       "file": "voix-h-4.wav",
-      "dur": 2646
+      "dur": 2237
     },
     {
       "file": "voix-h-5.wav",
-      "dur": 1983
+      "dur": 2147
     },
     {
       "file": "voix-h-6.wav",
-      "dur": 2437
+      "dur": 3243
     },
     {
       "file": "voix-h-7.wav",
-      "dur": 2139
+      "dur": 1807
     }
   ]
 }

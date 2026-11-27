@@ -1,6 +1,6 @@
-# Voix off « Ma pub » (lib/bioVideo.ts, VOIX) — FRANÇAIS, style UGC (26 nov. 2026, demande du
-# propriétaire) : une vraie cliente / un vrai client qui montre son téléphone et raconte, à la
-# première personne, avec émotion. Femme pour les salons de femmes, homme pour les salons d'hommes.
+# Voix off « Ma pub » (lib/bioVideo.ts, VOIX) — FRANÇAIS, style UGC soigné (27 nov. 2026, demande du
+# propriétaire : « pas trop street, plutôt fun et médiatique ») : une cliente / un client qui raconte
+# à la première personne, ton enjoué de présentatrice, sans « les gars » ni « les filles ». Femme pour les salons de femmes, homme pour les salons d'hommes.
 # Voix neuronales Microsoft : Vivienne (f) et Henri (h).
 # Les phrases DOIVENT rester identiques aux sous-titres de VOIX (lib/bioVideo.ts).
 #   python -m venv venv && venv/Scripts/python -m pip install edge-tts
@@ -14,22 +14,22 @@ import edge_tts
 VOIX = {"f": "fr-FR-VivienneMultilingualNeural", "h": "fr-FR-HenriNeural"}
 LIGNES = {
     "f": [
-        "Les filles, je vous montre comment je réserve !",
-        "Je clique sur le lien dans sa bio…",
+        "Vous allez adorer : je réserve en 30 secondes !",
+        "Un clic sur le lien dans la bio…",
         "Je choisis ma prestation…",
-        "Le jour, l'heure… franchement, trop facile !",
-        "Je me connecte avec Google, et hop !",
-        "C'est réservé ! Trop contente !",
-        "Allez, foncez, le lien est dans la bio !",
+        "Le jour, l'heure… c'est moi qui décide !",
+        "Je me connecte avec Google, en un instant.",
+        "Et voilà, c'est réservé ! Bluffant, non ?",
+        "À vous de jouer : le lien est dans la bio !",
     ],
     "h": [
-        "Les gars, regardez comment je réserve !",
-        "Je clique sur le lien dans sa bio…",
+        "Vous allez adorer : je réserve en 30 secondes !",
+        "Un clic sur le lien dans la bio…",
         "Je choisis ma prestation…",
-        "Le jour, l'heure… franchement, ultra simple !",
-        "Je me connecte avec Google, et hop !",
-        "C'est réservé ! Trop facile !",
-        "Allez, foncez, le lien est dans la bio !",
+        "Le jour, l'heure… c'est moi qui décide !",
+        "Je me connecte avec Google, en un instant.",
+        "Et voilà, c'est réservé ! Bluffant, non ?",
+        "À vous de jouer : le lien est dans la bio !",
     ],
 }
 
