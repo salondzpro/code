@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { langueDe, localiserNotif } from '../lib/notifI18n';
 import { z } from 'zod';
 import {
   chooseRoleSchema,
@@ -270,7 +271,10 @@ const meRoutes: FastifyPluginAsyncZod = async (app) => {
           .eq('user_id', req.user!.id)
           .is('read_at', null),
       ]);
-      const items = camelize<Notification[]>(unwrap(listRes));
+      // Dans la langue de la personne (27 nov. 2026, `lib/notifI18n.ts`) ; en français, rien ne change.
+      const loc = await db.from('profiles').select('locale').eq('id', req.user!.id).maybeSingle();
+      const langue = langueDe(loc.data?.locale);
+      const items = camelize<Notification[]>(unwrap(listRes)).map((n) => localiserNotif(n as Notification & { body: string | null }, langue));
       reply.header('Cache-Control', 'private, no-store');
       return {
         items,

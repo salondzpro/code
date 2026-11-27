@@ -5,6 +5,7 @@ import { isWebPushToken, sendWebPush, webPushEnabled } from './webpush';
 import { fcmEnabled, isFcmToken, sendFcm } from './fcm';
 import { apnsEnabled, isApnsToken, sendApns } from './apns';
 import { audienceOf, pushTitle, pushUrl } from './pushContent';
+import { langueDe, localiserNotif, type Langue } from './notifI18n';
 
 const expo = new Expo({ useFcmV1: true });
 
@@ -65,6 +66,13 @@ async function rolesOf(userIds: string[]): Promise<Map<string, string>> {
   const res = await db.from('profiles').select('id, role').in('id', userIds);
   if (res.error) throw res.error;
   return new Map((res.data ?? []).map((p) => [p.id as string, p.role as string]));
+}
+
+/** Langue de chaque destinataire (`profiles.locale`) : la notification part dans SA langue. */
+async function languesOf(userIds: string[]): Promise<Map<string, Langue>> {
+  const res = await db.from('profiles').select('id, locale').in('id', userIds);
+  if (res.error) throw res.error;
+  return new Map((res.data ?? []).map((p) => [p.id as string, langueDe(p.locale)]));
 }
 
 interface DeviceToken {
@@ -148,6 +156,8 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   if (tErr) throw tErr;
   // Jamais vers l'application de l'autre côté (voir `appMatchesRole`).
   const roles = await rolesOf(userIds);
+  // Une langue illisible ne bloque jamais l'envoi : le texte part alors en français.
+  const langues = await languesOf(userIds).catch(() => new Map<string, Langue>());
   const tokens = ((tokensBruts ?? []) as DeviceToken[]).filter((t) => appMatchesRole(t.app_id, roles.get(t.user_id)));
 
   // Quatre canaux, quatre protocoles, reconnus à la FORME du jeton : Expo (ancienne application),
@@ -186,9 +196,10 @@ export async function dispatchPendingPush(log: FastifyBaseLogger, bookingId?: st
   const pousse = (n: PendingNotification) => {
     const audience = audienceOf(n.data);
     const url = pushUrl(n, audience);
+    const l = localiserNotif(n, langues.get(n.user_id) ?? 'fr');
     return {
-      title: pushTitle(n.type, audience, n.title, n.data),
-      body: n.body,
+      title: pushTitle(n.type, audience, l.title, n.data),
+      body: l.body,
       badge: badges.get(n.user_id) ?? 0,
       data: { ...n.data, type: n.type, notificationId: n.id, ...(url ? { url } : {}) },
     };
