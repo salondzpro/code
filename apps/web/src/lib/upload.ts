@@ -1,10 +1,13 @@
-import imageCompression from 'browser-image-compression';
 import { IMAGE_MAX_BYTES, IMAGE_MAX_DIMENSION, STORAGE_BUCKETS } from '@salondz/constants';
 import { supabase } from './supabase';
 import { isDemo } from '@/demo/session';
 
-/** Compresse côté client (4G moyenne) : max 1600 px, ~600 Ko, WebP. */
+/**
+ * Compresse côté client (4G moyenne) : max 1600 px, ~600 Ko, WebP. Le compresseur (≈ 55 ko) n'est
+ * chargé qu'au premier envoi d'une photo (27 nov. 2026), plus dans le premier chargement de tous.
+ */
 export async function compressImage(file: File): Promise<File> {
+  const { default: imageCompression } = await import('browser-image-compression');
   return imageCompression(file, {
     maxSizeMB: IMAGE_MAX_BYTES / (1024 * 1024),
     maxWidthOrHeight: IMAGE_MAX_DIMENSION,

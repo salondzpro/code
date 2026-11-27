@@ -13,7 +13,6 @@
 import { AppleLogo, GooglePlayLogo } from './BrandIcons';
 import { useEffect, useState } from 'react';
 import { BellRing, CalendarSync } from 'lucide-react';
-import QRCode from 'qrcode';
 import { useAuth } from '@/lib/auth';
 import { mobileOS, storeUrl } from '@/lib/appLinks';
 import { PRO_ONLY } from '@/lib/flavor';
@@ -31,7 +30,11 @@ function Contenu({ onStore }: { onStore?: () => void }) {
   const [qr, setQr] = useState<string | null>(null);
   useEffect(() => {
     if (os) return;
-    void QRCode.toDataURL(APP_LINK, { margin: 1, width: 320, color: { dark: '#202020', light: '#ffffff' } }).then(setQr).catch(() => setQr(null));
+    // Le générateur de QR (≈ 80 ko) n'est chargé que sur ordinateur, quand le QR s'affiche (27 nov. 2026).
+    void import('qrcode')
+      .then(({ default: QRCode }) => QRCode.toDataURL(APP_LINK, { margin: 1, width: 320, color: { dark: '#202020', light: '#ffffff' } }))
+      .then(setQr)
+      .catch(() => setQr(null));
   }, [os]);
   return (
     <>

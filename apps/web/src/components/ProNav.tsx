@@ -35,7 +35,7 @@ import { useProUnseenBookings } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
 import { useRemindersToSend } from '@/lib/reminders';
 import { Avatar, Badge, I } from './ui';
-import { usePublicUrl } from '@/pages/pro/Link';
+import { usePublicUrl } from '@/lib/publicLinks';
 import { usePlusTiles } from './ProPlusSheet';
 import { env } from '@/lib/env';
 import { openExternal } from '@/lib/openExternal';

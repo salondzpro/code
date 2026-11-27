@@ -24,7 +24,7 @@ import { Button, I, Skeleton, Toggle } from '@/components/ui';
 import { Screen } from '@/components/AppFrame';
 import { LabelStudio } from '@/components/LabelStudio';
 import { ErrorMessage, errorText } from '@/components/ErrorMessage';
-import { useLabelUrl } from '@/pages/pro/Link';
+import { useLabelUrl } from '@/lib/publicLinks';
 import { t } from '@/i18n';
 
 const AUDIENCE: Record<string, string> = { women: 'Femmes', men: 'Hommes', all: 'Tous' };

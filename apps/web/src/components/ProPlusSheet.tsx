@@ -9,7 +9,7 @@ import { Link } from 'react-router';
 import { ChartColumn, CircleHelp, Crown, ContactRound, Link2, LogOut, Scissors, Settings, Star, Users, X, type LucideIcon } from 'lucide-react';
 import { useProReviewsUnanswered, useProSalon } from '@salondz/api-client';
 import { useSignOut } from '@/lib/auth';
-import { usePublicUrl } from '@/pages/pro/Link';
+import { usePublicUrl } from '@/lib/publicLinks';
 import { Avatar, BottomSheet, Dim, I } from './ui';
 import { PlanTag, usePlan } from './Plans';
 import { t } from '@/i18n';

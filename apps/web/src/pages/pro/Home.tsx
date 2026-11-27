@@ -37,7 +37,7 @@ import { QuickCloseBanner } from '@/components/QuickClose';
 import { PageHorsLigne } from '@/components/PageHorsLigne';
 import { StoryCard } from '@/components/StoryCard';
 import { NotificationsSheet } from '@/pages/AccountNotifications';
-import { useCopy, useLabelUrl, useQr } from './Link';
+import { useCopy, useLabelUrl, useQr } from '@/lib/publicLinks';
 import { t } from '@/i18n';
 import { isNative } from '@/lib/native';
 

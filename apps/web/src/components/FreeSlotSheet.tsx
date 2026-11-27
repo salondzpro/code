@@ -24,7 +24,7 @@ import { StoryStudio } from './StoryStudio';
 import { ErrorMessage } from './ErrorMessage';
 import { BottomSheet, Button, Dim, I } from './ui';
 import { formatDuration } from '@/lib/format';
-import { usePublicUrl } from '@/pages/pro/Link';
+import { usePublicUrl } from '@/lib/publicLinks';
 import { t } from '@/i18n';
 
 export interface FreeSlot {
